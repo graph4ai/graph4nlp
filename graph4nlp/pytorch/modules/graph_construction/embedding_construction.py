@@ -60,7 +60,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
     Methods
     -------
-    forward(feat)
+    forward(input_tensor, node_size, graph_size)
         Generate initial node and/or edge embeddings for the input graph.
     """
 
@@ -130,6 +130,10 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             raise RuntimeError('Unknown graph_level_emb_type: {}'.format(graph_level_emb_type))
 
     def forward(self, input_tensor, node_size, graph_size):
+        # input_tensor: shape [num_nodes, max_node_size]
+        # node_size: shape [num_nodes]
+        # graph_size: shape [1]
+
         feat = []
         for word_emb in self.word_embs:
             feat.append(word_emb(input_tensor))
