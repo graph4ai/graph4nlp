@@ -144,7 +144,7 @@ class Vocab(object):
     build_vocab(vocab_counter, max_vocab_size=None, min_vocab_freq=1)
         Build vocab from ``vocab_counter`` which is a vocab count dict.
 
-    add_words(words)
+    _add_words(words)
         Expand the existing vocab by taking as input a list of str.
 
     load_embeddings(file_path）
@@ -181,10 +181,10 @@ class Vocab(object):
 
     def build_vocab(self, vocab_counter, max_vocab_size=None, min_vocab_freq=1):
         self.word2count = vocab_counter
-        self.add_words(vocab_counter.keys())
+        self._add_words(vocab_counter.keys())
         self._trim(max_vocab_size=max_vocab_size, min_vocab_freq=min_vocab_freq)
 
-    def add_words(self, words):
+    def _add_words(self, words):
         # words: a list of str
         for word in words:
             if word not in self.word2index:
@@ -288,6 +288,7 @@ def collect_vocabs(all_instances, tokenizer):
     all_words = Counter()
     for instance in all_instances:
         for sentence in instance: # TODO: need to check which elements should be added to vocab
+            # Or sentence.node_attr, sentence.edge_attr
             all_words.update(tokenizer(sentence))
     return all_words
 
