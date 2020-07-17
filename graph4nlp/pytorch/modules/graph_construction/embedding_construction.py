@@ -1,7 +1,31 @@
 import torch
 from torch import nn
+from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
-from .base import EmbeddingConstructionBase
+from ..utils.torch_utils import to_cuda
+
+
+class EmbeddingConstructionBase(nn.Module):
+    """
+    Base class for (initial) graph embedding construction.
+
+    ...
+
+    Attributes
+    ----------
+
+
+    Methods
+    -------
+    forward(feat)
+        Generate initial node and/or edge embeddings for the input graph.
+    """
+
+    def __init__(self):
+        super(EmbeddingConstructionBase, self).__init__()
+
+    def forward(self):
+        raise NotImplementedError()
 
 
 class EmbeddingConstruction(EmbeddingConstructionBase):
@@ -12,20 +36,20 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
     Attributes
     ----------
-    word_emb_type: list of str
+    word_vocab: Vocab class
+        Word vocab instance.
+
+    word_emb_type: str or list of str
         Specify pretrained word embedding types. ``w2v`` includes GloVe, Word2Vec and etc. ``bert`` is to be supported.
 
     node_edge_level_emb_type: str
-        Specify node/edge level embedding initialization strategies (e.g., ``mean`` and ``bilstm``).
+        Specify node/edge level embedding initialization strategies (e.g., ``mean``, ``lstm`` and ``bilstm``).
 
     graph_level_emb_type: str
-        Specify graph level embedding initialization strategies (e.g., ``identity`` and ``bilstm``).
+        Specify graph level embedding initialization strategies (e.g., ``identity``, ``lstm``  and ``bilstm``).
 
     hidden_size: int
         Hidden size.
-
-    pretrained_word_emb: Tensor
-        Pretrained word embeddings.
 
     fix_word_emb: boolean, default: ``True``
         Specify whether to fix pretrained word embeddings.
@@ -44,18 +68,22 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                         node_edge_level_emb_type,
                         graph_level_emb_type,
                         hidden_size,
-                        pretrained_word_emb=None,
                         fix_word_emb=True,
                         dropout=None,
-                        use_cuda=False):
+                        use_cuda=True):
         super(EmbeddingConstruction, self).__init__()
+        self.node_edge_level_emb_type = node_edge_level_emb_type
+        self.graph_level_emb_type = graph_level_emb_type
+
+        if isinstance(word_emb_type, str):
+            word_emb_type = [word_emb_type]
 
         self.word_embs = nn.ModuleList()
         if 'w2v' in word_emb_type:
             self.word_embs.append(WordEmbedding(
                             word_vocab.embeddings.shape[0],
                             word_vocab.embeddings.shape[1],
-                            pretrained_word_emb=pretrained_word_emb,
+                            pretrained_word_emb=word_vocab.embeddings,
                             fix_word_emb=fix_word_emb))
 
         if 'bert' in word_emb_type:
@@ -81,7 +109,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             raise RuntimeError('Unknown node_edge_level_emb_type: {}'.format(node_edge_level_emb_type))
 
         if graph_level_emb_type == 'identity':
-            self.graph_level_emb = IdentityEmbedding()
+            self.graph_level_emb = None
 
         elif graph_level_emb_type == 'lstm':
             self.graph_level_emb = LSTMEmbedding(
@@ -101,14 +129,23 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         else:
             raise RuntimeError('Unknown graph_level_emb_type: {}'.format(graph_level_emb_type))
 
-    def forward(self, feat):
+    def forward(self, input_tensor, node_size, graph_size):
         feat = []
         for word_emb in self.word_embs:
-            feat.append(word_emb(feat))
-        feat = torch.stack(feat, dim=-1)
+            feat.append(word_emb(input_tensor))
 
-        feat = self.node_level_emb(feat)
-        feat = self.graph_level_emb(feat)
+        feat = torch.cat(feat, dim=-1)
+
+        feat = self.node_level_emb(feat, node_size)
+        if self.node_edge_level_emb_type in ('lstm', 'bilstm'):
+            feat = feat[-1]
+
+        if self.graph_level_emb is not None:
+            feat = self.graph_level_emb(torch.unsqueeze(feat, 0), graph_size)
+            if self.graph_level_emb_type in ('lstm', 'bilstm'):
+                feat = feat[0]
+
+            feat = torch.squeeze(feat, 0)
 
         return feat
 
@@ -124,8 +161,8 @@ class WordEmbedding(nn.Module):
 
     Methods
     -------
-    forward()
-        Return word embedding layer.
+    forward(input_tensor)
+        Return word embeddings.
 
 
     Examples
@@ -135,23 +172,19 @@ class WordEmbedding(nn.Module):
 
     def __init__(self, vocab_size, emb_size, padding_idx=0, pretrained_word_emb=None, fix_word_emb=False):
         super(WordEmbedding, self).__init__()
-        self.vocab_size = vocab_size
-        self.emb_size = emb_size
-        self.padding_idx = padding_idx
-        self.pretrained_word_emb = pretrained_word_emb
-        self.fix_word_emb = fix_word_emb
+        self.word_emb = nn.Embedding(vocab_size, emb_size, padding_idx=padding_idx,
+                            _weight=torch.from_numpy(pretrained_word_emb).float()
+                            if pretrained_word_emb is not None else None)
 
-    def forward(self):
-        word_emb = nn.Embedding(self.vocab_size, self.emb_size, padding_idx=self.padding_idx,
-                            _weight=torch.from_numpy(self.pretrained_word_emb).float()
-                            if self.pretrained_word_emb is not None else None)
-
-        if self.fix_word_emb:
+        if fix_word_emb:
             print('[ Fix word embeddings ]')
-            for param in word_emb.parameters():
+            for param in self.word_emb.parameters():
                 param.requires_grad = False
 
-        return word_emb
+    def forward(self, input_tensor):
+        emb = self.word_emb(input_tensor)
+
+        return emb
 
 
 class BertEmbedding(nn.Module):
@@ -187,36 +220,15 @@ class MeanEmbedding(nn.Module):
 
     Methods
     -------
-    forward(feat)
+    forward(emb)
         Return the input embeddings.
     """
     def __init__(self):
         super(MeanEmbedding, self).__init__()
 
-    def forward(self, feat):
-        return torch.mean(feat, dim=-2)
+    def forward(self, emb, len_):
+        return torch.sum(emb, dim=-2) / len_
 
-
-class IdentityEmbedding(nn.Module):
-    """
-    Identity embedding layer.
-
-    ...
-
-    Attributes
-    ----------
-
-
-    Methods
-    -------
-    forward(feat)
-        Return the input embeddings.
-    """
-    def __init__(self):
-        super(IdentityEmbedding, self).__init__()
-
-    def forward(self, feat):
-        return feat
 
 class LSTMEmbedding(nn.Module):
     """
@@ -240,11 +252,11 @@ class LSTMEmbedding(nn.Module):
         if not rnn_type in ('lstm', 'gru'):
             raise RuntimeError('rnn_type is expected to be lstm or gru, got {}'.format(rnn_type))
 
-        if bidirectional:
-            print('[ Using bidirectional {} encoder ]'.format(rnn_type))
+        # if bidirectional:
+        #     print('[ Using bidirectional {} encoder ]'.format(rnn_type))
 
-        else:
-            print('[ Using {} encoder ]'.format(rnn_type))
+        # else:
+        #     print('[ Using {} encoder ]'.format(rnn_type))
 
         if bidirectional and hidden_size % 2 != 0:
             raise RuntimeError('hidden_size is expected to be even in the bidirectional mode!')
@@ -267,11 +279,15 @@ class LSTMEmbedding(nn.Module):
             packed_h, (packed_h_t, _) = self.model(x, (h0, c0))
             if self.num_directions == 2:
                 packed_h_t = torch.cat([packed_h_t[i] for i in range(packed_h_t.size(0))], -1)
+            else:
+                packed_h_t = packed_h_t.squeeze(0)
 
         else:
             packed_h, packed_h_t = self.model(x, h0)
             if self.num_directions == 2:
                 packed_h_t = packed_h_t.transpose(0, 1).contiguous().view(query_lengths.size(0), -1)
+            else:
+                packed_h_t = packed_h_t.squeeze(0)
 
         hh, _ = pad_packed_sequence(packed_h, batch_first=True)
 
@@ -280,4 +296,28 @@ class LSTMEmbedding(nn.Module):
         restore_hh = hh[inverse_indx]
         restore_packed_h_t = packed_h_t[inverse_indx]
 
-        return restore_packed_h_t
+        return restore_hh, restore_packed_h_t
+
+
+if __name__ == '__main__':
+    # For test purpose
+    from ..utils.vocab_utils import VocabModel
+    from ..utils.padding_utils import pad_2d_vals_no_size
+
+
+    raw_text_data = [['I like nlp.', 'Same here!'], ['I like graph.', 'Same here!']]
+
+    vocab_model = VocabModel(raw_text_data, max_word_vocab_size=None,
+                                min_word_vocab_freq=1,
+                                word_emb_size=300)
+
+    src_text_seq = list(zip(*raw_text_data))[0]
+    src_idx_seq = [vocab_model.word_vocab.to_index_sequence(each) for each in src_text_seq]
+    src_len = torch.LongTensor([len(each) for each in src_idx_seq])
+    num_seq = torch.LongTensor([len(src_len)])
+    input_tensor = torch.LongTensor(pad_2d_vals_no_size(src_idx_seq))
+    print('input_tensor: {}'.format(input_tensor.shape))
+
+    emb_constructor = EmbeddingConstruction(vocab_model.word_vocab, 'w2v', 'bilstm', 'bilstm', 128)
+    emb = emb_constructor(input_tensor, src_len, num_seq)
+    print('emb: {}'.format(emb.shape))

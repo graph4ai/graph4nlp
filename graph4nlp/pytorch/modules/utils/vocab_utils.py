@@ -47,7 +47,7 @@ class VocabModel(object):
                                 min_word_vocab_freq=1,
                                 pretrained_word_emb_file=None,
                                 word_emb_size=None))
-        Static class method for building a vocab model.
+        Static class method for restoring a vocab model from disk or building one from scratch.
 
 
     Examples
@@ -67,17 +67,22 @@ class VocabModel(object):
                                 pretrained_word_emb_file=None,
                                 word_emb_size=None):
         super(VocabModel, self).__init__()
+        self.tokenizer = word_tokenize
+
         print('Building vocabs...')
-        all_words = collect_vocabs(data_set, tokenizer)
+        all_words = collect_vocabs(data_set, self.tokenizer)
         print('Number of words: {}'.format(len(all_words)))
 
-        self.word_vocab = Vocab()
+        self.word_vocab = Vocab(self.tokenizer)
         self.word_vocab.build_vocab(all_words, max_vocab_size=max_word_vocab_size, min_vocab_freq=min_word_vocab_freq)
+
         if pretrained_word_emb_file is not None:
             self.word_vocab.load_embeddings(pretrained_word_emb_file)
             print('Using pretrained word embeddings')
+
         else:
             self.word_vocab.randomize_embeddings(word_emb_size)
+
         print('Initialized word embeddings: {}'.format(self.word_vocab.embeddings.shape))
 
         # self.edge_vocab = Vocab()
@@ -122,10 +127,11 @@ class VocabModel(object):
                                         word_emb_size)
             print('Saving vocab model to {}'.format(saved_vocab_file))
             pickle.dump(vocab_model, open(saved_vocab_file, 'wb'))
+
         return vocab_model
 
 class Vocab(object):
-        """
+    """
     Vocab class.
 
     ...
@@ -155,8 +161,9 @@ class Vocab(object):
     >>> print(word_vocab.get_vocab_size())
     """
 
-    def __init__(self):
+    def __init__(self, tokenizer=word_tokenize):
         super(Vocab, self).__init__()
+        self.tokenizer = tokenizer
         self.PAD = 0
         self.SOS = 1
         self.EOS = 2
@@ -260,12 +267,12 @@ class Vocab(object):
         for idx in seq:
             word = self.getWord(idx)
             sentence.append(word)
-        return sentence
+        return ' '.join(sentence)
 
     def to_index_sequence(self, sentence):
         sentence = sentence.strip()
         seq = []
-        for word in re.split('\\s+', sentence):
+        for word in self.tokenizer(sentence):
             idx = self.getIndex(word)
             seq.append(idx)
         return seq
@@ -313,6 +320,7 @@ if __name__ == '__main__':
                             min_word_vocab_freq=1,
                             word_emb_size=300)
 
+    # Restore a vocab model from disk or build one from scratch.
     # vocab_model = VocabModel.build('vocab_model.pkl', [['I like nlp.', 'Same here!'],
     #                         ['I like graph.', 'Same here!']],
     #                         max_word_vocab_size=None,
