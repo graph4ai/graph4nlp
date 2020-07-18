@@ -1,7 +1,27 @@
 from torch import nn
 
-from .base import EmbeddingConstructionBase
+class EmbeddingConstructionBase(nn.Module):
+    """
+    Base class for (initial) graph embedding construction.
 
+    ...
+
+    Attributes
+    ----------
+    feat : dict
+        Raw features of graph nodes and/or edges.
+
+    Methods
+    -------
+    forward(raw_text_data)
+        Generate dynamic graph topology and embeddings.
+    """
+
+    def __init__(self):
+        super(EmbeddingConstructionBase, self).__init__()
+
+    def forward(self):
+        raise NotImplementedError()
 
 class EmbeddingConstruction(EmbeddingConstructionBase):
     """
@@ -41,7 +61,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             self.word_embs.append(BertEmbedding(fix_word_emb))
 
         if node_edge_level_emb_type == 'mean':
-            self.node_level_emb = MeanEmbedding()
+            pass
+            # self.node_level_emb = MeanEmbedding()
         elif node_edge_level_emb_type == 'bilstm':
             self.node_level_emb = BiLSTMEmbedding()
         else:
@@ -80,8 +101,9 @@ class GloveEmbedding(nn.Module):
     forward(feat)
         Generate GloVe embeddings.
     """
-    def __init__(self):
+    def __init__(self, fix_word_emb = True):
         super(GloveEmbedding, self).__init__()
+        self.fix_word_emb = fix_word_emb
 
     def forward(self, feat):
         raise NotImplementedError()
@@ -101,8 +123,9 @@ class BertEmbedding(nn.Module):
     forward(feat)
         Generate BERT embeddings.
     """
-    def __init__(self):
+    def __init__(self, fix_word_emb):
         super(BertEmbedding, self).__init__()
+        self.fix_word_emb = fix_word_emb
 
     def forward(self, feat):
         raise NotImplementedError()

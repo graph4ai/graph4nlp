@@ -1,2 +1,2 @@
-from .base import GraphConstructionBase, DynamicGraphConstructionBase, EmbeddingConstructionBase
-from .embedding_construction import EmbeddingConstruction
+from .base import GraphConstructionBase, DynamicGraphConstructionBase
+from .embedding_construction import EmbeddingConstructionBase, EmbeddingConstruction
