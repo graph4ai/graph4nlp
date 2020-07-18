@@ -4,7 +4,7 @@ from torch.nn import init
 from dgl.nn import GatedGraphConv
 import dgl.function as fn
 
-from graph_embedding.base import GNNLayerBase, GNNBase
+from .base import GNNLayerBase, GNNBase
 
 class GatedGraphConvWoGRU(nn.Module):
    r"""Gated Graph Convolution layer from paper `Gated Graph Sequence
