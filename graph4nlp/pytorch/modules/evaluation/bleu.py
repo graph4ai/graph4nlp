@@ -5,18 +5,15 @@ from graph4nlp.pytorch.modules.evaluation.bleu_tool.bleu import Bleu
 class BLEU(EvaluationMetricBase):
     """
         The BLEU evaluation metric class.
+    Parameters
+    ----------
+    n_grams: list[int]
+        The BLEU's n_gram parameter. The results will be returned according to the ``n_grams`` one-by-one.
+    verbase: int, default = 0
+        The log indicator. If set to 0, it will output no logs.
     """
 
     def __init__(self, n_grams, verbase=0):
-        """
-            The initial method for BLEU class
-        Parameters
-        ----------
-        n_grams: list
-            The BLEU's n_gram parameter. The results will be returned according to the ``n_grams`` one-by-one.
-        verbase: int, default = 0
-            The log indicator. If set to 0, it will output no logs.
-        """
         super(BLEU, self).__init__()
         max_gram = self._check_available(n_grams)
         self.scorer = Bleu(max_gram, verbase=verbase)
@@ -71,29 +68,3 @@ class BLEU(EvaluationMetricBase):
         if not n_grams_ok:
             raise TypeError("argument n_grams must be in list of int.")
         return max(n_grams)
-
-
-if __name__ == "__main__":
-    import json
-
-    scorer = BLEU(n_grams=[1, 2, 3, 4])
-    pred_file_path = "/home/shiina/shiina/question/iq/pred.json"
-    gt_file_path = "/home/shiina/shiina/question/iq/gt.json"
-    with open(gt_file_path, "r") as f:
-        gt = json.load(f)
-        print(gt[0])
-        gts = []
-        for i in gt:
-            for j in i:
-                gts.append(str(j))
-    with open(pred_file_path, "r") as f:
-        pred = json.load(f)
-        print(pred[1])
-        preds = []
-        for i in pred:
-            for j in i:
-                preds.append(str(j))
-    print(len(gts), len(preds))
-    score, scores = scorer.calculate_scores(gts, preds)
-    print(score)
-    print(len(scores))
