@@ -1,6 +1,5 @@
 from graph4nlp.pytorch.modules.evaluation.meteor import METEOR
 
-
 if __name__ == "__main__":
     import json
 

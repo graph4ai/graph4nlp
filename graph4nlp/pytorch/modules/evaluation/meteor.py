@@ -5,16 +5,11 @@ from graph4nlp.pytorch.modules.evaluation.meteor_tool.meteor import Meteor
 class METEOR(EvaluationMetricBase):
     """
         The METEOR evaluation metric class.
+    Parameters
+    ----------
     """
 
     def __init__(self):
-        """
-            The initial method for METEOR class
-        Parameters
-        ----------
-        df: string
-            Parameter indicating document frequency.
-        """
         super(METEOR, self).__init__()
         self.scorer = Meteor()
 

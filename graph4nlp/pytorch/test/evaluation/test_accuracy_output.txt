@@ -1,0 +1,22 @@
+ssh://shiina@10.214.223.119:22/home/shiina/env/anaconda3/envs/torch/bin/python -u /home/shiina/shiina/lib/graph4nlp/graph4nlp/pytorch/test/evaluation/test_accuracy.py
+  2%|▊                                          | 2/100 [00:04<03:39,  2.24s/it]/home/shiina/env/anaconda3/envs/torch/lib/python3.7/site-packages/sklearn/metrics/_classification.py:1221: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/shiina/shiina/lib/graph4nlp/graph4nlp/pytorch/modules/evaluation/accuracy.py:151: UserWarning: zero division encountered
+  warnings.warn("zero division encountered")
+  4%|█▋                                         | 4/100 [00:09<03:53,  2.44s/it]/home/shiina/env/anaconda3/envs/torch/lib/python3.7/site-packages/sklearn/metrics/_classification.py:1221: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+100%|█████████████████████████████████████████| 100/100 [03:30<00:00,  2.11s/it]
+random test 1 passed
+100%|█████████████████████████████████████████| 100/100 [02:51<00:00,  1.72s/it]
+random test 2 passed
+.mcm test passed
+micro average special case test passed
+macro average special case test passed
+weighted average special case test passed
+.
+----------------------------------------------------------------------
+Ran 2 tests in 382.427s
+
+OK
+
+Process finished with exit code 0
