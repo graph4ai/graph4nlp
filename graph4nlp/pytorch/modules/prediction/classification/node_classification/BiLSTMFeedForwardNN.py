@@ -1,9 +1,8 @@
-import sys
-from ..base import NodeClassifierBase
-import collections
 from torch import nn
 import torch as th
 import torch.autograd as autograd
+from ..base import NodeClassifierBase
+from BiLSTMFeedForwardNNLayer import BiLSTMFeedForwardNNLayer
 
 class BiLSTMFeedForwardNN(NodeClassifierBase):
     """
@@ -30,42 +29,38 @@ class BiLSTMFeedForwardNN(NodeClassifierBase):
     """     
     def __init__(self, input_size, num_class, hidden_size):
         
-        super(BiLSTMFeedForwardNN, self).__init__(input_size, num_class)
-        self.hidden_size=hidden_size
-        self.lstm = nn.LSTM(input_size, self.hidden_size//2, num_layers=1, bidirectional=True) # Maps the output of the LSTM into tag space.        
-        self.linear = nn.Linear(hidden_size, self.num_class) 
-        self.hidden = self.init_hidden()
+        super(BiLSTMFeedForwardNN, self).__init__()
         
-    def init_hidden(self):        
-        return (autograd.Variable(th.randn(2, 1, self.hidden_size // 2)),                
-                autograd.Variable(th.randn(2, 1, self.hidden_size // 2)))
+        self.classifier=BiLSTMFeedForwardNNLayer(input_size, num_class, hidden_size)
 
 
-    def forward(self, node_emb, node_idx=None):
-        """
-        Forward functions for classification task.
+    def forward(self, input_graph):
+        r"""
+        Forward functions to compute the logits tensor for node classification.
     
-        ...
+      
     
         Parameters
         ----------
     
-        node_emb : tensor [N,H]  
-                   N: number of nodes    
-                   H: length of the node embeddings
-        node_idx : a list of index of nodes that needs classification.
-                   Default: 'None'
+        input graph : GraphData
+                     The tensors stored in the node feature field named "node_emb"  in the 
+                     input_graph are used  for classification.
+
     
         Returns 
-        -------
-             logit tensor: [N, num_class] The score logits for all nodes preidcted.
+        ---------
+        
+        output_graph : GraphData
+                      The computed logit tensor for each nodes in the graph are stored
+                      in the node feature field named "node_logits".
+                      logit tensor shape is: [num_class] 
         """ 
-        if node_idx:
-            node_emb = node_emb[th.tensor(node_idx), :]  # get the required node embeddings.
-        self.hidden = self.init_hidden()
-        node_emb = node_emb.unsqueeze(1)         
-        lstm_out, self.hidden = self.lstm(node_emb, self.hidden)         
-        lstm_out = lstm_out.view(-1, self.hidden_size)          
-        lstm_feats = self.linear(lstm_out)
-           
-        return lstm_feats
+        node_emb=input_graph.ndata['node_emb'] #get the node embeddings from the graph
+         
+        input_graph.ndata['logits']=self.classifier(lstm_feats) #store the logits tensor into the graph
+        
+        return input_graph
+
+
+

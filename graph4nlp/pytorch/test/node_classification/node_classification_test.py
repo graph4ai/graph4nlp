@@ -4,8 +4,6 @@ Created on Fri Jul 17 00:30:50 2020
 
 @author: XiaojieGuo
 """
-
-
 import argparse, time
 import numpy as np
 import networkx as nx
@@ -14,9 +12,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from dgl import DGLGraph
 from dgl.data import register_data_args, load_data
-from prediction.classification.node_classification.FeedForwardNN import FeedForwardNN  
+from prediction.classification.node_classification.FeedForwardNNLayer import FeedForwardNNLayer  
 from dgl.nn.pytorch import GraphConv
-from prediction.classification.node_classification.BiLSTMFeedForwardNN import BiLSTMFeedForwardNN 
+from prediction.classification.node_classification.BiLSTMFeedForwardNNLayer import BiLSTMFeedForwardNNLayer 
 
 
 class GCN(nn.Module):
@@ -37,8 +35,8 @@ class GCN(nn.Module):
         for i in range(n_layers - 1):
             self.layers.append(GraphConv(n_hidden, n_hidden, activation=activation))
         # output layer
-        self.classifier=FeedForwardNN(n_hidden,n_classes,[16])
-        #self.classifier=BiLSTMFeedForwardNN(n_hidden,n_classes,16)   
+        self.classifier=FeedForwardNNLayer(n_hidden,n_classes,[16],nn.Sigmoid())
+        #self.classifier=BiLSTMFeedForwardNNLayer(n_hidden,n_classes,16)   
         self.dropout = nn.Dropout(p=dropout)
 
 
@@ -184,7 +182,7 @@ if __name__ == '__main__':
     register_data_args(parser)
     parser.add_argument("--dropout", type=float, default=0.5,
             help="dropout probability")
-    parser.add_argument("--gpu", type=int, default=0,
+    parser.add_argument("--gpu", type=int, default=-1,
             help="gpu")
     parser.add_argument("--lr", type=float, default=1e-2,
             help="learning rate")

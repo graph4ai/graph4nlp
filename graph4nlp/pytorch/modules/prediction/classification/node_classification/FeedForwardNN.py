@@ -1,76 +1,62 @@
-from ..base import NodeClassifierBase
 import collections
 from torch import nn
 import torch as th
-
+from ..base import NodeClassifierBase
+from FeedForwardNNLayer import FeedForwardNNLayer
 
 class FeedForwardNN(NodeClassifierBase):
-    """
-    Specific class for node classification task.
+    r"""Specific class for node classification task.
 
-    ...
 
-    Attributes
+    Parameters
     ----------
 
     input_size : int 
-                 the length of input node embeddings
-    num_class: int 
-               the number of node catrgoriey for classification
-    hidden_size: list of int type values
-                [hidden_size1, hidden_size2,...]
-
-    Methods
-    -------
-
-    forward(node_emb)
-
-        Generate the node classification logits.         
+                 The length of input node embeddings
+    num_class : int 
+               The number of node catrgoriey for classification
+    hidden_size : list of int type values
+                  Example for two layers's FeedforwardNN: [50, 20]
+    activation: the activation function class for each fully connected layer
+                Default: nn.ReLU()
+                Example: nn.ReLU(),nn.Sigmoid().        
 
     """     
-    def __init__(self, input_size, num_class, hidden_size):        
-        super(FeedForwardNN, self).__init__(input_size, num_class)
-        self.hidden_size=hidden_size
-        self.num_hidden_layers=len(self.hidden_size)
+    def __init__(self, input_size, num_class, hidden_size,activation=None):        
+        super(FeedForwardNN, self).__init__()
         
-        #build the linear module list
-        module_seq=[]
+        if not activation:
+            activation==nn.ReLU 
         
-        for layer_idx in range(self.num_hidden_layers):
-            if layer_idx==0:
-                module_seq.append(('linear'+str(layer_idx),nn.Linear(self.input_size,self.hidden_size[layer_idx])))
-            else:
-                module_seq.append(('linear'+str(layer_idx),nn.Linear(self.hidden_size[layer_idx-1],self.hidden_size[layer_idx])))
-            module_seq.append(('relu'+str(layer_idx),nn.ReLU()))
-            
-        module_seq.append(('linear_end',nn.Linear(self.hidden_size[-1],num_class)))
-        
-        self.classifier = nn.Sequential(collections.OrderedDict(module_seq))
+        self.classifier=FeedForwardNNLayer(input_size, num_class, hidden_size,activation)
 
-    def forward(self, node_emb, node_idx=None):
-        """
-        Forward functions for classification task.
+    def forward(self, input_graph):
+        r"""
+        Forward functions to compute the logits tensor for node classification.
     
-        ...
+      
     
         Parameters
         ----------
     
-        node_emb : tensor [N,H]  
-                   N: number of nodes    
-                   H: length of the node embeddings
-        node_idx : a list of index of nodes that needs classification.
-                   Default: 'None'
+        input graph : GraphData
+                     The tensors stored in the node feature field named "node_emb"  in the 
+                     input_graph are used  for classification.
+
     
         Returns 
-        -------
-             logit tensor: [N, num_class] The score logits for all nodes preidcted.
+        ---------
+        
+        output_graph : GraphData
+                      The computed logit tensor for each nodes in the graph are stored
+                      in the node feature field named "node_logits".
+                      logit tensor shape is: [num_class] 
         """ 
-        if node_idx == None:
-            return self.classifier(node_emb)
-        else:
-            new_emb_new = node_emb[th.tensor(node_idx), :]  # get the required node embeddings.
-            return self.classifier(new_emb_new)
 
-if __name__=="__main__":        
-   print('hello')
+        node_emb=input_graph.ndata['node_emb']
+        input_graph.ndata['logits']=self.classifier(node_emb)
+        
+        return input_graph
+
+
+
