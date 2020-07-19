@@ -10,22 +10,22 @@ from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 class Accuracy(EvaluationMetricBase):
     """
         Calculate precision, recall, F1 for each labels
+
+    Parameters
+    ----------
+    metrics: list
+        Indicate the metric for the class to return.
+        Note that each metric must be one of ``precision``, ``recall``, ``F1``, ``accuracy``.
+        And the results' order is the same as the metrics.
     """
 
     def __init__(self, metrics):
-        """
-            The initial function for this class
-        Parameters
-        ----------
-        metrics: list
-            Indicate the metric for the class to return.
-            Note that each metric must be one of ``precision``, ``recall``, ``F1``
-        """
         super().__init__()
         if not isinstance(metrics, list):
             for metric in metrics:
-                if metric not in ["precision", "recall", "F1"]:
-                    raise TypeError("argument metric must be list of str containing 'precision', 'recall', 'F1'")
+                if metric not in ["precision", "recall", "F1", "accuracy"]:
+                    raise TypeError(
+                        "argument metric must be list of str containing 'precision', 'recall', 'F1', 'accuracy'")
         self.metrics = metrics
 
     def calculate_scores(self, ground_truth, predict, average=None, zero_division="warning", sample_weight=None):
@@ -68,6 +68,14 @@ class Accuracy(EvaluationMetricBase):
             Return the expected metrics initialized in init function in ``precision``, ``recall``, ``F1`` order
         """
         ground_truth_np, predict_np = self._check_available(ground_truth, predict, zero_division)
+
+        # calculate accuracy
+        scores = ground_truth_np == predict_np
+        accuracy_score = np.average(scores)
+
+        if self.metrics is ["precision"]:
+            return [accuracy_score]
+
         mcm = self._calculate_confusion_matrix(ground_truth=ground_truth_np, predict=predict_np)
 
         tp_sum = mcm[:, 1, 1]
@@ -100,12 +108,18 @@ class Accuracy(EvaluationMetricBase):
             recall = np.average(recall, weights=weighted)
             f_score = np.average(f_score, weights=weighted)
         scores = []
-        if "precision" in self.metrics:
-            scores.append(precision)
-        if "recall" in self.metrics:
-            scores.append(recall)
-        if "F1" in self.metrics:
-            scores.append(f_score)
+
+        for metric_name in self.metrics:
+            if metric_name is "precision":
+                scores.append(precision)
+            elif metric_name is "recall":
+                scores.append(recall)
+            elif metric_name is "F1":
+                scores.append(f_score)
+            elif metric_name is "accuracy":
+                scores.append(accuracy_score)
+            else:
+                raise NotImplementedError()
         return scores
 
     @staticmethod
@@ -189,7 +203,7 @@ class Accuracy(EvaluationMetricBase):
     def _calculate_confusion_matrix(self, ground_truth, predict):
         """
             The function to calculate the confusion matrix for multi-class inputs.
-            The labels will be selected and transformed. eg: [1, 2, 3] --> [0, 1, 2]
+            The labels will be collected and relabeled. (eg: [1, 2, 3] --> [0, 1, 2])
 
             In multi-class confusion matrix :math:`MCM`, the count of true negatives is
             :math:`MCM_{:,0,0}`, false positives is :math:`MCM_{:,0,1}`, false negatives
@@ -205,9 +219,14 @@ class Accuracy(EvaluationMetricBase):
         confusion_matrix: numpy.ndarray
             The confusion matrix which has the shape: [num_labels, 2, 2]
         """
+        # select all labels, remove duplicates and sort
         unique_labels = sorted(self._get_unique_labels(ground_truth, predict))
+
+        # do relabeling
         ground_truth_transformed = np.searchsorted(unique_labels, ground_truth)
         predict_transformed = np.searchsorted(unique_labels, predict)
+
+        # the number of labels after relabeling
         n_labels = len(unique_labels)
 
         tp = ground_truth_transformed == predict_transformed

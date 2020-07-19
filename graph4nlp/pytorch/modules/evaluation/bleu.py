@@ -5,18 +5,15 @@ from graph4nlp.pytorch.modules.evaluation.bleu_tool.bleu import Bleu
 class BLEU(EvaluationMetricBase):
     """
         The BLEU evaluation metric class.
+    Parameters
+    ----------
+    n_grams: list[int]
+        The BLEU's n_gram parameter. The results will be returned according to the ``n_grams`` one-by-one.
+    verbase: int, default = 0
+        The log indicator. If set to 0, it will output no logs.
     """
 
     def __init__(self, n_grams, verbase=0):
-        """
-            The initial method for BLEU class
-        Parameters
-        ----------
-        n_grams: list
-            The BLEU's n_gram parameter. The results will be returned according to the ``n_grams`` one-by-one.
-        verbase: int, default = 0
-            The log indicator. If set to 0, it will output no logs.
-        """
         super(BLEU, self).__init__()
         max_gram = self._check_available(n_grams)
         self.scorer = Bleu(max_gram, verbase=verbase)

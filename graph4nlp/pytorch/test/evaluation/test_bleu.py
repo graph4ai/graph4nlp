@@ -1,6 +1,5 @@
 from graph4nlp.pytorch.modules.evaluation.bleu import BLEU
 
-
 if __name__ == "__main__":
     import json
 
