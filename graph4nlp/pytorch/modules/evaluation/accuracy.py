@@ -26,6 +26,7 @@ class Accuracy(EvaluationMetricBase):
                 if metric not in ["precision", "recall", "F1", "accuracy"]:
                     raise TypeError(
                         "argument metric must be list of str containing 'precision', 'recall', 'F1', 'accuracy'")
+
         self.metrics = metrics
 
     def calculate_scores(self, ground_truth, predict, average=None, zero_division="warning", sample_weight=None):
@@ -120,6 +121,7 @@ class Accuracy(EvaluationMetricBase):
                 scores.append(accuracy_score)
             else:
                 raise NotImplementedError()
+
         return scores
 
     @staticmethod
@@ -203,6 +205,7 @@ class Accuracy(EvaluationMetricBase):
     def _calculate_confusion_matrix(self, ground_truth, predict):
         """
             The function to calculate the confusion matrix for multi-class inputs.
+
             The labels will be collected and relabeled. (eg: [1, 2, 3] --> [0, 1, 2])
 
             In multi-class confusion matrix :math:`MCM`, the count of true negatives is
