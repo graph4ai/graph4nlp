@@ -7,4 +7,4 @@ class EvaluationMetricBase:
         pass
 
     def calculate_scores(self, **kwargs):
-        pass
+        raise NotImplementedError()
