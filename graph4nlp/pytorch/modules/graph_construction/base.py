@@ -2,7 +2,6 @@ from torch import nn
 
 from .embedding_construction import EmbeddingConstruction
 
-
 class GraphConstructionBase(nn.Module):
     """
     Base class for graph construction.
@@ -42,6 +41,45 @@ class GraphConstructionBase(nn.Module):
     def embedding(self):
         raise NotImplementedError()
 
+class StaticGraphConstructionBase(GraphConstructionBase):
+    """
+    Base class for static graph construction.
+
+    ...
+
+    Attributes
+    ----------
+    embedding_styles : dict
+        Specify embedding styles including ``word_emb_type``, ``node_edge_level_emb_type`` and ``graph_level_emb_type``.
+
+    Methods
+    -------
+    add_vocab()
+        Add new parsed words or syntactic components into vocab.
+
+    topology()
+        Generate graph topology.
+
+    embedding(raw_data, structure)
+        Generate graph embeddings.
+    
+    forward(raw_data)
+        Generate static graph embeddings and topology.
+    """
+    def __init__(self, embedding_styles):
+        super(StaticGraphConstructionBase, self).__init__(embedding_styles)
+
+    def add_vocab(self):
+        raise NotImplementedError()
+
+    def topology(self, raw_text_data, nlp_processor, merge_strategy, edge_strategy):
+        raise NotImplementedError()
+
+    def embedding(self, raw_data, structure):
+        raise NotImplementedError()
+
+    def forward(self, raw_data):
+        raise NotImplementedError()
 
 class DynamicGraphConstructionBase(GraphConstructionBase):
     """
