@@ -1,185 +1,177 @@
 import torch
 import torch.nn as nn
-from torch.nn import init
 from dgl.nn import GatedGraphConv
 import dgl.function as fn
 
 from .base import GNNLayerBase, GNNBase
 
-class GatedGraphConvWoGRU(nn.Module):
-   r"""Gated Graph Convolution layer from paper `Gated Graph Sequence
-   Neural Networks <https://arxiv.org/pdf/1511.05493.pdf>`__.
 
-   .. math::
+class UniGGNNLayerConv(GNNLayerBase):
+    r"""
+    Gated Graph Convolution layer from paper `Gated Graph Sequence
+    Neural Networks <https://arxiv.org/pdf/1511.05493.pdf>`__.
+
+    .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
 
        a_{i}^{t} & = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
 
        h_{i}^{t+1} & = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
 
-   Parameters
-   ----------
-   in_feats : int
-       Input feature size.
-   out_feats : int
-       Output feature size.
-   n_steps : int
-       Number of recurrent steps.
-   n_etypes : int
-       Number of edge types.
-   bias : bool
-       If True, adds a learnable bias to the output. Default: ``True``.
-   """
-   def __init__(self,
-                in_feats,
-                out_feats,
-                n_steps,
-                n_etypes,
-                bias=True):
-       super(GatedGraphConvWoGRU, self).__init__()
-       self._in_feats = in_feats
-       self._out_feats = out_feats
-       self._n_steps = n_steps
-       self._n_etypes = n_etypes
-       self.linears = nn.ModuleList(
-           [nn.Linear(out_feats, out_feats) for _ in range(n_etypes)]
-       )
-       # self.gru = nn.GRUCell(out_feats, out_feats, bias=bias)
-       self.reset_parameters()
+    """
+    def __init__(self,
+                 input_size,
+                 output_size,
+                 n_steps=1,
+                 n_etypes=1,
+                 bias=True):
+        """
 
-   def reset_parameters(self):
-       """Reinitialize learnable parameters."""
-       gain = init.calculate_gain('relu')
-       # self.gru.reset_parameters()
-       for linear in self.linears:
-           init.xavier_normal_(linear.weight, gain=gain)
-           init.zeros_(linear.bias)
-
-   def forward(self, graph, feat, etypes):
-       """Compute Gated Graph Convolution layer.
-
-       Parameters
-       ----------
-       graph : DGLGraph
-           The graph.
-       feat : torch.Tensor
-           The input feature of shape :math:`(N, D_{in})` where :math:`N`
-           is the number of nodes of the graph and :math:`D_{in}` is the
-           input feature size.
-       etypes : torch.LongTensor
-           The edge type tensor of shape :math:`(E,)` where :math:`E` is
-           the number of edges of the graph.
-
-       Returns
-       -------
-       torch.Tensor
-           The output feature of shape :math:`(N, D_{out})` where :math:`D_{out}`
-           is the output feature size.
-       """
-       assert graph.is_homograph(), \
-           "not a homograph; convert it with to_homo and pass in the edge type as argument"
-       graph = graph.local_var()
-       zero_pad = feat.new_zeros((feat.shape[0], self._out_feats - feat.shape[1]))
-       feat = torch.cat([feat, zero_pad], -1)
-
-       for _ in range(self._n_steps):
-           graph.ndata['h'] = feat
-           for i in range(self._n_etypes):
-               eids = (etypes == i).nonzero().view(-1)
-               if len(eids) > 0:
-                   graph.apply_edges(
-                       lambda edges: {'W_e*h': self.linears[i](edges.src['h'])},
-                       eids
-                   )
-           graph.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
-           a = graph.ndata.pop('a')  # (N, D)
-           """
-           You can also remove node or edge states from the graph. 
-           This is particularly useful to save memory during inference.
-           """
-           # feat = self.gru(a, feat)
-       return a
-
-
-class UniGGNNLayerConv(GNNLayerBase):
-    def __init__(self, in_feats, out_feats, n_steps=1, n_etypes=1, bias=True):
-        super(UniGGNNLayerConv, self).__init__(in_feats, out_feats)
-        self.model = GatedGraphConv(in_feats, out_feats, n_steps=n_steps, n_etypes=n_etypes, bias=bias)
-
-    def forward(self, dgl_graph, node_feats):
-        etypes = torch.LongTensor([0]*dgl_graph.number_of_edges())  # [B, E]. E is the number of edges.
-        return self.model(dgl_graph, node_feats, etypes)
-
-
-class BiSepGGNNLayerConv(GNNLayerBase):
-    def __init__(self, in_feats, out_feats, bias=True):
-        super(BiSepGGNNLayerConv, self).__init__(in_feats, out_feats)
-        self.conv_in = GatedGraphConv(in_feats, out_feats, n_steps=1, n_etypes=1, bias=bias)
-        self.conv_out = GatedGraphConv(in_feats, out_feats, n_steps=1, n_etypes=1, bias=bias)
-        self.forward_linear = nn.Linear(in_feats + out_feats, out_feats, bias=True)
-        self.backward_linear = nn.Linear(in_feats + out_feats, out_feats, bias=True)
-
-    def reset_parameters(self):
-        """Reinitialize learnable parameters."""
-        gain = nn.init.calculate_gain('relu')
-        if hasattr(self, 'forward_linear'):
-            nn.init.xavier_normal_(self.forward_linear.weight, gain=gain)
-
-        if hasattr(self, 'backward_linear'):
-            nn.init.xavier_normal_(self.backward_linear.weight, gain=gain)
+        Parameters
+        ----------
+        input_size: int
+            Input feature size.
+        output_size: int
+            Output feature size.
+        n_steps: int
+            Number of GGNN layers. default: 1.
+        n_etypes: int
+            Number of edge types. default: 1.
+        bias: bool
+            If True, adds a learnable bias to the output. default: True.
+        """
+        super(UniGGNNLayerConv, self).__init__()
+        self.model = GatedGraphConv(input_size, output_size, n_steps=n_steps, n_etypes=n_etypes, bias=bias)
 
     def forward(self, graph, node_feats):
-        feat_in, feat_out = node_feats
-        etypes = torch.LongTensor([0]*graph.number_of_edges())  # [B, E]. E is the number of edges.
+        """
 
-        forward_graph = graph
-        emb_in = self.conv_in(forward_graph, feat_in, etypes)
+        Parameters
+        ----------
+        graph: dgl.DGLGraph
 
-        backward_graph = graph.reverse()
-        emb_out = self.conv_out(backward_graph, feat_out, etypes)
+        node_feats: torch.Tensor
+            The shape of node_feats is :math:`(N, D_{in})`.
 
-        concat_in = torch.cat([feat_in, emb_in], dim=-1)
-        rst_in = torch.sigmoid(self.forward_linear(concat_in))
+        Returns
+        -------
+        torch.Tensor
+            The output feature of shape :math:`(N, D_{out})` where
+            :math:`D_{out}` is size of output feature.
 
-        concat_out = torch.cat([feat_out, emb_out], dim=-1)
-        rst_out = torch.sigmoid(self.backward_linear(concat_out))
-
-
-        return [rst_in, rst_out]
+        """
+        etypes = torch.LongTensor([0] * graph.number_of_edges())  # [B, E]. E is the number of edges.
+        return self.model(graph, node_feats, etypes)
 
 
 class BiFuseGGNNLayerConv(GNNLayerBase):
-    def __init__(self, in_feats, out_feats, bias=True):
-        super(BiFuseGGNNLayerConv, self).__init__(in_feats, out_feats)
-        self.conv_in = GatedGraphConvWoGRU(in_feats, out_feats, n_steps=1, n_etypes=1)
-        self.conv_out = GatedGraphConvWoGRU(in_feats, out_feats, n_steps=1, n_etypes=1)
+    r"""
+    Fuse aggregated embeddings from both incoming and outgoing
+    directions before updating node embeddings.
+
+    .. math::
+       h_{i}^{0} & = [ x_i \| \mathbf{0} ]
+
+       a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)} 
+       W_{\vdash} h_{j}^{t}
+
+       a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)} 
+       W_{\dashv} h_{j}^{t}
+
+       e_{i}^{t} &= \sigma (W_{f}[a_{i, \vdash}^{t};a_{i, \dashv}^{t};
+       a_{i, \vdash}^{t}*a_{i, \dashv}^{t};
+       a_{i, \vdash}^{t}-a_{i, \dashv}^{t}])
+
+       h_{i}^{t+1} & = \mathrm{GRU}(e_{i}^{t}, h_{i}^{t})
+
+    """
+    def __init__(self, in_feats, out_feats, n_etypes=1, bias=True):
+        super(BiFuseGGNNLayerConv, self).__init__()
+        self._in_feats = in_feats
+        self._out_feats = out_feats
+        # self._n_steps = n_steps
+        self._n_etypes = n_etypes
+
+        self.linears_in = nn.ModuleList(
+            [nn.Linear(out_feats, out_feats) for _ in range(n_etypes)]
+        )
+
+        self.linears_out = nn.ModuleList(
+            [nn.Linear(out_feats, out_feats) for _ in range(n_etypes)]
+        )
+
         self.gru = nn.GRUCell(out_feats, out_feats, bias=bias)
         self.fuse_linear = nn.Linear(4 * out_feats, out_feats, bias=True)
+        self.reset_parameters()
 
     def reset_parameters(self):
         """Reinitialize learnable parameters."""
         gain = nn.init.calculate_gain('relu')
         self.gru.reset_parameters()
-        if hasattr(self, 'fuse_linear'):
-            nn.init.xavier_normal_(self.fuse_linear.weight, gain=gain)
+        nn.init.xavier_normal_(self.fuse_linear.weight, gain=gain)
 
-    def forward(self, graphs, node_feats):
+        for linear in self.linears_in:
+            nn.init.xavier_normal_(linear.weight, gain=gain)
+            nn.init.zeros_(linear.bias)
+
+        for linear in self.linears_out:
+            nn.init.xavier_normal_(linear.weight, gain=gain)
+            nn.init.zeros_(linear.bias)
+
+
+    def forward(self, graph, node_feats):
+        """
+
+        Parameters
+        ----------
+        graph: dgl.DGLGraph
+
+        node_feats: torch.Tensor
+            The shape of node_feats is :math:`(N, D_{in})`.
+
+        Returns
+        -------
+        torch.Tensor
+            The output feature of shape :math:`(N, D_{out})` where
+            :math:`D_{out}` is size of output feature.
+
+        """
         feat_in, feat_out = node_feats  # feat_in == feat_out
-        etypes = torch.LongTensor([0]*graphs.number_of_edges())  # [B, E]. E is the number of edges.
+        etypes = torch.LongTensor([0]*graph.number_of_edges())  # [B, E]. E is the number of edges.
 
         # forward aggregation
-        forward_graph = graphs
-        emb_in = self.conv_in(forward_graph, feat_in, etypes)
+        graph_in = graph
+        graph_in = graph_in.local_var()
+        graph_in.ndata['h'] = feat_in
+        for i in range(self._n_etypes):
+            eids = (etypes == i).nonzero().view(-1)
+            if len(eids) > 0:
+                graph_in.apply_edges(
+                    lambda edges: {'W_e*h': self.linears_in[i](edges.src['h'])},
+                    eids
+                )
+        graph_in.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
+        agg_in = graph_in.ndata.pop('a')  # (N, D)
 
         # backward aggregation
-        backward_graph = graphs.reverse()
-        emb_out = self.conv_out(backward_graph, feat_out, etypes)
+        graph_out = graph.reverse()
+        graph_out = graph_out.local_var()
+        graph_out.ndata['h'] = feat_out
+        for i in range(self._n_etypes):
+            eids = (etypes == i).nonzero().view(-1)
+            if len(eids) > 0:
+                graph_out.apply_edges(
+                    lambda edges: {'W_e*h': self.linears_out[i](edges.src['h'])},
+                    eids
+                )
+        graph_out.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
+        agg_out = graph_out.ndata.pop('a')  # (N, D)
 
         # fuse
         fuse_vector = torch.cat(
-            [emb_in, emb_out, emb_in * emb_out, emb_in - emb_out], dim=-1)
+            [agg_in, agg_out, agg_in * agg_out, agg_in - agg_out], dim=-1)
         fuse_gate_vector = torch.sigmoid(self.fuse_linear(fuse_vector))
-        emb_fused = fuse_gate_vector * emb_out + (1 - fuse_gate_vector) * emb_out
+        emb_fused = fuse_gate_vector * agg_out + (1 - fuse_gate_vector) * agg_out
 
         # update
         rst = self.gru(emb_fused, feat_in)
@@ -187,10 +179,118 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
         return [rst, rst]
 
 
+class BiSepGGNNLayerConv(GNNLayerBase):
+    r"""
+    Compute node embeddings for incoming and outgoing directions
+    separately, and then concatenate the two output node embeddings
+    after the final layer.
+
+    .. math::
+       h_{i}^{0} & = [ x_i \| \mathbf{0} ]
+
+       a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)}
+       W_{\vdash} h_{j, \vdash}^{t}
+
+       a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)}
+       W_{\dashv} h_{j, \dashv}^{t}
+
+       h_{i, \vdash}^{t+1} & = \mathrm{GRU}_{\vdash}(a_{i, \vdash}^{t},
+       h_{i, \vdash}^{t})
+
+       h_{i, \dashv}^{t+1} & = \mathrm{GRU}_{\dashv}(a_{i, \dashv}^{t},
+       h_{i, \dashv}^{t})
+
+    """
+    def __init__(self, in_feats, out_feats, n_etypes=1, bias=True):
+        super(BiSepGGNNLayerConv, self).__init__()
+        self._in_feats = in_feats
+        self._out_feats = out_feats
+        # self._n_steps = n_steps
+        self._n_etypes = n_etypes
+
+        self.linears_in = nn.ModuleList(
+            [nn.Linear(out_feats, out_feats) for _ in range(n_etypes)]
+        )
+
+        self.linears_out = nn.ModuleList(
+            [nn.Linear(out_feats, out_feats) for _ in range(n_etypes)]
+        )
+
+        self.update_in = nn.Linear(in_feats + out_feats, out_feats, bias=True)
+        self.update_out = nn.Linear(in_feats + out_feats, out_feats, bias=True)
+
+        self.gru_in = nn.GRUCell(out_feats, out_feats, bias=bias)
+        self.gru_out = nn.GRUCell(out_feats, out_feats, bias=bias)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        """Reinitialize learnable parameters."""
+        gain = nn.init.calculate_gain('relu')
+        self.gru_in.reset_parameters()
+        self.gru_out.reset_parameters()
+
+        for linear in self.linears_in:
+            nn.init.xavier_normal_(linear.weight, gain=gain)
+            nn.init.zeros_(linear.bias)
+
+        for linear in self.linears_out:
+            nn.init.xavier_normal_(linear.weight, gain=gain)
+            nn.init.zeros_(linear.bias)
+
+        nn.init.xavier_normal_(self.update_in.weight, gain=gain)
+        nn.init.xavier_normal_(self.update_out.weight, gain=gain)
+
+    def forward(self, graph, node_feats):
+        feat_in, feat_out = node_feats
+        etypes = torch.LongTensor([0]*graph.number_of_edges())  # [B, E]. E is the number of edges.
+
+        graph_in = graph
+        graph_in = graph_in.local_var()
+        graph_in.ndata['h'] = feat_in
+        for i in range(self._n_etypes):
+            eids = (etypes == i).nonzero().view(-1)
+            if len(eids) > 0:
+                graph_in.apply_edges(
+                    lambda edges: {'W_e*h': self.linears_in[i](edges.src['h'])},
+                    eids
+                )
+        graph_in.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
+        a_in = graph_in.ndata.pop('a')  # (N, D)
+        emb_in = self.gru_in(a_in, feat_in)
+
+        graph_out = graph.reverse()
+        graph_out = graph_out.local_var()
+        graph_out.ndata['h'] = feat_out
+        for i in range(self._n_etypes):
+            eids = (etypes == i).nonzero().view(-1)
+            if len(eids) > 0:
+                graph_out.apply_edges(
+                    lambda edges: {'W_e*h': self.linears_out[i](edges.src['h'])},
+                    eids
+                )
+        graph_out.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
+        a_out = graph_out.ndata.pop('a')  # (N, D)
+        emb_out = self.gru_out(a_out, feat_out)
+
+        concat_in = torch.cat([feat_in, emb_in], dim=-1)
+        rst_in = torch.sigmoid(self.update_in(concat_in))
+
+        concat_out = torch.cat([feat_out, emb_out], dim=-1)
+        rst_out = torch.sigmoid(self.update_out(concat_out))
+
+        return [rst_in, rst_out]
+
 
 class GGNNLayer(GNNLayerBase):
+    r"""A unified wrapper for Gated Graph Convolution layer
+    from paper `Gated Graph Sequence Neural Networks
+    <https://arxiv.org/pdf/1511.05493.pdf>`__.
+
+    Support both unidirectional (i.e., regular) and bidirectional
+    (i.e., `bi_sep` and `bi_fuse`) versions.
+    """
     def __init__(self, in_feats, out_feats, direction_option='uni', n_steps=1, n_etypes=1, bias=True):
-        super(GGNNLayer, self).__init__(in_feats, out_feats)
+        super(GGNNLayer, self).__init__()
         if direction_option == 'uni':
             self.model = UniGGNNLayerConv(in_feats, out_feats, n_steps=n_steps, n_etypes=n_etypes, bias=bias)
         elif direction_option == 'bi_sep':
@@ -205,6 +305,12 @@ class GGNNLayer(GNNLayerBase):
 
 
 class GGNN(GNNBase):
+    r"""
+    Multi-layered `Gated Graph Sequence Neural Networks
+    <https://arxiv.org/pdf/1511.05493.pdf>`__.
+    Support both unidirectional (i.e., regular) and bidirectional
+    (i.e., `bi_sep` and `bi_fuse`) versions.
+    """
     def __init__(self, num_layers, in_feats, out_feats, direction_option='uni', n_etypes=1, bias=True):
         r"""
         Gated Graph Neural Networks from paper `Gated Graph Sequence
@@ -228,7 +334,7 @@ class GGNN(GNNBase):
 
 
         """
-        super(GGNN, self).__init__(in_feats, out_feats)
+        super(GGNN, self).__init__()
         self.num_layers = num_layers
         self.direction_option = direction_option
         self.in_feats = in_feats
