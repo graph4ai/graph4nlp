@@ -4,7 +4,6 @@ from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
 from ..utils.torch_utils import to_cuda
 
-
 class EmbeddingConstructionBase(nn.Module):
     """
     Base class for (initial) graph embedding construction.
@@ -13,12 +12,13 @@ class EmbeddingConstructionBase(nn.Module):
 
     Attributes
     ----------
-
+    feat : dict
+        Raw features of graph nodes and/or edges.
 
     Methods
     -------
-    forward(feat)
-        Generate initial node and/or edge embeddings for the input graph.
+    forward(raw_text_data)
+        Generate dynamic graph topology and embeddings.
     """
 
     def __init__(self):
@@ -26,7 +26,6 @@ class EmbeddingConstructionBase(nn.Module):
 
     def forward(self):
         raise NotImplementedError()
-
 
 class EmbeddingConstruction(EmbeddingConstructionBase):
     """
@@ -173,7 +172,7 @@ class WordEmbedding(nn.Module):
     ------
     word_emb = WordEmbedding(vocab_size, emb_size, padding_idx=0, pretrained_word_emb=None, fix_word_emb=False)
     """
-
+    
     def __init__(self, vocab_size, emb_size, padding_idx=0, pretrained_word_emb=None, fix_word_emb=False):
         super(WordEmbedding, self).__init__()
         self.word_emb = nn.Embedding(vocab_size, emb_size, padding_idx=padding_idx,
@@ -206,8 +205,9 @@ class BertEmbedding(nn.Module):
     forward(feat)
         Generate BERT embeddings.
     """
-    def __init__(self):
+    def __init__(self, fix_word_emb):
         super(BertEmbedding, self).__init__()
+        self.fix_word_emb = fix_word_emb
 
     def forward(self, feat):
         raise NotImplementedError()
