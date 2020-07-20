@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from graph4nlp.pytorch.data.utils import slice_to_list, SizeMismatchException
+from .utils import slice_to_list, SizeMismatchException
 
 NodeRepr = namedtuple('NodeData', ['features', 'attributes'])
 
@@ -60,7 +60,8 @@ class NodeAttrView(object):
         self._nodes = nodes
 
     def __getitem__(self, item):
-        return self._graph.get_node_attrs(self._nodes)[item]
+        pass
+        # return self._graph.get_node_attrs(self._nodes)[item]
 
     def __setitem__(self, key, value):
         pass
@@ -79,3 +80,6 @@ class EdgeView(object):
 
     def __call__(self, *args, **kwargs):
         return self._graph.get_all_edges(*args, **kwargs)
+
+    def __repr__(self):
+        return repr({'Edges': self._graph.get_all_edges()})
