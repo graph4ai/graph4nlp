@@ -2,7 +2,6 @@ from torch import nn
 
 from .embedding_construction import EmbeddingConstruction
 
-
 class GraphConstructionBase(nn.Module):
     """
     Base class for graph construction.
@@ -28,12 +27,10 @@ class GraphConstructionBase(nn.Module):
 
     def __init__(self, embedding_styles):
         super(GraphConstructionBase, self).__init__()
-        # self.embedding_layer = EmbeddingConstruction(
-        #     embedding_styles['word_vocab'],
-        #     embedding_styles['word_emb_type'],
-        #     embedding_styles['node_edge_level_emb_type'],
-        #     embedding_styles['graph_level_emb_type'],
-        #     embedding_styles['hidden_size'])
+        self.embedding_layer = EmbeddingConstruction(
+                                        embedding_styles['word_emb_type'],
+                                        embedding_styles['node_edge_level_emb_type'],
+                                        embedding_styles['graph_level_emb_type'])
 
     def forward(self, raw_text_data):
         raise NotImplementedError()
@@ -43,7 +40,6 @@ class GraphConstructionBase(nn.Module):
 
     def embedding(self):
         raise NotImplementedError()
-
 
 class StaticGraphConstructionBase(GraphConstructionBase):
     """
@@ -66,11 +62,10 @@ class StaticGraphConstructionBase(GraphConstructionBase):
 
     embedding(raw_data, structure)
         Generate graph embeddings.
-
+    
     forward(raw_data)
         Generate static graph embeddings and topology.
     """
-
     def __init__(self, embedding_styles):
         super(StaticGraphConstructionBase, self).__init__(embedding_styles)
 
@@ -85,7 +80,6 @@ class StaticGraphConstructionBase(GraphConstructionBase):
 
     def forward(self, raw_data):
         raise NotImplementedError()
-
 
 class DynamicGraphConstructionBase(GraphConstructionBase):
     """
