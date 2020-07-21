@@ -86,23 +86,23 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
        h_{i}^{t+1} & = \mathrm{GRU}(e_{i}^{t}, h_{i}^{t})
 
     """
-    def __init__(self, in_feats, out_feats, n_etypes=1, bias=True):
+    def __init__(self, input_size, output_size, n_etypes=1, bias=True):
         super(BiFuseGGNNLayerConv, self).__init__()
-        self._in_feats = in_feats
-        self._out_feats = out_feats
+        self._input_size = input_size
+        self._output_size = output_size
         # self._n_steps = n_steps
         self._n_etypes = n_etypes
 
         self.linears_in = nn.ModuleList(
-            [nn.Linear(out_feats, out_feats) for _ in range(n_etypes)]
+            [nn.Linear(output_size, output_size) for _ in range(n_etypes)]
         )
 
         self.linears_out = nn.ModuleList(
-            [nn.Linear(out_feats, out_feats) for _ in range(n_etypes)]
+            [nn.Linear(output_size, output_size) for _ in range(n_etypes)]
         )
 
-        self.gru = nn.GRUCell(out_feats, out_feats, bias=bias)
-        self.fuse_linear = nn.Linear(4 * out_feats, out_feats, bias=True)
+        self.gru = nn.GRUCell(output_size, output_size, bias=bias)
+        self.fuse_linear = nn.Linear(4 * output_size, output_size, bias=True)
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -202,26 +202,26 @@ class BiSepGGNNLayerConv(GNNLayerBase):
        h_{i, \dashv}^{t})
 
     """
-    def __init__(self, in_feats, out_feats, n_etypes=1, bias=True):
+    def __init__(self, input_size, output_size, n_etypes=1, bias=True):
         super(BiSepGGNNLayerConv, self).__init__()
-        self._in_feats = in_feats
-        self._out_feats = out_feats
+        self._input_size = input_size
+        self._output_size = output_size
         # self._n_steps = n_steps
         self._n_etypes = n_etypes
 
         self.linears_in = nn.ModuleList(
-            [nn.Linear(out_feats, out_feats) for _ in range(n_etypes)]
+            [nn.Linear(output_size, output_size) for _ in range(n_etypes)]
         )
 
         self.linears_out = nn.ModuleList(
-            [nn.Linear(out_feats, out_feats) for _ in range(n_etypes)]
+            [nn.Linear(output_size, output_size) for _ in range(n_etypes)]
         )
 
-        self.update_in = nn.Linear(in_feats + out_feats, out_feats, bias=True)
-        self.update_out = nn.Linear(in_feats + out_feats, out_feats, bias=True)
+        self.update_in = nn.Linear(input_size + output_size, output_size, bias=True)
+        self.update_out = nn.Linear(input_size + output_size, output_size, bias=True)
 
-        self.gru_in = nn.GRUCell(out_feats, out_feats, bias=bias)
-        self.gru_out = nn.GRUCell(out_feats, out_feats, bias=bias)
+        self.gru_in = nn.GRUCell(output_size, output_size, bias=bias)
+        self.gru_out = nn.GRUCell(output_size, output_size, bias=bias)
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -290,14 +290,14 @@ class GGNNLayer(GNNLayerBase):
     Support both unidirectional (i.e., regular) and bidirectional
     (i.e., `bi_sep` and `bi_fuse`) versions.
     """
-    def __init__(self, in_feats, out_feats, direction_option='uni', n_steps=1, n_etypes=1, bias=True):
+    def __init__(self, input_size, output_size, direction_option='uni', n_steps=1, n_etypes=1, bias=True):
         super(GGNNLayer, self).__init__()
         if direction_option == 'uni':
-            self.model = UniGGNNLayerConv(in_feats, out_feats, n_steps=n_steps, n_etypes=n_etypes, bias=bias)
+            self.model = UniGGNNLayerConv(input_size, output_size, n_steps=n_steps, n_etypes=n_etypes, bias=bias)
         elif direction_option == 'bi_sep':
-            self.model = BiSepGGNNLayerConv(in_feats, out_feats, bias=bias)
+            self.model = BiSepGGNNLayerConv(input_size, output_size, bias=bias)
         elif direction_option == 'bi_fuse':
-            self.model = BiFuseGGNNLayerConv(in_feats, out_feats, bias=bias)
+            self.model = BiFuseGGNNLayerConv(input_size, output_size, bias=bias)
         else:
             raise RuntimeError('Unknown `bidirection` value: {}'.format(direction_option))
 
@@ -312,16 +312,16 @@ class GGNN(GNNBase):
     Support both unidirectional (i.e., regular) and bidirectional
     (i.e., `bi_sep` and `bi_fuse`) versions.
     """
-    def __init__(self, num_layers, in_feats, out_feats, direction_option='uni', n_etypes=1, bias=True):
+    def __init__(self, num_layers, input_size, output_size, direction_option='uni', n_etypes=1, bias=True):
         r"""
 
         Parameters
         ----------
         num_layers: int
             Number of GGNN layers.
-        in_feats: int
+        input_size: int
             Input feature size.
-        out_feats: int
+        output_size: int
             Output feature size.
         direction_option: str
             The direction option of GGNN ('uni', 'bi_sep' or 'bi_fuse'). (default: 'uni')
@@ -336,15 +336,15 @@ class GGNN(GNNBase):
         super(GGNN, self).__init__()
         self.num_layers = num_layers
         self.direction_option = direction_option
-        self.in_feats = in_feats
-        self.out_feats = out_feats
+        self.input_size = input_size
+        self.output_size = output_size
 
-        assert self.out_feats >= self.in_feats
+        assert self.output_size >= self.input_size
 
         if self.direction_option=='uni':
-            self.models = GGNNLayer(in_feats, out_feats, direction_option, n_steps=num_layers, n_etypes=n_etypes, bias=bias)
+            self.models = GGNNLayer(input_size, output_size, direction_option, n_steps=num_layers, n_etypes=n_etypes, bias=bias)
         else:
-            self.models = GGNNLayer(out_feats, out_feats, direction_option, bias=bias)
+            self.models = GGNNLayer(output_size, output_size, direction_option, bias=bias)
 
     def forward(self, graph, node_feats):
         r"""
@@ -367,9 +367,9 @@ class GGNN(GNNBase):
         if self.direction_option == 'uni':
             node_embs = self.models(graph, node_feats)
         else:
-            assert node_feats.shape[1] == self.in_feats
+            assert node_feats.shape[1] == self.input_size
 
-            zero_pad = node_feats.new_zeros((node_feats.shape[0], self.out_feats - node_feats.shape[1]))
+            zero_pad = node_feats.new_zeros((node_feats.shape[0], self.output_size - node_feats.shape[1]))
             node_feats = torch.cat([node_feats, zero_pad], -1)
 
             feat_in = node_feats
@@ -397,16 +397,16 @@ class HighLevelGGNN(nn.Module):
     Support both unidirectional (i.e., regular) and bidirectional
     (i.e., `bi_sep` and `bi_fuse`) versions.
     """
-    def __init__(self, num_layers, in_feats, out_feats, direction_option='uni', n_etypes=1, bias=True):
+    def __init__(self, num_layers, input_size, output_size, direction_option='uni', n_etypes=1, bias=True):
         r"""
 
         Parameters
         ----------
         num_layers: int
             Number of GGNN layers.
-        in_feats: int
+        input_size: int
             Input feature size.
-        out_feats: int
+        output_size: int
             Output feature size.
         direction_option: str
             The direction option of GGNN ('uni', 'bi_sep' or 'bi_fuse'). (default: 'uni')
@@ -420,9 +420,9 @@ class HighLevelGGNN(nn.Module):
         """
         super(HighLevelGGNN, self).__init__()
 
-        assert out_feats >= in_feats
+        assert output_size >= input_size
 
-        self.models = GGNN(num_layers, in_feats, out_feats, direction_option, n_etypes, bias)
+        self.models = GGNN(num_layers, input_size, output_size, direction_option, n_etypes, bias)
 
     def forward(self, input_graph):
         r"""
@@ -432,19 +432,20 @@ class HighLevelGGNN(nn.Module):
         ----------
         input_graph: GraphData.
             The initial node features are stored in the node feature field
-            named `node_feats`.
+            named `node_feat`.
 
         Returns
         -------
         input_graph: GraphData.
             The computed node embedding tensors are stored in the node feature field
-            named `node_embs`.
+            named `node_emb`.
 
         """
 
         graph = input_graph.to_dgl()
-        node_feats = input_graph._node_features['node_feats']
+        node_feats = input_graph._node_features['node_feat']
 
-        input_graph._node_features['node_embs'] = self.models(graph, node_feats)
+        input_graph.set_node_features(slice(0, graph.number_of_nodes()),
+                                      {'node_emb':self.models(graph, node_feats)})
 
         return input_graph
