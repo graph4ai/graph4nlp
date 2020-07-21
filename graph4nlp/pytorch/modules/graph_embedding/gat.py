@@ -69,17 +69,20 @@ class GAT(GNNBase):
         self.num_layers = num_layers
         self.direction_option = direction_option
         self.gat_layers = nn.ModuleList()
+        assert self.num_layers > 0
 
-        # input projection
-        self.gat_layers.append(GATLayer(input_size,
-                                        hidden_size,
-                                        heads[0],
-                                        direction_option=self.direction_option,
-                                        feat_drop=feat_drop,
-                                        attn_drop=attn_drop,
-                                        negative_slope=negative_slope,
-                                        residual=residual,
-                                        activation=activation))
+        if self.num_layers > 1:
+            # input projection
+            self.gat_layers.append(GATLayer(input_size,
+                                            hidden_size,
+                                            heads[0],
+                                            direction_option=self.direction_option,
+                                            feat_drop=feat_drop,
+                                            attn_drop=attn_drop,
+                                            negative_slope=negative_slope,
+                                            residual=residual,
+                                            activation=activation))
+
         # hidden layers
         for l in range(1, self.num_layers - 1):
             # due to multi-head, the input_size = hidden_size * num_heads
@@ -93,7 +96,7 @@ class GAT(GNNBase):
                                             residual=residual,
                                             activation=activation))
         # output projection
-        self.gat_layers.append(GATLayer(hidden_size * heads[-2],
+        self.gat_layers.append(GATLayer(hidden_size * heads[-2] if self.num_layers > 1 else input_size,
                                         output_size,
                                         heads[-1],
                                         direction_option=self.direction_option,
@@ -103,7 +106,10 @@ class GAT(GNNBase):
                                         residual=residual,
                                         activation=None))
 
-    def forward(self, graph, feat):
+    def forward(self, graph):
+        # TODO: support GraphData when the data structure is ready.
+        feat = graph.ndata['node_feat']
+
         if self.direction_option == 'bi_sep':
             h = [feat, feat]
 
@@ -128,7 +134,8 @@ class GAT(GNNBase):
         else:
             logits = logits.mean(1)
 
-        return logits
+        graph.ndata['node_emb'] = logits
+        return graph
 
 class GATLayer(GNNLayerBase):
     r"""A unified wrapper for `Graph Attention Network <https://arxiv.org/pdf/1710.10903.pdf>`__
@@ -425,7 +432,7 @@ class BiFuseGATLayerConv(GNNLayerBase):
 
         # Forward direction
         with graph.local_scope():
-            if isinstance(feat, tuple):
+            if isinstance(feat_fw, tuple):
                 feat_src = self.fc_src_fw(h_src_fw).view(-1, self._num_heads, self._out_feats)
                 feat_dst = self.fc_dst_fw(h_dst_fw).view(-1, self._num_heads, self._out_feats)
             else:
@@ -459,7 +466,7 @@ class BiFuseGATLayerConv(GNNLayerBase):
         # Backward direction
         graph = graph.reverse()
         with graph.local_scope():
-            if isinstance(feat, tuple):
+            if isinstance(feat_bw, tuple):
                 feat_src = self.fc_src_bw(h_src_bw).view(-1, self._num_heads, self._out_feats)
                 feat_dst = self.fc_dst_bw(h_dst_bw).view(-1, self._num_heads, self._out_feats)
             else:
@@ -655,7 +662,7 @@ class BiSepGATLayerConv(GNNLayerBase):
 
         # Forward direction
         with graph.local_scope():
-            if isinstance(feat, tuple):
+            if isinstance(feat_fw, tuple):
                 feat_src = self.fc_src_fw(h_src_fw).view(-1, self._num_heads, self._out_feats)
                 feat_dst = self.fc_dst_fw(h_dst_fw).view(-1, self._num_heads, self._out_feats)
             else:
@@ -689,7 +696,7 @@ class BiSepGATLayerConv(GNNLayerBase):
         # Backward direction
         graph = graph.reverse()
         with graph.local_scope():
-            if isinstance(feat, tuple):
+            if isinstance(feat_bw, tuple):
                 feat_src = self.fc_src_bw(h_src_bw).view(-1, self._num_heads, self._out_feats)
                 feat_dst = self.fc_dst_bw(h_dst_bw).view(-1, self._num_heads, self._out_feats)
             else:
@@ -724,96 +731,3 @@ class BiSepGATLayerConv(GNNLayerBase):
             agg_emb_bw = self.activation(agg_emb_bw)
 
         return [agg_emb_fw, agg_emb_bw]
-
-
-# if __name__ == '__main__':
-#     # For test purpose
-#     import time
-#     import numpy as np
-#     from dgl import DGLGraph
-#     from dgl.data import citation_graph as citegrh
-
-
-#     def load_cora_data():
-#         data = citegrh.load_cora()
-#         features = torch.FloatTensor(data.features)
-#         labels = torch.LongTensor(data.labels)
-#         mask = torch.BoolTensor(data.train_mask)
-#         graph = DGLGraph(data.graph)
-#         return graph, features, labels, mask
-
-
-#     class GNNClassifier(nn.Module):
-#         def __init__(self,
-#                     num_layers,
-#                     input_size,
-#                     hidden_size,
-#                     output_size,
-#                     num_heads,
-#                     num_out_heads,
-#                     direction_option):
-#             super(GNNClassifier, self).__init__()
-#             self.direction_option = direction_option
-#             heads = [num_heads] * (num_layers - 1) + [num_out_heads]
-#             self.model = GAT(num_layers,
-#                         input_size,
-#                         hidden_size,
-#                         output_size,
-#                         heads,
-#                         direction_option=direction_option,
-#                         feat_drop=0.6,
-#                         attn_drop=0.6,
-#                         negative_slope=0.2,
-#                         residual=False,
-#                         activation=F.elu)
-
-#             if self.direction_option == 'bi_sep':
-#                 self.fc = nn.Linear(2 * output_size, output_size)
-
-#         def forward(self, graph, features):
-#             logits = self.model(graph, features)
-#             if self.direction_option == 'bi_sep':
-#                 logits = self.fc(F.elu(logits))
-
-#             return logits
-
-
-#     graph, features, labels, mask = load_cora_data()
-
-#     num_layers = 2
-#     input_size = features.size()[1]
-#     hidden_size = 8
-#     output_size = 7
-#     num_heads = 2
-#     num_out_heads = 1
-#     direction_option = 'bi_fuse' # 'uni', 'bi_sep', 'bi_fuse'
-
-#     classifier = GNNClassifier(num_layers,
-#             input_size,
-#             hidden_size,
-#             output_size,
-#             num_heads,
-#             num_out_heads,
-#             direction_option)
-
-#     # create optimizer
-#     optimizer = torch.optim.Adam(classifier.parameters(), lr=1e-3)
-
-#     # main loop
-#     dur = []
-#     for epoch in range(30):
-#         t0 = time.time()
-#         logits = classifier(graph, features)
-#         assert logits.shape[-1] == output_size
-
-#         logp = F.log_softmax(logits, 1)
-#         loss = F.nll_loss(logp[mask], labels[mask])
-
-#         optimizer.zero_grad()
-#         loss.backward()
-#         optimizer.step()
-
-#         dur.append(time.time() - t0)
-
-#         print("Epoch {} | Loss {:.4f} | Time(s) {:.2f}".format(
-#             epoch, loss.item(), np.mean(dur)))
