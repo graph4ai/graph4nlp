@@ -16,7 +16,7 @@ def test_dependency():
     vocab_model = VocabModel(raw_text_data, max_word_vocab_size=None,
                              min_word_vocab_freq=1,
                              word_emb_size=300)
-    app = DependencyBasedGraphConstruction(embedding_styles, vocab_model)
+    app = DependencyBasedGraphConstruction(embedding_style=embedding_styles, vocab=vocab_model)
 
     app.topology(raw_data, nlp_parser, merge_strategy="sequential", edge_strategy=None)
     pass

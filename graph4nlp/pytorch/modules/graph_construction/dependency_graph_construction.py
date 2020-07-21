@@ -19,8 +19,12 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(self, embedding_style, vocab):
-        super(DependencyBasedGraphConstruction, self).__init__(embedding_styles=embedding_style)
+    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, dropout=None, use_cuda=True):
+        super(DependencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
+                                                               embedding_styles=embedding_style,
+                                                               hidden_size=hidden_size,
+                                                               fix_word_emb=fix_word_emb,
+                                                               dropout=dropout, use_cuda=use_cuda)
         self.vocab = vocab
         self.verbase = 0
 
@@ -130,16 +134,16 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         sub_graphs = []
         for sent_id, parsed_sent in enumerate(parsed_results):
-            graph = self.construct_static_graph(parsed_sent, edge_strategy=None)
+            graph = self._construct_static_graph(parsed_sent, edge_strategy=None)
             sub_graphs.append(graph)
-        joint_graph = self.graph_connect(sub_graphs, merge_strategy)
+        joint_graph = self._graph_connect(sub_graphs, merge_strategy)
         self.add_vocab(joint_graph)
         return joint_graph
 
     def embedding(self, node_attributes, edge_attributes):
         pass
 
-    def construct_static_graph(self, parsed_object, edge_strategy=None):
+    def _construct_static_graph(self, parsed_object, edge_strategy=None):
         """
             Build dependency-parsing-tree based graph for single sentence.
 
@@ -186,7 +190,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             # TODO: add edge_attributes
         return ret_graph
 
-    def graph_connect(self, nx_graph_list, merge_strategy=None):
+    def _graph_connect(self, nx_graph_list, merge_strategy=None):
         """
             This method will merge the sub-graphs into one graph.
 

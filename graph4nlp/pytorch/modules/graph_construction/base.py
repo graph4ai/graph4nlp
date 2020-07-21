@@ -72,19 +72,32 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     forward(raw_data)
         Generate static graph embeddings and topology.
     """
-    def __init__(self, embedding_styles):
-        super(StaticGraphConstructionBase, self).__init__(embedding_styles)
+
+    def __init__(self, word_vocab, embedding_styles, hidden_size,
+                 fix_word_emb=True, dropout=None, use_cuda=True):
+        super(StaticGraphConstructionBase, self).__init__(word_vocab,
+                                                           embedding_styles,
+                                                           hidden_size,
+                                                           fix_word_emb=fix_word_emb,
+                                                           dropout=dropout,
+                                                           use_cuda=use_cuda)
 
     def add_vocab(self, **kwargs):
         raise NotImplementedError()
 
-    def topology(self, raw_text_data, nlp_processor, merge_strategy, edge_strategy):
+    def topology(self, **kwargs):
         raise NotImplementedError()
 
-    def embedding(self, raw_data, structure):
+    def embedding(self, **kwargs):
         raise NotImplementedError()
 
-    def forward(self, raw_data):
+    def forward(self, **kwargs):
+        raise NotImplementedError()
+
+    def _construct_static_graph(self, **kwargs):
+        raise NotImplementedError()
+
+    def _graph_connect(self, **kwargs):
         raise NotImplementedError()
 
 class DynamicGraphConstructionBase(GraphConstructionBase):
