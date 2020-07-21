@@ -70,6 +70,7 @@ class GAT(GNNBase):
         self.direction_option = direction_option
         self.gat_layers = nn.ModuleList()
 
+
         # input projection
         self.gat_layers.append(GATLayer(input_size,
                                         hidden_size,
