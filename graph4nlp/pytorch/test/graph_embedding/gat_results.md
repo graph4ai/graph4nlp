@@ -2,8 +2,8 @@ Graph Attention Networks (GAT)
 ============
 
 - GAT paper link: [https://arxiv.org/abs/1710.10903](https://arxiv.org/abs/1710.10903)
-- GAT-BiSep Paper link: [https://arxiv.org/abs/1808.07624](https://arxiv.org/abs/1808.07624)
-- GAT-BiFuse Paper link: [https://arxiv.org/abs/1908.04942](https://arxiv.org/abs/1908.04942)
+- GAT-BiSep paper link: [https://arxiv.org/abs/1808.07624](https://arxiv.org/abs/1808.07624)
+- GAT-BiFuse paper link: [https://arxiv.org/abs/1908.04942](https://arxiv.org/abs/1908.04942)
 - DGL GAT example: [https://github.com/dmlc/dgl/tree/master/examples/pytorch/gat](https://github.com/dmlc/dgl/tree/master/examples/pytorch/gat)
 
 Dependencies
@@ -46,5 +46,12 @@ Results
 
 
 * All the accuracy numbers are averaged after 5 random runs.
+
+
+TODO
+-------
+
+* Fine-tune hyper-parameters for GAT-BiSep and GAT-BiFuse.
+* Other datasets: Cora, Citeseer and Pubmed are all undirectional graph datasets, which might not be ideal to test Bidirectional GNN models.
 
 
