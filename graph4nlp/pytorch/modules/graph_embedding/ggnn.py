@@ -4,6 +4,7 @@ from dgl.nn import GatedGraphConv
 import dgl.function as fn
 
 from .base import GNNLayerBase, GNNBase
+from ...data.data import GraphData
 
 
 class UniGGNNLayerConv(GNNLayerBase):
@@ -313,8 +314,6 @@ class GGNN(GNNBase):
     """
     def __init__(self, num_layers, in_feats, out_feats, direction_option='uni', n_etypes=1, bias=True):
         r"""
-        Gated Graph Neural Networks from paper `Gated Graph Sequence
-        Neural Networks <https://arxiv.org/pdf/1511.05493.pdf>`__.
 
         Parameters
         ----------
@@ -389,3 +388,63 @@ class GGNN(GNNBase):
                 raise RuntimeError('Unknown `bidirection` value: {}'.format(self.direction_option))
 
         return node_embs
+
+
+class HighLevelGGNN(nn.Module):
+    r"""
+    High-level `Gated Graph Sequence Neural Networks
+    <https://arxiv.org/pdf/1511.05493.pdf>`__ receives `GraphData` as input.
+    Support both unidirectional (i.e., regular) and bidirectional
+    (i.e., `bi_sep` and `bi_fuse`) versions.
+    """
+    def __init__(self, num_layers, in_feats, out_feats, direction_option='uni', n_etypes=1, bias=True):
+        r"""
+
+        Parameters
+        ----------
+        num_layers: int
+            Number of GGNN layers.
+        in_feats: int
+            Input feature size.
+        out_feats: int
+            Output feature size.
+        direction_option: str
+            The direction option of GGNN ('uni', 'bi_sep' or 'bi_fuse'). (default: 'uni')
+        n_etypes: int
+            Number of edge types. n_etypes can be set to any integer if the direction_option is 'uni'.
+            If the direction_option is 'bi_sep' or 'bi_fuse', n_etypes will be set to 1.
+        bias: bool
+            If True, adds a learnable bias to the output. (default: True)
+
+
+        """
+        super(HighLevelGGNN, self).__init__()
+
+        assert out_feats >= in_feats
+
+        self.models = GGNN(num_layers, in_feats, out_feats, direction_option, n_etypes, bias)
+
+    def forward(self, input_graph):
+        r"""
+        Use GGNN compute node embeddings.
+
+        Parameters
+        ----------
+        input_graph: GraphData.
+            The initial node features are stored in the node feature field
+            named `node_feats`.
+
+        Returns
+        -------
+        input_graph: GraphData.
+            The computed node embedding tensors are stored in the node feature field
+            named `node_embs`.
+
+        """
+
+        graph = input_graph.to_dgl()
+        node_feats = input_graph._node_features['node_feats']
+
+        input_graph._node_features['node_embs'] = self.models(graph, node_feats)
+
+        return input_graph
