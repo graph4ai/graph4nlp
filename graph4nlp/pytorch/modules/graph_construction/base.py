@@ -75,7 +75,7 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     def __init__(self, embedding_styles):
         super(StaticGraphConstructionBase, self).__init__(embedding_styles)
 
-    def add_vocab(self):
+    def add_vocab(self, **kwargs):
         raise NotImplementedError()
 
     def topology(self, raw_text_data, nlp_processor, merge_strategy, edge_strategy):
