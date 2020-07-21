@@ -172,7 +172,7 @@ class WordEmbedding(nn.Module):
     ------
     word_emb = WordEmbedding(vocab_size, emb_size, padding_idx=0, pretrained_word_emb=None, fix_word_emb=False)
     """
-    
+
     def __init__(self, vocab_size, emb_size, padding_idx=0, pretrained_word_emb=None, fix_word_emb=False):
         super(WordEmbedding, self).__init__()
         self.word_emb = nn.Embedding(vocab_size, emb_size, padding_idx=padding_idx,
@@ -302,26 +302,3 @@ class LSTMEmbedding(nn.Module):
 
         return restore_hh, restore_packed_h_t
 
-
-# if __name__ == '__main__':
-#     # For test purpose
-#     from ..utils.vocab_utils import VocabModel
-#     from ..utils.padding_utils import pad_2d_vals_no_size
-
-
-#     raw_text_data = [['I like nlp.', 'Same here!'], ['I like graph.', 'Same here!']]
-
-#     vocab_model = VocabModel(raw_text_data, max_word_vocab_size=None,
-#                                 min_word_vocab_freq=1,
-#                                 word_emb_size=300)
-
-#     src_text_seq = list(zip(*raw_text_data))[0]
-#     src_idx_seq = [vocab_model.word_vocab.to_index_sequence(each) for each in src_text_seq]
-#     src_len = torch.LongTensor([len(each) for each in src_idx_seq])
-#     num_seq = torch.LongTensor([len(src_len)])
-#     input_tensor = torch.LongTensor(pad_2d_vals_no_size(src_idx_seq))
-#     print('input_tensor: {}'.format(input_tensor.shape))
-
-#     emb_constructor = EmbeddingConstruction(vocab_model.word_vocab, 'w2v', 'bilstm', 'bilstm', 128)
-#     emb = emb_constructor(input_tensor, src_len, num_seq)
-#     print('emb: {}'.format(emb.shape))

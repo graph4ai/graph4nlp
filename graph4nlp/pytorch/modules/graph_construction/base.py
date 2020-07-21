@@ -25,12 +25,17 @@ class GraphConstructionBase(nn.Module):
         Generate graph embeddings.
     """
 
-    def __init__(self, embedding_styles):
+    def __init__(self, word_vocab, embedding_styles, hidden_size,
+                        fix_word_emb=True, dropout=None, use_cuda=True):
         super(GraphConstructionBase, self).__init__()
-        self.embedding_layer = EmbeddingConstruction(
+        self.embedding_layer = EmbeddingConstruction(word_vocab,
                                         embedding_styles['word_emb_type'],
                                         embedding_styles['node_edge_level_emb_type'],
-                                        embedding_styles['graph_level_emb_type'])
+                                        embedding_styles['graph_level_emb_type'],
+                                        hidden_size,
+                                        fix_word_emb=fix_word_emb,
+                                        dropout=dropout,
+                                        use_cuda=use_cuda)
 
     def forward(self, raw_text_data):
         raise NotImplementedError()
@@ -62,7 +67,7 @@ class StaticGraphConstructionBase(GraphConstructionBase):
 
     embedding(raw_data, structure)
         Generate graph embeddings.
-    
+
     forward(raw_data)
         Generate static graph embeddings and topology.
     """
@@ -104,8 +109,14 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         Generate dynamic graph embeddings.
     """
 
-    def __init__(self, embedding_styles):
-        super(DynamicGraphConstructionBase, self).__init__(embedding_styles)
+    def __init__(self, word_vocab, embedding_styles, hidden_size,
+                        fix_word_emb=True, dropout=None, use_cuda=True):
+        super(DynamicGraphConstructionBase, self).__init__(word_vocab,
+                                                            embedding_styles,
+                                                            hidden_size,
+                                                            fix_word_emb=fix_word_emb,
+                                                            dropout=dropout,
+                                                            use_cuda=use_cuda)
 
     def forward(self, raw_text_data):
         raise NotImplementedError()
