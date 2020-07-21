@@ -37,6 +37,7 @@ class GraphConstructionBase(nn.Module):
                                         dropout=dropout,
                                         use_cuda=use_cuda)
 
+
     def forward(self, raw_text_data):
         raise NotImplementedError()
 
