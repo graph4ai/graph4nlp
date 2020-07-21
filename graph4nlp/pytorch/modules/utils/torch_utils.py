@@ -1,7 +1,7 @@
 import torch
 
 
-def to_cuda(x, use_cuda=True):
-    if use_cuda and torch.cuda.is_available():
-        x = x.cuda()
+def to_cuda(x, device=None):
+    if device:
+        x = x.to(device)
     return x
