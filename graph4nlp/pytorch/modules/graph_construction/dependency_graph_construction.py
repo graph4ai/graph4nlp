@@ -112,13 +112,13 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                     "edge_type": dep['dep'],
                     'src': {
                         'token': dep['governorGloss'],
-                        'position_id': dep['governor'],
+                        'position_id': dep['governor'] - 1 if dep['governorGloss'] != "ROOT" else None,
                         'id': unique_hash[(dep['governor'], dep['governorGloss'])],
                         "sentence_id": s_id
                     },
                     'tgt': {
                         'token': dep['dependentGloss'],
-                        'position_id': dep['dependent'],
+                        'position_id': dep['dependent'] - 1 if dep['dependentGloss'] != "ROOT" else None,
                         'id': unique_hash[(dep['dependent'], dep['dependentGloss'])],
                         "sentence_id": s_id
                     }
@@ -176,10 +176,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         node_num = parsed_object["node_num"]
         ret_graph.add_nodes(node_num)
         for dep_info in parsed_object["graph_content"]:
-            if edge_strategy is None or edge_strategy is "homogeneous":
+            if edge_strategy is None or edge_strategy == "homogeneous":
                 ret_graph.add_edge(dep_info["src"]['id'], dep_info['tgt']['id'])
-
-
             else:
                 raise NotImplementedError()
 
@@ -187,7 +185,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 0
                 ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 0
             else:
-                ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 2    # 2 for dependency parsing tree
+                ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 2  # 2 for dependency parsing tree
                 ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 2
 
             ret_graph.node_attributes[dep_info["src"]['id']]['token'] = dep_info["src"]['token']
@@ -198,12 +196,12 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ret_graph.node_attributes[dep_info["tgt"]['id']]['sentence_id'] = dep_info["src"]['sentence_id']
 
             # head
-            if dep_info["src"]['id'] is 0:
+            if dep_info["src"]['id'] == 0:
                 ret_graph.node_attributes[dep_info["src"]['id']]['head'] = True
                 ret_graph.node_attributes[dep_info["src"]['id']]['tail'] = False
 
             # tail
-            if dep_info["tgt"]['id'] is node_num - 1:
+            if dep_info["tgt"]['id'] == node_num - 1:
                 ret_graph.node_attributes[dep_info["tgt"]['id']]["head"] = False
                 ret_graph.node_attributes[dep_info["tgt"]['id']]["tail"] = True
             # TODO: add edge_attributes
@@ -272,7 +270,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 print("src list:", src_list)
                 print("tgt list:", tgt_list)
             g.add_edges(src_list, tgt_list)
-        elif merge_strategy is "sequential":
+        elif merge_strategy == "sequential":
             src_list = []
             tgt_list = []
             node_idx_off = 0
