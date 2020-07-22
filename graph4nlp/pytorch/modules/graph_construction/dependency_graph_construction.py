@@ -53,16 +53,16 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             Raw text data, it can be multi-sentences.
         nlp_processor: StanfordCoreNLP
             NLP parsing tools
-        merge_strategy: None or str, option=[None, "tailhead", "sequential", "user-define"]
+        merge_strategy: None or str, option=[None, "tailhead", "sequential", "user_define"]
             Strategy to merge sub-graphs into one graph
             ``None``: It will be the default option. We will do as ``"tailhead"``.
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
             ``"sequential"``: If sub-graph has ``a1, a2, ..., an`` nodes, and sub-graph has ``b1, b2, ..., bm`` nodes.
                               We will link ``a1, a2``, ``a2, a3``, ..., ``an-1, an``, \
                               ``an, b1``, ``b1, b2``, ..., ``bm-1, bm``.
-            ``"user-define"``: We will give this option to the user. User can override this method to define your merge
+            ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
-        edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as-node"]
+        edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
             Strategy to process edge.
             ``None``: It will be the default option. We will do as ``"homogeneous"``.
             ``"homogeneous"``: We will drop the edge type information.
@@ -71,7 +71,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ``heterogeneous``: We will keep the edge type information.
                                An edge will have type information like ``n_subj``.
                                It is not implemented yet.
-            ``as-node``: We will view the edge as a graph node.
+            ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
                          It is not implemented yet.
@@ -153,7 +153,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         ----------
         parsed_object: dict
             The parsing tree.
-        edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as-node"]
+        edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
             Strategy to process edge.
             ``None``: It will be the default option. We will do as ``"homogeneous"``.
             ``"homogeneous"``: We will drop the edge type information.
@@ -162,7 +162,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ``heterogeneous``: We will keep the edge type information.
                                An edge will have type information like ``n_subj``.
                                It is not implemented yet.
-            ``as-node``: We will view the edge as a graph node.
+            ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
                          It is not implemented yet.
@@ -218,14 +218,14 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         ----------
         nx_graph_list: list[GraphData]
             The list of all sub-graphs.
-        merge_strategy: None or str, option=[None, "tailhead", "sequential", "user-define"]
+        merge_strategy: None or str, option=[None, "tailhead", "sequential", "user_define"]
             Strategy to merge sub-graphs into one graph
             ``None``: It will be the default option. We will do as ``"tailhead"``.
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
             ``"sequential"``: If sub-graph has ``a1, a2, ..., an`` nodes, and sub-graph has ``b1, b2, ..., bm`` nodes.
                               We will link ``a1, a2``, ``a2, a3``, ..., ``an-1, an``, \
                               ``an, b1``, ``b1, b2``, ..., ``bm-1, bm``.
-            ``"user-define"``: We will give this option to the user. User can override this method to define your merge
+            ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
 
         Returns
