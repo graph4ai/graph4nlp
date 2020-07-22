@@ -35,7 +35,9 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         "gru", "bilstm" and "bigru".
     seq_info_encode_strategy : str
         Specify strategies of encoding sequential information in raw text
-        data including "none", "lstm", "gru", "bilstm" and "bigru".
+        data including "none", "lstm", "gru", "bilstm" and "bigru". You might
+        want to do this in some situations, e.g., when all the nodes are single
+        tokens extracted from the raw text.
     hidden_size : int, optional
         The hidden size of RNN layer, default: ``None``.
     fix_word_emb : boolean, optional
@@ -59,39 +61,39 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         if isinstance(word_emb_type, str):
             word_emb_type = [word_emb_type]
 
-        self.word_embs = nn.ModuleList()
+        self.word_emb_layers = nn.ModuleList()
         if 'w2v' in word_emb_type:
-            self.word_embs.append(WordEmbedding(
+            self.word_emb_layers.append(WordEmbedding(
                             word_vocab.embeddings.shape[0],
                             word_vocab.embeddings.shape[1],
                             pretrained_word_emb=word_vocab.embeddings,
                             fix_word_emb=fix_word_emb))
 
         if 'bert' in word_emb_type:
-            self.word_embs.append(BertEmbedding(fix_word_emb))
+            self.word_emb_layers.append(BertEmbedding(fix_word_emb))
 
         if node_edge_emb_strategy == 'mean':
-            self.node_level_emb = MeanEmbedding()
+            self.node_edge_emb_layer = MeanEmbedding()
         elif node_edge_emb_strategy == 'lstm':
-            self.node_level_emb = RNNEmbedding(
+            self.node_edge_emb_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1],
                                     hidden_size, dropout=dropout,
                                     bidirectional=False,
                                     rnn_type='lstm', device=device)
         elif node_edge_emb_strategy == 'bilstm':
-            self.node_level_emb = RNNEmbedding(
+            self.node_edge_emb_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1],
                                     hidden_size, dropout=dropout,
                                     bidirectional=True,
                                     rnn_type='lstm', device=device)
         elif node_edge_emb_strategy == 'gru':
-            self.node_level_emb = RNNEmbedding(
+            self.node_edge_emb_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1],
                                     hidden_size, dropout=dropout,
                                     bidirectional=False,
                                     rnn_type='gru', device=device)
         elif node_edge_emb_strategy == 'bigru':
-            self.node_level_emb = RNNEmbedding(
+            self.node_edge_emb_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1],
                                     hidden_size, dropout=dropout,
                                     bidirectional=True,
@@ -100,30 +102,30 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             raise RuntimeError('Unknown node_edge_emb_strategy: {}'.format(node_edge_emb_strategy))
 
         if seq_info_encode_strategy == 'none':
-            self.graph_level_emb = None
+            self.seq_info_encode_layer = None
         elif seq_info_encode_strategy == 'lstm':
-            self.graph_level_emb = RNNEmbedding(
+            self.seq_info_encode_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1] \
                                     if node_edge_emb_strategy == 'mean' else hidden_size,
                                     hidden_size, dropout=dropout,
                                     bidirectional=False,
                                     rnn_type='lstm', device=device)
         elif seq_info_encode_strategy == 'bilstm':
-            self.graph_level_emb = RNNEmbedding(
+            self.seq_info_encode_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1] \
                                     if node_edge_emb_strategy == 'mean' else hidden_size,
                                     hidden_size, dropout=dropout,
                                     bidirectional=True,
                                     rnn_type='lstm', device=device)
         elif seq_info_encode_strategy == 'gru':
-            self.graph_level_emb = RNNEmbedding(
+            self.seq_info_encode_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1] \
                                     if node_edge_emb_strategy == 'mean' else hidden_size,
                                     hidden_size, dropout=dropout,
                                     bidirectional=False,
                                     rnn_type='gru', device=device)
         elif seq_info_encode_strategy == 'bigru':
-            self.graph_level_emb = RNNEmbedding(
+            self.seq_info_encode_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1] \
                                     if node_edge_emb_strategy == 'mean' else hidden_size,
                                     hidden_size, dropout=dropout,
@@ -150,17 +152,17 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             The initial node/edge embeddings.
         """
         feat = []
-        for word_emb in self.word_embs:
-            feat.append(word_emb(input_tensor))
+        for word_emb_layer in self.word_emb_layers:
+            feat.append(word_emb_layer(input_tensor))
 
         feat = torch.cat(feat, dim=-1)
 
-        feat = self.node_level_emb(feat, item_size)
+        feat = self.node_edge_emb_layer(feat, item_size)
         if self.node_edge_emb_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
             feat = feat[-1]
 
-        if self.graph_level_emb is not None:
-            feat = self.graph_level_emb(torch.unsqueeze(feat, 0), num_items)
+        if self.seq_info_encode_layer is not None:
+            feat = self.seq_info_encode_layer(torch.unsqueeze(feat, 0), num_items)
             if self.seq_info_encode_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
                 feat = feat[0]
 
@@ -186,18 +188,18 @@ class WordEmbedding(nn.Module):
 
     Examples
     ----------
-    >>> word_emb = WordEmbedding(1000, 300, padding_idx=0, pretrained_word_emb=None, fix_word_emb=True)
+    >>> word_emb_layer = WordEmbedding(1000, 300, padding_idx=0, pretrained_word_emb=None, fix_word_emb=True)
     """
     def __init__(self, vocab_size, emb_size, padding_idx=0,
                     pretrained_word_emb=None, fix_word_emb=True):
         super(WordEmbedding, self).__init__()
-        self.word_emb = nn.Embedding(vocab_size, emb_size, padding_idx=padding_idx,
+        self.word_emb_layer = nn.Embedding(vocab_size, emb_size, padding_idx=padding_idx,
                             _weight=torch.from_numpy(pretrained_word_emb).float()
                             if pretrained_word_emb is not None else None)
 
         if fix_word_emb:
             print('[ Fix word embeddings ]')
-            for param in self.word_emb.parameters():
+            for param in self.word_emb_layer.parameters():
                 param.requires_grad = False
 
     def forward(self, input_tensor):
@@ -213,7 +215,7 @@ class WordEmbedding(nn.Module):
         torch.Tensor
             Word embedding matrix.
         """
-        return self.word_emb(input_tensor)
+        return self.word_emb_layer(input_tensor)
 
 class BertEmbedding(nn.Module):
     """Bert embedding class.
