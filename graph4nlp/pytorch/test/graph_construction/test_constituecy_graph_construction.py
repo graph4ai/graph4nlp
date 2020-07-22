@@ -38,7 +38,8 @@ if __name__ == "__main__":
     # print(list(g.nodes))
     # raise BaseException
 
-    raw_data = [["James went to the corner-shop. He want to buy some (eggs), <milk> and bread for breakfast."]]
+    raw_data = "I love you. My motherland."
+    # raw_data = "James went to the corner-shop. He want to buy some (eggs), <milk> and bread for breakfast."
     vocab_model = VocabModel(raw_data, max_word_vocab_size=None,
                                 min_word_vocab_freq=1,
                                 word_emb_size=300)
@@ -52,10 +53,11 @@ if __name__ == "__main__":
     nlp_parser = StanfordCoreNLP('http://localhost', port=9000, timeout=300000)
     print("syntactic parser ready\n-------------------")
 
-    constituency_graph_gonstructor = ConstituencyBasedGraphConstruction(hidden_emb_size=128, embedding_style=embedding_styles, word_emb_size=300, vocab=vocab_model.word_vocab)
-    for sentence in raw_data:
-        output_graph = constituency_graph_gonstructor.forward(sentence[0], nlp_parser)
-    print(output_graph.node_attributes[0])
-    print(output_graph.node_features)
-    print("-----------------------\nvocab size")
-    print(vocab_model.word_vocab.word2index)
+    # constituency_graph_gonstructor = ConstituencyBasedGraphConstruction(hidden_emb_size=128, embedding_style=embedding_styles, word_emb_size=300, vocab=vocab_model.word_vocab)
+    # for sentence in raw_data:
+        # output_graph = constituency_graph_gonstructor.forward(sentence[0], nlp_parser)
+    output_graph = ConstituencyBasedGraphConstruction.topology(raw_data, nlp_parser)
+    print(output_graph.node_attributes)
+    print(output_graph.edges)
+    # print("-----------------------\nvocab size")
+    # print(vocab_model.word_vocab.word2index)
