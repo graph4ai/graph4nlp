@@ -4,7 +4,7 @@ from dgl.nn import GatedGraphConv
 import dgl.function as fn
 
 from .base import GNNLayerBase, GNNBase
-from ...data.data import GraphData
+# from ...data.data import GraphData
 
 
 class UniGGNNLayerConv(GNNLayerBase):
@@ -217,8 +217,8 @@ class BiSepGGNNLayerConv(GNNLayerBase):
             [nn.Linear(output_size, output_size) for _ in range(n_etypes)]
         )
 
-        self.update_in = nn.Linear(input_size + output_size, output_size, bias=True)
-        self.update_out = nn.Linear(input_size + output_size, output_size, bias=True)
+        # self.update_in = nn.Linear(input_size + output_size, output_size, bias=True)
+        # self.update_out = nn.Linear(input_size + output_size, output_size, bias=True)
 
         self.gru_in = nn.GRUCell(output_size, output_size, bias=bias)
         self.gru_out = nn.GRUCell(output_size, output_size, bias=bias)
@@ -238,8 +238,8 @@ class BiSepGGNNLayerConv(GNNLayerBase):
             nn.init.xavier_normal_(linear.weight, gain=gain)
             nn.init.zeros_(linear.bias)
 
-        nn.init.xavier_normal_(self.update_in.weight, gain=gain)
-        nn.init.xavier_normal_(self.update_out.weight, gain=gain)
+        # nn.init.xavier_normal_(self.update_in.weight, gain=gain)
+        # nn.init.xavier_normal_(self.update_out.weight, gain=gain)
 
     def forward(self, graph, node_feats):
         feat_in, feat_out = node_feats
@@ -273,13 +273,14 @@ class BiSepGGNNLayerConv(GNNLayerBase):
         a_out = graph_out.ndata.pop('a')  # (N, D)
         emb_out = self.gru_out(a_out, feat_out)
 
-        concat_in = torch.cat([feat_in, emb_in], dim=-1)
-        rst_in = torch.sigmoid(self.update_in(concat_in))
+        # concat_in = torch.cat([feat_in, emb_in], dim=-1)
+        # rst_in = torch.sigmoid(self.update_in(concat_in))
 
-        concat_out = torch.cat([feat_out, emb_out], dim=-1)
-        rst_out = torch.sigmoid(self.update_out(concat_out))
+        # concat_out = torch.cat([feat_out, emb_out], dim=-1)
+        # rst_out = torch.sigmoid(self.update_out(concat_out))
 
-        return [rst_in, rst_out]
+        return [emb_in, emb_out]
+        # return [rst_in, rst_out]
 
 
 class GGNNLayer(GNNLayerBase):
