@@ -85,7 +85,8 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     def add_vocab(self, **kwargs):
         raise NotImplementedError()
 
-    def topology(self, **kwargs):
+    @classmethod
+    def topology(cls, **kwargs):
         raise NotImplementedError()
 
     def embedding(self, **kwargs):
@@ -94,10 +95,12 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     def forward(self, **kwargs):
         raise NotImplementedError()
 
-    def _construct_static_graph(self, **kwargs):
+    @classmethod
+    def _construct_static_graph(cls, **kwargs):
         raise NotImplementedError()
 
-    def _graph_connect(self, **kwargs):
+    @classmethod
+    def _graph_connect(cls, **kwargs):
         raise NotImplementedError()
 
 class DynamicGraphConstructionBase(GraphConstructionBase):
