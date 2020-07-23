@@ -11,56 +11,42 @@ from . import constants
 
 word_detector = re.compile('\w')
 
-
 class VocabModel(object):
-    """
-    Vocab model builder.
+    """Vocab model builder.
 
-    ...
-
-    Attributes
+    Parameters
     ----------
     data_set: iterable
-        A list of instances where each instance is a list of str
-
-    tokenizer: function
-        Word tokenization function. Default: nltk.tokenize.word_tokenize
-
-    max_word_vocab_size: int
-        Maximal word vocab size, serveing as a filter. Default: None
-
-    min_word_vocab_freq: int
-        Minimal word vocab frequency, serveing as a filter. Default: 1
-
-    pretrained_word_emb_file: str
-        Path to the pretrained word embedding file. Default: None
-
-    word_emb_size: int
-        Word embedding size. Default: None
-
-
-    Methods
-    -------
-    build(saved_vocab_file, data_set=None,
-                                tokenizer=word_tokenize,
-                                max_word_vocab_size=None,
-                                min_word_vocab_freq=1,
-                                pretrained_word_emb_file=None,
-                                word_emb_size=None))
-        Static class method for restoring a vocab model from disk or building one from scratch.
-
+        A list of instances where each instance is a list of str.
+    tokenizer: function, optional
+        Word tokenization function, default: nltk.tokenize.word_tokenize.
+    max_word_vocab_size: int, optional
+        Maximal word vocab size, default: ``None``.
+    min_word_vocab_freq: int, optional
+        Minimal word vocab frequency, default: ``1``.
+    pretrained_word_emb_file: str, optional
+        Path to the pretrained word embedding file, default: ``None``.
+    word_emb_size: int, optional
+        Word embedding size, default: ``None``.
 
     Examples
     -------
+    # Build a vocab model from scratch
     >>> vocab_model = VocabModel([['I like nlp.', 'Same here!'],
                         ['I like graph.', 'Same here!']],
                         max_word_vocab_size=None,
                         min_word_vocab_freq=1,
                         word_emb_size=300)
+    >>> print(vocab_model.word_vocab.get_vocab_size())
 
-    print(vocab_model.word_vocab.get_vocab_size())
+    # Restore a vocab model from disk if exists or build one from scratch.
+    >>> vocab_model = VocabModel.build('vocab_model.pkl', [['I like nlp.', 'Same here!'],
+                            ['I like graph.', 'Same here!']],
+                            max_word_vocab_size=None,
+                            min_word_vocab_freq=1,
+                            word_emb_size=300)
+    >>> print(vocab_model.word_vocab.get_vocab_size())
     """
-
     def __init__(self, data_set, tokenizer=word_tokenize,
                                 max_word_vocab_size=None,
                                 min_word_vocab_freq=1,
@@ -98,22 +84,36 @@ class VocabModel(object):
         # print('NER_vocab: {}'.format(self.NER_vocab.get_vocab_size()))
 
     @classmethod
-    def build(cls, saved_vocab_file, data_set=None,
-                                tokenizer=word_tokenize,
-                                max_word_vocab_size=None,
-                                min_word_vocab_freq=1,
-                                pretrained_word_emb_file=None,
-                                word_emb_size=None):
-        """
-        Loads a Vocabulary from disk.
+    def build(cls, saved_vocab_file,
+            data_set=None,
+            tokenizer=word_tokenize,
+            max_word_vocab_size=None,
+            min_word_vocab_freq=1,
+            pretrained_word_emb_file=None,
+            word_emb_size=None):
+        """Static method for loading a VocabModel from disk.
 
-        Args:
-            saved_vocab_file (str): path to the saved vocab file
-            data_set:
-            config:
+        Parameters:
+        -------
+        saved_vocab_file : str
+            Path to the saved vocab file.
+        data_set: iterable
+            A list of instances where each instance is a list of str.
+        tokenizer: function, optional
+            Word tokenization function, default: nltk.tokenize.word_tokenize.
+        max_word_vocab_size: int, optional
+            Maximal word vocab size, default: ``None``.
+        min_word_vocab_freq: int, optional
+            Minimal word vocab frequency, default: ``1``.
+        pretrained_word_emb_file: str, optional
+            Path to the pretrained word embedding file, default: ``None``.
+        word_emb_size: int, optional
+            Word embedding size, default: ``None``.
 
         Returns:
-            Vocabulary: loaded Vocabulary
+        -------
+        VocabModel
+            Loaded Vocabulary.
         """
         if os.path.exists(saved_vocab_file):
             print('Loading pre-built vocab model stored in {}'.format(saved_vocab_file))
@@ -131,36 +131,19 @@ class VocabModel(object):
         return vocab_model
 
 class Vocab(object):
-    """
-    Vocab class.
+    """Vocab class.
 
-    ...
-
-    Attributes
+    Parameters
     ----------
-
-    Methods
-    -------
-    build_vocab(vocab_counter, max_vocab_size=None, min_vocab_freq=1)
-        Build vocab from ``vocab_counter`` which is a vocab count dict.
-
-    _add_words(words)
-        Expand the existing vocab by taking as input a list of str.
-
-    load_embeddings(file_path）
-        Load pretrained word embeddings for initialization.
-
-    randomize_embeddings(n_dims, scale=0.08)
-        Use random word embeddings for initialization.
-
+    tokenizer: function, optional
+        Word tokenization function, default: nltk.tokenize.word_tokenize.
 
     Examples
     -------
     >>> word_vocab = Vocab()
-    >>> word_vocab.build_vocab(all_words)
+    >>> word_vocab.build_vocab({'i': 10, 'like': 5, 'nlp': 3})
     >>> print(word_vocab.get_vocab_size())
     """
-
     def __init__(self, tokenizer=word_tokenize):
         super(Vocab, self).__init__()
         self.tokenizer = tokenizer
@@ -180,6 +163,17 @@ class Vocab(object):
         self.embeddings = None
 
     def build_vocab(self, vocab_counter, max_vocab_size=None, min_vocab_freq=1):
+        """Build vocab from ``vocab_counter`` which is a vocab count dict.
+
+        Parameters
+        ----------
+        vocab_counter : dict
+            Vocab counter.
+        max_vocab_size : None, optional
+            Maximal word vocab size, default: ``None``.
+        min_vocab_freq : int, optional
+            Minimal word vocab frequency, default: ``1``.
+        """
         self.word2count = vocab_counter
         self._add_words(vocab_counter.keys())
         self._trim(max_vocab_size=max_vocab_size, min_vocab_freq=min_vocab_freq)
@@ -193,6 +187,7 @@ class Vocab(object):
         assert len(self.word2index) == len(self.index2word)
 
     def _trim(self, max_vocab_size=None, min_vocab_freq=1):
+        """Trim vocab"""
         if min_vocab_freq <= 1 and (max_vocab_size is None or max_vocab_size >= len(self.word2index)):
             return
         ordered_words = sorted(((c, w) for (w, c) in self.word2count.items()), reverse=True)
@@ -210,6 +205,7 @@ class Vocab(object):
         assert len(self.word2index) == len(self.index2word)
 
     def load_embeddings(self, file_path, scale=0.08, dtype=np.float32):
+        """Load pretrained word embeddings for initialization"""
         hit_words = set()
         vocab_size = len(self)
         with open(file_path, 'rb') as f:
@@ -230,6 +226,7 @@ class Vocab(object):
         print('Pretrained word embeddings hit ratio: {}'.format(len(hit_words) / len(self.index2word)))
 
     def randomize_embeddings(self, n_dims, scale=0.08):
+        """Use random word embeddings for initialization."""
         vocab_size = self.get_vocab_size()
         shape = (vocab_size, n_dims)
         self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=shape), dtype=np.float32)
@@ -285,10 +282,12 @@ class Vocab(object):
         return seq
 
 def collect_vocabs(all_instances, tokenizer):
+    """Count vocabulary tokens."""
     all_words = Counter()
     for instance in all_instances:
-        for sentence in instance: # TODO: need to check which elements should be added to vocab
-            # Or sentence.node_attr, sentence.edge_attr
+        # TODO: need to check which elements should be added to vocab
+        # Or sentence.node_attr, sentence.edge_attr
+        for sentence in instance:
             all_words.update(tokenizer(sentence))
     return all_words
 
@@ -311,19 +310,3 @@ def collect_vocabs(all_instances, tokenizer):
 #         for node1, value in sent1.graph['g_adj'].items():
 #             all_edge_types.update([each['edge'] for each in value])
 #     return (all_words, all_edge_types, all_POSs, all_NERs)
-
-
-if __name__ == '__main__':
-    # For test purpose
-    vocab_model = VocabModel([['I like nlp.', 'Same here!'],
-                            ['I like graph.', 'Same here!']],
-                            max_word_vocab_size=None,
-                            min_word_vocab_freq=1,
-                            word_emb_size=300)
-
-    # Restore a vocab model from disk or build one from scratch.
-    # vocab_model = VocabModel.build('vocab_model.pkl', [['I like nlp.', 'Same here!'],
-    #                         ['I like graph.', 'Same here!']],
-    #                         max_word_vocab_size=None,
-    #                         min_word_vocab_freq=1,
-    #                         word_emb_size=300)
