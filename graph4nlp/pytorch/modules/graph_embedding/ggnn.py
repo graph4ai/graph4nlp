@@ -4,7 +4,7 @@ from dgl.nn import GatedGraphConv
 import dgl.function as fn
 
 from .base import GNNLayerBase, GNNBase
-# from ...data.data import GraphData
+from ...data.data import GraphData
 
 
 class UniGGNNLayerConv(GNNLayerBase):
@@ -18,6 +18,19 @@ class UniGGNNLayerConv(GNNLayerBase):
        a_{i}^{t} & = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
 
        h_{i}^{t+1} & = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
+       
+    Attributes
+    ----------
+    input_size: int
+        Input feature size.
+    output_size: int
+        Output feature size.
+    n_steps: int
+        Number of GGNN layers. Default: 1.
+    n_etypes: int
+        Number of edge types. Default: 1.
+    bias: bool
+        If True, adds a learnable bias to the output. Default: True.
 
     """
     def __init__(self,
@@ -26,21 +39,6 @@ class UniGGNNLayerConv(GNNLayerBase):
                  n_steps=1,
                  n_etypes=1,
                  bias=True):
-        """
-
-        Parameters
-        ----------
-        input_size: int
-            Input feature size.
-        output_size: int
-            Output feature size.
-        n_steps: int
-            Number of GGNN layers. default: 1.
-        n_etypes: int
-            Number of edge types. default: 1.
-        bias: bool
-            If True, adds a learnable bias to the output. default: True.
-        """
         super(UniGGNNLayerConv, self).__init__()
         self.model = GatedGraphConv(input_size, output_size, n_steps=n_steps, n_etypes=n_etypes, bias=bias)
 
@@ -84,6 +82,20 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
        a_{i, \vdash}^{t}-a_{i, \dashv}^{t}])
 
        h_{i}^{t+1} & = \mathrm{GRU}(e_{i}^{t}, h_{i}^{t})
+       
+    Attributes
+    ----------
+    input_size: int
+        Input feature size.
+        
+    output_size: int
+        Output feature size.
+        
+    n_etypes: int
+        Number of edge types. Default: 1.
+        
+    bias: bool
+        If True, adds a learnable bias to the output. Default: True.
 
     """
     def __init__(self, input_size, output_size, n_etypes=1, bias=True):
@@ -200,6 +212,20 @@ class BiSepGGNNLayerConv(GNNLayerBase):
 
        h_{i, \dashv}^{t+1} & = \mathrm{GRU}_{\dashv}(a_{i, \dashv}^{t},
        h_{i, \dashv}^{t})
+    
+    Attributes
+    ----------
+    input_size: int
+        Input feature size.
+        
+    output_size: int
+        Output feature size.
+        
+    n_etypes: int
+        Number of edge types. Default: 1.
+        
+    bias: bool
+        If True, adds a learnable bias to the output. Default: True.
 
     """
     def __init__(self, input_size, output_size, n_etypes=1, bias=True):
@@ -312,28 +338,30 @@ class GGNN(GNNBase):
     <https://arxiv.org/pdf/1511.05493.pdf>`__.
     Support both unidirectional (i.e., regular) and bidirectional
     (i.e., `bi_sep` and `bi_fuse`) versions.
+
+    Attributes
+    ----------
+    num_layers: int
+        Number of GGNN layers.
+
+    input_size: int
+        Input feature size.
+
+    output_size: int
+        Output feature size.
+
+    direction_option: str
+        The direction option of GGNN ('uni', 'bi_sep' or 'bi_fuse'). (Default: 'uni')
+
+    n_etypes: int
+        Number of edge types. n_etypes can be set to any integer if the direction_option is 'uni'.
+        If the direction_option is 'bi_sep' or 'bi_fuse', n_etypes will be set to 1.
+
+    bias: bool
+        If True, adds a learnable bias to the output. (Default: True)
     """
+
     def __init__(self, num_layers, input_size, output_size, direction_option='uni', n_etypes=1, bias=True):
-        r"""
-
-        Parameters
-        ----------
-        num_layers: int
-            Number of GGNN layers.
-        input_size: int
-            Input feature size.
-        output_size: int
-            Output feature size.
-        direction_option: str
-            The direction option of GGNN ('uni', 'bi_sep' or 'bi_fuse'). (default: 'uni')
-        n_etypes: int
-            Number of edge types. n_etypes can be set to any integer if the direction_option is 'uni'.
-            If the direction_option is 'bi_sep' or 'bi_fuse', n_etypes will be set to 1.
-        bias: bool
-            If True, adds a learnable bias to the output. (default: True)
-
-
-        """
         super(GGNN, self).__init__()
         self.num_layers = num_layers
         self.direction_option = direction_option
@@ -342,29 +370,32 @@ class GGNN(GNNBase):
 
         assert self.output_size >= self.input_size
 
-        if self.direction_option=='uni':
-            self.models = GGNNLayer(input_size, output_size, direction_option, n_steps=num_layers, n_etypes=n_etypes, bias=bias)
+        if self.direction_option == 'uni':
+            self.models = GGNNLayer(input_size, output_size, direction_option, n_steps=num_layers, n_etypes=n_etypes,
+                                    bias=bias)
         else:
             self.models = GGNNLayer(output_size, output_size, direction_option, bias=bias)
 
-    def forward(self, graph, node_feats):
+    def forward(self, graph: GraphData):
         r"""
         Use GGNN compute node embeddings.
 
         Parameters
         ----------
-        graph: dgl.DGLGraph.
-            contains N nodes and E edges
-        node_feats: torch.Tensor.
-            The dimension of node_embs is [N, D_in].
+        graph: GraphData.
+            The initial node features are stored in the node feature field
+            named `node_feat`.
 
         Returns
         -------
-        node_embs: torch.Tensor.
-            If the direction_option == 'bi_sep', the dimension of node_embs is [N, 2*D_out].
-            Else, the dimension of node_embs is [N, D_out].
+        input_graph: GraphData.
+            The computed node embedding tensors are stored in the node feature field
+            named `node_emb`.
 
         """
+        graph = graph.to_dgl()
+        node_feats = graph.node_features['node_feat']
+
         if self.direction_option == 'uni':
             node_embs = self.models(graph, node_feats)
         else:
@@ -388,65 +419,148 @@ class GGNN(GNNBase):
             else:
                 raise RuntimeError('Unknown `bidirection` value: {}'.format(self.direction_option))
 
-        return node_embs
+        graph.node_features['node_emb'] = node_embs
+
+        return graph
 
 
-class HighLevelGGNN(nn.Module):
-    r"""
-    High-level `Gated Graph Sequence Neural Networks
-    <https://arxiv.org/pdf/1511.05493.pdf>`__ receives `GraphData` as input.
-    Support both unidirectional (i.e., regular) and bidirectional
-    (i.e., `bi_sep` and `bi_fuse`) versions.
-    """
-    def __init__(self, num_layers, input_size, output_size, direction_option='uni', n_etypes=1, bias=True):
-        r"""
+# class GGNN(GNNBase):
+#     r"""
+#     Multi-layered `Gated Graph Sequence Neural Networks
+#     <https://arxiv.org/pdf/1511.05493.pdf>`__.
+#     Support both unidirectional (i.e., regular) and bidirectional
+#     (i.e., `bi_sep` and `bi_fuse`) versions.
+#
+#     Attributes
+#     ----------
+#     num_layers: int
+#         Number of GGNN layers.
+#     input_size: int
+#         Input feature size.
+#     output_size: int
+#         Output feature size.
+#     direction_option: str
+#         The direction option of GGNN ('uni', 'bi_sep' or 'bi_fuse'). (Default: 'uni')
+#     n_etypes: int
+#         Number of edge types. n_etypes can be set to any integer if the direction_option is 'uni'.
+#         If the direction_option is 'bi_sep' or 'bi_fuse', n_etypes will be set to 1.
+#     bias: bool
+#         If True, adds a learnable bias to the output. (Default: True)
+#     """
+#     def __init__(self, num_layers, input_size, output_size, direction_option='uni', n_etypes=1, bias=True):
+#         super(GGNN, self).__init__()
+#         self.num_layers = num_layers
+#         self.direction_option = direction_option
+#         self.input_size = input_size
+#         self.output_size = output_size
+#
+#         assert self.output_size >= self.input_size
+#
+#         if self.direction_option=='uni':
+#             self.models = GGNNLayer(input_size, output_size, direction_option, n_steps=num_layers, n_etypes=n_etypes, bias=bias)
+#         else:
+#             self.models = GGNNLayer(output_size, output_size, direction_option, bias=bias)
+#
+#     def forward(self, graph, node_feats):
+#         r"""
+#         Use GGNN compute node embeddings.
+#
+#         Parameters
+#         ----------
+#         graph: dgl.DGLGraph.
+#             contains N nodes and E edges
+#         node_feats: torch.Tensor.
+#             The dimension of node_embs is [N, D_in].
+#
+#         Returns
+#         -------
+#         node_embs: torch.Tensor.
+#             If the direction_option == 'bi_sep', the dimension of node_embs is [N, 2*D_out].
+#             Else, the dimension of node_embs is [N, D_out].
+#
+#         """
+#         if self.direction_option == 'uni':
+#             node_embs = self.models(graph, node_feats)
+#         else:
+#             assert node_feats.shape[1] == self.input_size
+#
+#             zero_pad = node_feats.new_zeros((node_feats.shape[0], self.output_size - node_feats.shape[1]))
+#             node_feats = torch.cat([node_feats, zero_pad], -1)
+#
+#             feat_in = node_feats
+#             feat_out = node_feats
+#
+#             for i in range(self.num_layers):
+#                 h = self.models(graph, (feat_in, feat_out))
+#                 feat_in = h[0]
+#                 feat_out = h[1]
+#
+#             if self.direction_option == 'bi_sep':
+#                 node_embs = torch.cat([feat_in, feat_out], dim=-1)
+#             elif self.direction_option == 'bi_fuse':
+#                 node_embs = feat_in
+#             else:
+#                 raise RuntimeError('Unknown `bidirection` value: {}'.format(self.direction_option))
+#
+#         return node_embs
 
-        Parameters
-        ----------
-        num_layers: int
-            Number of GGNN layers.
-        input_size: int
-            Input feature size.
-        output_size: int
-            Output feature size.
-        direction_option: str
-            The direction option of GGNN ('uni', 'bi_sep' or 'bi_fuse'). (default: 'uni')
-        n_etypes: int
-            Number of edge types. n_etypes can be set to any integer if the direction_option is 'uni'.
-            If the direction_option is 'bi_sep' or 'bi_fuse', n_etypes will be set to 1.
-        bias: bool
-            If True, adds a learnable bias to the output. (default: True)
 
-
-        """
-        super(HighLevelGGNN, self).__init__()
-
-        assert output_size >= input_size
-
-        self.models = GGNN(num_layers, input_size, output_size, direction_option, n_etypes, bias)
-
-    def forward(self, input_graph):
-        r"""
-        Use GGNN compute node embeddings.
-
-        Parameters
-        ----------
-        input_graph: GraphData.
-            The initial node features are stored in the node feature field
-            named `node_feat`.
-
-        Returns
-        -------
-        input_graph: GraphData.
-            The computed node embedding tensors are stored in the node feature field
-            named `node_emb`.
-
-        """
-
-        graph = input_graph.to_dgl()
-        node_feats = input_graph._node_features['node_feat']
-
-        input_graph.set_node_features(slice(0, graph.number_of_nodes()),
-                                      {'node_emb':self.models(graph, node_feats)})
-
-        return input_graph
+# class HighLevelGGNN(nn.Module):
+#     r"""
+#     High-level `Gated Graph Sequence Neural Networks
+#     <https://arxiv.org/pdf/1511.05493.pdf>`__ receives `GraphData` as input.
+#     Support both unidirectional (i.e., regular) and bidirectional
+#     (i.e., `bi_sep` and `bi_fuse`) versions.
+#     """
+#     def __init__(self, num_layers, input_size, output_size, direction_option='uni', n_etypes=1, bias=True):
+#         r"""
+#
+#         Parameters
+#         ----------
+#         num_layers: int
+#             Number of GGNN layers.
+#         input_size: int
+#             Input feature size.
+#         output_size: int
+#             Output feature size.
+#         direction_option: str
+#             The direction option of GGNN ('uni', 'bi_sep' or 'bi_fuse'). (Default: 'uni')
+#         n_etypes: int
+#             Number of edge types. n_etypes can be set to any integer if the direction_option is 'uni'.
+#             If the direction_option is 'bi_sep' or 'bi_fuse', n_etypes will be set to 1.
+#         bias: bool
+#             If True, adds a learnable bias to the output. (Default: True)
+#
+#
+#         """
+#         super(HighLevelGGNN, self).__init__()
+#
+#         assert output_size >= input_size
+#
+#         self.models = GGNN(num_layers, input_size, output_size, direction_option, n_etypes, bias)
+#
+#     def forward(self, input_graph):
+#         r"""
+#         Use GGNN compute node embeddings.
+#
+#         Parameters
+#         ----------
+#         input_graph: GraphData.
+#             The initial node features are stored in the node feature field
+#             named `node_feat`.
+#
+#         Returns
+#         -------
+#         input_graph: GraphData.
+#             The computed node embedding tensors are stored in the node feature field
+#             named `node_emb`.
+#
+#         """
+#
+#         graph = input_graph.to_dgl()
+#         node_feats = input_graph._node_features['node_feat']
+#
+#         input_graph.set_node_features(slice(0, graph.number_of_nodes()),
+#                                       {'node_emb':self.models(graph, node_feats)})
+#
+#         return input_graph
