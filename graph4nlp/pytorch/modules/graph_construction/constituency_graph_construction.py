@@ -143,7 +143,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             if parse_list[idx] == '(':
                 res_graph.add_nodes(1)
                 res_graph.node_attributes[res_graph.get_node_num(
-                ) - 1] = {'token': parse_list[idx + 1], 'type': 1, 'position_id': -1, 'sentence_id': sub_sentence_id, 'tail': False, 'head': False}
+                ) - 1] = {'token': parse_list[idx + 1], 'type': 1, 'position_id': None, 'sentence_id': sub_sentence_id, 'tail': False, 'head': False}
                 pstack.push(res_graph.get_node_num() - 1)
                 if pstack.size() > 1:
                     node_2 = pstack.pop()
