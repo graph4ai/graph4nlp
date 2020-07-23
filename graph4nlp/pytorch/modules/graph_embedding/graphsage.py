@@ -574,7 +574,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
             self.lstm_bw.reset_parameters()
         if self._aggre_type != 'gcn':
             nn.init.xavier_uniform_(self.fc_self_fw.weight, gain=gain_fw)
-            nn.init.xavier_uniform_(self.fc_neigh_bw.weight, gain=gain_bw)
+            nn.init.xavier_uniform_(self.fc_self_bw.weight, gain=gain_bw)
 
     def _lstm_reducer_fw(self, nodes):
         """LSTM reducer
