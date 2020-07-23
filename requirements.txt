@@ -1,5 +1,5 @@
 nltk==3.5
 numpy==1.18.5
 numpy==1.5.0
-torch==1.5.1
+torch==1.1.0
 dgl==0.4.3.post2
