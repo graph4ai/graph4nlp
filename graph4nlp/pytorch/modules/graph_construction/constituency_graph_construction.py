@@ -11,7 +11,13 @@ from pythonds.basic.stack import Stack
 from stanfordcorenlp import StanfordCoreNLP
 
 from .base import StaticGraphConstructionBase
-from .utility_functions import Node, UtilityFunctionsForGraph
+from .embedding_construction import EmbeddingConstruction
+from ...data.data import GraphData
+
+"""TODO: some design choice:
+            - replace constituent tag "." with "const_period"
+            - unify whether use lower case in vocab and parsing
+"""
 
 
 class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
@@ -24,22 +30,20 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     ----------
     embedding_styles : (dict)
         Specify embedding styles including ``word_emb_type``, ``node_edge_level_emb_type`` and ``graph_level_emb_type``.
-    
+
     vocab: (set, optional)
         Vocabulary including all words appeared in graphs.
 
     Methods
     -------
-    add_vocab(g)
-        Expand vocabulary from graphs.
-    
+
     topology(paragraph, nlp_processor, merge_strategy=None, edge_strategy=None)
         Generate graph structure with nlp parser like ``CoreNLP`` etc.
 
-    construct_static_graph(parsed_object, sub_sentence_id, edge_strategy=None)
+    _construct_static_graph(parsed_object, sub_sentence_id, edge_strategy=None)
         Construct a single static graph from a single sentence, to be called by ``topology`` function.
 
-    graph_connect(nx_graph_list, merge_strategy=None)
+    _graph_connect(nx_graph_list, merge_strategy=None)
         Construct a merged graph from a list of graphs, to be called by ``topology`` function.
 
     embedding(node_attributes, edge_attributes)
@@ -48,47 +52,63 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     forward(raw_text_data, nlp_parser)
         Generate graph topology and embeddings.
     """
-    def __init__(self, embedding_style, vocab=None):
-        super(ConstituencyBasedGraphConstruction,
-              self).__init__(embedding_style)
-        self.vocab = vocab if vocab != None else set()
-        self.word2idx = {}
-        self.idx2word = []
 
-    def add_vocab(self, g):
-        vocab_list = UtilityFunctionsForGraph.get_all_text(g)
-        for v in vocab_list:
-            if v in self.vocab:
-                pass
-            else:
-                self.vocab.add(v)
-                self.word2idx[v] = len(self.vocab)
-                self.idx2word.append(v)
-
-    def topology(self,
+    def __init__(self, word_vocab, embedding_styles, hidden_size,
+                 fix_word_emb=True, dropout=None, use_cuda=True):
+        super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab,
+                                                                 embedding_styles,
+                                                                 hidden_size,
+                                                                 fix_word_emb=fix_word_emb,
+                                                                 dropout=dropout,
+                                                                 use_cuda=use_cuda)
+    @classmethod
+    def topology(cls,
                  paragraph,
                  nlp_processor,
                  merge_strategy=None,
                  edge_strategy=None):
-        """
-        Attributes
+        """topology This function generate a graph strcuture from a raw paragraph.
+
+        Parameters
         ----------
-        paragraph : (string)
-            A string to be used to construct a static graph, can be composed of multiple strings.
-        
-        nlp_processer: (object)
-            A parser used to parse sentence string to parsing trees like dependency parsing tree or constituency parsing tree.
+        paragraph : string
+            A string to be used to construct a static graph, can be composed of multiple strings
 
-        merge_strategy : (str)
-            Ways assigned for graph merge strategy: how to merge sentence-level graphs to a paragraph-level graph.
-            1) In a tail head way. 2) In a sequential way.
+        nlp_processor : object
+            A parser used to parse sentence string to parsing trees like dependency parsing tree or constituency parsing tree
 
-        edge_strategy: (str, optional)
-            Ways assigned for edge strategy: (1) 1/0: assign the weight (2) heterogeneous graph: type (3) as a node: process as node
+        merge_strategy : None or str, option=[None, "tailhead", "sequential", "user_define"]
+            Strategy to merge sub-graphs into one graph
+            ``None``: It will be the default option. We will do as ``"tailhead"``.
+            ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
+            ``"sequential"``: If sub-graph has ``a1, a2, ..., an`` nodes, and sub-graph has ``b1, b2, ..., bm`` nodes.
+                              We will link ``a1, a2``, ``a2, a3``, ..., ``an-1, an``, \
+                              ``an, b1``, ``b1, b2``, ..., ``bm-1, bm``.
+            ``"user_define"``: We will give this option to the user. User can override this method to define your merge
+                               strategy.
+
+        edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
+            Strategy to process edge.
+            ``None``: It will be the default option. We will do as ``"homogeneous"``.
+            ``"homogeneous"``: We will drop the edge type information.
+                               If there is a linkage among node ``i`` and node ``j``, we will add an edge whose weight
+                               is ``1.0``. Otherwise there is no edge.
+            ``heterogeneous``: We will keep the edge type information.
+                               An edge will have type information like ``n_subj``.
+                               It is not implemented yet.
+            ``as_node``: We will view the edge as a graph node.
+                         If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
+                         we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
+                         It is not implemented yet.
+
+        Returns
+        -------
+        GraphData
+            A customized graph data structure
         """
         output_graph_list = []
         output = nlp_processor.annotate(
-            paragraph.lower().strip(),
+            paragraph.strip(),
             properties={
                 'annotators': "tokenize,ssplit,pos,parse",
                 "tokenize.options":
@@ -100,12 +120,12 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         parsed_output = json.loads(output)['sentences']
         for index in range(len(parsed_output)):
             output_graph_list.append(
-                self.construct_static_graph(parsed_output[index], index))
-        ret_graph = self.graph_connect(output_graph_list)
-        self.add_vocab(ret_graph)
+                cls._construct_static_graph(parsed_output[index], index))
+        ret_graph = cls._graph_connect(output_graph_list)
         return ret_graph
 
-    def construct_static_graph(self,
+    @classmethod
+    def _construct_static_graph(cls,
                                parsed_object,
                                sub_sentence_id,
                                edge_strategy=None):
@@ -115,17 +135,16 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                 punc, ' ' + punc + ' ')
         parse_list = (parsed_sentence_data).split()
 
-        res_graph = nx.DiGraph()
+        res_graph = GraphData()
         pstack = Stack()
         idx = 0
+        cnt_word_node = -1
         while idx < len(parse_list):
             if parse_list[idx] == '(':
-                new_node = Node(word_=parse_list[idx + 1],
-                                id_=idx + 1,
-                                type_=1,
-                                sentence_=sub_sentence_id)
-                res_graph.add_node(new_node)
-                pstack.push(new_node)
+                res_graph.add_nodes(1)
+                res_graph.node_attributes[res_graph.get_node_num(
+                ) - 1] = {'token': parse_list[idx + 1], 'type': 1, 'position_id': None, 'sentence_id': sub_sentence_id, 'tail': False, 'head': False}
+                pstack.push(res_graph.get_node_num() - 1)
                 if pstack.size() > 1:
                     node_2 = pstack.pop()
                     node_1 = pstack.pop()
@@ -135,74 +154,89 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             elif parse_list[idx] == ')':
                 pstack.pop()
             elif parse_list[idx + 1] == u')' and parse_list[idx] != u')':
-                new_node = Node(word_=parse_list[idx],
-                                id_=idx,
-                                type_=0,
-                                sentence_=sub_sentence_id)
+                cnt_word_node += 1
+                res_graph.add_nodes(1)
+                res_graph.node_attributes[res_graph.get_node_num(
+                ) - 1] = {'token': parse_list[idx], 'type': 0, 'position_id': cnt_word_node, 'sentence_id': sub_sentence_id, 'tail': False, 'head': False}
                 node_1 = pstack.pop()
-                if node_1.id != new_node.id:
-                    res_graph.add_edge(node_1, new_node)
+                if node_1 != res_graph.get_node_num() - 1:
+                    res_graph.add_edge(node_1, res_graph.get_node_num() - 1)
                 pstack.push(node_1)
             idx += 1
 
-        max_id = 0
-        for n in res_graph.nodes():
-            if n.type == 0 and n.id > max_id:
-                max_id = n.id
+        max_pos = 0
+        for n in res_graph.node_attributes.values():
+            if n['type'] == 0 and n['position_id'] > max_pos:
+                max_pos = n['position_id']
 
-        min_id = 99999
-        for n in res_graph.nodes():
-            if n.type == 0 and n.id < min_id:
-                min_id = n.id
+        min_pos = 99999
+        for n in res_graph.node_attributes.values():
+            if n['type'] == 0 and n['position_id'] < min_pos:
+                min_pos = n['position_id']
 
-        for n in res_graph.nodes():
-            if n.type == 0 and n.id == max_id:
-                n.tail = True
-            if n.type == 0 and n.id == min_id:
-                n.head = True
+        for n in res_graph.node_attributes.values():
+            if n['type'] == 0 and n['position_id'] == max_pos:
+                n['tail'] = True
+            if n['type'] == 0 and n['position_id'] == min_pos:
+                n['head'] = True
+        # print(res_graph.node_attributes)
         return res_graph
 
-    def graph_connect(self, nx_graph_list, merge_strategy=None):
-        _len_graph_ = len(nx_graph_list)
-        output_graph = nx.union_all(nx_graph_list)
+    @classmethod
+    def _graph_connect(cls, graph_list, merge_strategy=None):
+        """
+        Parameters
+        ----------
+        graph_list : list
+            A graph list to be merged
+
+        Returns
+        -------
+        GraphData
+            A customized graph data structure
+        """
+        _len_graph_ = len(graph_list)
+        merged_graph = GraphData()
+        for index in range(_len_graph_):
+            len_merged_graph = merged_graph.get_node_num()
+            graph_i_nodes_attributes = {}
+            for dict_item in graph_list[index].node_attributes.items():
+                graph_i_nodes_attributes[dict_item[0] + len_merged_graph] = dict_item[1]
+            merged_graph.node_attributes.update(graph_i_nodes_attributes)
 
         for index in range(_len_graph_ - 1):
-            head_node = UtilityFunctionsForGraph.get_head_node(output_graph, index + 1)
-            tail_node = UtilityFunctionsForGraph.get_tail_node(output_graph, index)
-            output_graph.add_edge(tail_node, head_node)
-        return output_graph
+            # get head node
+            head_node = -1
+            for node_attr_item in merged_graph.node_attributes.items():
+                if node_attr_item[1]['sentence_id'] == index + 1 and node_attr_item[1]['type'] == 0 and node_attr_item[1]['head'] == True:
+                    head_node = node_attr_item[0]
+            # get tail node
+            tail_node = -1
+            for node_attr_item in merged_graph.node_attributes.items():
+                if node_attr_item[1]['sentence_id'] == index and node_attr_item[1]['type'] == 0 and node_attr_item[1]['tail'] == True:
+                    tail_node = node_attr_item[0]
+            merged_graph.add_edge(tail_node, head_node)
+        return merged_graph
 
     def embedding(self, node_attributes, edge_attributes):
-        node_emb, edge_emb = self.embedding_layer(node_attributes, edge_attributes)
+        node_emb, edge_emb = self.embedding_layer(
+            node_attributes, edge_attributes)
         return node_emb, edge_emb
 
     def forward(self, raw_sentence_data, nlp_parser):
         output_graph = self.topology(raw_sentence_data,
                                      nlp_processor=nlp_parser)
-        # TODO : implement or complete process from output_graph to node/edge embeddings and to dgl_graph finally.
+        # self.vocab.randomize_embeddings(self.word_emb_size)
+        # self.embedding_layer = EmbeddingConstruction(self.vocab, self.embedding_style['word_emb_type'], self.embedding_style[
+        #                                              'node_edge_level_emb_type'], self.embedding_style['graph_level_emb_type'], self.hidden_size)
+
+        # input_node_attributes = torch.LongTensor(
+        #     [[i[1]['wordid'] for i in output_graph.node_attributes.items()]])
+        # graph_num = torch.LongTensor([1])
+        # node_num = torch.LongTensor([output_graph.get_node_num()])
+
+        # node_feat = self.embedding_layer(
+        #     input_tensor=input_node_attributes, node_size=node_num, graph_size=graph_num)
+        # output_graph.node_features['node_feat'] = node_feat
+        # output_graph.node_features['node_meb'] = self.vocab.embeddings
         return output_graph
-
-# code used for tests.
-if __name__ == "__main__":
-    seed = 1234
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-
-    raw_data = "James went to the corner-shop. He want to buy some (eggs), <milk> and bread for breakfast."
-    embedding_styles = {
-        'word_emb_type': 'glove',
-        'node_edge_level_emb_type': 'mean',
-        'graph_level_emb_type': 'identity'
-    }
-
-    nlp_parser = StanfordCoreNLP('http://localhost', port=9000, timeout=300000)
-    print("syntactic parser ready\n-------------------")
-
-    constituency_graph_gonstructor = ConstituencyBasedGraphConstruction(
-        embedding_style=embedding_styles)
-    output_graph = constituency_graph_gonstructor.forward(raw_data, nlp_parser)
-
-    UtilityFunctionsForGraph.print_nodes(output_graph)
-    print("-----------------------\nvocab size")
-    print(len(constituency_graph_gonstructor.vocab))
