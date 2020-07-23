@@ -31,6 +31,7 @@ class Accuracy(EvaluationMetricBase):
     def calculate_scores(self, ground_truth, predict, average=None, zero_division="warning", sample_weight=None):
         """
             The function to calculate the expected metrics for each labels
+
         Parameters
         ----------
         ground_truth: torch.Tensor
@@ -126,6 +127,7 @@ class Accuracy(EvaluationMetricBase):
     def _prf_divide(numerator, denominator, zero_division):
         """
             The function performs division and handles zero-division situations.
+
         Parameters
         ----------
         numerator: numpy.ndarray
@@ -156,6 +158,7 @@ class Accuracy(EvaluationMetricBase):
         """
             The function to check the parameters.
             If all tests are passed, it will convert the tensor to numpy.
+
         Parameters
         ----------
         ground_truth: Any
@@ -244,6 +247,7 @@ class Accuracy(EvaluationMetricBase):
     def _get_unique_labels(*lists):
         """
             find the unique elements in the given lists
+
         Parameters
         ----------
         lists: [numpy.ndarray]
