@@ -33,8 +33,10 @@ class GraphSAGE(GNNBase):
         
         If aggregator type is ``gcn``, the feature size of source and destination nodes
         are required to be the same.
-    hidden_size: list of int
+    hidden_size: int list of int
         Hidden layer size.
+        If a scalar is given, the sizes of all the hidden layers are the same.
+        If a list of scalar is given, each element in the list is the size of each hidden layer.
         Example: [100,50]
     output_size : int
         Output feature size.
@@ -69,15 +71,22 @@ class GraphSAGE(GNNBase):
         self.GraphSAGE_layers = nn.ModuleList()
         if self.direction_option == 'bi_sep':
                output_size=int(output_size/2)
-        # input projection
-        self.GraphSAGE_layers.append(GraphSAGELayer(input_size,
-                                        hidden_size[0],
-                                        aggregator_type,
-                                        direction_option=self.direction_option,
-                                        feat_drop=feat_drop,
-                                        bias=True,
-                                        norm=None,
-                                        activation=None))
+               
+        #transform the hidden size format
+        if self.num_layers>1 and type(hidden_size) is int:
+            hidden_size=[hidden_size for i in range(self.num_layers-1)]
+            
+               
+        if self.num_layers>1:       
+            # input projection
+            self.GraphSAGE_layers.append(GraphSAGELayer(input_size,
+                                            hidden_size[0],
+                                            aggregator_type,
+                                            direction_option=self.direction_option,
+                                            feat_drop=feat_drop,
+                                            bias=True,
+                                            norm=None,
+                                            activation=None))
         # hidden layers
         for l in range(1, self.num_layers - 1):
             # due to multi-head, the input_size = hidden_size * num_heads
@@ -90,7 +99,7 @@ class GraphSAGE(GNNBase):
                                             norm=None,
                                             activation=None))
         # output projection
-        self.GraphSAGE_layers.append(GraphSAGELayer(hidden_size[-1],
+        self.GraphSAGE_layers.append(GraphSAGELayer(hidden_size[-1] if self.num_layers > 1 else input_size,
                                         output_size,
                                         aggregator_type,
                                         direction_option=self.direction_option,
@@ -120,10 +129,11 @@ class GraphSAGE(GNNBase):
         
 
         # output projection
-        for l in range(self.num_layers - 1):
-            h = self.GraphSAGE_layers[l](graph, h)
+        if self.num_layers>1:          
+          for l in range(0,self.num_layers - 1):
+              h = self.GraphSAGE_layers[l](graph, h)
             
-        logits = logits = self.GraphSAGE_layers[-1](graph, h)
+        logits = self.GraphSAGE_layers[-1](graph, h)
 
         if self.direction_option == 'bi_sep':
             logits = torch.cat(logits, -1)
@@ -824,8 +834,8 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
 
 #     # use optimizer
 #     optimizer = torch.optim.Adam(model.parameters(),
-#                                  lr=5e-3,
-#                                  weight_decay=5e-4)
+#                                   lr=5e-3,
+#                                   weight_decay=5e-4)
 
 #     # main loop
 #     # initialize graph
@@ -845,7 +855,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
 #         optimizer.step()
 
 #         if epoch >= 3:
-#            dur.append(time.time() - t0)
+#             dur.append(time.time() - t0)
 
 
 #         acc = evaluate(model, g, labels, val_mask)
@@ -858,19 +868,19 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
 #     print("Test accuracy {:.2%}".format(acc))
     
 #     """test results"
-#        uni-mean:79.90%
-#        uni-gcn:82.70%
-#        uni-pool: 76.33%
-#        uni-lstm:***
+#         uni-mean:79.90%
+#         uni-gcn:82.70%
+#         uni-pool: 76.33%
+#         uni-lstm:***
        
-#        bisep-mean: 80.20%
-#        bisep-gcn: 82020&
-#        bisep-pool: ***
-#        bisep-lstm: ***
+#         bisep-mean: 80.20%
+#         bisep-gcn: 82020&
+#         bisep-pool: ***
+#         bisep-lstm: ***
            
-#        bifuse-mean:81.33%
-#        bifuse-gcn:71.33%
-#        bifuse-pool:***
-#        bifuse-lstm:***           
+#         bifuse-mean:81.33%
+#         bifuse-gcn:71.33%
+#         bifuse-pool:***
+#         bifuse-lstm:***           
            
 #     """
