@@ -32,6 +32,6 @@ class EarlyStopping:
         print('Saved model to {}'.format(self.save_model_path))
 
     def load_checkpoint(self, model):
-        model.load_state_dict(torch.load(self.save_model_path))
-
+        model.load_state_dict(torch.load('es_checkpoint.pt'))
+        
         return model
