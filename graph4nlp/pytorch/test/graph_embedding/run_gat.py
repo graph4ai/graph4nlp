@@ -15,6 +15,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
+import dgl
 from dgl import DGLGraph
 from dgl.data import register_data_args, load_data
 
@@ -132,13 +133,18 @@ def prepare_ogbn_graph_data(args):
     features = torch.Tensor(g.ndata['feat'])
     labels = torch.LongTensor(labels).squeeze(-1)
 
+    # add self loop
+    # no duplicate self loop will be added for nodes already having self loops
+    new_g = dgl.transform.add_self_loop(g)
+
+
     # edge_index = data[0]['edge_index']
     # adj = to_undirected(edge_index, num_nodes=data[0]['num_nodes'])
     # assert adj.diagonal().sum() == 0 and adj.max() <= 1 and (adj != adj.transpose()).sum() == 0
 
     num_feats = features.shape[1]
     n_classes = labels.max().item() + 1
-    n_edges = g.number_of_edges()
+    n_edges = new_g.number_of_edges()
     print("""----Data statistics------'
       #Edges %d
       #Classes %d
@@ -151,7 +157,7 @@ def prepare_ogbn_graph_data(args):
            test_idx.shape[0]))
 
     data = {'features': features,
-            'graph': g,
+            'graph': new_g,
             'train_mask': train_idx,
             'val_mask': val_idx,
             'test_mask': test_idx,

@@ -56,7 +56,7 @@ python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=pubmed --gpu=
 ```
 
 #### ogbn-arxiv
-```bash
+<!-- ```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option uni 
 ```
 ```bash
@@ -64,8 +64,17 @@ python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --
 ```
 ```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option bi_fuse
-```
+``` -->
 
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option uni
+```
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option bi_sep
+```
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option bi_fuse
+```
 Results
 -------
 
@@ -74,7 +83,8 @@ Results
 | Cora     | 84.12 (0.13)  | 83.86 (0.36)  | 81.46 (0.71)  |
 | Citeseer | 70.70 (0.55)  | 69.78 (0.60)  | 70.12 (0.71)  |
 | Pubmed   | 78.46 (0.43)  | 78.46 (0.43)  | 77.10 (0.49)  |
-|ogbn-arxiv| 11.10 (0.04)  | 53.91         | 63.00         |
+|ogbn-arxiv| 46.93 (0.31)  | 58.32 (0.21)  | 60.83 (0.24)  |
+<!-- |ogbn-arxiv (hidden_size 128)|              | 53.35 (0.55)  | 63.22 (0.37)  | -->
 
 
 * All the accuracy numbers are averaged after 5 random runs.
