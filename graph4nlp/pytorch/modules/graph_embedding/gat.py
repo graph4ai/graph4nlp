@@ -37,12 +37,12 @@ class GAT(GNNBase):
         specifies the input feature size on both the source and destination nodes.  If
         a scalar is given, the source and destination node feature size would take the
         same value.
-    hidden_size: int
-        Hidden layer size.
+    hidden_size: int or list of int
+        Hidden size per GAT layer. If ``int`` is given, all layers are forced to have the same hidden size.
     output_size : int
         Output feature size.
-    heads : list of int
-        Number of heads in Multi-Head Attention per GAT layer.
+    heads : int or list of int
+        Number of heads per GAT layer. If ``int`` is given, all layers are forced to have the same number of heads.
     direction_option: str
         Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
     feat_drop : float, optional
@@ -75,11 +75,16 @@ class GAT(GNNBase):
         self.direction_option = direction_option
         self.gat_layers = nn.ModuleList()
         assert self.num_layers > 0
+        if isinstance(hidden_size, int):
+            hidden_size = [hidden_size] * (self.num_layers - 1)
+
+        if isinstance(heads, int):
+            heads = [heads] * self.num_layers
 
         if self.num_layers > 1:
             # input projection
             self.gat_layers.append(GATLayer(input_size,
-                                            hidden_size,
+                                            hidden_size[0],
                                             heads[0],
                                             direction_option=self.direction_option,
                                             feat_drop=feat_drop,
@@ -91,8 +96,8 @@ class GAT(GNNBase):
         # hidden layers
         for l in range(1, self.num_layers - 1):
             # due to multi-head, the input_size = hidden_size * num_heads
-            self.gat_layers.append(GATLayer(hidden_size * heads[l - 1],
-                                            hidden_size,
+            self.gat_layers.append(GATLayer(hidden_size[l - 1] * heads[l - 1],
+                                            hidden_size[l],
                                             heads[l],
                                             direction_option=self.direction_option,
                                             feat_drop=feat_drop,
@@ -101,7 +106,7 @@ class GAT(GNNBase):
                                             residual=residual,
                                             activation=activation))
         # output projection
-        self.gat_layers.append(GATLayer(hidden_size * heads[-2] if self.num_layers > 1 else input_size,
+        self.gat_layers.append(GATLayer(hidden_size[-1] * heads[-2] if self.num_layers > 1 else input_size,
                                         output_size,
                                         heads[-1],
                                         direction_option=self.direction_option,

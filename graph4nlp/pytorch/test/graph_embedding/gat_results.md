@@ -21,19 +21,50 @@ How to run
 
 Run with following:
 
+#### Cora
+
 ```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=cora --gpu=0 --direction-option uni
 ```
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=cora --gpu=0 --direction-option bi_sep
+```
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=cora --gpu=0 --direction-option bi_fuse
+```
 
+#### Citeseer
 ```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=citeseer --gpu=0 --early-stop  --direction-option uni
 ```
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=citeseer --gpu=0 --early-stop  --direction-option bi_sep
+```
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=citeseer --gpu=0 --early-stop  --direction-option bi_fuse
+```
 
+#### Pubmed
 ```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=pubmed --gpu=0 --num-out-heads=8 --weight-decay=0.001 --early-stop  --direction-option uni
 ```
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=pubmed --gpu=0 --num-out-heads=8 --weight-decay=0.001 --early-stop  --direction-option bi_sep
+```
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=pubmed --gpu=0 --num-out-heads=8 --weight-decay=0.001 --early-stop  --direction-option bi_fuse
+```
 
-
+#### ogbn-arxiv
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option uni 
+```
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option bi_sep 
+```
+```bash
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option bi_fuse
+```
 
 Results
 -------
@@ -41,11 +72,13 @@ Results
 | Dataset  |    GAT-Uni    |   GAT-BiSep   |  GAT-BiFuse   |
 | -------- | ------------- | ------------- | ------------- |
 | Cora     | 84.12 (0.13)  | 83.86 (0.36)  | 81.46 (0.71)  |
-| Citeseer | 70.26 (0.40)  | 67.84 (1.40)  | 69.54 (0.58)  |
-| Pubmed   | 78.46 (0.43)  | 78.42 (0.33)  | 77.76 (0.24)  |
+| Citeseer | 70.70 (0.55)  | 69.78 (0.60)  | 70.12 (0.71)  |
+| Pubmed   | 78.46 (0.43)  | 78.46 (0.43)  | 77.10 (0.49)  |
+|ogbn-arxiv| 11.10 (0.04)  | 53.91         | 63.00         |
 
 
 * All the accuracy numbers are averaged after 5 random runs.
+* `Cora`, `Citeseer` and `Pubmed` are undirected graph datasets. And `ogbn-arxiv` is a directed graph dataset.
 
 
 TODO
