@@ -1,8 +1,8 @@
 from ..base import KGCompletionBase
-from .DisMultLayer import DisMultLayer
+from .DistMultLayer import DistMultLayer
 
 
-class DisMult(KGCompletionBase):
+class DistMult(KGCompletionBase):
     r"""Specific class for knowledge graph completion task.
 
     Parameters
@@ -32,10 +32,10 @@ class DisMult(KGCompletionBase):
                  num_relations=None,
                  embedding_dim=None,
                  edge2node=False):
-        super(DisMult, self).__init__()
+        super(DistMult, self).__init__()
         self.rel_emb_from_gnn = rel_emb_from_gnn
         self.edge2node = edge2node
-        self.classifier = DisMultLayer(input_dropout, rel_emb_from_gnn,
+        self.classifier = DistMultLayer(input_dropout, rel_emb_from_gnn,
                                        num_relations, embedding_dim)
 
 

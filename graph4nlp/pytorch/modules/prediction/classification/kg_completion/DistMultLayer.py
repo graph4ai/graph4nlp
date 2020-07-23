@@ -3,9 +3,9 @@ import torch
 from ..base import KGCompletionLayerBase
 
 
-class DisMultLayer(KGCompletionLayerBase):
+class DistMultLayer(KGCompletionLayerBase):
     r"""Specific class for knowledge graph completion task.
-    DisMult from paper `Embedding entities and relations for learning and
+    DistMult from paper `Embedding entities and relations for learning and
     inference in knowledge bases <https://arxiv.org/pdf/1412.6575.pdf>`__.
 
     .. math::
@@ -35,7 +35,7 @@ class DisMultLayer(KGCompletionLayerBase):
                  rel_emb_from_gnn=True,
                  num_relations=None,
                  embedding_dim=None):
-        super(DisMultLayer, self).__init__()
+        super(DistMultLayer, self).__init__()
         self.rel_emb_from_gnn = rel_emb_from_gnn
         self.inp_drop = nn.Dropout(input_dropout)
         if self.rel_emb_from_gnn == False:
