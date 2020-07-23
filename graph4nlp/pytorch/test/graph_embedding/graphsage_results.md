@@ -4,7 +4,7 @@ GraphSAGE Networks (SAmple and aggreGat)
 - GraphSAGE paper link: [https://arxiv.org/pdf/1706.02216.pdf](https://arxiv.org/pdf/1706.02216.pdf)
 - BiSep paper link: [https://arxiv.org/abs/1808.07624](https://arxiv.org/abs/1808.07624)
 - BiFuse paper link: [https://arxiv.org/abs/1908.04942](https://arxiv.org/abs/1908.04942)
-- DGL GAT example: [https://github.com/dmlc/dgl/tree/master/examples/pytorch/graphsage](https://github.com/dmlc/dgl/tree/master/examples/pytorch/graphsage)
+- DGL GraphSAGE example: [https://github.com/dmlc/dgl/tree/master/examples/pytorch/graphsage](https://github.com/dmlc/dgl/tree/master/examples/pytorch/graphsage)
 
 Dependencies
 ------------
