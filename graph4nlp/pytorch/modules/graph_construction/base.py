@@ -37,6 +37,7 @@ class GraphConstructionBase(nn.Module):
                                         dropout=dropout,
                                         use_cuda=use_cuda)
 
+
     def forward(self, raw_text_data):
         raise NotImplementedError()
 
@@ -71,25 +72,35 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     forward(raw_data)
         Generate static graph embeddings and topology.
     """
+
     def __init__(self, word_vocab, embedding_styles, hidden_size,
-                        fix_word_emb=True, dropout=None, use_cuda=True):
+                 fix_word_emb=True, dropout=None, use_cuda=True):
         super(StaticGraphConstructionBase, self).__init__(word_vocab,
-                                                            embedding_styles,
-                                                            hidden_size,
-                                                            fix_word_emb=fix_word_emb,
-                                                            dropout=dropout,
-                                                            use_cuda=use_cuda)
+                                                           embedding_styles,
+                                                           hidden_size,
+                                                           fix_word_emb=fix_word_emb,
+                                                           dropout=dropout,
+                                                           use_cuda=use_cuda)
 
-    def add_vocab(self):
+    def add_vocab(self, **kwargs):
         raise NotImplementedError()
 
-    def topology(self, raw_text_data, nlp_processor, merge_strategy, edge_strategy):
+    @classmethod
+    def topology(cls, **kwargs):
         raise NotImplementedError()
 
-    def embedding(self, raw_data, structure):
+    def embedding(self, **kwargs):
         raise NotImplementedError()
 
-    def forward(self, raw_data):
+    def forward(self, **kwargs):
+        raise NotImplementedError()
+
+    @classmethod
+    def _construct_static_graph(cls, **kwargs):
+        raise NotImplementedError()
+
+    @classmethod
+    def _graph_connect(cls, **kwargs):
         raise NotImplementedError()
 
 class DynamicGraphConstructionBase(GraphConstructionBase):
