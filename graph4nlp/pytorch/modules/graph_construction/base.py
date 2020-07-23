@@ -2,7 +2,6 @@ from torch import nn
 
 from .embedding_construction import EmbeddingConstruction
 
-
 class GraphConstructionBase(nn.Module):
     """
     Base class for graph construction.
@@ -26,12 +25,18 @@ class GraphConstructionBase(nn.Module):
         Generate graph embeddings.
     """
 
-    def __init__(self, embedding_styles):
+    def __init__(self, word_vocab, embedding_styles, hidden_size,
+                        fix_word_emb=True, dropout=None, use_cuda=True):
         super(GraphConstructionBase, self).__init__()
-        self.embedding_layer = EmbeddingConstruction(
+        self.embedding_layer = EmbeddingConstruction(word_vocab,
                                         embedding_styles['word_emb_type'],
                                         embedding_styles['node_edge_level_emb_type'],
-                                        embedding_styles['graph_level_emb_type'])
+                                        embedding_styles['graph_level_emb_type'],
+                                        hidden_size,
+                                        fix_word_emb=fix_word_emb,
+                                        dropout=dropout,
+                                        use_cuda=use_cuda)
+
 
     def forward(self, raw_text_data):
         raise NotImplementedError()
@@ -42,6 +47,61 @@ class GraphConstructionBase(nn.Module):
     def embedding(self):
         raise NotImplementedError()
 
+class StaticGraphConstructionBase(GraphConstructionBase):
+    """
+    Base class for static graph construction.
+
+    ...
+
+    Attributes
+    ----------
+    embedding_styles : dict
+        Specify embedding styles including ``word_emb_type``, ``node_edge_level_emb_type`` and ``graph_level_emb_type``.
+
+    Methods
+    -------
+    add_vocab()
+        Add new parsed words or syntactic components into vocab.
+
+    topology()
+        Generate graph topology.
+
+    embedding(raw_data, structure)
+        Generate graph embeddings.
+
+    forward(raw_data)
+        Generate static graph embeddings and topology.
+    """
+
+    def __init__(self, word_vocab, embedding_styles, hidden_size,
+                 fix_word_emb=True, dropout=None, use_cuda=True):
+        super(StaticGraphConstructionBase, self).__init__(word_vocab,
+                                                           embedding_styles,
+                                                           hidden_size,
+                                                           fix_word_emb=fix_word_emb,
+                                                           dropout=dropout,
+                                                           use_cuda=use_cuda)
+
+    def add_vocab(self, **kwargs):
+        raise NotImplementedError()
+
+    @classmethod
+    def topology(cls, **kwargs):
+        raise NotImplementedError()
+
+    def embedding(self, **kwargs):
+        raise NotImplementedError()
+
+    def forward(self, **kwargs):
+        raise NotImplementedError()
+
+    @classmethod
+    def _construct_static_graph(cls, **kwargs):
+        raise NotImplementedError()
+
+    @classmethod
+    def _graph_connect(cls, **kwargs):
+        raise NotImplementedError()
 
 class DynamicGraphConstructionBase(GraphConstructionBase):
     """
@@ -66,8 +126,14 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         Generate dynamic graph embeddings.
     """
 
-    def __init__(self, embedding_styles):
-        super(DynamicGraphConstructionBase, self).__init__(embedding_styles)
+    def __init__(self, word_vocab, embedding_styles, hidden_size,
+                        fix_word_emb=True, dropout=None, use_cuda=True):
+        super(DynamicGraphConstructionBase, self).__init__(word_vocab,
+                                                            embedding_styles,
+                                                            hidden_size,
+                                                            fix_word_emb=fix_word_emb,
+                                                            dropout=dropout,
+                                                            use_cuda=use_cuda)
 
     def forward(self, raw_text_data):
         raise NotImplementedError()
@@ -76,28 +142,4 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         raise NotImplementedError()
 
     def embedding(self, feat):
-        raise NotImplementedError()
-
-
-class EmbeddingConstructionBase(nn.Module):
-    """
-    Base class for (initial) graph embedding construction.
-
-    ...
-
-    Attributes
-    ----------
-    feat : dict
-        Raw features of graph nodes and/or edges.
-
-    Methods
-    -------
-    forward(raw_text_data)
-        Generate dynamic graph topology and embeddings.
-    """
-
-    def __init__(self, feat):
-        super(EmbeddingConstructionBase, self).__init__()
-
-    def forward(self):
         raise NotImplementedError()
