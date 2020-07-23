@@ -1,5 +1,5 @@
 from ..base import KGCompletionBase
-from .DisMultLayer import TransELayer
+from .TransELayer import TransELayer
 
 
 class TransE(KGCompletionBase):
@@ -47,8 +47,6 @@ class TransE(KGCompletionBase):
 
     def forward(self, input_graph):
         r"""
-
-
 
         Parameters
         ----------

@@ -45,11 +45,9 @@ class TransELayer(KGCompletionLayerBase):
             self.rel_emb = nn.Embedding(num_relations, embedding_dim)
             self.reset_parameters()
 
-
     def reset_parameters(self):
         if self.rel_emb_from_gnn == False:
             nn.init.xavier_normal_(self.rel_emb.weight.data)
-
 
     def forward(self, node_emb, rel_emb=None, list_e_r_pair_idx=None, list_e_e_pair_idx=None):
         r"""
@@ -87,7 +85,7 @@ class TransELayer(KGCompletionLayerBase):
         if list_e_r_pair_idx == None and list_e_e_pair_idx == None:
             raise RuntimeError("Only one of `list_e_r_pair_idx` and `list_e_e_pair_idx` can be `None`.")
 
-        assert node_emb.size()[1]==rel_emb.size()[1]
+        assert node_emb.size()[1] == rel_emb.size()[1]
 
         if list_e_r_pair_idx != None:
             ent_idxs = torch.LongTensor([x[0] for x in list_e_r_pair_idx])
@@ -96,12 +94,20 @@ class TransELayer(KGCompletionLayerBase):
             selected_ent_embs = node_emb[ent_idxs].squeeze()  # [L, H]. L is the length of list_e_r_pair_idx
             selected_rel_embs = rel_emb[rel_idxs].squeeze()  # [L, H]. L is the length of list_e_r_pair_idx
 
+            selected_ent_embs = F.normalize(selected_ent_embs, 2, -1)
+            selected_rel_embs = F.normalize(selected_rel_embs, 2, -1)
+            node_emb = F.normalize(node_emb, 2, -1)
+
             head_add_rel = selected_ent_embs + selected_rel_embs  # [L, H]
             head_add_rel = head_add_rel.view(head_add_rel.size()[0], 1, head_add_rel.size()[1])  # [L, 1, H]
+            head_add_rel = head_add_rel.repeat(1, node_emb.size()[0], 1)
+
             node_emb = node_emb.view(1, node_emb.size()[0], node_emb.size()[1])  # [1, N, H]
+            node_emb = node_emb.repeat(head_add_rel.size()[0], 1, 1)
 
             result = head_add_rel - node_emb  # head+rel-tail [L, N, H]
-            logits = torch.norm(result, self.p_norm, dim=2)  # [L, N]
+            # logits = torch.norm(result, self.p_norm, dim=2)  # [L, N]
+            logits = torch.softmax(torch.norm(result, self.p_norm, dim=2), dim=-1)  # [L, N]
 
         elif list_e_e_pair_idx != None:
             ent_head_idxs = torch.LongTensor([x[0] for x in list_e_e_pair_idx])
@@ -110,13 +116,20 @@ class TransELayer(KGCompletionLayerBase):
             selected_ent_head_embs = node_emb[ent_head_idxs].squeeze()  # [L, H]. L is the length of list_e_e_pair_idx
             selected_ent_tail_embs = rel_emb[ent_tail_idxs].squeeze()  # [L, H]. L is the length of list_e_e_pair_idx
 
+            selected_ent_head_embs = F.normalize(selected_ent_head_embs, 2, -1)
+            selected_ent_tail_embs = F.normalize(selected_ent_tail_embs, 2, -1)
+            rel_emb = F.normalize(rel_emb, 2, -1)
+
             head_sub_tail = selected_ent_head_embs - selected_ent_tail_embs  # [L, H]
             head_sub_tail = head_sub_tail.view(head_sub_tail.size()[0], 1, head_sub_tail.size()[1])  # [L, 1, H]
+            head_sub_tail = head_sub_tail.repeat(1, rel_emb.size()[0], 1)  # [L, N, H]
+
             rel_emb = rel_emb.view(1, rel_emb.size()[0], rel_emb.size()[1])  # [1, N, H]
+            rel_emb = rel_emb.repeat(head_sub_tail.size()[0], 1, 1)  # [L, N, H]
 
             result = head_sub_tail + rel_emb  # head-tail+rel [L, N, H]
-            logits = torch.norm(result, self.p_norm, dim=2)  # [L, N]
+            # logits = torch.norm(result, self.p_norm, dim=2)  # [L, N]
+            logits = torch.softmax(torch.norm(result, self.p_norm, dim=2), dim=-1)  # [L, N]
 
-        logits = torch.sigmoid(logits)
 
         return logits
