@@ -11,8 +11,12 @@ from .base import GNNLayerBase, GNNBase
 
 
 class GAT(GNNBase):
-    r"""Multi-layered `Graph Attention Network <https://arxiv.org/pdf/1710.10903.pdf>`__
-    Support both unidirectional (i.e., regular) and bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
+    # TODO: improve math descriptions bidirectional GNN.
+    r"""Multi-layer Graph Attention Network (GAT).
+    Support both `unidirectional GAT
+    <https://arxiv.org/abs/1710.10903>`__ and bidirectional versions
+    including `GAT-BiSep <https://arxiv.org/abs/1808.07624>`__ and
+    `GAT-BiFuse <https://arxiv.org/abs/1908.04942>`__.
 
     .. math::
         h_i^{(l+1)} = \sum_{j\in \mathcal{N}(i)} \alpha_{i,j} W^{(l)} h_j^{(l)}
@@ -33,22 +37,23 @@ class GAT(GNNBase):
         specifies the input feature size on both the source and destination nodes.  If
         a scalar is given, the source and destination node feature size would take the
         same value.
-    hidden_size: int
-        Hidden layer size.
+    hidden_size: int or list of int
+        Hidden size per GAT layer. If ``int`` is given, all layers are forced to have the same hidden size.
     output_size : int
         Output feature size.
-    heads : list of int
-        Number of heads in Multi-Head Attention per GAT layer.
+    heads : int or list of int
+        Number of heads per GAT layer. If ``int`` is given, all layers are forced to have the same number of heads.
     direction_option: str
-        Whether use unidirectional (i.e., regular) or bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
+        Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
     feat_drop : float, optional
-        Dropout rate on feature, defaults: ``0``.
+        Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
-        Dropout rate on attention weight, defaults: ``0``.
+        Dropout rate on attention weight, default: ``0``.
     negative_slope : float, optional
-        LeakyReLU angle of negative slope.
+        LeakyReLU angle of negative slope, default: ``0.2``.
     residual : bool, optional
         If True, use residual connection.
+        Default: ``False``.
     activation : callable activation function/layer or None, optional.
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
@@ -69,23 +74,30 @@ class GAT(GNNBase):
         self.num_layers = num_layers
         self.direction_option = direction_option
         self.gat_layers = nn.ModuleList()
+        assert self.num_layers > 0
+        if isinstance(hidden_size, int):
+            hidden_size = [hidden_size] * (self.num_layers - 1)
 
+        if isinstance(heads, int):
+            heads = [heads] * self.num_layers
 
-        # input projection
-        self.gat_layers.append(GATLayer(input_size,
-                                        hidden_size,
-                                        heads[0],
-                                        direction_option=self.direction_option,
-                                        feat_drop=feat_drop,
-                                        attn_drop=attn_drop,
-                                        negative_slope=negative_slope,
-                                        residual=residual,
-                                        activation=activation))
+        if self.num_layers > 1:
+            # input projection
+            self.gat_layers.append(GATLayer(input_size,
+                                            hidden_size[0],
+                                            heads[0],
+                                            direction_option=self.direction_option,
+                                            feat_drop=feat_drop,
+                                            attn_drop=attn_drop,
+                                            negative_slope=negative_slope,
+                                            residual=residual,
+                                            activation=activation))
+
         # hidden layers
         for l in range(1, self.num_layers - 1):
             # due to multi-head, the input_size = hidden_size * num_heads
-            self.gat_layers.append(GATLayer(hidden_size * heads[l - 1],
-                                            hidden_size,
+            self.gat_layers.append(GATLayer(hidden_size[l - 1] * heads[l - 1],
+                                            hidden_size[l],
                                             heads[l],
                                             direction_option=self.direction_option,
                                             feat_drop=feat_drop,
@@ -94,7 +106,7 @@ class GAT(GNNBase):
                                             residual=residual,
                                             activation=activation))
         # output projection
-        self.gat_layers.append(GATLayer(hidden_size * heads[-2],
+        self.gat_layers.append(GATLayer(hidden_size[-1] * heads[-2] if self.num_layers > 1 else input_size,
                                         output_size,
                                         heads[-1],
                                         direction_option=self.direction_option,
@@ -104,10 +116,24 @@ class GAT(GNNBase):
                                         residual=residual,
                                         activation=None))
 
-    def forward(self, graph, feat):
+    def forward(self, graph):
+        # TODO: support GraphData when the data structure is ready.
+        r"""Compute multi-layer graph attention network.
+
+        Parameters
+        ----------
+        graph : GraphData
+            The graph data containing topology and features.
+
+        Returns
+        -------
+        GraphData
+            The output graph data containing updated embeddings.
+        """
+        feat = graph.ndata['node_feat']
+
         if self.direction_option == 'bi_sep':
             h = [feat, feat]
-
         else:
             h = feat
 
@@ -115,7 +141,6 @@ class GAT(GNNBase):
             h = self.gat_layers[l](graph, h)
             if self.direction_option == 'bi_sep':
                 h = [each.flatten(1) for each in h]
-
             else:
                 h = h.flatten(1)
 
@@ -125,15 +150,20 @@ class GAT(GNNBase):
         if self.direction_option == 'bi_sep':
             logits = [each.mean(1) for each in logits]
             logits = torch.cat(logits, -1)
-
         else:
             logits = logits.mean(1)
 
-        return logits
+        graph.ndata['node_emb'] = logits
+
+        return graph
 
 class GATLayer(GNNLayerBase):
-    r"""A unified wrapper for `Graph Attention Network <https://arxiv.org/pdf/1710.10903.pdf>`__
-    Support both unidirectional (i.e., regular) and bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
+    # TODO: improve math descriptions bidirectional GNN.
+    r"""Single-layer Graph Attention Network (GAT).
+    Support both `unidirectional GAT
+    <https://arxiv.org/abs/1710.10903>`__ and bidirectional versions
+    including `GAT-BiSep <https://arxiv.org/abs/1808.07624>`__ and
+    `GAT-BiFuse <https://arxiv.org/abs/1908.04942>`__.
 
     .. math::
         h_i^{(l+1)} = \sum_{j\in \mathcal{N}(i)} \alpha_{i,j} W^{(l)} h_j^{(l)}
@@ -159,13 +189,14 @@ class GATLayer(GNNLayerBase):
     direction_option: str
         Whether use unidirectional (i.e., regular) or bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
     feat_drop : float, optional
-        Dropout rate on feature, defaults: ``0``.
+        Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
-        Dropout rate on attention weight, defaults: ``0``.
+        Dropout rate on attention weight, default: ``0``.
     negative_slope : float, optional
-        LeakyReLU angle of negative slope.
+        LeakyReLU angle of negative slope, default: ``0.2``.
     residual : bool, optional
         If True, use residual connection.
+        Default: ``False``.
     activation : callable activation function/layer or None, optional.
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
@@ -190,7 +221,6 @@ class GATLayer(GNNLayerBase):
                                         negative_slope=negative_slope,
                                         residual=residual,
                                         activation=activation)
-
         elif direction_option == 'bi_sep':
             self.model = BiSepGATLayerConv(input_size,
                                         output_size,
@@ -200,7 +230,6 @@ class GATLayer(GNNLayerBase):
                                         negative_slope=negative_slope,
                                         residual=residual,
                                         activation=activation)
-
         elif direction_option == 'bi_fuse':
             self.model = BiFuseGATLayerConv(input_size,
                                             output_size,
@@ -210,15 +239,32 @@ class GATLayer(GNNLayerBase):
                                             negative_slope=negative_slope,
                                             residual=residual,
                                             activation=activation)
-
         else:
             raise RuntimeError('Unknown `direction_option` value: {}'.format(direction_option))
 
     def forward(self, graph, feat):
+        r"""Compute graph attention network layer.
+
+        Parameters
+        ----------
+        graph : DGLGraph
+            The graph.
+        feat : torch.Tensor or pair of torch.Tensor
+            If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
+            :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
+            If a pair of torch.Tensor is given, the pair must contain two tensors of shape
+            :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
+
+        Returns
+        -------
+        torch.Tensor
+            The output feature of shape :math:`(N, H, D_{out})` where :math:`H`
+            is the number of heads, and :math:`D_{out}` is size of output feature.
+        """
         return self.model(graph, feat)
 
 class UniGATLayerConv(GNNLayerBase):
-    r"""Apply `Graph Attention Network <https://arxiv.org/pdf/1710.10903.pdf>`__
+    r"""Apply `Graph Attention Network <https://arxiv.org/abs/1710.10903>`__
     over an input signal.
 
     .. math::
@@ -243,13 +289,14 @@ class UniGATLayerConv(GNNLayerBase):
     num_heads : int
         Number of heads in Multi-Head Attention.
     feat_drop : float, optional
-        Dropout rate on feature, defaults: ``0``.
+        Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
-        Dropout rate on attention weight, defaults: ``0``.
+        Dropout rate on attention weight, default: ``0``.
     negative_slope : float, optional
-        LeakyReLU angle of negative slope.
+        LeakyReLU angle of negative slope, default: ``0.2``.
     residual : bool, optional
         If True, use residual connection.
+        Default: ``False``.
     activation : callable activation function/layer or None, optional.
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
@@ -268,12 +315,31 @@ class UniGATLayerConv(GNNLayerBase):
                             attn_drop, negative_slope, residual, activation)
 
     def forward(self, graph, feat):
+        r"""Compute graph attention network layer.
+
+        Parameters
+        ----------
+        graph : DGLGraph
+            The graph.
+        feat : torch.Tensor or pair of torch.Tensor
+            If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
+            :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
+            If a pair of torch.Tensor is given, the pair must contain two tensors of shape
+            :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
+
+        Returns
+        -------
+        torch.Tensor
+            The output feature of shape :math:`(N, H, D_{out})` where :math:`H`
+            is the number of heads, and :math:`D_{out}` is size of output feature.
+        """
         return self.model(graph, feat)
 
 class BiFuseGATLayerConv(GNNLayerBase):
-    r"""Apply bidirectional `Graph Attention Network <https://arxiv.org/pdf/1710.10903.pdf>`__
-    over an input signal.
-    Fuse aggregated embeddings from both incoming and outgoing
+    # TODO: improve math descriptions bidirectional GNN.
+    r"""Apply `Bidirectional Fuse GNN mechanism <https://arxiv.org/abs/1908.04942>`__
+    to `Graph Attention Network <https://arxiv.org/abs/1710.10903>`__ over an
+    input signal. Fuse aggregated embeddings from both incoming and outgoing
     directions before updating node embeddings.
 
     .. math::
@@ -298,13 +364,14 @@ class BiFuseGATLayerConv(GNNLayerBase):
     num_heads : int
         Number of heads in Multi-Head Attention.
     feat_drop : float, optional
-        Dropout rate on feature, defaults: ``0``.
+        Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
-        Dropout rate on attention weight, defaults: ``0``.
+        Dropout rate on attention weight, default: ``0``.
     negative_slope : float, optional
-        LeakyReLU angle of negative slope.
+        LeakyReLU angle of negative slope, default: ``0.2``.
     residual : bool, optional
         If True, use residual connection.
+        Default: ``False``.
     activation : callable activation function/layer or None, optional.
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
@@ -332,7 +399,6 @@ class BiFuseGATLayerConv(GNNLayerBase):
                 self._in_src_feats, output_size * num_heads, bias=False)
             self.fc_dst_bw = nn.Linear(
                 self._in_dst_feats, output_size * num_heads, bias=False)
-
         else:
             self.fc_fw = nn.Linear(
                 self._in_src_feats, output_size * num_heads, bias=False)
@@ -368,7 +434,6 @@ class BiFuseGATLayerConv(GNNLayerBase):
         if hasattr(self, 'fc_fw') or hasattr(self, 'fc_bw'):
             nn.init.xavier_normal_(self.fc_fw.weight, gain=gain)
             nn.init.xavier_normal_(self.fc_bw.weight, gain=gain)
-
         else: # bipartite graph neural works
             nn.init.xavier_normal_(self.fc_src_fw.weight, gain=gain)
             nn.init.xavier_normal_(self.fc_src_bw.weight, gain=gain)
@@ -392,17 +457,18 @@ class BiFuseGATLayerConv(GNNLayerBase):
             nn.init.xavier_normal_(self.fuse_linear.weight, gain=gain)
 
     def forward(self, graph, feat):
-        r"""Compute graph attention modelwork layer.
+        r"""Compute graph attention network layer.
+
         Parameters
         ----------
         graph : DGLGraph
             The graph.
-        feat_fw : torch.Tensor or pair of torch.Tensor
-        feat_bw: torch.Tensor or pair of torch.Tensor
+        feat : torch.Tensor or pair of torch.Tensor
             If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
             If a pair of torch.Tensor is given, the pair must contain two tensors of shape
             :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
+
         Returns
         -------
         torch.Tensor
@@ -424,9 +490,9 @@ class BiFuseGATLayerConv(GNNLayerBase):
             h_src_bw = h_dst_bw = self.feat_drop(feat_bw)
 
 
-        # Forward direction
+        # forward direction
         with graph.local_scope():
-            if isinstance(feat, tuple):
+            if isinstance(feat_fw, tuple):
                 feat_src = self.fc_src_fw(h_src_fw).view(-1, self._num_heads, self._out_feats)
                 feat_dst = self.fc_dst_fw(h_dst_fw).view(-1, self._num_heads, self._out_feats)
             else:
@@ -457,10 +523,10 @@ class BiFuseGATLayerConv(GNNLayerBase):
             agg_emb_fw = graph.dstdata['ft']
 
 
-        # Backward direction
+        # backward direction
         graph = graph.reverse()
         with graph.local_scope():
-            if isinstance(feat, tuple):
+            if isinstance(feat_bw, tuple):
                 feat_src = self.fc_src_bw(h_src_bw).view(-1, self._num_heads, self._out_feats)
                 feat_dst = self.fc_dst_bw(h_dst_bw).view(-1, self._num_heads, self._out_feats)
             else:
@@ -500,9 +566,10 @@ class BiFuseGATLayerConv(GNNLayerBase):
         return agg_emb
 
 class BiSepGATLayerConv(GNNLayerBase):
-    r"""Apply bidirectional `Graph Attention Network <https://arxiv.org/pdf/1710.10903.pdf>`__
-    over an input signal.
-    Compute node embeddings for incoming and outgoing directions
+    # TODO: improve math descriptions bidirectional GNN.
+    r"""Apply `Bidirectional Separate GNN mechanism <https://arxiv.org/abs/1808.07624>`__
+    to `Graph Attention Network <https://arxiv.org/abs/1710.10903>`__ over an
+    input signal. Compute node embeddings for incoming and outgoing directions
     separately, and then concatenate the two output node embeddings
     after the final layer.
 
@@ -528,13 +595,14 @@ class BiSepGATLayerConv(GNNLayerBase):
     num_heads : int
         Number of heads in Multi-Head Attention.
     feat_drop : float, optional
-        Dropout rate on feature, defaults: ``0``.
+        Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
-        Dropout rate on attention weight, defaults: ``0``.
+        Dropout rate on attention weight, default: ``0``.
     negative_slope : float, optional
-        LeakyReLU angle of negative slope.
+        LeakyReLU angle of negative slope, default: ``0.2``.
     residual : bool, optional
         If True, use residual connection.
+        Default: ``False``.
     activation : callable activation function/layer or None, optional.
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
@@ -562,7 +630,6 @@ class BiSepGATLayerConv(GNNLayerBase):
                 self._in_src_feats, output_size * num_heads, bias=False)
             self.fc_dst_bw = nn.Linear(
                 self._in_dst_feats, output_size * num_heads, bias=False)
-
         else:
             self.fc_fw = nn.Linear(
                 self._in_src_feats, output_size * num_heads, bias=False)
@@ -598,7 +665,6 @@ class BiSepGATLayerConv(GNNLayerBase):
         if hasattr(self, 'fc_fw') or hasattr(self, 'fc_bw'):
             nn.init.xavier_normal_(self.fc_fw.weight, gain=gain)
             nn.init.xavier_normal_(self.fc_bw.weight, gain=gain)
-
         else: # bipartite graph neural works
             nn.init.xavier_normal_(self.fc_src_fw.weight, gain=gain)
             nn.init.xavier_normal_(self.fc_src_bw.weight, gain=gain)
@@ -622,21 +688,34 @@ class BiSepGATLayerConv(GNNLayerBase):
             nn.init.xavier_normal_(self.fuse_linear.weight, gain=gain)
 
     def forward(self, graph, feat):
-        r"""Compute graph attention modelwork layer.
+        r"""Compute graph attention network layer.
+
         Parameters
         ----------
         graph : DGLGraph
             The graph.
-        feat_fw : torch.Tensor or pair of torch.Tensor
-        feat_bw: torch.Tensor or pair of torch.Tensor
-            If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
-            :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
-            If a pair of torch.Tensor is given, the pair must contain two tensors of shape
-            :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
+        feat:
+            A list/tuple containing incoming feature ``feat_fw``
+            and outgoing feature ``feat_bw``.
+            - ``feat_fw`` : torch.Tensor or pair of torch.Tensor
+                    If a torch.Tensor is given, the input feature of
+                    shape :math:`(N, D_{in})` where :math:`D_{in}` is
+                    size of input feature, :math:`N` is the number of
+                    nodes. If a pair of torch.Tensor is given, the pair
+                    must contain two tensors of shape :math:`(N_{in},
+                    D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
+            - ``feat_bw``: torch.Tensor or pair of torch.Tensor
+                    If a torch.Tensor is given, the input feature of
+                    shape :math:`(N, D_{in})` where :math:`D_{in}` is
+                    size of input feature, :math:`N` is the number of
+                    nodes. If a pair of torch.Tensor is given, the pair
+                    must contain two tensors of shape :math:`(N_{in},
+                    D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
+
         Returns
         -------
-        torch.Tensor
-            The output feature of shape :math:`(N, H, D_{out})` where :math:`H`
+        Pair of torch.Tensor
+            Each output feature of shape :math:`(N, H, D_{out})` where :math:`H`
             is the number of heads, and :math:`D_{out}` is size of output feature.
         """
         feat_fw, feat_bw = feat
@@ -654,9 +733,9 @@ class BiSepGATLayerConv(GNNLayerBase):
             h_src_bw = h_dst_bw = self.feat_drop(feat_bw)
 
 
-        # Forward direction
+        # forward direction
         with graph.local_scope():
-            if isinstance(feat, tuple):
+            if isinstance(feat_fw, tuple):
                 feat_src = self.fc_src_fw(h_src_fw).view(-1, self._num_heads, self._out_feats)
                 feat_dst = self.fc_dst_fw(h_dst_fw).view(-1, self._num_heads, self._out_feats)
             else:
@@ -687,10 +766,10 @@ class BiSepGATLayerConv(GNNLayerBase):
             agg_emb_fw = graph.dstdata['ft']
 
 
-        # Backward direction
+        # backward direction
         graph = graph.reverse()
         with graph.local_scope():
-            if isinstance(feat, tuple):
+            if isinstance(feat_bw, tuple):
                 feat_src = self.fc_src_bw(h_src_bw).view(-1, self._num_heads, self._out_feats)
                 feat_dst = self.fc_dst_bw(h_dst_bw).view(-1, self._num_heads, self._out_feats)
             else:
@@ -725,96 +804,3 @@ class BiSepGATLayerConv(GNNLayerBase):
             agg_emb_bw = self.activation(agg_emb_bw)
 
         return [agg_emb_fw, agg_emb_bw]
-
-
-# if __name__ == '__main__':
-#     # For test purpose
-#     import time
-#     import numpy as np
-#     from dgl import DGLGraph
-#     from dgl.data import citation_graph as citegrh
-
-
-#     def load_cora_data():
-#         data = citegrh.load_cora()
-#         features = torch.FloatTensor(data.features)
-#         labels = torch.LongTensor(data.labels)
-#         mask = torch.BoolTensor(data.train_mask)
-#         graph = DGLGraph(data.graph)
-#         return graph, features, labels, mask
-
-
-#     class GNNClassifier(nn.Module):
-#         def __init__(self,
-#                     num_layers,
-#                     input_size,
-#                     hidden_size,
-#                     output_size,
-#                     num_heads,
-#                     num_out_heads,
-#                     direction_option):
-#             super(GNNClassifier, self).__init__()
-#             self.direction_option = direction_option
-#             heads = [num_heads] * (num_layers - 1) + [num_out_heads]
-#             self.model = GAT(num_layers,
-#                         input_size,
-#                         hidden_size,
-#                         output_size,
-#                         heads,
-#                         direction_option=direction_option,
-#                         feat_drop=0.6,
-#                         attn_drop=0.6,
-#                         negative_slope=0.2,
-#                         residual=False,
-#                         activation=F.elu)
-
-#             if self.direction_option == 'bi_sep':
-#                 self.fc = nn.Linear(2 * output_size, output_size)
-
-#         def forward(self, graph, features):
-#             logits = self.model(graph, features)
-#             if self.direction_option == 'bi_sep':
-#                 logits = self.fc(F.elu(logits))
-
-#             return logits
-
-
-#     graph, features, labels, mask = load_cora_data()
-
-#     num_layers = 2
-#     input_size = features.size()[1]
-#     hidden_size = 8
-#     output_size = 7
-#     num_heads = 2
-#     num_out_heads = 1
-#     direction_option = 'bi_fuse' # 'uni', 'bi_sep', 'bi_fuse'
-
-#     classifier = GNNClassifier(num_layers,
-#             input_size,
-#             hidden_size,
-#             output_size,
-#             num_heads,
-#             num_out_heads,
-#             direction_option)
-
-#     # create optimizer
-#     optimizer = torch.optim.Adam(classifier.parameters(), lr=1e-3)
-
-#     # main loop
-#     dur = []
-#     for epoch in range(30):
-#         t0 = time.time()
-#         logits = classifier(graph, features)
-#         assert logits.shape[-1] == output_size
-
-#         logp = F.log_softmax(logits, 1)
-#         loss = F.nll_loss(logp[mask], labels[mask])
-
-#         optimizer.zero_grad()
-#         loss.backward()
-#         optimizer.step()
-
-#         dur.append(time.time() - t0)
-
-#         print("Epoch {} | Loss {:.4f} | Time(s) {:.2f}".format(
-#             epoch, loss.item(), np.mean(dur)))
