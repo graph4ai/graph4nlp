@@ -15,6 +15,19 @@ class UniGGNNLayerConv(GNNLayerBase):
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
        a_{i}^{t} & = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
        h_{i}^{t+1} & = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
+       
+    Attributes
+    ----------
+    input_size: int
+        Input feature size.
+    output_size: int
+        Output feature size.
+    n_steps: int
+        Number of GGNN layers. Default: 1.
+    n_etypes: int
+        Number of edge types. Default: 1.
+    bias: bool
+        If True, adds a learnable bias to the output. Default: True.
 
     Attributes
     ----------
@@ -70,6 +83,20 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
        a_{i, \vdash}^{t}*a_{i, \dashv}^{t};
        a_{i, \vdash}^{t}-a_{i, \dashv}^{t}])
        h_{i}^{t+1} & = \mathrm{GRU}(e_{i}^{t}, h_{i}^{t})
+       
+    Attributes
+    ----------
+    input_size: int
+        Input feature size.
+        
+    output_size: int
+        Output feature size.
+        
+    n_etypes: int
+        Number of edge types. Default: 1.
+        
+    bias: bool
+        If True, adds a learnable bias to the output. Default: True.
 
     Attributes
     ----------
@@ -190,6 +217,20 @@ class BiSepGGNNLayerConv(GNNLayerBase):
        h_{i, \vdash}^{t})
        h_{i, \dashv}^{t+1} & = \mathrm{GRU}_{\dashv}(a_{i, \dashv}^{t},
        h_{i, \dashv}^{t})
+    
+    Attributes
+    ----------
+    input_size: int
+        Input feature size.
+        
+    output_size: int
+        Output feature size.
+        
+    n_etypes: int
+        Number of edge types. Default: 1.
+        
+    bias: bool
+        If True, adds a learnable bias to the output. Default: True.
 
     Attributes
     ----------
@@ -316,19 +357,25 @@ class GGNN(GNNBase):
     <https://arxiv.org/pdf/1511.05493.pdf>`__.
     Support both unidirectional (i.e., regular) and bidirectional
     (i.e., `bi_sep` and `bi_fuse`) versions.
+
     Attributes
     ----------
     num_layers: int
         Number of GGNN layers.
+
     input_size: int
         Input feature size.
+
     output_size: int
         Output feature size.
+
     direction_option: str
         The direction option of GGNN ('uni', 'bi_sep' or 'bi_fuse'). (Default: 'uni')
+
     n_etypes: int
         Number of edge types. n_etypes can be set to any integer if the direction_option is 'uni'.
         If the direction_option is 'bi_sep' or 'bi_fuse', n_etypes will be set to 1.
+
     bias: bool
         If True, adds a learnable bias to the output. (Default: True)
     """
@@ -356,11 +403,13 @@ class GGNN(GNNBase):
         graph: GraphData.
             The initial node features are stored in the node feature field
             named `node_feat`.
+
         Returns
         -------
         input_graph: GraphData.
             The computed node embedding tensors are stored in the node feature field
             named `node_emb`.
+
         """
         graph = graph.to_dgl()
         node_feats = graph.node_features['node_feat']
@@ -391,6 +440,7 @@ class GGNN(GNNBase):
         graph.node_features['node_emb'] = node_embs
 
         return graph
+
 
 # class GGNN(GNNBase):
 #     r"""

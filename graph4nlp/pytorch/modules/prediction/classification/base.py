@@ -42,25 +42,4 @@ class NodeClassifierLayerBase(ClassifierLayerBase):
 
 
     def forward(self, node_emb, node_idx=None):       
-        raise NotImplementedError()
-
-
-class KGCompletionBase(nn.Module):
-
-    def __init__(self):
-        super(KGCompletionBase, self).__init__()
-
-    def forward(self, node_emb, rel_emb, list_e_r_pair_idx=None, list_e_e_pair_idx=None):
-        # Cannot inherit from the base class ClassifierLayerBase and
-        # ClassifierBase because the forward(...) arguments are inconsistent.
-        # rel_emb cannot be `None`
-        raise NotImplementedError()
-
-
-class KGCompletionLayerBase(nn.Module):
-
-    def __init__(self):
-        super(KGCompletionLayerBase, self).__init__()
-
-    def forward(self, node_emb, rel_emb, list_e_r_pair_idx=None, list_e_e_pair_idx=None):
-        raise NotImplementedError()
+        raise NotImplementedError()    
