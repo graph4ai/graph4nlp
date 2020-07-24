@@ -6,17 +6,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
+import dgl
 from dgl import DGLGraph
 from dgl.data import register_data_args, load_data
-from dgl.data import citation_graph as citegrh
 
 from .utils import EarlyStopping
 # from utils import EarlyStopping
 from ...modules.graph_embedding.ggnn import GGNN
 # from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
-
-from dgl.nn import GatedGraphConv
-
 # from graph4nlp.pytorch.test.graph_embedding.utils import EarlyStopping
 
 
@@ -25,54 +22,13 @@ def accuracy(logits, labels):
     correct = torch.sum(indices == labels)
     return correct.item() * 1.0 / len(labels)
 
-
 def evaluate(model, g, labels, mask):
     model.eval()
     with torch.no_grad():
-        logits = model(g, g.ndata['node_feat'])
+        logits = model(g)
         logits = logits[mask]
         labels = labels[mask]
         return accuracy(logits, labels)
-
-
-# class GNNClassifier(nn.Module):
-#     def __init__(self,
-#                 num_layers,
-#                 input_size,
-#                 hidden_size,
-#                 output_size,
-#                 num_heads,
-#                 num_out_heads,
-#                 direction_option,
-#                 feat_drop=0.6,
-#                 attn_drop=0.6,
-#                 negative_slope=0.2,
-#                 residual=False,
-#                 activation=F.elu):
-#         super(GNNClassifier, self).__init__()
-#         self.direction_option = direction_option
-#         # heads = [num_heads] * (num_layers - 1) + [num_out_heads]
-#         self.model = GGNN(num_layers,
-#                     input_size,
-#                     hidden_size,
-#                     direction_option=direction_option)
-#
-#         # self.model = GatedGraphConv(input_size, hidden_size,n_steps=num_layers,n_etypes=1)
-#
-#         if self.direction_option == 'bi_sep':
-#             self.fc = nn.Linear(2 * hidden_size, output_size)
-#         else:
-#             self.fc = nn.Linear(hidden_size, output_size)
-#
-#     def forward(self, graph):
-#         # etypes = torch.LongTensor([0] * graph.number_of_edges())
-#         node_embs = self.model(graph, graph.ndata['node_feat'])
-#         # graph = self.model(graph)
-#         # logits = graph.ndata['node_emb']
-#         # if self.direction_option == 'bi_sep':
-#         logits = self.fc(F.elu(node_embs))
-#
-#         return logits
 
 class GNNClassifier(nn.Module):
     def __init__(self,
@@ -90,19 +46,14 @@ class GNNClassifier(nn.Module):
         else:
             self.fc = nn.Linear(output_size, n_class)
 
-    def forward(self, graph, features):
-
-        logits = self.model(graph, features)
-        if self.direction_option == 'bi_sep':
-            logits = self.fc(F.elu(logits))
-        else:
-            logits = self.fc(F.elu(logits))
+    def forward(self, graph):
+        graph = self.model(graph)
+        logits = graph.ndata['node_emb']
+        logits = self.fc(F.elu(logits))
 
         return logits
 
-
-def main(args, seed):
-    # load and preprocess dataset
+def prepare_dgl_graph_data(args):
     data = load_data(args)
     features = torch.FloatTensor(data.features)
     labels = torch.LongTensor(data.labels)
@@ -114,6 +65,7 @@ def main(args, seed):
         train_mask = torch.ByteTensor(data.train_mask)
         val_mask = torch.ByteTensor(data.val_mask)
         test_mask = torch.ByteTensor(data.test_mask)
+
     num_feats = features.shape[1]
     n_classes = data.num_labels
     n_edges = data.graph.number_of_edges()
@@ -128,11 +80,91 @@ def main(args, seed):
            val_mask.int().sum().item(),
            test_mask.int().sum().item()))
 
+    g = data.graph
+    # add self loop
+    g.remove_edges_from(nx.selfloop_edges(g))
+    g = DGLGraph(g)
+    g.add_edges(g.nodes(), g.nodes())
+    n_edges = g.number_of_edges()
+
+    data = {'features': features,
+            'graph': g,
+            'train_mask': train_mask,
+            'val_mask': val_mask,
+            'test_mask': test_mask,
+            'labels': labels,
+            'num_feats': num_feats,
+            'n_classes': n_classes,
+            'n_edges': n_edges}
+
+    return data
+
+def prepare_ogbn_graph_data(args):
+    from ogb.nodeproppred import DglNodePropPredDataset
+
+    dataset = DglNodePropPredDataset(name=args.dataset)
+
+    split_idx = dataset.get_idx_split()
+    train_idx, val_idx, test_idx = torch.LongTensor(split_idx['train']), torch.LongTensor(split_idx['valid']), torch.LongTensor(split_idx['test'])
+    g, labels = dataset[0] # graph: dgl graph object, label: torch tensor of shape (num_nodes, num_tasks)
+    features = torch.Tensor(g.ndata['feat'])
+    labels = torch.LongTensor(labels).squeeze(-1)
+
+    # add self loop
+    # no duplicate self loop will be added for nodes already having self loops
+    new_g = dgl.transform.add_self_loop(g)
+
+
+    # edge_index = data[0]['edge_index']
+    # adj = to_undirected(edge_index, num_nodes=data[0]['num_nodes'])
+    # assert adj.diagonal().sum() == 0 and adj.max() <= 1 and (adj != adj.transpose()).sum() == 0
+
+    num_feats = features.shape[1]
+    n_classes = labels.max().item() + 1
+    n_edges = new_g.number_of_edges()
+    print("""----Data statistics------'
+      #Edges %d
+      #Classes %d
+      #Train samples %d
+      #Val samples %d
+      #Test samples %d""" %
+          (n_edges, n_classes,
+           train_idx.shape[0],
+           val_idx.shape[0],
+           test_idx.shape[0]))
+
+    data = {'features': features,
+            'graph': new_g,
+            'train_mask': train_idx,
+            'val_mask': val_idx,
+            'test_mask': test_idx,
+            'labels': labels,
+            'num_feats': num_feats,
+            'n_classes': n_classes,
+            'n_edges': n_edges}
+
+    return data
+
+def main(args, seed):
+    # load and preprocess dataset
+    if args.dataset.startswith('ogbn'):
+        # Open Graph Benchmark datasets
+        data = prepare_ogbn_graph_data(args)
+    else:
+        # DGL datasets
+        data = prepare_dgl_graph_data(args)
+
+    features, g, train_mask, val_mask, test_mask, labels, num_feats, n_classes, n_edges\
+                             = data['features'], data['graph'], data['train_mask'], \
+                             data['val_mask'], data['test_mask'], data['labels'], \
+                             data['num_feats'], data['n_classes'], data['n_edges']
+
+
     # Configure
     np.random.seed(seed)
     torch.manual_seed(seed)
 
-    if torch.cuda.is_available():
+    if not args.no_cuda and torch.cuda.is_available():
         print('[ Using CUDA ]')
         device = torch.device('cuda' if args.gpu < 0 else 'cuda:%d' % args.gpu)
         cudnn.benchmark = True
@@ -140,26 +172,14 @@ def main(args, seed):
     else:
         device = torch.device('cpu')
 
-    if not args.no_cuda and torch.cuda.is_available():
-        print('[ Use CUDA ]')
-        cuda = True
-        torch.cuda.set_device(args.gpu)
-        cudnn.benchmark = True
-        features = features.cuda()
-        labels = labels.cuda()
-        train_mask = train_mask.cuda()
-        val_mask = val_mask.cuda()
-        test_mask = test_mask.cuda()
-    else:
-        cuda = False
+    features = features.to(device)
+    labels = labels.to(device)
+    train_mask = train_mask.to(device)
+    val_mask = val_mask.to(device)
+    test_mask = test_mask.to(device)
 
-    g = data.graph
-    # add self loop
-    g.remove_edges_from(nx.selfloop_edges(g))
-    g = DGLGraph(g)
-    g.add_edges(g.nodes(), g.nodes())
-    n_edges = g.number_of_edges()
     g.ndata['node_feat'] = features
+
     # create model
     model = GNNClassifier(args.num_layers,
                           num_feats,
@@ -169,10 +189,11 @@ def main(args, seed):
 
 
     print(model)
+    model.to(device)
+
     if args.early_stop:
-        stopper = EarlyStopping(patience=100)
-    if cuda:
-        model.cuda()
+        stopper = EarlyStopping('{}.{}'.format(args.save_model_path, seed), patience=args.patience)
+
     loss_fcn = torch.nn.CrossEntropyLoss()
 
     # use optimizer
@@ -186,7 +207,7 @@ def main(args, seed):
         if epoch >= 3:
             t0 = time.time()
         # forward
-        logits = model(g, features)
+        logits = model(g)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
 
         optimizer.zero_grad()
@@ -256,9 +277,14 @@ if __name__ == '__main__':
                         help="the negative slope of leaky relu")
     parser.add_argument('--early-stop', action='store_true', default=False,
                         help="indicates whether to use early stop or not")
+    parser.add_argument("--patience", type=int, default=100,
+                        help="early stopping patience")
     parser.add_argument('--fastmode', action="store_true", default=False,
                         help="skip re-evaluate the validation set")
+    parser.add_argument('--save-model-path', type=str, default="checkpoint",
+                        help="path to the best saved model")
     args = parser.parse_args()
+    args.save_model_path = '{}_{}_{}_{}'.format(args.save_model_path, args.dataset, 'ggnn', args.direction_option)
     print(args)
 
     np.random.seed(123)
