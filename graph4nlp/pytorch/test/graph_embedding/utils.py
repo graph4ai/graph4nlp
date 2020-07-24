@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 
+
 class EarlyStopping:
     def __init__(self, save_model_path, patience=10):
         self.patience = patience
@@ -32,6 +33,6 @@ class EarlyStopping:
         print('Saved model to {}'.format(self.save_model_path))
 
     def load_checkpoint(self, model):
-        model.load_state_dict(torch.load('es_checkpoint.pt'))
-        
+        model.load_state_dict(torch.load(self.save_model_path))
+
         return model
