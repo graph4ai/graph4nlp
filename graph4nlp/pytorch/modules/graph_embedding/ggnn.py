@@ -11,12 +11,9 @@ class UniGGNNLayerConv(GNNLayerBase):
     r"""
     Gated Graph Convolution layer from paper `Gated Graph Sequence
     Neural Networks <https://arxiv.org/pdf/1511.05493.pdf>`__.
-
     .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
-
        a_{i}^{t} & = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
-
        h_{i}^{t+1} & = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
        
     Attributes
@@ -32,7 +29,20 @@ class UniGGNNLayerConv(GNNLayerBase):
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
 
+    Attributes
+    ----------
+    input_size: int
+        Input feature size.
+    output_size: int
+        Output feature size.
+    n_steps: int
+        Number of GGNN layers. Default: 1.
+    n_etypes: int
+        Number of edge types. Default: 1.
+    bias: bool
+        If True, adds a learnable bias to the output. Default: True.
     """
+
     def __init__(self,
                  input_size,
                  output_size,
@@ -44,20 +54,16 @@ class UniGGNNLayerConv(GNNLayerBase):
 
     def forward(self, graph, node_feats):
         """
-
         Parameters
         ----------
         graph: dgl.DGLGraph
-
         node_feats: torch.Tensor
             The shape of node_feats is :math:`(N, D_{in})`.
-
         Returns
         -------
         torch.Tensor
             The output feature of shape :math:`(N, D_{out})` where
             :math:`D_{out}` is size of output feature.
-
         """
         etypes = torch.LongTensor([0] * graph.number_of_edges())  # [B, E]. E is the number of edges.
         return self.model(graph, node_feats, etypes)
@@ -67,20 +73,15 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
     r"""
     Fuse aggregated embeddings from both incoming and outgoing
     directions before updating node embeddings.
-
     .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
-
-       a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)} 
+       a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)}
        W_{\vdash} h_{j}^{t}
-
-       a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)} 
+       a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)}
        W_{\dashv} h_{j}^{t}
-
        e_{i}^{t} &= \sigma (W_{f}[a_{i, \vdash}^{t};a_{i, \dashv}^{t};
        a_{i, \vdash}^{t}*a_{i, \dashv}^{t};
        a_{i, \vdash}^{t}-a_{i, \dashv}^{t}])
-
        h_{i}^{t+1} & = \mathrm{GRU}(e_{i}^{t}, h_{i}^{t})
        
     Attributes
@@ -97,7 +98,21 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
 
+    Attributes
+    ----------
+    input_size: int
+        Input feature size.
+
+    output_size: int
+        Output feature size.
+
+    n_etypes: int
+        Number of edge types. Default: 1.
+
+    bias: bool
+        If True, adds a learnable bias to the output. Default: True.
     """
+
     def __init__(self, input_size, output_size, n_etypes=1, bias=True):
         super(BiFuseGGNNLayerConv, self).__init__()
         self._input_size = input_size
@@ -131,26 +146,21 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
             nn.init.xavier_normal_(linear.weight, gain=gain)
             nn.init.zeros_(linear.bias)
 
-
     def forward(self, graph, node_feats):
         """
-
         Parameters
         ----------
         graph: dgl.DGLGraph
-
         node_feats: torch.Tensor
             The shape of node_feats is :math:`(N, D_{in})`.
-
         Returns
         -------
         torch.Tensor
             The output feature of shape :math:`(N, D_{out})` where
             :math:`D_{out}` is size of output feature.
-
         """
         feat_in, feat_out = node_feats  # feat_in == feat_out
-        etypes = torch.LongTensor([0]*graph.number_of_edges())  # [B, E]. E is the number of edges.
+        etypes = torch.LongTensor([0] * graph.number_of_edges())  # [B, E]. E is the number of edges.
 
         # forward aggregation
         graph_in = graph
@@ -197,19 +207,14 @@ class BiSepGGNNLayerConv(GNNLayerBase):
     Compute node embeddings for incoming and outgoing directions
     separately, and then concatenate the two output node embeddings
     after the final layer.
-
     .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
-
        a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)}
        W_{\vdash} h_{j, \vdash}^{t}
-
        a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)}
        W_{\dashv} h_{j, \dashv}^{t}
-
        h_{i, \vdash}^{t+1} & = \mathrm{GRU}_{\vdash}(a_{i, \vdash}^{t},
        h_{i, \vdash}^{t})
-
        h_{i, \dashv}^{t+1} & = \mathrm{GRU}_{\dashv}(a_{i, \dashv}^{t},
        h_{i, \dashv}^{t})
     
@@ -227,7 +232,21 @@ class BiSepGGNNLayerConv(GNNLayerBase):
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
 
+    Attributes
+    ----------
+    input_size: int
+        Input feature size.
+
+    output_size: int
+        Output feature size.
+
+    n_etypes: int
+        Number of edge types. Default: 1.
+
+    bias: bool
+        If True, adds a learnable bias to the output. Default: True.
     """
+
     def __init__(self, input_size, output_size, n_etypes=1, bias=True):
         super(BiSepGGNNLayerConv, self).__init__()
         self._input_size = input_size
@@ -269,7 +288,7 @@ class BiSepGGNNLayerConv(GNNLayerBase):
 
     def forward(self, graph, node_feats):
         feat_in, feat_out = node_feats
-        etypes = torch.LongTensor([0]*graph.number_of_edges())  # [B, E]. E is the number of edges.
+        etypes = torch.LongTensor([0] * graph.number_of_edges())  # [B, E]. E is the number of edges.
 
         graph_in = graph
         graph_in = graph_in.local_var()
@@ -313,10 +332,10 @@ class GGNNLayer(GNNLayerBase):
     r"""A unified wrapper for Gated Graph Convolution layer
     from paper `Gated Graph Sequence Neural Networks
     <https://arxiv.org/pdf/1511.05493.pdf>`__.
-
     Support both unidirectional (i.e., regular) and bidirectional
     (i.e., `bi_sep` and `bi_fuse`) versions.
     """
+
     def __init__(self, input_size, output_size, direction_option='uni', n_steps=1, n_etypes=1, bias=True):
         super(GGNNLayer, self).__init__()
         if direction_option == 'uni':
@@ -379,7 +398,6 @@ class GGNN(GNNBase):
     def forward(self, graph: GraphData):
         r"""
         Use GGNN compute node embeddings.
-
         Parameters
         ----------
         graph: GraphData.
