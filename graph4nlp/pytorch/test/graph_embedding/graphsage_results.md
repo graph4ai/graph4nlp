@@ -80,12 +80,12 @@ Results
 
 | Dataset  | GraphSAGE-Uni |GraphSAGE-BiSep|GraphSAGE-BiFuse|
 | -------- | --------------| ------------- | -------------- |
-| Cora     | 80.08 (0.01)  |               |                |
-| Citeseer |               |               |                |
-| Pubmed   |               |               |                |
-|ogbn-arxiv|               |               |                |
+| Cora     |  80.08 (0.01) | 79.33 (0.01)  |  79.36 (0.01)  |
+| Citeseer |  67.33 (0.01) | 68.30 (0.01)  |  65.90 (0.02)  |
+| Pubmed   |  77.70 (0.01) | 77.97 (0.01)  |  77.43 (0.01)  |
+|ogbn-arxiv|  47.76 (0.00) | 49.57 (0.00)  |  48.83 (0.00)  |
 
 
-* All the accuracy numbers are averaged after 5 random runs.
+* All the accuracy numbers are averaged after 3 random runs.
 * `Cora`, `Citeseer` and `Pubmed` are undirected graph datasets. And `ogbn-arxiv` is a directed graph dataset.
 
