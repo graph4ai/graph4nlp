@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from layers import GraphConvolution
-from prediction.classification.link_prediction.ElementSumLayer import ElementSumLayer
-from prediction.classification.link_prediction.ConcatFeedForwardNNLayer import ConcatFeedForwardNNLayer
-from prediction.classification.link_prediction.StackedElementProdLayer import StackedElementProdLayer
+from ...modules.prediction.classification.link_prediction.ElementSumLayer import ElementSumLayer
+from ...modules.prediction.classification.link_prediction.ConcatFeedForwardNNLayer import ConcatFeedForwardNNLayer
+from ...modules.prediction.classification.link_prediction.StackedElementProdLayer import StackedElementProdLayer
 
 
 class GCNModelVAE(nn.Module):
