@@ -4,6 +4,7 @@ from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
 from ..utils.torch_utils import to_cuda
 
+
 class EmbeddingConstructionBase(nn.Module):
     """
     Base class for (initial) graph embedding construction.
