@@ -26,9 +26,8 @@ class ConcatFeedForwardNNLayer(LinkPredictionLayerBase):
             
         #build the linear module list
         self.activation=activation
-        self.ffnn_src = nn.Linear(input_size, hidden_size)
-        self.ffnn_dst = nn.Linear(input_size, hidden_size)
-        self.ffnn_all = nn.Linear(2*hidden_size, num_class)
+        self.ffnn_all1 = nn.Linear(2*input_size, hidden_size)
+        self.ffnn_all2 = nn.Linear(hidden_size, num_class)
         
     def forward(self, node_emb, edge_idx=None):
         r"""
@@ -62,10 +61,10 @@ class ConcatFeedForwardNNLayer(LinkPredictionLayerBase):
             src_idx=torch.tensor([tuple_idx[0] for tuple_idx in edge_idx])    
             dst_idx=torch.tensor([tuple_idx[1] for tuple_idx in edge_idx])    
 
-        src_emb = self.ffnn_src(node_emb[src_idx, :])  # input the source node embeddings into ffnn
-        dst_emb = self.ffnn_dst(node_emb[dst_idx, :])  # input the destinate node embeddings into ffnn
-
-        return self.activation(self.ffnn_all(torch.cat([src_emb, dst_emb], dim=1)))
+        src_emb = node_emb[src_idx, :] # input the source node embeddings into ffnn
+        dst_emb = node_emb[dst_idx, :]  # input the destinate node embeddings into ffnn
+        fused_emb=self.ffnn_all1(torch.cat([src_emb, dst_emb], dim=1))
+        return self.ffnn_all2(self.activation(fused_emb))
 
 
 
