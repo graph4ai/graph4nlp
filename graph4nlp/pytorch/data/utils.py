@@ -8,6 +8,9 @@ class SizeMismatchException(Exception):
 class NodeNotFoundException(Exception):
     pass
 
+class EdgeNotFoundException(Exception):
+    pass
+
 
 def slice_to_list(sl, max_len):
     """
