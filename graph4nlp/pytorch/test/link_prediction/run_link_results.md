@@ -47,8 +47,8 @@ Results
 
 | Dataset  |  ElementSum  |   ConcatFFNN  | StackedElementProd | Baseline (InnerProd) |
 | -------- | -------------| ------------- | ------------------ |----------------------|
-| Cora     | 88.70 (89.94)| 65.66 (66.29) |    90.38 (91.89)   |    91.13 (91.53)     |
-| Citeseer | 86.10 (87.58)| 68.91 (69.75) |    92.21 (93.81)   |    90.80 (92.00)     |
+| Cora     | 88.70 (89.94)| 89.03 (90.87) |    90.38 (91.89)   |    91.13 (91.53)     |
+| Citeseer | 86.10 (87.58)| 85.39 (87.42) |    92.21 (93.81)   |    90.80 (92.00)     |
 
 
-* The metrics are: AUC (precision) for the binary classification task.
+* The metrics are: AUC (precision)*100 for the binary classification task.
