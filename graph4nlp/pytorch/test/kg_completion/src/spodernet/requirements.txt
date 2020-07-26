@@ -1,0 +1,10 @@
+pytest
+cython
+numpy
+h5py
+nltk
+enum34
+simplejson
+spacy
+sklearn
+future

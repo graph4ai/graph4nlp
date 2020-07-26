@@ -4,7 +4,7 @@ from dgl.nn import GatedGraphConv
 import dgl.function as fn
 
 from .base import GNNLayerBase, GNNBase
-from ...data.data import GraphData
+# from ...data.data import GraphData
 
 
 class UniGGNNLayerConv(GNNLayerBase):
@@ -395,7 +395,8 @@ class GGNN(GNNBase):
         else:
             self.models = GGNNLayer(output_size, output_size, direction_option, bias=bias)
 
-    def forward(self, graph: GraphData):
+    # def forward(self, graph: GraphData):
+    def forward(self, graph):
         r"""
         Use GGNN compute node embeddings.
         Parameters
@@ -411,8 +412,10 @@ class GGNN(GNNBase):
             named `node_emb`.
 
         """
-        graph = graph.to_dgl()
-        node_feats = graph.node_features['node_feat']
+        # graph = graph.to_dgl()
+        # node_feats = graph.node_features['node_feat']
+
+        node_feats = graph.ndata['node_feat']
 
         if self.direction_option == 'uni':
             node_embs = self.models(graph, node_feats)
@@ -437,7 +440,8 @@ class GGNN(GNNBase):
             else:
                 raise RuntimeError('Unknown `bidirection` value: {}'.format(self.direction_option))
 
-        graph.node_features['node_emb'] = node_embs
+        # graph.node_features['node_emb'] = node_embs
+        graph.ndata['node_emb'] = node_embs
 
         return graph
 
