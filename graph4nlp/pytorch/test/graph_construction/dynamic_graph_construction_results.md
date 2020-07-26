@@ -24,18 +24,15 @@ Run with following:
 python -m graph4nlp.pytorch.test.graph_construction.run_dynamic_graph_construction --dataset=cora --gpu=0 --early-stop --gl-topk 200  --gl-type node_emb
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_construction.run_dynamic_graph_construction --dataset=cora --gpu=0 --early-stop --gl-topk 100 --init-adj-alpha 0.85 --gl-type node_emb_refined
+python -m graph4nlp.pytorch.test.graph_construction.run_dynamic_graph_construction --dataset=cora --gpu=0 --early-stop --gl-topk 200 --init-adj-alpha 0.85 --gl-type node_emb_refined
 ```
 
-Results
+Results with 2-layer GCN
 -------
 
 | Dataset  |    Raw graph    |  NodeEmb-based Graph   | Raw graph + NodeEmb-based Graph   |
 | -------- | ------------- | ------------- | ------------- |
-| Cora     |   | 26.98 (0.95) |   |
- 
-topk 100, alpha 0.85, mean 0.8018, std 0.0148
-
+| Cora     | 82.02 (0.57)  | 26.98 (0.95) | 80.36 (1.01) |
 
 
 * All the accuracy numbers are averaged after 5 random runs.
@@ -44,5 +41,7 @@ topk 100, alpha 0.85, mean 0.8018, std 0.0148
 
 TODO
 -------
+* Explore other similarity metric functions.
+* Explore graph regularization techniques.
 
 

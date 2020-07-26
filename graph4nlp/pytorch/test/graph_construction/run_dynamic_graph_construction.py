@@ -293,14 +293,20 @@ def main(args, seed):
         g.init_adj = init_adj
 
     raw_text_data = [['I like nlp.', 'Same here!'], ['I like graph.', 'Same here!']]
+    src_text_seq = list(zip(*raw_text_data))[0]
+    src_idx_seq = [vocab_model.word_vocab.to_index_sequence(each) for each in src_text_seq]
+    src_len = torch.LongTensor([len(each) for each in src_idx_seq])
+    num_seq = torch.LongTensor([len(src_len)])
+    input_tensor = torch.LongTensor(pad_2d_vals_no_size(src_idx_seq))
+
+
     vocab_model = VocabModel(raw_text_data, max_word_vocab_size=None,
                                 min_word_vocab_freq=1,
                                 word_emb_size=300)
 
     embedding_styles = {'word_emb_type': 'w2v',
                         'node_edge_emb_strategy': 'bilstm',
-                        'seq_info_encode_strategy': 'none',
-                        }
+                        'seq_info_encode_strategy': 'none'}
 
 
     # create model
@@ -379,7 +385,6 @@ def main(args, seed):
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser(description='DynamicGraphConstruction')
     register_data_args(parser)
     parser.add_argument("--num-runs", type=int, default=5,

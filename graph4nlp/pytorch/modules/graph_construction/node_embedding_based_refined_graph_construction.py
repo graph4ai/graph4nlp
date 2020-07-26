@@ -43,33 +43,18 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         self.device = device
         self.linear_sim = nn.Linear(input_size, hidden_size, bias=False)
 
-    def forward(self, raw_text_data):
+    def forward(self, node_word_idx, node_size, num_nodes, node_mask=None):
         """Compute graph topology and initial node/edge embeddings.
 
         Parameters
         ----------
-        raw_text_data : list of sequences.
-            The raw text data.
-        **kwargs
-            Extra parameters.
-
-        Raises
-        ------
-        NotImplementedError
-            NotImplementedError.
         """
-        # nx_graph = text_data_to_static_graph(raw_text_data)
+        node_emb = self.embedding(node_word_idx, node_size, num_nodes)
 
-        # node_feat = get_node_feat(nx_graph)
-        # node_emb = self.embedding(node_feat)
+        dgl_graph = self.topology(node_emb, node_mask)
+        dgl_graph.ndata['node_feat'] = node_emb
 
-        # node_mask = get_node_mask(nx_graph)
-
-        # dgl_graph = self.topology(node_emb, node_mask)
-        # dgl_graph.ndata['x'] = node_emb
-
-        # return dgl_graph
-        pass
+        return dgl_graph
 
     def topology(self, node_emb, init_adj, alpha, node_mask=None):
 
@@ -96,18 +81,15 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         return dgl_graph
 
 
-    def embedding(self, feat, **kwargs):
+    def embedding(self, input_tensor, src_len, num_seq):
         """Compute initial node/edge embeddings.
 
         Parameters
         ----------
-        **kwargs
-            Extra parameters.
-
         """
-        # emb = self.embedding_layer(feat)
-        # return emb
-        pass
+        emb = self.embedding_layer(input_tensor, src_len, num_seq)
+        return emb
+
 
     def raw_text_to_init_graph(self, raw_text_data, **kwargs):
         """Convert raw text data to initial static graph.
