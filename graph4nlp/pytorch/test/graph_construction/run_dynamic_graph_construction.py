@@ -13,8 +13,8 @@ if __name__ == '__main__':
                                 word_emb_size=300)
 
     embedding_styles = {'word_emb_type': 'w2v',
-                        'node_edge_level_emb_type': 'bilstm',
-                        'graph_level_emb_type': 'bilstm',
+                        'node_edge_emb_strategy': 'bigru',
+                        'seq_info_encode_strategy': 'bigru',
                         }
     dyn_graph_constructor = DynamicGraphConstructionBase(vocab_model.word_vocab, embedding_styles, 128)
     print('Passed DynamicGraphConstructionBase testing')
