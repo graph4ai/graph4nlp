@@ -20,6 +20,7 @@ def test_ie_graph():
     #             'was being held in the Warren County Regional Jail on a $5,000 bond .')
 
     # use '_' replace '-' ? 'fourth-degree'->'fourth_degree'
+    # java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
 
     # raw_data = ('Rand Paul was assaulted in his home in Bowling Green, Kentucky , on Friday , '
     #             'according to Kentucky State Police . State troopers responded to a call to the senator \'s '
@@ -30,7 +31,8 @@ def test_ie_graph():
 
     nlp_parser = StanfordCoreNLP('http://localhost', port=9000, timeout=300000)
 
-    output_graph = IEBasedGraphConstruction.topology(raw_data, nlp_parser, merge_strategy="share_common_tokens", edge_strategy=None)
+    output_graph = IEBasedGraphConstruction.topology(raw_data, nlp_parser, merge_strategy=None, edge_strategy=None)
+    # output_graph = IEBasedGraphConstruction.topology(raw_data, nlp_parser, merge_strategy="global", edge_strategy=None)
     # IEBasedGraphConstruction.topology(raw_data, nlp_parser, merge_strategy="share_common_tokens", edge_strategy='as_node')
     # IEBasedGraphConstruction.topology(raw_data, nlp_parser, merge_strategy="sequential", edge_strategy=None)
 

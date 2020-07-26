@@ -335,10 +335,11 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
 
         merge_strategy: None or str, option=[None, "tailhead", "sequential", "user_define"]
             Strategy to merge sub-graphs into one graph
-            ``None``:   All subjects in extracted triples are connected by a "GLOBAL_NODE"
+            ``None``:  Do not add additional nodes and edges.
+
+            ``global``: All subjects in extracted triples are connected by a "GLOBAL_NODE"
                         using a "global" edge
-            ``"share_common_tokens"``:  The entity nodes share the same tokens are connected
-                                        using a "COM" edge
+
             ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
 
@@ -348,33 +349,40 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             The added triples using merge_strategy.
         """
 
-        graph_nodes = []
-        global_triples = []
-        for triple in triple_list:
-            if triple[0] not in graph_nodes:
-                graph_nodes.append(triple[0])
-                global_triples.append([triple[0], 'global', 'GLOBAL_NODE'])
+        if merge_strategy == 'global':
+            graph_nodes = []
+            global_triples = []
+            for triple in triple_list:
+                if triple[0] not in graph_nodes:
+                    graph_nodes.append(triple[0])
+                    global_triples.append([triple[0], 'global', 'GLOBAL_NODE'])
 
-            if triple[2] not in graph_nodes:
-                graph_nodes.append(triple[2])
+                if triple[2] not in graph_nodes:
+                    graph_nodes.append(triple[2])
 
+            return global_triples
+        elif merge_strategy == None:
+            return []
+        else:
+            raise NotImplementedError()
 
-        if merge_strategy=='share_common_tokens':
-            common_tokens_triples = []
-            for i, node_i in enumerate(graph_nodes[:-1]):
-                for j, node_j in enumerate(graph_nodes[i+1:]):
-                    node_i_lst = node_i.split()
+        # ``"share_common_tokens"``:  The entity nodes share the same tokens are connected
+        #                             using a "COM" edge
+        # if merge_strategy=='share_common_tokens':
+        #     common_tokens_triples = []
+        #     for i, node_i in enumerate(graph_nodes[:-1]):
+        #         for j, node_j in enumerate(graph_nodes[i+1:]):
+        #             node_i_lst = node_i.split()
+        #
+        #             node_j_lst = node_j.split()
+        #
+        #             common_tokens = list(set(node_i_lst).intersection(set(node_j_lst)))
+        #
+        #             if common_tokens!=[]:
+        #                 common_tokens_triples.append([node_i, 'COM', node_j])
+        #
+        #     global_triples.extend(common_tokens_triples)
 
-                    node_j_lst = node_j.split()
-
-                    common_tokens = list(set(node_i_lst).intersection(set(node_j_lst)))
-
-                    if common_tokens!=[]:
-                        common_tokens_triples.append([node_i, 'COM', node_j])
-
-            global_triples.extend(common_tokens_triples)
-
-        return global_triples
 
     def forward(self, feat):
         pass
