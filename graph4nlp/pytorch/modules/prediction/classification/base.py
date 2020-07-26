@@ -59,3 +59,21 @@ class KGCompletionLayerBase(nn.Module):
     def forward(self, node_emb, rel_emb, list_e_r_pair_idx=None, list_e_e_pair_idx=None):
         raise NotImplementedError()
 
+
+class LinkPredictionBase(ClassifierBase):
+
+    def __init__(self):
+        super(LinkPredictionBase, self).__init__()
+
+    def forward(self, node_emb, node_idx=None):
+        raise NotImplementedError()
+
+
+class LinkPredictionLayerBase(ClassifierLayerBase):
+
+    def __init__(self):
+        super(LinkPredictionLayerBase, self).__init__()
+
+    def forward(self, node_emb, node_idx=None):
+
+        raise NotImplementedError()
