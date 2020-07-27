@@ -2,7 +2,6 @@ from torch import nn
 
 from .embedding_construction import EmbeddingConstruction
 
-
 class GraphConstructionBase(nn.Module):
     """Base class for graph construction.
 

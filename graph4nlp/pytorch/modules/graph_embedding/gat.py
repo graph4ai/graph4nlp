@@ -457,18 +457,14 @@ class BiFuseGATLayerConv(GNNLayerBase):
             nn.init.xavier_normal_(self.fuse_linear.weight, gain=gain)
 
     def forward(self, graph, feat):
-        r"""Compute graph attention network layer.
-
-        Parameters
+        """Parameters
         ----------
         graph : DGLGraph
             The graph.
-        feat : torch.Tensor or pair of torch.Tensor
             If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
             If a pair of torch.Tensor is given, the pair must contain two tensors of shape
             :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
-
         Returns
         -------
         torch.Tensor
@@ -488,7 +484,6 @@ class BiFuseGATLayerConv(GNNLayerBase):
             h_dst_bw = self.feat_drop(feat_bw[1])
         else:
             h_src_bw = h_dst_bw = self.feat_drop(feat_bw)
-
 
         # forward direction
         with graph.local_scope():

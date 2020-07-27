@@ -6,6 +6,29 @@ from ..utils.torch_utils import to_cuda
 
 
 class EmbeddingConstructionBase(nn.Module):
+    """
+    Base class for (initial) graph embedding construction.
+
+    ...
+
+    Attributes
+    ----------
+    feat : dict
+        Raw features of graph nodes and/or edges.
+
+    Methods
+    -------
+    forward(raw_text_data)
+        Generate dynamic graph topology and embeddings.
+    """
+
+    def __init__(self):
+        super(EmbeddingConstructionBase, self).__init__()
+
+    def forward(self):
+        raise NotImplementedError()
+
+class EmbeddingConstructionBase(nn.Module):
     """Basic class for embedding construction.
     """
     def __init__(self):
@@ -220,8 +243,9 @@ class WordEmbedding(nn.Module):
 class BertEmbedding(nn.Module):
     """Bert embedding class.
     """
-    def __init__(self):
+    def __init__(self, fix_word_emb):
         super(BertEmbedding, self).__init__()
+        self.fix_word_emb = fix_word_emb
 
     def forward(self):
         raise NotImplementedError()
