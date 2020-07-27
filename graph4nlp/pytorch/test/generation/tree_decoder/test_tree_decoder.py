@@ -3,9 +3,9 @@ import numpy as np
 import torch
 from stanfordcorenlp import StanfordCoreNLP
 
-from ...modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder
-from ...modules.utils.tree_utils import Tree
-from ...data.data import GraphData
+from ....modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder
+from ....modules.utils.tree_utils import Tree, Vocab, DataLoader, to_cuda
+from ....data.data import GraphData
 
 
 if __name__ == "__main__":
@@ -14,11 +14,31 @@ if __name__ == "__main__":
     np.random.seed(seed)
     torch.manual_seed(seed)
 
-    raw_data = "I love you. My motherland."
-    # raw_data = "James went to the corner-shop. He want to buy some (eggs), <milk> and bread for breakfast."
-    vocab_model = VocabModel(raw_data, max_word_vocab_size=None,
-                                min_word_vocab_freq=1,
-                                word_emb_size=300)
+    train_hyper_para_dict = {}
+    train_hyper_para_dict['src_vocab_file'] = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\vocab.q.txt"
+    train_hyper_para_dict['tgt_vocab_file'] = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\vocab.f.txt"
+    train_hyper_para_dict['data_file'] = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\train.txt"
+    train_hyper_para_dict['mode'] = "train"
+    train_hyper_para_dict['min_freq'] = 2
+    train_hyper_para_dict['max_vocab_size'] = 10000
+    train_hyper_para_dict['batch_size'] = 20
+    train_hyper_para_dict['device'] = None
+
+    train_data_loader = DataLoader(**train_hyper_para_dict)
+    print("samples number: ", len(train_data_loader.data))
+
+    # test_hyper_para_dict = {}
+    # test_hyper_para_dict['src_vocab_file'] = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\vocab.q.txt"
+    # test_hyper_para_dict['tgt_vocab_file'] = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\vocab.f.txt"
+    # test_hyper_para_dict['data_file'] = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\test.txt"
+    # test_hyper_para_dict['mode'] = "test"
+    # test_hyper_para_dict['min_freq'] = 2
+    # test_hyper_para_dict['max_vocab_size'] = 10000
+    # test_hyper_para_dict['batch_size'] = 1
+    # test_hyper_para_dict['device'] = None
+
+    # test_data_loader = DataLoader(**test_hyper_para_dict)
+    # print(len(test_data_loader.data))
 
     # embedding_styles = {
     #     'word_emb_type': 'w2v',

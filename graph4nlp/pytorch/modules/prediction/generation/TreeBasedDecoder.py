@@ -15,6 +15,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         self.dropout = nn.Dropout(dropout)
         self.max_dec_seq_length = max_dec_seq_length
         self.max_dec_tree_depth = max_dec_tree_depth
+        self.tgt_vocab = tgt_vocab
 
         self.dec_state = {}
         self.attn_state = {}
@@ -72,7 +73,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         
         cur_index = 1
 
-        dec_batch, queue_tree, max_index = get_dec_batch(tgt_tree_batch, tgt_batch_size, using_gpu=False, tgt_vocab)
+        dec_batch, queue_tree, max_index = get_dec_batch(tgt_tree_batch, tgt_batch_size, self.tgt_vocab, using_gpu=False)
 
         while (cur_index <= max_index):
             for j in range(1, 3):
