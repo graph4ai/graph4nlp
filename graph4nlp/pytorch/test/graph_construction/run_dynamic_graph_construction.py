@@ -197,13 +197,16 @@ class DynamicGNNClassifier(nn.Module):
     def __init__(self,
                 word_vocab,
                 embedding_styles,
-                gl_input_size,
-                gl_hidden_size,
-                gl_top_k,
-                gl_type,
                 input_size,
                 hidden_size,
                 output_size,
+                gl_type,
+                gl_metric_type='weighted_cosine',
+                gl_num_heads=1,
+                gl_top_k=None,
+                gl_epsilon=None,
+                gl_input_size=None,
+                gl_hidden_size=None,
                 init_adj_alpha=None,
                 feat_drop=0,
                 layer_drop=0.5,
@@ -211,24 +214,35 @@ class DynamicGNNClassifier(nn.Module):
                 device=None):
         super(DynamicGNNClassifier, self).__init__()
         self.gl_type = gl_type
-        self.init_adj_alpha = init_adj_alpha
         if self.gl_type == 'node_emb':
             self.graph_learner = NodeEmbeddingBasedGraphConstruction(
                                                         word_vocab,
                                                         embedding_styles,
-                                                        gl_input_size,
-                                                        gl_hidden_size,
-                                                        gl_top_k,
+                                                        sim_metric_type=gl_metric_type,
+                                                        num_heads=gl_num_heads,
+                                                        top_k_neigh=gl_top_k,
+                                                        epsilon_neigh=gl_epsilon,
+                                                        input_size=gl_input_size,
+                                                        hidden_size=gl_hidden_size,
+                                                        fix_word_emb=True,
+                                                        dropout=None,
                                                         device=device)
+
         elif self.gl_type == 'node_edge_emb':
             raise NotImplementedError()
         elif self.gl_type == 'node_emb_refined':
             self.graph_learner = NodeEmbeddingBasedRefinedGraphConstruction(
                                                         word_vocab,
                                                         embedding_styles,
-                                                        gl_input_size,
-                                                        gl_hidden_size,
-                                                        gl_top_k,
+                                                        init_adj_alpha,
+                                                        sim_metric_type=gl_metric_type,
+                                                        num_heads=gl_num_heads,
+                                                        top_k_neigh=gl_top_k,
+                                                        epsilon_neigh=gl_epsilon,
+                                                        input_size=gl_input_size,
+                                                        hidden_size=gl_hidden_size,
+                                                        fix_word_emb=True,
+                                                        dropout=None,
                                                         device=device)
         else:
             raise RuntimeError('Unknown gl_type: {}'.format(self.gl_type))
@@ -245,7 +259,7 @@ class DynamicGNNClassifier(nn.Module):
         node_feat = graph.ndata['node_feat']
 
         if self.gl_type == 'node_emb_refined':
-            new_graph = self.graph_learner.topology(node_feat, graph.init_adj, self.init_adj_alpha, node_mask=None)
+            new_graph = self.graph_learner.topology(node_feat, graph.init_adj, node_mask=None)
         else:
             new_graph = self.graph_learner.topology(node_feat, node_mask=None)
 
@@ -293,6 +307,10 @@ def main(args, seed):
         g.init_adj = init_adj
 
     raw_text_data = [['I like nlp.', 'Same here!'], ['I like graph.', 'Same here!']]
+    vocab_model = VocabModel(raw_text_data, max_word_vocab_size=None,
+                                min_word_vocab_freq=1,
+                                word_emb_size=300)
+
     src_text_seq = list(zip(*raw_text_data))[0]
     src_idx_seq = [vocab_model.word_vocab.to_index_sequence(each) for each in src_text_seq]
     src_len = torch.LongTensor([len(each) for each in src_idx_seq])
@@ -300,26 +318,26 @@ def main(args, seed):
     input_tensor = torch.LongTensor(pad_2d_vals_no_size(src_idx_seq))
 
 
-    vocab_model = VocabModel(raw_text_data, max_word_vocab_size=None,
-                                min_word_vocab_freq=1,
-                                word_emb_size=300)
+
 
     embedding_styles = {'word_emb_type': 'w2v',
                         'node_edge_emb_strategy': 'bilstm',
                         'seq_info_encode_strategy': 'none'}
-
 
     # create model
     model = DynamicGNNClassifier(
                     vocab_model.word_vocab,
                     embedding_styles,
                     num_feats,
-                    args.gl_num_hidden,
-                    args.gl_topk,
-                    args.gl_type,
-                    num_feats,
                     args.num_hidden,
                     n_classes,
+                    args.gl_type,
+                    gl_metric_type=args.gl_metric_type,
+                    gl_num_heads=args.gl_num_heads,
+                    gl_top_k=args.gl_top_k,
+                    gl_epsilon=args.gl_epsilon,
+                    gl_input_size=num_feats,
+                    gl_hidden_size=args.gl_num_hidden,
                     init_adj_alpha=args.init_adj_alpha,
                     feat_drop=args.in_drop,
                     layer_drop=args.layer_drop,
@@ -397,12 +415,18 @@ if __name__ == '__main__':
                         help="number of training epochs")
     parser.add_argument("--gl-num-hidden", type=int, default=16,
                         help="number of hidden units for dynamic graph construction")
-    parser.add_argument("--gl-topk", type=int, default=200,
-                        help="top k for dynamic graph construction")
+    parser.add_argument("--gl-top-k", type=int,
+                        help="top k for graph sparsification")
+    parser.add_argument("--gl-epsilon", type=float,
+                        help="epsilon for graph sparsification")
+    parser.add_argument("--gl-num-heads", type=int, default=1,
+                        help="num of heads for dynamic graph construction")
     parser.add_argument("--gl-type", type=str, default='node_emb',
                         help=r"dynamic graph construction algorithm type, \
                         {'node_emb', 'node_edge_emb' and 'node_emb_refined'},\
                         default: 'node_emb'")
+    parser.add_argument("--gl-metric-type", type=str, default='attention',
+                        help=r"similarity metric type for dynamic graph construction")
     parser.add_argument("--init-adj-alpha", type=float, default=0.8,
                         help="alpha ratio for combining initial graph adjacency matrix")
     parser.add_argument("--num-hidden", type=int, default=16,
@@ -424,11 +448,14 @@ if __name__ == '__main__':
     parser.add_argument('--save-model-path', type=str, default="checkpoint",
                         help="path to the best saved model")
     args = parser.parse_args()
-    args.save_model_path = '{}_{}_gl_type_{}_gl_topk_{}_init_adj_alpha_{}'.format(
+    args.save_model_path = '{}_{}_gl_type_{}_gl_metric_type_{}_gl_heads_{}_gl_topk_{}_gl_epsilon_{}_init_adj_alpha_{}'.format(
                                                     args.save_model_path,
                                                     args.dataset,
                                                     args.gl_type,
-                                                    args.gl_topk,
+                                                    args.gl_metric_type,
+                                                    args.gl_num_heads,
+                                                    args.gl_top_k,
+                                                    args.gl_epsilon,
                                                     args.init_adj_alpha)
     print(args)
 

@@ -2,8 +2,7 @@ import torch
 from torch import nn
 
 from .base import DynamicGraphConstructionBase
-from .utils import sparsify_graph, convert_adj_to_dgl_graph
-from ..utils.constants import INF
+from .utils import convert_adj_to_dgl_graph
 
 
 class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
@@ -30,18 +29,11 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
-
-    def __init__(self, word_vocab, embedding_styles, input_size, hidden_size,
-                        top_k, fix_word_emb=True, dropout=None, device=None):
-        super(NodeEmbeddingBasedGraphConstruction, self).__init__(word_vocab,
+    def __init__(self, word_vocab, embedding_styles, **kwargs):
+        super(NodeEmbeddingBasedGraphConstruction, self).__init__(
+                                                            word_vocab,
                                                             embedding_styles,
-                                                            hidden_size=hidden_size,
-                                                            fix_word_emb=fix_word_emb,
-                                                            dropout=dropout,
-                                                            device=device)
-        self.top_k = top_k
-        self.device = device
-        self.linear_sim = nn.Linear(input_size, hidden_size, bias=False)
+                                                            **kwargs)
 
     def forward(self, node_word_idx, node_size, num_nodes, node_mask=None):
         """Compute graph topology and initial node/edge embeddings.
@@ -68,43 +60,16 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             The node mask matrix, default: ``None``.
 
         """
-        attention = self.self_attention(node_emb, node_mask)
-        adj = sparsify_graph(attention, self.top_k, -INF, device=self.device)
-
-        dgl_graph = convert_adj_to_dgl_graph(adj, -INF, use_edge_softmax=True)
+        adj = self.compute_similarity_metric(node_emb, node_mask)
+        dgl_graph = convert_adj_to_dgl_graph(adj, self.mask_off_val, use_edge_softmax=True)
 
         return dgl_graph
 
 
-    def embedding(self, input_tensor, src_len, num_seq):
-        """Compute initial node/edge embeddings.
+    def embedding(self, node_word_idx, node_size, num_nodes):
+        """Compute initial node embeddings.
 
         Parameters
         ----------
         """
-        emb = self.embedding_layer(input_tensor, src_len, num_seq)
-        return emb
-
-    def raw_text_to_init_graph(self, raw_text_data, **kwargs):
-        """Convert raw text data to initial static graph.
-
-        Parameters
-        ----------
-        raw_text_data : list of sequences.
-            The raw text data.
-        **kwargs
-            Extra parameters.
-
-        """
-        pass
-
-    def self_attention(self, node_emb, node_mask=None):
-        """Computing an attention matrix for a fully connected graph
-        """
-        node_vec_t = torch.relu(self.linear_sim(node_emb))
-        attention = torch.matmul(node_vec_t, node_vec_t.transpose(-1, -2))
-
-        if node_mask is not None:
-            attention = attention.masked_fill_(1 - node_mask.byte().unsqueeze(1), -INF)
-
-        return attention
+        return self.embedding_layer(node_word_idx, node_size, num_nodes)
