@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -5,6 +6,7 @@ import torch.nn.functional as F
 from .embedding_construction import EmbeddingConstruction
 from ..utils.constants import INF
 from ..utils.generic_utils import to_cuda
+from ..utils.constants import VERY_SMALL_NUMBER
 
 
 class GraphConstructionBase(nn.Module):
@@ -178,6 +180,9 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                 num_heads=1,
                 top_k_neigh=None,
                 epsilon_neigh=None,
+                smoothness_ratio=None,
+                degree_ratio=None,
+                sparsity_ratio=None,
                 input_size=None,
                 hidden_size=None,
                 fix_word_emb=False,
@@ -196,6 +201,10 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         self.top_k_neigh = top_k_neigh
         self.epsilon_neigh = epsilon_neigh
         self.sim_metric_type = sim_metric_type
+        self.smoothness_ratio = smoothness_ratio
+        self.degree_ratio = degree_ratio
+        self.sparsity_ratio = sparsity_ratio
+
         if self.sim_metric_type == 'attention':
             self.mask_off_val = -INF
             self.linear_sims = nn.ModuleList([nn.Linear(input_size, hidden_size, bias=False)
@@ -337,6 +346,25 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             attention = self.build_knn_neighbourhood(attention, self.top_k_neigh)
 
         return attention
+
+    def compute_graph_regularization(self, adj, node_feat):
+        # Graph regularization
+        graph_reg = 0
+        if not self.smoothness_ratio in (0, None):
+            L = torch.diagflat(torch.sum(adj, -1)) - adj
+            graph_reg += self.smoothness_ratio / int(np.prod(adj.shape))\
+                    * torch.trace(torch.mm(node_feat.transpose(-1, -2), torch.mm(L, node_feat)))
+
+        if not self.degree_ratio in (0, None):
+            ones_vec = to_cuda(torch.ones(adj.size(-1)), self.device)
+            graph_reg += -self.degree_ratio / adj.shape[-1]\
+                    * torch.mm(ones_vec.unsqueeze(0), torch.log(torch.mm(adj, ones_vec.unsqueeze(-1)) + VERY_SMALL_NUMBER)).squeeze()
+
+        if not self.sparsity_ratio in (0, None):
+            graph_reg += self.sparsity_ratio / int(np.prod(adj.shape))\
+                    * torch.sum(torch.pow(adj, 2))
+
+        return graph_reg
 
     def build_knn_neighbourhood(self, attention, top_k_neigh):
         top_k_neigh = min(top_k_neigh, attention.size(-1))

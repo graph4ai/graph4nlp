@@ -4,7 +4,7 @@ from torch import nn
 from .base import DynamicGraphConstructionBase
 from .utils import convert_adj_to_dgl_graph
 from ..utils.generic_utils import normalize_adj
-from ..utils.constants import VERY_SMALL_NUMBER, INF
+from ..utils.constants import VERY_SMALL_NUMBER
 
 
 class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
@@ -67,6 +67,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
 
         """
         adj = self.compute_similarity_metric(node_emb, node_mask)
+        graph_reg = self.compute_graph_regularization(adj, node_emb)
 
         if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
             assert adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
@@ -81,6 +82,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * adj, self.alpha_fusion * init_norm_adj)
 
         dgl_graph = convert_adj_to_dgl_graph(adj, 0, use_edge_softmax=False)
+        dgl_graph.graph_reg = graph_reg
 
         return dgl_graph
 

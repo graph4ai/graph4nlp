@@ -28,7 +28,7 @@ def accuracy(logits, labels):
 def evaluate(model, g, labels, mask):
     model.eval()
     with torch.no_grad():
-        logits = model(g)
+        logits, _ = model(g)
         logits = logits[mask]
         labels = labels[mask]
         return accuracy(logits, labels)
@@ -205,6 +205,9 @@ class DynamicGNNClassifier(nn.Module):
                 gl_num_heads=1,
                 gl_top_k=None,
                 gl_epsilon=None,
+                gl_smoothness_ratio=None,
+                gl_degree_ratio=None,
+                gl_sparsity_ratio=None,
                 gl_input_size=None,
                 gl_hidden_size=None,
                 init_adj_alpha=None,
@@ -222,6 +225,9 @@ class DynamicGNNClassifier(nn.Module):
                                                         num_heads=gl_num_heads,
                                                         top_k_neigh=gl_top_k,
                                                         epsilon_neigh=gl_epsilon,
+                                                        smoothness_ratio=gl_smoothness_ratio,
+                                                        degree_ratio=gl_degree_ratio,
+                                                        sparsity_ratio=gl_sparsity_ratio,
                                                         input_size=gl_input_size,
                                                         hidden_size=gl_hidden_size,
                                                         fix_word_emb=True,
@@ -239,6 +245,9 @@ class DynamicGNNClassifier(nn.Module):
                                                         num_heads=gl_num_heads,
                                                         top_k_neigh=gl_top_k,
                                                         epsilon_neigh=gl_epsilon,
+                                                        smoothness_ratio=gl_smoothness_ratio,
+                                                        degree_ratio=gl_degree_ratio,
+                                                        sparsity_ratio=gl_sparsity_ratio,
                                                         input_size=gl_input_size,
                                                         hidden_size=gl_hidden_size,
                                                         fix_word_emb=True,
@@ -266,7 +275,7 @@ class DynamicGNNClassifier(nn.Module):
         new_graph.ndata['node_feat'] = node_feat
         logits = self.gnn_clf(new_graph)
 
-        return logits
+        return logits, new_graph
 
 def main(args, seed):
     # Configure
@@ -336,6 +345,9 @@ def main(args, seed):
                     gl_num_heads=args.gl_num_heads,
                     gl_top_k=args.gl_top_k,
                     gl_epsilon=args.gl_epsilon,
+                    gl_smoothness_ratio=args.gl_smoothness_ratio,
+                    gl_degree_ratio=args.gl_degree_ratio,
+                    gl_sparsity_ratio=args.gl_sparsity_ratio,
                     gl_input_size=num_feats,
                     gl_hidden_size=args.gl_num_hidden,
                     init_adj_alpha=args.init_adj_alpha,
@@ -364,8 +376,9 @@ def main(args, seed):
         if epoch >= 3:
             t0 = time.time()
         # forward
-        logits = model(g)
+        logits, dgl_graph = model(g)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
+        loss += dgl_graph.graph_reg
 
         optimizer.zero_grad()
         loss.backward()
@@ -419,6 +432,12 @@ if __name__ == '__main__':
                         help="top k for graph sparsification")
     parser.add_argument("--gl-epsilon", type=float,
                         help="epsilon for graph sparsification")
+    parser.add_argument("--gl-smoothness-ratio", type=float,
+                        help="smoothness ratio for graph regularization loss")
+    parser.add_argument("--gl-degree-ratio", type=float,
+                        help="degree ratio for graph regularization loss")
+    parser.add_argument("--gl-sparsity-ratio", type=float,
+                        help="sparsity ratio for graph regularization loss")
     parser.add_argument("--gl-num-heads", type=int, default=1,
                         help="num of heads for dynamic graph construction")
     parser.add_argument("--gl-type", type=str, default='node_emb',
@@ -445,10 +464,12 @@ if __name__ == '__main__':
                         help="early stopping patience")
     parser.add_argument('--fastmode', action="store_true", default=False,
                         help="skip re-evaluate the validation set")
-    parser.add_argument('--save-model-path', type=str, default="checkpoint",
+    parser.add_argument('--save-model-path', type=str, default="ckpt",
                         help="path to the best saved model")
     args = parser.parse_args()
-    args.save_model_path = '{}_{}_gl_type_{}_gl_metric_type_{}_gl_heads_{}_gl_topk_{}_gl_epsilon_{}_init_adj_alpha_{}'.format(
+    args.save_model_path = ('{}_{}_gl_type_{}_gl_metric_type_{}_gl_heads_{}'
+                            '_gl_topk_{}_gl_epsilon_{}_smoothness_{}_degree_{}'
+                            '_sparsity_{}_init_adj_alpha_{}').format(
                                                     args.save_model_path,
                                                     args.dataset,
                                                     args.gl_type,
@@ -456,6 +477,9 @@ if __name__ == '__main__':
                                                     args.gl_num_heads,
                                                     args.gl_top_k,
                                                     args.gl_epsilon,
+                                                    args.gl_smoothness_ratio,
+                                                    args.gl_degree_ratio,
+                                                    args.gl_sparsity_ratio,
                                                     args.init_adj_alpha)
     print(args)
 
