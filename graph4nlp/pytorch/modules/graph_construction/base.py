@@ -1,9 +1,11 @@
+from nltk.tokenize import word_tokenize
 import numpy as np
 import torch
 from torch import nn
 import torch.nn.functional as F
 
 from .embedding_construction import EmbeddingConstruction
+from ...data.data import GraphData
 from ..utils.constants import INF
 from ..utils.generic_utils import to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
@@ -287,22 +289,29 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         """
         raise NotImplementedError()
 
-    def raw_text_to_init_graph(self, raw_text_data, **kwargs):
+    @classmethod
+    def raw_text_to_init_graph(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize):
         """Convert raw text data to initial static graph.
 
         Parameters
         ----------
-        raw_text_data : list of sequences.
+        raw_text_data : str
             The raw text data.
-        **kwargs
-            Extra parameters.
-
-        Raises
-        ------
-        NotImplementedError
-            NotImplementedError.
         """
-        raise NotImplementedError()
+        if lower_case:
+            raw_text_data = raw_text_data.lower()
+
+        token_list = tokenizer(raw_text_data.strip())
+        ret_graph = GraphData()
+        ret_graph.add_nodes(len(token_list))
+
+        for idx, token in enumerate(token_list[:-1]):
+            ret_graph.add_edge(idx, idx + 1)
+            ret_graph.node_attributes[idx]['token'] = token
+
+        ret_graph.node_attributes[idx + 1]['token'] = token_list[-1]
+
+        return ret_graph
 
     def compute_similarity_metric(self, node_emb, node_mask=None):
         if self.sim_metric_type == 'attention':

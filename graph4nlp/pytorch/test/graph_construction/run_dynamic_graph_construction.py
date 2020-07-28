@@ -17,7 +17,7 @@ from ..utils import EarlyStopping
 from ...modules.graph_construction import NodeEmbeddingBasedGraphConstruction, NodeEmbeddingBasedRefinedGraphConstruction
 from ...modules.utils.vocab_utils import VocabModel
 from ...modules.utils.padding_utils import pad_2d_vals_no_size
-from ...modules.utils.torch_utils import to_cuda
+from ...modules.utils.generic_utils import to_cuda
 
 
 def accuracy(logits, labels):

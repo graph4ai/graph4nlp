@@ -25,7 +25,7 @@ Run with following:
 python -m graph4nlp.pytorch.test.graph_construction.run_dynamic_graph_construction --dataset=cora --gpu=0 --early-stop --gl-metric-type weighted_cosine --gl-epsilon 0.3 --gl-type node_emb --gl-smoothness-ratio 0.2 --gl-sparsity-ratio 0.1
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_construction.run_dynamic_graph_construction --dataset=cora --gpu=0 --early-stop --gl-metric-type weighted_cosine --gl-epsilon 0.3 --gl-type node_emb_refined --init-adj-alpha 0.85 
+python -m graph4nlp.pytorch.test.graph_construction.run_dynamic_graph_construction --dataset=cora --gpu=0 --early-stop --gl-metric-type weighted_cosine --gl-epsilon 0.3 --gl-type node_emb_refined --init-adj-alpha 0.8 
 ```
 
 Results with 2-layer GCN
@@ -44,10 +44,10 @@ NodeEmb-based Graph:
 1 head weighted cosine, epsilon 0.3: 58.48 (2.40)
 2 head weighted cosine, epsilon 0.3: 56.80 (1.74)
 4 head weighted cosine, epsilon 0.3: 57.62 (0.75) 
+1 head weighted cosine, epsilon 0.3, smooth 0.5: 57.30 (1.32)
 
-1 head weighted cosine, epsilon 0.3, smooth 0.1:mean 0.5634, std 0.0189   
-
-
+Raw graph + NodeEmb-based Graph:
+1 head weighted cosine, epsilon 0.3, init-adj-alpha 0.8: 82.04 (0.52)
 
 
 * All the accuracy numbers are averaged after 5 random runs.
