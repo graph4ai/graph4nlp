@@ -22,7 +22,7 @@ Run with following:
 
 
 ```bash
-python -m graph4nlp.pytorch.test.graph_construction.run_dynamic_graph_construction --dataset=cora --gpu=0 --early-stop --gl-metric-type weighted_cosine --gl-epsilon 0.3 --gl-type node_emb --gl-smoothness-ratio 0.2 --gl-sparsity-ratio 0.1
+python -m graph4nlp.pytorch.test.graph_construction.run_dynamic_graph_construction --dataset=cora --gpu=0 --early-stop --gl-metric-type weighted_cosine --gl-epsilon 0.3 --gl-type node_emb
 ```
 ```bash
 python -m graph4nlp.pytorch.test.graph_construction.run_dynamic_graph_construction --dataset=cora --gpu=0 --early-stop --gl-metric-type weighted_cosine --gl-epsilon 0.3 --gl-type node_emb_refined --init-adj-alpha 0.8 
@@ -60,7 +60,7 @@ Raw graph + NodeEmb-based Graph:
 
 TODO
 -------
-* Explore other similarity metric functions.
-* Explore graph regularization techniques.
+
+* Implement NodeEdgeEmbeddingBasedGraphConstruction
 
 

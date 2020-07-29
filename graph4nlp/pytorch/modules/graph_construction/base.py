@@ -392,13 +392,16 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         if node_mask is not None:
             attention = attention.masked_fill_(1 - node_mask.byte(), self.mask_off_val)
 
+        return attention
+
+    def sparsify_graph(self, adj):
         if self.epsilon_neigh is not None:
-            attention = self._build_epsilon_neighbourhood(attention, self.epsilon_neigh)
+            adj = self._build_epsilon_neighbourhood(adj, self.epsilon_neigh)
 
         if self.top_k_neigh is not None:
-            attention = self._build_knn_neighbourhood(attention, self.top_k_neigh)
+            adj = self._build_knn_neighbourhood(adj, self.top_k_neigh)
 
-        return attention
+        return adj
 
     def compute_graph_regularization(self, adj, node_feat):
         """Graph graph regularization loss.

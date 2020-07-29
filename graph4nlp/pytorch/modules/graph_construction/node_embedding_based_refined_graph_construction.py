@@ -111,6 +111,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             The constructed graph.
         """
         adj = self.compute_similarity_metric(node_emb, node_mask)
+        adj = self.sparsify_graph(adj)
         graph_reg = self.compute_graph_regularization(adj, node_emb)
 
         if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):

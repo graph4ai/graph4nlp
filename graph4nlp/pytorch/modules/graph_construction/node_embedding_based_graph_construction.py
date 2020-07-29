@@ -101,7 +101,9 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             The constructed graph.
         """
         adj = self.compute_similarity_metric(node_emb, node_mask)
+        adj = self.sparsify_graph(adj)
         graph_reg = self.compute_graph_regularization(adj, node_emb)
+
         dgl_graph = convert_adj_to_dgl_graph(adj, self.mask_off_val, use_edge_softmax=True)
         dgl_graph.graph_reg = graph_reg
 
