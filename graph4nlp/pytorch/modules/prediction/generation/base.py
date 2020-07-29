@@ -132,7 +132,7 @@ class RNNTreeDecoderBase(DecoderBase):
         The probability rate to use teacher forcing strategy.
     """
     def __init__(self, attentional=True, use_copy=False, use_coverage=False, attention_type="uniform",
-                 fuse_strategy="average", teacher_forcing_ratio=1.):
+                 fuse_strategy="average"):
         super(RNNTreeDecoderBase, self).__init__(attentional=attentional)
 
     def _build_rnn(self, rnn_type, **kwargs):
@@ -142,8 +142,8 @@ class RNNTreeDecoderBase(DecoderBase):
         """
         raise NotImplementedError()
 
-    def forward(self, encoder_output_dict, tgt):
-        return self._run_forward_pass(**encoder_output_dict, tgt=tgt)
+    def forward(self, encoder_output_dict, tgt_tree_batch):
+        return self._run_forward_pass(**encoder_output_dict, tgt_tree_batch=tgt_tree_batch)
 
     def _run_forward_pass(self, graph_node_embedding, graph_node_mask, rnn_node_embedding, graph_level_embedding,
                           graph_edge_embedding=None, graph_edge_mask=None, tgt=None):
