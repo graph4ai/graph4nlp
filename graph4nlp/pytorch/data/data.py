@@ -7,6 +7,8 @@ from .utils import SizeMismatchException, NodeNotFoundException, EdgeNotFoundExc
 from .utils import entail_zero_padding, slice_to_list
 from .views import NodeView, NodeFeatView, EdgeView
 
+import scipy.sparse
+
 EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
 
 node_feat_factory = dict
@@ -23,6 +25,8 @@ single_edge_attr_factory = dict
 res_init_edge_features = {'edge_feat': None, 'edge_emb': None}
 res_init_edge_attributes = {'edge_attr': None}
 
+graph_data_factory = dict
+
 
 class GraphData(object):
     """
@@ -37,7 +41,14 @@ class GraphData(object):
         self._nids_eid_mapping = nids_eid_mapping_factory()
         self._edge_features = edge_feature_factory(res_init_edge_features)
         self._edge_attributes = edge_attribute_factory()
+        self.graph_attributes = graph_data_factory()
 
+    # # Graph level data
+    # @property
+    # def graph_attributes(self):
+    #     return self._graph_attributes
+
+    # Node operations
     @property
     def nodes(self) -> NodeView:
         """
@@ -80,7 +91,33 @@ class GraphData(object):
         for key in self._node_features.keys():
             entail_zero_padding(self._node_features[key], node_num)
 
-    def _get_node_features(self, nodes: int or slice) -> torch.tensor:
+    # Node feature operations
+    @property
+    def node_features(self) -> NodeFeatView:
+        """
+        Access and modify node feature vectors (tensor).
+        This property can be accessed in a dict-of-dict fashion, with the order being [name][index].
+        'name' indicates the name of the feature vector. 'index' selects the specific nodes to be accessed.
+        When accessed independently, returns the feature dictionary with the format {name: tensor}
+
+        Examples
+        --------
+        >>> g = GraphData()
+        >>> g.add_nodes(10)
+        >>> import torch
+        >>> g.node_features['x'] = torch.rand((10, 10))
+        >>> g.node_features['x'][0]
+        torch.Tensor([0.1036, 0.6757, 0.4702, 0.8938, 0.6337, 0.3290, 0.6739, 0.1091, 0.7996, 0.0586])
+
+
+        Returns
+        -------
+        NodeFeatView
+        """
+
+        return self.nodes[:].features
+
+    def get_node_features(self, nodes: int or slice) -> torch.tensor:
         """
         Get the node feature dictionary of the `nodes`
 
@@ -102,7 +139,10 @@ class GraphData(object):
                 ret[key] = self._node_features[key][nodes]
         return ret
 
-    def _set_node_features(self, nodes: int or slice, new_data: dict) -> None:
+    def get_node_feature_names(self):
+        return self._node_features.keys()
+
+    def set_node_features(self, nodes: int or slice, new_data: dict) -> None:
         """
         Set the features of the `nodes` with the given `new_data`.
 
@@ -135,6 +175,7 @@ class GraphData(object):
             else:
                 self._node_features[key][nodes] = value
 
+    # Node attribute operations
     @property
     def node_attributes(self) -> dict:
         """
@@ -147,19 +188,7 @@ class GraphData(object):
         """
         return self._node_attributes
 
-    @property
-    def node_features(self) -> NodeFeatView:
-        """
-        Access node attribute dictionary
-
-        Returns
-        -------
-        node_attribute_dict: NodeAttrView
-            The view of node attributes
-        """
-        return self.nodes[:].features
-
-    def _get_node_attrs(self, nodes: int or slice):
+    def get_node_attrs(self, nodes: int or slice):
         """
         Get the attributes of the given `nodes`.
 
@@ -182,6 +211,29 @@ class GraphData(object):
         for idx in node_idx:
             ret[idx] = self._node_attributes[idx]
         return ret
+
+    # Edge views and operations
+    @property
+    def edges(self):
+        """
+        Return an edge view of the edges and the corresponding data
+
+        Returns
+        -------
+        edges: EdgeView
+        """
+        return EdgeView(self)
+
+    def get_edge_num(self) -> int:
+        """
+        Get the number of edges in the graph
+
+        Returns
+        -------
+        num_edges: int
+            The number of edges
+        """
+        return len(self._edge_indices.src)
 
     def add_edge(self, src: int, tgt: int):
         """
@@ -245,28 +297,6 @@ class GraphData(object):
             for src_idx, tgt_idx in zip(src, tgt):
                 self.add_edge(src_idx, tgt_idx)
 
-    def get_edge_num(self) -> int:
-        """
-        Get the number of edges in the graph
-
-        Returns
-        -------
-        num_edges: int
-            The number of edges
-        """
-        return len(self._edge_indices.src)
-
-    @property
-    def edges(self):
-        """
-        Return an edge view of the edges and the corresponding data
-
-        Returns
-        -------
-        edges: EdgeView
-        """
-        return EdgeView(self)
-
     def edge_ids(self, src: int or list, tgt: int or list) -> list:
         """
         Convert the given endpoints to edge indices.
@@ -323,7 +353,26 @@ class GraphData(object):
         else:
             raise AssertionError("`src' must be int or list!")
 
-    def _get_edge_feature(self, edges: list):
+    def get_all_edges(self):
+        """
+        Get all the edges in the graph
+
+        Returns
+        -------
+        edges: list
+            List of edges
+        """
+        edges = list()
+        for i in range(self.get_edge_num()):
+            edges.append((self._edge_indices.src[i], self._edge_indices.tgt[i]))
+        return edges
+
+    # Edge feature operations
+    @property
+    def edge_features(self):
+        return self.edges[:].features
+
+    def get_edge_feature(self, edges: list):
         """
         Get the feature of the given edges.
 
@@ -342,7 +391,10 @@ class GraphData(object):
             ret[key] = self._edge_features[key][edges]
         return ret
 
-    def _set_edge_feature(self, edges: int or slice or list, new_data: dict):
+    def get_edge_feature_names(self):
+        return self._edge_features.keys()
+
+    def set_edge_feature(self, edges: int or slice or list, new_data: dict):
         """
         Set edge feature
 
@@ -375,28 +427,12 @@ class GraphData(object):
             else:
                 self._edge_features[key][edges] = value
 
-    @property
-    def edge_features(self):
-        return self.edges[:].features
-
+    # Edge attribute operations
     @property
     def edge_attributes(self):
         return self._edge_attributes
 
-    def get_all_edges(self):
-        """
-        Get all the edges in the graph
-
-        Returns
-        -------
-        edges: list
-            List of edges
-        """
-        edges = list()
-        for i in range(self.get_edge_num()):
-            edges.append((self._edge_indices.src[i], self._edge_indices.tgt[i]))
-        return edges
-
+    # Conversion utility functions
     def to_dgl(self) -> dgl.DGLGraph:
         """
         Convert to dgl.DGLGraph
@@ -437,3 +473,135 @@ class GraphData(object):
         self.add_edges(src_list, tgt_list)
         for k, v in dgl_g.edata.items():
             self.edge_features[k] = v
+
+    def from_dense_adj(self, adj: torch.Tensor):
+        assert adj.dim() == 2, 'Adjancency matrix is not 2-dimensional.'
+        assert adj.shape[0] == adj.shape[1], 'Adjancecy is not a square.'
+
+        node_num = adj.shape[0]
+        self.add_nodes(node_num)
+
+        for i in range(adj.shape[0]):
+            for j in range(adj.shape[1]):
+                if adj[i][j] != 0:
+                    self.add_edge(i, j)
+
+    def from_scipy_sparse_matrix(self, adj:scipy.sparse.coo_matrix):
+        assert adj.shape[0] == adj.shape[1], 'Adjancecy is not a square.'
+
+        num_nodes = adj.shape[0]
+        self.add_nodes(num_nodes)
+
+        for i in range(num_nodes):
+            self.add_edge(adj.row[i], adj.col[i])
+            self.edge_features['edge_feat'][i] = adj.data[i]
+
+    def union(self, graph):
+        """
+        Merge a graph into current graph.
+
+        Parameters
+        ----------
+        graph: GraphData
+            The new graph to be merged.
+        """
+
+        # Consistency check
+        # 1. check if node feature names are consistent
+        for feat_name in graph.node_features.keys():
+            assert feat_name in self._node_features.keys(), "Node feature '{}' does not exist in current graph.".format(
+                feat_name)
+
+        # 2. check if edge feature names are consistent
+        for feat_name in graph.edge_features.keys():
+            assert feat_name in self._edge_features.keys(), "Edge feature '{}' does not exist in current graph.".format(
+                feat_name)
+
+        # Append information to current graph
+        # 1. add nodes
+        self.add_nodes(graph.get_node_num())
+
+        # 2. add node features
+        append_node_st_idx = self.get_node_num()
+        append_node_ed_idx = self.get_node_num() + graph.get_node_num()
+        for feat_name in graph.node_features.keys():
+            self.node_features[feat_name][append_node_st_idx:append_node_ed_idx] = graph.node_features[feat_name]
+
+        # 3. add node attributes
+        for node_idx in range(append_node_st_idx, append_node_ed_idx):
+            self.node_attributes[node_idx] = graph.node_attributes[node_idx - self.get_edge_num()]
+
+        # 4. add edges
+        for (src, tgt) in graph.edges():
+            self.add_edge(src + self.get_node_num(), tgt + self.get_node_num())
+
+        # 5. add edge features
+        append_edge_st_idx = self.get_edge_num()
+        append_edge_ed_idx = self.get_edge_num() + graph.get_edge_num()
+        for feat_name in graph.edge_features.keys():
+            self.edge_features[feat_name][append_edge_st_idx:append_edge_ed_idx] = graph.edge_features[feat_name]
+
+        # 6. add edge attributes
+        for edge_idx in range(append_edge_st_idx, append_edge_ed_idx):
+            self.edge_attributes[edge_idx] = graph.edge_attributes[edge_idx - self.get_edge_num()]
+
+
+def to_batch(graphs: list = None) -> GraphData:
+    """
+    Convert a list of GraphData to a large graph (a batch).
+
+    Parameters
+    ----------
+    graphs: list of GraphData
+        The list of GraphData to be batched
+
+    Returns
+    -------
+    GraphData
+        The large graph containing all the graphs in the batch.
+    """
+    batch = graphs[0]
+    batch.batch = [0] * graphs[0].get_node_num()
+    for i in range(1, len(graphs)):
+        batch.union(graphs[i])
+        batch.batch += [i] * graphs[i].get_node_num()
+    return batch
+
+
+def from_batch(batch) -> list:
+
+    def rindex(mylist, myvalue):
+        return len(mylist) - mylist[::-1].index(myvalue) - 1
+
+    graphs = []
+    batch_size = max(batch.batch)
+    for idx in range(batch_size):
+        g = GraphData()
+        node_st_idx = batch.batch.index(idx)
+        node_ed_idx = rindex(batch.batch, idx)
+        # 1. add nodes
+        g.add_nodes(node_ed_idx - node_st_idx)
+        # 2. add node features
+        for feat_name in batch.node_features.keys():
+            g.node_features[feat_name] = batch.node_features[feat_name][node_st_idx:node_ed_idx]
+        # 3. add node attributes
+        for i in range(node_st_idx, node_ed_idx):
+            g.node_attributes[i - node_st_idx] = batch.node_attributes[i]
+        # 4. add edges
+        batch_edges = batch.edges()
+        edge_idx = []
+        for i in range(len(batch_edges)):
+            edge = batch_edges[i]
+            if edge[0] in range(node_st_idx, node_ed_idx) and edge[1] in range(node_st_idx, node_ed_idx):
+                edge_idx.append(i)
+                g.add_edge(edge[0], edge[1])
+        edge_st_idx = min(edge_idx)
+        edge_ed_idx = max(edge_idx)
+        # 5. add edge features
+        for feat_name in batch.edge_features.keys():
+            g.edge_features[feat_name] = batch.edge_features[feat_name][node_st_idx:node_ed_idx]
+        # 6. add edge attributes
+        for i in range(edge_st_idx, edge_ed_idx):
+            g.edge_attributes[i - edge_st_idx] = batch.edge_attributes[i]
+        graphs.append(g)
+    return graphs

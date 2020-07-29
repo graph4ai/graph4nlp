@@ -1,3 +1,4 @@
+# Views implementations used in GraphData
 from collections import namedtuple
 
 from .utils import slice_to_list
@@ -14,25 +15,43 @@ class NodeView(object):
     def __init__(self, graph):
         self._graph = graph
 
-    def __getitem__(self, item: int or slice):
-        assert isinstance(item, int) or isinstance(item, slice), 'Only int or slice is supported in accessing nodes.'
+    def __getitem__(self, node_idx: int or slice) -> NodeRepr:
+        """
+        Get a number of nodes and their corresponding data.
 
-        if isinstance(item, slice):
-            node_idx_list = slice_to_list(item, self._graph.get_node_num())
+        Parameters
+        ----------
+        node_idx: int or slice
+            The index of nodes to be accessed.
+
+        Returns
+        -------
+        NodeRepr
+            A collection of the corresponding data.
+        """
+        # consistency check
+        # 1. type check
+        assert isinstance(node_idx, int) or isinstance(node_idx, slice), "Only int and slice are supported currently."
+        # 2. boundary check
+        if isinstance(node_idx, slice):
+            node_idx_list = slice_to_list(node_idx, self._graph.get_node_num())
             for node_idx in node_idx_list:
                 assert node_idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(node_idx)
         else:
-            assert item < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(item)
+            assert node_idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(node_idx)
 
-        return NodeRepr(features=NodeFeatView(self._graph, item), attributes=NodeAttrView(self._graph, item))
+        return NodeRepr(features=NodeFeatView(self._graph, node_idx), attributes=NodeAttrView(self._graph, node_idx))
 
     def __len__(self):
         return self._graph.get_node_num()
 
+    def __call__(self):
+        return list(range(self._graph.get_node_num))
+
 
 class NodeFeatView(object):
     """
-    View for node features which are all tensors
+    View for node features which are all tensors.
     """
 
     def __init__(self, graph, nodes: slice or int):
@@ -48,14 +67,21 @@ class NodeFeatView(object):
     def __repr__(self):
         return repr(self._graph.get_node_features(self._nodes))
 
+    def keys(self):
+        return self._graph.get_node_feature_names()
+
 
 class NodeAttrView(object):
+    """
+    View for node attributes which are arbitrary objects.
+    """
+
     def __init__(self, graph, nodes):
         self._graph = graph
         self._nodes = nodes
 
     def __getitem__(self, item):
-        total_attrs = self._graph._get_node_attrs(self._nodes)
+        total_attrs = self._graph.get_node_attrs(self._nodes)
         filtered_attrs = dict()
         for k, v in total_attrs.items():
             if item in v:
@@ -94,7 +120,10 @@ class EdgeFeatView(object):
         self._edges = edges
 
     def __getitem__(self, item):
-        return self._graph._get_edge_feature(self._edges)[item]
+        return self._graph.get_edge_feature(self._edges)[item]
 
     def __setitem__(self, key, value):
-        self._graph._set_edge_feature(self._edges, {key: value})
+        self._graph.set_edge_feature(self._edges, {key: value})
+
+    def keys(self):
+        return self._graph.get_edge_faeture_names()
