@@ -206,7 +206,7 @@ class DynamicGNNClassifier(nn.Module):
                 gl_top_k=None,
                 gl_epsilon=None,
                 gl_smoothness_ratio=None,
-                gl_degree_ratio=None,
+                gl_connectivity_ratio=None,
                 gl_sparsity_ratio=None,
                 gl_input_size=None,
                 gl_hidden_size=None,
@@ -226,7 +226,7 @@ class DynamicGNNClassifier(nn.Module):
                                                         top_k_neigh=gl_top_k,
                                                         epsilon_neigh=gl_epsilon,
                                                         smoothness_ratio=gl_smoothness_ratio,
-                                                        degree_ratio=gl_degree_ratio,
+                                                        connectivity_ratio=gl_connectivity_ratio,
                                                         sparsity_ratio=gl_sparsity_ratio,
                                                         input_size=gl_input_size,
                                                         hidden_size=gl_hidden_size,
@@ -246,7 +246,7 @@ class DynamicGNNClassifier(nn.Module):
                                                         top_k_neigh=gl_top_k,
                                                         epsilon_neigh=gl_epsilon,
                                                         smoothness_ratio=gl_smoothness_ratio,
-                                                        degree_ratio=gl_degree_ratio,
+                                                        connectivity_ratio=gl_connectivity_ratio,
                                                         sparsity_ratio=gl_sparsity_ratio,
                                                         input_size=gl_input_size,
                                                         hidden_size=gl_hidden_size,
@@ -346,7 +346,7 @@ def main(args, seed):
                     gl_top_k=args.gl_top_k,
                     gl_epsilon=args.gl_epsilon,
                     gl_smoothness_ratio=args.gl_smoothness_ratio,
-                    gl_degree_ratio=args.gl_degree_ratio,
+                    gl_connectivity_ratio=args.gl_connectivity_ratio,
                     gl_sparsity_ratio=args.gl_sparsity_ratio,
                     gl_input_size=num_feats,
                     gl_hidden_size=args.gl_num_hidden,
@@ -434,8 +434,8 @@ if __name__ == '__main__':
                         help="epsilon for graph sparsification")
     parser.add_argument("--gl-smoothness-ratio", type=float,
                         help="smoothness ratio for graph regularization loss")
-    parser.add_argument("--gl-degree-ratio", type=float,
-                        help="degree ratio for graph regularization loss")
+    parser.add_argument("--gl-connectivity-ratio", type=float,
+                        help="connectivity ratio for graph regularization loss")
     parser.add_argument("--gl-sparsity-ratio", type=float,
                         help="sparsity ratio for graph regularization loss")
     parser.add_argument("--gl-num-heads", type=int, default=1,
@@ -444,7 +444,7 @@ if __name__ == '__main__':
                         help=r"dynamic graph construction algorithm type, \
                         {'node_emb', 'node_edge_emb' and 'node_emb_refined'},\
                         default: 'node_emb'")
-    parser.add_argument("--gl-metric-type", type=str, default='attention',
+    parser.add_argument("--gl-metric-type", type=str, default='weighted_cosine',
                         help=r"similarity metric type for dynamic graph construction")
     parser.add_argument("--init-adj-alpha", type=float, default=0.8,
                         help="alpha ratio for combining initial graph adjacency matrix")
@@ -468,7 +468,7 @@ if __name__ == '__main__':
                         help="path to the best saved model")
     args = parser.parse_args()
     args.save_model_path = ('{}_{}_gl_type_{}_gl_metric_type_{}_gl_heads_{}'
-                            '_gl_topk_{}_gl_epsilon_{}_smoothness_{}_degree_{}'
+                            '_gl_topk_{}_gl_epsilon_{}_smoothness_{}_connectivity_{}'
                             '_sparsity_{}_init_adj_alpha_{}').format(
                                                     args.save_model_path,
                                                     args.dataset,
@@ -478,7 +478,7 @@ if __name__ == '__main__':
                                                     args.gl_top_k,
                                                     args.gl_epsilon,
                                                     args.gl_smoothness_ratio,
-                                                    args.gl_degree_ratio,
+                                                    args.gl_connectivity_ratio,
                                                     args.gl_sparsity_ratio,
                                                     args.init_adj_alpha)
     print(args)

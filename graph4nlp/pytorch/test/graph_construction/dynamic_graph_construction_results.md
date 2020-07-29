@@ -33,9 +33,9 @@ Results with 2-layer GCN
 
 | Dataset  |    Raw graph    |  NodeEmb-based Graph   | Raw graph + NodeEmb-based Graph   |
 | -------- | ------------- | ------------- | ------------- |
-| Cora     | 82.02 (0.57)  | 26.98 (0.95) | 80.36 (1.01) |
+| Cora     | 82.02 (0.57)  | 58.48 (2.40) | 82.04 (0.52) |
 
-NodeEmb-based Graph:
+<!-- NodeEmb-based Graph:
 1 head attention, top-k 200: 27.14 (1.02)
 1 head weighted cosine, top-k 10:  46.24 (2.63)
 1 head weighted cosine, top-k 100: 50.58 (2.08)
@@ -48,6 +48,10 @@ NodeEmb-based Graph:
 
 Raw graph + NodeEmb-based Graph:
 1 head weighted cosine, epsilon 0.3, init-adj-alpha 0.8: 82.04 (0.52)
+1 head weighted cosine, epsilon 0.3, init-adj-alpha 0.8, smoothness 0.1: 81.34 (1.15)
+1 head weighted cosine, epsilon 0.3, init-adj-alpha 0.8, smoothness 0.2: 81.36 (0.77)
+ -->
+
 
 
 * All the accuracy numbers are averaged after 5 random runs.
