@@ -457,7 +457,7 @@ class BiFuseGATLayerConv(GNNLayerBase):
             nn.init.xavier_normal_(self.fuse_linear.weight, gain=gain)
 
     def forward(self, graph, feat):
-        Parameters
+        """Parameters
         ----------
         graph : DGLGraph
             The graph.
