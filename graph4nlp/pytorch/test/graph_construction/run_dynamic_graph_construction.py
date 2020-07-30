@@ -17,7 +17,7 @@ from ..utils import EarlyStopping
 from ...modules.graph_construction import NodeEmbeddingBasedGraphConstruction, NodeEmbeddingBasedRefinedGraphConstruction
 from ...modules.utils.vocab_utils import VocabModel
 from ...modules.utils.padding_utils import pad_2d_vals_no_size
-from ...modules.utils.torch_utils import to_cuda
+from ...modules.utils.generic_utils import to_cuda
 
 
 def accuracy(logits, labels):
@@ -28,7 +28,7 @@ def accuracy(logits, labels):
 def evaluate(model, g, labels, mask):
     model.eval()
     with torch.no_grad():
-        logits = model(g)
+        logits, _ = model(g)
         logits = logits[mask]
         labels = labels[mask]
         return accuracy(logits, labels)
@@ -197,13 +197,19 @@ class DynamicGNNClassifier(nn.Module):
     def __init__(self,
                 word_vocab,
                 embedding_styles,
-                gl_input_size,
-                gl_hidden_size,
-                gl_top_k,
-                gl_type,
                 input_size,
                 hidden_size,
                 output_size,
+                gl_type,
+                gl_metric_type='weighted_cosine',
+                gl_num_heads=1,
+                gl_top_k=None,
+                gl_epsilon=None,
+                gl_smoothness_ratio=None,
+                gl_connectivity_ratio=None,
+                gl_sparsity_ratio=None,
+                gl_input_size=None,
+                gl_hidden_size=None,
                 init_adj_alpha=None,
                 feat_drop=0,
                 layer_drop=0.5,
@@ -211,24 +217,41 @@ class DynamicGNNClassifier(nn.Module):
                 device=None):
         super(DynamicGNNClassifier, self).__init__()
         self.gl_type = gl_type
-        self.init_adj_alpha = init_adj_alpha
         if self.gl_type == 'node_emb':
             self.graph_learner = NodeEmbeddingBasedGraphConstruction(
                                                         word_vocab,
                                                         embedding_styles,
-                                                        gl_input_size,
-                                                        gl_hidden_size,
-                                                        gl_top_k,
+                                                        sim_metric_type=gl_metric_type,
+                                                        num_heads=gl_num_heads,
+                                                        top_k_neigh=gl_top_k,
+                                                        epsilon_neigh=gl_epsilon,
+                                                        smoothness_ratio=gl_smoothness_ratio,
+                                                        connectivity_ratio=gl_connectivity_ratio,
+                                                        sparsity_ratio=gl_sparsity_ratio,
+                                                        input_size=gl_input_size,
+                                                        hidden_size=gl_hidden_size,
+                                                        fix_word_emb=True,
+                                                        dropout=None,
                                                         device=device)
+
         elif self.gl_type == 'node_edge_emb':
             raise NotImplementedError()
         elif self.gl_type == 'node_emb_refined':
             self.graph_learner = NodeEmbeddingBasedRefinedGraphConstruction(
                                                         word_vocab,
                                                         embedding_styles,
-                                                        gl_input_size,
-                                                        gl_hidden_size,
-                                                        gl_top_k,
+                                                        init_adj_alpha,
+                                                        sim_metric_type=gl_metric_type,
+                                                        num_heads=gl_num_heads,
+                                                        top_k_neigh=gl_top_k,
+                                                        epsilon_neigh=gl_epsilon,
+                                                        smoothness_ratio=gl_smoothness_ratio,
+                                                        connectivity_ratio=gl_connectivity_ratio,
+                                                        sparsity_ratio=gl_sparsity_ratio,
+                                                        input_size=gl_input_size,
+                                                        hidden_size=gl_hidden_size,
+                                                        fix_word_emb=True,
+                                                        dropout=None,
                                                         device=device)
         else:
             raise RuntimeError('Unknown gl_type: {}'.format(self.gl_type))
@@ -245,14 +268,14 @@ class DynamicGNNClassifier(nn.Module):
         node_feat = graph.ndata['node_feat']
 
         if self.gl_type == 'node_emb_refined':
-            new_graph = self.graph_learner.topology(node_feat, graph.init_adj, self.init_adj_alpha, node_mask=None)
+            new_graph = self.graph_learner.topology(node_feat, graph.init_adj, node_mask=None)
         else:
             new_graph = self.graph_learner.topology(node_feat, node_mask=None)
 
         new_graph.ndata['node_feat'] = node_feat
         logits = self.gnn_clf(new_graph)
 
-        return logits
+        return logits, new_graph
 
 def main(args, seed):
     # Configure
@@ -293,6 +316,10 @@ def main(args, seed):
         g.init_adj = init_adj
 
     raw_text_data = [['I like nlp.', 'Same here!'], ['I like graph.', 'Same here!']]
+    vocab_model = VocabModel(raw_text_data, max_word_vocab_size=None,
+                                min_word_vocab_freq=1,
+                                word_emb_size=300)
+
     src_text_seq = list(zip(*raw_text_data))[0]
     src_idx_seq = [vocab_model.word_vocab.to_index_sequence(each) for each in src_text_seq]
     src_len = torch.LongTensor([len(each) for each in src_idx_seq])
@@ -300,26 +327,29 @@ def main(args, seed):
     input_tensor = torch.LongTensor(pad_2d_vals_no_size(src_idx_seq))
 
 
-    vocab_model = VocabModel(raw_text_data, max_word_vocab_size=None,
-                                min_word_vocab_freq=1,
-                                word_emb_size=300)
+
 
     embedding_styles = {'word_emb_type': 'w2v',
                         'node_edge_emb_strategy': 'bilstm',
                         'seq_info_encode_strategy': 'none'}
-
 
     # create model
     model = DynamicGNNClassifier(
                     vocab_model.word_vocab,
                     embedding_styles,
                     num_feats,
-                    args.gl_num_hidden,
-                    args.gl_topk,
-                    args.gl_type,
-                    num_feats,
                     args.num_hidden,
                     n_classes,
+                    args.gl_type,
+                    gl_metric_type=args.gl_metric_type,
+                    gl_num_heads=args.gl_num_heads,
+                    gl_top_k=args.gl_top_k,
+                    gl_epsilon=args.gl_epsilon,
+                    gl_smoothness_ratio=args.gl_smoothness_ratio,
+                    gl_connectivity_ratio=args.gl_connectivity_ratio,
+                    gl_sparsity_ratio=args.gl_sparsity_ratio,
+                    gl_input_size=num_feats,
+                    gl_hidden_size=args.gl_num_hidden,
                     init_adj_alpha=args.init_adj_alpha,
                     feat_drop=args.in_drop,
                     layer_drop=args.layer_drop,
@@ -346,8 +376,9 @@ def main(args, seed):
         if epoch >= 3:
             t0 = time.time()
         # forward
-        logits = model(g)
+        logits, dgl_graph = model(g)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
+        loss += dgl_graph.graph_reg
 
         optimizer.zero_grad()
         loss.backward()
@@ -397,12 +428,24 @@ if __name__ == '__main__':
                         help="number of training epochs")
     parser.add_argument("--gl-num-hidden", type=int, default=16,
                         help="number of hidden units for dynamic graph construction")
-    parser.add_argument("--gl-topk", type=int, default=200,
-                        help="top k for dynamic graph construction")
+    parser.add_argument("--gl-top-k", type=int,
+                        help="top k for graph sparsification")
+    parser.add_argument("--gl-epsilon", type=float,
+                        help="epsilon for graph sparsification")
+    parser.add_argument("--gl-smoothness-ratio", type=float,
+                        help="smoothness ratio for graph regularization loss")
+    parser.add_argument("--gl-connectivity-ratio", type=float,
+                        help="connectivity ratio for graph regularization loss")
+    parser.add_argument("--gl-sparsity-ratio", type=float,
+                        help="sparsity ratio for graph regularization loss")
+    parser.add_argument("--gl-num-heads", type=int, default=1,
+                        help="num of heads for dynamic graph construction")
     parser.add_argument("--gl-type", type=str, default='node_emb',
                         help=r"dynamic graph construction algorithm type, \
                         {'node_emb', 'node_edge_emb' and 'node_emb_refined'},\
                         default: 'node_emb'")
+    parser.add_argument("--gl-metric-type", type=str, default='weighted_cosine',
+                        help=r"similarity metric type for dynamic graph construction")
     parser.add_argument("--init-adj-alpha", type=float, default=0.8,
                         help="alpha ratio for combining initial graph adjacency matrix")
     parser.add_argument("--num-hidden", type=int, default=16,
@@ -421,14 +464,22 @@ if __name__ == '__main__':
                         help="early stopping patience")
     parser.add_argument('--fastmode', action="store_true", default=False,
                         help="skip re-evaluate the validation set")
-    parser.add_argument('--save-model-path', type=str, default="checkpoint",
+    parser.add_argument('--save-model-path', type=str, default="ckpt",
                         help="path to the best saved model")
     args = parser.parse_args()
-    args.save_model_path = '{}_{}_gl_type_{}_gl_topk_{}_init_adj_alpha_{}'.format(
+    args.save_model_path = ('{}_{}_gl_type_{}_gl_metric_type_{}_gl_heads_{}'
+                            '_gl_topk_{}_gl_epsilon_{}_smoothness_{}_connectivity_{}'
+                            '_sparsity_{}_init_adj_alpha_{}').format(
                                                     args.save_model_path,
                                                     args.dataset,
                                                     args.gl_type,
-                                                    args.gl_topk,
+                                                    args.gl_metric_type,
+                                                    args.gl_num_heads,
+                                                    args.gl_top_k,
+                                                    args.gl_epsilon,
+                                                    args.gl_smoothness_ratio,
+                                                    args.gl_connectivity_ratio,
+                                                    args.gl_sparsity_ratio,
                                                     args.init_adj_alpha)
     print(args)
 

@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
-from ..utils.torch_utils import to_cuda
+from ..utils.generic_utils import to_cuda
 
 
 class EmbeddingConstructionBase(nn.Module):
