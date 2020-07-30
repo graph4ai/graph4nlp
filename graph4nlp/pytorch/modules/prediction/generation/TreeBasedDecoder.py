@@ -85,30 +85,30 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         while (cur_index <= max_index):
             for j in range(1, 3):
                 dec_state[cur_index][0][j] = torch.zeros(
-                    (self.batch_size, self.rnn_size), dtype=torch.float, requires_grad=True)
-                to_cuda(dec_state[cur_index][0][j], self.device)
+                    (self.batch_size, self.rnn_size), dtype=torch.float, requires_grad=True, device=self.device)
+                # to_cuda(dec_state[cur_index][0][j], self.device)
 
             # sibling_state = torch.zeros(
             #     (self.batch_size, self.rnn_size), dtype=torch.float, requires_grad=True)
             # to_cuda(sibling_state, self.device)
-
-            if cur_index == 1:
-                for i in range(self.batch_size):
-                    # print(dec_state[1][0][1].is_leaf)
-                    dec_state[1][0][1][i, :] = graph_cell_state[i]
-                    dec_state[1][0][2][i, :] = graph_hidden_state[i]
-
-            else:
-                for i in range(1, self.batch_size+1):
-                    if (cur_index <= len(queue_tree[i])):
-                        par_index = queue_tree[i][cur_index - 1]["parent"]
-                        child_index = queue_tree[i][cur_index -
-                                                    1]["child_index"]
-
-                        dec_state[cur_index][0][1][i-1, :] = \
-                            dec_state[par_index][child_index][1][i-1, :]
-                        dec_state[cur_index][0][2][i-1,
-                                                        :] = dec_state[par_index][child_index][2][i-1, :]
+            with torch.no_grad():
+                if cur_index == 1:
+                    for i in range(self.batch_size):
+                        # print(dec_state[1][0][1].is_leaf)
+                        dec_state[1][0][1][i, :] = graph_cell_state[i]
+                        dec_state[1][0][2][i, :] = graph_hidden_state[i]
+    
+                else:
+                    for i in range(1, self.batch_size+1):
+                        if (cur_index <= len(queue_tree[i])):
+                            par_index = queue_tree[i][cur_index - 1]["parent"]
+                            child_index = queue_tree[i][cur_index -
+                                                        1]["child_index"]
+    
+                            dec_state[cur_index][0][1][i-1, :] = \
+                                dec_state[par_index][child_index][1][i-1, :]
+                            dec_state[cur_index][0][2][i-1,
+                                                            :] = dec_state[par_index][child_index][2][i-1, :]
 
                     # flag_sibling = False
                     # for q_index in range(len(queue_tree[i])):
