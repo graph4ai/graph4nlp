@@ -52,11 +52,11 @@ def slice_to_list(sl, max_len):
     return list(range(start, stop, step))
 
 
-def entail_zero_padding(old_tensor: torch.tensor, num_rows: int):
+def entail_zero_padding(old_tensor: torch.Tensor, num_rows: int):
     if old_tensor is None:
-        return
+        return None
 
     if len(old_tensor.shape) == 1:
-        torch.cat((old_tensor, torch.zeros(1)), out=old_tensor)
+        return torch.cat((old_tensor, torch.zeros(1)))
     else:
-        torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:]))), dim=0, out=old_tensor)
+        return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:]))), dim=0)

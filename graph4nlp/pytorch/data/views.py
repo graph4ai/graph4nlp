@@ -35,8 +35,8 @@ class NodeView(object):
         # 2. boundary check
         if isinstance(node_idx, slice):
             node_idx_list = slice_to_list(node_idx, self._graph.get_node_num())
-            for node_idx in node_idx_list:
-                assert node_idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(node_idx)
+            for idx in node_idx_list:
+                assert idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(idx)
         else:
             assert node_idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(node_idx)
 
@@ -126,4 +126,4 @@ class EdgeFeatView(object):
         self._graph.set_edge_feature(self._edges, {key: value})
 
     def keys(self):
-        return self._graph.get_edge_faeture_names()
+        return self._graph.get_edge_feature_names()

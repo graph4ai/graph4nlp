@@ -1,13 +1,13 @@
 from collections import namedtuple
 
 import dgl
+import numpy as np
+import scipy.sparse
 import torch
 
 from .utils import SizeMismatchException, NodeNotFoundException, EdgeNotFoundException
 from .utils import entail_zero_padding, slice_to_list
 from .views import NodeView, NodeFeatView, EdgeView
-
-import scipy.sparse
 
 EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
 
@@ -89,7 +89,7 @@ class GraphData(object):
 
         # Do padding in the node feature dictionary
         for key in self._node_features.keys():
-            entail_zero_padding(self._node_features[key], node_num)
+            self._node_features[key] = entail_zero_padding(self._node_features[key], node_num)
 
     # Node feature operations
     @property
@@ -250,22 +250,22 @@ class GraphData(object):
         if (src not in range(self.get_node_num())) or (tgt not in range(self.get_node_num())):
             raise NodeNotFoundException('Endpoint not in the graph.')
 
-        # Add edge
-        self._edge_indices.src.append(src)
-        self._edge_indices.tgt.append(tgt)
-
         # Append to the mapping list
         endpoint_tuple = (src, tgt)
         eid = self.get_edge_num()
         self._eid_nids_mapping[eid] = endpoint_tuple
         self._nids_eid_mapping[endpoint_tuple] = eid
 
+        # Add edge
+        self._edge_indices.src.append(src)
+        self._edge_indices.tgt.append(tgt)
+
         # Initialize edge feature and attribute
         # 1. create placeholder in edge attribute dictionary
         self._edge_attributes[eid] = single_edge_attr_factory(res_init_edge_attributes)
         # 2. perform zero padding
         for key in self._edge_features.keys():
-            entail_zero_padding(self._edge_features[key], 1)
+            self._edge_features[key] = entail_zero_padding(self._edge_features[key], 1)
 
     def add_edges(self, src: list, tgt: list):
         """
@@ -388,7 +388,10 @@ class GraphData(object):
         """
         ret = {}
         for key in self._edge_features.keys():
-            ret[key] = self._edge_features[key][edges]
+            if self._edge_features[key] is None:
+                ret[key] = None
+            else:
+                ret[key] = self._edge_features[key][edges]
         return ret
 
     def get_edge_feature_names(self):
@@ -422,6 +425,7 @@ class GraphData(object):
         # Modification
         for key, value in new_data.items():
             assert isinstance(value, torch.Tensor), "`{}' is not a tensor. Node features are expected to be tensor."
+            assert value.shape[0] == self.get_edge_num(), "Length of the feature vector does not match the edge number."
             if key not in self._edge_features or self._edge_features[key] is None:
                 self._edge_features[key] = value
             else:
@@ -480,13 +484,17 @@ class GraphData(object):
 
         node_num = adj.shape[0]
         self.add_nodes(node_num)
-
+        edge_weight = []
         for i in range(adj.shape[0]):
             for j in range(adj.shape[1]):
                 if adj[i][j] != 0:
                     self.add_edge(i, j)
+                    edge_weight.append(adj[i][j])
+        edge_weight = torch.stack(edge_weight, dim=0)
+        self.edge_features['edge_weight'] = edge_weight
+                    # self.edge_features['edge_weight'][-1] = adj[i][j]
 
-    def from_scipy_sparse_matrix(self, adj:scipy.sparse.coo_matrix):
+    def from_scipy_sparse_matrix(self, adj: scipy.sparse.coo_matrix):
         assert adj.shape[0] == adj.shape[1], 'Adjancecy is not a square.'
 
         num_nodes = adj.shape[0]
@@ -494,7 +502,22 @@ class GraphData(object):
 
         for i in range(num_nodes):
             self.add_edge(adj.row[i], adj.col[i])
-            self.edge_features['edge_feat'][i] = adj.data[i]
+        self.edge_features['edge_weight'] = torch.tensor(adj.data)
+
+    def adj_matrix(self):
+        ret = torch.zeros((self.get_node_num(), self.get_node_num()))
+        all_edges = self.edges()
+        for i in range(len(all_edges)):
+            u, v = all_edges[i]
+            ret[u][v] = 1
+        return ret
+
+    def scipy_sparse_adj(self):
+        row = np.array(self._edge_indices[0])
+        col = np.array(self._edge_indices[1])
+        data = np.ones(self.get_edge_num())
+        matrix = scipy.sparse.coo_matrix((data, (row, col)), shape=(self.get_node_num(), self.get_node_num()))
+        return matrix
 
     def union(self, graph):
         """
@@ -511,39 +534,51 @@ class GraphData(object):
         for feat_name in graph.node_features.keys():
             assert feat_name in self._node_features.keys(), "Node feature '{}' does not exist in current graph.".format(
                 feat_name)
+            # assert self._node_features[feat_name] is not None, "Node feature '{}' of current graph is None.".format(
+            #     feat_name)
 
         # 2. check if edge feature names are consistent
         for feat_name in graph.edge_features.keys():
             assert feat_name in self._edge_features.keys(), "Edge feature '{}' does not exist in current graph.".format(
                 feat_name)
+            # assert self._edge_features[feat_name] is not None, "Edge feature '{}' of current graph is None.".format(
+            #     feat_name)
+
+        # Save original information
+        old_node_num = self.get_node_num()
+        old_edge_num = self.get_edge_num()
 
         # Append information to current graph
         # 1. add nodes
         self.add_nodes(graph.get_node_num())
 
         # 2. add node features
-        append_node_st_idx = self.get_node_num()
-        append_node_ed_idx = self.get_node_num() + graph.get_node_num()
+        append_node_st_idx = old_node_num
+        append_node_ed_idx = self.get_node_num()
         for feat_name in graph.node_features.keys():
+            if self.node_features[feat_name] is None:
+                continue
             self.node_features[feat_name][append_node_st_idx:append_node_ed_idx] = graph.node_features[feat_name]
 
         # 3. add node attributes
         for node_idx in range(append_node_st_idx, append_node_ed_idx):
-            self.node_attributes[node_idx] = graph.node_attributes[node_idx - self.get_edge_num()]
+            self.node_attributes[node_idx] = graph.node_attributes[node_idx - append_node_st_idx]
 
         # 4. add edges
         for (src, tgt) in graph.edges():
-            self.add_edge(src + self.get_node_num(), tgt + self.get_node_num())
+            self.add_edge(src + old_node_num, tgt + old_node_num)
 
         # 5. add edge features
-        append_edge_st_idx = self.get_edge_num()
-        append_edge_ed_idx = self.get_edge_num() + graph.get_edge_num()
+        append_edge_st_idx = old_edge_num
+        append_edge_ed_idx = self.get_edge_num()
         for feat_name in graph.edge_features.keys():
+            if self.edge_features[feat_name] is None:
+                continue
             self.edge_features[feat_name][append_edge_st_idx:append_edge_ed_idx] = graph.edge_features[feat_name]
 
         # 6. add edge attributes
         for edge_idx in range(append_edge_st_idx, append_edge_ed_idx):
-            self.edge_attributes[edge_idx] = graph.edge_attributes[edge_idx - self.get_edge_num()]
+            self.edge_attributes[edge_idx] = graph.edge_attributes[edge_idx - append_edge_st_idx]
 
 
 def to_batch(graphs: list = None) -> GraphData:
@@ -569,21 +604,23 @@ def to_batch(graphs: list = None) -> GraphData:
 
 
 def from_batch(batch) -> list:
-
     def rindex(mylist, myvalue):
         return len(mylist) - mylist[::-1].index(myvalue) - 1
 
     graphs = []
-    batch_size = max(batch.batch)
+    batch_size = max(batch.batch) + 1
     for idx in range(batch_size):
         g = GraphData()
         node_st_idx = batch.batch.index(idx)
-        node_ed_idx = rindex(batch.batch, idx)
+        node_ed_idx = rindex(batch.batch, idx) + 1
         # 1. add nodes
         g.add_nodes(node_ed_idx - node_st_idx)
         # 2. add node features
         for feat_name in batch.node_features.keys():
-            g.node_features[feat_name] = batch.node_features[feat_name][node_st_idx:node_ed_idx]
+            if batch.node_features[feat_name] is None:
+                continue
+            else:
+                g.node_features[feat_name] = batch.node_features[feat_name][node_st_idx:node_ed_idx]
         # 3. add node attributes
         for i in range(node_st_idx, node_ed_idx):
             g.node_attributes[i - node_st_idx] = batch.node_attributes[i]
@@ -594,12 +631,15 @@ def from_batch(batch) -> list:
             edge = batch_edges[i]
             if edge[0] in range(node_st_idx, node_ed_idx) and edge[1] in range(node_st_idx, node_ed_idx):
                 edge_idx.append(i)
-                g.add_edge(edge[0], edge[1])
+                g.add_edge(edge[0] - node_st_idx, edge[1] - node_st_idx)
         edge_st_idx = min(edge_idx)
-        edge_ed_idx = max(edge_idx)
+        edge_ed_idx = max(edge_idx) + 1
         # 5. add edge features
         for feat_name in batch.edge_features.keys():
-            g.edge_features[feat_name] = batch.edge_features[feat_name][node_st_idx:node_ed_idx]
+            if batch.edge_features[feat_name] is None:
+                continue
+            else:
+                g.edge_features[feat_name] = batch.edge_features[feat_name][node_st_idx:node_ed_idx]
         # 6. add edge attributes
         for i in range(edge_st_idx, edge_ed_idx):
             g.edge_attributes[i - edge_st_idx] = batch.edge_attributes[i]
