@@ -15,7 +15,7 @@ import tqdm
 from pythonds.basic.stack import Stack
 from stanfordcorenlp import StanfordCoreNLP
 
-from data_utils import SymbolsManager, convert_to_tree
+from .data_utils import SymbolsManager, convert_to_tree
 
 
 class Node():
@@ -58,7 +58,7 @@ class GraphGenerator():
         elif args.parse_chinese_or_english == 1:
             self.parser = StanfordCoreNLP('http://localhost', port=9001)
 
-        print "syntactic parser ready..\n"
+        print("syntactic parser ready..\n")
 
     def parse(self, src_text):
         nlp_parser = self.parser
@@ -80,7 +80,7 @@ class GraphGenerator():
     ''' Some data processing func '''
 
     def split_str(self, string):
-        dele_char = u'\uff0e'
+        dele_char = '\uff0e'
         if dele_char not in string:
             return [string]
         else:
@@ -189,14 +189,14 @@ class GraphGenerator():
     def print_edges(self, g):
         edge_arr = list(g.edges())
         for e in edge_arr:
-            print (e[0].word, e[1].word), (e[0].id, e[1].id)
+            print((e[0].word, e[1].word), (e[0].id, e[1].id))
 
     def print_nodes(self, g, he_ta=False):
         nodes_arr = list(g.nodes())
         if he_ta:
-            print [(n.word, n.id, n.head, n.tail) for n in nodes_arr]
+            print([(n.word, n.id, n.head, n.tail) for n in nodes_arr])
         else:
-            print [(n.word, n.id) for n in nodes_arr]
+            print([(n.word, n.id) for n in nodes_arr])
 
     def graph_connect(self, a_, b_):
         a = copy.deepcopy(a_)
@@ -235,7 +235,7 @@ class GraphGenerator():
             adj_dict[node.id] = []
 
         for node, n_dict in g.adjacency():
-            for i in n_dict.items():
+            for i in list(n_dict.items()):
                 adj_dict[i[0].id].append(node.id)
         return adj_dict
 
@@ -243,7 +243,7 @@ class GraphGenerator():
         # whether to cut root
         parse_str = self.cut_root_node(self.parse(original_str))
 
-        token_list = original_str.decode("utf-8").split()
+        token_list = original_str.split()
         for punc in ['(', ')']:
             parse_str = parse_str.replace(punc, ' ' + punc + ' ')
 
@@ -335,7 +335,7 @@ class GraphGenerator():
             # print word_list
 
             # transform id to position in wordlist
-            for k in adj_dic.keys():
+            for k in list(adj_dic.keys()):
                 new_dic[id_arr.index(k)] = [id_arr.index(x)
                                             for x in adj_dic[k]]
 
@@ -397,8 +397,8 @@ class GraphGenerator():
         form_manager = SymbolsManager(True)
         form_manager.init_from_file(
             "{}/vocab.f.txt".format(self.source_data_dir), 0, self.max_vocab_size)
-        print(word_manager.vocab_size)
-        print(form_manager.vocab_size)
+        print((word_manager.vocab_size))
+        print((form_manager.vocab_size))
 
         data = []
         with open("{}/{}.txt".format(self.source_data_dir, "train"), "r") as f:
@@ -432,9 +432,9 @@ class GraphGenerator():
             for w in new_vocab:
                 if w not in word_manager.symbol2idx:
                     word_manager.add_symbol(w)
-                    print "{} Added.".format(w)
+                    print("{} Added.".format(w))
             index += self.batch_size
-            print index
+            print(index)
     #         if index >= 120:
     #             break
 
@@ -446,11 +446,11 @@ class GraphGenerator():
         with open(out_mapfile, "wb") as out_map:
             pkl.dump([word_manager, form_manager], out_map)
 
-        print(word_manager.vocab_size)
-        print(form_manager.vocab_size)
+        print((word_manager.vocab_size))
+        print((form_manager.vocab_size))
 
         time_end = time.time()
-        print "time used:" + str(time_end - time_start)
+        print("time used:" + str(time_end - time_start))
 
     def test_data_preprocess(self):
         data = []

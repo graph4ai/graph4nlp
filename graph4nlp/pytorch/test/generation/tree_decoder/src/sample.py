@@ -7,9 +7,9 @@ import warnings
 import numpy as np
 import torch
 
-from train import do_generate
-from utils import data_utils, graph_utils
-from utils.tree import Tree
+from .train import do_generate
+from .utils import data_utils, graph_utils
+from .utils.tree import Tree
 
 warnings.filterwarnings('ignore')
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         np.random.seed(args.seed)
         torch.manual_seed(args.seed)
 
-        print model_num
+        print(model_num)
         try:
             checkpoint = torch.load(
                 args.model_dir + "model_g2t" + str(model_num))
@@ -118,13 +118,13 @@ if __name__ == "__main__":
             #     add_acc += 1.0
         val_acc = data_utils.compute_tree_accuracy(
             candidate_list, reference_list, form_manager) + add_acc/len(data)
-        print("ACCURACY = {}\n".format(val_acc))
+        print(("ACCURACY = {}\n".format(val_acc)))
         if val_acc >= max_acc:
             max_acc = val_acc
             max_index = model_num
 
         model_num += args.num_batch
-    print "max accuracy:", max_acc
+    print("max accuracy:", max_acc)
     best_valid_model = torch.load(
         args.model_dir + "model_g2t" + str(max_index))
     torch.save(best_valid_model, args.model)

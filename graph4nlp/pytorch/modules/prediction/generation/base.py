@@ -131,9 +131,9 @@ class RNNTreeDecoderBase(DecoderBase):
     teacher_forcing_ratio: float, default=1.
         The probability rate to use teacher forcing strategy.
     """
-    def __init__(self, attentional=True, use_copy=False, use_coverage=False, attention_type="uniform",
+    def __init__(self, use_attention=True, use_copy=False, use_coverage=False, attention_type="uniform",
                  fuse_strategy="average"):
-        super(RNNTreeDecoderBase, self).__init__(attentional=attentional)
+        super(RNNTreeDecoderBase, self).__init__(attentional=use_attention)
 
     def _build_rnn(self, rnn_type, **kwargs):
         """

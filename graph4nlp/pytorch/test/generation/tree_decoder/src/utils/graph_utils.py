@@ -39,10 +39,10 @@ def cons_batch_graph(graphs):
         # used in the creation of fw_adj and bw_adj
 
         id_gid_map = {}
-        offset = len(g_ids.keys())
+        offset = len(list(g_ids.keys()))
         for id in ids:
             id = int(id)
-            g_ids[offset + id] = len(g_ids.keys())
+            g_ids[offset + id] = len(list(g_ids.keys()))
             g_ids_features[offset + id] = features[str(id)]
             id_gid_map[id] = offset + id
             nodes.append(offset + id)
@@ -62,7 +62,7 @@ def cons_batch_graph(graphs):
                     g_bw_adj[g_t] = []
                 g_bw_adj[g_t].append(g_id)
 
-    node_size = len(g_ids.keys())
+    node_size = len(list(g_ids.keys()))
     for id in range(node_size):
         if id not in g_fw_adj:
             g_fw_adj[id] = []
@@ -124,23 +124,23 @@ def vectorize_batch_graph(graph, word_manager):
     for id in g_fw_adj:
         adj = g_fw_adj[id]
         for _ in range(degree_max_size - len(adj)):
-            adj.append(len(g_fw_adj.keys()))
+            adj.append(len(list(g_fw_adj.keys())))
         adj = adj[:degree_max_size]
         g_fw_adj_v.append(adj)
 
     # PAD node directs to the PAD node
-    g_fw_adj_v.append([len(g_fw_adj.keys()) for _ in range(degree_max_size)])
+    g_fw_adj_v.append([len(list(g_fw_adj.keys())) for _ in range(degree_max_size)])
 
     g_bw_adj_v = []
     for id in g_bw_adj:
         adj = g_bw_adj[id]
         for _ in range(degree_max_size - len(adj)):
-            adj.append(len(g_bw_adj.keys()))
+            adj.append(len(list(g_bw_adj.keys())))
         adj = adj[:degree_max_size]
         g_bw_adj_v.append(adj)
 
     # PAD node directs to the PAD node
-    g_bw_adj_v.append([len(g_bw_adj.keys()) for _ in range(degree_max_size)])
+    g_bw_adj_v.append([len(list(g_bw_adj.keys())) for _ in range(degree_max_size)])
 
     gv['g_ids'] = graph['g_ids']
     gv['g_nodes'] = np.array(graph['g_nodes'])

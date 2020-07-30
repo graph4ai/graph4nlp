@@ -1,7 +1,7 @@
 import os
 import time
 import random
-import nn_modules
+from . import nn_modules
 import numpy as np
 import pickle as pkl
 
@@ -110,7 +110,7 @@ class GraphEncoder(nn.Module):
                 cnt_change += 1
             else:
                 weight_matrix[i] = torch.randn((embedding_dim, ))
-        print cnt_change
+        print(cnt_change)
         return weight_matrix
 
     def forward(self, graph_batch):

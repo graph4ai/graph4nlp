@@ -3,20 +3,25 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .base import RNNTreeDecoderBase
+from ...utils.tree_utils import Tree, to_cuda
 
 
 class StdTreeDecoder(RNNTreeDecoderBase):
-    def __init__(self, attn, dec_emb_size, dec_hidden_size, output_size, device, attentional=True, use_copy=False, use_coverage=False,
+    def __init__(self, attn, dec_emb_size, dec_hidden_size, output_size, device, criterion, use_sibling = True, batch_size=20, use_attention=True, use_copy=False, use_coverage=False,
                  fuse_strategy="average", num_layers=1, dropout_input=0.1, dropout_output=0.3, rnn_type="lstm", max_dec_seq_length=512, max_dec_tree_depth=256, tgt_vocab=None):
-        super(StdTreeDecoder, self).__init__(attentional=True, use_copy=False, use_coverage=False, attention_type="uniform",
+        super(StdTreeDecoder, self).__init__(use_attention=True, use_copy=False, use_coverage=False, attention_type="uniform",
                                              fuse_strategy="average")
         self.num_layers = num_layers
+        self.device = device
+        self.criterion = criterion
+        self.batch_size = batch_size
+        self.rnn_size = dec_hidden_size
         self.hidden_size = dec_hidden_size
         self.max_dec_seq_length = max_dec_seq_length
         self.max_dec_tree_depth = max_dec_tree_depth
         self.tgt_vocab = tgt_vocab
 
-        self.dec_state = {}
+                
         self.attn_state = {}
 
         self.rnn = self._build_rnn(
@@ -56,74 +61,80 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         """
 
         tgt_batch_size = len(tgt_tree_batch)
-
-        assert graph_node_embedding.requires_grad == True
+        # assert graph_node_embedding.requires_grad == True
         assert rnn_node_embedding.requires_grad == True
         assert graph_level_embedding.requires_grad == True
 
-        enc_outputs = graph_node_embedding
+        enc_outputs = rnn_node_embedding
         graph_cell_state = graph_level_embedding
         graph_hidden_state = graph_level_embedding
 
-        for i in range(self.max_dec_tree_depth + 1):
-            self.dec_state[i] = {}
-            for j in range(self.max_dec_seq_length + 1):
-                self.dec_state[i][j] = {}
-
         cur_index = 1
+        loss = 0
 
         dec_batch, queue_tree, max_index = get_dec_batch(
             tgt_tree_batch, tgt_batch_size, False, self.tgt_vocab)
 
+
+        dec_state = {}
+        for i in range(self.max_dec_tree_depth + 1):
+            dec_state[i] = {}
+            for j in range(self.max_dec_seq_length + 1):
+                dec_state[i][j] = {}
+
         while (cur_index <= max_index):
             for j in range(1, 3):
-                self.dec_state[cur_index][0][j] = torch.zeros(
-                    (opt.batch_size, opt.rnn_size), dtype=torch.float, requires_grad=True)
-                if using_gpu:
-                    self.dec_state[cur_index][0][j] = self.dec_state[cur_index][0][j].cuda(
-                    )
+                dec_state[cur_index][0][j] = torch.zeros(
+                    (self.batch_size, self.rnn_size), dtype=torch.float, requires_grad=True)
+                to_cuda(dec_state[cur_index][0][j], self.device)
 
-            sibling_state = torch.zeros(
-                (opt.batch_size, opt.rnn_size), dtype=torch.float, requires_grad=True)
-            if using_gpu:
-                sibling_state = sibling_state.cuda()
+            # sibling_state = torch.zeros(
+            #     (self.batch_size, self.rnn_size), dtype=torch.float, requires_grad=True)
+            # to_cuda(sibling_state, self.device)
 
             if cur_index == 1:
-                for i in range(opt.batch_size):
-                    self.dec_state[1][0][1][i, :] = graph_cell_state[i]
-                    self.dec_state[1][0][2][i, :] = graph_hidden_state[i]
+                for i in range(self.batch_size):
+                    # print(dec_state[1][0][1].is_leaf)
+                    dec_state[1][0][1][i, :] = graph_cell_state[i]
+                    dec_state[1][0][2][i, :] = graph_hidden_state[i]
 
             else:
-                for i in range(1, opt.batch_size+1):
+                for i in range(1, self.batch_size+1):
                     if (cur_index <= len(queue_tree[i])):
                         par_index = queue_tree[i][cur_index - 1]["parent"]
                         child_index = queue_tree[i][cur_index -
                                                     1]["child_index"]
 
-                        self.dec_state[cur_index][0][1][i-1, :] = \
-                            self.dec_state[par_index][child_index][1][i-1, :]
-                        self.dec_state[cur_index][0][2][i-1,
-                                                        :] = self.dec_state[par_index][child_index][2][i-1, :]
+                        dec_state[cur_index][0][1][i-1, :] = \
+                            dec_state[par_index][child_index][1][i-1, :]
+                        dec_state[cur_index][0][2][i-1,
+                                                        :] = dec_state[par_index][child_index][2][i-1, :]
 
-                    flag_sibling = False
-                    for q_index in range(len(queue_tree[i])):
-                        if (cur_index <= len(queue_tree[i])) and (q_index < cur_index - 1) and (queue_tree[i][q_index]["parent"] == queue_tree[i][cur_index - 1]["parent"]) and (queue_tree[i][q_index]["child_index"] < queue_tree[i][cur_index - 1]["child_index"]):
-                            flag_sibling = True
-                            # sibling_index = queue_tree[i][q_index]["child_index"]
-                            sibling_index = q_index
-                    if flag_sibling:
-                        sibling_state[i - 1, :] = self.dec_state[sibling_index][dec_batch[sibling_index].size(
-                            1) - 1][2][i - 1, :]
+                    # flag_sibling = False
+                    # for q_index in range(len(queue_tree[i])):
+                    #     if (cur_index <= len(queue_tree[i])) and (q_index < cur_index - 1) and (queue_tree[i][q_index]["parent"] == queue_tree[i][cur_index - 1]["parent"]) and (queue_tree[i][q_index]["child_index"] < queue_tree[i][cur_index - 1]["child_index"]):
+                    #         flag_sibling = True
+                    #         # sibling_index = queue_tree[i][q_index]["child_index"]
+                    #         sibling_index = q_index
+                    # if flag_sibling:
+                    #     sibling_state[i - 1, :] = dec_state[sibling_index][dec_batch[sibling_index].size(
+                    #         1) - 1][2][i - 1, :]
 
-            parent_h = self.dec_state[cur_index][0][2]
+            parent_h = dec_state[cur_index][0][2]
             for i in range(dec_batch[cur_index].size(1) - 1):
-                self.dec_state[cur_index][i+1][1], self.dec_state[cur_index][i+1][2] = decoder(
-                    dec_batch[cur_index][:, i], self.dec_state[cur_index][i][1], self.dec_state[cur_index][i][2], parent_h, sibling_state)
-                pred = attention_decoder(
-                    enc_outputs, self.dec_state[cur_index][i+1][2], structural_info)
-
-                loss += criterion(pred, dec_batch[cur_index][:, i+1])
+                dec_state[cur_index][i+1][1], dec_state[cur_index][i+1][2] = self.rnn(
+                    dec_batch[cur_index][:, i], dec_state[cur_index][i][1], dec_state[cur_index][i][2], parent_h)
+                # print(enc_outputs.is_leaf)
+                pred = self.attention(
+                    enc_outputs, dec_state[cur_index][i+1][2], torch.tensor(0))
+                # output_tree_batch
+                # print(pred.is_leaf)
+                # print(i)
+                loss += self.criterion(pred, dec_batch[cur_index][:, i+1])
+                # print(loss.is_leaf)
             cur_index = cur_index + 1
+        loss = loss / self.batch_size
+        return loss
 
     def _build_rnn(self, rnn_type, input_size, emb_size, hidden_size, dropout_input, dropout_output):
         rnn = DecoderRNN(input_size, emb_size, hidden_size, dropout_input, dropout_output)
@@ -153,8 +164,7 @@ class Dec_LSTM(nn.Module):
         forgetgate = F.sigmoid(forgetgate)
         cellgate = F.tanh(cellgate)
         outgate = F.sigmoid(outgate)
-        if self.opt.dropout_de_out > 0:
-            cellgate = self.dropout(cellgate)
+        cellgate = self.dropout(cellgate)
         cy = (forgetgate * prev_c) + (ingate * cellgate)
         hy = outgate * F.tanh(cy)
         return cy, hy
@@ -180,7 +190,7 @@ class DecoderRNN(nn.Module):
         return prev_cy, prev_hy
 
 
-def get_dec_batch(dec_tree_batch, batch_size, using_gpu, form_manager):
+def get_dec_batch(dec_tree_batch, batch_size, device, form_manager):
     queue_tree = {}
     for i in range(1, batch_size+1):
         queue_tree[i] = []
@@ -225,8 +235,7 @@ def get_dec_batch(dec_tree_batch, batch_size, using_gpu, form_manager):
                         '(')
                 dec_batch[cur_index][i][len(w_list) + 1] = 2
 
-        if using_gpu:
-            dec_batch[cur_index] = dec_batch[cur_index].cuda()
+        to_cuda(dec_batch[cur_index], device)
         cur_index += 1
 
     return dec_batch, queue_tree, max_index

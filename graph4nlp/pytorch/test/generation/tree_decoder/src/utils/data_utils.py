@@ -1,9 +1,9 @@
 import math
-import tree
+from . import tree
 import torch
 import sympy
 import random
-import graph_utils
+from . import graph_utils
 
 import numpy as np
 import pickle as pkl
@@ -60,7 +60,7 @@ class SymbolsManager():
 
     def init_from_file(self, fn, min_freq, max_vocab_size):
         # the vocab file is sorted by word_freq
-        print "loading vocabulary file: {}".format(fn)
+        print("loading vocabulary file: {}".format(fn))
         with open(fn, "r") as f:
             for line in f:
                 l_list = line.strip().split('\t')
@@ -180,7 +180,7 @@ def norm_tree(r_list, form_manager):
 
 def compute_accuracy(candidate_list, reference_list, form_manager):
     if len(candidate_list) != len(reference_list):
-        print("candidate list has length {}, reference list has length {}\n".format(len(candidate_list), len(reference_list)))
+        print(("candidate list has length {}, reference list has length {}\n".format(len(candidate_list), len(reference_list))))
 
     len_min = min(len(candidate_list), len(reference_list))
     c = 0

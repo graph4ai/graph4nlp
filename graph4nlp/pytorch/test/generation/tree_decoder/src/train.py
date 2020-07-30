@@ -5,7 +5,7 @@ import random
 import re
 import time
 import warnings
-from config import get_args
+from .config import get_args
 
 import numpy as np
 import torch
@@ -14,9 +14,9 @@ import torch.nn.functional as F
 import torch.nn.init as init
 from torch import optim
 
-from model.graph_encoder import GraphEncoder
-from utils import data_utils, graph_utils
-from utils.tree import Tree
+from .model.graph_encoder import GraphEncoder
+from .utils import data_utils, graph_utils
+from .utils.tree import Tree
 
 
 def get_dec_batch(dec_tree_batch, opt, using_gpu, form_manager):

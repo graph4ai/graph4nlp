@@ -8,7 +8,7 @@ import torch
 from torch import nn
 from tqdm import tqdm
 
-import data_utils
+from . import data_utils
 
 
 def generate_embedding_from_glove(args):
@@ -33,12 +33,12 @@ def generate_embedding_from_glove(args):
             glove2vec[word] = vect
 
     word2vec = {}
-    word_arr = word_manager.symbol2idx.keys()
+    word_arr = list(word_manager.symbol2idx.keys())
     for w in tqdm(word_arr):
-        if w in glove2vec.keys():
+        if w in list(glove2vec.keys()):
             word2vec[w] = glove2vec[w]
 
-    print len(word2vec)
+    print(len(word2vec))
     out_file = "{}/pretrain.pkl".format(data_dir)
     with open(out_file, "wb") as out_data:
         pkl.dump(word2vec, out_data)

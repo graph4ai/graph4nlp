@@ -5,7 +5,7 @@ import random
 import re
 import time
 import warnings
-from config import get_args, show_args, get_args_for_geo
+from .config import get_args, show_args, get_args_for_geo
 
 import numpy as np
 import torch
@@ -14,12 +14,12 @@ import torch.nn.functional as F
 import torch.nn.init as init
 from torch import optim
 
-from model.graph_encoder import GraphEncoder
-from model.tree_decoder import AttnUnit, DecoderRNN
-from train import do_generate, eval_training
-from utils import data_utils, graph_utils, pretrained_embedding
-from utils.GraphGeneration import GraphGenerator
-from utils.tree import Tree
+from .model.graph_encoder import GraphEncoder
+from .model.tree_decoder import AttnUnit, DecoderRNN
+from .train import do_generate, eval_training
+from .utils import data_utils, graph_utils, pretrained_embedding
+from .utils.GraphGeneration import GraphGenerator
+from .utils.tree import Tree
 
 warnings.filterwarnings('ignore')
 
@@ -31,20 +31,20 @@ def main(opt):
     torch.manual_seed(opt.seed)
 
     if opt.graph_generate != 0:
-        print "---generating graph input---"
+        print("---generating graph input---")
         g_generator = GraphGenerator(opt)
         g_generator.GraphGenerateBegin()
         if opt.graph_generate == 2:
-            print "Graph generation done!"
+            print("Graph generation done!")
             return
-        print "--------------------done------------------"
+        print("--------------------done------------------")
 
-    print "---loading vocab loader---"
-    managers = pkl.load(open("{}/map.pkl".format(opt.data_dir), "rb"))
+    print("---loading vocab loader---")
+    managers = pkl.load(open("{}\\map.pkl".format(opt.data_dir), "rb"))
     word_manager, form_manager = managers
-    print "input vocab size", word_manager.vocab_size
-    print "output vocab size", form_manager.vocab_size
-    print "--------------------done------------------"
+    print("input vocab size", word_manager.vocab_size)
+    print("output vocab size", form_manager.vocab_size)
+    print("--------------------done------------------")
 
     using_gpu = False
     if opt.gpuid > -1:
@@ -52,13 +52,13 @@ def main(opt):
 
     # print opt.pretrain_flag
     if opt.pretrain_flag:
-        print "--------------generating word pretrained embedding--------------"
+        print("--------------generating word pretrained embedding--------------")
         if (os.path.exists("{}/pretrain.pkl".format(opt.vocab_data_dir))):
-            print "word embedding has been generated !"
+            print("word embedding has been generated !")
         else:
-            print "word embedding generating..."
+            print("word embedding generating...")
             pretrained_embedding.generate_embedding_from_glove(opt)
-        print "--------------------done------------------"
+        print("--------------------done------------------")
 
     encoder = GraphEncoder(opt, word_manager.vocab_size)
     decoder = DecoderRNN(opt, form_manager.vocab_size)
@@ -79,10 +79,10 @@ def main(opt):
         if param.requires_grad:
             init.uniform_(param, -opt.init_weight, opt.init_weight)
 
-    print "--------------loading train loader----------------"
+    print("--------------loading train loader----------------")
     train_loader = data_utils.MinibatchLoader(
         opt, 'train', using_gpu, word_manager)
-    print "--------------------done------------------"
+    print("--------------------done------------------")
 
     if not os.path.exists(opt.checkpoint_dir):
         os.makedirs(opt.checkpoint_dir)
@@ -116,7 +116,7 @@ def main(opt):
 
     best_val_acc = 0
 
-    print "Batch number per Epoch:", train_loader.num_batch
+    print("Batch number per Epoch:", train_loader.num_batch)
     opt.print_every = train_loader.num_batch
 
     loss_to_print = 0
@@ -152,8 +152,8 @@ def main(opt):
 
         if (i+1) % opt.print_every == 0:
             end_time = time.time()
-            print("{}/{}, train_loss = {}, epochs = {}, time since last print = {}".format(i,
-                                                                                           iterations, (loss_to_print / opt.print_every), epoch, (end_time - start_time)/60))
+            print(("{}/{}, train_loss = {}, epochs = {}, time since last print = {}".format(i,
+                                                                                           iterations, (loss_to_print / opt.print_every), epoch, (end_time - start_time)/60)))
             loss_to_print = 0
             start_time = time.time()
 
@@ -169,4 +169,4 @@ if __name__ == "__main__":
 
     main(args)
     end = time.time()
-    print("total time: {} minutes\n".format((end - start)/60))
+    print(("total time: {} minutes\n".format((end - start)/60)))

@@ -3,8 +3,12 @@ import warnings
 
 import numpy as np
 import torch
+import time
 from stanfordcorenlp import StanfordCoreNLP
 from torch import nn
+import torch.nn.functional as F
+import torch.nn.init as init
+from torch import optim
 
 from ....data.data import GraphData
 from ....modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder
@@ -84,7 +88,7 @@ class AttnUnit(nn.Module):
     def __init__(self, hidden_size, output_size, attention_type, dropout):
         super(AttnUnit, self).__init__()
         self.hidden_size = hidden_size
-        self.separate_attention = (attention_type != None)
+        self.separate_attention = (attention_type != "uniform")
 
         if self.separate_attention == "separate_different_encoder_type":
             self.linear_att = nn.Linear(3*self.hidden_size, self.hidden_size)
@@ -114,8 +118,8 @@ class AttnUnit(nn.Module):
             hid = F.tanh(self.linear_att(
                 torch.cat((enc_attention.squeeze(2), dec_s_top), 1)))
         h2y_in = hid
-        if self.opt.dropout_for_predict > 0:
-            h2y_in = self.dropout(h2y_in)
+
+        h2y_in = self.dropout(h2y_in)
         h2y = self.linear_out(h2y_in)
         pred = self.logsoftmax(h2y)
 
@@ -130,7 +134,7 @@ if __name__ == "__main__":
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
 
-    '''For data loader'''
+    '''loading data and begin training'''
     src_vocab_file = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\vocab.q.txt"
     tgt_vocab_file = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\vocab.f.txt"
     data_file = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\train.txt"
@@ -142,9 +146,8 @@ if __name__ == "__main__":
 
     train_data_loader = DataLoader(src_vocab_file=src_vocab_file, tgt_vocab_file=tgt_vocab_file, data_file=data_file,
                                    mode=mode, min_freq=min_freq, max_vocab_size=max_vocab_size, batch_size=batch_size, device=device)
-    print(train_data_loader.random_batch()[0].size())
 
-    '''For encoder'''
+    '''For encoder-decoder'''
     input_size = train_data_loader.src_vocab.vocab_size
     output_size = train_data_loader.tgt_vocab.vocab_size
     enc_emb_size = 300
@@ -160,43 +163,113 @@ if __name__ == "__main__":
     encoder = SequenceEncoder(input_size=input_size, enc_emb_size=enc_emb_size, enc_hidden_size=enc_hidden_size, dec_hidden_size=dec_hidden_size,
                               pad_idx=train_data_loader.src_vocab.get_symbol_idx(train_data_loader.src_vocab.pad_token), dropout_input=enc_dropout_input, dropout_output=enc_dropout_output, encode_rnn_num_layer=1)
 
-    '''For decoder and attention unit'''
+    '''For attention unit'''
     attention_type = "uniform"
-    tree_decoder = StdTreeDecoder(attn=None, dec_emb_size=tgt_emb_size, dec_hidden_size=dec_hidden_size, output_size=output_size, device=device, attentional=True, use_copy=False, use_coverage=False,
+    criterion = nn.NLLLoss(size_average=False, ignore_index=0)
+    
+    attn_unit = AttnUnit(dec_hidden_size, output_size, attention_type, attn_dropout)
+    tree_decoder = StdTreeDecoder(attn=attn_unit, dec_emb_size=tgt_emb_size, dec_hidden_size=dec_hidden_size, output_size=output_size, device=device, criterion=criterion, use_sibling=True, use_attention=True, use_copy=False, use_coverage=False,
                                   fuse_strategy="average", num_layers=1, dropout_input=dec_dropout_input, dropout_output=dec_dropout_output, rnn_type="lstm", max_dec_seq_length=512, max_dec_tree_depth=256, tgt_vocab=train_data_loader.tgt_vocab)
-    input_batch, _, tgt_tree_batch = train_data_loader.random_batch()
-    output_, hidden_ = encoder(input_batch)
-    encode_output_dict = {'graph_node_embedding': None, 'graph_node_mask':None, 'graph_edge_embedding':None, 'rnn_node_embedding':output_, 'graph_level_embedding':hidden_, 'graph_edge_mask':None}
-    tree_decoder(encode_output_dict, tgt_tree_batch)
-    # print("samples number: ", len(train_data_loader.data))
 
-    # test_hyper_para_dict = {}
-    # test_hyper_para_dict['src_vocab_file'] = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\vocab.q.txt"
-    # test_hyper_para_dict['tgt_vocab_file'] = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\vocab.f.txt"
-    # test_hyper_para_dict['data_file'] = r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\jobs640\test.txt"
-    # test_hyper_para_dict['mode'] = "test"
-    # test_hyper_para_dict['min_freq'] = 2
-    # test_hyper_para_dict['max_vocab_size'] = 10000
-    # test_hyper_para_dict['batch_size'] = 1
-    # test_hyper_para_dict['device'] = None
+    to_cuda(encoder, device)
+    to_cuda(tree_decoder, device)
 
-    # test_data_loader = DataLoader(**test_hyper_para_dict)
-    # print(len(test_data_loader.data))
+    init_weight = 0.08
+    print("encoder:")
+    for name, param in encoder.named_parameters():
+        # print(name,param.size())
+        if param.requires_grad:
+            # print(name,param.size())
+            # print(name)
+            if ("embedding.weight" in name) or ("bert_embedding" in name):
+                print("Do not initialize pretrained embedding parameters")
+            else:
+                if len(param.size()) >= 2:
+                    if "rnn" in name:
+                        init.orthogonal_(param)
+                    else:
+                        init.xavier_uniform_(param, gain=1.0)
+                else:
+                    init.uniform_(param, -init_weight, init_weight)
+                # init.xavier_uniform_(param, gain=1.0)
 
-    # embedding_styles = {
-    #     'word_emb_type': 'w2v',
-    #     'node_edge_level_emb_type': 'mean',
-    #     'graph_level_emb_type': 'identity',
-    # }
+    print("decoder:")
+    for name, param in tree_decoder.named_parameters():
+        if param.requires_grad:
+            # print(name,param.size())
+            if "rnn" in name and len(param.size()) >= 2:
+                init.orthogonal_(param)
+            else:
+                init.uniform_(param, -init_weight, init_weight)
 
-    # nlp_parser = StanfordCoreNLP('http://localhost', port=9000, timeout=300000)
-    # print("syntactic parser ready\n-------------------")
+    max_epochs = 300
+    step = 0
+    epoch = 0
+    grad_clip = 5
+    optim_state = {"learningRate": 1e-3,
+                   "weight_decay":  1e-5}
+    print("using adam")
+    encoder_optimizer = optim.Adam(encoder.parameters(
+    ),  lr=optim_state["learningRate"], weight_decay=optim_state["weight_decay"])
 
-    # # constituency_graph_gonstructor = ConstituencyBasedGraphConstruction(hidden_emb_size=128, embedding_style=embedding_styles, word_emb_size=300, vocab=vocab_model.word_vocab)
-    # # for sentence in raw_data:
-    #     # output_graph = constituency_graph_gonstructor.forward(sentence[0], nlp_parser)
-    # output_graph = ConstituencyBasedGraphConstruction.topology(raw_data, nlp_parser)
-    # print(output_graph.node_attributes)
-    # print(output_graph.edges)
-    # print("-----------------------\nvocab size")
-    # print(vocab_model.word_vocab.word2index)
+    decoder_optimizer = optim.Adam(
+        tree_decoder.parameters(),  lr=optim_state["learningRate"])
+
+
+    print("Starting training.")
+    encoder.train()
+    tree_decoder.train()
+
+    iterations = max_epochs * train_data_loader.num_batch
+    start_time = time.time()
+
+    best_val_acc = 0
+
+    print("Batch number per Epoch:", train_data_loader.num_batch)
+    print_every = train_data_loader.num_batch
+
+    loss_to_print = 0
+    for i in range(iterations):
+        if (i+1) % train_data_loader.num_batch == 0:
+            epoch += 1
+
+        epoch = i // train_data_loader.num_batch
+
+        encoder_optimizer.zero_grad()
+        decoder_optimizer.zero_grad()
+        enc_batch, enc_len_batch, dec_tree_batch = train_data_loader.random_batch()
+
+        output_, hidden_ = encoder(enc_batch)
+        encode_output_dict = {'graph_node_embedding': None, 'graph_node_mask':None, 'graph_edge_embedding':None, 'rnn_node_embedding':output_, 'graph_level_embedding':hidden_, 'graph_edge_mask':None}
+        loss = tree_decoder(encode_output_dict, dec_tree_batch)
+        loss.backward()
+        torch.nn.utils.clip_grad_value_(encoder.parameters(),grad_clip)
+        torch.nn.utils.clip_grad_value_(tree_decoder.parameters(),grad_clip)
+        encoder_optimizer.step()
+        decoder_optimizer.step()
+
+        loss_to_print += loss
+        if i == iterations - 1 or (i+1) % print_every == 0:
+            pass
+            # checkpoint = {}
+            # checkpoint["encoder"] = encoder
+            # checkpoint["decoder"] = decoder
+            # checkpoint["attention_decoder"] = attention_decoder
+            # checkpoint["opt"] = opt
+            # checkpoint["i"] = i
+            # checkpoint["epoch"] = epoch
+            # if epoch % opt.save_when_train == 0:
+            #     torch.save(
+            #         checkpoint, "{}/model_g2t".format(opt.checkpoint_dir) + str(i))
+
+        if (i+1) % print_every == 0:
+            end_time = time.time()
+            print(("{}/{}, train_loss = {}, epochs = {}, time since last print = {}".format(i,
+                                                                                           iterations, (loss_to_print / print_every), epoch, (end_time - start_time)/60)))
+            loss_to_print = 0
+            start_time = time.time()
+
+        if loss != loss:
+            print('loss is NaN.  This usually indicates a bug.')
+            break
+

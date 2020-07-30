@@ -2,38 +2,38 @@ from argparse import ArgumentParser
 
 
 def show_args(opt):
-    print "---------------Configuration------------------"
-    print "Train or just graph generation:", opt.graph_generate
-    print "Data Directory:", opt.data_dir
-    print "Random Seed:", opt.seed
-    print "Directory checkpoints are saved:", opt.checkpoint_dir
-    print "How many epochs between printing the loss:", opt.print_every
+    print("---------------Configuration------------------")
+    print("Train or just graph generation:", opt.graph_generate)
+    print("Data Directory:", opt.data_dir)
+    print("Random Seed:", opt.seed)
+    print("Directory checkpoints are saved:", opt.checkpoint_dir)
+    print("How many epochs between printing the loss:", opt.print_every)
 
-    print "---------------Network Parameter--------------"
-    print "RNN hidden layer size:", opt.rnn_size
-    print "Word embedding size", opt.emb_dim
-    print "Graph encoder hop size:", opt.sample_layer_size
+    print("---------------Network Parameter--------------")
+    print("RNN hidden layer size:", opt.rnn_size)
+    print("Word embedding size", opt.emb_dim)
+    print("Graph encoder hop size:", opt.sample_layer_size)
 
-    print "---------------Training Setting---------------"
-    print "Batch size:", opt.batch_size
-    print "Max epochs:", opt.max_epochs
-    print "Learning rate:", opt.learning_rate
-    print "Weight decay:", opt.weight_decay
-    print
-    print "Dropout for GraphEncoder in input:", opt.dropout_en_in
-    print "Dropout for GraphEncoder in output(cell state):", opt.dropout_en_out
+    print("---------------Training Setting---------------")
+    print("Batch size:", opt.batch_size)
+    print("Max epochs:", opt.max_epochs)
+    print("Learning rate:", opt.learning_rate)
+    print("Weight decay:", opt.weight_decay)
+    print()
+    print("Dropout for GraphEncoder in input:", opt.dropout_en_in)
+    print("Dropout for GraphEncoder in output(cell state):", opt.dropout_en_out)
 
-    print "Dropout for Decoder in input:", opt.dropout_de_in
-    print "Dropout for Decoder in output(cell state):", opt.dropout_de_out
+    print("Dropout for Decoder in input:", opt.dropout_de_in)
+    print("Dropout for Decoder in output(cell state):", opt.dropout_de_out)
 
-    print "Dropout in attention layer:", opt.dropout_for_predict
-    print
+    print("Dropout in attention layer:", opt.dropout_for_predict)
+    print()
 
-    print "---------------Some Options-------------------"
-    print "Whether use pretrained embedding:", (opt.pretrain_flag)
-    print "Whether Regenerate Graph input:", (opt.graph_generate)
+    print("---------------Some Options-------------------")
+    print("Whether use pretrained embedding:", (opt.pretrain_flag))
+    print("Whether Regenerate Graph input:", (opt.graph_generate))
 
-    print "----------------------------------------------"
+    print("----------------------------------------------")
 
 
 def get_args():
@@ -43,7 +43,7 @@ def get_args():
                         help='which gpu to use. -1 = use CPU')
 
     parser.add_argument('-data_dir', type=str,
-                        default='../data/GraphConstruction', help='graph and tree data_dir')
+                        default= r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\GraphConstruction", help='graph and tree data_dir')
 
     parser.add_argument('-seed', type=int, default=123,
                         help='torch manual random number generator seed')
@@ -143,7 +143,7 @@ def get_args_for_geo():
                         help='which gpu to use. -1 = use CPU')
 
     parser.add_argument('-data_dir', type=str,
-                        default='../data/GraphConstruction', help='graph and tree data_dir')
+                        default= r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\GraphConstruction", help='graph and tree data_dir')
 
     parser.add_argument('-seed', type=int, default=123,
                         help='torch manual random number generator seed')
@@ -208,9 +208,9 @@ def get_args_for_geo():
                         default=1, help='separate attention mechanism')
 
     ''' Pretrain embedding '''
-    parser.add_argument('-pretrain_flag', type=int, default=1)
+    parser.add_argument('-pretrain_flag', type=int, default=0)
     parser.add_argument('-vocab_data_dir', type=str,
-                        default='../data/TextData', help='data path')
+                        default= r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\TextData", help='data path')
     parser.add_argument('-pretrained_embedding_text', type=str,
                         default="/home/lishucheng/projects/Tools-and-Resources/glove/glove.6B.300d.txt")
     # parser.add_argument('-pretrained_embedding_text', type=str,
@@ -220,10 +220,10 @@ def get_args_for_geo():
     parser.add_argument('-graph_generate', type=int, default=0,
                         help='0 for just train, 1 for graph generation and train, 2 for just graph generation')
     parser.add_argument('-source_data_dir', type=str,
-                        default='../data/TextData/', help='data path')
+                        default= r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\TextData", help='data path')
 
     parser.add_argument('-output_data_dir', type=str,
-                        default='../data/GraphConstruction/', help='data path')
+                        default=r"C:\Users\shuchengli\Desktop\Code\g4nlp\graph4nlp\graph4nlp\pytorch\test\generation\tree_decoder\data\GraphConstruction", help='data path')
 
     parser.add_argument('-min_freq', type=int,
                         default=2)
