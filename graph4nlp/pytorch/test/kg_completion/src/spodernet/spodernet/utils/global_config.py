@@ -1,7 +1,9 @@
 import os
 from collections import namedtuple
 from src.spodernet.spodernet.utils.logger import Logger
+
 log = Logger('global_config.py.txt')
+
 
 class Backends:
     TORCH = 'pytorch'
@@ -11,23 +13,22 @@ class Backends:
 
 
 class Config:
-    
-    dropout_rate = 0.25 #0.1, 0,2, 0.3
-    channels = 200 #100, 200, 300
-    kernel_size = 5 #1,3,5...
-    init_emb_size = 100 #100, 200, 300
-    gc1_emb_size = 150 #100, 200, 300
-    embedding_dim = 200 # 100, 200
-    learning_rate = 0.002 #0.001, 0.002, 0.003, 0.004
-    batch_size = 128 # 64, 128ßßß
+    dropout_rate = 0.25  # 0.1, 0,2, 0.3
+    channels = 200  # 100, 200, 300
+    kernel_size = 5  # 1,3,5...
+    init_emb_size = 100  # 100, 200, 300
+    gc1_emb_size = 150  # 100, 200, 300
+    embedding_dim = 200  # 100, 200
+    learning_rate = 0.002  # 0.001, 0.002, 0.003, 0.004
+    batch_size = 128  # 64, 128ßßß
 
     dropout = 0.2
     backend = Backends.TORCH
     L2 = 0.000
     cuda = False
     init_embedding_dim = 100
-    gc1_emb_size=200
-    gc2_emb_size=100
+    gc1_emb_size = 200
+    gc2_emb_size = 100
     hidden_size = 256
     input_dropout = 0.0
     feature_map_dropout = 0.2
@@ -40,11 +41,11 @@ class Config:
     label_smoothing_epsilon = 0.1
     epochs = 1000
     dataset = None
+    loss_name = "None"
     process = False
     model_name = None
     save_model_dir = None
     load_model = False
-
 
     @staticmethod
     def parse_argv(argv):
@@ -69,7 +70,9 @@ class Config:
             if name[:2] == '--': continueparams2field
             if name not in params2type:
                 log.info('List of possible parameters: {0}', params2type.keys())
-                log.error('Parameter {0} does not exist. Prefix your custom parameters with -- to skip parsing for global config', name)
+                log.error(
+                    'Parameter {0} does not exist. Prefix your custom parameters with -- to skip parsing for global config',
+                    name)
             values[i] = params2type[name](values[i])
 
         for name, value in zip(names, values):
@@ -78,6 +81,7 @@ class Config:
             log.info('Set parameter {0} to {1}', name, value)
 
     use_transposed_convolutions = False
+
 
 params2type = {}
 params2type['dropout_rate'] = lambda x: float(x)
@@ -105,6 +109,7 @@ params2type['sim_use_relu'] = lambda x: x.lower() == 'true' or x == '1'
 params2type['optimizer'] = lambda x: x
 params2type['epochs'] = lambda x: int(x)
 params2type['dataset'] = lambda x: x
+params2type['loss_name'] = lambda x: x
 params2type['model_name'] = lambda x: x
 params2type['save_model_dir'] = lambda x: x
 params2type['process'] = lambda x: x.lower() == 'true' or x == '1'
@@ -122,8 +127,6 @@ alias2params['conv_trans'] = 'use_conv_transpose'
 alias2params['opt'] = 'optimizer'
 alias2params['label_smoothing'] = 'label_smoothing_epsilon'
 alias2params['model'] = 'model_name'
-
-
 
 params2field = {}
 params2field['dropout_rate'] = lambda x: setattr(Config, 'dropout_rate', x)
@@ -151,6 +154,7 @@ params2field['optimizer'] = lambda x: setattr(Config, 'optimizer', x)
 params2field['label_smoothing_epsilon'] = lambda x: setattr(Config, 'label_smoothing_epsilon', x)
 params2field['epochs'] = lambda x: setattr(Config, 'epochs', x)
 params2field['dataset'] = lambda x: setattr(Config, 'dataset', x)
+params2field['loss_name'] = lambda x: setattr(Config, 'loss_name', x)
 params2field['process'] = lambda x: setattr(Config, 'process', x)
 params2field['model_name'] = lambda x: setattr(Config, 'model_name', x)
 params2field['save_model_dir'] = lambda x: setattr(Config, 'save_model_dir', x)

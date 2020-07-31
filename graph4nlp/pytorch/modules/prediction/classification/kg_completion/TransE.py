@@ -32,7 +32,7 @@ class TransE(KGCompletionBase):
     edge2node: bool
         The edges or relations in KG are converted to nodes. Defauly: `False`.
 
-    loss_type: str
+    loss_name: str
         The loss type selected fot the KG completion task. Default: `'BCELoss'`
     """
 
@@ -42,12 +42,12 @@ class TransE(KGCompletionBase):
                  num_relations=None,
                  embedding_dim=None,
                  edge2node=False,
-                 loss_type='BCELoss'):
+                 loss_name='BCELoss'):
         super(TransE, self).__init__()
         self.rel_emb_from_gnn = rel_emb_from_gnn
         self.edge2node = edge2node
         self.classifier = TransELayer(input_dropout, rel_emb_from_gnn,
-                                       num_relations, embedding_dim, loss_type)
+                                       num_relations, embedding_dim, loss_name)
 
 
     def forward(self, input_graph: GraphData):
@@ -70,7 +70,7 @@ class TransE(KGCompletionBase):
         """
 
         node_emb = input_graph.node_features['node_emb']
-        if self.loss_type in ['SoftplusLoss', 'SigmoidLoss']:
+        if self.loss_name in ['SoftplusLoss', 'SigmoidLoss']:
             multi_label = input_graph.node_features['multi_binary_label']
         else:
             multi_label = None

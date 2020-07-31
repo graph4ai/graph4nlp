@@ -30,7 +30,7 @@ class TransELayer(KGCompletionLayerBase):
         Dimension of the rel_emb. `embedding_dim` is needed if rel_emb_from_gnn==True.
         Default: `0`.
 
-    loss_type: str
+    loss_name: str
         The loss type selected fot the KG completion task.
 
     """
@@ -40,7 +40,7 @@ class TransELayer(KGCompletionLayerBase):
                  rel_emb_from_gnn=True,
                  num_relations=None,
                  embedding_dim=None,
-                 loss_type='BCELoss'):
+                 loss_name='BCELoss'):
         super(TransELayer, self).__init__()
         self.p_norm = p_norm
         self.rel_emb_from_gnn = rel_emb_from_gnn
@@ -49,7 +49,7 @@ class TransELayer(KGCompletionLayerBase):
             assert embedding_dim != None
             self.rel_emb = nn.Embedding(num_relations, embedding_dim)
             self.reset_parameters()
-        self.loss_type = loss_type
+        self.loss_name = loss_name
 
     def reset_parameters(self):
         if self.rel_emb_from_gnn == False:
@@ -143,7 +143,7 @@ class TransELayer(KGCompletionLayerBase):
 
             result = head_sub_tail + rel_emb  # head-tail+rel [L, N, H]
 
-        if self.loss_type in ['SoftMarginLoss']:
+        if self.loss_name in ['SoftMarginLoss']:
             # target labels are numbers selecting from -1 and 1.
             pred = torch.norm(result, self.p_norm, dim=2)  # TODO
         else:

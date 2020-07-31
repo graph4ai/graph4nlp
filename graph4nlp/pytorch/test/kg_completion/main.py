@@ -11,8 +11,8 @@ from os.path import join
 import torch.backends.cudnn as cudnn
 
 from evaluation import ranking_and_hits
-from models import SACN, ConvTransE, ConvE, DistMult, Complex, TransE
-from models_graph4nlp import DistMultGNN, TransEGNN
+from models import SACN, ConvTransE, ConvE
+from models_graph4nlp import DistMult, DistMultGNN, TransEGNN, TransE, Complex, ComplexGNN
 from src.spodernet.spodernet.preprocessing.pipeline import Pipeline, DatasetStreamer
 from src.spodernet.spodernet.preprocessing.processors import JsonLoaderProcessors, Tokenizer, AddToVocab, SaveLengthsToState, StreamToHDF5, SaveMaxLengthsToState, CustomTokenizer
 from src.spodernet.spodernet.preprocessing.processors import ConvertTokenToIdx, ApplyFunction, ToLower, DictKey2ListMapper, ApplyFunction, StreamToBatch
@@ -45,7 +45,7 @@ Config.parse_argv(sys.argv)
 # Config.cuda = True
 #Config.embedding_dim = 200
 
-model_name = '{2}_{0}_{1}'.format(Config.input_dropout, Config.dropout, Config.model_name)
+model_name = '{2}_{0}_{1}_{3}'.format(Config.input_dropout, Config.dropout, Config.model_name, Config.loss_name)
 epochs = 1000
 load = False
 if Config.dataset is None:
@@ -122,6 +122,7 @@ def main():
     test_rank_batcher.at_batch_prepared_observers.insert(1,TargetIdx2MultiTarget(num_entities, 'e2_multi2', 'e2_multi2_binary'))
 
 
+
     def normalize(mx):
         """Row-normalize sparse matrix"""
         rowsum = np.array(mx.sum(1))
@@ -181,15 +182,17 @@ def main():
     elif Config.model_name == 'ConvE':
         model = ConvE(vocab['e1'].num_token, vocab['rel'].num_token)
     elif Config.model_name == 'DistMult':
-        model = DistMult(vocab['e1'].num_token, vocab['rel'].num_token)
+        model = DistMult(vocab['e1'].num_token, vocab['rel'].num_token, Config.loss_name)
     elif Config.model_name == 'DistMultGNN':
-        model = DistMultGNN(vocab['e1'].num_token, vocab['rel'].num_token)
+        model = DistMultGNN(vocab['e1'].num_token, vocab['rel'].num_token, Config.loss_name)
     elif Config.model_name == 'TransE':
-        model = TransE(vocab['e1'].num_token, vocab['rel'].num_token)
+        model = TransE(vocab['e1'].num_token, vocab['rel'].num_token, loss_name=Config.loss_name)
     elif Config.model_name == 'TransEGNN':
-        model = TransEGNN(vocab['e1'].num_token, vocab['rel'].num_token)
+        model = TransEGNN(vocab['e1'].num_token, vocab['rel'].num_token, loss_name=Config.loss_name)
     elif Config.model_name == 'ComplEx':
-        model = Complex(vocab['e1'].num_token, vocab['rel'].num_token)
+        model = Complex(vocab['e1'].num_token, vocab['rel'].num_token, loss_name=Config.loss_name)
+    elif Config.model_name == 'ComplExGNN':
+        model = ComplexGNN(vocab['e1'].num_token, vocab['rel'].num_token, loss_name=Config.loss_name)
     else:
         # log.info('Unknown model: {0}', Config.model_name)
         raise Exception("Unknown model!")
@@ -247,23 +250,15 @@ def main():
             if model.loss_name == "SoftMarginLoss":
                 e2_multi[e2_multi==0] = -1
                 pred = model.forward(e1, rel, X, adjacencies)
-                # loss = model.loss(pred.view(-1,1).squeeze(), e2_multi.view(-1,1).squeeze())
                 loss = model.loss(pred, e2_multi)
             elif model.loss_name == "SoftplusLoss" or model.loss_name == "SigmoidLoss":
                 pred, pos, neg = model.forward(e1, rel, X, adjacencies, e2_multi)
                 loss = model.loss(pos, neg)
-            elif model.loss_name == "BCELoss":
+            else:
                 # label smoothing
                 e2_multi = ((1.0 - Config.label_smoothing_epsilon) * e2_multi) + (1.0 / e2_multi.size(1))
                 pred = model.forward(e1, rel, X, adjacencies)
                 loss = model.loss(pred, e2_multi)
-            else: # MSELoss
-                # label smoothing
-                e2_multi = ((1.0-Config.label_smoothing_epsilon)*e2_multi) + (1.0/e2_multi.size(1))
-                pred = model.forward(e1, rel, X, adjacencies)
-                loss = model.loss(pred.view(-1,1).squeeze(), e2_multi.view(-1,1).squeeze())
-                # loss = model.loss(pred, e2_multi)
-
             loss.backward()
             opt.step()
 
@@ -283,3 +278,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
