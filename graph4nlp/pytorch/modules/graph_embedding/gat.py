@@ -155,12 +155,12 @@ class GAT(GNNBase):
             logits = logits.mean(1)
 
         # option 1)
-        # graph.node_features['node_emb'] = logits
+        graph.node_features['node_emb'] = logits
 
-        # option 2)
-        dgl_graph.ndata['node_emb'] = logits
-        graph = GraphData()
-        graph.from_dgl(dgl_graph)
+        # # option 2)
+        # dgl_graph.ndata['node_emb'] = logits
+        # graph = GraphData()
+        # graph.from_dgl(dgl_graph)
 
         return graph
 
