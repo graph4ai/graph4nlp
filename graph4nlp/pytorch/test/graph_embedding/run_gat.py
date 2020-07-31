@@ -69,9 +69,8 @@ class GNNClassifier(nn.Module):
             self.fc = nn.Linear(2 * output_size, output_size)
 
     def forward(self, graph):
-        logits = self.model(graph)
-        # graph = self.model(graph)
-        # logits = graph.node_features['node_emb']
+        graph = self.model(graph)
+        logits = graph.node_features['node_emb']
         if self.direction_option == 'bi_sep':
             logits = self.fc(F.elu(logits))
 

@@ -8,6 +8,7 @@ from dgl.nn.pytorch.softmax import edge_softmax
 from dgl.utils import expand_as_pair
 
 from .base import GNNLayerBase, GNNBase
+from ...data.data import GraphData
 
 
 class GAT(GNNBase):
@@ -153,10 +154,15 @@ class GAT(GNNBase):
         else:
             logits = logits.mean(1)
 
-        return logits
+        # option 1)
         # graph.node_features['node_emb'] = logits
 
-        # return graph
+        # option 2)
+        dgl_graph.ndata['node_emb'] = logits
+        graph = GraphData()
+        graph.from_dgl(dgl_graph)
+
+        return graph
 
 class GATLayer(GNNLayerBase):
     # TODO: improve math descriptions bidirectional GNN.
