@@ -50,15 +50,15 @@ class ElementSum(LinkPredictionBase):
                       logit tensor shape is: [num_class] 
         """ 
         #get the nod embedding from the graph 
-        node_emb=input_graph.ndata['node_emb']
+        node_emb=input_graph.node_features['node_emb']
         
         #add the edges and edge prediction logits into the graph
-        num_node=node_emb.shape[1]
+        num_node=node_emb.shape[0]
         node_idx_list=[idx for idx in range(num_node)]
         src_idx=torch.tensor(node_idx_list).view(-1,1).repeat(1,num_node).view(-1)
         dst_idx=torch.tensor(node_idx_list).view(1,-1).repeat(num_node,1).view(-1)
         input_graph.add_edges(src_idx,dst_idx)
-        input_graph.edata['logits']=self.classifier(node_emb)       
+        input_graph.edge_features['logits']=self.classifier(node_emb)       
          
         return input_graph
 

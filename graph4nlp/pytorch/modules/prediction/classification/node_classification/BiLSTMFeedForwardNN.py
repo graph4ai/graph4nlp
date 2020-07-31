@@ -2,7 +2,7 @@ from torch import nn
 import torch as th
 import torch.autograd as autograd
 from ..base import NodeClassifierBase
-from BiLSTMFeedForwardNNLayer import BiLSTMFeedForwardNNLayer
+from .BiLSTMFeedForwardNNLayer import BiLSTMFeedForwardNNLayer
 
 class BiLSTMFeedForwardNN(NodeClassifierBase):
     """
@@ -56,9 +56,9 @@ class BiLSTMFeedForwardNN(NodeClassifierBase):
                       in the node feature field named "node_logits".
                       logit tensor shape is: [num_class] 
         """ 
-        node_emb=input_graph.ndata['node_emb'] #get the node embeddings from the graph
+        node_emb=input_graph.node_features['node_emb'] #get the node embeddings from the graph
          
-        input_graph.ndata['logits']=self.classifier(lstm_feats) #store the logits tensor into the graph
+        input_graph.node_features['logits']=self.classifier(node_emb) #store the logits tensor into the graph
         
         return input_graph
 

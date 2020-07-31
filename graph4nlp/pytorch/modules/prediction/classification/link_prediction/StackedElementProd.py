@@ -54,7 +54,7 @@ class StackedElementProd(NodeClassifierBase):
         #get the nod embedding from the graph 
         node_emb_list=[]
         for channel_idx in range(self.num_channel):
-           node_emb_list.append(input_graph.ndata['node_emb_'+str(channel_idx)]
+           node_emb_list.append(input_graph.node_features['node_emb_'+str(channel_idx)]
         
         #add the edges and edge prediction logits into the graph
         num_node=node_emb_list[0].shape[1]
@@ -62,7 +62,7 @@ class StackedElementProd(NodeClassifierBase):
         src_idx=torch.tensor(node_idx_list).view(-1,1).repeat(1,num_node).view(-1)
         dst_idx=torch.tensor(node_idx_list).view(1,-1).repeat(num_node,1).view(-1)
         input_graph.add_edges(src_idx,dst_idx)
-        input_graph.edata['logits']=self.classifier(node_emb_list)       
+        input_graph.edge_features['logits']=self.classifier(node_emb_list)       
         
         return input_graph
 
