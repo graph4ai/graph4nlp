@@ -117,7 +117,6 @@ class GAT(GNNBase):
                                         activation=None))
 
     def forward(self, graph):
-        # TODO: support GraphData when the data structure is ready.
         r"""Compute multi-layer graph attention network.
 
         Parameters
@@ -130,7 +129,8 @@ class GAT(GNNBase):
         GraphData
             The output graph data containing updated embeddings.
         """
-        feat = graph.ndata['node_feat']
+        feat = graph.node_features['node_feat']
+        dgl_graph = graph.to_dgl()
 
         if self.direction_option == 'bi_sep':
             h = [feat, feat]
@@ -138,14 +138,14 @@ class GAT(GNNBase):
             h = feat
 
         for l in range(self.num_layers - 1):
-            h = self.gat_layers[l](graph, h)
+            h = self.gat_layers[l](dgl_graph, h)
             if self.direction_option == 'bi_sep':
                 h = [each.flatten(1) for each in h]
             else:
                 h = h.flatten(1)
 
         # output projection
-        logits = self.gat_layers[-1](graph, h)
+        logits = self.gat_layers[-1](dgl_graph, h)
 
         if self.direction_option == 'bi_sep':
             logits = [each.mean(1) for each in logits]
@@ -153,9 +153,10 @@ class GAT(GNNBase):
         else:
             logits = logits.mean(1)
 
-        graph.ndata['node_emb'] = logits
+        return logits
+        # graph.node_features['node_emb'] = logits
 
-        return graph
+        # return graph
 
 class GATLayer(GNNLayerBase):
     # TODO: improve math descriptions bidirectional GNN.
