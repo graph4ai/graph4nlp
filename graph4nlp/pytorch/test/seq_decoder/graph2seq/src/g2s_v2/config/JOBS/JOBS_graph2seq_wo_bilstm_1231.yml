@@ -1,0 +1,120 @@
+# Data
+dataset_name: 'job_dataset'
+trainset: '../../data/job_dataset/train.ndjson'
+devset: '../../data/job_dataset/test.ndjson'
+testset: '../../data/job_dataset/test.ndjson'
+pretrained_word_embed_file: '../../data/glove.6B.300d.txt' # Be sure to use glove embeddings
+wmd_emb_file: null
+saved_vocab_file: '../../data/job_dataset/vocab_model_glove'
+pretrained: null
+
+# Output
+random_seed: 1231
+out_dir: '../../out/job_dataset/graph2seq_word300_h300_copy_glove_wobilstm_separate_attn_hops4_seed_1231'
+
+
+# Preprocessing
+top_word_vocab: 10000
+min_word_freq: 1
+max_dec_steps: 50 # Including the EOS symbol
+
+
+
+# Embedding
+word_embed_dim: 300 #100
+fix_word_embed: False
+
+
+hidden_size: 300
+no_rnn_encoder_on_graph: True # False
+node_encoder: 'mean' # rnn, mean
+rnn_type: 'lstm'
+dec_hidden_size: 300  # if set, a matrix will transform enc state into dec state
+enc_bidi: True
+num_enc_rnn_layers: 1
+rnn_size: 300
+
+
+# Attention & copy
+enc_attn: True  # decoder has attention over encoder states?
+separate_attn: True
+dec_attn: False  # decoder has attention over previous decoder states?
+pointer: True  # use pointer network (copy mechanism) in addition to word generator?
+out_embed_size: null  # if set, use an additional layer before decoder output
+tie_embed: True  # tie the decoder output layer to the input embedding layer?
+
+# Coverage (to turn on/off, change both `enc_attn_cover` and `cover_loss`)
+enc_attn_cover: True  # provide coverage as input when computing enc attn?
+cover_func: 'sum'  # how to aggregate previous attention distributions? sum or max
+cover_loss: 0.3 # 0.3  # add coverage loss if > 0; weight of coverage loss as compared to NLLLoss
+show_cover_loss: True  # include coverage loss in the loss shown in the progress bar?
+
+# Regularization
+word_dropout: 0.4 # 0.4
+# rnn_dropout: 0.3 # dropout for regularization, used after each RNN hidden layer. 0 = no dropout
+# dropoutrec: 0.3 # dropout for regularization, used after each c_i. 0 = no dropout
+dropoutagg: 0 # dropout for regularization, used after each aggregator. 0 = no dropout
+enc_rnn_dropout: 0.3 # 0.3
+dec_rnn_dropout: 0.3
+dec_in_dropout: 0
+dec_out_dropout: 0
+
+
+# Graph neural networks
+bignn: True
+graph_hops: 4
+
+
+# Training
+optimizer: 'adam'
+learning_rate: 0.002 # 0.002
+lr_decay: True
+grad_clipping: 3 # 3, 10
+grad_accumulated_steps: 1
+eary_stop_metric: 'acc'
+
+# Evaluation metrics, a list of metrics separated by ;
+metrics: 'acc'
+
+
+shuffle: True # Whether to shuffle the examples during training
+max_epochs: 300
+batch_size: 20
+patience: 10
+verbose: 1000 # Print every X batches
+
+forcing_ratio: 0.9 # 0.9  # initial percentage of using teacher forcing
+partial_forcing: True  # in a seq, can some steps be teacher forced and some not? partial_forcing works much better as mentioned in the origin paper
+forcing_decay_type: 'exp'  # linear, exp, sigmoid, or None
+forcing_decay: 0.9999 # 0.9999
+sample: False  # are non-teacher forced inputs based on sampling or greedy selection?
+# note: enabling reinforcement learning can significantly slow down training
+rl_ratio: 0  # use mixed objective if > 0; ratio of RL in the loss function
+rl_ratio_power: 1  #0.7 # increase rl_ratio by **= rl_ratio_power after each epoch; (0, 1]
+rl_start_epoch: 1  # start RL at which epoch (later start can ensure a strong baseline)?
+max_rl_ratio: 0.99
+rl_reward_metric: 'acc'
+rl_wmd_ratio: 0
+max_wmd_reward: 0
+
+
+# Testing
+# test_batch_size: 20
+out_len_in_words: False # Only for beam search
+out_predictions: True # Whether to output predictions
+save_params: True # Whether to save params
+logging: True # Turn it off for Codalab
+
+# Beam search
+beam_size: 2 # 2
+min_out_len: 4 # 4 # Only for beam search
+max_out_len: 50 # Only for beam search
+block_ngram_repeat: 0 # Block repetition of ngrams during decoding. (To turn it off, set it to 0)
+
+
+# Device
+no_cuda: False
+cuda_id: 0
+#cuda_id: -1
+
+dataset_lower: True

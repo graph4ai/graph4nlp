@@ -1,6 +1,7 @@
 from torch import nn
 import torch
 from ..base import KGCompletionLayerBase
+import torch.nn.functional as F
 
 
 class TransELayer(KGCompletionLayerBase):
@@ -29,13 +30,17 @@ class TransELayer(KGCompletionLayerBase):
         Dimension of the rel_emb. `embedding_dim` is needed if rel_emb_from_gnn==True.
         Default: `0`.
 
+    loss_type: str
+        The loss type selected fot the KG completion task.
+
     """
 
     def __init__(self,
                  p_norm=1,
                  rel_emb_from_gnn=True,
                  num_relations=None,
-                 embedding_dim=None):
+                 embedding_dim=None,
+                 loss_type='BCELoss'):
         super(TransELayer, self).__init__()
         self.p_norm = p_norm
         self.rel_emb_from_gnn = rel_emb_from_gnn
@@ -44,15 +49,19 @@ class TransELayer(KGCompletionLayerBase):
             assert embedding_dim != None
             self.rel_emb = nn.Embedding(num_relations, embedding_dim)
             self.reset_parameters()
+        self.loss_type = loss_type
 
     def reset_parameters(self):
         if self.rel_emb_from_gnn == False:
             nn.init.xavier_normal_(self.rel_emb.weight.data)
 
-    def forward(self, node_emb, rel_emb=None, list_e_r_pair_idx=None, list_e_e_pair_idx=None):
+    def forward(self,
+                node_emb,
+                rel_emb=None,
+                list_e_r_pair_idx=None,
+                list_e_e_pair_idx=None,
+                multi_label=None):
         r"""
-
-
 
         Parameters
         ----------
@@ -73,6 +82,13 @@ class TransELayer(KGCompletionLayerBase):
             a list of index of head entities and tail entities that needs
             predicting the relations between them. Default: `None`.
             Only one of `list_e_r_pair_idx` and `list_e_e_pair_idx` can be `None`.
+
+        multi_label: tensor [L, N]
+            multi_label is a binary matrix. Each element can be equal to 1 for true label
+            and 0 for false label (or 1 for true label, -1 for false label).
+            multi_label[i] represents a multi-label of a given head-rel pair or head-tail pair.
+            L is the length of list_e_r_pair_idx, list_e_e_pair_idx or batch size.
+            N: number of nodes in the whole KG graph.
 
         Returns
         -------
@@ -106,8 +122,6 @@ class TransELayer(KGCompletionLayerBase):
             node_emb = node_emb.repeat(head_add_rel.size()[0], 1, 1)
 
             result = head_add_rel - node_emb  # head+rel-tail [L, N, H]
-            # logits = torch.norm(result, self.p_norm, dim=2)  # [L, N]
-            logits = torch.softmax(torch.norm(result, self.p_norm, dim=2), dim=-1)  # [L, N]
 
         elif list_e_e_pair_idx != None:
             ent_head_idxs = torch.LongTensor([x[0] for x in list_e_e_pair_idx])
@@ -128,8 +142,19 @@ class TransELayer(KGCompletionLayerBase):
             rel_emb = rel_emb.repeat(head_sub_tail.size()[0], 1, 1)  # [L, N, H]
 
             result = head_sub_tail + rel_emb  # head-tail+rel [L, N, H]
-            # logits = torch.norm(result, self.p_norm, dim=2)  # [L, N]
-            logits = torch.softmax(torch.norm(result, self.p_norm, dim=2), dim=-1)  # [L, N]
 
+        if self.loss_type in ['SoftMarginLoss']:
+            # target labels are numbers selecting from -1 and 1.
+            pred = torch.norm(result, self.p_norm, dim=2)  # TODO
+        else:
+            pred = torch.softmax(torch.norm(result, self.p_norm, dim=2), dim=-1)  # logits [L, N]
 
-        return logits
+        if multi_label!=None:
+            idxs_pos = torch.nonzero(multi_label == 1.)
+            pred_pos = pred[idxs_pos[:, 0], idxs_pos[:, 1]]
+
+            idxs_neg = torch.nonzero(multi_label == 0.)
+            pred_neg = pred[idxs_neg[:, 0], idxs_neg[:, 1]]
+            return pred, pred_pos, pred_neg
+        else:
+            return pred

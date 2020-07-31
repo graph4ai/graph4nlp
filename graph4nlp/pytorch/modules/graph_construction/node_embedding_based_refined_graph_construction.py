@@ -2,8 +2,9 @@ import torch
 from torch import nn
 
 from .base import DynamicGraphConstructionBase
-from .utils import sparsify_graph, convert_adj_to_dgl_graph
-from ..utils.constants import INF
+from .utils import convert_adj_to_dgl_graph
+from ..utils.generic_utils import normalize_adj
+from ..utils.constants import VERY_SMALL_NUMBER
 
 
 class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
@@ -21,96 +22,133 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         - ``seq_info_encode_strategy`` : Specify strategies of encoding
             sequential information in raw text data including "none",
             "lstm", "gru", "bilstm" and "bigru".
+    alpha_fusion : float
+        Specify the fusion value for combining initial and learned adjacency matrices.
+    sim_metric_type : str, optional
+        Specify similarity metric function type including "attention",
+        "weighted_cosine", "gat_attention", "rbf_kernel", and "cosine".
+        Default: ``"weighted_cosine"``.
+    num_heads : int, optional
+        Specify the number of heads for multi-head similarity metric
+        function, default: ``1``.
+    top_k_neigh : int, optional
+        Specify the top k value for knn neighborhood graph sparsificaiton,
+        default: ``None``.
+    epsilon_neigh : float, optional
+        Specify the epsilon value (i.e., between ``0`` and ``1``) for
+        epsilon neighborhood graph sparsificaiton, default: ``None``.
+    smoothness_ratio : float, optional
+        Specify the smoothness ratio (i.e., between ``0`` and ``1``)
+        for graph regularization on smoothness, default: ``None``.
+    connectivity_ratio : float, optional
+        Specify the connectivity ratio (i.e., between ``0`` and ``1``)
+        for graph regularization on connectivity, default: ``None``.
+    sparsity_ratio : float, optional
+        Specify the sparsity ratio (i.e., between ``0`` and ``1``)
+        for graph regularization on sparsity, default: ``None``.
+    input_size : int, optional
+        The dimension of input embeddings, default: ``None``.
     hidden_size : int, optional
-        The hidden size of RNN layer, default: ``None``.
+        The dimension of hidden layers, default: ``None``.
     fix_word_emb : boolean, optional
-        Specify whether to fix pretrained word embeddings, default: ``True``.
+        Specify whether to fix pretrained word embeddings, default: ``False``.
     dropout : float, optional
         Dropout ratio, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
-
-    def __init__(self, word_vocab, embedding_styles, input_size, hidden_size,
-                        top_k, fix_word_emb=True, dropout=None, device=None):
-        super(NodeEmbeddingBasedRefinedGraphConstruction, self).__init__(word_vocab,
+    def __init__(self, word_vocab, embedding_styles, alpha_fusion, **kwargs):
+        super(NodeEmbeddingBasedRefinedGraphConstruction, self).__init__(
+                                                            word_vocab,
                                                             embedding_styles,
-                                                            hidden_size=hidden_size,
-                                                            fix_word_emb=fix_word_emb,
-                                                            dropout=dropout,
-                                                            device=device)
-        self.top_k = top_k
-        self.device = device
-        self.linear_sim = nn.Linear(input_size, hidden_size, bias=False)
+                                                            **kwargs)
+        assert 0 <= alpha_fusion <= 1, 'alpha_fusion should be a `float` number between 0 and 1'
+        self.alpha_fusion = alpha_fusion
 
-    def forward(self, node_word_idx, node_size, num_nodes, node_mask=None):
-        """Compute graph topology and initial node/edge embeddings.
+    def forward(self, init_norm_adj, node_word_idx, node_size, num_nodes, node_mask=None):
+        """Compute graph topology and initial node embeddings.
 
         Parameters
         ----------
+        init_norm_adj : torch.sparse.FloatTensor
+            The initial normalized adjacency matrix.
+        node_word_idx : torch.LongTensor
+            The input word index node features.
+        node_size : torch.LongTensor
+            Indicate the length of word sequences for nodes.
+        num_nodes : torch.LongTensor
+            Indicate the number of nodes.
+        node_mask : torch.Tensor, optional
+            The node mask matrix, default: ``None``.
+
+        Returns
+        -------
+        GraphData
+            The constructed graph.
         """
         node_emb = self.embedding(node_word_idx, node_size, num_nodes)
 
-        dgl_graph = self.topology(node_emb, node_mask)
+        dgl_graph = self.topology(node_emb, init_norm_adj, node_mask)
         dgl_graph.ndata['node_feat'] = node_emb
 
         return dgl_graph
 
-    def topology(self, node_emb, init_adj, alpha, node_mask=None):
-
+    def topology(self, node_emb, init_norm_adj, node_mask=None):
         """Compute graph topology.
 
         Parameters
         ----------
         node_emb : torch.Tensor
             The node embeddings.
-        init_adj : torch.sparse.FloatTensor
-            The initial adjacency matrix, default: ``None``.
+        init_norm_adj : torch.sparse.FloatTensor
+            The initial init_norm_adj adjacency matrix.
         node_mask : torch.Tensor, optional
             The node mask matrix, default: ``None``.
 
+        Returns
+        -------
+        GraphData
+            The constructed graph.
         """
-        assert 0 <= alpha <= 1
-        attention = self.self_attention(node_emb, node_mask)
-        adj = sparsify_graph(attention, self.top_k, -INF, device=self.device)
-        adj = torch.softmax(adj, dim=-1)
+        adj = self.compute_similarity_metric(node_emb, node_mask)
+        adj = self.sparsify_graph(adj)
+        graph_reg = self.compute_graph_regularization(adj, node_emb)
 
-        new_adj = torch.sparse.FloatTensor.add((1 - alpha) * adj, alpha * init_adj)
-        dgl_graph = convert_adj_to_dgl_graph(new_adj, 0, use_edge_softmax=False)
+        if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
+            try:
+                assert adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
+            except:
+                import pdb;pdb.set_trace()
+            adj = adj / torch.clamp(torch.sum(adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
+        elif self.sim_metric_type == 'cosine':
+            adj = (adj > 0).float()
+            adj = normalize_adj(adj)
+        else:
+            adj = torch.softmax(adj, dim=-1)
+
+        if self.alpha_fusion is not None:
+            adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * adj, self.alpha_fusion * init_norm_adj)
+
+        dgl_graph = convert_adj_to_dgl_graph(adj, 0, use_edge_softmax=False)
+        dgl_graph.graph_reg = graph_reg
 
         return dgl_graph
 
-
-    def embedding(self, input_tensor, src_len, num_seq):
-        """Compute initial node/edge embeddings.
-
-        Parameters
-        ----------
-        """
-        emb = self.embedding_layer(input_tensor, src_len, num_seq)
-        return emb
-
-
-    def raw_text_to_init_graph(self, raw_text_data, **kwargs):
-        """Convert raw text data to initial static graph.
+    def embedding(self, node_word_idx, node_size, num_nodes):
+        """Compute initial node embeddings.
 
         Parameters
         ----------
-        raw_text_data : list of sequences.
-            The raw text data.
-        **kwargs
-            Extra parameters.
+        node_word_idx : torch.LongTensor
+            The input word index node features.
+        node_size : torch.LongTensor
+            Indicate the length of word sequences for nodes.
+        num_nodes : torch.LongTensor
+            Indicate the number of nodes.
 
+        Returns
+        -------
+        torch.Tensor
+            The initial node embeddings.
         """
-        pass
-
-    def self_attention(self, node_emb, node_mask=None):
-        """Computing an attention matrix for a fully connected graph
-        """
-        node_vec_t = torch.relu(self.linear_sim(node_emb))
-        attention = torch.matmul(node_vec_t, node_vec_t.transpose(-1, -2))
-
-        if node_mask is not None:
-            attention = attention.masked_fill_(1 - node_mask.byte().unsqueeze(1), -INF)
-
-        return attention
+        return self.embedding_layer(node_word_idx, node_size, num_nodes)

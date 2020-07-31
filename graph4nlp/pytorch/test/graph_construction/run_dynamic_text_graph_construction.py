@@ -17,7 +17,7 @@ from ..utils import EarlyStopping
 from ...modules.graph_construction import NodeEmbeddingBasedGraphConstruction, NodeEmbeddingBasedRefinedGraphConstruction
 from ...modules.utils.vocab_utils import VocabModel
 from ...modules.utils.padding_utils import pad_2d_vals_no_size
-from ...modules.utils.torch_utils import to_cuda
+from ...modules.utils.generic_utils import to_cuda
 
 
 def main(args, seed):
@@ -41,6 +41,13 @@ def main(args, seed):
                                 word_emb_size=300)
 
     src_text_seq = list(zip(*raw_text_data))[0]
+
+    # Test raw_text_to_init_graph method of dynamic graph construction class
+    text_graphs = []
+    for each in src_text_seq:
+        tmp_graph = NodeEmbeddingBasedGraphConstruction.raw_text_to_init_graph(each)
+        text_graphs.append(tmp_graph)
+
     src_idx_seq = [vocab_model.word_vocab.to_index_sequence(each) for each in src_text_seq]
     src_len = torch.LongTensor([len(each) for each in src_idx_seq]).to(device)
     num_seq = torch.LongTensor([len(src_len)]).to(device)
@@ -55,17 +62,17 @@ def main(args, seed):
     gl = NodeEmbeddingBasedGraphConstruction(
                                             vocab_model.word_vocab,
                                             embedding_styles,
-                                            args.gl_num_hidden,
-                                            args.gl_num_hidden,
-                                            args.gl_topk,
+                                            input_size=args.gl_num_hidden,
+                                            hidden_size=args.gl_num_hidden,
+                                            top_k_neigh=args.gl_topk,
                                             device=device)
+
     gl.to(device)
     print(gl)
 
     graph = gl(input_tensor, src_len, num_seq)
     print('\nadj:', graph.adjacency_matrix().to_dense())
     print('node feat: ', graph.ndata['node_feat'])
-
 
 
 if __name__ == '__main__':

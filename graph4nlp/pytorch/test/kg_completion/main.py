@@ -11,7 +11,8 @@ from os.path import join
 import torch.backends.cudnn as cudnn
 
 from evaluation import ranking_and_hits
-from models import SACN, ConvTransE, ConvE, DistMult, Complex, DisMultGNN, TransEGNN, TransE
+from models import SACN, ConvTransE, ConvE, DistMult, Complex, TransE
+from models_graph4nlp import DistMultGNN, TransEGNN
 from src.spodernet.spodernet.preprocessing.pipeline import Pipeline, DatasetStreamer
 from src.spodernet.spodernet.preprocessing.processors import JsonLoaderProcessors, Tokenizer, AddToVocab, SaveLengthsToState, StreamToHDF5, SaveMaxLengthsToState, CustomTokenizer
 from src.spodernet.spodernet.preprocessing.processors import ConvertTokenToIdx, ApplyFunction, ToLower, DictKey2ListMapper, ApplyFunction, StreamToBatch
@@ -115,6 +116,10 @@ def main():
     test_rank_batcher = StreamBatcher(Config.dataset, 'test_ranking', Config.batch_size, randomize=False, loader_threads=4, keys=input_keys)
 
     train_batcher.at_batch_prepared_observers.insert(1,TargetIdx2MultiTarget(num_entities, 'e2_multi1', 'e2_multi1_binary'))
+    dev_rank_batcher.at_batch_prepared_observers.insert(1,TargetIdx2MultiTarget(num_entities, 'e2_multi1', 'e2_multi1_binary'))
+    dev_rank_batcher.at_batch_prepared_observers.insert(1,TargetIdx2MultiTarget(num_entities, 'e2_multi2', 'e2_multi2_binary'))
+    test_rank_batcher.at_batch_prepared_observers.insert(1,TargetIdx2MultiTarget(num_entities, 'e2_multi1', 'e2_multi1_binary'))
+    test_rank_batcher.at_batch_prepared_observers.insert(1,TargetIdx2MultiTarget(num_entities, 'e2_multi2', 'e2_multi2_binary'))
 
 
     def normalize(mx):
@@ -177,8 +182,8 @@ def main():
         model = ConvE(vocab['e1'].num_token, vocab['rel'].num_token)
     elif Config.model_name == 'DistMult':
         model = DistMult(vocab['e1'].num_token, vocab['rel'].num_token)
-    elif Config.model_name == 'DisMultGNN':
-        model = DisMultGNN(vocab['e1'].num_token, vocab['rel'].num_token)
+    elif Config.model_name == 'DistMultGNN':
+        model = DistMultGNN(vocab['e1'].num_token, vocab['rel'].num_token)
     elif Config.model_name == 'TransE':
         model = TransE(vocab['e1'].num_token, vocab['rel'].num_token)
     elif Config.model_name == 'TransEGNN':
@@ -239,10 +244,26 @@ def main():
                 e1 = str2var['e1']
                 rel = str2var['rel']
                 e2_multi = str2var['e2_multi1_binary'].float()
-            # label smoothing
-            e2_multi = ((1.0-Config.label_smoothing_epsilon)*e2_multi) + (1.0/e2_multi.size(1))
-            pred = model.forward(e1, rel, X, adjacencies)
-            loss = model.loss(pred, e2_multi)
+            if model.loss_name == "SoftMarginLoss":
+                e2_multi[e2_multi==0] = -1
+                pred = model.forward(e1, rel, X, adjacencies)
+                # loss = model.loss(pred.view(-1,1).squeeze(), e2_multi.view(-1,1).squeeze())
+                loss = model.loss(pred, e2_multi)
+            elif model.loss_name == "SoftplusLoss" or model.loss_name == "SigmoidLoss":
+                pred, pos, neg = model.forward(e1, rel, X, adjacencies, e2_multi)
+                loss = model.loss(pos, neg)
+            elif model.loss_name == "BCELoss":
+                # label smoothing
+                e2_multi = ((1.0 - Config.label_smoothing_epsilon) * e2_multi) + (1.0 / e2_multi.size(1))
+                pred = model.forward(e1, rel, X, adjacencies)
+                loss = model.loss(pred, e2_multi)
+            else: # MSELoss
+                # label smoothing
+                e2_multi = ((1.0-Config.label_smoothing_epsilon)*e2_multi) + (1.0/e2_multi.size(1))
+                pred = model.forward(e1, rel, X, adjacencies)
+                loss = model.loss(pred.view(-1,1).squeeze(), e2_multi.view(-1,1).squeeze())
+                # loss = model.loss(pred, e2_multi)
+
             loss.backward()
             opt.step()
 
