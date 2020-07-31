@@ -28,7 +28,7 @@ class DistMultLayer(KGCompletionLayerBase):
         Dimension of the rel_emb. `embedding_dim` is needed if rel_emb_from_gnn==True.
         Default: `0`.
 
-    loss_type: str
+    loss_name: str
         The loss type selected fot the KG completion task.
 
     """
@@ -38,7 +38,7 @@ class DistMultLayer(KGCompletionLayerBase):
                  rel_emb_from_gnn=True,
                  num_relations=None,
                  embedding_dim=None,
-                 loss_type='BCELoss'):
+                 loss_name='BCELoss'):
         super(DistMultLayer, self).__init__()
         self.rel_emb_from_gnn = rel_emb_from_gnn
         self.inp_drop = nn.Dropout(input_dropout)
@@ -47,7 +47,7 @@ class DistMultLayer(KGCompletionLayerBase):
             assert embedding_dim != None
             self.rel_emb = nn.Embedding(num_relations, embedding_dim)
             self.reset_parameters()
-        self.loss_type = loss_type
+        self.loss_name = loss_name
 
 
     def reset_parameters(self):
@@ -130,14 +130,14 @@ class DistMultLayer(KGCompletionLayerBase):
             logits = torch.mm(selected_ent_head_embs*selected_ent_tail_embs,
                               rel_emb.transpose(1, 0))
 
-        if self.loss_type in ['SoftMarginLoss']:
+        if self.loss_name in ['SoftMarginLoss']:
             # target labels are numbers selecting from -1 and 1.
             pred = torch.tanh(logits)
         else:
             # target labels are numbers selecting from 0 and 1.
             pred = torch.sigmoid(logits)
 
-        if multi_label!=None:
+        if type(multi_label) != type(None):
             idxs_pos = torch.nonzero(multi_label == 1.)
             pred_pos = pred[idxs_pos[:, 0], idxs_pos[:, 1]]
 

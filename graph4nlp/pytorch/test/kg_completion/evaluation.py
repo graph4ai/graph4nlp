@@ -8,9 +8,9 @@ from src.spodernet.spodernet.utils.logger import Logger
 from torch.autograd import Variable
 from sklearn import metrics
 
-# timer = CUDATimer()
-log = Logger('evaluation{0}.py.txt'.format(datetime.datetime.now()))
 
+#timer = CUDATimer()
+log = Logger('evaluation{0}.py.txt'.format(datetime.datetime.now()))
 
 def ranking_and_hits(model, dev_rank_batcher, vocab, name, X, adjacencies):
     log.info('')
@@ -24,7 +24,6 @@ def ranking_and_hits(model, dev_rank_batcher, vocab, name, X, adjacencies):
     ranks = []
     ranks_left = []
     ranks_right = []
-    acc_list = []
     for i in range(10):
         hits_left.append([])
         hits_right.append([])
@@ -51,20 +50,10 @@ def ranking_and_hits(model, dev_rank_batcher, vocab, name, X, adjacencies):
                 e2_multi1_binary = str2var['e2_multi1_binary'].float()
                 e2_multi2_binary = str2var['e2_multi2_binary'].float()
                 pred1, pos1, neg1 = model.forward(e1, rel, X, adjacencies, e2_multi1_binary)
-                # print("loss = "+str(model.loss(pos1, neg1).item()))
                 pred2, pos2, neg2 = model.forward(e2, rel_reverse, X, adjacencies, e2_multi2_binary)
             else:
                 pred1 = model.forward(e1, rel, X, adjacencies)
                 pred2 = model.forward(e2, rel_reverse, X, adjacencies)
-
-            if model.loss_name == "SoftMarginLoss":
-                acc = (torch.sum(torch.gt(pred1, 0) == str2var['e2_multi1_binary'].float())).item() / (
-                            pred1.size()[0] * pred1.size()[1])
-            else:
-                acc = (torch.sum(torch.gt(pred1, 0.5) == str2var['e2_multi1_binary'].float())).item() / (
-                            pred1.size()[0] * pred1.size()[1])
-            acc_list.append(acc)
-
             pred1, pred2 = pred1.data, pred2.data
             e1, e2 = e1.data, e2.data
             e2_multi1, e2_multi2 = e2_multi1.data, e2_multi2.data
@@ -75,8 +64,8 @@ def ranking_and_hits(model, dev_rank_batcher, vocab, name, X, adjacencies):
 
                 num = e1[i, 0].item()
                 # save the prediction that is relevant
-                target_value1 = pred1[i, e2.cpu().numpy()[i, 0].item()].item()
-                target_value2 = pred2[i, e1.cpu().numpy()[i, 0].item()].item()
+                target_value1 = pred1[i,e2.cpu().numpy()[i, 0].item()].item()
+                target_value2 = pred2[i,e1.cpu().numpy()[i, 0].item()].item()
                 # zero all known cases (this are not interesting)
                 # this corresponds to the filtered setting
                 pred1[i][filter1] = 0.0
@@ -87,6 +76,7 @@ def ranking_and_hits(model, dev_rank_batcher, vocab, name, X, adjacencies):
 
                 # print(e1[i, 0])
 
+
             # sort and rank
             max_values1, argsort1 = torch.sort(pred1, 1, descending=True)
             max_values2, argsort2 = torch.sort(pred2, 1, descending=True)
@@ -95,11 +85,11 @@ def ranking_and_hits(model, dev_rank_batcher, vocab, name, X, adjacencies):
             argsort2 = argsort2.cpu().numpy()
             for i in range(Config.batch_size):
                 # find the rank of the target entities
-                rank1 = np.where(argsort1[i] == e2.cpu().numpy()[i, 0])[0][0]
-                if max_values1[i][rank1] == max_values1[i][0]:
+                rank1 = np.where(argsort1[i]==e2.cpu().numpy()[i, 0])[0][0]
+                if model.loss_name in ['SoftplusLoss', 'SigmoidLoss'] and max_values1[i][rank1] == max_values1[i][0]:
                     rank1 = 0
-                rank2 = np.where(argsort2[i] == e2.cpu().numpy()[i, 0])[0][0]
-                if max_values2[i][rank2] == max_values2[i][0]:
+                rank2 = np.where(argsort2[i]==e1.cpu().numpy()[i, 0])[0][0]
+                if model.loss_name in ['SoftplusLoss', 'SigmoidLoss'] and max_values2[i][rank2] == max_values2[i][0]:
                     rank2 = 0
                 # rank+1, since the lowest rank is rank 1 not rank 0
                 ranks.append(rank1 + 1)
@@ -135,7 +125,7 @@ def ranking_and_hits(model, dev_rank_batcher, vocab, name, X, adjacencies):
 
             dev_rank_batcher.state.loss = [0]
 
-    print("acc = ", str(sum(acc_list) / len(acc_list)))
+
     for i in range(10):
         log.info('Hits left @{0}: {1}'.format(i + 1, np.mean(hits_left[i])))
         log.info('Hits right @{0}: {1}'.format(i + 1, np.mean(hits_right[i])))

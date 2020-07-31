@@ -1,9 +1,9 @@
 from ..base import KGCompletionBase
-from .DistMultLayer import DistMultLayer
+from .ComplExLayer import ComplExLayer
 from .....data.data import GraphData
 
 
-class DistMult(KGCompletionBase):
+class ComplEx(KGCompletionBase):
     r"""Specific class for knowledge graph completion task.
 
     Parameters
@@ -37,11 +37,11 @@ class DistMult(KGCompletionBase):
                  embedding_dim=None,
                  edge2node=False,
                  loss_name='BCELoss'):
-        super(DistMult, self).__init__()
+        super(ComplEx, self).__init__()
         self.rel_emb_from_gnn = rel_emb_from_gnn
         self.edge2node = edge2node
         self.loss_name = loss_name
-        self.classifier = DistMultLayer(input_dropout, rel_emb_from_gnn,
+        self.classifier = ComplExLayer(input_dropout, rel_emb_from_gnn,
                                        num_relations, embedding_dim, loss_name)
 
 
@@ -64,20 +64,25 @@ class DistMult(KGCompletionBase):
                       logit tensor shape is: [num_class]
         """
 
-        node_emb = input_graph.node_features['node_emb']
+        node_emb_real = input_graph.node_features['node_emb_real']
+        node_emb_img = input_graph.node_features['node_emb_img']
         if self.loss_name in ['SoftplusLoss', 'SigmoidLoss']:
             multi_label = input_graph.node_features['multi_binary_label']
         else:
             multi_label = None
 
         if self.edge2node:
-            rel_emb = node_emb
+            rel_emb_real = node_emb_real
+            rel_emb_img = node_emb_img
         else:
-            if 'rel_emb' in input_graph.node_features.keys():
-                rel_emb = input_graph.node_features['rel_emb']
+            if 'rel_emb_real' in input_graph.node_features.keys() and \
+                    'rel_emb_img' in input_graph.node_features.keys():
+                rel_emb_real = input_graph.node_features['rel_emb_real']
+                rel_emb_img = input_graph.node_features['rel_emb_img']
             else:
                 assert self.rel_emb_from_gnn == False
-                rel_emb = None
+                rel_emb_real = None
+                rel_emb_img = None
 
         if 'list_e_r_pair_idx' in input_graph.node_features.keys():
             list_e_r_pair_idx = input_graph.node_features['list_e_r_pair_idx']
@@ -89,14 +94,18 @@ class DistMult(KGCompletionBase):
             raise RuntimeError("'list_e_r_pair_idx' or 'list_e_e_pair_idx' should be given.")
 
         if multi_label==None:
-            input_graph.node_features['logits'] = self.classifier(node_emb,
-                                                                  rel_emb,
+            input_graph.node_features['logits'] = self.classifier(node_emb_real,
+                                                                  node_emb_img,
+                                                                  rel_emb_real,
+                                                                  rel_emb_img,
                                                                   list_e_r_pair_idx,
                                                                   list_e_e_pair_idx)
         else:
             input_graph.node_features['logits'], input_graph.node_features['p_score'], \
-            input_graph.node_features['n_score'] = self.classifier(node_emb,
-                                                                   rel_emb,
+            input_graph.node_features['n_score'] = self.classifier(node_emb_real,
+                                                                   node_emb_img,
+                                                                   rel_emb_real,
+                                                                   rel_emb_img,
                                                                    list_e_r_pair_idx,
                                                                    list_e_e_pair_idx,
                                                                    multi_label)
