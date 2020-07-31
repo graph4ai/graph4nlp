@@ -7,14 +7,13 @@ from ...utils.tree_utils import Tree, to_cuda
 
 
 class StdTreeDecoder(RNNTreeDecoderBase):
-    def __init__(self, attn, dec_emb_size, dec_hidden_size, output_size, device, criterion, use_sibling = True, batch_size=20, use_attention=True, use_copy=False, use_coverage=False,
+    def __init__(self, attn, dec_emb_size, dec_hidden_size, output_size, device, criterion, use_sibling = True, use_attention=True, use_copy=False, use_coverage=False,
                  fuse_strategy="average", num_layers=1, dropout_input=0.1, dropout_output=0.3, rnn_type="lstm", max_dec_seq_length=512, max_dec_tree_depth=256, tgt_vocab=None):
         super(StdTreeDecoder, self).__init__(use_attention=True, use_copy=False, use_coverage=False, attention_type="uniform",
                                              fuse_strategy="average")
         self.num_layers = num_layers
         self.device = device
         self.criterion = criterion
-        self.batch_size = batch_size
         self.rnn_size = dec_hidden_size
         self.hidden_size = dec_hidden_size
         self.max_dec_seq_length = max_dec_seq_length
@@ -61,13 +60,11 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         """
 
         tgt_batch_size = len(tgt_tree_batch)
-        # assert graph_node_embedding.requires_grad == True
-        assert rnn_node_embedding.requires_grad == True
-        assert graph_level_embedding.requires_grad == True
 
         enc_outputs = rnn_node_embedding
-        graph_cell_state = graph_level_embedding
-        graph_hidden_state = graph_level_embedding
+        graph_hidden_state, graph_cell_state = graph_level_embedding
+        # graph_cell_state = graph_level_embedding
+        # graph_hidden_state = graph_level_embedding
 
         cur_index = 1
         loss = 0
@@ -85,26 +82,26 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         while (cur_index <= max_index):
             for j in range(1, 3):
                 dec_state[cur_index][0][j] = torch.zeros(
-                    (self.batch_size, self.rnn_size), dtype=torch.float, requires_grad=True, device=self.device)
+                    (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=True, device=self.device)
                 # to_cuda(dec_state[cur_index][0][j], self.device)
 
             # sibling_state = torch.zeros(
-            #     (self.batch_size, self.rnn_size), dtype=torch.float, requires_grad=True)
+            #     (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=True)
             # to_cuda(sibling_state, self.device)
             with torch.no_grad():
                 if cur_index == 1:
-                    for i in range(self.batch_size):
+                    for i in range(tgt_batch_size):
                         # print(dec_state[1][0][1].is_leaf)
                         dec_state[1][0][1][i, :] = graph_cell_state[i]
                         dec_state[1][0][2][i, :] = graph_hidden_state[i]
-    
+
                 else:
-                    for i in range(1, self.batch_size+1):
+                    for i in range(1, tgt_batch_size+1):
                         if (cur_index <= len(queue_tree[i])):
                             par_index = queue_tree[i][cur_index - 1]["parent"]
                             child_index = queue_tree[i][cur_index -
                                                         1]["child_index"]
-    
+
                             dec_state[cur_index][0][1][i-1, :] = \
                                 dec_state[par_index][child_index][1][i-1, :]
                             dec_state[cur_index][0][2][i-1,
@@ -133,7 +130,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                 loss += self.criterion(pred, dec_batch[cur_index][:, i+1])
                 # print(loss.is_leaf)
             cur_index = cur_index + 1
-        loss = loss / self.batch_size
+        loss = loss / tgt_batch_size
         return loss
 
     def _build_rnn(self, rnn_type, input_size, emb_size, hidden_size, dropout_input, dropout_output):
