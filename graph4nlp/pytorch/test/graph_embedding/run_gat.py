@@ -332,4 +332,3 @@ if __name__ == '__main__':
         scores.append(main(args, seed))
 
     print("\nTest Accuracy ({} runs): mean {:.4f}, std {:.4f}".format(args.num_runs, np.mean(scores), np.std(scores)))
-
