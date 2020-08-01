@@ -59,7 +59,7 @@ class ConcatFeedForwardNN(LinkPredictionBase):
         dst_idx=torch.tensor(node_idx_list).view(1,-1).repeat(num_node,1).view(-1)
         
         input_graph.add_edges(src_idx,dst_idx)
-        input_graph.edge_features['logits']=self.classifier(node_emb)       
+        input_graph.edge_features['logits']=self.classifier(node_emb).clone().detach()       
          
         return input_graph
 
