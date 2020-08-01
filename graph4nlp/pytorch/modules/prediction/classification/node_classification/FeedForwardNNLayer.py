@@ -21,11 +21,9 @@ class FeedForwardNNLayer(NodeClassifierLayerBase):
                 Example: nn.ReLU(),nn.Sigmoid().        
 
     """     
-    def __init__(self, input_size, num_class, hidden_size,activation=None):        
+    def __init__(self, input_size, num_class, hidden_size,activation=nn.ReLU()):        
         super(FeedForwardNNLayer, self).__init__()
-        
-        if not activation:
-            activation==nn.ReLU()    
+           
             
         #build the linear module list
         module_seq=[]        
