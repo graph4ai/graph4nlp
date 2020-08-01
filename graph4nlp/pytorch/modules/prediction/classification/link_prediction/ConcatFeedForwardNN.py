@@ -20,11 +20,9 @@ class ConcatFeedForwardNN(LinkPredictionBase):
                 Example: nn.ReLU(),nn.Sigmoid().        
 
     """     
-    def __init__(self, input_size,  hidden_size,num_class,activation=None):        
+    def __init__(self, input_size,  hidden_size,num_class,activation=nn.ReLU()):        
         super(ConcatFeedForwardNN, self).__init__()
         
-        if not activation:
-            activation==nn.ReLU() 
         
         self.classifier=ConcatFeedForwardNNLayer(input_size, num_class, hidden_size,activation)
 
@@ -59,7 +57,7 @@ class ConcatFeedForwardNN(LinkPredictionBase):
         dst_idx=torch.tensor(node_idx_list).view(1,-1).repeat(num_node,1).view(-1)
         
         input_graph.add_edges(src_idx,dst_idx)
-        input_graph.edge_features['logits']=self.classifier(node_emb).clone().detach()       
+        input_graph.edge_features['logits']=self.classifier(node_emb)
          
         return input_graph
 
