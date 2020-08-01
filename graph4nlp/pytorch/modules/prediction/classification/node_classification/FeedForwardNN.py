@@ -54,7 +54,7 @@ class FeedForwardNN(NodeClassifierBase):
         """ 
 
         node_emb=input_graph.node_features['node_emb']
-        input_graph.node_features['logits']=self.classifier(node_emb)
+        input_graph.node_features['logits']=self.classifier(node_emb).clone().detach()
         
         return input_graph
 
