@@ -26,7 +26,7 @@ class FeedForwardNN(NodeClassifierBase):
         super(FeedForwardNN, self).__init__()
         
         if not activation:
-            activation==nn.ReLU 
+            activation==nn.ReLU() 
         
         self.classifier=FeedForwardNNLayer(input_size, num_class, hidden_size,activation)
 
