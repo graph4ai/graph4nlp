@@ -142,7 +142,9 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         return joint_graph
 
     def embedding(self, node_attributes, edge_attributes):
-        pass
+        node_emb, edge_emb = self.embedding_layer(
+            node_attributes, edge_attributes)
+        return node_emb, edge_emb
 
     @classmethod
     def _construct_static_graph(cls, parsed_object, edge_strategy=None):
@@ -178,6 +180,20 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         for dep_info in parsed_object["graph_content"]:
             if edge_strategy is None or edge_strategy == "homogeneous":
                 ret_graph.add_edge(dep_info["src"]['id'], dep_info['tgt']['id'])
+            elif edge_strategy == "heterogeneous":
+                raise NotImplementedError()
+            elif edge_strategy == "as_node":
+                # insert a node
+                node_idx = ret_graph.get_node_num()
+                ret_graph.add_nodes(1)
+                ret_graph.node_attributes[node_idx]['type'] = 3  # 3 for edge node
+                ret_graph.node_attributes[node_idx]['token'] = dep_info['edge_type']
+                ret_graph.node_attributes[node_idx]['position_id'] = None
+                ret_graph.node_attributes[node_idx]['head'] = False
+                ret_graph.node_attributes[node_idx]['tail'] = False
+                # add edge infos
+                ret_graph.add_edge(dep_info['src']['id'], node_idx)
+                ret_graph.add_edge(node_idx, dep_info['tgt']['id'])
             else:
                 raise NotImplementedError()
 
