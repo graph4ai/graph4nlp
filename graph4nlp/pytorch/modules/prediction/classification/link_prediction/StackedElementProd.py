@@ -16,13 +16,10 @@ class StackedElementProd(NodeClassifierBase):
     num_channel: int
                The number of channels for node embeddings to be used for link prediction                 
     hidden_size : list of int type values
-                  Example for two layers's FeedforwardNN: [50, 20]
-    activation: the activation function class for each fully connected layer
-                Default: nn.ReLU()
-                Example: nn.ReLU(),nn.Sigmoid().        
+                  Example for two layers's FeedforwardNN: [50, 20]        
 
     """     
-    def __init__(self, input_size, hidden_size,num_class, activation=None):        
+    def __init__(self, input_size, hidden_size,num_class):        
         super(StackedElementProd, self).__init__()
         
         self.num_channel=num_channel 
@@ -62,7 +59,7 @@ class StackedElementProd(NodeClassifierBase):
         src_idx=torch.tensor(node_idx_list).view(-1,1).repeat(1,num_node).view(-1)
         dst_idx=torch.tensor(node_idx_list).view(1,-1).repeat(num_node,1).view(-1)
         input_graph.add_edges(src_idx,dst_idx)
-        input_graph.edge_features['logits']=self.classifier(node_emb_list).clone().detach()       
+        input_graph.edge_features['logits']=self.classifier(node_emb_list)     
         
         return input_graph
 
