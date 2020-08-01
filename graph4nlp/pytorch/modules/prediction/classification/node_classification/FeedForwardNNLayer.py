@@ -25,7 +25,7 @@ class FeedForwardNNLayer(NodeClassifierLayerBase):
         super(FeedForwardNNLayer, self).__init__()
         
         if not activation:
-            activation==nn.ReLU    
+            activation==nn.ReLU()    
             
         #build the linear module list
         module_seq=[]        
