@@ -141,7 +141,7 @@ class GraphSAGE(GNNBase):
         else:
             logits = logits
             
-        graph.node_features['node_emb']=logits #put the results into the NLPGraph
+        graph.node_features['node_emb']=logits.clone().detach() #put the results into the NLPGraph
 
         return graph
     
