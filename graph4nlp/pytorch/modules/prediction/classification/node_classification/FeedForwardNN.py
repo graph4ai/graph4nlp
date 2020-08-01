@@ -22,11 +22,9 @@ class FeedForwardNN(NodeClassifierBase):
                 Example: nn.ReLU(),nn.Sigmoid().        
 
     """     
-    def __init__(self, input_size, num_class, hidden_size,activation=None):        
+    def __init__(self, input_size, num_class, hidden_size,activation=nn.ReLU()):        
         super(FeedForwardNN, self).__init__()
         
-        if not activation:
-            activation==nn.ReLU() 
         
         self.classifier=FeedForwardNNLayer(input_size, num_class, hidden_size,activation)
 
@@ -54,7 +52,7 @@ class FeedForwardNN(NodeClassifierBase):
         """ 
 
         node_emb=input_graph.node_features['node_emb']
-        input_graph.node_features['logits']=self.classifier(node_emb).clone().detach()
+        input_graph.node_features['logits']=self.classifier(node_emb)
         
         return input_graph
 
