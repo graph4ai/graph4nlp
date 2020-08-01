@@ -56,7 +56,7 @@ class ElementSum(LinkPredictionBase):
         src_idx=torch.tensor(node_idx_list).view(-1,1).repeat(1,num_node).view(-1)
         dst_idx=torch.tensor(node_idx_list).view(1,-1).repeat(num_node,1).view(-1)
         input_graph.add_edges(src_idx,dst_idx)
-        input_graph.edge_features['logits']=self.classifier(node_emb).clone().detach()       
+        input_graph.edge_features['logits']=self.classifier(node_emb)      
          
         return input_graph
 
