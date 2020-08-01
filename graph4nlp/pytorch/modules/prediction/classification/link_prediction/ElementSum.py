@@ -20,11 +20,9 @@ class ElementSum(LinkPredictionBase):
                 Example: nn.ReLU(),nn.Sigmoid().        
 
     """     
-    def __init__(self, input_size,  hidden_size,num_class,activation=None):        
+    def __init__(self, input_size,  hidden_size,num_class,activation=nn.ReLU()):        
         super(ElementSum, self).__init__()
         
-        if not activation:
-            activation==nn.ReLU 
         
         self.classifier=ElementSumLayer(input_size, num_class, hidden_size,activation)
 
