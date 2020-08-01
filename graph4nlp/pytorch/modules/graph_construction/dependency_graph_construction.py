@@ -210,16 +210,21 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ret_graph.node_attributes[dep_info["tgt"]['id']]['position_id'] = dep_info['tgt']['position_id']
             ret_graph.node_attributes[dep_info["src"]['id']]['sentence_id'] = dep_info["src"]['sentence_id']
             ret_graph.node_attributes[dep_info["tgt"]['id']]['sentence_id'] = dep_info["src"]['sentence_id']
+            ret_graph.node_attributes[dep_info["src"]['id']]['head'] = False
+            ret_graph.node_attributes[dep_info["tgt"]['id']]['head'] = False
+            ret_graph.node_attributes[dep_info["src"]['id']]['tail'] = False
+            ret_graph.node_attributes[dep_info["tgt"]['id']]['tail'] = False
 
-            # head
             if dep_info["src"]['id'] == 0:
+                # head
                 ret_graph.node_attributes[dep_info["src"]['id']]['head'] = True
                 ret_graph.node_attributes[dep_info["src"]['id']]['tail'] = False
 
-            # tail
             if dep_info["tgt"]['id'] == node_num - 1:
+                # tail
                 ret_graph.node_attributes[dep_info["tgt"]['id']]["head"] = False
                 ret_graph.node_attributes[dep_info["tgt"]['id']]["tail"] = True
+
             # TODO: add edge_attributes
         return ret_graph
 
@@ -260,24 +265,46 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             for edge in s_g.get_all_edges():
                 src, tgt = edge
                 g.add_edge(src + node_idx_off, tgt + node_idx_off)
-            s_g_node_num = s_g.get_node_num()
-            for i in range(s_g_node_num):
-                g.node_attributes[node_idx_off + i]['token'] = s_g.node_attributes[i]['token']
-                g.node_attributes[node_idx_off + i]['position_id'] = s_g.node_attributes[i]['position_id']
-                g.node_attributes[node_idx_off + i]['type'] = s_g.node_attributes[i]['type']
-                g.node_attributes[node_idx_off + i]['sentence_id'] = s_g.node_attributes[i]['sentence_id']
-                g.node_attributes[node_idx_off + i]['head'] = False
-                g.node_attributes[node_idx_off + i]['tail'] = False
+            tmp = {}
+            for key, value in s_g.node_attributes.items():
+                tmp[key + node_idx_off] = value
+            g.node_attributes.update(tmp)
             node_idx_off += s_g.get_node_num()
 
+        head_g = -1
+        tail_g = -1
+
+        headtail_list = []
+
+        head = -1
+        tail = -1
+
+        node_idx_off = 0
+        for i in range(len(nx_graph_list)):
+            for node_idx, node_attrs in nx_graph_list[i].node_attributes.items():
+                print(node_attrs, "-----")
+                if node_attrs['head'] is True:
+                    head = node_idx + node_idx_off
+                elif node_attrs['tail'] is True:
+                    tail = node_idx + node_idx_off
+            assert head != -1
+            assert tail != -1
+            headtail_list.append((head, tail))
+            head = -1
+            tail = -1
+
+        for n_node in node_num_list:
+            headtail_list.append((node_idx_off, node_idx_off + n_node - 1))
+            node_idx_off += n_node
+
+        head_g = headtail_list[0][0]
+        tail_g = headtail_list[-1][1]
+
         if merge_strategy is None or merge_strategy == "tailhead":
-            headtail_list = []
-            node_idx_off = 0
-            for n_node in node_num_list:
-                headtail_list.append((node_idx_off, node_idx_off + n_node - 1))
-                node_idx_off += n_node
+
             src_list = []
             tgt_list = []
+
             for i in range(len(headtail_list) - 1):
                 src_list.append(headtail_list[i][1])
                 tgt_list.append(headtail_list[i + 1][0])
@@ -306,8 +333,11 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             # TODO: add two merge strategy
             raise NotImplementedError()
 
-        g.node_attributes[0]['head'] = True
-        g.node_attributes[g.get_node_num() - 1]['tail'] = True
+
+        for node_idx, node_attrs in g.node_attributes.items():
+            node_attrs['head'] = node_idx == head_g
+            node_attrs['tail'] = node_idx == tail_g
+
 
         if cls.verbase > 0:
             print("sub_graph print")
