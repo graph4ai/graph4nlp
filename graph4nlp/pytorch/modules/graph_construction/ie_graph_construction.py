@@ -8,6 +8,8 @@ from .base import StaticGraphConstructionBase
 
 import networkx as nx
 
+import torch
+
 
 class IEBasedGraphConstruction(StaticGraphConstructionBase):
     """
@@ -66,19 +68,15 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
 
-        edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
+        edge_strategy: None or str, option=[None, "as_node"]
             Strategy to process edge.
-            ``None``: It will be the default option. We will do as ``"homogeneous"``.
-            ``"homogeneous"``: We will drop the edge type information.
-                               If there is a linkage among node ``i`` and node ``j``, we will add an edge whose weight
-                               is ``1.0``. Otherwise there is no edge.
-            ``heterogeneous``: We will keep the edge type information.
-                               An edge will have type information like ``n_subj``.
-                               It is not implemented yet.
+            ``None``: It will be the default option.
+                      Edge information will be preserved in GraphDate.edge_attributes.
             ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
-                         It is not implemented yet.
+                         The ``type`` of original nodes will be set as ``ent_node``,
+                         while the ``type`` of edge nodes is ``edge_node`.`
 
         Returns
         -------
@@ -198,7 +196,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         parsed_results['graph_content'] = []
         graph_nodes = []
         for triple in all_sent_triples_list:
-            if edge_strategy is None or edge_strategy == "homogeneous":
+            if edge_strategy is None:
                 if triple[0] not in graph_nodes:
                     graph_nodes.append(triple[0])
 
@@ -214,7 +212,8 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                                    'tokens': triple[2].split(),
                                    'id': graph_nodes.index(triple[2])
                                }}
-                parsed_results['graph_content'].append(triple_info)
+                if triple not in parsed_results['graph_content']:
+                    parsed_results['graph_content'].append(triple_info)
             elif edge_strategy == "as_node":
                 if triple[0] not in graph_nodes:
                     graph_nodes.append(triple[0])
@@ -249,8 +248,10 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                                        'type': 'ent_node'
                                    }}
 
-                parsed_results['graph_content'].append(triple_info_0_1)
-                parsed_results['graph_content'].append(triple_info_1_2)
+                if triple_info_0_1 not in parsed_results['graph_content']:
+                    parsed_results['graph_content'].append(triple_info_0_1)
+                if triple_info_1_2 not in parsed_results['graph_content']:
+                    parsed_results['graph_content'].append(triple_info_1_2)
             else:
                 raise NotImplementedError()
 
@@ -267,10 +268,56 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         return graph
 
 
-    def embedding(self, node_attributes, edge_attributes):
-        node_emb, edge_emb = self.embedding_layer(
-            node_attributes, edge_attributes)
-        return node_emb, edge_emb
+    def embedding(self, graph: GraphData):
+        node_attributes = graph.node_attributes
+        edge_attributes = graph.edge_attributes
+
+        # Build embedding(initial feature vector) for graph nodes.
+        # Each node may contains multiple tokens.
+        node_idxs_list = []
+        node_len_list = []
+        for node_id, node_dict in node_attributes.items():
+            node_word_idxs = []
+            for token in node_dict['token']:
+                node_word_idxs.append(self.vocab.getIndex(token))
+            node_idxs_list.append(node_word_idxs)
+            node_len_list.append(len(node_word_idxs))
+        max_size = max(node_len_list)
+        node_idxs_list = [x+[self.vocab.PAD]*(max_size-len(x)) for x in node_idxs_list]
+        node_idxs_tensor = torch.LongTensor(node_idxs_list)
+        if self.embedding_layer.node_edge_emb_strategy == 'mean':
+            node_len_tensor = torch.LongTensor(node_len_list).view(-1, 1)
+        else:
+            node_len_tensor = torch.LongTensor(node_len_list)
+        num_nodes = torch.LongTensor([len(node_len_list)])
+        node_feat = self.embedding_layer(node_idxs_tensor, node_len_tensor, num_nodes)
+        graph.node_features['node_feat'] = node_feat
+
+        if 'token' in edge_attributes[0].keys():
+            # If edge information is stored in `edge_attributes`,
+            # build embedding(initial feature vector) for graph edges.
+            # Each edge may contains multiple tokens.
+            edge_idxs_list = []
+            edge_len_list = []
+            for edge_id, edge_dict in edge_attributes.items():
+                edge_word_idxs = []
+                for token in edge_dict['token']:
+                    edge_word_idxs.append(self.vocab.getIndex(token))
+                edge_idxs_list.append(edge_word_idxs)
+                edge_len_list.append(len(edge_word_idxs))
+
+            max_size = max(edge_len_list)
+            edge_idxs_list = [x + [self.vocab.PAD] * (max_size - len(x)) for x in edge_idxs_list]
+            edge_idxs_tensor = torch.LongTensor(edge_idxs_list)
+            if self.embedding_layer.node_edge_emb_strategy == 'mean':
+                edge_len_tensor = torch.LongTensor(edge_len_list).view(-1, 1)
+            else:
+                edge_len_tensor = torch.LongTensor(edge_len_list)
+            num_edges = torch.LongTensor([len(edge_len_list)])
+            edge_feat = self.embedding_layer(edge_idxs_tensor, edge_len_tensor, num_edges)
+            graph.edge_features['edge_feat'] = edge_feat
+
+        return graph
 
 
     @classmethod
@@ -283,19 +330,15 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         parsed_object: dict
             ``parsed_object`` contains all triples extracted from the raw_text_data.
 
-        edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
+        edge_strategy: None or str, option=[None, "as_node"]
             Strategy to process edge.
-            ``None``: It will be the default option. We will do as ``"homogeneous"``.
-            ``"homogeneous"``: We will drop the edge type information.
-                               If there is a linkage among node ``i`` and node ``j``, we will add an edge whose weight
-                               is ``1.0``. Otherwise there is no edge.
-            ``heterogeneous``: We will keep the edge type information.
-                               An edge will have type information like ``n_subj``.
-                               It is not implemented yet.
+            ``None``: It will be the default option.
+                      Edge information will be preserved in GraphDate.edge_attributes.
             ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
-                         It is not implemented yet.
+                         The ``type`` of original nodes will be set as ``ent_node``,
+                         while the ``type`` of edge nodes is ``edge_node`.`
 
         Returns
         -------
@@ -306,8 +349,12 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         node_num = parsed_object["node_num"]
         ret_graph.add_nodes(node_num)
         for triple_info in parsed_object["graph_content"]:
-            if edge_strategy is None or edge_strategy == "homogeneous":
+            if edge_strategy is None:
                 ret_graph.add_edge(triple_info["src"]['id'], triple_info['tgt']['id'])
+                # eid = ret_graph.get_edge_num() - 1
+                eids = ret_graph.edge_ids(triple_info["src"]['id'], triple_info['tgt']['id'])
+                for eid in eids:
+                    ret_graph.edge_attributes[eid]['token'] = triple_info['edge_tokens']
             elif edge_strategy == 'as_node':
                 ret_graph.add_edge(triple_info["src"]['id'], triple_info['tgt']['id'])
             else:
@@ -319,7 +366,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                 ret_graph.node_attributes[triple_info["src"]['id']]['type'] = triple_info["src"]['type']
                 ret_graph.node_attributes[triple_info["tgt"]['id']]['type'] = triple_info['tgt']['type']
 
-            # TODO: add edge_attributes
         return ret_graph
 
     @classmethod
@@ -365,23 +411,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             return []
         else:
             raise NotImplementedError()
-
-        # ``"share_common_tokens"``:  The entity nodes share the same tokens are connected
-        #                             using a "COM" edge
-        # if merge_strategy=='share_common_tokens':
-        #     common_tokens_triples = []
-        #     for i, node_i in enumerate(graph_nodes[:-1]):
-        #         for j, node_j in enumerate(graph_nodes[i+1:]):
-        #             node_i_lst = node_i.split()
-        #
-        #             node_j_lst = node_j.split()
-        #
-        #             common_tokens = list(set(node_i_lst).intersection(set(node_j_lst)))
-        #
-        #             if common_tokens!=[]:
-        #                 common_tokens_triples.append([node_i, 'COM', node_j])
-        #
-        #     global_triples.extend(common_tokens_triples)
 
 
     def forward(self, feat):
