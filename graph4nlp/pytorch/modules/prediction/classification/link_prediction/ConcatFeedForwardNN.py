@@ -24,7 +24,7 @@ class ConcatFeedForwardNN(LinkPredictionBase):
         super(ConcatFeedForwardNN, self).__init__()
         
         if not activation:
-            activation==nn.ReLU 
+            activation==nn.ReLU() 
         
         self.classifier=ConcatFeedForwardNNLayer(input_size, num_class, hidden_size,activation)
 
