@@ -1,32 +1,10 @@
 import torch
 from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
+import dgl
 
 from ..utils.generic_utils import to_cuda
 
-
-class EmbeddingConstructionBase(nn.Module):
-    """
-    Base class for (initial) graph embedding construction.
-
-    ...
-
-    Attributes
-    ----------
-    feat : dict
-        Raw features of graph nodes and/or edges.
-
-    Methods
-    -------
-    forward(raw_text_data)
-        Generate dynamic graph topology and embeddings.
-    """
-
-    def __init__(self):
-        super(EmbeddingConstructionBase, self).__init__()
-
-    def forward(self):
-        raise NotImplementedError()
 
 class EmbeddingConstructionBase(nn.Module):
     """Basic class for embedding construction.
@@ -157,41 +135,51 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         else:
             raise RuntimeError('Unknown seq_info_encode_strategy: {}'.format(seq_info_encode_strategy))
 
-    def forward(self, input_tensor, item_size, num_items):
+    def forward(self, graph, feat_name, item_size,
+                    num_items, out_feat_name='node_feat'):
         """Compute initial node/edge embeddings.
 
         Parameters
         ----------
-        input_tensor : torch.LongTensor
-            The input word index sequence, shape: [num_items, max_size].
+        graph : GraphData
+            The input graph data.
+        feat_name : str
+            The field name for extracting the word sequence tensor.
         item_size : torch.LongTensor
-            The length of word sequence per node/edge, shape: [num_items].
+            The length of word sequence per item with shape :math:`(N)`
+            where :math:`N` is the number of total items in the batched graph.
         num_items : torch.LongTensor
-            The number of nodes/edges, shape: [1].
+            The number of items per graph with shape :math:`(B,)`
+            where :math:`B` is the number of graphs in the batched graph.
 
         Returns
         -------
-        torch.Tensor
-            The initial node/edge embeddings.
+        GraphData
+            The output graph data containing initial item embeddings.
         """
+        input_tensor = graph.ndata[feat_name]
         feat = []
         for word_emb_layer in self.word_emb_layers:
             feat.append(word_emb_layer(input_tensor))
 
         feat = torch.cat(feat, dim=-1)
-
         feat = self.node_edge_emb_layer(feat, item_size)
         if self.node_edge_emb_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
             feat = feat[-1]
 
+        graph.ndata[out_feat_name] = feat
         if self.seq_info_encode_layer is not None:
-            feat = self.seq_info_encode_layer(torch.unsqueeze(feat, 0), num_items)
-            if self.seq_info_encode_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
-                feat = feat[0]
+            graph_list = dgl.unbatch(graph)
+            for i, each in enumerate(graph_list):
+                tmp_feat = self.seq_info_encode_layer(torch.unsqueeze(each.ndata[out_feat_name], 0), num_items[i:i+1])
+                if self.seq_info_encode_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
+                    tmp_feat = tmp_feat[0]
 
-            feat = torch.squeeze(feat, 0)
+                each.ndata[out_feat_name] = tmp_feat.squeeze(0)
 
-        return feat
+            graph = dgl.batch(graph_list)
+
+        return graph
 
 class WordEmbedding(nn.Module):
     """Word embedding class.

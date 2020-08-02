@@ -47,7 +47,8 @@ class VocabModel(object):
                             word_emb_size=300)
     >>> print(vocab_model.word_vocab.get_vocab_size())
     """
-    def __init__(self, data_set, tokenizer=word_tokenize,
+    def __init__(self, data_set, lower_case=True,
+                                tokenizer=word_tokenize,
                                 max_word_vocab_size=None,
                                 min_word_vocab_freq=1,
                                 pretrained_word_emb_file=None,
@@ -56,10 +57,10 @@ class VocabModel(object):
         self.tokenizer = word_tokenize
 
         print('Building vocabs...')
-        all_words = collect_vocabs(data_set, self.tokenizer)
+        all_words = collect_vocabs(data_set, self.tokenizer, lower_case=lower_case)
         print('Number of words: {}'.format(len(all_words)))
 
-        self.word_vocab = Vocab(self.tokenizer)
+        self.word_vocab = Vocab(lower_case=lower_case, tokenizer=self.tokenizer)
         self.word_vocab.build_vocab(all_words, max_vocab_size=max_word_vocab_size, min_vocab_freq=min_word_vocab_freq)
 
         if pretrained_word_emb_file is not None:
@@ -144,8 +145,9 @@ class Vocab(object):
     >>> word_vocab.build_vocab({'i': 10, 'like': 5, 'nlp': 3})
     >>> print(word_vocab.get_vocab_size())
     """
-    def __init__(self, tokenizer=word_tokenize):
+    def __init__(self, lower_case=False, tokenizer=word_tokenize):
         super(Vocab, self).__init__()
+        self.lower_case = lower_case
         self.tokenizer = tokenizer
         self.PAD = 0
         self.SOS = 1
@@ -181,6 +183,9 @@ class Vocab(object):
     def _add_words(self, words):
         # words: a list of str
         for word in words:
+            if self.lower_case:
+                word = word.lower()
+
             if word not in self.word2index:
                 self.word2index[word] = len(self.index2word)
                 self.index2word.append(word)
@@ -190,18 +195,23 @@ class Vocab(object):
         """Trim vocab"""
         if min_vocab_freq <= 1 and (max_vocab_size is None or max_vocab_size >= len(self.word2index)):
             return
+
         ordered_words = sorted(((c, w) for (w, c) in self.word2count.items()), reverse=True)
+
         if max_vocab_size:
             ordered_words = ordered_words[:max_vocab_size]
+
         self.index2word = self.reserved[:]
         self.word2index = dict(zip(self.reserved, range(len(self.reserved))))
         self.word2count = Counter()
+
         for count, word in ordered_words:
             if count < min_vocab_freq: break
             if word not in self.word2index:
                 self.word2index[word] = len(self.index2word)
                 self.word2count[word] = count
                 self.index2word.append(word)
+
         assert len(self.word2index) == len(self.index2word)
 
     def load_embeddings(self, file_path, scale=0.08, dtype=np.float32):
@@ -212,7 +222,10 @@ class Vocab(object):
             for line in f:
                 line = line.split()
                 word = line[0].decode('utf-8')
-                idx = self.word2index.get(word.lower(), None)
+                if self.lower_case:
+                    word = word.lower()
+
+                idx = self.word2index.get(word, None)
                 if idx is None or idx in hit_words:
                     continue
 
@@ -254,6 +267,9 @@ class Vocab(object):
         return len(self.index2word)
 
     def getIndex(self, word):
+        if self.lower_case:
+            word = word.lower()
+
         return self.word2index.get(word, self.UNK)
 
     def getWord(self, idx):
@@ -268,6 +284,9 @@ class Vocab(object):
 
     def to_index_sequence(self, sentence):
         sentence = sentence.strip()
+        if self.lower_case:
+            sentence = sentence.lower()
+
         seq = []
         for word in self.tokenizer(sentence):
             idx = self.getIndex(word)
@@ -277,17 +296,22 @@ class Vocab(object):
     def to_index_sequence_for_list(self, words):
         seq = []
         for word in words:
+            if self.lower_case:
+                word = word.lower()
+
             idx = self.getIndex(word)
             seq.append(idx)
         return seq
 
-def collect_vocabs(all_instances, tokenizer):
+def collect_vocabs(all_instances, tokenizer, lower_case=True):
     """Count vocabulary tokens."""
     all_words = Counter()
     for instance in all_instances:
         # TODO: need to check which elements should be added to vocab
         # Or sentence.node_attr, sentence.edge_attr
         for sentence in instance:
+            if lower_case:
+                sentence = sentence.lower()
             all_words.update(tokenizer(sentence))
     return all_words
 
