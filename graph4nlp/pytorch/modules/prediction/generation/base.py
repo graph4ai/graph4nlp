@@ -66,7 +66,7 @@ class RNNSeqDecoderBase(DecoderBase):
         """
         raise NotImplementedError()
 
-    def forward(self, encoder_output_dict, tgt):
+    def forward(self, encoder_output_dict, tgt, enc_batch):
         return self._run_forward_pass(**encoder_output_dict, tgt=tgt)
 
     def _run_forward_pass(self, graph_node_embedding, graph_node_mask, rnn_node_embedding, graph_level_embedding,
@@ -142,11 +142,11 @@ class RNNTreeDecoderBase(DecoderBase):
         """
         raise NotImplementedError()
 
-    def forward(self, encoder_output_dict, tgt_tree_batch):
-        return self._run_forward_pass(**encoder_output_dict, tgt_tree_batch=tgt_tree_batch)
+    def forward(self, encoder_output_dict, tgt_tree_batch, enc_batch):
+        return self._run_forward_pass(**encoder_output_dict, tgt_tree_batch=tgt_tree_batch, enc_batch=enc_batch)
 
     def _run_forward_pass(self, graph_node_embedding, graph_node_mask, rnn_node_embedding, graph_level_embedding,
-                          graph_edge_embedding=None, graph_edge_mask=None, tgt=None):
+                          graph_edge_embedding=None, graph_edge_mask=None, tgt=None, enc_batch=None):
         r"""
             The private calculation method for decoder.
 
