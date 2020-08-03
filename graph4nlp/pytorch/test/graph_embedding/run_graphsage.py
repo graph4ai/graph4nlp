@@ -196,6 +196,10 @@ def main(args, seed):
             aggreagte_type=args.aggregate_type,
             direction_option=args.direction_option)
 
+    G=GraphData()
+    G.from_dgl(g)
+    
+    print(model)
     model.to(device)
 
     if args.early_stop:
@@ -214,14 +218,11 @@ def main(args, seed):
         if epoch >= 3:
             t0 = time.time()
         # forward
-        G=GraphData()
-        G.from_dgl(g)
         logits = model(G)
-        
         loss = loss_fcn(logits[train_mask], labels[train_mask])
 
         optimizer.zero_grad()
-        loss.backward()
+        loss.backward(retain_graph=True)
         optimizer.step()
 
         if epoch >= 3:
@@ -242,6 +243,7 @@ def main(args, seed):
               format(epoch, np.mean(dur), loss.item(), train_acc,
                      val_acc, n_edges / np.mean(dur) / 1000))
 
+    print()
     if args.early_stop:
         model = stopper.load_checkpoint(model)
         print('Restored best saved model')
@@ -284,7 +286,7 @@ if __name__ == '__main__':
     parser.add_argument('--weight-decay', type=float, default=5e-4,
                         help="weight decay")
     parser.add_argument('--aggregate_type', type=str, default='mean',
-                        help="aggregate_type: 'mean','gcn','pool','lstm'")
+                        help="aggregate type: 'mean','gcn','pool','lstm'")
     parser.add_argument('--early-stop', action='store_true', default=False,
                         help="indicates whether to use early stop or not")
     parser.add_argument("--patience", type=int, default=100,
