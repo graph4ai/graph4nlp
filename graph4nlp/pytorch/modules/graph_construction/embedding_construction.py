@@ -2,7 +2,30 @@ import torch
 from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
-from ..utils.torch_utils import to_cuda
+from ..utils.generic_utils import to_cuda
+
+class EmbeddingConstructionBase(nn.Module):
+    """
+    Base class for (initial) graph embedding construction.
+
+    ...
+
+    Attributes
+    ----------
+    feat : dict
+        Raw features of graph nodes and/or edges.
+
+    Methods
+    -------
+    forward(raw_text_data)
+        Generate dynamic graph topology and embeddings.
+    """
+
+    def __init__(self):
+        super(EmbeddingConstructionBase, self).__init__()
+
+    def forward(self):
+        raise NotImplementedError()
 
 class EmbeddingConstructionBase(nn.Module):
     """

@@ -23,6 +23,11 @@ for i in range(num_edges):
 g = GraphData()
 g.add_nodes(num_nodes)
 
+# Add node attributes
+for i in range(num_nodes):
+    g.node_attributes[i]['name'] = '*NAMEFIX_{}'.format(i)
+    g.node_attributes[i]['value'] = i
+
 # Test add edges
 g.add_edges(src_list, tgt_list)
 
