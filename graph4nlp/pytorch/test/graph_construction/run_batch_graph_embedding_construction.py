@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import torch
 import dgl
@@ -16,10 +17,10 @@ if __name__ == '__main__':
     vocab_model = VocabModel(raw_text_data, max_word_vocab_size=None,
                             min_word_vocab_freq=1,
                             pretrained_word_emb_file=None,
-                            word_emb_size=50)
+                            word_emb_size=300)
 
-    batch_size = 4
-    hidden_size = 8
+    batch_size = 64
+    hidden_size = 128
     num_nodes = list(range(3, 3 + batch_size))
     np.random.shuffle(num_nodes)
 
@@ -48,6 +49,10 @@ if __name__ == '__main__':
     node_size = torch.LongTensor(node_size)
     num_nodes = torch.LongTensor(num_nodes)
 
-    emb_constructor = EmbeddingConstruction(vocab_model.word_vocab, 'w2v', 'bilstm', 'bilstm', hidden_size)
-    emb_constructor(bg, 'token_idx', node_size, num_nodes)
-    print('emb: {}'.format(bg.ndata['node_feat'].shape))
+    emb_constructor = EmbeddingConstruction(vocab_model.word_vocab, 'w2v', 'bilstm', 'bilstm', hidden_size, device=None)
+    t0 = time.time()
+    node_feat = emb_constructor(bg.ndata['token_idx'], node_size, num_nodes)
+    print('runtime: {}'.format(time.time() - t0))
+    print('mean', node_feat.mean())
+
+    print('emb: {}'.format(node_feat.shape))
