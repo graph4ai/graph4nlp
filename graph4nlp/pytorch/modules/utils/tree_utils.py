@@ -2,6 +2,7 @@ from operator import itemgetter
 import pickle as pkl
 import torch
 from random import randint
+import numpy as np
 import copy
 
 
@@ -32,7 +33,16 @@ class Tree():
             if isinstance(self.children[i], Tree):
                 r_list.append("( " + self.children[i].to_string() + " )")
             else:
-                r_list.append(str(self.children[i]))
+                r_list.append(" "+str(self.children[i])+" ")
+        return "".join(r_list)
+
+    def to_text(self, form_manager):
+        r_list = []
+        for i in range(self.num_children):
+            if isinstance(self.children[i], Tree):
+                r_list.append("( " + self.children[i].to_text(form_manager) + " )")
+            else:
+                r_list.append(" "+form_manager.get_idx_symbol(self.children[i])+" ")
         return "".join(r_list)
 
     def to_list(self, tgt_vocab):
@@ -154,6 +164,13 @@ class Vocab():
         for i in range(len(l)):
             r.append(self.get_symbol_idx(l[i]))
         return r
+    
+    def get_idx_symbol_for_list(self, l):
+        l = np.array(l)
+        r = []
+        for i in range(len(l)):
+            r.append(self.get_idx_symbol(l[i]))
+        return r
 
 
 class DataLoader():
@@ -165,43 +182,20 @@ class DataLoader():
         self.tgt_vocab = Vocab()
         self.use_copy = use_copy
 
+        if use_copy:
+            share_vocab_file_path = self.generate_share_vocab_file(data_dir, src_vocab_file, tgt_vocab_file, min_freq, max_vocab_size)
+
         print("loading vocabulary file...")
         if not use_copy:
             self.src_vocab.init_from_file(src_vocab_file, min_freq, max_vocab_size)
             self.tgt_vocab.init_from_file(tgt_vocab_file, 0, max_vocab_size)
-            # print(self.src_vocab.symbol2idx)
         else:
-            self.share_vocab = Vocab()
-            self.src_vocab.init_from_file(src_vocab_file, min_freq, max_vocab_size)
-            self.tgt_vocab.init_from_file(tgt_vocab_file, 0, max_vocab_size)
+            self.src_vocab.init_from_file(share_vocab_file_path, min_freq, max_vocab_size)
+            self.tgt_vocab = self.src_vocab
+            self.share_vocab = self.src_vocab
             
-            share_vocab = {}
-            print(len(self.src_vocab.symbol2idx))
-            print(len(self.tgt_vocab.symbol2idx))
-
-            num = 1000
-            for word, freq in self.src_vocab.symbol2idx.items():
-                freq = num-freq
-                if word not in share_vocab.keys():
-                    share_vocab[word] = freq
-                else:
-                    share_vocab[word] += freq
-
-            for word, freq in self.tgt_vocab.symbol2idx.items():
-                freq = num-freq
-                if word not in share_vocab.keys():
-                    share_vocab[word] = freq
-                else:
-                    share_vocab[word] += freq
-            share_vocab = sorted(share_vocab.items(), key=lambda d:d[1], reverse = True)[5:]
-            with open(data_dir + 'share_vocab.txt','w') as f:
-                for k, v in share_vocab:
-                    f.write(k+'\t'+str(v)+'\n')
-            self.share_vocab.init_from_file(data_dir + 'share_vocab.txt', min_freq, max_vocab_size)
-
         print("loading data file...")
         self.data = self._get_seq_tree_pair_data()
-        # print(data[0][1], data[0][2].to_string())
 
         if self.mode == "test":
             assert(batch_size == 1)
@@ -253,6 +247,34 @@ class DataLoader():
         self.num_batch = len(self.enc_batch_list)
         assert(len(self.enc_batch_list) == len(self.dec_batch_list))
         print("---Done---")
+
+    def generate_share_vocab_file(self, data_dir, src_vocab_file, tgt_vocab_file, min_freq, max_vocab_size):
+        self.src_vocab.init_from_file(src_vocab_file, min_freq, max_vocab_size)
+        self.tgt_vocab.init_from_file(tgt_vocab_file, 0, max_vocab_size)
+
+        share_vocab = {}
+        num = np.max([self.src_vocab.vocab_size, self.tgt_vocab.vocab_size]) + min_freq + 1
+
+        for word, freq in self.src_vocab.symbol2idx.items():
+            freq = num-freq
+            if word not in share_vocab.keys():
+                share_vocab[word] = freq
+            else:
+                share_vocab[word] += freq
+
+        for word, freq in self.tgt_vocab.symbol2idx.items():
+            freq = num-freq
+            if word not in share_vocab.keys():
+                share_vocab[word] = freq
+            else:
+                share_vocab[word] += freq
+
+        share_vocab = sorted(share_vocab.items(), key=lambda d:d[1], reverse = True)[5:]
+        with open(data_dir + 'share_vocab.txt','w') as f:
+            for k, v in share_vocab:
+                f.write(k+'\t'+str(v)+'\n')
+        return (data_dir + 'share_vocab.txt')
+
 
     def _get_seq_tree_pair_data(self):
         data = []

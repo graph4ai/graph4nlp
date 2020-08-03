@@ -116,6 +116,8 @@ def train_tree_decoder(seed, save_every):
     use_coverage = True
     train_data_loader = DataLoader(data_dir=data_dir, use_copy=use_copy, src_vocab_file=src_vocab_file, tgt_vocab_file=tgt_vocab_file, data_file=data_file,
                                    mode=mode, min_freq=min_freq, max_vocab_size=max_vocab_size, batch_size=batch_size, device=device)
+    # print(train_data_loader.share_vocab.idx2symbol)
+    # print(train_data_loader.share_vocab.idx2symbol)
     
     '''For encoder-decoder'''
     if use_copy:
@@ -137,8 +139,8 @@ def train_tree_decoder(seed, save_every):
 
     enc_dropout_input = 0.1
     enc_dropout_output = 0.3
-    # dec_dropout_input = 0.1
-    dec_dropout_input = 0
+    dec_dropout_input = 0.1
+    # dec_dropout_input = 0
     dec_dropout_output = 0.3
     attn_dropout = 0.1
     # teacher_force_ratio = 0.3
@@ -151,8 +153,9 @@ def train_tree_decoder(seed, save_every):
 
     attention_type = "uniform"
 
-    criterion = nn.NLLLoss(size_average=False, ignore_index=train_data_loader.tgt_vocab.get_symbol_idx(train_data_loader.tgt_vocab.pad_token))
-    
+    # criterion = nn.NLLLoss(size_average=False, ignore_index=train_data_loader.tgt_vocab.get_symbol_idx(train_data_loader.tgt_vocab.pad_token))
+    criterion = nn.NLLLoss(size_average=False)
+
     attn_unit = AttnUnit(dec_hidden_size, output_size, attention_type, attn_dropout)
 
 
@@ -289,22 +292,21 @@ def test_tree_decoder(seed, save_every):
 
     test_data_loader = DataLoader(data_dir=data_dir, use_copy=use_copy, src_vocab_file=src_vocab_file, tgt_vocab_file=tgt_vocab_file, data_file=data_file,
                                    mode=mode, min_freq=min_freq, max_vocab_size=max_vocab_size, batch_size=batch_size, device=device)
-    print("test samples number : ", test_data_loader.num_batch)
+    # print(test_data_loader.share_vocab.idx2symbol)
+    # print("test samples number : ", test_data_loader.num_batch)
     
     num_batch = 25
     # model_num = save_every * num_batch - 1
-    model_num = 449
+    model_num = 1199
 
     if use_copy:
         enc_emb_size = 300
         tgt_emb_size = 300
-        embeddings = nn.Embedding(test_data_loader.share_vocab.vocab_size, enc_emb_size, padding_idx=test_data_loader.share_vocab.get_symbol_idx(test_data_loader.share_vocab.pad_token))
         enc_hidden_size = 150
         dec_hidden_size = 300
     else:
         enc_emb_size = 150
         tgt_emb_size = 150
-        embeddings = None
         enc_hidden_size = 150
         dec_hidden_size = 300
 
@@ -334,6 +336,7 @@ def test_tree_decoder(seed, save_every):
             x = data[i]
             reference = torch.tensor(x[1], dtype=torch.long)
             input_word_list = x[0]
+            # print(test_data_loader.tgt_vocab.get_idx_symbol_for_list(reference))
             candidate = do_generate(use_copy, enc_hidden_size, dec_hidden_size, encoder, tree_decoder, input_word_list,
                                     test_data_loader.src_vocab, test_data_loader.tgt_vocab, device, max_dec_seq_length, max_dec_tree_depth)
             candidate = [int(c) for c in candidate]
@@ -351,7 +354,7 @@ def test_tree_decoder(seed, save_every):
             cand_str = convert_to_string(candidate, test_data_loader.tgt_vocab)
             reference_list.append(reference)
             candidate_list.append(candidate)
-            print(cand_str)
+            # print(cand_str)
 
         val_acc = compute_tree_accuracy(
             candidate_list, reference_list, test_data_loader.tgt_vocab)
@@ -386,6 +389,9 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, encoder, tree_decode
     enc_w_list.append(word_manager.get_symbol_idx(word_manager.end_token))
     enc_w_list.insert(0, word_manager.get_symbol_idx(word_manager.start_token))
     enc_w_list = torch.tensor(enc_w_list, dtype=torch.long).unsqueeze(0)
+
+
+    # print(form_manager.get_idx_symbol_for_list(enc_w_list[0]))
     
     enc_outputs = torch.zeros((1, enc_w_list.size(1), enc_hidden_size), requires_grad=False)
     to_cuda(enc_outputs)
@@ -421,7 +427,7 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, encoder, tree_decode
             prev_word = torch.tensor([form_manager.get_symbol_idx(form_manager.start_token)], dtype=torch.long)
         else:
             prev_word = torch.tensor([form_manager.get_symbol_idx('(')], dtype=torch.long)
-        
+
         to_cuda(prev_word, device)
         
         i_child = 1
@@ -439,26 +445,29 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, encoder, tree_decode
                 _, _prev_word = prediction.max(1)
                 prev_word = _prev_word
             else:
+                # print(form_manager.idx2symbol[np.array(prev_word)[0]])
                 decoder_embedded = tree_decoder.embeddings(prev_word)
                 pred, decoder_state, _, _, enc_context = tree_decoder.rnn(parent_h, sibling_state, decoder_embedded,
                                               decoder_state,
-                                              output_.transpose(0,1),
+                                              enc_outputs.transpose(0,1),
                                               None, None, input_mask=input_mask,
                                               encoder_word_idx=enc_w_list,
                                               ext_vocab_size=tree_decoder.embeddings.num_embeddings,
                                               log_prob=False,
                                               prev_enc_context=enc_context,
                                               encoder_outputs2=output_.transpose(0,1))
-                
+
+                dec_next_state_1 = decoder_state[0].squeeze(0)
+                dec_next_state_2 = decoder_state[1].squeeze(0)
+
                 pred = torch.log(pred + 1e-31)
-                _, _prev_word = pred.max(1)
-                prev_word = _prev_word
+                prev_word= pred.argmax(1)
 
             if int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.end_token) or t.num_children >= max_dec_seq_length:
                 break
             elif int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
                 #print("we predicted N");exit()
-                queue_decode.append({"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index":i_child, "t": Tree()})
+                queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone()), "parent": head, "child_index":i_child, "t": Tree()})
                 t.add_child(int(prev_word[0]))
             else:
                 t.add_child(int(prev_word[0]))
@@ -506,5 +515,5 @@ def compute_tree_accuracy(candidate_list_, reference_list_, form_manager):
     return compute_accuracy(candidate_list, reference_list, form_manager)
 
 if __name__ == "__main__":
-    # train_tree_decoder(1234, 2)
+    train_tree_decoder(1234, 2)
     test_tree_decoder(1234, 2)

@@ -115,13 +115,13 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                         dec_state[cur_index][0][1][i-1, :] = dec_state[par_index][child_index][1][i-1, :]
                         dec_state[cur_index][0][2][i-1, :] = dec_state[par_index][child_index][2][i-1, :]
 
-                flag_sibling = False
-                for q_index in range(len(queue_tree[i])):
-                    if (cur_index <= len(queue_tree[i])) and (q_index < cur_index - 1) and (queue_tree[i][q_index]["parent"] == queue_tree[i][cur_index - 1]["parent"]) and (queue_tree[i][q_index]["child_index"] < queue_tree[i][cur_index - 1]["child_index"]):
-                        flag_sibling = True
-                        sibling_index = q_index
-                if flag_sibling:
-                    sibling_state[i - 1, :] = dec_state[sibling_index][dec_batch[sibling_index].size(1) - 1][2][i - 1, :]
+                    flag_sibling = False
+                    for q_index in range(len(queue_tree[i])):
+                        if (cur_index <= len(queue_tree[i])) and (q_index < cur_index - 1) and (queue_tree[i][q_index]["parent"] == queue_tree[i][cur_index - 1]["parent"]) and (queue_tree[i][q_index]["child_index"] < queue_tree[i][cur_index - 1]["child_index"]):
+                            flag_sibling = True
+                            sibling_index = q_index
+                    if flag_sibling:
+                        sibling_state[i - 1, :] = dec_state[sibling_index][dec_batch[sibling_index].size(1) - 1][2][i - 1, :]
 
             if self.use_copy:
                 enc_context = None
