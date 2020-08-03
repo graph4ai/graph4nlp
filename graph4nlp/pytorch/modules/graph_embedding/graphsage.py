@@ -137,7 +137,6 @@ class GraphSAGE(GNNBase):
 
         if self.direction_option == 'bi_sep':
             logits = torch.cat(logits, -1)
-
         else:
             logits = logits
             
@@ -203,7 +202,6 @@ class GraphSAGELayer(GNNLayerBase):
                                         bias=bias,
                                         norm=norm,
                                         activation=activation)
-
         elif direction_option == 'bi_sep':
             self.model = BiSepGraphSAGELayerConv(input_size,
                                         output_size,
@@ -212,7 +210,6 @@ class GraphSAGELayer(GNNLayerBase):
                                         bias=bias,
                                         norm=norm,
                                         activation=activation)
-
         elif direction_option == 'bi_fuse':
             self.model = BiFuseGraphSAGELayerConv(input_size,
                                         output_size,
@@ -221,7 +218,6 @@ class GraphSAGELayer(GNNLayerBase):
                                         bias=bias,
                                         norm=norm,
                                         activation=activation)
-
         else:
             raise RuntimeError('Unknown `direction_option` value: {}'.format(direction_option))
 
