@@ -1,9 +1,9 @@
 from torch import nn
 import torch
 from ..base import LinkPredictionBase
-from .StackedElementProd import StackedElementProd
+from .StackedElementProdLayer import StackedElementProdLayer
 
-class StackedElementProd(NodeClassifierBase):
+class StackedElementProd(StackedElementProdLayer):
     r"""Specific class for link prediction task.
 
     Parameters
