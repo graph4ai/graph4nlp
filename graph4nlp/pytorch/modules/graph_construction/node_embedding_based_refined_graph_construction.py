@@ -129,10 +129,15 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         if self.alpha_fusion is not None:
             adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * adj, self.alpha_fusion * init_norm_adj)
 
-        dgl_graph = convert_adj_to_dgl_graph(adj, 0, use_edge_softmax=False)
-        dgl_graph.graph_reg = graph_reg
+        # 1) use GraphData
+        graph_data = convert_adj_to_graph(adj, 0)
+        graph_data.graph_attributes['graph_reg'] = graph_reg
 
-        return dgl_graph
+        # # 2) use DGLGraph
+        # dgl_graph = convert_adj_to_dgl_graph(adj, 0)
+        # dgl_graph.graph_reg = graph_reg
+
+        return graph_data
 
     def embedding(self, node_word_idx, node_size, num_nodes):
         """Compute initial node embeddings.

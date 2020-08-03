@@ -115,8 +115,13 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         else:
             adj = torch.softmax(adj, dim=-1)
 
+        # 1) use GraphData
         graph_data = convert_adj_to_graph(adj, 0)
         graph_data.graph_attributes['graph_reg'] = graph_reg
+
+        # # 2) use DGLGraph
+        # dgl_graph = convert_adj_to_dgl_graph(adj, 0)
+        # dgl_graph.graph_reg = graph_reg
 
         return graph_data
 
