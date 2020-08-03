@@ -2,9 +2,9 @@ import torch
 from torch import nn
 
 from .base import DynamicGraphConstructionBase
-from .utils import convert_adj_to_dgl_graph
 from ..utils.generic_utils import normalize_adj
 from ..utils.constants import VERY_SMALL_NUMBER
+from .utils import convert_adj_to_graph, convert_adj_to_dgl_graph
 
 
 class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):

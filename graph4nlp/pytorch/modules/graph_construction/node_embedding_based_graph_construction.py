@@ -2,7 +2,9 @@ import torch
 from torch import nn
 
 from .base import DynamicGraphConstructionBase
-from .utils import convert_adj_to_dgl_graph
+from ..utils.generic_utils import normalize_adj
+from ..utils.constants import VERY_SMALL_NUMBER
+from .utils import convert_adj_to_graph, convert_adj_to_dgl_graph
 
 
 class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
@@ -104,10 +106,19 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         adj = self.sparsify_graph(adj)
         graph_reg = self.compute_graph_regularization(adj, node_emb)
 
-        dgl_graph = convert_adj_to_dgl_graph(adj, self.mask_off_val, use_edge_softmax=True)
-        dgl_graph.graph_reg = graph_reg
+        if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
+            assert adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
+            adj = adj / torch.clamp(torch.sum(adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
+        elif self.sim_metric_type == 'cosine':
+            adj = (adj > 0).float()
+            adj = normalize_adj(adj)
+        else:
+            adj = torch.softmax(adj, dim=-1)
 
-        return dgl_graph
+        graph_data = convert_adj_to_graph(adj, 0)
+        graph_data.graph_attributes['graph_reg'] = graph_reg
+
+        return graph_data
 
 
     def embedding(self, node_word_idx, node_size, num_nodes):
