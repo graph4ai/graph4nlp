@@ -1,3 +1,4 @@
+import os
 import argparse
 import numpy as np
 import networkx as nx
@@ -13,6 +14,7 @@ from dgl.data import register_data_args, load_data
 from .utils import EarlyStopping
 # from utils import EarlyStopping
 from ...modules.graph_embedding.ggnn import GGNN
+from ...data.data import GraphData
 # from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 # from graph4nlp.pytorch.test.graph_embedding.utils import EarlyStopping
 
@@ -48,7 +50,7 @@ class GNNClassifier(nn.Module):
 
     def forward(self, graph):
         graph = self.model(graph)
-        logits = graph.ndata['node_emb']
+        logits = graph.node_features['node_emb']
         logits = self.fc(F.elu(logits))
 
         return logits
@@ -154,7 +156,7 @@ def main(args, seed):
         # DGL datasets
         data = prepare_dgl_graph_data(args)
 
-    features, g, train_mask, val_mask, test_mask, labels, num_feats, n_classes, n_edges\
+    features, dgl_graph, train_mask, val_mask, test_mask, labels, num_feats, n_classes, n_edges\
                              = data['features'], data['graph'], data['train_mask'], \
                              data['val_mask'], data['test_mask'], data['labels'], \
                              data['num_feats'], data['n_classes'], data['n_edges']
@@ -178,7 +180,11 @@ def main(args, seed):
     val_mask = val_mask.to(device)
     test_mask = test_mask.to(device)
 
-    g.ndata['node_feat'] = features
+    dgl_graph.ndata['node_feat'] = features
+
+    # convert DGLGraph to GraphData
+    g = GraphData()
+    g.from_dgl(dgl_graph)
 
     # create model
     model = GNNClassifier(args.num_layers,
@@ -235,6 +241,10 @@ def main(args, seed):
     print()
     if args.early_stop:
         model = stopper.load_checkpoint(model)
+        print('Restored best saved model')
+        os.remove(stopper.save_model_path)
+        print('Removed best saved model file to save disk space')
+
     acc = evaluate(model, g, labels, test_mask)
     print("Test Accuracy {:.4f}".format(acc))
 
