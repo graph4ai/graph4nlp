@@ -146,7 +146,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         return node_emb, edge_emb
 
     @classmethod
-    def _construct_static_graph(cls, parsed_object, edge_strategy=None):
+    def _construct_static_graph(cls, parsed_object, edge_strategy=None, sequential_link=True):
         """
             Build dependency-parsing-tree based graph for single sentence.
 
@@ -167,9 +167,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
                          It is not implemented yet.
-        construct_strategy:
-            "only_depen"
-            "depen with sequential"
+
         Returns
         -------
         graph: GraphData
@@ -180,14 +178,21 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         ret_graph.add_nodes(node_num)
         head_node = -1
         tail_node = node_num - 1
+        root_id = -1
+        sequential_dict = {}
         for dep_info in parsed_object["graph_content"]:
-
             if dep_info["src"]['token'] != "ROOT":
                 ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 0
                 ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 0
             else:
                 ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 2  # 2 for dependency parsing tree
-                ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 2
+                ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 0
+                root_id = dep_info["src"]['id']
+
+            if dep_info["src"]["position_id"] is not None:
+                sequential_dict[dep_info["src"]["position_id"]] = dep_info["src"]["id"]
+            if dep_info["tgt"]["position_id"] is not None:
+                sequential_dict[dep_info["tgt"]["position_id"]] = dep_info["tgt"]["id"]
 
             ret_graph.node_attributes[dep_info["src"]['id']]['token'] = dep_info["src"]['token']
             ret_graph.node_attributes[dep_info["tgt"]['id']]['token'] = dep_info['tgt']['token']
@@ -224,9 +229,23 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 ret_graph.add_edge(node_idx, dep_info['tgt']['id'])
             else:
                 raise NotImplementedError()
-        print(head_node, tail_node, "-------")
         ret_graph.node_attributes[head_node]['head'] = True
         ret_graph.node_attributes[tail_node]['tail'] = True
+
+        if sequential_link and len(sequential_dict.keys()) > 1:
+            pos_list = sequential_dict.keys()
+            pos_list = sorted(pos_list)
+            for st, ed in zip(pos_list[:-1], pos_list[1:]):
+                try:
+                    ret_graph.edge_ids(sequential_dict[st], sequential_dict[ed])
+                except:
+                    ret_graph.add_edge(sequential_dict[st], sequential_dict[ed])
+
+            # link root with token
+            try:
+                ret_graph.edge_ids(root_id, sequential_dict[pos_list[0]])
+            except:
+                ret_graph.add_edge(root_id, sequential_dict[pos_list[0]])
 
         return ret_graph
 
@@ -243,9 +262,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             Strategy to merge sub-graphs into one graph
             ``None``: It will be the default option. We will do as ``"tailhead"``.
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
-            ``"sequential"``: If sub-graph has ``a1, a2, ..., an`` nodes, and sub-graph has ``b1, b2, ..., bm`` nodes.
-                              We will link ``a1, a2``, ``a2, a3``, ..., ``an-1, an``, \
-                              ``an, b1``, ``b1, b2``, ..., ``bm-1, bm``.
             ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
 
@@ -253,25 +269,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         -------
         joint_graph: GraphData
             The merged graph structure.
-        """
-
-        """
-        a1, e1, a2, e2, a3
-
-        (a1, a2)
-        (a1, e1)
-        (e1, a2)
-
-
-        (a1, e2)
-        (e2, a3)
-
-        aa1, ee1, aa2, ee2, aa3
-
-        (a1, e1)
-        (e1, a2)
-        (a1, e2)
-        (e2, a3)
         """
         if cls.verbase > 0:
             print("sub_graph print")
@@ -301,6 +298,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 edge_idx_old = s_g.edge_ids(src, tgt)[0]
                 g.add_edge(src + node_idx_off, tgt + node_idx_off)
                 edge_idx_new = g.edge_ids(src + node_idx_off, tgt + node_idx_off)[0]
+                print(edge_idx_new, edge_idx_old)
+                print(s_g.edge_attributes[edge_idx_old], "--------")
                 g.edge_attributes[edge_idx_new] = copy.deepcopy(s_g.edge_attributes[edge_idx_old])
             tmp = {}
             for key, value in s_g.node_attributes.items():
@@ -334,30 +333,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
             src_list = []
             tgt_list = []
-
-            for i in range(len(headtail_list) - 1):
-                src_list.append(headtail_list[i][1])
-                tgt_list.append(headtail_list[i + 1][0])
-            if cls.verbase > 0:
-                print("merged edges")
-                print("src list:", src_list)
-                print("tgt list:", tgt_list)
-            g.add_edges(src_list, tgt_list)
-        elif merge_strategy == "sequential":
-            src_list = []
-            tgt_list = []
-            node_idx_off = 0
-            for s_g_idx, n_node in enumerate(node_num_list):
-                if node_num_list[s_g_idx] > 1:
-                    node_id_list = []
-                    for node_idx, node_attrs in nx_graph_list[s_g_idx].node_attributes.items():
-                        if node_attrs["type"] in [0, 2]:
-                            node_id_list.append(node_idx + node_idx_off)
-
-                    src_list.extend(node_id_list[:-1])
-                    tgt_list.extend(node_id_list[1:])
-
-                node_idx_off += n_node
 
             for i in range(len(headtail_list) - 1):
                 src_list.append(headtail_list[i][1])
