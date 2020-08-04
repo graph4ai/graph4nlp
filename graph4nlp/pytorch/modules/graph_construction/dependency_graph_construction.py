@@ -5,6 +5,7 @@ from stanfordcorenlp import StanfordCoreNLP
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from .base import StaticGraphConstructionBase
+import copy
 
 
 class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
@@ -70,11 +71,9 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                                is ``1.0``. Otherwise there is no edge.
             ``heterogeneous``: We will keep the edge type information.
                                An edge will have type information like ``n_subj``.
-                               It is not implemented yet.
             ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
-                         It is not implemented yet.
 
         Returns
         -------
@@ -136,7 +135,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         sub_graphs = []
         for sent_id, parsed_sent in enumerate(parsed_results):
-            graph = cls._construct_static_graph(parsed_sent, edge_strategy=None)
+            graph = cls._construct_static_graph(parsed_sent, edge_strategy=edge_strategy)
             sub_graphs.append(graph)
         joint_graph = cls._graph_connect(sub_graphs, merge_strategy)
         return joint_graph
@@ -168,7 +167,9 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
                          It is not implemented yet.
-
+        construct_strategy:
+            "only_depen"
+            "depen with sequential"
         Returns
         -------
         graph: GraphData
@@ -177,25 +178,9 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         ret_graph = GraphData()
         node_num = parsed_object["node_num"]
         ret_graph.add_nodes(node_num)
+        head_node = -1
+        tail_node = node_num - 1
         for dep_info in parsed_object["graph_content"]:
-            if edge_strategy is None or edge_strategy == "homogeneous":
-                ret_graph.add_edge(dep_info["src"]['id'], dep_info['tgt']['id'])
-            elif edge_strategy == "heterogeneous":
-                raise NotImplementedError()
-            elif edge_strategy == "as_node":
-                # insert a node
-                node_idx = ret_graph.get_node_num()
-                ret_graph.add_nodes(1)
-                ret_graph.node_attributes[node_idx]['type'] = 3  # 3 for edge node
-                ret_graph.node_attributes[node_idx]['token'] = dep_info['edge_type']
-                ret_graph.node_attributes[node_idx]['position_id'] = None
-                ret_graph.node_attributes[node_idx]['head'] = False
-                ret_graph.node_attributes[node_idx]['tail'] = False
-                # add edge infos
-                ret_graph.add_edge(dep_info['src']['id'], node_idx)
-                ret_graph.add_edge(node_idx, dep_info['tgt']['id'])
-            else:
-                raise NotImplementedError()
 
             if dep_info["src"]['token'] != "ROOT":
                 ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 0
@@ -215,17 +200,34 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ret_graph.node_attributes[dep_info["src"]['id']]['tail'] = False
             ret_graph.node_attributes[dep_info["tgt"]['id']]['tail'] = False
 
-            if dep_info["src"]['id'] == 0:
-                # head
-                ret_graph.node_attributes[dep_info["src"]['id']]['head'] = True
-                ret_graph.node_attributes[dep_info["src"]['id']]['tail'] = False
+            if dep_info["src"]['token'] == "ROOT":
+                head_node = dep_info["src"]['id']
 
-            if dep_info["tgt"]['id'] == node_num - 1:
-                # tail
-                ret_graph.node_attributes[dep_info["tgt"]['id']]["head"] = False
-                ret_graph.node_attributes[dep_info["tgt"]['id']]["tail"] = True
+            if edge_strategy is None or edge_strategy == "homogeneous":
+                ret_graph.add_edge(dep_info["src"]['id'], dep_info['tgt']['id'])
+            elif edge_strategy == "heterogeneous":
+                ret_graph.add_edge(dep_info["src"]['id'], dep_info['tgt']['id'])
+                edge_idx = ret_graph.edge_ids(dep_info["src"]['id'], dep_info['tgt']['id'])[0]
+                ret_graph.edge_attributes[edge_idx]["token"] = dep_info["edge_type"]
 
-            # TODO: add edge_attributes
+            elif edge_strategy == "as_node":
+                # insert a node
+                node_idx = ret_graph.get_node_num()
+                ret_graph.add_nodes(1)
+                ret_graph.node_attributes[node_idx]['type'] = 3  # 3 for edge node
+                ret_graph.node_attributes[node_idx]['token'] = dep_info['edge_type']
+                ret_graph.node_attributes[node_idx]['position_id'] = None
+                ret_graph.node_attributes[node_idx]['head'] = False
+                ret_graph.node_attributes[node_idx]['tail'] = False
+                # add edge infos
+                ret_graph.add_edge(dep_info['src']['id'], node_idx)
+                ret_graph.add_edge(node_idx, dep_info['tgt']['id'])
+            else:
+                raise NotImplementedError()
+        print(head_node, tail_node, "-------")
+        ret_graph.node_attributes[head_node]['head'] = True
+        ret_graph.node_attributes[tail_node]['tail'] = True
+
         return ret_graph
 
     @classmethod
@@ -252,6 +254,38 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         joint_graph: GraphData
             The merged graph structure.
         """
+
+        """
+        a1, e1, a2, e2, a3
+
+        (a1, a2)
+        (a1, e1)
+        (e1, a2)
+
+
+        (a1, e2)
+        (e2, a3)
+
+        aa1, ee1, aa2, ee2, aa3
+
+        (a1, e1)
+        (e1, a2)
+        (a1, e2)
+        (e2, a3)
+        """
+        if cls.verbase > 0:
+            print("sub_graph print")
+            for i, s_g in enumerate(nx_graph_list):
+                print("-------------------------")
+                print("sub-graph: {}".format(i))
+                print("node_num: {}".format(s_g.get_node_num()))
+                for i in range(s_g.get_node_num()):
+                    print(s_g.get_node_attrs(i))
+                print("edge_num: {}".format(s_g.get_edge_num()))
+                print(s_g.get_all_edges())
+                for i in range(s_g.get_edge_num()):
+                    print(i, s_g.edge_attributes[i])
+            print("*************************************")
         if len(nx_graph_list) == 1:
             return nx_graph_list[0]
         node_num_list = [s_g.get_node_num() for s_g in nx_graph_list]
@@ -264,15 +298,15 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         for s_g in nx_graph_list:
             for edge in s_g.get_all_edges():
                 src, tgt = edge
+                edge_idx_old = s_g.edge_ids(src, tgt)[0]
                 g.add_edge(src + node_idx_off, tgt + node_idx_off)
+                edge_idx_new = g.edge_ids(src + node_idx_off, tgt + node_idx_off)[0]
+                g.edge_attributes[edge_idx_new] = copy.deepcopy(s_g.edge_attributes[edge_idx_old])
             tmp = {}
             for key, value in s_g.node_attributes.items():
-                tmp[key + node_idx_off] = value
+                tmp[key + node_idx_off] = copy.deepcopy(value)
             g.node_attributes.update(tmp)
             node_idx_off += s_g.get_node_num()
-
-        head_g = -1
-        tail_g = -1
 
         headtail_list = []
 
@@ -282,7 +316,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         node_idx_off = 0
         for i in range(len(nx_graph_list)):
             for node_idx, node_attrs in nx_graph_list[i].node_attributes.items():
-                print(node_attrs, "-----")
                 if node_attrs['head'] is True:
                     head = node_idx + node_idx_off
                 elif node_attrs['tail'] is True:
@@ -292,10 +325,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             headtail_list.append((head, tail))
             head = -1
             tail = -1
-
-        for n_node in node_num_list:
-            headtail_list.append((node_idx_off, node_idx_off + n_node - 1))
-            node_idx_off += n_node
+            node_idx_off += node_num_list[i]
 
         head_g = headtail_list[0][0]
         tail_g = headtail_list[-1][1]
@@ -318,37 +348,33 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             tgt_list = []
             node_idx_off = 0
             for s_g_idx, n_node in enumerate(node_num_list):
-                src_list.extend(list(range(node_idx_off, node_idx_off + n_node - 1)))
-                tgt_list.extend(list(range(node_idx_off + 1, node_idx_off + n_node)))
-                if s_g_idx != 0:
-                    src_list.append(node_idx_off - 1)
-                    tgt_list.append(node_idx_off)
+                if node_num_list[s_g_idx] > 1:
+                    node_id_list = []
+                    for node_idx, node_attrs in nx_graph_list[s_g_idx].node_attributes.items():
+                        if node_attrs["type"] in [0, 2]:
+                            node_id_list.append(node_idx + node_idx_off)
+
+                    src_list.extend(node_id_list[:-1])
+                    tgt_list.extend(node_id_list[1:])
+
                 node_idx_off += n_node
+
+            for i in range(len(headtail_list) - 1):
+                src_list.append(headtail_list[i][1])
+                tgt_list.append(headtail_list[i + 1][0])
             if cls.verbase > 0:
                 print("merged edges")
                 print("src list:", src_list)
                 print("tgt list:", tgt_list)
             g.add_edges(src_list, tgt_list)
         else:
-            # TODO: add two merge strategy
             raise NotImplementedError()
-
 
         for node_idx, node_attrs in g.node_attributes.items():
             node_attrs['head'] = node_idx == head_g
             node_attrs['tail'] = node_idx == tail_g
 
-
         if cls.verbase > 0:
-            print("sub_graph print")
-            for i, s_g in enumerate(nx_graph_list):
-                print("-------------------------")
-                print("sub-graph: {}".format(i))
-                print("node_num: {}".format(s_g.get_node_num()))
-                for i in range(s_g.get_node_num()):
-                    print(s_g.get_node_attrs(i))
-                print("edge_num: {}".format(s_g.get_edge_num()))
-                print(s_g.get_all_edges())
             print("-----------------------------")
             print("merged graph")
             print("node_num: {}".format(g.get_node_num()))
@@ -356,6 +382,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 print(g.get_node_attrs(i))
             print("edge_num: {}".format(g.get_edge_num()))
             print(g.get_all_edges())
+            for i in range(g.get_edge_num()):
+                print(i, g.edge_attributes[i])
 
         return g
 
