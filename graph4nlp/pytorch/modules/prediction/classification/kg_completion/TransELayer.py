@@ -50,6 +50,7 @@ class TransELayer(KGCompletionLayerBase):
             self.rel_emb = nn.Embedding(num_relations, embedding_dim)
             self.reset_parameters()
         self.loss_name = loss_name
+        self.reset_parameters()
 
     def reset_parameters(self):
         if self.rel_emb_from_gnn == False:
@@ -90,9 +91,18 @@ class TransELayer(KGCompletionLayerBase):
             L is the length of list_e_r_pair_idx, list_e_e_pair_idx or batch size.
             N: number of nodes in the whole KG graph.
 
+
         Returns
         -------
-             logit tensor: [N, num_class] The score logits for all nodes preidcted.
+        pred: tensor [L, N]
+            logit tensor. [L, N] The score logits for all nodes preidcted.
+
+        pred_pos: tensor [L_p]
+            The predition scores of positive examples.
+
+        pred_neg: tensor [L_n]
+            The predition scores of negative examples. L_p + L_n == L * N.
+
         """
         if self.rel_emb_from_gnn == False:
             assert rel_emb == None
