@@ -374,12 +374,13 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
         node_emb = self.embedding_layer(bg.ndata['token_id'], node_size, num_nodes)
 
-        bg.ndata["node_emb"] = node_emb
+        bg.ndata["node_feat"] = node_emb
 
-        dgl_list = dgl.unbatch(bg)
-        for g, dg in zip(batch_graphdata, dgl_list):
-            g.node_features["node_emb"] = dg.ndata["node_emb"]
-        return batch_graphdata
+        return bg
+        # dgl_list = dgl.unbatch(bg)
+        # for g, dg in zip(batch_graphdata, dgl_list):
+        #     g.node_features["node_emb"] = dg.ndata["node_emb"]
+        # return batch_graphdata
 
     def embedding(self, node_attributes, edge_attributes):
         node_emb, edge_emb = self.embedding_layer(
