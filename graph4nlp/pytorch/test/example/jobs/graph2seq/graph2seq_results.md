@@ -15,11 +15,11 @@ Dependencies
 ```bash
 pip install torch==1.1.0 requests dgl
 ```
-
+<!-- 
 How to run
 ----------
 
-Run with following:
+Run with following: -->
 
 
 
@@ -28,5 +28,5 @@ Results
 
 | Dataset  |    GAT-Uni    |   GAT-BiSep   |  GAT-BiFuse   |
 | -------- | ------------- | ------------- | ------------- |
-| Jobs     |   |   |   |
+| Jobs     |  69.4 |   |  71.1  |
 
