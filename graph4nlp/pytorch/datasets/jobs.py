@@ -9,6 +9,7 @@ from graph4nlp.pytorch.data.dataset import DependencyDataset
 # from ..modules.graph_construction.dependency_graph_construction import \
 #     DependencyBasedGraphConstruction as topology_builder
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel, Vocab
+from graph4nlp.pytorch.data.data import GraphData
 
 dataset_root = '../test/dataset/jobs'
 
@@ -142,10 +143,21 @@ class JobsDataset(DependencyDataset):
         pass
 
     def vectorization(self):
-        padding_length = 20
+        padding_length = 50
         data = []
+
         for i in range(len(self.seq_data)):
             topo = self.topo_data[i]
+            topo: GraphData
+            token_matrix = []
+            for node_idx in range(topo.get_node_num()):
+                node_token = topo.get_node_attrs(node_idx)[node_idx]['token']
+                node_token_id = self.vocab_model.word_vocab.getIndex(node_token)
+                topo.node_attributes[node_idx]['token_id'] = node_token_id
+                token_matrix.append([node_token_id])
+            token_matrix = torch.Tensor(token_matrix).long()
+            # topo.node_features['token_id'][:] = token_matrix
+            topo.set_node_features(slice(None, None, None), {'token_id': token_matrix})
 
             tgt = self.seq_data[i][1]
             tgt_token_id = self.vocab_model.word_vocab.to_index_sequence(tgt)
@@ -156,6 +168,7 @@ class JobsDataset(DependencyDataset):
                 pad = torch.zeros(need_pad_length).fill_(self.vocab_model.word_vocab.PAD)
                 tgt_token_id = torch.cat((tgt_token_id, pad.long()), dim=0)
             data.append((topo, tgt_token_id))
+
         torch.save(data, os.path.join(self.processed_dir, 'graph.pkl'))
         pass
 
@@ -173,8 +186,12 @@ class JobsDataset(DependencyDataset):
     def len(self):
         return len(self.data)
 
-    def collate_fn(self, data_list):
-        return None
+    @staticmethod
+    def collate_fn(data_list):
+        graph_data = [item[0] for item in data_list]
+        tgt_seq = [item[1].unsqueeze(0) for item in data_list]
+        tgt_seq = torch.cat(tgt_seq, dim=0)
+        return [graph_data, tgt_seq]
 
 if __name__ == '__main__':
     JobsDataset()

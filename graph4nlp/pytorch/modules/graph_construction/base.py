@@ -123,9 +123,9 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     def __init__(self, word_vocab, embedding_styles, hidden_size,
                  fix_word_emb=True, dropout=None, use_cuda=True):
         if use_cuda:
-            device = 'cuda'
+            device = torch.device('cuda')
         else:
-            device = 'cpu'
+            device = torch.device('cpu')
         super(StaticGraphConstructionBase, self).__init__(word_vocab,
                                                            embedding_styles,
                                                            hidden_size,

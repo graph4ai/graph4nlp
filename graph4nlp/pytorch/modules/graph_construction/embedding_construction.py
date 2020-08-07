@@ -69,7 +69,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                             word_vocab.embeddings.shape[0],
                             word_vocab.embeddings.shape[1],
                             pretrained_word_emb=word_vocab.embeddings,
-                            fix_word_emb=fix_word_emb))
+                            fix_word_emb=fix_word_emb, device=self.device))
 
         if 'bert' in word_emb_type:
             self.word_emb_layers.append(BertEmbedding(fix_word_emb))
@@ -173,11 +173,11 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             new_feat = []
             start_idx = 0
             for i in range(num_items.shape[0]):
-                tmp_feat = feat[start_idx: start_idx + num_items[i].item()]
+                tmp_feat = feat[int(start_idx): int(start_idx + num_items[i].item())]
                 start_idx += num_items[i].item()
                 if num_items[i].item() < max_num_items:
                     tmp_feat = torch.cat([tmp_feat, to_cuda(torch.zeros(
-                        max_num_items - num_items[i].item(), tmp_feat.shape[1]), self.device)], 0)
+                        int(max_num_items - num_items[i].item()), tmp_feat.shape[1]), self.device)], 0)
                 new_feat.append(tmp_feat)
 
             # computation
@@ -277,11 +277,14 @@ class WordEmbedding(nn.Module):
     >>> word_emb_layer = WordEmbedding(1000, 300, padding_idx=0, pretrained_word_emb=None, fix_word_emb=True)
     """
     def __init__(self, vocab_size, emb_size, padding_idx=0,
-                    pretrained_word_emb=None, fix_word_emb=True):
+                    pretrained_word_emb=None, fix_word_emb=True, device=None):
         super(WordEmbedding, self).__init__()
         self.word_emb_layer = nn.Embedding(vocab_size, emb_size, padding_idx=padding_idx,
                             _weight=torch.from_numpy(pretrained_word_emb).float()
                             if pretrained_word_emb is not None else None)
+        self.device = device
+        if self.device:
+            self.word_emb_layer = self.word_emb_layer.to(self.device)
 
         if fix_word_emb:
             print('[ Fix word embeddings ]')
@@ -377,6 +380,8 @@ class RNNEmbedding(nn.Module):
         self.num_directions = 2 if bidirectional else 1
         model = nn.LSTM if rnn_type == 'lstm' else nn.GRU
         self.model = model(input_size, self.hidden_size, 1, batch_first=True, bidirectional=bidirectional)
+        if self.device:
+            self.model = self.model.to(self.device)
 
     def forward(self, x, x_len):
         """Apply the RNN network to a sequence of word embeddings.

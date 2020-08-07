@@ -129,7 +129,7 @@ class Dataset(torch.utils.data.Dataset):
 
     @staticmethod
     @abc.abstractmethod
-    def collate_fn(self, data_list):
+    def collate_fn(data_list):
         """Takes a list of data and convert it to a batch of data."""
         raise NotImplementedError
 
