@@ -1,10 +1,11 @@
 import abc
+import copy
 import os
 
 import torch.utils.data
 
-from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from ..modules.graph_construction.base import GraphConstructionBase
+from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from ..modules.utils.vocab_utils import VocabModel
 
 
@@ -51,7 +52,7 @@ class Dataset(torch.utils.data.Dataset):
 
         if 'download' in self.__class__.__dict__.keys():
             self._download()
-        
+
         self._process()
 
     @property
@@ -115,6 +116,41 @@ class Dataset(torch.utils.data.Dataset):
         """The abstraction of getting one item from the dataset given the index."""
         raise NotImplementedError
 
+    def indices(self):
+        if self.__indices__ is not None:
+            return self.__indices__
+        else:
+            return range(len(self))
+
+    def index_select(self, idx):
+        indices = self.indices()
+
+        if isinstance(idx, slice):
+            indices = indices[idx]
+        elif torch.is_tensor(idx):
+            if idx.dtype == torch.long:
+                if len(idx.shape) == 0:
+                    idx = idx.unsqueeze(0)
+                return self.index_select(idx.tolist())
+            elif idx.dtype == torch.bool or idx.dtype == torch.uint8:
+                return self.index_select(idx.nonzero().flatten().tolist())
+        elif isinstance(idx, list) or isinstance(idx, tuple):
+            indices = [indices[i] for i in idx]
+        else:
+            raise IndexError(
+                'Only integers, slices (`:`), list, tuples, and long or bool '
+                'tensors are valid indices (got {}).'.format(
+                    type(idx).__name__))
+
+        dataset = copy.copy(self)
+        dataset.__indices__ = indices
+        return dataset
+
+    def shuffle(self, return_perm=False):
+        perm = torch.randperm(len(self))
+        dataset = self.index_select(perm)
+        return (dataset, perm) if return_perm is True else dataset
+
     def __len__(self):
         if self.__indices__ is not None:
             return len(self.__indices__)
@@ -123,9 +159,9 @@ class Dataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         if not isinstance(index, int):
-            raise NotImplementedError('Currently only index of int type is supported in `Dataset`.')
+            return self.index_select(index)
         else:
-            return self.get(index)
+            return self.get(self.indices()[index])
 
     @staticmethod
     @abc.abstractmethod

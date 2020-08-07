@@ -1,4 +1,5 @@
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
@@ -30,11 +31,13 @@ class Graph2seqLoss(nn.Module):
         loss = self.loss_func(log_prob.view(-1, prob.shape[2]), gt.view(-1))
         return loss
 
+
 class Graph2seq(nn.Module):
     def __init__(self, vocab):
         super(Graph2seq, self).__init__()
         self.vocab = vocab
-        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "bilstm", 'seq_info_encode_strategy': "bilstm"}
+        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "bilstm",
+                           'seq_info_encode_strategy': "bilstm"}
         self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style, vocab=vocab.word_vocab,
                                                                dropout=0.2, use_cuda=True, fix_word_emb=False)
         self.gnn = None
@@ -56,6 +59,7 @@ class Graph2seq(nn.Module):
         else:
             return prob
 
+
 class Jobs:
     def __init__(self):
         super(Jobs, self).__init__()
@@ -64,12 +68,16 @@ class Jobs:
         self._build_optimizer()
         self._build_evaluation()
 
-
     def _build_dataloader(self):
-        train_dataset = JobsDataset(root_dir="../../../dataset/jobs")
-        self.train_dataloader = DataLoader(train_dataset, batch_size=24, shuffle=True, num_workers=1,
-                                           collate_fn=train_dataset.collate_fn)
-        self.vocab = train_dataset.vocab_model
+        dataset = JobsDataset(root_dir="../../../dataset/jobs")
+        data_size = len(dataset)
+        self.train_dataloader = DataLoader(dataset[:int(0.8 * data_size)], batch_size=24, shuffle=True,
+                                           num_workers=1,
+                                           collate_fn=dataset.collate_fn)
+        self.test_dataloader = DataLoader(dataset[int(0.8 * data_size):], batch_size=24, shuffle=True,
+                                          num_workers=1,
+                                          collate_fn=dataset.collate_fn)
+        self.vocab = dataset.vocab_model
 
     def _build_model(self):
         self.model = Graph2seq(self.vocab).cuda()
@@ -85,7 +93,7 @@ class Jobs:
         for epoch in range(200):
             self.model.train()
             print("Epoch: {}".format(epoch))
-            for data in self.train_dataloader:
+            for data in self.test_dataloader:
                 graph_list, tgt = data
                 tgt = tgt.cuda()
                 _, loss = self.model(graph_list, tgt, require_loss=True)
