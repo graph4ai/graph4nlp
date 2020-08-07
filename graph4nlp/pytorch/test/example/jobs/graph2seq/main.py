@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -66,7 +66,8 @@ class Jobs:
 
 
     def _build_dataloader(self):
-        train_dataset = JobsDataset(root_dir="../../../dataset/jobs")
+        train_dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs")
+        # train_dataset = JobsDataset(root_dir="../../../dataset/jobs")
         self.train_dataloader = DataLoader(train_dataset, batch_size=24, shuffle=True, num_workers=1,
                                            collate_fn=train_dataset.collate_fn)
         self.vocab = train_dataset.vocab_model
