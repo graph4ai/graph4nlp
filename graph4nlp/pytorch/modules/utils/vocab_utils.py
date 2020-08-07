@@ -47,8 +47,8 @@ class VocabModel(object):
                             word_emb_size=300)
     >>> print(vocab_model.word_vocab.get_vocab_size())
     """
-    def __init__(self, data_set, lower_case=True,
-                                tokenizer=word_tokenize,
+    def __init__(self, data_set=None, tokenizer=word_tokenize, lower_case=True,
+                                words_counter=None,
                                 max_word_vocab_size=None,
                                 min_word_vocab_freq=1,
                                 pretrained_word_emb_file=None,
@@ -57,7 +57,10 @@ class VocabModel(object):
         self.tokenizer = word_tokenize
 
         print('Building vocabs...')
-        all_words = collect_vocabs(data_set, self.tokenizer, lower_case=lower_case)
+        if words_counter is not None:
+            all_words = words_counter
+        else:
+            all_words = collect_vocabs(data_set, self.tokenizer, lower_case=lower_case)
         print('Number of words: {}'.format(len(all_words)))
 
         self.word_vocab = Vocab(lower_case=lower_case, tokenizer=self.tokenizer)
@@ -309,10 +312,15 @@ def collect_vocabs(all_instances, tokenizer, lower_case=True):
     for instance in all_instances:
         # TODO: need to check which elements should be added to vocab
         # Or sentence.node_attr, sentence.edge_attr
-        for sentence in instance:
+        if isinstance(instance, str):
             if lower_case:
-                sentence = sentence.lower()
-            all_words.update(tokenizer(sentence))
+                instance = instance.lower()
+            all_words.update(tokenizer(instance))
+        else:
+            for sentence in instance:
+                if lower_case:
+                    sentence = sentence.lower()
+                all_words.update(tokenizer(sentence))
     return all_words
 
 

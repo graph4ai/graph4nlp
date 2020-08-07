@@ -2,10 +2,13 @@ import os
 
 import stanfordcorenlp
 import torch
+import numpy as np
 
-from ..data.dataset import DependencyDataset
-from ..modules.graph_construction.dependency_graph_construction import \
-    DependencyBasedGraphConstruction as topology_builder
+# from ..data.dataset import DependencyDataset
+from graph4nlp.pytorch.data.dataset import DependencyDataset
+# from ..modules.graph_construction.dependency_graph_construction import \
+#     DependencyBasedGraphConstruction as topology_builder
+from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel, Vocab
 
 dataset_root = '../test/dataset/jobs'
 
@@ -97,7 +100,9 @@ class JobsDataset(DependencyDataset):
             for line in f:
                 l_list = line.split("\t")
                 w_list = l_list[0]
-                r_list = form_manager.get_symbol_idx_for_list(l_list[1].strip().split(' '))
+                r_list = l_list[1]
+
+                # r_list = form_manager.get_symbol_idx_for_list(l_list[1].strip().split(' '))
                 data.append((w_list, r_list))
         self.seq_data = data
         torch.save(self.seq_data, os.path.join(self.processed_dir, 'sequence.pt'))
@@ -113,9 +118,45 @@ class JobsDataset(DependencyDataset):
         torch.save(self.topo_data, os.path.join(self.topology_subdir, 'topology.pt'))
 
     def build_vocab(self):
+        from collections import Counter
+        from graph4nlp.pytorch.modules.utils.vocab_utils import collect_vocabs, word_tokenize
+        from graph4nlp.pytorch.data.data import GraphData
+
+        token_counter = Counter()
+        for graph in self.topo_data:
+            graph: GraphData
+            for i in range(graph.get_node_num()):
+                node_attr = graph.get_node_attrs(i)[i]
+                token = node_attr.get('token')
+                token_counter.update([token])
+        inst_list = []
+        for item in self.seq_data:
+            inst_list.append(item[1])
+
+        q_counter = collect_vocabs(inst_list, word_tokenize)
+        token_counter.update(q_counter)
+
+        vocab_model = VocabModel(words_counter=token_counter, min_word_vocab_freq=1,
+                                 word_emb_size=300)
+        self.vocab_model = vocab_model
         pass
 
     def vectorization(self):
+        padding_length = 20
+        data = []
+        for i in range(len(self.seq_data)):
+            topo = self.topo_data[i]
+
+            tgt = self.seq_data[i][1]
+            tgt_token_id = self.vocab_model.word_vocab.to_index_sequence(tgt)
+            tgt_token_id = np.array(tgt_token_id)
+            tgt_token_id = torch.from_numpy(tgt_token_id)
+            if tgt_token_id.shape[0] < padding_length:
+                need_pad_length = padding_length - tgt_token_id.shape[0]
+                pad = torch.zeros(need_pad_length).fill_(self.vocab_model.word_vocab.PAD)
+                tgt_token_id = torch.cat((tgt_token_id, pad.long()), dim=0)
+            data.append((topo, tgt_token_id))
+        torch.save(data, os.path.join(self.processed_dir, 'graph.pkl'))
         pass
 
     def download(self):

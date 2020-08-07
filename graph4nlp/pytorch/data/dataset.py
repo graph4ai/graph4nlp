@@ -89,6 +89,7 @@ class Dataset(torch.utils.data.Dataset):
             return
 
         os.makedirs(self.processed_dir, exist_ok=True)
+        print("iiiiii", self.__class__.__dict__)
 
         if 'preprocess' in self.__class__.__dict__.keys():
             self._preprocess()
@@ -99,8 +100,9 @@ class Dataset(torch.utils.data.Dataset):
         self.vectorization()
 
     def _preprocess(self):
-        if all([os.path.exists(preprocessed_path) for preprocessed_path in self.preprocessed_file_paths]):
-            return
+        # if all([os.path.exists(preprocessed_path) for preprocessed_path in self.preprocessed_file_paths]):
+        #     self.seq_data = torch.load(os.path.join(self.processed_dir, 'sequence.pt'))
+        #     return
 
         os.makedirs(self.processed_dir, exist_ok=True)
         self.preprocess()
@@ -162,8 +164,8 @@ class TopologyDataset(Dataset):
         raise NotImplementedError
 
     def __init__(self, root, topology_builder: GraphConstructionBase, vocab_builder=VocabModel):
-        self.vocab_builder = topology_builder
-        self.topology_builder = vocab_builder
+        self.vocab_builder = vocab_builder
+        self.topology_builder = topology_builder
         super(TopologyDataset, self).__init__(root=root)
 
     @property
@@ -180,17 +182,17 @@ class TopologyDataset(Dataset):
 
     def _build_topology(self):
         if all([os.path.exists(file_path) for file_path in self.topology_file_paths]):
+            self.topo_data = torch.load(os.path.join(self.topology_subdir, 'topology.pt'))
             return
 
         os.makedirs(self.topology_subdir, exist_ok=True)
         self.build_topology()
 
     def _build_vocab(self):
-        if all([os.path.exists(file_path) for file_path in self.vocab_file_paths]):
-            return
-
+        # if all([os.path.exists(file_path) for file_path in self.vocab_file_paths]):
+        #     return
         os.makedirs(self.topology_subdir, exist_ok=True)
-        self._build_vocab()
+        self.build_vocab()
 
 
 class DependencyDataset(TopologyDataset):
