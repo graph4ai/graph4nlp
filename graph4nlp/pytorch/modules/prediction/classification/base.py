@@ -77,3 +77,31 @@ class LinkPredictionLayerBase(ClassifierLayerBase):
     def forward(self, node_emb, node_idx=None):
 
         raise NotImplementedError()
+
+
+class GraphClassifierBase(ClassifierBase):
+
+    def __init__(self):
+        super(GraphClassifierBase, self).__init__()
+
+    def forward(self, graph_emb):
+        raise NotImplementedError()
+
+
+class GraphClassifierLayerBase(ClassifierLayerBase):
+
+    def __init__(self):
+        super(GraphClassifierLayerBase, self).__init__()
+
+    def forward(self, graph_emb):
+
+        raise NotImplementedError()
+
+class PoolingBase(nn.Module):
+
+    def __init__(self):
+        super(PoolingBase, self).__init__()
+
+    def forward(self, graph, feat):
+
+        raise NotImplementedError()
