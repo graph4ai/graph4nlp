@@ -15,13 +15,15 @@ Dependencies
 ```bash
 pip install torch==1.1.0 requests dgl
 ```
-<!-- 
+
 How to run
 ----------
 
-Run with following: -->
+Run with following:
 
-
+```python
+python -m graph4nlp.pytorch.test.example.jobs.graph2seq.main
+```
 
 Results
 -------
