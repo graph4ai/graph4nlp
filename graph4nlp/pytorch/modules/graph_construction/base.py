@@ -122,12 +122,16 @@ class StaticGraphConstructionBase(GraphConstructionBase):
 
     def __init__(self, word_vocab, embedding_styles, hidden_size,
                  fix_word_emb=True, dropout=None, use_cuda=True):
+        if use_cuda:
+            device = 'cuda'
+        else:
+            device = 'cpu'
         super(StaticGraphConstructionBase, self).__init__(word_vocab,
                                                            embedding_styles,
                                                            hidden_size,
                                                            fix_word_emb=fix_word_emb,
                                                            dropout=dropout,
-                                                           use_cuda=use_cuda)
+                                                           device=device)
 
     def add_vocab(self, **kwargs):
         raise NotImplementedError()

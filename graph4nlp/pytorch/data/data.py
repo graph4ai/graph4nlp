@@ -171,9 +171,14 @@ class GraphData(object):
         for key, value in new_data.items():
             assert isinstance(value, torch.Tensor), "`{}' is not a tensor. Node features are expected to be tensor."
             if key not in self._node_features or self._node_features[key] is None:
+                # self._node_features[key] = None
                 self._node_features[key] = value
             else:
-                self._node_features[key][nodes] = value
+                # self._node_features[key][nodes] = None
+                if nodes == slice(None, None, None):
+                    self._node_features[key] = value
+                else:
+                    self._node_features[key][nodes] = value
 
     # Node attribute operations
     @property

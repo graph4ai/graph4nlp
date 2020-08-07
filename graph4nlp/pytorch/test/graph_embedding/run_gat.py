@@ -5,7 +5,6 @@ References
 ----------
 DGL GAT example: https://github.com/dmlc/dgl/tree/master/examples/pytorch/gat
 """
-
 import os
 import argparse
 import numpy as np
@@ -21,6 +20,7 @@ from dgl.data import register_data_args, load_data
 
 from .utils import EarlyStopping
 from ...modules.graph_embedding.gat import GAT
+from ...data.data import GraphData
 
 
 def accuracy(logits, labels):
@@ -70,7 +70,7 @@ class GNNClassifier(nn.Module):
 
     def forward(self, graph):
         graph = self.model(graph)
-        logits = graph.ndata['node_emb']
+        logits = graph.node_features['node_emb']
         if self.direction_option == 'bi_sep':
             logits = self.fc(F.elu(logits))
 
@@ -177,7 +177,7 @@ def main(args, seed):
         # DGL datasets
         data = prepare_dgl_graph_data(args)
 
-    features, g, train_mask, val_mask, test_mask, labels, num_feats, n_classes, n_edges\
+    features, dgl_graph, train_mask, val_mask, test_mask, labels, num_feats, n_classes, n_edges\
                              = data['features'], data['graph'], data['train_mask'], \
                              data['val_mask'], data['test_mask'], data['labels'], \
                              data['num_feats'], data['n_classes'], data['n_edges']
@@ -201,7 +201,11 @@ def main(args, seed):
     val_mask = val_mask.to(device)
     test_mask = test_mask.to(device)
 
-    g.ndata['node_feat'] = features
+    dgl_graph.ndata['node_feat'] = features
+
+    # convert DGLGraph to GraphData
+    g = GraphData()
+    g.from_dgl(dgl_graph)
 
     # create model
     model = GNNClassifier(args.num_layers,
@@ -328,4 +332,3 @@ if __name__ == '__main__':
         scores.append(main(args, seed))
 
     print("\nTest Accuracy ({} runs): mean {:.4f}, std {:.4f}".format(args.num_runs, np.mean(scores), np.std(scores)))
-
