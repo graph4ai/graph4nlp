@@ -3,6 +3,10 @@ import os
 
 import torch.utils.data
 
+from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from ..modules.graph_construction.base import GraphConstructionBase
+from ..modules.utils.vocab_utils import VocabModel
+
 
 class Dataset(torch.utils.data.Dataset):
     """
@@ -16,18 +20,27 @@ class Dataset(torch.utils.data.Dataset):
 
     @property
     def raw_file_names(self) -> list:
-        """The file names of raw data which are to be found in the `self.raw_dir` directory.
+        raise NotImplementedError
 
-        Returns
-        -------
-        list
-            The list of raw file names.
-        """
+    @property
+    def processed_file_names(self) -> list:
+        raise NotImplementedError
+
+    @property
+    def preprocessed_file_names(self) -> list:
         raise NotImplementedError
 
     @abc.abstractmethod
     def download(self):
         """Download the raw data from the Internet."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def vectorization(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def preprocess(self):
         raise NotImplementedError
 
     def __init__(self, root):
@@ -39,15 +52,31 @@ class Dataset(torch.utils.data.Dataset):
         if 'download' in self.__class__.__dict__.keys():
             self._download()
 
+        if 'process' in self.__class__.__dict__.keys():
+            self._process()
+
     @property
     def raw_dir(self) -> str:
         """The directory where the raw data is stored."""
         return os.path.join(self.root, 'raw')
 
     @property
+    def processed_dir(self) -> str:
+        return os.path.join(self.root, 'processed')
+
+    @property
     def raw_file_paths(self) -> list:
         """The paths to raw files."""
         return [os.path.join(self.raw_dir, raw_file_name) for raw_file_name in self.raw_file_names]
+
+    @property
+    def processed_file_paths(self) -> list:
+        return [os.path.join(self.processed_dir, processed_file_name) for processed_file_name in
+                self.processed_file_names]
+
+    @property
+    def preprocessed_file_paths(self):
+        return [os.path.join(self.processed_dir, file_name) for file_name in self.preprocessed_file_names]
 
     def _download(self):
         if all([os.path.exists(raw_path) for raw_path in self.raw_file_paths]):
@@ -56,11 +85,32 @@ class Dataset(torch.utils.data.Dataset):
         os.makedirs(self.raw_dir, exist_ok=True)
         self.download()
 
+    def _process(self):
+        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths]):
+            return
+
+        os.makedirs(self.processed_dir, exist_ok=True)
+
+        if 'preprocess' in self.__class__.__dict__.keys():
+            self._preprocess()
+        if 'build_topology' in self.__class__.__dict__.keys():
+            self._build_topology()
+        if 'build_vocab' in self.__class__.__dict__.keys():
+            self._build_vocab()
+        self.vectorization()
+
+    def _preprocess(self):
+        if all([os.path.exists(preprocessed_path) for preprocessed_path in self.preprocessed_file_paths]):
+            return
+
+        os.makedirs(self.processed_dir, exist_ok=True)
+        self.preprocess()
+
     def len(self):
         """The number of examples in the whole dataset."""
         raise NotImplementedError
 
-    def get(self, index):
+    def get(self, index: int):
         """The abstraction of getting one item from the dataset given the index."""
         raise NotImplementedError
 
@@ -70,17 +120,15 @@ class Dataset(torch.utils.data.Dataset):
         else:
             return self.len()
 
-    # TODO: Design the `self.indices` method.
-
-    # TODO: Vectorization of data (step 3 of preprocessing). Runtime or static?
-
     def __getitem__(self, index):
-        # TODO: Implement __getitem__ method.
-        pass
+        if not isinstance(index, int):
+            raise NotImplementedError('Currently only index of int type is supported in `Dataset`.')
+        else:
+            return self.get(index)
 
     @staticmethod
     @abc.abstractmethod
-    def collate_fn(self):
+    def collate_fn(self, data_list):
         """Takes a list of data and convert it to a batch of data."""
         raise NotImplementedError
 
@@ -100,6 +148,10 @@ class TopologyDataset(Dataset):
         """The file names of the vocabulary."""
         raise NotImplementedError
 
+    @property
+    def topology_subdir_name(self):
+        raise NotImplementedError
+
     @abc.abstractmethod
     def build_topology(self):
         """Build topology based on raw data."""
@@ -110,111 +162,42 @@ class TopologyDataset(Dataset):
         """Build vocabulary based on the topology."""
         raise NotImplementedError
 
-    def __init__(self, root, topology_build_fn, vocab_build_fn):
+    def __init__(self, root, topology_builder: GraphConstructionBase, vocab_builder=VocabModel):
+        self.vocab_builder = topology_builder
+        self.topology_builder = vocab_builder
         super(TopologyDataset, self).__init__(root=root)
 
-        self.vocab_build_fn = vocab_build_fn
-        self.topology_build_fn = topology_build_fn
-
-        if 'build_topology' in self.__class__.__dict__.keys():
-            self._build_topology()
-
-        if 'build_vocab' in self.__class__.__dict__.keys():
-            self._build_vocab()
-
     @property
-    def topology_dir(self):
-        return os.path.join(self.root, 'topology')
-
-    @property
-    def vocab_dir(self):
-        return os.path.join(self.root, 'vocab')
+    def topology_subdir(self):
+        return os.path.join(self.root, 'processed', self.topology_subdir_name)
 
     @property
     def topology_file_paths(self):
-        return [os.path.join(self.topology_dir, file_name) for file_name in self.topology_file_names]
+        return [os.path.join(self.topology_subdir, file_name) for file_name in self.topology_file_names]
 
     @property
     def vocab_file_paths(self):
-        return [os.path.join(self.vocab_dir, file_name) for file_name in self.vocab_file_names]
+        return [os.path.join(self.topology_subdir, file_name) for file_name in self.vocab_file_names]
 
     def _build_topology(self):
         if all([os.path.exists(file_path) for file_path in self.topology_file_paths]):
             return
 
-        os.makedirs(self.topology_dir, exist_ok=True)
+        os.makedirs(self.topology_subdir, exist_ok=True)
         self.build_topology()
 
     def _build_vocab(self):
         if all([os.path.exists(file_path) for file_path in self.vocab_file_paths]):
             return
 
-        os.makedirs(self.vocab_dir, exist_ok=True)
+        os.makedirs(self.topology_subdir, exist_ok=True)
         self._build_vocab()
 
-class TopologyBuilder(object):
-    """
-    The base class for dataset with topology building techniques.
-    """
 
+class DependencyDataset(TopologyDataset):
     @property
-    def topology_file_names(self):
-        """The file names of the topological data."""
-        raise NotImplementedError
+    def topology_subdir_name(self):
+        return 'DependencyGraph'
 
-    @property
-    def vocab_file_names(self):
-        """The file names of the vocabulary."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def build_topology(self):
-        """Build topology based on raw data."""
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def build_vocab(self):
-        """Build vocabulary based on the topology."""
-        raise NotImplementedError
-
-    def __init__(self, topology_build_fn, vocab_build_fn):
-        super(TopologyBuilder, self).__init__()
-
-        self.vocab_build_fn = vocab_build_fn
-        self.topology_build_fn = topology_build_fn
-
-        if 'build_topology' in self.__class__.__dict__.keys():
-            self._build_topology()
-
-        if 'build_vocab' in self.__class__.__dict__.keys():
-            self._build_vocab()
-
-    @property
-    def topology_dir(self):
-        return os.path.join(self.root, 'topology')
-
-    @property
-    def vocab_dir(self):
-        return os.path.join(self.root, 'vocab')
-
-    @property
-    def topology_file_paths(self):
-        return [os.path.join(self.topology_dir, file_name) for file_name in self.topology_file_names]
-
-    @property
-    def vocab_file_paths(self):
-        return [os.path.join(self.vocab_dir, file_name) for file_name in self.vocab_file_names]
-
-    def _build_topology(self):
-        if all([os.path.exists(file_path) for file_path in self.topology_file_paths]):
-            return
-
-        os.makedirs(self.topology_dir, exist_ok=True)
-        self.build_topology()
-
-    def _build_vocab(self):
-        if all([os.path.exists(file_path) for file_path in self.vocab_file_paths]):
-            return
-
-        os.makedirs(self.vocab_dir, exist_ok=True)
-        self._build_vocab()
+    def __init__(self, root):
+        super(DependencyDataset, self).__init__(root=root, topology_builder=DependencyBasedGraphConstruction)

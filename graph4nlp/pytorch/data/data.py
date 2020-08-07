@@ -117,7 +117,7 @@ class GraphData(object):
 
         return self.nodes[:].features
 
-    def get_node_features(self, nodes: int or slice) -> torch.tensor:
+    def get_node_features(self, nodes: int or slice) -> torch.Tensor:
         """
         Get the node feature dictionary of the `nodes`
 
@@ -249,7 +249,7 @@ class GraphData(object):
         src: int
             Source node index
         tgt: int
-            Tatget node index
+            Target node index
         """
         # Consistency check
         if (src not in range(self.get_node_num())) or (tgt not in range(self.get_node_num())):
