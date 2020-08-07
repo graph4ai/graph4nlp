@@ -51,9 +51,8 @@ class Dataset(torch.utils.data.Dataset):
 
         if 'download' in self.__class__.__dict__.keys():
             self._download()
-
-        if 'process' in self.__class__.__dict__.keys():
-            self._process()
+        
+        self._process()
 
     @property
     def raw_dir(self) -> str:
