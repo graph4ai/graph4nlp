@@ -1,7 +1,9 @@
-from torch import nn
+import torch
+import dgl
 from dgl.nn.pytorch.glob import AvgPooling as DGLAvgPooling
 
 from ..base import PoolingBase
+from .....data.data import from_batch
 
 
 class AvgPooling(PoolingBase):
@@ -12,7 +14,7 @@ class AvgPooling(PoolingBase):
     """
     def __init__(self):
         super(AvgPooling, self).__init__()
-        self.model = DGLAvgPooling()
+        # self.model = DGLAvgPooling()
 
     def forward(self, graph, feat):
         r"""Compute average pooling.
@@ -21,14 +23,28 @@ class AvgPooling(PoolingBase):
         ----------
         graph : GraphData
             The graph data.
-        feat : torch.Tensor
-            The input feature.
+        feat : str
+            The feature field name.
 
         Returns
         -------
         torch.Tensor
             The output feature.
         """
-        # graph = graph.to_dgl()
+        # return self.model(graph, feat)
 
-        return self.model(graph, feat)
+        # use DGLGraph
+        graph_list = dgl.unbatch(graph)
+        output_feat = []
+        for g in graph_list:
+            output_feat.append(g.ndata[feat].mean(dim=0))
+
+        # use GraphData
+        # graph_list = from_batch(graph)
+        # output_feat = []
+        # for g in graph_list:
+        #     output_feat.append(g.node_features[feat].mean(dim=0))
+
+        output_feat = torch.stack(output_feat, 0)
+
+        return output_feat

@@ -30,12 +30,19 @@ python -m graph4nlp.pytorch.test.graph_classification.run_graph_classification -
 Results
 -------
 
-| Dataset  |    AvgPooling    | 
-| -------- | ------------- | 
+| Dataset  |    AvgPooling    | MaxPooling | 
+| -------- | ------------- | ------------- | 
+| MiniGC | 12.5 | 28.8 |
 
+<!-- 
+Avg_pool
+Accuracy of sampled predictions on the test set: 15.0000%
+Accuracy of argmax predictions on the test set: 12.500000%    
 
-
-
+Max_pool (no linear projection)
+Accuracy of sampled predictions on the test set: 16.2500%
+Accuracy of argmax predictions on the test set: 28.750000% 
+ -->
 
 
 <!-- TODO

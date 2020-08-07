@@ -271,7 +271,7 @@ if __name__ == '__main__':
     # Training settings
     parser = argparse.ArgumentParser(description='GAT')
     # register_data_args(parser)
-    parser.add_argument("--graph-pooling", type=str, default='avg_pool',
+    parser.add_argument("--graph-pooling", type=str, default='max_pool',
                         help="graph pooling (`avg_pool`, `max_pool`)")
     parser.add_argument("--direction-option", type=str, default='uni',
                         help="direction type (`uni`, `bi_fuse`, `bi_sep`)")

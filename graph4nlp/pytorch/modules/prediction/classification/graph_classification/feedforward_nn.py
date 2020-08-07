@@ -3,6 +3,7 @@ from torch import nn
 
 from ..base import GraphClassifierLayerBase, GraphClassifierBase
 from .avg_pooling import AvgPooling
+from .max_pooling import MaxPooling
 
 
 class FeedForwardNN(GraphClassifierBase):
@@ -24,7 +25,8 @@ class FeedForwardNN(GraphClassifierBase):
                 num_class,
                 hidden_size,
                 activation=None,
-                graph_pool_type='avg_pool'):
+                graph_pool_type='max_pool',
+                **kwargs):
         super(FeedForwardNN, self).__init__()
 
         if not activation:
@@ -32,8 +34,8 @@ class FeedForwardNN(GraphClassifierBase):
 
         if graph_pool_type == 'avg_pool':
             self.graph_pool = AvgPooling()
-        # elif graph_pool_type == 'max':
-        #     self.graph_pool = MaxPooling()
+        elif graph_pool_type == 'max_pool':
+            self.graph_pool = MaxPooling(**kwargs)
         else:
             raise RuntimeError('Unknown graph pooling type: {}'.format(graph_pool_type))
 
@@ -52,7 +54,9 @@ class FeedForwardNN(GraphClassifierBase):
         list of GraphData
             The output graph data containing logits tensor for graph classification.
         """
-        graph_emb = self.graph_pool(graph, graph.node_features['node_emb'])
+        graph_emb = self.graph_pool(graph, 'node_emb')
+        # graph_emb = self.graph_pool(graph, graph.ndata['node_emb'])
+        # graph_emb = self.graph_pool(graph, graph.node_features['node_emb'])
 
         logits = self.classifier(graph_emb)
 
