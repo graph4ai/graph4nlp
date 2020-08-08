@@ -164,7 +164,7 @@ class Dataset(torch.utils.data.Dataset):
 class DependencyDataset(Dataset):
     @property
     def topology_subdir(self):
-        return 'DependencyGraph'
+        return os.path.join(self.root, 'processed', 'DependencyGraph')
 
     def __init__(self, root):
         super(DependencyDataset, self).__init__(root=root, topology_builder=DependencyBasedGraphConstruction)

@@ -130,7 +130,7 @@ class Jobs:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = JobsDataset(root_dir="../../../dataset/jobs")
+        dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs")
         data_size = len(dataset)
         self.train_dataloader = DataLoader(dataset[:int(0.8 * data_size)], batch_size=24, shuffle=True,
                                            num_workers=1,
@@ -139,7 +139,6 @@ class Jobs:
                                           num_workers=1,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
-
 
     def _build_model(self):
         self.model = Graph2seq(self.vocab).cuda()
@@ -187,8 +186,22 @@ class Jobs:
         print("accuracy: {:.3f}".format(score))
         return score
 
+def preprocess():
+    raw_dir = "graph4nlp/pytorch/test/dataset/jobs/raw"
+    data = []
+    with open("{}/{}.txt".format(raw_dir, "train"), "r") as f:
+        for line in f:
+            l_list = line.split("\t")
+            w_list = l_list[0]
+            r_list = l_list[1]
+            data.append((w_list, r_list))
+
+    seq_data = data
+    torch.save(seq_data, os.path.join(raw_dir, 'sequence.pt'))
+
 
 if __name__ == "__main__":
+    preprocess()
     runner = Jobs()
     max_score = runner.train()
     print("Train finish, best score: {:.3f}".format(max_score))
