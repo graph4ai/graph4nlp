@@ -85,7 +85,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         """
         cls.verbase = 1
         props = {
-            'annotators': 'depparse',
+            'annotators': 'ssplit,tokenize,depparse',
             "tokenize.options":
                 "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
             "tokenize.whitespace": False,
@@ -94,14 +94,22 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         }
         dep_json = nlp_processor.annotate(raw_text_data.strip(), properties=props)
         dep_dict = json.loads(dep_json)
+
         parsed_results = []
         node_id = 0
-        for s_id, s in enumerate(dep_dict["sentences"]):
+        for s_id in range(len(dep_dict["sentences"])):
             parsed_sent = []
             unique_hash = {}
             node_id = 0
 
-            for dep in s["basicDependencies"]:
+            unique_hash[(0, 'ROOT')] = node_id
+            node_id += 1
+
+            for tokens in dep_dict["sentences"][s_id]['tokens']:
+                unique_hash[(tokens['index'], tokens['word'])] = node_id
+                node_id += 1
+
+            for dep in dep_dict["sentences"][s_id]["basicDependencies"]:
                 if cls.verbase > 0:
                     print(dep)
                 if unique_hash.get((dep['governor'], dep['governorGloss'])) is None:

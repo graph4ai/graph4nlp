@@ -62,7 +62,7 @@ class StdRNNDecoder(RNNDecoderBase):
     def __init__(self, max_decoder_step, decoder_input_size, decoder_hidden_size, device,  # decoder config
                  word_emb, vocab,  # word embedding & vocabulary TODO: add our vocabulary when building pipeline
                  rnn_type="LSTM",  # RNN config
-                 use_attention=True, attention_type="uniform",  # attention config
+                 use_attention=True, attention_type="uniform", rnn_emb_input_size=None,  # attention config
                  attention_function="mlp", node_type_num=None, fuse_strategy="average",
                  use_copy=False, use_coverage=False, coverage_strategy="sum",
                  tgt_emb_as_output_layer=False,  # share label projection with word embedding
@@ -71,6 +71,7 @@ class StdRNNDecoder(RNNDecoderBase):
                                             attention_type=attention_type, fuse_strategy=fuse_strategy)
         self.max_decoder_step = max_decoder_step
         self.word_emb_size = word_emb.embedding_dim
+        self.decoder_input_size = decoder_input_size
         self.device = device
         self.dropout = nn.Dropout(p=dropout)
         self.tgt_emb = word_emb
@@ -93,18 +94,23 @@ class StdRNNDecoder(RNNDecoderBase):
                                                query_size=query_size,
                                                memory_size=decoder_input_size, has_bias=True,
                                                attention_funtion=attention_function)
-                self.out_logits_size += self.decoder_hidden_size
+                self.out_logits_size += self.decoder_input_size
             elif attention_type == "sep_diff_encoder_type":
+                assert isinstance(rnn_emb_input_size, int)
+                self.rnn_emb_input_size = rnn_emb_input_size
                 self.enc_attention = Attention(hidden_size=self.decoder_hidden_size,
                                                query_size=query_size,
                                                memory_size=decoder_input_size, has_bias=True,
                                                attention_funtion=attention_function)
-                self.out_logits_size += self.decoder_hidden_size
+                self.out_logits_size += self.decoder_input_size
                 self.rnn_attention = Attention(hidden_size=self.decoder_hidden_size, query_size=query_size,
-                                               memory_size=decoder_input_size, has_bias=True,
+                                               memory_size=rnn_emb_input_size, has_bias=True,
                                                attention_funtion=attention_function)
                 if self.fuse_strategy == "concatenate":
-                    self.out_logits_size += self.decoder_hidden_size
+                    self.out_logits_size += self.rnn_emb_input_size
+                else:
+                    if rnn_emb_input_size != decoder_input_size:
+                        raise ValueError("input RNN embedding size is not equal to graph embedding size")
             elif attention_type == "sep_diff_node_type":
                 assert node_type_num >= 1
                 attn_modules = [Attention(hidden_size=self.decoder_hidden_size, query_size=query_size,
@@ -114,16 +120,16 @@ class StdRNNDecoder(RNNDecoderBase):
                 self.node_type_num = node_type_num
                 self.attn_modules = nn.ModuleList(attn_modules)
                 if self.fuse_strategy == "concatenate":
-                    self.out_logits_size += self.decoder_hidden_size * self.node_type_num
+                    self.out_logits_size += self.decoder_input_size * self.node_type_num
                 elif self.fuse_strategy == "average":
-                    self.out_logits_size += self.decoder_hidden_size
+                    self.out_logits_size += self.decoder_input_size
                 else:
                     raise NotImplementedError()
             else:
                 raise NotImplementedError()
 
         self.attention_type = attention_type
-        self.decoder_input_size = decoder_input_size
+
         if self.rnn_type == "LSTM":
             self.encoder_decoder_adapter = nn.ModuleList(
                 [nn.Linear(self.decoder_input_size, self.decoder_hidden_size) for _ in range(2)])
@@ -245,7 +251,6 @@ class StdRNNDecoder(RNNDecoderBase):
             It is used for calculating coverage loss.
             The coverage vector.
         """
-
         target_len = self.max_decoder_step
         if tgt_seq is not None:
             target_len = min(tgt_seq.shape[1], target_len)
@@ -435,7 +440,8 @@ class StdRNNDecoder(RNNDecoderBase):
         params: dict
         """
         graph_node_emb = [s_g.node_features["node_emb"] for s_g in graph_list]
-        rnn_node_emb = None
+        rnn_node_emb = [s_g.node_features["rnn_emb"] for s_g in graph_list]
+
         graph_edge_emb = None
 
         def pad_tensor(x, dim, pad_size):
@@ -481,7 +487,7 @@ class StdRNNDecoder(RNNDecoderBase):
         return {
              "graph_node_embedding": graph_node_emb_ret,
              "graph_node_mask": graph_node_mask_ret,
-             "rnn_node_embedding": None,
+             "rnn_node_embedding": rnn_node_emb_ret,
              "graph_level_embedding": None,
              "graph_edge_embedding": None,
              "graph_edge_mask": None

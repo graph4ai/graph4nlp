@@ -161,6 +161,7 @@ class JobsDataset(DependencyDataset):
 
             tgt = self.seq_data[i][1]
             tgt_token_id = self.vocab_model.word_vocab.to_index_sequence(tgt)
+            tgt_token_id.append(self.vocab_model.word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
             tgt_token_id = torch.from_numpy(tgt_token_id)
             if tgt_token_id.shape[0] < padding_length:

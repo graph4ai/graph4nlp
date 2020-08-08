@@ -30,7 +30,7 @@ Results
 
 | Dataset  |    GAT-Uni    |   GAT-BiSep   |  GAT-BiFuse   |
 | -------- | ------------- | ------------- | ------------- |
-| Jobs     |  69.4 |   |  71.1  |
+| Jobs     |  33.0 |   |  44.0  |
 
 TODO
 -------
