@@ -6,6 +6,7 @@ import torch.nn as nn
 
 from graph4nlp.pytorch.modules.prediction.generation.attention import Attention
 from graph4nlp.pytorch.modules.prediction.generation.base import RNNDecoderBase
+from graph4nlp.pytorch.data.data import GraphData, from_batch
 
 
 class StdRNNDecoder(RNNDecoderBase):
@@ -415,3 +416,75 @@ class StdRNNDecoder(RNNDecoderBase):
         ret = tokens.clone()
         ret[tokens >= self.vocab_size] = self.vocab.UNK
         return ret
+
+    def forward(self, g, tgt_seq=None, src_seq=None, teacher_forcing_rate=1.0):
+        params = self._extract_params(g)
+        params['tgt_seq'] = tgt_seq
+        params['src_seq'] = src_seq
+        params['teacher_forcing_rate'] = teacher_forcing_rate
+        return self._run_forward_pass(**params)
+
+    def _extract_params(self, g):
+        """
+
+        Parameters
+        ----------
+        g: GraphData
+
+        Returns
+        -------
+        params: dict
+        """
+        graph_list = from_batch(g)
+        graph_node_emb = [s_g.node_features["node_emb"] for s_g in graph_list]
+        rnn_node_emb = [s_g.node_features.get("rnn_emb") for s_g in graph_list]
+        graph_edge_emb = [s_g.node_features["edge_emb"] for s_g in graph_list]
+
+        def pad_tensor(x, dim, pad_size):
+            if len(x.shape) == 2:
+                assert (0 <= dim <= 1)
+                assert pad_size >= 0
+                dim1, dim2 = x.shape
+                pad = torch.zeros(pad_size, dim2) if dim == 0 else torch.zeros(dim1, pad_size)
+                pad = pad.to(self.device)
+                return torch.cat((x, pad), dim=dim)
+
+        batch_size = len(graph_list)
+        max_node_num = max([emb.shape[0] for emb in graph_node_emb])
+
+        graph_node_emb_ret = []
+        for emb in graph_node_emb:
+            if emb.shape[0] < max_node_num:
+                emb = pad_tensor(emb, 0, max_node_num-emb.shape[0])
+            graph_node_emb_ret.append(emb.unsqueeze(0))
+        graph_node_emb_ret = torch.cat(graph_node_emb_ret, dim=0)
+
+        graph_node_mask = torch.zeros(batch_size, max_node_num).fill(-1)
+
+        for i, s_g in enumerate(graph_list):
+            node_num = s_g.get_node_num()
+            for j in range(node_num):
+                node_type = s_g.node_attributes[j].get('type')
+                if node_type is not None:
+                    graph_node_mask[i][j] = node_type
+        graph_node_mask_ret = graph_node_mask.to(self.device)
+
+        rnn_node_emb_ret = None
+        if self.attention_type == "sep_diff_encoder_type":
+            max_rnn_num = max([rnn_emb.shape[0] for rnn_emb in rnn_node_emb])
+            rnn_node_emb_ret = []
+            assert max_rnn_num == max_node_num
+            for rnn_emb in rnn_node_emb:
+                if rnn_emb.shape[0] < max_rnn_num:
+                    rnn_emb = pad_tensor(rnn_emb, 0, max_rnn_num - rnn_emb.shape[0])
+                rnn_node_emb_ret.append(rnn_emb.unsqueeze(0))
+            rnn_node_emb_ret = torch.cat(rnn_node_emb_ret, dim=0)
+
+        return {
+             "graph_node_embedding": graph_node_emb_ret,
+             "graph_node_mask": graph_node_mask_ret,
+             "rnn_node_embedding": rnn_node_emb_ret,
+             "graph_level_embedding": None,
+             "graph_edge_embedding": None,
+             "graph_edge_mask": None
+        }
