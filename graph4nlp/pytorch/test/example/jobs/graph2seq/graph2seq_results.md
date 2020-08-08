@@ -32,3 +32,8 @@ Results
 | -------- | ------------- | ------------- | ------------- |
 | Jobs     |  69.4 |   |  71.1  |
 
+TODO
+-------
+
+- early stopping, loading best model, pretrianed glove vectors, hyper-param tuning, ggnn/graphsage, seq_info_encode_strategy (check node ordering)
+
