@@ -130,7 +130,7 @@ class Jobs:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs")
+        dataset = JobsDataset(root_dir="../../../dataset/jobs")
         data_size = len(dataset)
         self.train_dataloader = DataLoader(dataset[:int(0.8 * data_size)], batch_size=24, shuffle=True,
                                            num_workers=1,
