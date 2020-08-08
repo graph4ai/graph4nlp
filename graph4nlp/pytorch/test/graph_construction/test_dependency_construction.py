@@ -8,7 +8,7 @@ def test_dependency():
 
     nlp_parser = StanfordCoreNLP('http://localhost', port=9000, timeout=300000)
 
-    DependencyBasedGraphConstruction.topology(raw_data, nlp_parser, merge_strategy="sequential", edge_strategy=None)
+    DependencyBasedGraphConstruction.topology(raw_data, nlp_parser, merge_strategy="tailhead", edge_strategy="heterogeneous")
     pass
 
 
