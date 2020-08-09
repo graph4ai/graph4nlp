@@ -55,6 +55,7 @@ class Text2TextDataItem(DataItem):
         else:
             return input_tokens, output_tokens
 
+
 class Dataset(torch.utils.data.Dataset):
     """
     Base class for datasets.
@@ -169,7 +170,6 @@ class Dataset(torch.utils.data.Dataset):
                                min_word_vocab_freq=1,
                                pretrained_word_emb_file=self.pretrained_word_emb_file,
                                word_emb_size=300)
-
         self.vocab_model = vocab_model
 
     def _process(self):
@@ -281,7 +281,6 @@ class TextToTextDataset(Dataset):
                                        word_emb_size=300,
                                        share_vocab=self.share_vocab)
         self.vocab_model = vocab_model
-        torch.save(self.vocab_model, os.path.join(self.processed_dir, self.processed_file_names['vocab']))
 
     def vectorization(self):
         for i in range(len(self.data)):
