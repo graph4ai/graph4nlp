@@ -128,7 +128,8 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     def _construct_static_graph(cls,
                                parsed_object,
                                sub_sentence_id,
-                               edge_strategy=None):
+                               edge_strategy=None,
+                               sequential_link=True):
         parsed_sentence_data = parsed_object['parse']
         for punc in [u'(', u')']:
             parsed_sentence_data = parsed_sentence_data.replace(
@@ -163,6 +164,23 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                     res_graph.add_edge(node_1, res_graph.get_node_num() - 1)
                 pstack.push(node_1)
             idx += 1
+        
+        if sequential_link:
+            _len_single_graph = res_graph.get_node_num()
+            _cnt_node = 0
+            while(True):
+                node_1_idx = -1
+                node_2_idx = -1
+                for idx, node_attr in res_graph.node_attributes.items():
+                    if node_attr['position_id'] == _cnt_node:
+                        node_1_idx = idx
+                    elif node_attr['position_id'] == _cnt_node + 1:
+                        node_2_idx = idx
+                if node_1_idx != -1 and node_2_idx != -1:
+                    res_graph.add_edge(node_1_idx, node_2_idx)
+                if _cnt_node >= _len_single_graph:
+                    break
+                _cnt_node += 1
 
         max_pos = 0
         for n in res_graph.node_attributes.values():
@@ -179,7 +197,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                 n['tail'] = True
             if n['type'] == 0 and n['position_id'] == min_pos:
                 n['head'] = True
-        # print(res_graph.node_attributes)
+        # print(res_graph.edges)
         return res_graph
 
     @classmethod
@@ -199,10 +217,20 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         merged_graph = GraphData()
         for index in range(_len_graph_):
             len_merged_graph = merged_graph.get_node_num()
+
             graph_i_nodes_attributes = {}
             for dict_item in graph_list[index].node_attributes.items():
                 graph_i_nodes_attributes[dict_item[0] + len_merged_graph] = dict_item[1]
             merged_graph.node_attributes.update(graph_i_nodes_attributes)
+        
+        _cnt_edge_num = 0
+        for g_idx in range(_len_graph_):
+            print(g_idx)
+            tmp_edges = graph_list[g_idx].get_all_edges()
+            current_node_num = graph_list[g_idx].get_node_num()
+            for _edge in tmp_edges:
+                merged_graph.add_edge(_edge[0]+_cnt_edge_num, _edge[1]+_cnt_edge_num)
+            _cnt_edge_num += current_node_num
 
         for index in range(_len_graph_ - 1):
             # get head node

@@ -59,5 +59,7 @@ if __name__ == "__main__":
     output_graph = ConstituencyBasedGraphConstruction.topology(raw_data, nlp_parser)
     print(output_graph.node_attributes)
     print(output_graph.edges)
+    for _edge in output_graph.get_all_edges():
+        print(output_graph.nodes[_edge[0]].attributes['token'], output_graph.nodes[_edge[1]].attributes['token'])
     # print("-----------------------\nvocab size")
     # print(vocab_model.word_vocab.word2index)
