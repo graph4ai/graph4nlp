@@ -37,7 +37,7 @@ class TransE(KGCompletionBase):
     """
 
     def __init__(self,
-                 input_dropout=0.0,
+                 p_norm=1,
                  rel_emb_from_gnn=True,
                  num_relations=None,
                  embedding_dim=None,
@@ -46,12 +46,13 @@ class TransE(KGCompletionBase):
         super(TransE, self).__init__()
         self.rel_emb_from_gnn = rel_emb_from_gnn
         self.edge2node = edge2node
-        self.classifier = TransELayer(input_dropout, rel_emb_from_gnn,
+        self.classifier = TransELayer(p_norm, rel_emb_from_gnn,
                                        num_relations, embedding_dim, loss_name)
 
 
     def forward(self, input_graph: GraphData):
         r"""
+        Forward functions to compute the logits tensor for kg completion.
 
         Parameters
         ----------
@@ -78,29 +79,29 @@ class TransE(KGCompletionBase):
         if self.edge2node:
             rel_emb = node_emb
         else:
-            if 'rel_emb' in input_graph.ndata.keys():
-                rel_emb = input_graph.ndata['rel_emb']
+            if 'rel_emb' in input_graph.node_features.keys():
+                rel_emb = input_graph.node_features['rel_emb']
             else:
                 assert self.rel_emb_from_gnn == False
                 rel_emb = None
 
-        if 'list_e_r_pair_idx' in input_graph.ndata.keys():
-            list_e_r_pair_idx = input_graph.ndata['list_e_r_pair_idx']
+        if 'list_e_r_pair_idx' in input_graph.node_features.keys():
+            list_e_r_pair_idx = input_graph.node_features['list_e_r_pair_idx']
             list_e_e_pair_idx = None
-        elif 'list_e_e_pair_idx' in input_graph.ndata.keys():
-            list_e_e_pair_idx = input_graph.ndata['list_e_e_pair_idx']
+        elif 'list_e_e_pair_idx' in input_graph.node_features.keys():
+            list_e_e_pair_idx = input_graph.node_features['list_e_e_pair_idx']
             list_e_r_pair_idx = None
         else:
             raise RuntimeError("'list_e_r_pair_idx' or 'list_e_e_pair_idx' should be given.")
 
         if multi_label == None:
-            input_graph.node_features['logits'] = self.classifier(node_emb,
+            input_graph.graph_attributes['logits'] = self.classifier(node_emb,
                                                                   rel_emb,
                                                                   list_e_r_pair_idx,
                                                                   list_e_e_pair_idx)
         else:
-            input_graph.node_features['logits'], input_graph.node_features['p_score'], \
-            input_graph.node_features['n_score'] = self.classifier(node_emb,
+            input_graph.graph_attributes['logits'], input_graph.graph_attributes['p_score'], \
+            input_graph.graph_attributes['n_score'] = self.classifier(node_emb,
                                                                    rel_emb,
                                                                    list_e_r_pair_idx,
                                                                    list_e_e_pair_idx,

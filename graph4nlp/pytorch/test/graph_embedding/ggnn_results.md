@@ -23,7 +23,7 @@ Run with following:
 
 #### Cora
 
-```bash mean 0.7440, std 0.0237
+```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option uni --early-stop
 ```
 ```bash
@@ -71,7 +71,7 @@ Results
 
 | Dataset  |    GGNN-Uni    |   GGNN-BiSep   |   GGNN-BiFuse  |
 | -------- | -------------- | -------------- | -------------- |
-| Cora     | 0.7740 (0.01)  | 0.7584 (0.01)  | 0.7530 (0.01)  |
+| Cora     | 0.7740 (0.01)  | 0.7882 (0.01)  | 0.7530 (0.01)  |
 | Citeseer | 0.6094 (0.02)  | 0.6122 (0.03)  | 0.6230 (0.02)  |
 | Pubmed   | 0.7684 (0.01)  | 0.7736 (0.01)  | 0.7676 (0.01)  |
 

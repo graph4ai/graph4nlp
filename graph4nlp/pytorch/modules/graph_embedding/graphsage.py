@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import dgl.function as fn
 from dgl.nn.pytorch import SAGEConv
 from dgl.utils import expand_as_pair
-from base import GNNLayerBase, GNNBase
+from .base import GNNLayerBase, GNNBase
 from dgl.utils import expand_as_pair,check_eq_shape
 
 class GraphSAGE(GNNBase):
@@ -125,23 +125,22 @@ class GraphSAGE(GNNBase):
             named as "node_emb".
         """        
         
-        h=graph.ndata['node_feat'] #get the node feature tensor from graph
-        
+        h=graph.node_features['node_feat'] #get the node feature tensor from graph
+        g = graph.to_dgl() #transfer the current NLPgraph to DGL graph
 
         # output projection
         if self.num_layers>1:          
           for l in range(0,self.num_layers - 1):
-              h = self.GraphSAGE_layers[l](graph, h)
+              h = self.GraphSAGE_layers[l](g, h)
             
-        logits = self.GraphSAGE_layers[-1](graph, h)
+        logits = self.GraphSAGE_layers[-1](g, h)
 
         if self.direction_option == 'bi_sep':
             logits = torch.cat(logits, -1)
-
         else:
             logits = logits
             
-        graph.ndata['node_emb']=logits
+        graph.node_features['node_emb']=logits #put the results into the NLPGraph
 
         return graph
     
@@ -203,7 +202,6 @@ class GraphSAGELayer(GNNLayerBase):
                                         bias=bias,
                                         norm=norm,
                                         activation=activation)
-
         elif direction_option == 'bi_sep':
             self.model = BiSepGraphSAGELayerConv(input_size,
                                         output_size,
@@ -212,7 +210,6 @@ class GraphSAGELayer(GNNLayerBase):
                                         bias=bias,
                                         norm=norm,
                                         activation=activation)
-
         elif direction_option == 'bi_fuse':
             self.model = BiFuseGraphSAGELayerConv(input_size,
                                         output_size,
@@ -221,7 +218,6 @@ class GraphSAGELayer(GNNLayerBase):
                                         bias=bias,
                                         norm=norm,
                                         activation=activation)
-
         else:
             raise RuntimeError('Unknown `direction_option` value: {}'.format(direction_option))
 
