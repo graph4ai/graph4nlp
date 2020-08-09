@@ -27,7 +27,7 @@ class JobsDataset(TextToTextDataset):
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
         self.data = torch.load(os.path.join(self.processed_dir, self.processed_file_names['data']))
-        self.vocab_model = self.build_vocab()
+        self.build_vocab()
 
 
 if __name__ == '__main__':
