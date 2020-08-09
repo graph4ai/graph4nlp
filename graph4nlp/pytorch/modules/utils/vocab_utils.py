@@ -1,15 +1,16 @@
 import os
-import re
 import pickle
-import numpy as np
+import re
 from collections import Counter
 from functools import lru_cache
+
+import numpy as np
 from nltk.tokenize import word_tokenize
 
 from . import constants
 
-
 word_detector = re.compile('\w')
+
 
 class VocabModel(object):
     """Vocab model builder.
@@ -47,30 +48,54 @@ class VocabModel(object):
                             word_emb_size=300)
     >>> print(vocab_model.word_vocab.get_vocab_size())
     """
-    def __init__(self, data_set, lower_case=True,
-                                tokenizer=word_tokenize,
-                                max_word_vocab_size=None,
-                                min_word_vocab_freq=1,
-                                pretrained_word_emb_file=None,
-                                word_emb_size=None):
+
+    def __init__(self, data_set=None,
+                 tokenizer=word_tokenize,
+                 lower_case=True,
+                 max_word_vocab_size=None,
+                 min_word_vocab_freq=1,
+                 pretrained_word_emb_file=None,
+                 word_emb_size=None,
+                 share_vocab=True):
         super(VocabModel, self).__init__()
-        self.tokenizer = word_tokenize
+        self.tokenizer = tokenizer
 
         print('Building vocabs...')
-        all_words = collect_vocabs(data_set, self.tokenizer, lower_case=lower_case)
-        print('Number of words: {}'.format(len(all_words)))
+        all_words = VocabModel.collect_vocabs(data_set, self.tokenizer, lower_case=lower_case, share_vocab=share_vocab)
+        # print('Number of words: {}'.format(len(all_words)))
+        if share_vocab:
+            in_all_words, out_all_words = all_words, None
+        else:
+            in_all_words, out_all_words = all_words
 
-        self.word_vocab = Vocab(lower_case=lower_case, tokenizer=self.tokenizer)
-        self.word_vocab.build_vocab(all_words, max_vocab_size=max_word_vocab_size, min_vocab_freq=min_word_vocab_freq)
+
+        self.in_word_vocab = Vocab(lower_case=lower_case, tokenizer=self.tokenizer)
+        self.in_word_vocab.build_vocab(in_all_words, max_vocab_size=max_word_vocab_size, min_vocab_freq=min_word_vocab_freq)
 
         if pretrained_word_emb_file is not None:
-            self.word_vocab.load_embeddings(pretrained_word_emb_file)
+            self.in_word_vocab.load_embeddings(pretrained_word_emb_file)
             print('Using pretrained word embeddings')
-
         else:
-            self.word_vocab.randomize_embeddings(word_emb_size)
+            self.in_word_vocab.randomize_embeddings(word_emb_size)
 
-        print('Initialized word embeddings: {}'.format(self.word_vocab.embeddings.shape))
+        if out_all_words is not None:
+            self.out_word_vocab = Vocab(lower_case=lower_case, tokenizer=self.tokenizer)
+            self.out_word_vocab.build_vocab(out_all_words, max_vocab_size=max_word_vocab_size, min_vocab_freq=min_word_vocab_freq)
+
+            if pretrained_word_emb_file is not None:
+                self.out_word_vocab.load_embeddings(pretrained_word_emb_file)
+                print('Using pretrained word embeddings')
+            else:
+                self.out_word_vocab.randomize_embeddings(word_emb_size)
+        else:
+            self.out_word_vocab = self.in_word_vocab
+
+        if share_vocab:
+            print('[ Initialized word embeddings: {} ]'.format(self.in_word_vocab.embeddings.shape))
+        else:
+            print('[ Using separate word vocabs for input & output text ]')
+            print('[ Initialized input word embeddings: {} ]'.format(self.in_word_vocab.embeddings.shape))
+            print('[ Initialized output word embeddings: {} ]'.format(self.out_word_vocab.embeddings.shape))
 
         # self.edge_vocab = Vocab()
         # self.edge_vocab.build_vocab(all_edge_types)
@@ -86,12 +111,14 @@ class VocabModel(object):
 
     @classmethod
     def build(cls, saved_vocab_file,
-            data_set=None,
-            tokenizer=word_tokenize,
-            max_word_vocab_size=None,
-            min_word_vocab_freq=1,
-            pretrained_word_emb_file=None,
-            word_emb_size=None):
+              data_set=None,
+              tokenizer=word_tokenize,
+              lower_case=True,
+              max_word_vocab_size=None,
+              min_word_vocab_freq=1,
+              pretrained_word_emb_file=None,
+              word_emb_size=None,
+              share_vocab=True):
         """Static method for loading a VocabModel from disk.
 
         Parameters:
@@ -121,15 +148,35 @@ class VocabModel(object):
             vocab_model = pickle.load(open(saved_vocab_file, 'rb'))
 
         else:
-            vocab_model = VocabModel(data_set, tokenizer,
-                                        max_word_vocab_size,
-                                        min_word_vocab_freq,
-                                        pretrained_word_emb_file,
-                                        word_emb_size)
+            vocab_model = VocabModel(data_set=data_set, tokenizer=tokenizer,
+                                     max_word_vocab_size=max_word_vocab_size,
+                                     min_word_vocab_freq=min_word_vocab_freq,
+                                     pretrained_word_emb_file=pretrained_word_emb_file,
+                                     word_emb_size=word_emb_size,
+                                     share_vocab=share_vocab)
             print('Saving vocab model to {}'.format(saved_vocab_file))
             pickle.dump(vocab_model, open(saved_vocab_file, 'wb'))
 
         return vocab_model
+
+    @staticmethod
+    def collect_vocabs(all_instances, tokenizer, lower_case=True, share_vocab=True):
+        """Count vocabulary tokens."""
+        if share_vocab:
+            all_words = Counter()
+        else:
+            all_words = [Counter(), Counter()]
+
+        for instance in all_instances:
+            extracted_tokens = instance.extract()
+            if share_vocab:
+                all_words.update(extracted_tokens)
+            else:
+                all_words[0].update(extracted_tokens[0])
+                all_words[1].update(extracted_tokens[1])
+
+        return all_words
+
 
 class Vocab(object):
     """Vocab class.
@@ -145,19 +192,18 @@ class Vocab(object):
     >>> word_vocab.build_vocab({'i': 10, 'like': 5, 'nlp': 3})
     >>> print(word_vocab.get_vocab_size())
     """
-    def __init__(self, lower_case=False, tokenizer=word_tokenize):
+    PAD = 0
+    SOS = 1
+    EOS = 2
+    UNK = 3
+    pad_token = constants._PAD_TOKEN
+    sos_token = constants._SOS_TOKEN
+    eos_token = constants._EOS_TOKEN
+    unk_token = constants._UNK_TOKEN
+    def __init__(self, lower_case=True, tokenizer=word_tokenize):
         super(Vocab, self).__init__()
         self.lower_case = lower_case
         self.tokenizer = tokenizer
-        self.PAD = 0
-        self.SOS = 1
-        self.EOS = 2
-        self.UNK = 3
-        self.pad_token = constants._PAD_TOKEN
-        self.sos_token = constants._SOS_TOKEN
-        self.eos_token = constants._EOS_TOKEN
-        self.unk_token = constants._UNK_TOKEN
-
         self.reserved = [self.pad_token, self.sos_token, self.eos_token, self.unk_token]
         self.index2word = self.reserved[:]
         self.word2index = dict(zip(self.reserved, range(len(self.reserved))))
@@ -232,7 +278,8 @@ class Vocab(object):
                 vec = np.array(line[1:], dtype=dtype)
                 if self.embeddings is None:
                     n_dims = len(vec)
-                    self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=(vocab_size, n_dims)), dtype=dtype)
+                    self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=(vocab_size, n_dims)),
+                                               dtype=dtype)
                     self.embeddings[self.PAD] = np.zeros(n_dims)
                 self.embeddings[idx] = vec
                 hit_words.add(idx)
@@ -288,7 +335,7 @@ class Vocab(object):
             sentence = sentence.lower()
 
         seq = []
-        for word in self.tokenizer(sentence):
+        for word in sentence.strip().split(' '):
             idx = self.getIndex(word)
             seq.append(idx)
         return seq
@@ -302,35 +349,3 @@ class Vocab(object):
             idx = self.getIndex(word)
             seq.append(idx)
         return seq
-
-def collect_vocabs(all_instances, tokenizer, lower_case=True):
-    """Count vocabulary tokens."""
-    all_words = Counter()
-    for instance in all_instances:
-        # TODO: need to check which elements should be added to vocab
-        # Or sentence.node_attr, sentence.edge_attr
-        for sentence in instance:
-            if lower_case:
-                sentence = sentence.lower()
-            all_words.update(tokenizer(sentence))
-    return all_words
-
-
-# def collect_vocabs(all_instances):
-#     all_words = Counter()
-#     all_edge_types = Counter()
-#     all_POSs = Counter()
-#     all_NERs = Counter()
-#     for (sent1, sent2, sent3) in all_instances:
-#         sentences = [sent1, sent2]
-#         if sent3 is not None: sentences.append(sent3)
-#         for sentence in sentences:
-#             all_words.update(re.split("\\s+", sentence.tokText))
-#             if sentence.POSs != None and sentence.POSs != []:
-#                 all_POSs.update(re.split("\\s+", sentence.POSs))
-#             if sentence.NERs != None and sentence.NERs != []:
-#                 all_NERs.update(re.split("\\s+", sentence.NERs))
-
-#         for node1, value in sent1.graph['g_adj'].items():
-#             all_edge_types.update([each['edge'] for each in value])
-#     return (all_words, all_edge_types, all_POSs, all_NERs)

@@ -215,7 +215,10 @@ class ModelHandler(object):
             x_batch = vectorize_input(input_batch, self.config, training=training, device=self.device)
             if not x_batch:
                 continue  # When there are no examples in the batch
-
+            # print(x_batch.keys())
+            # print(x_batch["targets"])
+            #
+            # exit(0)
             forcing_ratio = self._set_forcing_ratio(step) if training else 0
             res = self.model.predict(x_batch, step, forcing_ratio=forcing_ratio, rl_ratio=rl_ratio, update=training, out_predictions=out_predictions, mode=mode)
 

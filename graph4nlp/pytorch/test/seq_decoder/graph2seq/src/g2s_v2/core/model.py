@@ -300,6 +300,7 @@ def dev_batch(batch, network, vocab, criterion=None, show_cover_loss=False):
   """Test the `network` on the `batch`, return the ROUGE score and the loss."""
   network.train(False)
   decoded_batch, out = eval_decode_batch(batch, network, vocab, criterion=criterion, show_cover_loss=show_cover_loss)
+
   metrics = evaluate_predictions(batch['target_src'], decoded_batch, vocab)
   return decoded_batch, out.loss_value, metrics
 
@@ -637,6 +638,8 @@ def evaluate_acc(golds, preds):
         pred_str = preds[_].lower()
 
         if gold_str == pred_str:
+            print("gt: ", gold_str)
+            print("pred: ", pred_str)
             correct += 1.0
     return correct / len(preds)
 

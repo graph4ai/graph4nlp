@@ -6,6 +6,8 @@ from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from .base import StaticGraphConstructionBase
 import copy
+import dgl
+import torch
 
 
 class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
@@ -28,6 +30,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                                                                dropout=dropout, use_cuda=use_cuda)
         self.vocab = vocab
         self.verbase = 1
+        self.device = self.embedding_layer.device
 
     def add_vocab(self, g):
         """
@@ -82,7 +85,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         """
         cls.verbase = 1
         props = {
-            'annotators': 'depparse',
+            'annotators': 'ssplit,tokenize,depparse',
             "tokenize.options":
                 "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
             "tokenize.whitespace": False,
@@ -91,14 +94,22 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         }
         dep_json = nlp_processor.annotate(raw_text_data.strip(), properties=props)
         dep_dict = json.loads(dep_json)
+
         parsed_results = []
         node_id = 0
-        for s_id, s in enumerate(dep_dict["sentences"]):
+        for s_id in range(len(dep_dict["sentences"])):
             parsed_sent = []
             unique_hash = {}
             node_id = 0
 
-            for dep in s["basicDependencies"]:
+            unique_hash[(0, 'ROOT')] = node_id
+            node_id += 1
+
+            for tokens in dep_dict["sentences"][s_id]['tokens']:
+                unique_hash[(tokens['index'], tokens['word'])] = node_id
+                node_id += 1
+
+            for dep in dep_dict["sentences"][s_id]["basicDependencies"]:
                 if cls.verbase > 0:
                     print(dep)
                 if unique_hash.get((dep['governor'], dep['governorGloss'])) is None:
@@ -139,11 +150,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             sub_graphs.append(graph)
         joint_graph = cls._graph_connect(sub_graphs, merge_strategy)
         return joint_graph
-
-    def embedding(self, node_attributes, edge_attributes):
-        node_emb, edge_emb = self.embedding_layer(
-            node_attributes, edge_attributes)
-        return node_emb, edge_emb
 
     @classmethod
     def _construct_static_graph(cls, parsed_object, edge_strategy=None, sequential_link=True):
@@ -362,5 +368,29 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         return g
 
-    def forward(self, feat):
-        pass
+    def forward(self, batch_graphdata: list):
+        node_size = []
+        num_nodes = []
+
+        for g in batch_graphdata:
+            g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
+            num_nodes.append(g.get_node_num())
+            node_size.extend([1 for i in range(num_nodes[-1])])
+        graph_list = [g.to_dgl() for g in batch_graphdata]
+        bg = dgl.batch(graph_list, edge_attrs=None)
+        node_size = torch.Tensor(node_size).to(self.device).int()
+        num_nodes = torch.Tensor(num_nodes).to(self.device).int()
+        node_emb = self.embedding_layer(bg.ndata['token_id'], node_size, num_nodes)
+
+        bg.ndata["node_feat"] = node_emb
+
+        return bg
+        # dgl_list = dgl.unbatch(bg)
+        # for g, dg in zip(batch_graphdata, dgl_list):
+        #     g.node_features["node_emb"] = dg.ndata["node_emb"]
+        # return batch_graphdata
+
+    def embedding(self, node_attributes, edge_attributes):
+        node_emb, edge_emb = self.embedding_layer(
+            node_attributes, edge_attributes)
+        return node_emb, edge_emb
