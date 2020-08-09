@@ -172,6 +172,8 @@ class Dataset(torch.utils.data.Dataset):
                                word_emb_size=300)
         self.vocab_model = vocab_model
 
+        return self.vocab_model
+
     def _process(self):
         if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths]):
             return
@@ -281,6 +283,8 @@ class TextToTextDataset(Dataset):
                                        word_emb_size=300,
                                        share_vocab=self.share_vocab)
         self.vocab_model = vocab_model
+
+        return self.vocab_model
 
     def vectorization(self):
         for i in range(len(self.data)):

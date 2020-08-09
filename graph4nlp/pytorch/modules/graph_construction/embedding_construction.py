@@ -360,7 +360,7 @@ class MeanEmbedding(nn.Module):
             The average embedding tensor.
         """
         sumed_emb = torch.sum(emb, dim=1)
-        len_ = len_.unsqueeze(1).expand_as(sumed_emb)
+        len_ = len_.unsqueeze(1).expand_as(sumed_emb).float()
         return sumed_emb / len_
 
 
