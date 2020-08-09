@@ -505,7 +505,7 @@ class GraphData(object):
         num_nodes = adj.shape[0]
         self.add_nodes(num_nodes)
 
-        for i in range(num_nodes):
+        for i in range(adj.row.shape[0]):
             self.add_edge(adj.row[i], adj.col[i])
         self.edge_features['edge_weight'] = torch.tensor(adj.data)
 

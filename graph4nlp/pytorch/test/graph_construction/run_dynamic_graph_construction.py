@@ -272,10 +272,14 @@ class DynamicGNNClassifier(nn.Module):
         else:
             new_graph = self.graph_learner.topology(node_feat, node_mask=None)
 
-        new_graph.ndata['node_feat'] = node_feat
-        logits = self.gnn_clf(new_graph)
+        # convert GraphData to DGLGraph
+        dgl_graph = new_graph.to_dgl()
+        dgl_graph.ndata['node_feat'] = node_feat
+        dgl_graph.edata['a'] = new_graph.edge_features['a']
+        dgl_graph.graph_reg = new_graph.graph_attributes['graph_reg']
+        logits = self.gnn_clf(dgl_graph)
 
-        return logits, new_graph
+        return logits, dgl_graph
 
 def main(args, seed):
     # Configure
