@@ -283,7 +283,7 @@ class TextToTextDataset(Dataset):
             tgt_token_id = torch.from_numpy(tgt_token_id)
             self.data[i].output_tensor = tgt_token_id
 
-        torch.save(self.vocab_model, os.path.join(self.processed_dir, self.processed_file_names['data']))
+        torch.save(self.data, os.path.join(self.processed_dir, self.processed_file_names['data']))
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
