@@ -1,15 +1,16 @@
 import os
-import re
 import pickle
-import numpy as np
+import re
 from collections import Counter
 from functools import lru_cache
+
+import numpy as np
 from nltk.tokenize import word_tokenize
 
 from . import constants
 
-
 word_detector = re.compile('\w')
+
 
 class VocabModel(object):
     """Vocab model builder.
@@ -47,14 +48,15 @@ class VocabModel(object):
                             word_emb_size=300)
     >>> print(vocab_model.word_vocab.get_vocab_size())
     """
+
     def __init__(self, data_set=None, tokenizer=word_tokenize, lower_case=True,
-                                words_counter=None,
-                                max_word_vocab_size=None,
-                                min_word_vocab_freq=1,
-                                pretrained_word_emb_file=None,
-                                word_emb_size=None):
+                 words_counter=None,
+                 max_word_vocab_size=None,
+                 min_word_vocab_freq=1,
+                 pretrained_word_emb_file=None,
+                 word_emb_size=None):
         super(VocabModel, self).__init__()
-        self.tokenizer = word_tokenize
+        self.tokenizer = tokenizer
 
         print('Building vocabs...')
         if words_counter is not None:
@@ -89,12 +91,12 @@ class VocabModel(object):
 
     @classmethod
     def build(cls, saved_vocab_file,
-            data_set=None,
-            tokenizer=word_tokenize,
-            max_word_vocab_size=None,
-            min_word_vocab_freq=1,
-            pretrained_word_emb_file=None,
-            word_emb_size=None):
+              data_set=None,
+              tokenizer=word_tokenize,
+              max_word_vocab_size=None,
+              min_word_vocab_freq=1,
+              pretrained_word_emb_file=None,
+              word_emb_size=None):
         """Static method for loading a VocabModel from disk.
 
         Parameters:
@@ -124,15 +126,16 @@ class VocabModel(object):
             vocab_model = pickle.load(open(saved_vocab_file, 'rb'))
 
         else:
-            vocab_model = VocabModel(data_set, tokenizer,
-                                        max_word_vocab_size,
-                                        min_word_vocab_freq,
-                                        pretrained_word_emb_file,
-                                        word_emb_size)
+            vocab_model = VocabModel(data_set=data_set, tokenizer=tokenizer,
+                                     max_word_vocab_size=max_word_vocab_size,
+                                     min_word_vocab_freq=min_word_vocab_freq,
+                                     pretrained_word_emb_file=pretrained_word_emb_file,
+                                     word_emb_size=word_emb_size)
             print('Saving vocab model to {}'.format(saved_vocab_file))
             pickle.dump(vocab_model, open(saved_vocab_file, 'wb'))
 
         return vocab_model
+
 
 class Vocab(object):
     """Vocab class.
@@ -148,6 +151,7 @@ class Vocab(object):
     >>> word_vocab.build_vocab({'i': 10, 'like': 5, 'nlp': 3})
     >>> print(word_vocab.get_vocab_size())
     """
+
     def __init__(self, lower_case=False, tokenizer=word_tokenize):
         super(Vocab, self).__init__()
         self.lower_case = lower_case
@@ -235,7 +239,8 @@ class Vocab(object):
                 vec = np.array(line[1:], dtype=dtype)
                 if self.embeddings is None:
                     n_dims = len(vec)
-                    self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=(vocab_size, n_dims)), dtype=dtype)
+                    self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=(vocab_size, n_dims)),
+                                               dtype=dtype)
                     self.embeddings[self.PAD] = np.zeros(n_dims)
                 self.embeddings[idx] = vec
                 hit_words.add(idx)
@@ -291,7 +296,7 @@ class Vocab(object):
             sentence = sentence.lower()
 
         seq = []
-        for word in self.tokenizer(sentence):
+        for word in sentence.strip().split(' '):
             idx = self.getIndex(word)
             seq.append(idx)
         return seq
@@ -306,23 +311,24 @@ class Vocab(object):
             seq.append(idx)
         return seq
 
+
 def collect_vocabs(all_instances, tokenizer, lower_case=True):
     """Count vocabulary tokens."""
     all_words = Counter()
     for instance in all_instances:
         # TODO: need to check which elements should be added to vocab
         # Or sentence.node_attr, sentence.edge_attr
-        if isinstance(instance, str):
-            if lower_case:
-                instance = instance.lower()
-            all_words.update(tokenizer(instance))
-        else:
-            for sentence in instance:
-                if lower_case:
-                    sentence = sentence.lower()
-                all_words.update(tokenizer(sentence))
+        all_words.update(tokenizer(instance))
+        # if isinstance(instance, str):
+        #     if lower_case:
+        #         instance = instance.lower()
+        #     all_words.update(tokenizer(instance))
+        # else:
+        #     for sentence in instance:
+        #         if lower_case:
+        #             sentence = sentence.lower()
+        #         all_words.update(tokenizer(sentence))
     return all_words
-
 
 # def collect_vocabs(all_instances):
 #     all_words = Counter()

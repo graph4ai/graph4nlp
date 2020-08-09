@@ -2,7 +2,7 @@ import os
 
 os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.datasets.jobs import JobsDataset
+from graph4nlp.pytorch.datasets.jobs import JobsDatasetTextTo
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
@@ -130,7 +130,7 @@ class Jobs:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs")
+        dataset = JobsDatasetTextTo(root_dir="graph4nlp/pytorch/test/dataset/jobs")
         data_size = len(dataset)
         self.train_dataloader = DataLoader(dataset[:int(0.8 * data_size)], batch_size=24, shuffle=True,
                                            num_workers=1,
