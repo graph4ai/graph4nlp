@@ -17,6 +17,7 @@ import dgl
 from dgl import DGLGraph
 from dgl.data import register_data_args, load_data
 from dgl.data import citation_graph as citegrh
+from ...data.data import *
 from .utils import EarlyStopping
 from ...modules.graph_embedding.graphsage import GraphSAGE
 
@@ -59,7 +60,7 @@ class GNNClassifier(nn.Module):
 
     def forward(self, graph):
         out_graph = self.model(graph)            
-        return self.fc(out_graph.ndata['node_emb'])
+        return self.fc(out_graph.node_features['node_emb'])
         
 def prepare_dgl_graph_data(args):
     data = load_data(args)
@@ -195,7 +196,9 @@ def main(args, seed):
             aggreagte_type=args.aggregate_type,
             direction_option=args.direction_option)
 
-
+    G=GraphData()
+    G.from_dgl(g)
+    
     print(model)
     model.to(device)
 
@@ -215,11 +218,11 @@ def main(args, seed):
         if epoch >= 3:
             t0 = time.time()
         # forward
-        logits = model(g)
+        logits = model(G)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
 
         optimizer.zero_grad()
-        loss.backward()
+        loss.backward(retain_graph=True)
         optimizer.step()
 
         if epoch >= 3:
@@ -230,7 +233,7 @@ def main(args, seed):
         if args.fastmode:
             val_acc = accuracy(logits[val_mask], labels[val_mask])
         else:
-            val_acc = evaluate(model, g, labels, val_mask)
+            val_acc = evaluate(model, G, labels, val_mask)
             if args.early_stop:
                 if stopper.step(val_acc, model):
                     break
@@ -247,7 +250,7 @@ def main(args, seed):
         os.remove(stopper.save_model_path)
         print('Removed best saved model file to save disk space')
 
-    acc = evaluate(model, g, labels, test_mask)
+    acc = evaluate(model, G, labels, test_mask)
     print("Test Accuracy {:.4f}".format(acc))
 
     return acc
