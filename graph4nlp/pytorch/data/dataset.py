@@ -5,45 +5,55 @@ import os
 import numpy as np
 import stanfordcorenlp
 import torch.utils.data
+from nltk.tokenize import word_tokenize
 
 from ..data.data import GraphData
 from ..modules.utils.vocab_utils import VocabModel, Vocab
 
 
 class DataItem(object):
-    def __init__(self, input_text):
+    def __init__(self, input_text, tokenizer):
         self.input_text = input_text
+        self.tokenizer = tokenizer
         pass
 
-    @staticmethod
     @abc.abstractmethod
-    def extract(item):
+    def extract(self):
         raise NotImplementedError
 
 
 class Text2TextDataItem(DataItem):
-    def __init__(self, input_text, output_text):
-        super(Text2TextDataItem, self).__init__(input_text)
+    def __init__(self, input_text, output_text, tokenizer, share_vocab=True):
+        super(Text2TextDataItem, self).__init__(input_text, tokenizer)
         self.output_text = output_text
+        self.share_vocab = share_vocab
 
-    @staticmethod
-    def extract(item) -> list:
+    def extract(self):
         """
         Returns
         -------
-        (list, list)
-            Input tokens and output tokens
+        Input tokens and output tokens
         """
-        g: GraphData = item.graph
+        g: GraphData = self.graph
 
         input_tokens = []
         for i in range(g.get_node_num()):
-            input_tokens.append(g.node_attributes[i]['token'])
+            if self.tokenizer is None:
+                tokenized_token = self.output_text.strip().split(' ')
+            else:
+                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
 
-        output_tokens = item.output_text.strip().split(' ')
+            input_tokens.extend(tokenized_token)
 
-        return input_tokens + output_tokens
+        if self.tokenizer is None:
+            output_tokens = self.output_text.strip().split(' ')
+        else:
+            output_tokens = self.tokenizer(self.output_text)
 
+        if self.share_vocab:
+            return input_tokens + output_tokens
+        else:
+            return input_tokens, output_tokens
 
 class Dataset(torch.utils.data.Dataset):
     """
@@ -60,7 +70,7 @@ class Dataset(torch.utils.data.Dataset):
         raise NotImplementedError
 
     @property
-    def processed_file_names(self) -> list:
+    def processed_file_names(self) -> dict:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -83,10 +93,11 @@ class Dataset(torch.utils.data.Dataset):
         """Takes a list of data and convert it to a batch of data."""
         raise NotImplementedError
 
-    def __init__(self, root, topology_builder, topology_subdir, **kwargs):
+    def __init__(self, root, topology_builder, topology_subdir, tokenizer=word_tokenize, **kwargs):
         super(Dataset, self).__init__()
 
         self.root = root
+        self.tokenizer = tokenizer
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         for k, v in kwargs.items():
@@ -115,7 +126,7 @@ class Dataset(torch.utils.data.Dataset):
     @property
     def processed_file_paths(self) -> list:
         return [os.path.join(self.processed_dir, processed_file_name) for processed_file_name in
-                self.processed_file_names]
+                self.processed_file_names.values()]
 
     def _download(self):
         if all([os.path.exists(raw_path) for raw_path in self.raw_file_paths]):
@@ -142,7 +153,7 @@ class Dataset(torch.utils.data.Dataset):
 
     def build_vocab(self):
         vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, 'vocab.pt'),
-                                       data_set=self.data, tokenizer=self.data_item_type.extract, min_word_vocab_freq=1,
+                                       data_set=self.data, min_word_vocab_freq=1, tokenizer=self.tokenizer,
                                        word_emb_size=300)
         self.vocab_model = vocab_model
 
@@ -211,14 +222,14 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class TextToTextDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, **kwargs):
+    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
         self.data_item_type = Text2TextDataItem
+        self.share_vocab = share_vocab
         super(TextToTextDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
-    @staticmethod
-    def build_dataitem(files):
+    def build_dataitem(self, files):
         r"""Read raw input file and build DataItem out of it.
-        The format of the input file should contain lines of input, each line representing on record of data.
+        The format of the input file should contain lines of input, each line representing one record of data.
         The input and output is seperated by a tab(\t).
 
         Examples
@@ -240,8 +251,16 @@ class TextToTextDataset(Dataset):
                 lines = f.readlines()
                 for line in lines:
                     input, output = line.split('\t')
-                    data.append(Text2TextDataItem(input_text=input, output_text=output))
+                    data.append(Text2TextDataItem(input_text=input, output_text=output, tokenizer=self.tokenizer,
+                                                  share_vocab=self.share_vocab))
         return data
+
+    def build_vocab(self):
+        vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, 'vocab.pt'),
+                                       data_set=self.data, min_word_vocab_freq=1, tokenizer=self.tokenizer,
+                                       word_emb_size=300, share_vocab=self.share_vocab)
+        self.vocab_model = vocab_model
+        torch.save(self.vocab_model, os.path.join(self.processed_dir, self.processed_file_names['vocab']))
 
     def vectorization(self):
         for i in range(len(self.data)):
@@ -262,8 +281,7 @@ class TextToTextDataset(Dataset):
             tgt_token_id = torch.from_numpy(tgt_token_id)
             self.data[i].output_tensor = tgt_token_id
 
-        torch.save(self.data, self.processed_file_paths[0])
-        pass
+        torch.save(self.vocab_model, os.path.join(self.processed_dir, self.processed_file_names['data']))
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):

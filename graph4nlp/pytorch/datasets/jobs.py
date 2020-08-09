@@ -14,8 +14,8 @@ class JobsDataset(TextToTextDataset):
         return ['sequence.txt']
 
     @property
-    def processed_file_names(self) -> list:
-        return ['graph.pt']
+    def processed_file_names(self) -> dict:
+        return {'vocab': 'vocab.pt', 'data': 'data.pt'}
 
     def download(self):
         raise NotImplementedError(
@@ -26,10 +26,9 @@ class JobsDataset(TextToTextDataset):
         super(JobsDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
-        self.data = torch.load(os.path.join(self.processed_dir, 'graph.pt'))
-        import pickle
-        with open(os.path.join(self.processed_dir, 'vocab.pt'), "rb") as f:
-            self.vocab_model = pickle.load(f)
+        self.data = torch.load(os.path.join(self.processed_dir, self.processed_file_names['data']))
+        self.vocab_model = torch.load(os.path.join(self.processed_dir, self.processed_file_names['vocab']))
+
 
 if __name__ == '__main__':
     JobsDataset(root_dir='../test/dataset/jobs', topology_builder=DependencyBasedGraphConstruction,
