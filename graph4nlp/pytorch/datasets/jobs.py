@@ -27,7 +27,9 @@ class JobsDataset(TextToTextDataset):
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
         self.data = torch.load(os.path.join(self.processed_dir, 'graph.pt'))
-
+        import pickle
+        with open(os.path.join(self.processed_dir, 'vocab.pt'), "rb") as f:
+            self.vocab_model = pickle.load(f)
 
 if __name__ == '__main__':
     JobsDataset(root_dir='../test/dataset/jobs', topology_builder=DependencyBasedGraphConstruction,

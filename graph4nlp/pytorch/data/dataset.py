@@ -7,7 +7,7 @@ import stanfordcorenlp
 import torch.utils.data
 
 from ..data.data import GraphData
-from ..modules.utils.vocab_utils import VocabModel
+from ..modules.utils.vocab_utils import VocabModel, Vocab
 
 
 class DataItem(object):
@@ -244,8 +244,6 @@ class TextToTextDataset(Dataset):
         return data
 
     def vectorization(self):
-        padding_length = 50
-
         for i in range(len(self.data)):
             graph: GraphData = self.data[i].graph
             token_matrix = []
@@ -262,11 +260,7 @@ class TextToTextDataset(Dataset):
             tgt_token_id.append(self.vocab_model.word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
             tgt_token_id = torch.from_numpy(tgt_token_id)
-            if tgt_token_id.shape[0] < padding_length:
-                need_pad_length = padding_length - tgt_token_id.shape[0]
-                pad = torch.zeros(need_pad_length).fill_(self.vocab_model.word_vocab.PAD)
-                tgt_token_id = torch.cat((tgt_token_id, pad.long()), dim=0)
-            self.data[i].output_text = tgt_token_id
+            self.data[i].output_tensor = tgt_token_id
 
         torch.save(self.data, self.processed_file_paths[0])
         pass
@@ -274,6 +268,20 @@ class TextToTextDataset(Dataset):
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
         graph_data = [item.graph for item in data_list]
-        tgt_seq = [item.output_tensor.unsqueeze(0) for item in data_list]
-        tgt_seq = torch.cat(tgt_seq, dim=0)
+
+        # do padding here
+        seq_len = [item.output_tensor.shape[0] for item in data_list]
+        max_seq_len = max(seq_len)
+        tgt_seq_pad = []
+        for item in data_list:
+            if item.output_tensor.shape[0] < max_seq_len:
+                need_pad_length = max_seq_len - item.output_tensor.shape[0]
+                pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+                tgt_seq_pad.append(torch.cat((item.output_tensor, pad.long()), dim=0).unsqueeze(0))
+            elif item.output_tensor.shape[0] == max_seq_len:
+                tgt_seq_pad.append(item.output_tensor.unsqueeze(0))
+            else:
+                raise RuntimeError("Size mismatch error")
+
+        tgt_seq = torch.cat(tgt_seq_pad, dim=0)
         return [graph_data, tgt_seq]

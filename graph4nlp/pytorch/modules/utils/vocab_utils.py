@@ -151,20 +151,18 @@ class Vocab(object):
     >>> word_vocab.build_vocab({'i': 10, 'like': 5, 'nlp': 3})
     >>> print(word_vocab.get_vocab_size())
     """
-
+    PAD = 0
+    SOS = 1
+    EOS = 2
+    UNK = 3
+    pad_token = constants._PAD_TOKEN
+    sos_token = constants._SOS_TOKEN
+    eos_token = constants._EOS_TOKEN
+    unk_token = constants._UNK_TOKEN
     def __init__(self, lower_case=False, tokenizer=word_tokenize):
         super(Vocab, self).__init__()
         self.lower_case = lower_case
         self.tokenizer = tokenizer
-        self.PAD = 0
-        self.SOS = 1
-        self.EOS = 2
-        self.UNK = 3
-        self.pad_token = constants._PAD_TOKEN
-        self.sos_token = constants._SOS_TOKEN
-        self.eos_token = constants._EOS_TOKEN
-        self.unk_token = constants._UNK_TOKEN
-
         self.reserved = [self.pad_token, self.sos_token, self.eos_token, self.unk_token]
         self.index2word = self.reserved[:]
         self.word2index = dict(zip(self.reserved, range(len(self.reserved))))
