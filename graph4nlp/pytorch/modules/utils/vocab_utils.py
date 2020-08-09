@@ -61,7 +61,7 @@ class VocabModel(object):
         self.tokenizer = tokenizer
 
         print('Building vocabs...')
-        all_words = collect_vocabs(data_set, self.tokenizer, lower_case=lower_case, share_vocab=share_vocab)
+        all_words = self.collect_vocabs(data_set, self.tokenizer, lower_case=lower_case, share_vocab=share_vocab)
         # print('Number of words: {}'.format(len(all_words)))
         if share_vocab:
             in_all_words, out_all_words = all_words, None
