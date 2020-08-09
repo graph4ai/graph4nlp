@@ -44,7 +44,7 @@ class KGCompletionBase(nn.Module):
     def __init__(self):
         super(KGCompletionBase, self).__init__()
 
-    def forward(self, node_emb, rel_emb, list_e_r_pair_idx=None, list_e_e_pair_idx=None):
+    def forward(self, input_graph):
         # Cannot inherit from the base class ClassifierLayerBase and
         # ClassifierBase because the forward(...) arguments are inconsistent.
         # rel_emb cannot be `None`
