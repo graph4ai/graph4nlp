@@ -34,7 +34,6 @@ class Text2TextDataItem(DataItem):
         (list, list)
             Input tokens and output tokens
         """
-        # TODO: Implement specific extraction function
         g: GraphData = item.graph
 
         input_tokens = []
