@@ -288,15 +288,15 @@ class TextToTextDataset(Dataset):
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
                 node_token = graph.node_attributes[node_idx]['token']
-                node_token_id = self.vocab_model.word_vocab.getIndex(node_token)
+                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
                 graph.node_attributes[node_idx]['token_id'] = node_token_id
                 token_matrix.append([node_token_id])
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features['token_id'] = token_matrix
 
             tgt = self.data[i].output_text
-            tgt_token_id = self.vocab_model.word_vocab.to_index_sequence(tgt)
-            tgt_token_id.append(self.vocab_model.word_vocab.EOS)
+            tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
+            tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
             tgt_token_id = torch.from_numpy(tgt_token_id)
             self.data[i].output_tensor = tgt_token_id

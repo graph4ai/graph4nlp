@@ -61,7 +61,7 @@ class VocabModel(object):
         self.tokenizer = tokenizer
 
         print('Building vocabs...')
-        all_words = self.collect_vocabs(data_set, self.tokenizer, lower_case=lower_case, share_vocab=share_vocab)
+        all_words = VocabModel.collect_vocabs(data_set, self.tokenizer, lower_case=lower_case, share_vocab=share_vocab)
         # print('Number of words: {}'.format(len(all_words)))
         if share_vocab:
             in_all_words, out_all_words = all_words, None
@@ -158,6 +158,24 @@ class VocabModel(object):
             pickle.dump(vocab_model, open(saved_vocab_file, 'wb'))
 
         return vocab_model
+
+    @staticmethod
+    def collect_vocabs(all_instances, tokenizer, lower_case=True, share_vocab=True):
+        """Count vocabulary tokens."""
+        if share_vocab:
+            all_words = Counter()
+        else:
+            all_words = [Counter(), Counter()]
+
+        for instance in all_instances:
+            extracted_tokens = instance.extract()
+            if share_vocab:
+                all_words.update(extracted_tokens)
+            else:
+                all_words[0].update(extracted_tokens[0])
+                all_words[1].update(extracted_tokens[1])
+
+        return all_words
 
 
 class Vocab(object):
@@ -331,22 +349,3 @@ class Vocab(object):
             idx = self.getIndex(word)
             seq.append(idx)
         return seq
-
-    @staticmethod
-    def collect_vocabs(all_instances, tokenizer, lower_case=True, share_vocab=True):
-        """Count vocabulary tokens."""
-        if share_vocab:
-            all_words = Counter()
-        else:
-            all_words = [Counter(), Counter()]
-
-        for instance in all_instances:
-            extracted_tokens = instance.extract()
-            if share_vocab:
-                all_words.update(extracted_tokens)
-            else:
-                all_words[0].update(extracted_tokens[0])
-                all_words[1].update(extracted_tokens[1])
-
-        return all_words
-

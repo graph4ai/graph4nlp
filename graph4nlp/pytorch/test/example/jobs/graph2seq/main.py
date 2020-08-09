@@ -83,7 +83,7 @@ class Graph2seq(nn.Module):
         self.vocab = vocab
         embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
                            'seq_info_encode_strategy': "bilstm"}
-        self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style, vocab=vocab.word_vocab,
+        self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style, vocab=vocab.in_word_vocab,
                                                                hidden_size=hidden_size, dropout=0.2, use_cuda=True, fix_word_emb=False)
         self.gnn = None
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
@@ -91,10 +91,10 @@ class Graph2seq(nn.Module):
         self.seq_decoder = StdRNNDecoder(max_decoder_step=50,
                                         decoder_input_size=2 * hidden_size if direction_option == 'bi_sep' else hidden_size,
                                         decoder_hidden_size=hidden_size,
-                                         word_emb=self.word_emb, vocab=self.vocab.word_vocab,
+                                         word_emb=self.word_emb, vocab=self.vocab.in_word_vocab,
                                          attention_type="sep_diff_encoder_type", fuse_strategy="concatenate", rnn_emb_input_size=hidden_size,
                                          tgt_emb_as_output_layer=True, device=self.graph_topology.device)
-        self.loss_calc = Graph2seqLoss(self.vocab.word_vocab)
+        self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
 
     def forward(self, graph_list, tgt=None, require_loss=True):
         batch_dgl_graph = self.graph_topology(graph_list)
@@ -132,7 +132,7 @@ class Jobs:
 
     def _build_dataloader(self):
         dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs", topology_builder=DependencyBasedGraphConstruction,
-                topology_subdir='DependencyGraph')
+                topology_subdir='DependencyGraph', share_vocab=True)
         data_size = len(dataset)
         self.train_dataloader = DataLoader(dataset[:int(0.8 * data_size)], batch_size=24, shuffle=True,
                                            num_workers=1,
@@ -179,8 +179,8 @@ class Jobs:
             prob = self.model(graph_list, require_loss=False)
             pred = logits2seq(prob)
 
-            pred_str = wordid2str(pred.detach().cpu(), self.vocab.word_vocab)
-            tgt_str = wordid2str(tgt, self.vocab.word_vocab)
+            pred_str = wordid2str(pred.detach().cpu(), self.vocab.in_word_vocab)
+            tgt_str = wordid2str(tgt, self.vocab.in_word_vocab)
             pred_collect.extend(pred_str)
             gt_collect.extend(tgt_str)
 
