@@ -93,11 +93,20 @@ class Dataset(torch.utils.data.Dataset):
         """Takes a list of data and convert it to a batch of data."""
         raise NotImplementedError
 
-    def __init__(self, root, topology_builder, topology_subdir, tokenizer=word_tokenize, **kwargs):
+    def __init__(self,
+                root,
+                topology_builder,
+                topology_subdir,
+                tokenizer=word_tokenize,
+                lower_case=True,
+                pretrained_word_emb_file=None,
+                **kwargs):
         super(Dataset, self).__init__()
 
         self.root = root
         self.tokenizer = tokenizer
+        self.lower_case = lower_case
+        self.pretrained_word_emb_file = pretrained_word_emb_file
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         for k, v in kwargs.items():
@@ -153,8 +162,14 @@ class Dataset(torch.utils.data.Dataset):
 
     def build_vocab(self):
         vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, 'vocab.pt'),
-                                       data_set=self.data, min_word_vocab_freq=1, tokenizer=self.tokenizer,
-                                       word_emb_size=300)
+                               data_set=self.data,
+                               tokenizer=self.tokenizer,
+                               lower_case=self.lower_case,
+                               max_word_vocab_size=None,
+                               min_word_vocab_freq=1,
+                               pretrained_word_emb_file=self.pretrained_word_emb_file,
+                               word_emb_size=300)
+
         self.vocab_model = vocab_model
 
     def _process(self):
@@ -257,8 +272,14 @@ class TextToTextDataset(Dataset):
 
     def build_vocab(self):
         vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, 'vocab.pt'),
-                                       data_set=self.data, min_word_vocab_freq=1, tokenizer=self.tokenizer,
-                                       word_emb_size=300, share_vocab=self.share_vocab)
+                                       data_set=self.data,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=None,
+                                       min_word_vocab_freq=1,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       word_emb_size=300,
+                                       share_vocab=self.share_vocab)
         self.vocab_model = vocab_model
         torch.save(self.vocab_model, os.path.join(self.processed_dir, self.processed_file_names['vocab']))
 
