@@ -1,9 +1,9 @@
 from torch import nn
 import torch
 from ..base import LinkPredictionBase
-from .StackedElementProd import StackedElementProd
+from .StackedElementProdLayer import StackedElementProdLayer
 
-class StackedElementProd(NodeClassifierBase):
+class StackedElementProd(StackedElementProdLayer):
     r"""Specific class for link prediction task.
 
     Parameters
@@ -16,13 +16,10 @@ class StackedElementProd(NodeClassifierBase):
     num_channel: int
                The number of channels for node embeddings to be used for link prediction                 
     hidden_size : list of int type values
-                  Example for two layers's FeedforwardNN: [50, 20]
-    activation: the activation function class for each fully connected layer
-                Default: nn.ReLU()
-                Example: nn.ReLU(),nn.Sigmoid().        
+                  Example for two layers's FeedforwardNN: [50, 20]        
 
     """     
-    def __init__(self, input_size, hidden_size,num_class, activation=None):        
+    def __init__(self, input_size, hidden_size,num_class):        
         super(StackedElementProd, self).__init__()
         
         self.num_channel=num_channel 
@@ -54,7 +51,7 @@ class StackedElementProd(NodeClassifierBase):
         #get the nod embedding from the graph 
         node_emb_list=[]
         for channel_idx in range(self.num_channel):
-           node_emb_list.append(input_graph.ndata['node_emb_'+str(channel_idx)]
+           node_emb_list.append(input_graph.node_features['node_emb_'+str(channel_idx)]
         
         #add the edges and edge prediction logits into the graph
         num_node=node_emb_list[0].shape[1]
@@ -62,7 +59,7 @@ class StackedElementProd(NodeClassifierBase):
         src_idx=torch.tensor(node_idx_list).view(-1,1).repeat(1,num_node).view(-1)
         dst_idx=torch.tensor(node_idx_list).view(1,-1).repeat(num_node,1).view(-1)
         input_graph.add_edges(src_idx,dst_idx)
-        input_graph.edata['logits']=self.classifier(node_emb_list)       
+        input_graph.edge_features['logits']=self.classifier(node_emb_list)     
         
         return input_graph
 

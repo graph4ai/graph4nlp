@@ -2,7 +2,7 @@ import collections
 from torch import nn
 import torch as th
 from ..base import NodeClassifierBase
-from FeedForwardNNLayer import FeedForwardNNLayer
+from .FeedForwardNNLayer import FeedForwardNNLayer
 
 class FeedForwardNN(NodeClassifierBase):
     r"""Specific class for node classification task.
@@ -22,11 +22,9 @@ class FeedForwardNN(NodeClassifierBase):
                 Example: nn.ReLU(),nn.Sigmoid().        
 
     """     
-    def __init__(self, input_size, num_class, hidden_size,activation=None):        
+    def __init__(self, input_size, num_class, hidden_size,activation=nn.ReLU()):        
         super(FeedForwardNN, self).__init__()
         
-        if not activation:
-            activation==nn.ReLU 
         
         self.classifier=FeedForwardNNLayer(input_size, num_class, hidden_size,activation)
 
@@ -53,8 +51,8 @@ class FeedForwardNN(NodeClassifierBase):
                       logit tensor shape is: [num_class] 
         """ 
 
-        node_emb=input_graph.ndata['node_emb']
-        input_graph.ndata['logits']=self.classifier(node_emb)
+        node_emb=input_graph.node_features['node_emb']
+        input_graph.node_features['logits']=self.classifier(node_emb)
         
         return input_graph
 

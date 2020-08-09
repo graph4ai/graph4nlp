@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jul 17 00:30:50 2020
-
-@author: XiaojieGuo
-"""
 import argparse, time
 import numpy as np
 import networkx as nx
@@ -14,46 +8,46 @@ from dgl import DGLGraph
 from dgl.data import register_data_args, load_data
 from prediction.classification.node_classification.FeedForwardNNLayer import FeedForwardNNLayer  
 from dgl.nn.pytorch import GraphConv
-from prediction.classification.node_classification.BiLSTMFeedForwardNNLayer import BiLSTMFeedForwardNNLayer 
-
+from ...modules.prediction.classification.node_classification.BiLSTMFeedForwardNNLayer import BiLSTMFeedForwardNNLayer 
+from ...data.data import *
 
 class GCN(nn.Module):
     def __init__(self,
-                 g,
                  in_feats,
                  n_hidden,
                  n_classes,
                  n_layers,
-                 activation,
+                 aggreagte_type,
+                 output_size,
                  dropout):
         super(GCN, self).__init__()
-        self.g = g
         self.layers = nn.ModuleList()
-        # input layer
-        self.layers.append(GraphConv(in_feats, n_hidden, activation=activation))
-        # hidden layers
-        for i in range(n_layers - 1):
-            self.layers.append(GraphConv(n_hidden, n_hidden, activation=activation))
-        # output layer
-        self.classifier=FeedForwardNNLayer(n_hidden,n_classes,[16],nn.Sigmoid())
-        #self.classifier=BiLSTMFeedForwardNNLayer(n_hidden,n_classes,16)   
+        self.model = GraphSAGE(n_layers,
+                    in_feats,
+                    n_hidden,
+                    output_size,
+                    aggreagte_type,
+                    direction_option=args.direction_option,
+                    feat_drop=0.6,
+                    bias=True,
+                    activation=nn.ReLU)      
+        # output layer            
+        #self.classifier=FeedForwardNN(output_size,n_classes,[16],nn.Sigmoid())
+        self.classifier=BiLSTMFeedForwardNN(output_size,n_classes,16)   
         self.dropout = nn.Dropout(p=dropout)
 
 
 
-    def forward(self, features):
-        h = features
-        for i, layer in enumerate(self.layers):
-            if i != 0:
-                h = self.dropout(h)
-            h = layer(self.g, h)
-        return self.classifier(h,[idx for idx in range(len(h))])
+    def forward(self, graph):
+        out_graph = self.model(graph) 
+        out_graph_=self.classifier(out_graph)       
+        return out_graph_.node_features['logits']
 
 
-def evaluate(model, features, labels, mask):
+def evaluate(model, G, labels, mask):
     model.eval()
     with torch.no_grad():
-        logits = model(features)
+        logits = model(G)
         logits = logits[mask]
         labels = labels[mask]
         _, indices = torch.max(logits, dim=1)
@@ -114,20 +108,23 @@ def main(args):
     degs = g.in_degrees().float()
     norm = torch.pow(degs, -0.5)
     norm[torch.isinf(norm)] = 0
-
+    g.ndata['node_feat'] = features
     if cuda:
         norm = norm.cuda()
     g.ndata['norm'] = norm.unsqueeze(1)
 
+    G=GraphData()
+    G.from_dgl(g)    
 
     # create GCN model
-    model = GCN(g,
+    model = GCN(
                 in_feats,
                 args.n_hidden,
                 n_classes,
                 args.n_layers,
-                F.relu,
-                args.dropout)
+                args.aggregate_type,
+                args.output_size,
+                dropout=args.dropout)
 
 
 
@@ -150,7 +147,7 @@ def main(args):
         if epoch >= 3:
             t0 = time.time()
         # forward
-        logits = model(features)
+        logits = model(G)
         loss = loss_fcn(logits[train_mask], labels[train_mask])
 
         optimizer.zero_grad()
@@ -162,7 +159,7 @@ def main(args):
 
 
 
-        acc = evaluate(model, features, labels, val_mask)
+        acc = evaluate(model, G, labels, val_mask)
         print("Epoch {:05d} | Time(s) {:.4f} | Loss {:.4f} | Accuracy {:.4f} | "
               "ETputs(KTEPS) {:.2f}". format(epoch, np.mean(dur), loss.item(),
                                             acc, n_edges / np.mean(dur) / 1000))
@@ -170,7 +167,7 @@ def main(args):
 
 
     print()
-    acc = evaluate(model, features, labels, test_mask)
+    acc = evaluate(model, G, labels, test_mask)
     print("Test accuracy {:.2%}".format(acc))
 
 
@@ -188,7 +185,7 @@ if __name__ == '__main__':
             help="learning rate")
     parser.add_argument("--n-epochs", type=int, default=400,
             help="number of training epochs")
-    parser.add_argument("--n-hidden", type=int, default=50,
+    parser.add_argument("--n-hidden", type=int, default=[64],
             help="number of hidden gcn units")
     parser.add_argument("--n-layers", type=int, default=2,
             help="number of hidden gcn layers")
@@ -196,6 +193,12 @@ if __name__ == '__main__':
             help="Weight for L2 loss")
     parser.add_argument("--self-loop", action='store_true',
             help="graph self-loop (default=False)")
+    parser.add_argument('--aggregate_type', type=str, default='mean',
+                        help="aggregate type: 'mean','gcn','pool','lstm'")   
+    parser.add_argument("--output_size", type=int, default=16,
+                        help="hiddensize")
+    parser.add_argument("--direction_option", type=str, default='uni',
+                        help="direction type (`uni`, `bi_fuse`, `bi_sep`)")
     parser.set_defaults(self_loop=False)
     args = parser.parse_args()
     main(args)
