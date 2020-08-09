@@ -5,6 +5,7 @@ from ..base import KGCompletionLayerBase
 
 class DistMultLayer(KGCompletionLayerBase):
     r"""Specific class for knowledge graph completion task.
+
     DistMult from paper `Embedding entities and relations for learning and
     inference in knowledge bases <https://arxiv.org/pdf/1412.6575.pdf>`__.
 
@@ -48,6 +49,7 @@ class DistMultLayer(KGCompletionLayerBase):
             self.rel_emb = nn.Embedding(num_relations, embedding_dim)
             self.reset_parameters()
         self.loss_name = loss_name
+        self.reset_parameters()
 
 
     def reset_parameters(self):
@@ -92,7 +94,15 @@ class DistMultLayer(KGCompletionLayerBase):
 
         Returns
         -------
-             logit tensor: [N, num_class] The score logits for all nodes preidcted.
+        pred: tensor [L, N]
+            logit tensor. [L, N] The score logits for all nodes preidcted.
+
+        pred_pos: tensor [L_p]
+            The predition scores of positive examples.
+
+        pred_neg: tensor [L_n]
+            The predition scores of negative examples. L_p + L_n == L * N.
+
         """
         if self.rel_emb_from_gnn == False:
             assert rel_emb == None

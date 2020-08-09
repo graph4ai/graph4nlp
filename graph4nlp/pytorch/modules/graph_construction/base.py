@@ -10,7 +10,6 @@ from ..utils.constants import INF
 from ..utils.generic_utils import to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
 
-
 class GraphConstructionBase(nn.Module):
     """Base class for graph construction.
 

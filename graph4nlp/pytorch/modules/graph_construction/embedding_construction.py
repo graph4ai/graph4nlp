@@ -5,6 +5,28 @@ import dgl
 
 from ..utils.generic_utils import to_cuda
 
+class EmbeddingConstructionBase(nn.Module):
+    """
+    Base class for (initial) graph embedding construction.
+
+    ...
+
+    Attributes
+    ----------
+    feat : dict
+        Raw features of graph nodes and/or edges.
+
+    Methods
+    -------
+    forward(raw_text_data)
+        Generate dynamic graph topology and embeddings.
+    """
+
+    def __init__(self):
+        super(EmbeddingConstructionBase, self).__init__()
+
+    def forward(self):
+        raise NotImplementedError()
 
 class EmbeddingConstructionBase(nn.Module):
     """Basic class for embedding construction.

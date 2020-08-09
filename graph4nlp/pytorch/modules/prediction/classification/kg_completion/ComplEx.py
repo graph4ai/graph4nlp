@@ -6,6 +6,10 @@ from .....data.data import GraphData
 class ComplEx(KGCompletionBase):
     r"""Specific class for knowledge graph completion task.
 
+    ComplEx from paper `Complex Embeddings for Simple Link Prediction
+    <http://proceedings.mlr.press/v48/trouillon16.pdf>`__.
+
+
     Parameters
     ----------
     input_dropout: float
@@ -47,6 +51,7 @@ class ComplEx(KGCompletionBase):
 
     def forward(self, input_graph: GraphData):
         r"""
+        Forward functions to compute the logits tensor for kg completion.
 
         Parameters
         ----------
@@ -67,7 +72,7 @@ class ComplEx(KGCompletionBase):
         node_emb_real = input_graph.node_features['node_emb_real']
         node_emb_img = input_graph.node_features['node_emb_img']
         if self.loss_name in ['SoftplusLoss', 'SigmoidLoss']:
-            multi_label = input_graph.node_features['multi_binary_label']
+            multi_label = input_graph.node_features['multi_binary_label']  # [B, N]
         else:
             multi_label = None
 
@@ -94,15 +99,15 @@ class ComplEx(KGCompletionBase):
             raise RuntimeError("'list_e_r_pair_idx' or 'list_e_e_pair_idx' should be given.")
 
         if multi_label==None:
-            input_graph.node_features['logits'] = self.classifier(node_emb_real,
+            input_graph.graph_attributes['logits'] = self.classifier(node_emb_real,
                                                                   node_emb_img,
                                                                   rel_emb_real,
                                                                   rel_emb_img,
                                                                   list_e_r_pair_idx,
                                                                   list_e_e_pair_idx)
         else:
-            input_graph.node_features['logits'], input_graph.node_features['p_score'], \
-            input_graph.node_features['n_score'] = self.classifier(node_emb_real,
+            input_graph.graph_attributes['logits'], input_graph.graph_attributes['p_score'], \
+            input_graph.graph_attributes['n_score'] = self.classifier(node_emb_real,
                                                                    node_emb_img,
                                                                    rel_emb_real,
                                                                    rel_emb_img,

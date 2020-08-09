@@ -6,6 +6,9 @@ from .....data.data import GraphData
 class DistMult(KGCompletionBase):
     r"""Specific class for knowledge graph completion task.
 
+    DistMult from paper `Embedding entities and relations for learning and
+    inference in knowledge bases <https://arxiv.org/pdf/1412.6575.pdf>`__.
+
     Parameters
     ----------
     input_dropout: float
@@ -47,6 +50,7 @@ class DistMult(KGCompletionBase):
 
     def forward(self, input_graph: GraphData):
         r"""
+        Forward functions to compute the logits tensor for kg completion.
 
         Parameters
         ----------
@@ -64,9 +68,9 @@ class DistMult(KGCompletionBase):
                       logit tensor shape is: [num_class]
         """
 
-        node_emb = input_graph.node_features['node_emb']
+        node_emb = input_graph.node_features['node_emb']  # [N, D]
         if self.loss_name in ['SoftplusLoss', 'SigmoidLoss']:
-            multi_label = input_graph.node_features['multi_binary_label']
+            multi_label = input_graph.node_features['multi_binary_label']  # [B, N]
         else:
             multi_label = None
 
@@ -80,7 +84,7 @@ class DistMult(KGCompletionBase):
                 rel_emb = None
 
         if 'list_e_r_pair_idx' in input_graph.node_features.keys():
-            list_e_r_pair_idx = input_graph.node_features['list_e_r_pair_idx']
+            list_e_r_pair_idx = input_graph.node_features['list_e_r_pair_idx']  # contain B pairs
             list_e_e_pair_idx = None
         elif 'list_e_e_pair_idx' in input_graph.node_features.keys():
             list_e_e_pair_idx = input_graph.node_features['list_e_e_pair_idx']
@@ -89,16 +93,19 @@ class DistMult(KGCompletionBase):
             raise RuntimeError("'list_e_r_pair_idx' or 'list_e_e_pair_idx' should be given.")
 
         if multi_label==None:
-            input_graph.node_features['logits'] = self.classifier(node_emb,
+            input_graph.graph_attributes['logits'] = self.classifier(node_emb,
                                                                   rel_emb,
                                                                   list_e_r_pair_idx,
-                                                                  list_e_e_pair_idx)
+                                                                  list_e_e_pair_idx)  # [B, N]
         else:
-            input_graph.node_features['logits'], input_graph.node_features['p_score'], \
-            input_graph.node_features['n_score'] = self.classifier(node_emb,
+            input_graph.graph_attributes['logits'], input_graph.graph_attributes['p_score'], \
+            input_graph.graph_attributes['n_score'] = self.classifier(node_emb,
                                                                    rel_emb,
                                                                    list_e_r_pair_idx,
                                                                    list_e_e_pair_idx,
                                                                    multi_label)
+            # input_graph.graph_attributes['p_score']: [L_p]
+            # input_graph.graph_attributes['n_score']: [L_n]
+            # L_p + L_n == B * N
 
         return input_graph

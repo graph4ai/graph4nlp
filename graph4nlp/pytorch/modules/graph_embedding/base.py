@@ -12,5 +12,5 @@ class GNNBase(nn.Module):
     def __init__(self):
         super(GNNBase, self).__init__()
 
-    def forward(self, graph, node_feat):
+    def forward(self, graph):
         raise NotImplementedError('GNNBase: Not Implemented.')

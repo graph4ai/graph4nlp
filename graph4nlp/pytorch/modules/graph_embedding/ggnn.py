@@ -4,16 +4,19 @@ from dgl.nn import GatedGraphConv
 import dgl.function as fn
 
 from .base import GNNLayerBase, GNNBase
-# from ...data.data import GraphData
+from ...data.data import GraphData
 
 
 class UniGGNNLayerConv(GNNLayerBase):
     r"""
     Gated Graph Convolution layer from paper `Gated Graph Sequence
     Neural Networks <https://arxiv.org/pdf/1511.05493.pdf>`__.
+
     .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
+
        a_{i}^{t} & = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
+
        h_{i}^{t+1} & = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
        
     Attributes
@@ -73,15 +76,20 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
     r"""
     Fuse aggregated embeddings from both incoming and outgoing
     directions before updating node embeddings.
+
     .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
+
        a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)}
        W_{\vdash} h_{j}^{t}
+
        a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)}
        W_{\dashv} h_{j}^{t}
+
        e_{i}^{t} &= \sigma (W_{f}[a_{i, \vdash}^{t};a_{i, \dashv}^{t};
        a_{i, \vdash}^{t}*a_{i, \dashv}^{t};
        a_{i, \vdash}^{t}-a_{i, \dashv}^{t}])
+
        h_{i}^{t+1} & = \mathrm{GRU}(e_{i}^{t}, h_{i}^{t})
        
     Attributes
@@ -207,14 +215,19 @@ class BiSepGGNNLayerConv(GNNLayerBase):
     Compute node embeddings for incoming and outgoing directions
     separately, and then concatenate the two output node embeddings
     after the final layer.
+
     .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
+
        a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)}
        W_{\vdash} h_{j, \vdash}^{t}
+
        a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)}
        W_{\dashv} h_{j, \dashv}^{t}
+
        h_{i, \vdash}^{t+1} & = \mathrm{GRU}_{\vdash}(a_{i, \vdash}^{t},
        h_{i, \vdash}^{t})
+
        h_{i, \dashv}^{t+1} & = \mathrm{GRU}_{\dashv}(a_{i, \dashv}^{t},
        h_{i, \dashv}^{t})
     
@@ -334,6 +347,28 @@ class GGNNLayer(GNNLayerBase):
     <https://arxiv.org/pdf/1511.05493.pdf>`__.
     Support both unidirectional (i.e., regular) and bidirectional
     (i.e., `bi_sep` and `bi_fuse`) versions.
+
+    Attributes
+    ----------
+    input_size: int
+        Input feature size.
+
+    output_size: int
+        Output feature size.
+
+    direction_option: str
+        The direction option of GGNN ('uni', 'bi_sep' or 'bi_fuse'). (Default: 'uni')
+
+    n_steps: int
+        Number of GGNN layers. `n_steps` is set to any integer if the direction_option is 'uni'.
+        If the direction_option is 'bi_sep' or 'bi_fuse', `n_steps` will be set to 1.
+
+    n_etypes: int
+        Number of edge types. `n_etypes` can be set to any integer if the direction_option is 'uni'.
+        If the direction_option is 'bi_sep' or 'bi_fuse', `n_etypes` will be set to 1.
+
+    bias: bool
+        If True, adds a learnable bias to the output. (Default: True)
     """
 
     def __init__(self, input_size, output_size, direction_option='uni', n_steps=1, n_etypes=1, bias=True):
@@ -348,6 +383,18 @@ class GGNNLayer(GNNLayerBase):
             raise RuntimeError('Unknown `bidirection` value: {}'.format(direction_option))
 
     def forward(self, graph, node_feats):
+        """
+
+        Parameters
+        ----------
+        graph: dgl.DGLGraph
+        node_feats: torch.Tensor
+            The shape of node_feats is :math:`(N, D_{in})`.
+
+        Returns
+        -------
+        torch.Tensor
+        """
         return self.model(graph, node_feats)
 
 
@@ -395,8 +442,7 @@ class GGNN(GNNBase):
         else:
             self.models = GGNNLayer(output_size, output_size, direction_option, bias=bias)
 
-    # def forward(self, graph: GraphData):
-    def forward(self, graph):
+    def forward(self, graph: GraphData):
         r"""
         Use GGNN compute node embeddings.
         Parameters
@@ -412,13 +458,11 @@ class GGNN(GNNBase):
             named `node_emb`.
 
         """
-        # graph = graph.to_dgl()
-        # node_feats = graph.node_features['node_feat']
-
-        node_feats = graph.ndata['node_feat']
+        node_feats = graph.node_features['node_feat']
+        dgl_graph = graph.to_dgl()
 
         if self.direction_option == 'uni':
-            node_embs = self.models(graph, node_feats)
+            node_embs = self.models(dgl_graph, node_feats)
         else:
             assert node_feats.shape[1] == self.input_size
 
@@ -429,7 +473,7 @@ class GGNN(GNNBase):
             feat_out = node_feats
 
             for i in range(self.num_layers):
-                h = self.models(graph, (feat_in, feat_out))
+                h = self.models(dgl_graph, (feat_in, feat_out))
                 feat_in = h[0]
                 feat_out = h[1]
 
@@ -440,8 +484,7 @@ class GGNN(GNNBase):
             else:
                 raise RuntimeError('Unknown `bidirection` value: {}'.format(self.direction_option))
 
-        # graph.node_features['node_emb'] = node_embs
-        graph.ndata['node_emb'] = node_embs
+        graph.node_features['node_emb'] = node_embs
 
         return graph
 
