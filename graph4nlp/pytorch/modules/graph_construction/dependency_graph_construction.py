@@ -1,13 +1,13 @@
+import copy
 import json
 
+import dgl
+import torch
 from stanfordcorenlp import StanfordCoreNLP
 
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from .base import StaticGraphConstructionBase
-import copy
-import dgl
-import torch
 
 
 class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
@@ -47,7 +47,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             self.vocab.word_vocab._add_words([attr["token"]])
 
     @classmethod
-    def topology(cls, raw_text_data, nlp_processor, merge_strategy, edge_strategy):
+    def topology(cls, raw_text_data, nlp_processor, merge_strategy, edge_strategy, split_hyphenated=False,
+                 normalize=False, verbase=0):
         """
             Graph building method.
 
@@ -77,17 +78,26 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
-
+        split_hyphenated: bool, default=False
+            Whether or not to tokenize segments of hyphenated words separately (“school” “-“ “aged”, “frog” “-“ “lipped”)
+        normalize: bool, default=False
+            Whether to convert bracket (`(`) to  -LRB-, and etc.
+        verbase: int, default=0
+            Whether to output log infors. Set 1 to output more infos.
         Returns
         -------
         joint_graph: GraphData
             The merged graph data-structure.
         """
-        cls.verbase = 1
+        cls.verbase = verbase
+        splitHyphenated_option = "true" if split_hyphenated else "false"
+        normalize_option = "true" if normalize else "false"
         props = {
             'annotators': 'ssplit,tokenize,depparse',
             "tokenize.options":
-                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                "splitHyphenated={},normalizeParentheses={},normalizeOtherBrackets={}".format(splitHyphenated_option,
+                                                                                              normalize_option,
+                                                                                              normalize_option),
             "tokenize.whitespace": False,
             'ssplit.isOneSentence': False,
             'outputFormat': 'json'
@@ -291,6 +301,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             print("*************************************")
         if len(nx_graph_list) == 1:
             return nx_graph_list[0]
+        elif len(nx_graph_list) == 0:
+            raise RuntimeError("There is no graph needed to merge.")
         node_num_list = [s_g.get_node_num() for s_g in nx_graph_list]
         node_num = sum(node_num_list)
         g = GraphData()
