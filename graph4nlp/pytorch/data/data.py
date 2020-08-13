@@ -466,7 +466,7 @@ class GraphData(object):
                 dgl_g.ndata[key] = value
         # Add edges and their features
         dgl_g.add_edges(u=self._edge_indices.src, v=self._edge_indices.tgt)
-        for key, value in self._node_features.items():
+        for key, value in self._edge_features.items():
             if value is not None:
                 dgl_g.edata[key] = value
 
@@ -551,6 +551,7 @@ class GraphData(object):
         # 0. check if both graphs have nodes
         assert self.get_edge_num() > 0 and graph.get_node_num() > 0, \
             "Both participants of the union operation should contain at least 1 node."
+
         # 1. check if node feature names are consistent
         for feat_name in graph.node_features.keys():
             assert feat_name in self._node_features.keys(), "Node feature '{}' does not exist in current graph.".format(
