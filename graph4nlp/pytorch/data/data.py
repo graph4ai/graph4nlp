@@ -634,7 +634,7 @@ def from_batch(batch: GraphData) -> list:
 
     graphs = []
     batch_size = max(batch.batch) + 1
-
+    # TODO: Consistency check: a graph should contain at least 2 nodes and 1 edges
     # 1. calculate the number of nodes in the batch and get a list indicating #nodes of each graph.
     num_nodes = []
     node_indices = []
@@ -678,6 +678,7 @@ def from_batch(batch: GraphData) -> list:
                 edge_idx.append(i)
                 g.add_edge(edge[0] - node_st_idx, edge[1] - node_st_idx)
         if len(edge_idx) == 0:
+            graphs.append(g)
             continue
         edge_st_idx = min(edge_idx)
         edge_ed_idx = max(edge_idx) + 1
