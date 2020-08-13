@@ -70,7 +70,7 @@ class DistMult(KGCompletionBase):
 
         node_emb = input_graph.node_features['node_emb']  # [N, D]
         if self.loss_name in ['SoftplusLoss', 'SigmoidLoss']:
-            multi_label = input_graph.node_features['multi_binary_label']  # [B, N]
+            multi_label = input_graph.graph_attributes['multi_binary_label']  # [B, N]
         else:
             multi_label = None
 

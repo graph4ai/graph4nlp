@@ -61,7 +61,10 @@ class RankingAndHits(EvaluationMetricBase):
                 rel_eval = rel_eval.view(-1, 1).to(device)
                 e1_multi = e1_multi.to(device)
                 e1_multi_tensor_idx = e1_multi_tensor_idx.to(device)
-
+                # if model.loss_name == "SoftplusLoss" or model.loss_name == "SigmoidLoss":
+                #     pred1, pos1, neg1 = model(kg_graph, e1, rel, e2_multi, require_loss=False)
+                #     pred2, pos2, neg2 = model(kg_graph, e2, rel_eval, e1_multi, require_loss=False)
+                # else:
                 pred1 = model(kg_graph, e1, rel, e2_multi, require_loss=False)
                 pred2 = model(kg_graph, e2, rel_eval, e1_multi, require_loss=False)
                 pred1, pred2 = pred1.data, pred2.data
@@ -168,6 +171,8 @@ class RankingAndHits(EvaluationMetricBase):
         print('-' * 50)
         print('')
 
+# TODO: 1. initialize graph.node_features['edge_feat']/self.distmult.rel_emb with self.embedding_layer
+# TODO: 2. learn graph.node_features['edge_emb'] from GNN (edge2node)
 
 class Graph2DistMult(nn.Module):
     def __init__(self, vocab, num_entities, hidden_size=300, num_relations=None, direction_option='uni', loss_name='BCELoss'):
@@ -177,17 +182,18 @@ class Graph2DistMult(nn.Module):
         self.num_entities = num_entities
 
         self.node_emb = nn.Embedding(num_entities, hidden_size)
-        # embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
-        #                    'seq_info_encode_strategy': "none"}
-        #
-        # self.embedding_layer = EmbeddingConstruction(self.vocab.in_word_vocab,
-        #                                              embedding_style['word_emb_type'],
-        #                                              embedding_style['node_edge_emb_strategy'],
-        #                                              embedding_style['seq_info_encode_strategy'],
-        #                                              hidden_size=hidden_size,
-        #                                              fix_word_emb=False,
-        #                                              dropout=0.2,
-        #                                              device=self.device)
+
+        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
+                           'seq_info_encode_strategy': "none"}
+
+        self.embedding_layer = EmbeddingConstruction(self.vocab.in_word_vocab,
+                                                     embedding_style['word_emb_type'],
+                                                     embedding_style['node_edge_emb_strategy'],
+                                                     embedding_style['seq_info_encode_strategy'],
+                                                     hidden_size=hidden_size,
+                                                     fix_word_emb=False,
+                                                     dropout=0.2,
+                                                     device=self.device)
 
         # self.graph_topology = IEBasedGraphConstruction(vocab=self.vocab.in_word_vocab,
         #                                                embedding_style=embedding_style,
@@ -206,7 +212,8 @@ class Graph2DistMult(nn.Module):
         self.gnn_encoder = GGNN(1, hidden_size, hidden_size, direction_option=direction_option)
         self.bn = torch.nn.BatchNorm1d(hidden_size)  # necessary for this task
 
-        self.distmult = DistMult(rel_emb_from_gnn=False, num_relations=num_relations, embedding_dim=hidden_size)
+        self.distmult = DistMult(rel_emb_from_gnn=False, num_relations=num_relations,
+                                 embedding_dim=hidden_size, loss_name=loss_name)
 
         self.loss_name = loss_name
         if loss_name == 'BCELoss':
@@ -275,22 +282,37 @@ class Graph2DistMult(nn.Module):
     #
     #     return graph
 
+    def embedding(self, kg_graph):
+        # graph_nodes_idx = [self.vocab.in_word_vocab.word2index[token]
+        #                    for x in kg_graph.graph_attributes['graph_nodes']
+        #                    for token in x.split(' ')]
+        graph_nodes_idx = []
+        node_len_list = []
+        for x in kg_graph.graph_attributes['graph_nodes']:
+            tmp_list = []
+            for token in x.split(' '):
+                tmp_list.append(self.vocab.in_word_vocab.word2index[token])
+
+            graph_nodes_idx.append(tmp_list)
+            node_len_list.append(len(tmp_list))
+
+        max_size = max(node_len_list)
+        graph_nodes_idx = [x + [self.vocab.in_word_vocab.PAD] * (max_size - len(x)) for x in graph_nodes_idx]
+        graph_nodes_idx = torch.tensor(graph_nodes_idx, dtype=torch.long).to(self.device)
+        node_len_tensor = torch.tensor(node_len_list, dtype=torch.long).to(self.device)
+        num_nodes = torch.tensor([len(node_len_list)], dtype=torch.long).to(self.device)
+        node_feat = self.embedding_layer(graph_nodes_idx, node_len_tensor, num_nodes)
+        return node_feat
+
     def reset_parameters(self):
         nn.init.xavier_normal_(self.node_emb.weight.data)
         # xavier_normal_(self.emb_rel.weight.data)
 
     def forward(self, kg_graph, e1, rel, e2_multi=None, require_loss=True):
-        kg_graph.node_features['node_feat'] = self.node_emb.weight
+        # kg_graph.node_features['node_feat'] = self.node_emb.weight
+
         # kg_graph.node_features['node_emb'] = self.node_emb.weight
-        # kg_graph = self.embedding(kg_graph)
-
-        # batch_dgl_graph = self.graph_topology(graph_list)
-        # do graph nn here
-        # convert DGLGraph to GraphData
-        # batch_graph = GraphData()
-        # batch_graph.from_dgl(kg_graph)
-        # kg_graph_dgl = kg_graph.to_dgl()
-
+        kg_graph.node_features['node_feat'] = self.embedding(kg_graph)
 
         list_e_r_pair_idx = list(zip(e1.squeeze().tolist(), rel.squeeze().tolist()))
 
@@ -298,11 +320,16 @@ class Graph2DistMult(nn.Module):
         kg_graph = self.gnn_encoder(kg_graph)
         kg_graph.node_features['node_emb'] = self.bn(kg_graph.node_features['node_emb'])
         kg_graph.graph_attributes['list_e_r_pair_idx'] = list_e_r_pair_idx
+        kg_graph.graph_attributes['multi_binary_label'] = e2_multi
 
         # down-task
         kg_graph = self.distmult(kg_graph)
         if require_loss:
-            loss = self.loss(kg_graph.graph_attributes['logits'], e2_multi)
+            if self.loss_name == "SoftplusLoss" or self.loss_name == "SigmoidLoss":
+                loss = self.loss(kg_graph.graph_attributes['p_score'],
+                                 kg_graph.graph_attributes['n_score'])
+            else:
+                loss = self.loss(kg_graph.graph_attributes['logits'], e2_multi)
             return kg_graph.graph_attributes['logits'], loss
         else:
             return kg_graph.graph_attributes['logits']
@@ -348,8 +375,10 @@ class Kinship:
         self.vocab = train_set.vocab_model
 
     def _build_model(self):
-        self.model = Graph2DistMult(self.vocab, num_entities=self.num_entities,
-                                    num_relations=self.num_relations).to(self.device)
+        self.model = Graph2DistMult(self.vocab,
+                                    num_entities=self.num_entities,
+                                    num_relations=self.num_relations,
+                                    loss_name='SigmoidLoss').to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
