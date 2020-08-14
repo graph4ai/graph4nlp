@@ -2,7 +2,7 @@ import os
 import torch
 import json
 from nltk.tokenize import word_tokenize
-from graph4nlp.pytorch.data.dataset import KGDataset, KGDataItem
+from graph4nlp.pytorch.data.dataset import KGCompletionDataset, KGDataItem
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from ..data.data import GraphData
@@ -13,7 +13,7 @@ dataset_root = '../test/dataset/kinship'
 
 
 
-class KinshipDataset(KGDataset):
+class KinshipDataset(KGCompletionDataset):
     @property
     def raw_file_names(self) -> list:
         return ['e1rel_to_e2_train.json']
@@ -37,7 +37,7 @@ class KinshipDataset(KGDataset):
         self.build_vocab()
 
 
-class KinshipTestDataset(KGDataset):
+class KinshipTestDataset(KGCompletionDataset):
     @property
     def raw_file_names(self) -> list:
         return ['e1rel_to_e2_ranking_test.json']

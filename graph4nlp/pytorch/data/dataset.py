@@ -387,14 +387,14 @@ class KGDataItem(DataItem):
             return e1_tokens + e2_tokens + e1_multi_tokens + e2_multi_tokens, rel_tokens + rel_eval_tokens
 
 
-class KGDataset(Dataset):
+class KGCompletionDataset(Dataset):
     def __init__(self, root_dir, topology_builder=None, topology_subdir=None, share_vocab=True,
                  edge_strategy=None, **kwargs):
         self.data_item_type = KGDataItem
         self.share_vocab = share_vocab  # share vocab between entity and relation
         # self.KG_graph = GraphData()
         self.edge_strategy = edge_strategy
-        super(KGDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+        super(KGCompletionDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
     def build_vocab(self):
         vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, self.processed_file_names['vocab']),
