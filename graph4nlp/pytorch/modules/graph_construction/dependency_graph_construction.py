@@ -112,8 +112,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             unique_hash = {}
             node_id = 0
 
-            unique_hash[(0, 'ROOT')] = node_id
-            node_id += 1
+            # unique_hash[(0, 'ROOT')] = node_id
+            # node_id += 1
 
             for tokens in dep_dict["sentences"][s_id]['tokens']:
                 unique_hash[(tokens['index'], tokens['word'])] = node_id
@@ -123,9 +123,13 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 if cls.verbase > 0:
                     print(dep)
                 if unique_hash.get((dep['governor'], dep['governorGloss'])) is None:
+                    if dep['governorGloss'] == "ROOT":
+                        continue
                     unique_hash[(dep['governor'], dep['governorGloss'])] = node_id
                     node_id += 1
                 if unique_hash.get((dep['dependent'], dep['dependentGloss'])) is None:
+                    if dep['dependentGloss'] == "ROOT":
+                        continue
                     unique_hash[(dep['dependent'], dep['dependentGloss'])] = node_id
                     node_id += 1
                 dep_info = {
@@ -192,18 +196,18 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         ret_graph = GraphData()
         node_num = parsed_object["node_num"]
         ret_graph.add_nodes(node_num)
-        head_node = -1
+        head_node = 0
         tail_node = node_num - 1
         root_id = -1
         sequential_dict = {}
         for dep_info in parsed_object["graph_content"]:
-            if dep_info["src"]['token'] != "ROOT":
-                ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 0
-                ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 0
-            else:
-                ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 2  # 2 for dependency parsing tree
-                ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 0
-                root_id = dep_info["src"]['id']
+            # if dep_info["src"]['token'] != "ROOT":
+            ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 0
+            ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 0
+            # else:
+            #     ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 2  # 2 for dependency parsing tree
+            #     ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 0
+                # root_id = dep_info["src"]['id']
 
             if dep_info["src"]["position_id"] is not None:
                 sequential_dict[dep_info["src"]["position_id"]] = dep_info["src"]["id"]
@@ -258,10 +262,10 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                     ret_graph.add_edge(sequential_dict[st], sequential_dict[ed])
 
             # link root with token
-            try:
-                ret_graph.edge_ids(root_id, sequential_dict[pos_list[0]])
-            except:
-                ret_graph.add_edge(root_id, sequential_dict[pos_list[0]])
+            # try:
+            #     ret_graph.edge_ids(root_id, sequential_dict[pos_list[0]])
+            # except:
+            #     ret_graph.add_edge(root_id, sequential_dict[pos_list[0]])
 
         return ret_graph
 
@@ -316,8 +320,9 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 edge_idx_old = s_g.edge_ids(src, tgt)[0]
                 g.add_edge(src + node_idx_off, tgt + node_idx_off)
                 edge_idx_new = g.edge_ids(src + node_idx_off, tgt + node_idx_off)[0]
-                print(edge_idx_new, edge_idx_old)
-                print(s_g.edge_attributes[edge_idx_old], "--------")
+                if cls.verbase > 0:
+                    print(edge_idx_new, edge_idx_old)
+                    print(s_g.edge_attributes[edge_idx_old], "--------")
                 g.edge_attributes[edge_idx_new] = copy.deepcopy(s_g.edge_attributes[edge_idx_old])
             tmp = {}
             for key, value in s_g.node_attributes.items():
