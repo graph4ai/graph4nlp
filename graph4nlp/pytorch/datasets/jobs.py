@@ -11,7 +11,10 @@ dataset_root = '../test/dataset/jobs'
 class JobsDataset(TextToTextDataset):
     @property
     def raw_file_names(self) -> list:
-        return ['sequence.txt']
+        # raw_dir = 'jobs/raw'
+        return ['sequence.txt', 'seq.txt']
+        # self.raw_file_paths = ['jobs/raw/sequence.txt', 'jobs/raw/seq/txt']
+    # {'train': 'train_seq.txt', 'test': 'test_seq.txt'}
 
     @property
     def processed_file_names(self) -> dict:

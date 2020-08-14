@@ -169,6 +169,11 @@ class GraphData(object):
 
         # Modification
         for key, value in new_data.items():
+            # Node-shape check
+            assert value.shape[0] == self.get_node_num(), \
+                "The shape feature '{}' does not match the number of nodes in the graph. Got a {} tensor but have {} nodes.".format(
+                    key, value.shape, self.get_node_num())
+
             assert isinstance(value, torch.Tensor), "`{}' is not a tensor. Node features are expected to be tensor."
             if key not in self._node_features or self._node_features[key] is None:
                 # self._node_features[key] = None
@@ -430,7 +435,9 @@ class GraphData(object):
         # Modification
         for key, value in new_data.items():
             assert isinstance(value, torch.Tensor), "`{}' is not a tensor. Node features are expected to be tensor."
-            assert value.shape[0] == self.get_edge_num(), "Length of the feature vector does not match the edge number."
+            assert value.shape[0] == self.get_edge_num(), "Length of the feature vector does not match the edge number." \
+                                                          "Got tensor '{}' of shape {} but the graph has only {} edges.".format(
+                key, value.shape, self.get_edge_num())
             if key not in self._edge_features or self._edge_features[key] is None:
                 self._edge_features[key] = value
             else:
@@ -452,11 +459,17 @@ class GraphData(object):
             The converted dgl.DGLGraph
         """
         dgl_g = dgl.DGLGraph()
+        # Add nodes and their features
         dgl_g.add_nodes(num=self.get_node_num())
         for key, value in self._node_features.items():
             if value is not None:
                 dgl_g.ndata[key] = value
+        # Add edges and their features
         dgl_g.add_edges(u=self._edge_indices.src, v=self._edge_indices.tgt)
+        for key, value in self._edge_features.items():
+            if value is not None:
+                dgl_g.edata[key] = value
+
         return dgl_g
 
     def from_dgl(self, dgl_g: dgl.DGLGraph):
@@ -497,7 +510,7 @@ class GraphData(object):
                     edge_weight.append(adj[i][j])
         edge_weight = torch.stack(edge_weight, dim=0)
         self.edge_features['edge_weight'] = edge_weight
-                    # self.edge_features['edge_weight'][-1] = adj[i][j]
+        # self.edge_features['edge_weight'][-1] = adj[i][j]
 
     def from_scipy_sparse_matrix(self, adj: scipy.sparse.coo_matrix):
         assert adj.shape[0] == adj.shape[1], 'Adjancecy is not a square.'
@@ -535,6 +548,10 @@ class GraphData(object):
         """
 
         # Consistency check
+        # 0. check if both graphs have nodes
+        assert self.get_edge_num() > 0 and graph.get_node_num() > 0, \
+            "Both participants of the union operation should contain at least 1 node."
+
         # 1. check if node feature names are consistent
         for feat_name in graph.node_features.keys():
             assert feat_name in self._node_features.keys(), "Node feature '{}' does not exist in current graph.".format(
@@ -600,7 +617,8 @@ def to_batch(graphs: list = None) -> GraphData:
     GraphData
         The large graph containing all the graphs in the batch.
     """
-    batch = graphs[0]
+    import copy
+    batch = copy.deepcopy(graphs[0])
     batch.batch = [0] * graphs[0].get_node_num()
     for i in range(1, len(graphs)):
         batch.union(graphs[i])
@@ -608,28 +626,51 @@ def to_batch(graphs: list = None) -> GraphData:
     return batch
 
 
-def from_batch(batch) -> list:
+def from_batch(batch: GraphData) -> list:
     def rindex(mylist, myvalue):
+        # todo: value not found error
+        if myvalue not in mylist:
+            raise ValueError
         return len(mylist) - mylist[::-1].index(myvalue) - 1
 
     graphs = []
     batch_size = max(batch.batch) + 1
-    for idx in range(batch_size):
+    # TODO: Consistency check: a graph should contain at least 2 nodes and 1 edges
+    # 1. calculate the number of nodes in the batch and get a list indicating #nodes of each graph.
+    num_nodes = []
+    node_indices = []
+    for i in range(batch_size):
+        try:
+            end_node_index = rindex(batch.batch, i)
+        except ValueError:
+            ValueError("Graph #{} has no nodes. All graphs in a batch should contain at least one node.".format(i))
+        node_indices.append(end_node_index)
+        if i == 0:  # the first graph
+            num_nodes.append(end_node_index + 1)
+        else:
+            num_nodes.append(end_node_index - num_nodes[-1])
+
+    # 2. iterate each sub-graph to extract them
+    for i in range(batch_size):
+        #   a. calculate the starting and ending node index in the batch
         g = GraphData()
-        node_st_idx = batch.batch.index(idx)
-        node_ed_idx = rindex(batch.batch, idx) + 1
-        # 1. add nodes
+        node_st_idx = 0 if i == 0 else node_indices[i - 1]
+        node_ed_idx = node_indices[i]
+        #   b. extract the corresponding edge indices
+
+        #   c. copy data
+        #       i. add nodes
         g.add_nodes(node_ed_idx - node_st_idx)
-        # 2. add node features
+        #       ii. add node features
         for feat_name in batch.node_features.keys():
             if batch.node_features[feat_name] is None:
                 continue
             else:
                 g.node_features[feat_name] = batch.node_features[feat_name][node_st_idx:node_ed_idx]
-        # 3. add node attributes
+        #       iii. add node attributes
         for i in range(node_st_idx, node_ed_idx):
             g.node_attributes[i - node_st_idx] = batch.node_attributes[i]
-        # 4. add edges
+        #       iv. add edges
         batch_edges = batch.edges()
         edge_idx = []
         for i in range(len(batch_edges)):
@@ -637,6 +678,9 @@ def from_batch(batch) -> list:
             if edge[0] in range(node_st_idx, node_ed_idx) and edge[1] in range(node_st_idx, node_ed_idx):
                 edge_idx.append(i)
                 g.add_edge(edge[0] - node_st_idx, edge[1] - node_st_idx)
+        if len(edge_idx) == 0:
+            graphs.append(g)
+            continue
         edge_st_idx = min(edge_idx)
         edge_ed_idx = max(edge_idx) + 1
         # 5. add edge features
@@ -649,4 +693,6 @@ def from_batch(batch) -> list:
         for i in range(edge_st_idx, edge_ed_idx):
             g.edge_attributes[i - edge_st_idx] = batch.edge_attributes[i]
         graphs.append(g)
+
+    assert len(graphs) == batch_size
     return graphs

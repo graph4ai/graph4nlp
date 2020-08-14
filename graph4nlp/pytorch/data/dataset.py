@@ -265,6 +265,9 @@ class TextToTextDataset(Dataset):
             The list containing all the input file paths.
         """
         data = []
+        # data = {}
+        # train_raw_data = files['train']
+        # data['train'] =
         for file in files:
             with open(file, 'r') as f:
                 lines = f.readlines()
