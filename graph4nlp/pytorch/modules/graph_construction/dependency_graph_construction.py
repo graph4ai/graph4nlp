@@ -305,7 +305,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             for node_idx, node_attrs in nx_graph_list[i].node_attributes.items():
                 if node_attrs['head'] is True:
                     head = node_idx + node_idx_off
-                elif node_attrs['tail'] is True:
+                if node_attrs['tail'] is True:
                     tail = node_idx + node_idx_off
             assert head != -1
             assert tail != -1
