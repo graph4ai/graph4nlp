@@ -335,7 +335,7 @@ class TextToTextDataset(Dataset):
 
 
 class KGDataItem(DataItem):
-    def __init__(self, e1, rel, e2, rel_eval, e2_multi, e1_multi, share_vocab=True):
+    def __init__(self, e1, rel, e2, rel_eval, e2_multi, e1_multi, share_vocab=True, split_token=' '):
         super(KGDataItem, self).__init__(input_text=None, tokenizer=None)
         self.e1 = e1
         self.rel = rel
@@ -344,6 +344,7 @@ class KGDataItem(DataItem):
         self.e2_multi = e2_multi
         self.e1_multi = e1_multi
         self.share_vocab = share_vocab
+        self.split_token = split_token
 
     def extract(self):
         """
@@ -375,12 +376,12 @@ class KGDataItem(DataItem):
             e1_multi_tokens = self.tokenizer(self.e1_multi)
 
         if self.tokenizer is None:
-            rel_tokens = self.rel.strip().split(' ')
+            rel_tokens = self.rel.strip().split(self.split_token)
         else:
             rel_tokens = self.tokenizer(self.rel)
 
         if self.tokenizer is None:
-            rel_eval_tokens = self.rel_eval.strip().split(' ')
+            rel_eval_tokens = self.rel_eval.strip().split(self.split_token)
         else:
             rel_eval_tokens = self.tokenizer(self.rel_eval)
 
@@ -445,7 +446,8 @@ class KGCompletionDataset(Dataset):
                                            rel_eval=line_dict['rel_eval'],
                                            e2_multi=line_dict['e2_multi1'],
                                            e1_multi=line_dict['e2_multi2'],
-                                           share_vocab=self.share_vocab))
+                                           share_vocab=self.share_vocab,
+                                           split_token=self.split_token))
 
                     for e2 in line_dict['e2_multi1'].split(' '):
                         triple = [line_dict['e1'], line_dict['rel'], e2]

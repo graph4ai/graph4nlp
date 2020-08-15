@@ -29,6 +29,7 @@ class KinshipDataset(KGCompletionDataset):
         #     'This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
 
     def __init__(self, root_dir, topology_builder=None, topology_subdir=None, edge_strategy=None, **kwargs):
+        self.split_token = ' '
         super(KinshipDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                              topology_subdir=topology_subdir,edge_strategy=edge_strategy, **kwargs)
         self.data = torch.load(os.path.join(self.processed_dir, self.processed_file_names['data']))
@@ -54,6 +55,7 @@ class KinshipTestDataset(KGCompletionDataset):
 
     def __init__(self, root_dir, topology_builder=None, topology_subdir=None, edge_strategy=None, KG_graph=None, **kwargs):
         self.KG_graph = KG_graph
+        self.split_token = ' '
         super(KinshipTestDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                              topology_subdir=topology_subdir,edge_strategy=edge_strategy, **kwargs)
         self.data = torch.load(os.path.join(self.processed_dir, self.processed_file_names['data']))
