@@ -109,43 +109,35 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         node_id = 0
         for s_id in range(len(dep_dict["sentences"])):
             parsed_sent = []
+            node_item = []
             unique_hash = {}
             node_id = 0
 
-            # unique_hash[(0, 'ROOT')] = node_id
-            # node_id += 1
-
             for tokens in dep_dict["sentences"][s_id]['tokens']:
                 unique_hash[(tokens['index'], tokens['word'])] = node_id
+                node = {
+                        'token': tokens["word"],
+                        'position_id': tokens["index"] - 1,
+                        'id': node_id,
+                        "sentence_id": s_id
+                    }
+                node_item.append(node)
                 node_id += 1
 
             for dep in dep_dict["sentences"][s_id]["basicDependencies"]:
                 if cls.verbase > 0:
                     print(dep)
-                if unique_hash.get((dep['governor'], dep['governorGloss'])) is None:
-                    if dep['governorGloss'] == "ROOT":
-                        continue
-                    unique_hash[(dep['governor'], dep['governorGloss'])] = node_id
-                    node_id += 1
-                if unique_hash.get((dep['dependent'], dep['dependentGloss'])) is None:
-                    if dep['dependentGloss'] == "ROOT":
-                        continue
-                    unique_hash[(dep['dependent'], dep['dependentGloss'])] = node_id
-                    node_id += 1
+
+                if dep['governorGloss'] == "ROOT":
+                    continue
+
+                if dep['dependentGloss'] == "ROOT":
+                    continue
+
                 dep_info = {
                     "edge_type": dep['dep'],
-                    'src': {
-                        'token': dep['governorGloss'],
-                        'position_id': dep['governor'] - 1 if dep['governorGloss'] != "ROOT" else None,
-                        'id': unique_hash[(dep['governor'], dep['governorGloss'])],
-                        "sentence_id": s_id
-                    },
-                    'tgt': {
-                        'token': dep['dependentGloss'],
-                        'position_id': dep['dependent'] - 1 if dep['dependentGloss'] != "ROOT" else None,
-                        'id': unique_hash[(dep['dependent'], dep['dependentGloss'])],
-                        "sentence_id": s_id
-                    }
+                    'src': unique_hash[(dep['governor'], dep['governorGloss'])],
+                    'tgt': unique_hash[(dep['dependent'], dep['dependentGloss'])]
                 }
                 if cls.verbase > 0:
                     print(dep_info)
@@ -155,6 +147,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 print(len(parsed_sent))
             parsed_results.append({
                 "graph_content": parsed_sent,
+                "node_content": node_item,
                 "node_num": node_id
             })
 
@@ -195,46 +188,28 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         """
         ret_graph = GraphData()
         node_num = parsed_object["node_num"]
+        assert node_num > 0
         ret_graph.add_nodes(node_num)
         head_node = 0
         tail_node = node_num - 1
-        root_id = -1
-        sequential_dict = {}
+
+        # insert node attributes
+        node_objects = parsed_object["node_content"]
+        for node in node_objects:
+            ret_graph.node_attributes[node['id']]['type'] = 0
+            ret_graph.node_attributes[node['id']]['token'] = node['token']
+            ret_graph.node_attributes[node['id']]['position_id'] = node['position_id']
+            ret_graph.node_attributes[node['id']]['sentence_id'] = node['sentence_id']
+            ret_graph.node_attributes[node['id']]['head'] = False
+            ret_graph.node_attributes[node['id']]['tail'] = False
+
         for dep_info in parsed_object["graph_content"]:
-            # if dep_info["src"]['token'] != "ROOT":
-            ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 0
-            ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 0
-            # else:
-            #     ret_graph.node_attributes[dep_info["src"]['id']]['type'] = 2  # 2 for dependency parsing tree
-            #     ret_graph.node_attributes[dep_info["tgt"]['id']]['type'] = 0
-                # root_id = dep_info["src"]['id']
-
-            if dep_info["src"]["position_id"] is not None:
-                sequential_dict[dep_info["src"]["position_id"]] = dep_info["src"]["id"]
-            if dep_info["tgt"]["position_id"] is not None:
-                sequential_dict[dep_info["tgt"]["position_id"]] = dep_info["tgt"]["id"]
-
-            ret_graph.node_attributes[dep_info["src"]['id']]['token'] = dep_info["src"]['token']
-            ret_graph.node_attributes[dep_info["tgt"]['id']]['token'] = dep_info['tgt']['token']
-            ret_graph.node_attributes[dep_info["src"]['id']]['position_id'] = dep_info["src"]['position_id']
-            ret_graph.node_attributes[dep_info["tgt"]['id']]['position_id'] = dep_info['tgt']['position_id']
-            ret_graph.node_attributes[dep_info["src"]['id']]['sentence_id'] = dep_info["src"]['sentence_id']
-            ret_graph.node_attributes[dep_info["tgt"]['id']]['sentence_id'] = dep_info["src"]['sentence_id']
-            ret_graph.node_attributes[dep_info["src"]['id']]['head'] = False
-            ret_graph.node_attributes[dep_info["tgt"]['id']]['head'] = False
-            ret_graph.node_attributes[dep_info["src"]['id']]['tail'] = False
-            ret_graph.node_attributes[dep_info["tgt"]['id']]['tail'] = False
-
-            if dep_info["src"]['token'] == "ROOT":
-                head_node = dep_info["src"]['id']
-
             if edge_strategy is None or edge_strategy == "homogeneous":
-                ret_graph.add_edge(dep_info["src"]['id'], dep_info['tgt']['id'])
+                ret_graph.add_edge(dep_info["src"], dep_info['tgt'])
             elif edge_strategy == "heterogeneous":
-                ret_graph.add_edge(dep_info["src"]['id'], dep_info['tgt']['id'])
-                edge_idx = ret_graph.edge_ids(dep_info["src"]['id'], dep_info['tgt']['id'])[0]
+                ret_graph.add_edge(dep_info["src"], dep_info['tgt'])
+                edge_idx = ret_graph.edge_ids(dep_info["src"], dep_info['tgt'])[0]
                 ret_graph.edge_attributes[edge_idx]["token"] = dep_info["edge_type"]
-
             elif edge_strategy == "as_node":
                 # insert a node
                 node_idx = ret_graph.get_node_num()
@@ -245,28 +220,18 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 ret_graph.node_attributes[node_idx]['head'] = False
                 ret_graph.node_attributes[node_idx]['tail'] = False
                 # add edge infos
-                ret_graph.add_edge(dep_info['src']['id'], node_idx)
-                ret_graph.add_edge(node_idx, dep_info['tgt']['id'])
+                ret_graph.add_edge(dep_info['src'], node_idx)
+                ret_graph.add_edge(node_idx, dep_info['tgt'])
             else:
                 raise NotImplementedError()
         ret_graph.node_attributes[head_node]['head'] = True
         ret_graph.node_attributes[tail_node]['tail'] = True
 
-        if sequential_link and len(sequential_dict.keys()) > 1:
-            pos_list = sequential_dict.keys()
-            pos_list = sorted(pos_list)
-            for st, ed in zip(pos_list[:-1], pos_list[1:]):
-                try:
-                    ret_graph.edge_ids(sequential_dict[st], sequential_dict[ed])
-                except:
-                    ret_graph.add_edge(sequential_dict[st], sequential_dict[ed])
+        sequential_list = [i for i in range(node_num)]
 
-            # link root with token
-            # try:
-            #     ret_graph.edge_ids(root_id, sequential_dict[pos_list[0]])
-            # except:
-            #     ret_graph.add_edge(root_id, sequential_dict[pos_list[0]])
-
+        if sequential_list and len(sequential_list) > 1:
+            for st, ed in zip(sequential_list[:-1], sequential_list[1:]):
+                ret_graph.add_edge(st, ed)
         return ret_graph
 
     @classmethod
