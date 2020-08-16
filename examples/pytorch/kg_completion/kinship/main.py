@@ -9,7 +9,7 @@ from graph4nlp.pytorch.modules.graph_embedding.gat import GAT, GATLayer
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGELayer
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN, GGNNLayer
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-from graph4nlp.pytorch.modules.prediction.classification.kg_completion.DistMult import DistMult, DistMultLayer
+from graph4nlp.pytorch.modules.prediction.classification.kg_completion.DistMult import DistMult
 
 import torch
 import torch.nn as nn
@@ -31,7 +31,7 @@ class RankingAndHits(EvaluationMetricBase):
         self.best_hits10 = 0.
         self.model_path = model_path
 
-    def calculate_scores(self, model, dataloader, name, kg_graph, device):
+    def calculate_scores(self, model, dataloader, name, kg_graph, device, save=True):
         print('')
         print('-' * 50)
         print(name)
@@ -148,8 +148,9 @@ class RankingAndHits(EvaluationMetricBase):
 
         if np.mean(1. / np.array(ranks))>self.best_mrr:
             self.best_mrr = np.mean(1. / np.array(ranks))
-            print('saving best model...')
-            torch.save(model.state_dict(), self.model_path)
+            if save:
+                print('saving best model...')
+                torch.save(model.state_dict(), self.model_path)
 
         print('-' * 50)
         print('')
@@ -219,56 +220,6 @@ class Graph2DistMult(nn.Module):
 
         self.reset_parameters()
 
-    # def embedding(self, graph: GraphData):
-    #     node_attributes = graph.node_attributes
-    #     edge_attributes = graph.edge_attributes
-    #
-    #     # Build embedding(initial feature vector) for graph nodes.
-    #     # Each node may contains multiple tokens.
-    #     node_idxs_list = []
-    #     node_len_list = []
-    #     for node_id, node_dict in node_attributes.items():
-    #         node_word_idxs = []
-    #         for token in node_dict['token'].split():
-    #             node_word_idxs.append(self.vocab.in_word_vocab.getIndex(token))
-    #         node_idxs_list.append(node_word_idxs)
-    #         node_len_list.append(len(node_word_idxs))
-    #     max_size = max(node_len_list)
-    #     node_idxs_list = [x+[self.vocab.in_word_vocab.PAD]*(max_size-len(x)) for x in node_idxs_list]
-    #     node_idxs_tensor = torch.LongTensor(node_idxs_list).to(self.device)
-    #     # if self.embedding_layer.node_edge_emb_strategy == 'mean':
-    #     #     node_len_tensor = torch.LongTensor(node_len_list).view(-1, 1)
-    #     # else:
-    #     node_len_tensor = torch.LongTensor(node_len_list).to(self.device)
-    #     num_nodes = torch.LongTensor([len(node_len_list)]).to(self.device)
-    #     node_feat = self.embedding_layer(node_idxs_tensor, node_len_tensor, num_nodes)
-    #     graph.node_features['node_feat'] = node_feat
-    #
-    #     if 'token' in edge_attributes[0].keys():
-    #         # If edge information is stored in `edge_attributes`,
-    #         # build embedding(initial feature vector) for graph edges.
-    #         # Each edge may contains multiple tokens.
-    #         edge_idxs_list = []
-    #         edge_len_list = []
-    #         for edge_id, edge_dict in edge_attributes.items():
-    #             edge_word_idxs = []
-    #             for token in edge_dict['token'].split():
-    #                 edge_word_idxs.append(self.vocab.in_word_vocab.getIndex(token))
-    #             edge_idxs_list.append(edge_word_idxs)
-    #             edge_len_list.append(len(edge_word_idxs))
-    #
-    #         max_size = max(edge_len_list)
-    #         edge_idxs_list = [x + [self.vocab.in_word_vocab.PAD] * (max_size - len(x)) for x in edge_idxs_list]
-    #         edge_idxs_tensor = torch.LongTensor(edge_idxs_list).to(self.device)
-    #         # if self.embedding_layer.node_edge_emb_strategy == 'mean':
-    #         #     edge_len_tensor = torch.LongTensor(edge_len_list).view(-1, 1)
-    #         # else:
-    #         edge_len_tensor = torch.LongTensor(edge_len_list).to(self.device)
-    #         num_edges = torch.LongTensor([len(edge_len_list)]).to(self.device)
-    #         edge_feat = self.embedding_layer(edge_idxs_tensor, edge_len_tensor, num_edges)
-    #         graph.edge_features['edge_feat'] = edge_feat
-    #
-    #     return graph
 
     def embedding(self, kg_graph):
         graph_nodes_idx = []
@@ -324,13 +275,7 @@ class Graph2DistMult(nn.Module):
             feat_in = node_feats
             feat_out = node_feats
 
-            # for i in range(self.num_layers):
-            #     h = self.gnn_encoder[i](dgl_graph, (feat_in, feat_out))
-            #     feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0])), 0.25, train=require_loss)
-            #     feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1])), 0.25, train=require_loss)
-
             if self.direction_option == 'bi_sep':
-                # TODO
                 for i in range(self.num_layers):
                     h = self.gnn_encoder[i](dgl_graph, (feat_in,feat_out))
                     # feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0].squeeze())), 0.25, train=require_loss)  # GAT
@@ -387,8 +332,6 @@ class Kinship:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        # train_set = KinshipDataset(root_dir="/mnt/graph4nlp/graph4nlp/pytorch/test/dataset/kinship",
-        # train_set = KinshipDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/graph4nlp/pytorch/test/dataset/kinship",
         train_set = KinshipDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship",
                                   topology_builder=None,
                                   topology_subdir='e1rel_to_e2',
@@ -402,8 +345,6 @@ class Kinship:
 
         test_set = KinshipTestDataset(
             root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship",
-            # root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/graph4nlp/pytorch/test/dataset/kinship",
-            # root_dir="/mnt/graph4nlp/graph4nlp/pytorch/test/dataset/kinship",
             topology_builder=None,
             topology_subdir='e1rel_to_e2',
             share_vocab=True,
@@ -451,11 +392,11 @@ class Kinship:
             print("Epoch: {}".format(epoch))
             print('train loss =' + str(sum(loss_list)/len(loss_list)))
             print('#' * 50)
-            self.evaluate()
+            self.valid()
 
         return self.metrics[0].best_mrr
 
-    def evaluate(self):
+    def valid(self):
         self.model.eval()
 
         self.metrics[0].calculate_scores(self.model,
@@ -464,10 +405,26 @@ class Kinship:
                                          kg_graph=self.kg_graph,
                                          device=self.device)
 
+        return self.metrics[0].best_mrr
+
+    def test(self):
+        print('load best model...')
+        self.model.load_state_dict(torch.load(self.metrics[0].model_path))
+        self.model.eval()
+        self.metrics[0].calculate_scores(self.model,
+                                         self.test_dataloader,
+                                         name='test',
+                                         kg_graph=self.kg_graph,
+                                         device=self.device,
+                                         save=False)
+
+        return self.metrics[0].best_mrr
+
 
 if __name__ == "__main__":
     runner = Kinship()
-    max_score = runner.train()
+    # max_score = runner.train()
+    max_score = runner.test()
     print("Train finish, best MRR: {:.3f}".format(max_score))
 
 # nohup python -m examples.pytorch.kg_completion.kinship.main >> distmult_bce_gat_uni.log 2>&1 &

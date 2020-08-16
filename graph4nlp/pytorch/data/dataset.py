@@ -155,7 +155,8 @@ class Dataset(torch.utils.data.Dataset):
             for item in self.data:
                 graph = self.topology_builder.topology(raw_text_data=item.input_text, nlp_processor=processor,
                                                        merge_strategy=self.merge_strategy,
-                                                       edge_strategy=self.edge_strategy)
+                                                       edge_strategy=self.edge_strategy,
+                                                       verbase=False)
                 item.graph = graph
         elif self.graph_type == 'dynamic':
             # TODO: Implement this
@@ -517,6 +518,11 @@ class KGCompletionDataset(Dataset):
     def build_topology(self):
         self.graph_nodes = []
         self.graph_edges = []
+        # `self.parsed_results` is an intermediate dict that contains all the information of the KG graph.
+        # `self.parsed_results['graph_content']` is a list of dict.
+        # Each dict in `self.parsed_results['graph_content']` contains information about a triple (src_ent, rel, tgt_ent).
+        # `self.parsed_results['graph_nodes']` contains all nodes in the KG graph.
+        # `self.parsed_results['node_num']` is the number of nodes in the KG graph.
         self.parsed_results = {}
         self.parsed_results['graph_content'] = []
         self.data: [KGDataItem] = self.build_dataitem(self.raw_file_paths)
