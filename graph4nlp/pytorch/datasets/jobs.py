@@ -2,22 +2,19 @@ import os
 
 import torch
 
-from graph4nlp.pytorch.data.dataset import TextToTextDataset
+from graph4nlp.pytorch.data.dataset import Text2TextDataset
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 
 dataset_root = '../test/dataset/jobs'
 
 
-class JobsDataset(TextToTextDataset):
+class JobsDataset(Text2TextDataset):
     @property
-    def raw_file_names(self) -> list:
-        # raw_dir = 'jobs/raw'
-        return ['sequence.txt', 'seq.txt']
-        # self.raw_file_paths = ['jobs/raw/sequence.txt', 'jobs/raw/seq/txt']
-    # {'train': 'train_seq.txt', 'test': 'test_seq.txt'}
+    def raw_file_names(self):
+        return {'train': 'train.txt', 'test': 'test.txt'}
 
     @property
-    def processed_file_names(self) -> dict:
+    def processed_file_names(self):
         return {'vocab': 'vocab.pt', 'data': 'data.pt'}
 
     def download(self):
