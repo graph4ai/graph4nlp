@@ -60,6 +60,18 @@ class Dataset(torch.utils.data.Dataset):
     """
     Base class for datasets.
 
+    The dataset is organized in a two-layer index style. Direct access to the dataset object, e.g. Dataset[1], will first
+    be converted to the access to the internal index list, which is then passed to access the actual data. This design
+    is for the ease of sampling.
+
+    Examples
+    --------
+    Suppose we have a Dataset containing 5 data items ['a', 'b', 'c', 'd', 'e']. The indices of the 5 elements in the
+    list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset is shuffled, which shuffles the internal index list, the
+    consequent indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset `Dataset[2]` will first access the indices[2]
+    which is 1, and then use the received index to access the actual dataset, which will return the actual data item 'b'.
+    Now to the user the 3rd ([2]) element in the dataset got shuffled and is not 'c'.
+
     Parameters
     ----------
     root: str
@@ -67,7 +79,7 @@ class Dataset(torch.utils.data.Dataset):
     """
 
     @property
-    def raw_file_names(self) -> list:
+    def raw_file_names(self) -> dict:
         raise NotImplementedError
 
     @property
@@ -81,11 +93,12 @@ class Dataset(torch.utils.data.Dataset):
 
     @abc.abstractmethod
     def vectorization(self):
+        """Convert tokens to indices which can be processed by downstream models."""
         raise NotImplementedError
 
-    @staticmethod
     @abc.abstractmethod
-    def build_dataitem(self):
+    def parse_file(self, file_path):
+        """To be implemented in task-specific dataset base class."""
         raise NotImplementedError
 
     @staticmethod
@@ -95,21 +108,27 @@ class Dataset(torch.utils.data.Dataset):
         raise NotImplementedError
 
     def __init__(self,
-                root,
-                topology_builder,
-                topology_subdir,
-                tokenizer=word_tokenize,
-                lower_case=True,
-                pretrained_word_emb_file=None,
-                **kwargs):
+                 root,
+                 topology_builder,
+                 topology_subdir,
+                 tokenizer=word_tokenize,
+                 lower_case=True,
+                 pretrained_word_emb_file=None,
+                 use_val_for_vocab=False,
+                 **kwargs):
         super(Dataset, self).__init__()
 
-        self.root = root
+        self.data = {}  # The dictionary maintaining data and indices.
+        self.split_ids = {}  # The dictionary indicating the indices of each split subset.
+        self.root = root    # The root directory where the dataset is located.
+
+        # Processing-specific attributes
         self.tokenizer = tokenizer
         self.lower_case = lower_case
         self.pretrained_word_emb_file = pretrained_word_emb_file
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
+        self.use_val_for_vocab = use_val_for_vocab
         for k, v in kwargs.items():
             setattr(self, k, v)
         self.__indices__ = None
@@ -129,9 +148,9 @@ class Dataset(torch.utils.data.Dataset):
         return os.path.join(self.root, 'processed', self.topology_subdir)
 
     @property
-    def raw_file_paths(self) -> list:
+    def raw_file_paths(self) -> dict:
         """The paths to raw files."""
-        return [os.path.join(self.raw_dir, raw_file_name) for raw_file_name in self.raw_file_names]
+        return {key: os.path.join(self.raw_dir, name) for key, name in self.raw_file_names.items()}
 
     @property
     def processed_file_paths(self) -> list:
@@ -139,18 +158,37 @@ class Dataset(torch.utils.data.Dataset):
                 self.processed_file_names.values()]
 
     def _download(self):
-        if all([os.path.exists(raw_path) for raw_path in self.raw_file_paths]):
+        if all([os.path.exists(raw_path) for raw_path in self.raw_file_paths.values()]):
             return
 
         os.makedirs(self.raw_dir, exist_ok=True)
         self.download()
 
-    def build_topology(self):
-        self.data: [Text2TextDataItem] = self.build_dataitem(self.raw_file_paths)
+    def read_raw_data(self):
+        """
+        Read raw data from the disk and put them in a dictionary (`self.data`).
+        The raw data file should be organized as the format defined in `self.parse_file()` method.
 
+        This function calls `self.parse_file()` repeatedly and pass the file paths in `self.raw_file_names` once at a time.
+
+        This function builds `self.data` which is a dict of {int (index): DataItem}, where the id represents the
+        index of the DataItem w.r.t. the whole dataset.
+
+        This function also builds the `self.split_ids` dictionary whose keys correspond to those of self.raw_file_names
+        defined by the user, indicating the indices of each subset (e.g. train, val and test).
+
+        """
+        for split_name, file_path in self.raw_file_paths.items():
+            self.split_ids[split_name] = self.parse_file(file_path)
+
+    def build_topology(self):
+        """
+        Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
+        DataItem.
+        """
         if self.graph_type == 'static':
             processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
-            for item in self.data:
+            for item in self.data.values():
                 graph = self.topology_builder.topology(raw_text_data=item.input_text, nlp_processor=processor,
                                                        merge_strategy=self.merge_strategy,
                                                        edge_strategy=self.edge_strategy)
@@ -162,14 +200,23 @@ class Dataset(torch.utils.data.Dataset):
             raise NotImplementedError('Currently only static and dynamic are supported!')
 
     def build_vocab(self):
+        """
+        Build the vocabulary. If `self.use_val_for_vocab` is `True`, use both training set and validation set for building
+        the vocabulary. Otherwise only the training set is used.
+
+        """
+        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        if self.use_val_for_vocab:
+            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
+
         vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, 'vocab.pt'),
-                               data_set=self.data,
-                               tokenizer=self.tokenizer,
-                               lower_case=self.lower_case,
-                               max_word_vocab_size=None,
-                               min_word_vocab_freq=1,
-                               pretrained_word_emb_file=self.pretrained_word_emb_file,
-                               word_emb_size=300)
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=None,
+                                       min_word_vocab_freq=1,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       word_emb_size=300)
         self.vocab_model = vocab_model
 
         return self.vocab_model
@@ -180,15 +227,18 @@ class Dataset(torch.utils.data.Dataset):
 
         os.makedirs(self.processed_dir, exist_ok=True)
 
+        self.read_raw_data()
         self.build_topology()
         self.build_vocab()
         self.vectorization()
 
+    @property
     def indices(self):
         if self.__indices__ is not None:
             return self.__indices__
         else:
-            return range(len(self))
+            self.__dict__['indices'] = list(self.data.keys())
+            return list(self.data.keys())
 
     def index_select(self, idx):
         indices = self.indices()
@@ -229,7 +279,7 @@ class Dataset(torch.utils.data.Dataset):
         if not isinstance(index, int):
             return self.index_select(index)
         else:
-            return self.get(self.indices()[index])
+            return self.get(self.indices[index])
 
     def get(self, index: int):
         return self.data[index]
@@ -238,46 +288,56 @@ class Dataset(torch.utils.data.Dataset):
         return len(self.data)
 
 
-class TextToTextDataset(Dataset):
+class Text2TextDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
         self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
-        super(TextToTextDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+        super(Text2TextDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
-    def build_dataitem(self, files):
-        r"""Read raw input file and build DataItem out of it.
-        The format of the input file should contain lines of input, each line representing one record of data.
-        The input and output is seperated by a tab(\t).
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+
+        For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
 
         Examples
         --------
-        list job use languageid0	job ( ANS ) , language ( ANS , languageid0 )
-        show job use languageid0	job ( ANS ) , language ( ANS , languageid0 )
+        input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
 
-        In the above the input is the natural language in the left ("list job use languageid0") and the output
-        is in the right.
+        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
 
         Parameters
         ----------
-        file: list
-            The list containing all the input file paths.
+        file_path: str
+            The path of the input file.
+
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
         """
-        data = []
-        # data = {}
-        # train_raw_data = files['train']
-        # data['train'] =
-        for file in files:
-            with open(file, 'r') as f:
-                lines = f.readlines()
-                for line in lines:
-                    input, output = line.split('\t')
-                    data.append(Text2TextDataItem(input_text=input, output_text=output, tokenizer=self.tokenizer,
-                                                  share_vocab=self.share_vocab))
-        return data
+        current_index = len(self.data)
+        subset_indices = []
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                input, output = line.split('\t')
+                data_item = Text2TextDataItem(input_text=input, output_text=output, tokenizer=self.tokenizer,
+                                              share_vocab=self.share_vocab)
+                self.data[current_index] = data_item
+                subset_indices.append(current_index)
+                current_index += 1
+        return subset_indices
 
     def build_vocab(self):
+        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        if self.use_val_for_vocab:
+            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
+
         vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, 'vocab.pt'),
-                                       data_set=self.data,
+                                       data_set=data_for_vocab,
                                        tokenizer=self.tokenizer,
                                        lower_case=self.lower_case,
                                        max_word_vocab_size=None,
@@ -290,8 +350,8 @@ class TextToTextDataset(Dataset):
         return self.vocab_model
 
     def vectorization(self):
-        for i in range(len(self.data)):
-            graph: GraphData = self.data[i].graph
+        for item in self.data.values():
+            graph: GraphData = item.graph
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
                 node_token = graph.node_attributes[node_idx]['token']
@@ -301,12 +361,12 @@ class TextToTextDataset(Dataset):
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features['token_id'] = token_matrix
 
-            tgt = self.data[i].output_text
+            tgt = item.output_text
             tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
             tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
             tgt_token_id = torch.from_numpy(tgt_token_id)
-            self.data[i].output_tensor = tgt_token_id
+            item.output_tensor = tgt_token_id
 
         torch.save(self.data, os.path.join(self.processed_dir, self.processed_file_names['data']))
 
