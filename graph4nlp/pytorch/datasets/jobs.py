@@ -11,6 +11,7 @@ dataset_root = '../test/dataset/jobs'
 class JobsDataset(Text2TextDataset):
     @property
     def raw_file_names(self):
+        """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
         return {'train': 'train.txt', 'test': 'test.txt'}
 
     @property
