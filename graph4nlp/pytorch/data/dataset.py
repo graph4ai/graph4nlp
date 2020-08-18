@@ -153,9 +153,9 @@ class Dataset(torch.utils.data.Dataset):
         return {key: os.path.join(self.raw_dir, name) for key, name in self.raw_file_names.items()}
 
     @property
-    def processed_file_paths(self) -> list:
-        return [os.path.join(self.processed_dir, processed_file_name) for processed_file_name in
-                self.processed_file_names.values()]
+    def processed_file_paths(self) -> dict:
+        return {name: os.path.join(self.processed_dir, processed_file_name) for name, processed_file_name in
+                self.processed_file_names.items()}
 
     def _download(self):
         if all([os.path.exists(raw_path) for raw_path in self.raw_file_paths.values()]):
@@ -180,6 +180,7 @@ class Dataset(torch.utils.data.Dataset):
         """
         for split_name, file_path in self.raw_file_paths.items():
             self.split_ids[split_name] = self.parse_file(file_path)
+        torch.save(self.split_ids, self.processed_file_paths['split_ids'])
 
     def build_topology(self):
         """
@@ -209,7 +210,7 @@ class Dataset(torch.utils.data.Dataset):
         if self.use_val_for_vocab:
             data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
 
-        vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, 'vocab.pt'),
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
                                        data_set=data_for_vocab,
                                        tokenizer=self.tokenizer,
                                        lower_case=self.lower_case,
@@ -222,7 +223,7 @@ class Dataset(torch.utils.data.Dataset):
         return self.vocab_model
 
     def _process(self):
-        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths]):
+        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
             return
 
         os.makedirs(self.processed_dir, exist_ok=True)
@@ -241,7 +242,7 @@ class Dataset(torch.utils.data.Dataset):
             return list(self.data.keys())
 
     def index_select(self, idx):
-        indices = self.indices()
+        indices = self.indices
 
         if isinstance(idx, slice):
             indices = indices[idx]
@@ -336,7 +337,7 @@ class Text2TextDataset(Dataset):
         if self.use_val_for_vocab:
             data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
 
-        vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, 'vocab.pt'),
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
                                        data_set=data_for_vocab,
                                        tokenizer=self.tokenizer,
                                        lower_case=self.lower_case,
@@ -368,7 +369,7 @@ class Text2TextDataset(Dataset):
             tgt_token_id = torch.from_numpy(tgt_token_id)
             item.output_tensor = tgt_token_id
 
-        torch.save(self.data, os.path.join(self.processed_dir, self.processed_file_names['data']))
+        torch.save(self.data, self.processed_file_paths['data'])
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
