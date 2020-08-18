@@ -17,6 +17,7 @@ from torch.utils.data import DataLoader
 import torch.optim as optim
 import dgl
 import numpy as np
+import copy
 
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import EmbeddingConstruction
@@ -332,16 +333,24 @@ class Kinship:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        train_set = KinshipDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship",
+        dataset = KinshipDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship",
                                   topology_builder=None,
-                                  topology_subdir='e1rel_to_e2',
+                                  topology_subdir='e_rel_to_e',
                                   share_vocab=True)
 
-        # TODO: When edge2node is True, num_entities != train_set.KG_graph.get_node_num()
-        self.num_entities = train_set.KG_graph.graph_attributes['num_entities']
-        self.num_relations = train_set.KG_graph.graph_attributes['num_relations']
+        # train_idx = dataset.split_ids['train']
+        # dataset.index_select(train_idx)
 
-        self.kg_graph = train_set.KG_graph
+        # TODO: When edge2node is True, num_entities != train_set.KG_graph.get_node_num()
+        self.num_entities = dataset.KG_graph.graph_attributes['num_entities']
+        self.num_relations = dataset.KG_graph.graph_attributes['num_relations']
+        self.kg_graph = dataset.KG_graph
+
+        train_set = copy.deepcopy(dataset)
+        test_set = copy.deepcopy(dataset)
+
+        train_set.data = train_set.data[train_set.split_ids['train']]
+        test_set.data = test_set.data[test_set.split_ids['test']]
 
         test_set = KinshipTestDataset(
             root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship",

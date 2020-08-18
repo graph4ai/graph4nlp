@@ -457,27 +457,16 @@ class KGCompletionDataset(Dataset):
                  edge_strategy=None, **kwargs):
         self.data_item_type = KGDataItem
         self.share_vocab = share_vocab  # share vocab between entity and relation
-        # self.KG_graph = GraphData()
         self.edge_strategy = edge_strategy
         super(KGCompletionDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
-    def build_vocab(self):
-        vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, self.processed_file_names['vocab']),
-                               data_set=self.data,
-                               tokenizer=self.tokenizer,
-                               lower_case=self.lower_case,
-                               max_word_vocab_size=None,
-                               min_word_vocab_freq=1,
-                               pretrained_word_emb_file=self.pretrained_word_emb_file,
-                               word_emb_size=300)
-        self.vocab_model = vocab_model
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
 
-        return self.vocab_model
-
-    def build_dataitem(self, files):
-        r"""Read raw input file and build DataItem out of it.
-        The format of the input file should contain lines of input, each line representing one record of data.
-        The input and output is seperated by a tab(\t).
+        For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
 
         Examples
         --------
@@ -490,103 +479,187 @@ class KGCompletionDataset(Dataset):
         person83 person46 person16 person48 person17 person59 person80 person50 person90",
         "e2_multi2": "person29 person82 person2 person20 person83 person46 person80"}
 
+        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
+
         Parameters
         ----------
-        file: list of json files
-            The list containing all the input file paths.
+        file_path: str
+            The path of the input file.
+
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
         """
-        data = []
-        for file in files:
-            with open(file, 'r') as f:
-                lines = f.readlines()
-                for line in lines:
-                    line_dict = json.loads(line)
-                    data.append(KGDataItem(e1=line_dict['e1'],
-                                           e2=line_dict['e2'],
-                                           rel=line_dict['rel'],
-                                           rel_eval=line_dict['rel_eval'],
-                                           e2_multi=line_dict['e2_multi1'],
-                                           e1_multi=line_dict['e2_multi2'],
-                                           share_vocab=self.share_vocab,
-                                           split_token=self.split_token))
+        current_index = len(self.data)
+        subset_indices = []
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                line_dict = json.loads(line)
+                self.data[current_index] = KGDataItem(e1=line_dict['e1'],
+                                                      e2=line_dict['e2'],
+                                                      rel=line_dict['rel'],
+                                                      rel_eval=line_dict['rel_eval'],
+                                                      e2_multi=line_dict['e2_multi1'],
+                                                      e1_multi=line_dict['e2_multi2'],
+                                                      share_vocab=self.share_vocab,
+                                                      split_token=self.split_token)
+                subset_indices.append(current_index)
+                current_index += 1
 
-                    for e2 in line_dict['e2_multi1'].split(' '):
-                        triple = [line_dict['e1'], line_dict['rel'], e2]
+                for e2 in line_dict['e2_multi1'].split(' '):
+                    triple = [line_dict['e1'], line_dict['rel'], e2]
+                    self.build_parsed_results(triple)
 
-                        if self.edge_strategy is None:
-                            if triple[0] not in self.graph_nodes:
-                                self.graph_nodes.append(triple[0])
+                    # if self.edge_strategy is None:
+                    #     if triple[0] not in self.graph_nodes:
+                    #         self.graph_nodes.append(triple[0])
+                    #
+                    #     if triple[2] not in self.graph_nodes:
+                    #         self.graph_nodes.append(triple[2])
+                    #
+                    #     if triple[1] not in self.graph_edges:
+                    #         self.graph_edges.append(triple[1])
+                    #
+                    #     triple_info = {'edge_tokens': triple[1],
+                    #                    'src': {
+                    #                        'tokens': triple[0],
+                    #                        'id': self.graph_nodes.index(triple[0])
+                    #                    },
+                    #                    'tgt': {
+                    #                        'tokens': triple[2],
+                    #                        'id': self.graph_nodes.index(triple[2])
+                    #                    }}
+                    #     if triple_info not in self.parsed_results['graph_content']:
+                    #         self.parsed_results['graph_content'].append(triple_info)
+                    # elif self.edge_strategy == "as_node":
+                    #     if triple[0] not in self.graph_nodes:
+                    #         self.graph_nodes.append(triple[0])
+                    #
+                    #     if triple[1] not in self.graph_nodes:
+                    #         self.graph_nodes.append(triple[1])
+                    #
+                    #     if triple[2] not in self.graph_nodes:
+                    #         self.graph_nodes.append(triple[2])
+                    #
+                    #     triple_info_0_1 = {'edge_tokens': [],
+                    #                        'src': {
+                    #                            'tokens': triple[0],
+                    #                            'id': self.graph_nodes.index(triple[0]),
+                    #                            'type': 'ent_node'
+                    #                        },
+                    #                        'tgt': {
+                    #                            'tokens': triple[1],
+                    #                            'id': self.graph_nodes.index(triple[1]),
+                    #                            'type': 'edge_node'
+                    #                        }}
+                    #
+                    #     triple_info_1_2 = {'edge_tokens': [],
+                    #                        'src': {
+                    #                            'tokens': triple[1],
+                    #                            'id': self.graph_nodes.index(triple[1]),
+                    #                            'type': 'edge_node'
+                    #                        },
+                    #                        'tgt': {
+                    #                            'tokens': triple[2],
+                    #                            'id': self.graph_nodes.index(triple[2]),
+                    #                            'type': 'ent_node'
+                    #                        }}
+                    #
+                    #     if triple_info_0_1 not in self.parsed_results['graph_content']:
+                    #         self.parsed_results['graph_content'].append(triple_info_0_1)
+                    #     if triple_info_1_2 not in self.parsed_results['graph_content']:
+                    #         self.parsed_results['graph_content'].append(triple_info_1_2)
 
-                            if triple[2] not in self.graph_nodes:
-                                self.graph_nodes.append(triple[2])
+                for e1 in line_dict['e2_multi2'].split(' '):
+                    triple = [line_dict['e2'], line_dict['rel_eval'], e1]
+                    self.build_parsed_results(triple)
 
-                            if triple[1] not in self.graph_edges:
-                                self.graph_edges.append(triple[1])
+        return subset_indices
 
-                            triple_info = {'edge_tokens': triple[1],
-                                           'src': {
-                                               'tokens': triple[0],
-                                               'id': self.graph_nodes.index(triple[0])
-                                           },
-                                           'tgt': {
-                                               'tokens': triple[2],
-                                               'id': self.graph_nodes.index(triple[2])
-                                           }}
-                            if triple not in self.parsed_results['graph_content']:
-                                self.parsed_results['graph_content'].append(triple_info)
-                        elif self.edge_strategy == "as_node":
-                            if triple[0] not in self.graph_nodes:
-                                self.graph_nodes.append(triple[0])
+    def build_vocab(self):
+        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        if self.use_val_for_vocab:
+            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
 
-                            if triple[1] not in self.graph_nodes:
-                                self.graph_nodes.append(triple[1])
+        vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, self.processed_file_names['vocab']),
+                               data_set=data_for_vocab,
+                               tokenizer=self.tokenizer,
+                               lower_case=self.lower_case,
+                               max_word_vocab_size=None,
+                               min_word_vocab_freq=1,
+                               pretrained_word_emb_file=self.pretrained_word_emb_file,
+                               word_emb_size=300)
+        self.vocab_model = vocab_model
 
-                            if triple[2] not in self.graph_nodes:
-                                self.graph_nodes.append(triple[2])
+        return self.vocab_model
 
-                            triple_info_0_1 = {'edge_tokens': [],
-                                               'src': {
-                                                   'tokens': triple[0],
-                                                   'id': self.graph_nodes.index(triple[0]),
-                                                   'type': 'ent_node'
-                                               },
-                                               'tgt': {
-                                                   'tokens': triple[1],
-                                                   'id': self.graph_nodes.index(triple[1]),
-                                                   'type': 'edge_node'
-                                               }}
+    def build_parsed_results(self, triple):
+        if self.edge_strategy is None:
+            if triple[0] not in self.graph_nodes:
+                self.graph_nodes.append(triple[0])
 
-                            triple_info_1_2 = {'edge_tokens': [],
-                                               'src': {
-                                                   'tokens': triple[1],
-                                                   'id': self.graph_nodes.index(triple[1]),
-                                                   'type': 'edge_node'
-                                               },
-                                               'tgt': {
-                                                   'tokens': triple[2],
-                                                   'id': self.graph_nodes.index(triple[2]),
-                                                   'type': 'ent_node'
-                                               }}
+            if triple[2] not in self.graph_nodes:
+                self.graph_nodes.append(triple[2])
 
-                            if triple_info_0_1 not in self.parsed_results['graph_content']:
-                                self.parsed_results['graph_content'].append(triple_info_0_1)
-                            if triple_info_1_2 not in self.parsed_results['graph_content']:
-                                self.parsed_results['graph_content'].append(triple_info_1_2)
+            if triple[1] not in self.graph_edges:
+                self.graph_edges.append(triple[1])
 
-        return data
+            triple_info = {'edge_tokens': triple[1],
+                           'src': {
+                               'tokens': triple[0],
+                               'id': self.graph_nodes.index(triple[0])
+                           },
+                           'tgt': {
+                               'tokens': triple[2],
+                               'id': self.graph_nodes.index(triple[2])
+                           }}
+            if triple_info not in self.parsed_results['graph_content']:
+                self.parsed_results['graph_content'].append(triple_info)
+        elif self.edge_strategy == "as_node":
+            if triple[0] not in self.graph_nodes:
+                self.graph_nodes.append(triple[0])
+
+            if triple[1] not in self.graph_nodes:
+                self.graph_nodes.append(triple[1])
+
+            if triple[2] not in self.graph_nodes:
+                self.graph_nodes.append(triple[2])
+
+            triple_info_0_1 = {'edge_tokens': [],
+                               'src': {
+                                   'tokens': triple[0],
+                                   'id': self.graph_nodes.index(triple[0]),
+                                   'type': 'ent_node'
+                               },
+                               'tgt': {
+                                   'tokens': triple[1],
+                                   'id': self.graph_nodes.index(triple[1]),
+                                   'type': 'edge_node'
+                               }}
+
+            triple_info_1_2 = {'edge_tokens': [],
+                               'src': {
+                                   'tokens': triple[1],
+                                   'id': self.graph_nodes.index(triple[1]),
+                                   'type': 'edge_node'
+                               },
+                               'tgt': {
+                                   'tokens': triple[2],
+                                   'id': self.graph_nodes.index(triple[2]),
+                                   'type': 'ent_node'
+                               }}
+
+            if triple_info_0_1 not in self.parsed_results['graph_content']:
+                self.parsed_results['graph_content'].append(triple_info_0_1)
+            if triple_info_1_2 not in self.parsed_results['graph_content']:
+                self.parsed_results['graph_content'].append(triple_info_1_2)
+
+        return
 
     def build_topology(self):
-        self.graph_nodes = []
-        self.graph_edges = []
-        # `self.parsed_results` is an intermediate dict that contains all the information of the KG graph.
-        # `self.parsed_results['graph_content']` is a list of dict.
-        # Each dict in `self.parsed_results['graph_content']` contains information about a triple (src_ent, rel, tgt_ent).
-        # `self.parsed_results['graph_nodes']` contains all nodes in the KG graph.
-        # `self.parsed_results['node_num']` is the number of nodes in the KG graph.
-        self.parsed_results = {}
-        self.parsed_results['graph_content'] = []
-        self.data: [KGDataItem] = self.build_dataitem(self.raw_file_paths)
-
+        # self.data: [KGDataItem] = self.build_dataitem(self.raw_file_paths)
         self.KG_graph = GraphData()
         self.parsed_results['node_num'] = len(self.graph_nodes)
         self.parsed_results['graph_nodes'] = self.graph_nodes
@@ -602,6 +675,22 @@ class KGCompletionDataset(Dataset):
 
         os.makedirs(self.processed_dir, exist_ok=True)
 
+        self.graph_nodes = []
+        self.graph_edges = []
+        """
+        `self.parsed_results` is an intermediate dict that contains all the information of the KG graph.
+        `self.parsed_results['graph_content']` is a list of dict.
+        
+        Each dict in `self.parsed_results['graph_content']` contains information about a triple 
+        (src_ent, rel, tgt_ent).
+        
+        `self.parsed_results['graph_nodes']` contains all nodes in the KG graph.
+        `self.parsed_results['node_num']` is the number of nodes in the KG graph.
+        """
+        self.parsed_results = {}
+        self.parsed_results['graph_content'] = []
+
+        self.read_raw_data()
         self.build_topology()
         self.build_vocab()
         self.vectorization()
@@ -619,44 +708,38 @@ class KGCompletionDataset(Dataset):
 
         for i in range(len(self.data)):
             e1 = self.data[i].e1
-            # self.data[i].e1_tensor = torch.tensor(self.vocab_model.in_word_vocab.to_index_sequence(e1), dtype=torch.long)
             self.data[i].e1_tensor = torch.tensor(self.graph_nodes.index(e1), dtype=torch.long)
 
-            # e2 = self.data[i].e2
-            # self.data[i].e2_tensor = torch.tensor(self.vocab_model.in_word_vocab.to_index_sequence(e2),
-            #                                       dtype=torch.long)
-            # self.data[i].e2_tensor = torch.tensor(self.graph_nodes.index(e2), dtype=torch.long)
+            e2 = self.data[i].e2
+            self.data[i].e2_tensor = torch.tensor(self.graph_nodes.index(e2), dtype=torch.long)
 
             rel = self.data[i].rel
-            # self.data[i].rel_tensor = torch.tensor(self.vocab_model.in_word_vocab.to_index_sequence(rel),
-            #                                        dtype=torch.long)
             if self.edge_strategy == "as_node":
                 self.data[i].rel_tensor = torch.tensor(self.graph_nodes.index(rel), dtype=torch.long)
             else:
                 self.data[i].rel_tensor = torch.tensor(self.graph_edges.index(rel), dtype=torch.long)
 
-            # rel_eval = self.data[i].rel_eval
-            # self.data[i].rel_eval_tensor = torch.tensor(self.vocab_model.in_word_vocab.to_index_sequence(rel_eval),
-            #                                             dtype=torch.long)
-            # self.data[i].rel_eval_tensor = torch.tensor(self.graph_nodes.index(rel_eval), dtype=torch.long)
+            rel_eval = self.data[i].rel_eval
+            self.data[i].rel_eval_tensor = torch.tensor(self.graph_edges.index(rel_eval), dtype=torch.long)
 
             e2_multi = self.data[i].e2_multi
-            # self.data[i].e2_multi_tensor = torch.tensor(self.vocab_model.in_word_vocab.to_index_sequence(e2_multi),
-            #                                       dtype=torch.long)
             self.data[i].e2_multi_tensor = torch.zeros(1, len(self.graph_nodes)).\
                 scatter_(1,
                          torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long).view(1, -1),
                          torch.ones(1, len(e2_multi.split()))).squeeze()
             self.data[i].e2_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long)
-            # self.data[i].e2_multi_tensor = torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long)
 
-            # e1_multi = self.data[i].e1_multi
-            # self.data[i].e1_multi_tensor = torch.tensor(self.vocab_model.in_word_vocab.to_index_sequence(e1_multi),
-            #                                             dtype=torch.long)
-            # self.data[i].e1_multi_tensor = torch.tensor(e1_multi, dtype=torch.long)
+            e1_multi = self.data[i].e1_multi
+            self.data[i].e1_multi_tensor = torch.zeros(1, len(self.graph_nodes)). \
+                scatter_(1,
+                         torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()], dtype=torch.long).view(1, -1),
+                         torch.ones(1, len(e1_multi.split()))).squeeze()
+            self.data[i].e1_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()],
+                                                            dtype=torch.long)
 
 
         torch.save(self.data, os.path.join(self.processed_dir, self.processed_file_names['data']))
+        torch.save(self.split_ids, os.path.join(self.processed_dir, self.processed_file_names['split_ids']))
         if 'KG_graph' in self.processed_file_names.keys():
             torch.save(self.KG_graph, os.path.join(self.processed_dir, self.processed_file_names['KG_graph']))
 

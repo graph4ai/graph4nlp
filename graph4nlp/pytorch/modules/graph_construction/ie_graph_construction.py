@@ -221,7 +221,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                                    'tokens': triple[2],
                                    'id': graph_nodes.index(triple[2])
                                }}
-                if triple not in parsed_results['graph_content']:
+                if triple_info not in parsed_results['graph_content']:
                     parsed_results['graph_content'].append(triple_info)
             elif edge_strategy == "as_node":
                 if triple[0] not in graph_nodes:
