@@ -244,7 +244,7 @@ class Dataset(torch.utils.data.Dataset):
             return list(self.data.keys())
 
     def index_select(self, idx):
-        indices = self.indices()
+        indices = self.indices
 
         if isinstance(idx, slice):
             indices = indices[idx]
