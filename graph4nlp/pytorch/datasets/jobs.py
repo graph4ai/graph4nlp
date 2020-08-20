@@ -1,6 +1,7 @@
 import os
 
 import torch
+import pickle
 
 from graph4nlp.pytorch.data.dataset import Text2TextDataset
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -20,8 +21,9 @@ class JobsDataset(Text2TextDataset):
         return {'vocab': 'vocab.pt', 'data': 'data.pt', 'split_ids': 'split_ids.pt'}
 
     def download(self):
-        raise NotImplementedError(
-            'This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
+        # raise NotImplementedError(
+        #     'This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
+        return
 
     def __init__(self, root_dir, topology_builder=None, topology_subdir=None, graph_type='static',
                  edge_strategy=None, merge_strategy='tailhead', **kwargs):

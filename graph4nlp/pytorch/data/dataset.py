@@ -3,6 +3,7 @@ import copy
 import os
 
 import numpy as np
+import random
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
@@ -10,6 +11,8 @@ from nltk.tokenize import word_tokenize
 from ..data.data import GraphData
 from ..modules.utils.vocab_utils import VocabModel, Vocab
 
+import json
+from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 
 class DataItem(object):
     def __init__(self, input_text, tokenizer):
@@ -192,7 +195,8 @@ class Dataset(torch.utils.data.Dataset):
             for item in self.data.values():
                 graph = self.topology_builder.topology(raw_text_data=item.input_text, nlp_processor=processor,
                                                        merge_strategy=self.merge_strategy,
-                                                       edge_strategy=self.edge_strategy)
+                                                       edge_strategy=self.edge_strategy,
+                                                       verbase=False)
                 item.graph = graph
         elif self.graph_type == 'dynamic':
             # TODO: Implement this
@@ -441,3 +445,479 @@ class Text2TextDataset(Dataset):
 
         tgt_seq = torch.cat(tgt_seq_pad, dim=0)
         return [graph_data, tgt_seq]
+
+
+class KGDataItem(DataItem):
+    def __init__(self, e1, rel, e2, rel_eval, e2_multi, e1_multi, share_vocab=True, split_token=' '):
+        super(KGDataItem, self).__init__(input_text=None, tokenizer=None)
+        self.e1 = e1
+        self.rel = rel
+        self.e2 = e2
+        self.rel_eval = rel_eval
+        self.e2_multi = e2_multi
+        self.e1_multi = e1_multi
+        self.share_vocab = share_vocab
+        self.split_token = split_token
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens and output tokens
+        """
+        # g: GraphData = self.graph
+
+        input_tokens = []
+        if self.tokenizer is None:
+            e1_tokens = self.e1.strip().split(' ')
+        else:
+            e1_tokens = self.tokenizer(self.e1)
+
+        if self.tokenizer is None:
+            e2_tokens = self.e2.strip().split(' ')
+        else:
+            e2_tokens = self.tokenizer(self.e2)
+
+        if self.tokenizer is None:
+            e2_multi_tokens = self.e2_multi.strip().split(' ')
+        else:
+            e2_multi_tokens = self.tokenizer(self.e2_multi)
+
+        if self.tokenizer is None:
+            e1_multi_tokens = self.e1_multi.strip().split(' ')
+        else:
+            e1_multi_tokens = self.tokenizer(self.e1_multi)
+
+        if self.tokenizer is None:
+            rel_tokens = self.rel.strip().split(self.split_token)
+        else:
+            rel_tokens = self.tokenizer(self.rel)
+
+        if self.tokenizer is None:
+            rel_eval_tokens = self.rel_eval.strip().split(self.split_token)
+        else:
+            rel_eval_tokens = self.tokenizer(self.rel_eval)
+
+        if self.share_vocab:
+            return e1_tokens + e2_tokens + e1_multi_tokens + e2_multi_tokens + rel_tokens + rel_eval_tokens
+        else:
+            return e1_tokens + e2_tokens + e1_multi_tokens + e2_multi_tokens, rel_tokens + rel_eval_tokens
+
+
+class KGCompletionDataset(Dataset):
+    def __init__(self, root_dir, topology_builder=None, topology_subdir=None, share_vocab=True,
+                 edge_strategy=None, **kwargs):
+        self.data_item_type = KGDataItem
+        self.share_vocab = share_vocab  # share vocab between entity and relation
+        self.edge_strategy = edge_strategy
+        super(KGCompletionDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+
+        For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
+
+        Examples
+        --------
+        {"e1": "person84", "e2": "person85", "rel": "term21", "rel_eval": "term21_reverse",
+        "e2_multi1": "person85",
+        "e2_multi2": "person74 person84 person55 person96 person66 person57"}
+
+        {"e1": "person20", "e2": "person90", "rel": "term11", "rel_eval": "term11_reverse",
+        "e2_multi1": "person29 person82 person85 person77 person73 person63 person34 person86 person4
+        person83 person46 person16 person48 person17 person59 person80 person50 person90",
+        "e2_multi2": "person29 person82 person2 person20 person83 person46 person80"}
+
+        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
+
+        Parameters
+        ----------
+        file_path: str
+            The path of the input file.
+
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
+        """
+        current_index = len(self.data)
+        subset_indices = []
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                line_dict = json.loads(line)
+                self.data[current_index] = KGDataItem(e1=line_dict['e1'],
+                                                      e2=line_dict['e2'],
+                                                      rel=line_dict['rel'],
+                                                      rel_eval=line_dict['rel_eval'],
+                                                      e2_multi=line_dict['e2_multi1'],
+                                                      e1_multi=line_dict['e2_multi2'],
+                                                      share_vocab=self.share_vocab,
+                                                      split_token=self.split_token)
+                subset_indices.append(current_index)
+                current_index += 1
+
+                for e2 in line_dict['e2_multi1'].split(' '):
+                    triple = [line_dict['e1'], line_dict['rel'], e2]
+                    self.build_parsed_results(triple)
+
+                    # if self.edge_strategy is None:
+                    #     if triple[0] not in self.graph_nodes:
+                    #         self.graph_nodes.append(triple[0])
+                    #
+                    #     if triple[2] not in self.graph_nodes:
+                    #         self.graph_nodes.append(triple[2])
+                    #
+                    #     if triple[1] not in self.graph_edges:
+                    #         self.graph_edges.append(triple[1])
+                    #
+                    #     triple_info = {'edge_tokens': triple[1],
+                    #                    'src': {
+                    #                        'tokens': triple[0],
+                    #                        'id': self.graph_nodes.index(triple[0])
+                    #                    },
+                    #                    'tgt': {
+                    #                        'tokens': triple[2],
+                    #                        'id': self.graph_nodes.index(triple[2])
+                    #                    }}
+                    #     if triple_info not in self.parsed_results['graph_content']:
+                    #         self.parsed_results['graph_content'].append(triple_info)
+                    # elif self.edge_strategy == "as_node":
+                    #     if triple[0] not in self.graph_nodes:
+                    #         self.graph_nodes.append(triple[0])
+                    #
+                    #     if triple[1] not in self.graph_nodes:
+                    #         self.graph_nodes.append(triple[1])
+                    #
+                    #     if triple[2] not in self.graph_nodes:
+                    #         self.graph_nodes.append(triple[2])
+                    #
+                    #     triple_info_0_1 = {'edge_tokens': [],
+                    #                        'src': {
+                    #                            'tokens': triple[0],
+                    #                            'id': self.graph_nodes.index(triple[0]),
+                    #                            'type': 'ent_node'
+                    #                        },
+                    #                        'tgt': {
+                    #                            'tokens': triple[1],
+                    #                            'id': self.graph_nodes.index(triple[1]),
+                    #                            'type': 'edge_node'
+                    #                        }}
+                    #
+                    #     triple_info_1_2 = {'edge_tokens': [],
+                    #                        'src': {
+                    #                            'tokens': triple[1],
+                    #                            'id': self.graph_nodes.index(triple[1]),
+                    #                            'type': 'edge_node'
+                    #                        },
+                    #                        'tgt': {
+                    #                            'tokens': triple[2],
+                    #                            'id': self.graph_nodes.index(triple[2]),
+                    #                            'type': 'ent_node'
+                    #                        }}
+                    #
+                    #     if triple_info_0_1 not in self.parsed_results['graph_content']:
+                    #         self.parsed_results['graph_content'].append(triple_info_0_1)
+                    #     if triple_info_1_2 not in self.parsed_results['graph_content']:
+                    #         self.parsed_results['graph_content'].append(triple_info_1_2)
+
+                for e1 in line_dict['e2_multi2'].split(' '):
+                    triple = [line_dict['e2'], line_dict['rel_eval'], e1]
+                    self.build_parsed_results(triple)
+
+        return subset_indices
+
+    def build_vocab(self):
+        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        if self.use_val_for_vocab:
+            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
+
+        vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, self.processed_file_names['vocab']),
+                               data_set=data_for_vocab,
+                               tokenizer=self.tokenizer,
+                               lower_case=self.lower_case,
+                               max_word_vocab_size=None,
+                               min_word_vocab_freq=1,
+                               pretrained_word_emb_file=self.pretrained_word_emb_file,
+                               word_emb_size=300)
+        self.vocab_model = vocab_model
+
+        return self.vocab_model
+
+    def build_parsed_results(self, triple):
+        if self.edge_strategy is None:
+            if triple[0] not in self.graph_nodes:
+                self.graph_nodes.append(triple[0])
+
+            if triple[2] not in self.graph_nodes:
+                self.graph_nodes.append(triple[2])
+
+            if triple[1] not in self.graph_edges:
+                self.graph_edges.append(triple[1])
+
+            triple_info = {'edge_tokens': triple[1],
+                           'src': {
+                               'tokens': triple[0],
+                               'id': self.graph_nodes.index(triple[0])
+                           },
+                           'tgt': {
+                               'tokens': triple[2],
+                               'id': self.graph_nodes.index(triple[2])
+                           }}
+            if triple_info not in self.parsed_results['graph_content']:
+                self.parsed_results['graph_content'].append(triple_info)
+        elif self.edge_strategy == "as_node":
+            if triple[0] not in self.graph_nodes:
+                self.graph_nodes.append(triple[0])
+
+            if triple[1] not in self.graph_nodes:
+                self.graph_nodes.append(triple[1])
+
+            if triple[2] not in self.graph_nodes:
+                self.graph_nodes.append(triple[2])
+
+            triple_info_0_1 = {'edge_tokens': [],
+                               'src': {
+                                   'tokens': triple[0],
+                                   'id': self.graph_nodes.index(triple[0]),
+                                   'type': 'ent_node'
+                               },
+                               'tgt': {
+                                   'tokens': triple[1],
+                                   'id': self.graph_nodes.index(triple[1]),
+                                   'type': 'edge_node'
+                               }}
+
+            triple_info_1_2 = {'edge_tokens': [],
+                               'src': {
+                                   'tokens': triple[1],
+                                   'id': self.graph_nodes.index(triple[1]),
+                                   'type': 'edge_node'
+                               },
+                               'tgt': {
+                                   'tokens': triple[2],
+                                   'id': self.graph_nodes.index(triple[2]),
+                                   'type': 'ent_node'
+                               }}
+
+            if triple_info_0_1 not in self.parsed_results['graph_content']:
+                self.parsed_results['graph_content'].append(triple_info_0_1)
+            if triple_info_1_2 not in self.parsed_results['graph_content']:
+                self.parsed_results['graph_content'].append(triple_info_1_2)
+
+        return
+
+    def build_topology(self):
+        # self.data: [KGDataItem] = self.build_dataitem(self.raw_file_paths)
+        self.KG_graph = GraphData()
+        self.parsed_results['node_num'] = len(self.graph_nodes)
+        self.parsed_results['graph_nodes'] = self.graph_nodes
+        self.KG_graph = IEBasedGraphConstruction._construct_static_graph(self.parsed_results, edge_strategy=self.edge_strategy)
+        self.KG_graph.graph_attributes['num_entities'] = len(self.graph_nodes)
+        self.KG_graph.graph_attributes['num_relations'] = len(self.graph_edges)
+        self.KG_graph.graph_attributes['graph_nodes'] = self.graph_nodes
+        self.KG_graph.graph_attributes['graph_edges'] = self.graph_edges
+
+    def _process(self):
+        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths]):
+            return
+
+        os.makedirs(self.processed_dir, exist_ok=True)
+
+        self.graph_nodes = []
+        self.graph_edges = []
+        """
+        `self.parsed_results` is an intermediate dict that contains all the information of the KG graph.
+        `self.parsed_results['graph_content']` is a list of dict.
+        
+        Each dict in `self.parsed_results['graph_content']` contains information about a triple 
+        (src_ent, rel, tgt_ent).
+        
+        `self.parsed_results['graph_nodes']` contains all nodes in the KG graph.
+        `self.parsed_results['node_num']` is the number of nodes in the KG graph.
+        """
+        self.parsed_results = {}
+        self.parsed_results['graph_content'] = []
+
+        self.read_raw_data()
+        self.build_topology()
+        self.build_vocab()
+        self.vectorization()
+
+    def vectorization(self):
+        graph: GraphData = self.KG_graph
+        token_matrix = []
+        for node_idx in range(graph.get_node_num()):
+            node_token = graph.node_attributes[node_idx]['token']
+            node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
+            graph.node_attributes[node_idx]['token_id'] = node_token_id
+            token_matrix.append([node_token_id])
+        token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+        graph.node_features['token_id'] = token_matrix
+
+        for i in range(len(self.data)):
+            e1 = self.data[i].e1
+            self.data[i].e1_tensor = torch.tensor(self.graph_nodes.index(e1), dtype=torch.long)
+
+            e2 = self.data[i].e2
+            self.data[i].e2_tensor = torch.tensor(self.graph_nodes.index(e2), dtype=torch.long)
+
+            rel = self.data[i].rel
+            if self.edge_strategy == "as_node":
+                self.data[i].rel_tensor = torch.tensor(self.graph_nodes.index(rel), dtype=torch.long)
+            else:
+                self.data[i].rel_tensor = torch.tensor(self.graph_edges.index(rel), dtype=torch.long)
+
+            rel_eval = self.data[i].rel_eval
+            self.data[i].rel_eval_tensor = torch.tensor(self.graph_edges.index(rel_eval), dtype=torch.long)
+
+            e2_multi = self.data[i].e2_multi
+            self.data[i].e2_multi_tensor = torch.zeros(1, len(self.graph_nodes)).\
+                scatter_(1,
+                         torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long).view(1, -1),
+                         torch.ones(1, len(e2_multi.split()))).squeeze()
+            self.data[i].e2_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long)
+
+            e1_multi = self.data[i].e1_multi
+            self.data[i].e1_multi_tensor = torch.zeros(1, len(self.graph_nodes)). \
+                scatter_(1,
+                         torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()], dtype=torch.long).view(1, -1),
+                         torch.ones(1, len(e1_multi.split()))).squeeze()
+            self.data[i].e1_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()],
+                                                            dtype=torch.long)
+
+
+        torch.save(self.data, os.path.join(self.processed_dir, self.processed_file_names['data']))
+        torch.save(self.split_ids, os.path.join(self.processed_dir, self.processed_file_names['split_ids']))
+        if 'KG_graph' in self.processed_file_names.keys():
+            torch.save(self.KG_graph, os.path.join(self.processed_dir, self.processed_file_names['KG_graph']))
+
+    # @staticmethod
+    # def collate_fn(data_list: [KGDataItem]):
+    #     # graph_data = [item.graph for item in data_list]
+    #     e1 = torch.tensor([item.e1_tensor for item in data_list])
+    #     rel = torch.tensor([item.rel_tensor for item in data_list])
+    #     # e2_multi_tensor_idx = torch.tensor([item.e2_multi_tensor_idx for item in data_list])
+    #
+    #     e2_multi_tensor_idx_len = [item.e2_multi_tensor_idx.shape[0] for item in data_list]
+    #     max_e2_multi_tensor_idx_len = max(e2_multi_tensor_idx_len)
+    #     e2_multi_tensor_idx_pad = []
+    #     for item in data_list:
+    #         if item.e2_multi_tensor_idx.shape[0] < max_e2_multi_tensor_idx_len:
+    #             need_pad_length = max_e2_multi_tensor_idx_len - item.e2_multi_tensor_idx.shape[0]
+    #             pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+    #             e2_multi_tensor_idx_pad.append(torch.cat((item.e2_multi_tensor_idx, pad.long()), dim=0).unsqueeze(0))
+    #         elif item.e2_multi_tensor_idx.shape[0] == max_e2_multi_tensor_idx_len:
+    #             e2_multi_tensor_idx_pad.append(item.e2_multi_tensor_idx.unsqueeze(0))
+    #         else:
+    #             raise RuntimeError("Size mismatch error")
+    #
+    #     e2_multi_tensor_idx = torch.cat(e2_multi_tensor_idx_pad, dim=0)
+    #
+    #     # do padding here
+    #     e2_multi_len = [item.e2_multi_tensor.shape[0] for item in data_list]
+    #     max_e2_multi_len = max(e2_multi_len)
+    #     e2_multi_pad = []
+    #     for item in data_list:
+    #         if item.e2_multi_tensor.shape[0] < max_e2_multi_len:
+    #             need_pad_length = max_e2_multi_len - item.e2_multi_tensor.shape[0]
+    #             pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+    #             e2_multi_pad.append(torch.cat((item.e2_multi_tensor, pad.long()), dim=0).unsqueeze(0))
+    #         elif item.e2_multi_tensor.shape[0] == max_e2_multi_len:
+    #             e2_multi_pad.append(item.e2_multi_tensor.unsqueeze(0))
+    #         else:
+    #             raise RuntimeError("Size mismatch error")
+    #
+    #     e2_multi = torch.cat(e2_multi_pad, dim=0)
+    #
+    #     # # do padding here
+    #     # seq_len = [item.output_tensor.shape[0] for item in data_list]
+    #     # max_seq_len = max(seq_len)
+    #     # tgt_seq_pad = []
+    #     # for item in data_list:
+    #     #     if item.output_tensor.shape[0] < max_seq_len:
+    #     #         need_pad_length = max_seq_len - item.output_tensor.shape[0]
+    #     #         pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+    #     #         tgt_seq_pad.append(torch.cat((item.output_tensor, pad.long()), dim=0).unsqueeze(0))
+    #     #     elif item.output_tensor.shape[0] == max_seq_len:
+    #     #         tgt_seq_pad.append(item.output_tensor.unsqueeze(0))
+    #     #     else:
+    #     #         raise RuntimeError("Size mismatch error")
+    #     #
+    #     # tgt_seq = torch.cat(tgt_seq_pad, dim=0)
+    #     return [e1, rel, e2_multi, e2_multi_tensor_idx]
+
+    @staticmethod
+    def collate_fn(data_list: [KGDataItem]):
+        # graph_data = [item.graph for item in data_list]
+        e1 = torch.tensor([item.e1_tensor for item in data_list])
+        e2 = torch.tensor([item.e2_tensor for item in data_list])
+        rel = torch.tensor([item.rel_tensor for item in data_list])
+        rel_eval = torch.tensor([item.rel_eval_tensor for item in data_list])
+
+        # do padding here
+        e1_multi_tensor_idx_len = [item.e1_multi_tensor_idx.shape[0] for item in data_list]
+        max_e1_multi_tensor_idx_len = max(e1_multi_tensor_idx_len)
+        e1_multi_tensor_idx_pad = []
+        for item in data_list:
+            if item.e1_multi_tensor_idx.shape[0] < max_e1_multi_tensor_idx_len:
+                need_pad_length = max_e1_multi_tensor_idx_len - item.e1_multi_tensor_idx.shape[0]
+                pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+                e1_multi_tensor_idx_pad.append(torch.cat((item.e1_multi_tensor_idx, pad.long()), dim=0).unsqueeze(0))
+            elif item.e1_multi_tensor_idx.shape[0] == max_e1_multi_tensor_idx_len:
+                e1_multi_tensor_idx_pad.append(item.e1_multi_tensor_idx.unsqueeze(0))
+            else:
+                raise RuntimeError("Size mismatch error")
+
+        e1_multi_tensor_idx = torch.cat(e1_multi_tensor_idx_pad, dim=0)
+
+        e1_multi_len = [item.e1_multi_tensor.shape[0] for item in data_list]
+        max_e1_multi_len = max(e1_multi_len)
+        e1_multi_pad = []
+        for item in data_list:
+            if item.e1_multi_tensor.shape[0] < max_e1_multi_len:
+                need_pad_length = max_e1_multi_len - item.e1_multi_tensor.shape[0]
+                pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+                e1_multi_pad.append(torch.cat((item.e1_multi_tensor, pad.long()), dim=0).unsqueeze(0))
+            elif item.e1_multi_tensor.shape[0] == max_e1_multi_len:
+                e1_multi_pad.append(item.e1_multi_tensor.unsqueeze(0))
+            else:
+                raise RuntimeError("Size mismatch error")
+
+        e1_multi = torch.cat(e1_multi_pad, dim=0)
+
+        # do padding here
+        e2_multi_tensor_idx_len = [item.e2_multi_tensor_idx.shape[0] for item in data_list]
+        max_e2_multi_tensor_idx_len = max(e2_multi_tensor_idx_len)
+        e2_multi_tensor_idx_pad = []
+        for item in data_list:
+            if item.e2_multi_tensor_idx.shape[0] < max_e2_multi_tensor_idx_len:
+                need_pad_length = max_e2_multi_tensor_idx_len - item.e2_multi_tensor_idx.shape[0]
+                pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+                e2_multi_tensor_idx_pad.append(torch.cat((item.e2_multi_tensor_idx, pad.long()), dim=0).unsqueeze(0))
+            elif item.e2_multi_tensor_idx.shape[0] == max_e2_multi_tensor_idx_len:
+                e2_multi_tensor_idx_pad.append(item.e2_multi_tensor_idx.unsqueeze(0))
+            else:
+                raise RuntimeError("Size mismatch error")
+
+        e2_multi_tensor_idx = torch.cat(e2_multi_tensor_idx_pad, dim=0)
+
+        e2_multi_len = [item.e2_multi_tensor.shape[0] for item in data_list]
+        max_e2_multi_len = max(e2_multi_len)
+        e2_multi_pad = []
+        for item in data_list:
+            if item.e2_multi_tensor.shape[0] < max_e2_multi_len:
+                need_pad_length = max_e2_multi_len - item.e2_multi_tensor.shape[0]
+                pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+                e2_multi_pad.append(torch.cat((item.e2_multi_tensor, pad.long()), dim=0).unsqueeze(0))
+            elif item.e2_multi_tensor.shape[0] == max_e2_multi_len:
+                e2_multi_pad.append(item.e2_multi_tensor.unsqueeze(0))
+            else:
+                raise RuntimeError("Size mismatch error")
+
+        e2_multi = torch.cat(e2_multi_pad, dim=0)
+
+        return [e1, rel, e2_multi, e2_multi_tensor_idx, e2, rel_eval, e1_multi, e1_multi_tensor_idx]

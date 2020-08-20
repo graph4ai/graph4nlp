@@ -72,7 +72,7 @@ class ComplEx(KGCompletionBase):
         node_emb_real = input_graph.node_features['node_emb_real']
         node_emb_img = input_graph.node_features['node_emb_img']
         if self.loss_name in ['SoftplusLoss', 'SigmoidLoss']:
-            multi_label = input_graph.node_features['multi_binary_label']  # [B, N]
+            multi_label = input_graph.graph_attributes['multi_binary_label']  # [B, N]
         else:
             multi_label = None
 
@@ -80,20 +80,20 @@ class ComplEx(KGCompletionBase):
             rel_emb_real = node_emb_real
             rel_emb_img = node_emb_img
         else:
-            if 'rel_emb_real' in input_graph.node_features.keys() and \
-                    'rel_emb_img' in input_graph.node_features.keys():
-                rel_emb_real = input_graph.node_features['rel_emb_real']
-                rel_emb_img = input_graph.node_features['rel_emb_img']
+            if 'rel_emb_real' in input_graph.edge_features.keys() and \
+                    'rel_emb_img' in input_graph.edge_features.keys():
+                rel_emb_real = input_graph.edge_features['rel_emb_real']
+                rel_emb_img = input_graph.edge_features['rel_emb_img']
             else:
                 assert self.rel_emb_from_gnn == False
                 rel_emb_real = None
                 rel_emb_img = None
 
-        if 'list_e_r_pair_idx' in input_graph.node_features.keys():
-            list_e_r_pair_idx = input_graph.node_features['list_e_r_pair_idx']
+        if 'list_e_r_pair_idx' in input_graph.graph_attributes.keys():
+            list_e_r_pair_idx = input_graph.graph_attributes['list_e_r_pair_idx']
             list_e_e_pair_idx = None
-        elif 'list_e_e_pair_idx' in input_graph.node_features.keys():
-            list_e_e_pair_idx = input_graph.node_features['list_e_e_pair_idx']
+        elif 'list_e_e_pair_idx' in input_graph.graph_attributes.keys():
+            list_e_e_pair_idx = input_graph.graph_attributes['list_e_e_pair_idx']
             list_e_r_pair_idx = None
         else:
             raise RuntimeError("'list_e_r_pair_idx' or 'list_e_e_pair_idx' should be given.")
