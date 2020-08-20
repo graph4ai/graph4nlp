@@ -70,7 +70,8 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                  raw_text_data,
                  nlp_processor,
                  merge_strategy=None,
-                 edge_strategy=None):
+                 edge_strategy=None,
+                 verbase=True):
         """topology This function generate a graph strcuture from a raw text data.
 
         Parameters
@@ -126,12 +127,12 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             output_graph_list.append(
                 cls._construct_static_graph(parsed_output[index], index))
         ret_graph = cls._graph_connect(output_graph_list)
-
-        print('--------------------------------------')
-        for _edge in ret_graph.get_all_edges():
-            print(ret_graph.nodes[_edge[0]].attributes['token'],
-                  "\t---\t", ret_graph.nodes[_edge[1]].attributes['token'])
-        print('--------------------------------------')
+        if verbase:
+            print('--------------------------------------')
+            for _edge in ret_graph.get_all_edges():
+                print(ret_graph.nodes[_edge[0]].attributes['token'],
+                      "\t---\t", ret_graph.nodes[_edge[1]].attributes['token'])
+            print('--------------------------------------')
 
         return ret_graph
 

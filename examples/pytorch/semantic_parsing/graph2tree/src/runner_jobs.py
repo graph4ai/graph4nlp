@@ -10,16 +10,14 @@ import torch.nn.functional as F
 import torch.nn.init as init
 import torch.optim as optim
 from stanfordcorenlp import StanfordCoreNLP
-# from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.data.data import GraphData
-# from graph4nlp.pytorch.datasets.jobs import JobsDataset
-from graph4nlp.pytorch.test.example.jobs.graph2tree.test_dataset import JobsDataset
+
+from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
+from graph4nlp.pytorch.datasets.geo import GeoDatasetForTree
 
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import \
-    DependencyBasedGraphConstruction
-
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
@@ -28,28 +26,9 @@ from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import \
     StdTreeDecoder
 
 from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
-# from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-
 
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask, dropout
 from graph4nlp.pytorch.modules.utils.tree_utils import DataLoaderForGraphEncoder, Tree, Vocab, to_cuda
-
-
-class ExpressionAccuracy(EvaluationMetricBase):
-    def __init__(self):
-        super(ExpressionAccuracy, self).__init__()
-
-    def calculate_scores(self, ground_truth, predict):
-        correct = 0
-        assert len(ground_truth) == len(predict)
-        for gt, pred in zip(ground_truth, predict):
-            print("ground truth: ", gt)
-            print("prediction: ", pred)
-
-            if gt == pred:
-                correct += 1.
-        return correct / len(ground_truth)
-
 
 class Graph2Tree(nn.Module):
     def __init__(self, src_vocab,
@@ -80,6 +59,7 @@ class Graph2Tree(nn.Module):
                            'seq_info_encode_strategy': "bilstm"}
 
         # TODO: specify two encoder RNN dropout ratios.
+        
         # self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
         #                                                        vocab=self.src_vocab,
         #                                                        hidden_size=enc_hidden_size, dropout=enc_dropout_input, use_cuda=(

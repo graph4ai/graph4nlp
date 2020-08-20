@@ -8,6 +8,9 @@ import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 
+from collections import Counter
+import pickle
+
 from ..data.data import GraphData
 from ..modules.utils.vocab_utils import VocabModel, Vocab
 
@@ -441,40 +444,53 @@ class TextToTreeDataset(Dataset):
         self.share_vocab = share_vocab
         super(TextToTreeDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
-    def build_dataitem(self, files):
-        r"""Read raw input file and build DataItem out of it.
-        The format of the input file should contain lines of input, each line representing one record of data.
-        The input and output is seperated by a tab(\t).
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+
+        For Text2TreeDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
 
         Examples
         --------
-        list job use languageid0	job ( ANS ) , language ( ANS , languageid0 )
-        show job use languageid0	job ( ANS ) , language ( ANS , languageid0 )
+        input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
 
-        In the above the input is the natural language in the left ("list job use languageid0") and the output
-        is in the right.
+        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
 
         Parameters
         ----------
-        file: list
-            The list containing all the input file paths.
+        file_path: str
+            The path of the input file.
+
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
         """
-        data = []
-        for file in files:
-            with open(file, 'r') as f:
-                lines = f.readlines()
-                for line in lines:
-                    input, output = line.split('\t')
-                    data.append(Text2TreeDataItem(input_text=input, output_text=output, output_tree=None,tokenizer=self.tokenizer,
-                                                  share_vocab=self.share_vocab))
-        return data
+        current_index = len(self.data)
+        subset_indices = []
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                input, output = line.split('\t')
+                data_item = Text2TreeDataItem(input_text=input, output_text=output, output_tree=None, tokenizer=self.tokenizer,
+                                              share_vocab=self.share_vocab)
+                self.data[current_index] = data_item
+                subset_indices.append(current_index)
+                current_index += 1
+        return subset_indices
 
     def build_vocab(self):
-        saved_vocab_file=os.path.join(self.processed_dir, 'vocab.pt')
+        saved_vocab_file = self.processed_file_paths['vocab']
         if os.path.exists(saved_vocab_file):
             print('Loading pre-built vocab model stored in {}'.format(saved_vocab_file))
             self.src_vocab_model, self.tgt_vocab_model = pickle.load(open(saved_vocab_file, 'rb'))
             return True
+
+        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        if self.use_val_for_vocab:
+            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
 
         src_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.enc_emb_size)
         tgt_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.dec_emb_size)
@@ -484,7 +500,7 @@ class TextToTreeDataset(Dataset):
         else:
             all_words = [Counter(), Counter()]
 
-        for instance in self.data:
+        for instance in data_for_vocab:
             extracted_tokens = instance.extract()
             if self.share_vocab:
                 all_words.update(extracted_tokens)
@@ -524,7 +540,7 @@ class TextToTreeDataset(Dataset):
             output_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), self.tgt_vocab_model)
             self.data[i].output_tree = output_tree
 
-        torch.save(self.data, os.path.join(self.processed_dir, self.processed_file_names['data']))
+        torch.save(self.data, self.processed_file_paths['data'])
 
     @staticmethod
     def collate_fn(data_list: [Text2TreeDataItem]):
