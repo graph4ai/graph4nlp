@@ -39,7 +39,7 @@ class Text2TextDataItem(DataItem):
         input_tokens = []
         for i in range(g.get_node_num()):
             if self.tokenizer is None:
-                tokenized_token = self.output_text.strip().split(' ')
+                tokenized_token = g.node_attributes[i]['token'].strip().split(' ')
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
 
@@ -241,7 +241,57 @@ class Dataset(torch.utils.data.Dataset):
             self.__dict__['indices'] = list(self.data.keys())
             return list(self.data.keys())
 
+    def split_subset(self, split_name: str):
+        """
+        Split a subset out of the whole set according to `self.split_ids`.
+        The `split_name` parameter should exist in `self.split_ids.keys()`.
+
+        Parameters
+        ----------
+        split_name: str
+            The name of the subset, usually 'train', 'val' or 'test'.
+
+        Returns
+        -------
+        Dataset
+            The corresponding subset.
+        """
+        # Consistency check: The name of the subset should exist in self.split_ids
+        assert split_name in self.split_ids.keys(), "The subset `{}` doesn't exist in the split_ids of this dataset."
+
+        dataset = copy.copy(self)
+        dataset.__indices__ = self.split_ids[split_name]
+        return dataset
+
     def index_select(self, idx):
+        """
+        Given the index of the graph, return the corresponding subset.
+
+        Examples
+        --------
+        User level:     dataset[3]
+        __getitem__:    dataset.data[dataset.indices[3]]
+        self.indices:   0, 1, 2, (3), 4
+        self.data:    k:0, 1, 2, (3),  4
+                      v:a, b, c,  d,  e
+        user return:    d
+
+        After shuffling:
+        User level:     dataset[3]
+        __getitem__:    dataset.data[dataset.indices[3]]
+        self.indices:   3, 2, 1, (4), 0
+        self.data:    k:0, 1, 2,  3, (4)
+                      v:a, b, c,  d,  e
+        user return:    e
+
+        Parameters
+        ----------
+        idx
+
+        Returns
+        -------
+
+        """
         indices = self.indices
 
         if isinstance(idx, slice):
@@ -254,7 +304,7 @@ class Dataset(torch.utils.data.Dataset):
             elif idx.dtype == torch.bool or idx.dtype == torch.uint8:
                 return self.index_select(idx.nonzero().flatten().tolist())
         elif isinstance(idx, list) or isinstance(idx, tuple):
-            indices = [indices[i] for i in idx]
+            indices = idx
         else:
             raise IndexError(
                 'Only integers, slices (`:`), list, tuples, and long or bool '
@@ -266,7 +316,7 @@ class Dataset(torch.utils.data.Dataset):
         return dataset
 
     def shuffle(self, return_perm=False):
-        perm = torch.randperm(len(self))
+        perm = torch.randperm(self.indices)
         dataset = self.index_select(perm)
         return (dataset, perm) if return_perm is True else dataset
 

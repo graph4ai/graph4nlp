@@ -1,8 +1,3 @@
-import os
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-
-os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -79,19 +74,21 @@ class Graph2seqLoss(nn.Module):
 
 
 class Graph2seq(nn.Module):
-    def __init__(self, vocab, hidden_size=300, direction_option='bi_sep'):
+    def __init__(self, vocab, hidden_size=300, direction_option='bi_sep', device='cpu'):
         super(Graph2seq, self).__init__()
 
+        use_cuda = (device == 'cuda')
         self.vocab = vocab
         embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
                            'seq_info_encode_strategy': "bilstm"}
         self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                vocab=vocab.in_word_vocab,
-                                                               hidden_size=hidden_size, dropout=0.2, use_cuda=True,
+                                                               hidden_size=hidden_size, dropout=0.2, use_cuda=use_cuda,
                                                                fix_word_emb=False)
         self.gnn = None
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
-        self.gnn_encoder = GAT(2, hidden_size, hidden_size, hidden_size, [2, 1], direction_option=direction_option)
+        self.gnn_encoder = GAT(2, hidden_size, hidden_size, hidden_size, [2, 1], direction_option=direction_option).to(
+            device)
         self.seq_decoder = StdRNNDecoder(max_decoder_step=50,
                                          decoder_input_size=2 * hidden_size if direction_option == 'bi_sep' else hidden_size,
                                          decoder_hidden_size=hidden_size,
@@ -128,8 +125,9 @@ class Graph2seq(nn.Module):
 
 
 class Jobs:
-    def __init__(self):
+    def __init__(self, args):
         super(Jobs, self).__init__()
+        self.device = args.device
         self._build_dataloader()
         self._build_model()
         self._build_optimizer()
@@ -139,17 +137,15 @@ class Jobs:
         dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
                               topology_builder=DependencyBasedGraphConstruction,
                               topology_subdir='DependencyGraph', share_vocab=True)
-        data_size = len(dataset)
-        self.train_dataloader = DataLoader(dataset[:int(0.8 * data_size)], batch_size=24, shuffle=True,
-                                           num_workers=1,
+
+        self.train_dataloader = DataLoader(dataset.split_subset('train'), batch_size=24, shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset[int(0.8 * data_size):], batch_size=24, shuffle=True,
-                                          num_workers=1,
+        self.test_dataloader = DataLoader(dataset.split_subset('test'), batch_size=24, shuffle=True, num_workers=1,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-        self.model = Graph2seq(self.vocab).cuda()
+        self.model = Graph2seq(self.vocab, device=self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -165,7 +161,7 @@ class Jobs:
             print("Epoch: {}".format(epoch))
             for data in self.train_dataloader:
                 graph_list, tgt = data
-                tgt = tgt.cuda()
+                tgt = tgt.to(self.device)
                 _, loss = self.model(graph_list, tgt, require_loss=True)
                 print(loss)
                 self.optimizer.zero_grad()
@@ -195,22 +191,12 @@ class Jobs:
         return score
 
 
-# def preprocess():
-#     raw_dir = "graph4nlp/pytorch/test/dataset/jobs/raw"
-#     data = []
-#     with open("{}/{}.txt".format(raw_dir, "train"), "r") as f:
-#         for line in f:
-#             l_list = line.split("\t")
-#             w_list = l_list[0]
-#             r_list = l_list[1]
-#             data.append((w_list, r_list))
-#
-#     seq_data = data
-#     torch.save(seq_data, os.path.join(raw_dir, 'sequence.pt'))
-
-
 if __name__ == "__main__":
-    # preprocess()
-    runner = Jobs()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--device', type=str, default='cpu')
+    args = parser.parse_args()
+    runner = Jobs(args)
     max_score = runner.train()
     print("Train finish, best score: {:.3f}".format(max_score))
