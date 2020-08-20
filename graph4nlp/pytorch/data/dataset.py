@@ -6,6 +6,7 @@ import numpy as np
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
+from sklearn import preprocessing
 
 from ..data.data import GraphData
 from ..modules.utils.vocab_utils import VocabModel, Vocab
@@ -54,6 +55,31 @@ class Text2TextDataItem(DataItem):
             return input_tokens + output_tokens
         else:
             return input_tokens, output_tokens
+
+
+class Text2LabelDataItem(DataItem):
+    def __init__(self, input_text, output_label, tokenizer):
+        super(Text2LabelDataItem, self).__init__(input_text, tokenizer)
+        self.output_label = output_label
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens and output tokens
+        """
+        g: GraphData = self.graph
+
+        input_tokens = []
+        for i in range(g.get_node_num()):
+            if self.tokenizer is None:
+                tokenized_token = g.node_attributes[i]['token'].strip().split()
+            else:
+                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
+
+            input_tokens.extend(tokenized_token)
+
+        return input_tokens
 
 
 class Dataset(torch.utils.data.Dataset):
@@ -391,3 +417,90 @@ class Text2TextDataset(Dataset):
 
         tgt_seq = torch.cat(tgt_seq_pad, dim=0)
         return [graph_data, tgt_seq]
+
+
+class Text2LabelDataset(Dataset):
+    def __init__(self, root_dir, topology_builder, topology_subdir, **kwargs):
+        self.data_item_type = Text2LabelDataItem
+        super(Text2LabelDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+
+        For Text2LabelDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
+
+        Examples
+        --------
+        input: How far is it from Denver to Aspen ?    NUM:dist
+
+        DataItem: input_text="How far is it from Denver to Aspen ?", output_label="NUM:dist"
+
+        Parameters
+        ----------
+        file_path: str
+            The path of the input file.
+
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
+        """
+        current_index = len(self.data)
+        subset_indices = []
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                input, output = line.split('\t')
+                data_item = Text2LabelDataItem(input_text=input.strip(), output_label=output.split(':')[0], tokenizer=self.tokenizer)
+                self.data[current_index] = data_item
+                subset_indices.append(current_index)
+                current_index += 1
+        return subset_indices
+
+    def build_vocab(self):
+        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        if self.use_val_for_vocab:
+            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
+
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=None,
+                                       min_word_vocab_freq=1,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       word_emb_size=300,
+                                       share_vocab=True)
+        self.vocab_model = vocab_model
+
+        # label encoding
+        self.le = preprocessing.LabelEncoder()
+        self.le.fit([item.output_label for item in self.data.values()])
+        self.num_classes = len(self.le.classes_)
+
+    def vectorization(self):
+        for item in self.data.values():
+            graph: GraphData = item.graph
+            token_matrix = []
+            for node_idx in range(graph.get_node_num()):
+                node_token = graph.node_attributes[node_idx]['token']
+                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
+                graph.node_attributes[node_idx]['token_id'] = node_token_id
+                token_matrix.append([node_token_id])
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features['token_id'] = token_matrix
+
+            item.output = self.le.transform([item.output_label])[0]
+        torch.save(self.data, self.processed_file_paths['data'])
+
+    @staticmethod
+    def collate_fn(data_list: [Text2LabelDataItem]):
+        graph_data = [item.graph for item in data_list]
+
+        # do padding here
+        tgt = [item.output for item in data_list]
+        tgt_tensor = torch.LongTensor(tgt)
+        return [graph_data, tgt_tensor]

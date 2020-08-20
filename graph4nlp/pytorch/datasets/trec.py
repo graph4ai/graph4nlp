@@ -1,14 +1,10 @@
 import os
-
 import torch
 
-from graph4nlp.pytorch.data.dataset import Text2TextDataset
-from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-
-dataset_root = '../test/dataset/jobs'
+from ..data.dataset import Text2LabelDataset
 
 
-class JobsDataset(Text2TextDataset):
+class TrecDataset(Text2LabelDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
@@ -25,7 +21,7 @@ class JobsDataset(Text2TextDataset):
 
     def __init__(self, root_dir, topology_builder=None, topology_subdir=None, graph_type='static',
                  edge_strategy=None, merge_strategy='tailhead', **kwargs):
-        super(JobsDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
+        super(TrecDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
         self.data = torch.load(os.path.join(self.processed_dir, self.processed_file_names['data']))
@@ -34,5 +30,6 @@ class JobsDataset(Text2TextDataset):
 
 
 if __name__ == '__main__':
-    a = JobsDataset(root_dir='../test/dataset/jobs', topology_builder=DependencyBasedGraphConstruction,
+    from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+    a = TrecDataset(root_dir='../test/dataset/jobs', topology_builder=DependencyBasedGraphConstruction,
                     topology_subdir='DependencyGraph')
