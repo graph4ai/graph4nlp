@@ -6,7 +6,6 @@ def to_cuda(x, device=None):
         x = x.to(device)
     return x
 
-
 def normalize_adj(mx):
     """Row-normalize matrix: symmetric normalized Laplacian"""
     rowsum = mx.sum(1)
@@ -15,3 +14,37 @@ def normalize_adj(mx):
     r_mat_inv_sqrt = torch.diag(r_inv_sqrt)
 
     return torch.mm(torch.mm(mx, r_mat_inv_sqrt).transpose(-1, -2), r_mat_inv_sqrt)
+
+class EarlyStopping:
+    def __init__(self, save_model_path, patience=10):
+        self.patience = patience
+        self.counter = 0
+        self.best_score = None
+        self.early_stop = False
+        self.save_model_path = save_model_path
+
+    def step(self, acc, model):
+        score = acc
+        if self.best_score is None:
+            self.best_score = score
+            self.save_checkpoint(model)
+        elif score < self.best_score:
+            self.counter += 1
+            if self.counter >= self.patience:
+                self.early_stop = True
+        else:
+            self.best_score = score
+            self.save_checkpoint(model)
+            self.counter = 0
+
+        return self.early_stop
+
+    def save_checkpoint(self, model):
+        '''Saves model when validation loss decrease.'''
+        torch.save(model.state_dict(), self.save_model_path)
+        print('Saved model to {}'.format(self.save_model_path))
+
+    def load_checkpoint(self, model):
+        model.load_state_dict(torch.load(self.save_model_path))
+        print('Loaded model from {}'.format(self.save_model_path))
+        return model
