@@ -12,5 +12,5 @@ for line in fin:
 
     data = line.strip().split()
     text = ' '.join(data[1:])
-    label = data[0]
+    label = data[0].split(':')[0]
     fout.write('{}\t{}\n'.format(text, label))

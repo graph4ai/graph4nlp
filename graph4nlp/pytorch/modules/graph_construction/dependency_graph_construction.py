@@ -1,11 +1,10 @@
 import copy
 import json
 
-import dgl
 import torch
 from stanfordcorenlp import StanfordCoreNLP
 
-from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.data.data import GraphData, to_batch
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from .base import StaticGraphConstructionBase
 from ...data.data import to_batch
@@ -48,49 +47,41 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             self.vocab.word_vocab._add_words([attr["token"]])
 
     @classmethod
-    def topology(cls, raw_text_data, nlp_processor, merge_strategy, edge_strategy, split_hyphenated=False,
-                 normalize=False, verbase=0):
-        """
-            Graph building method.
+    def parsing(cls, raw_text_data, nlp_processor, split_hyphenated, normalize):
+        '''
 
         Parameters
         ----------
         raw_text_data: str
-            Raw text data, it can be multi-sentences.
         nlp_processor: StanfordCoreNLP
-            NLP parsing tools
-        merge_strategy: None or str, option=[None, "tailhead", "sequential", "user_define"]
-            Strategy to merge sub-graphs into one graph
-            ``None``: It will be the default option. We will do as ``"tailhead"``.
-            ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
-            ``"sequential"``: If sub-graph has ``a1, a2, ..., an`` nodes, and sub-graph has ``b1, b2, ..., bm`` nodes.
-                              We will link ``a1, a2``, ``a2, a3``, ..., ``an-1, an``, \
-                              ``an, b1``, ``b1, b2``, ..., ``bm-1, bm``.
-            ``"user_define"``: We will give this option to the user. User can override this method to define your merge
-                               strategy.
-        edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
-            Strategy to process edge.
-            ``None``: It will be the default option. We will do as ``"homogeneous"``.
-            ``"homogeneous"``: We will drop the edge type information.
-                               If there is a linkage among node ``i`` and node ``j``, we will add an edge whose weight
-                               is ``1.0``. Otherwise there is no edge.
-            ``heterogeneous``: We will keep the edge type information.
-                               An edge will have type information like ``n_subj``.
-            ``as_node``: We will view the edge as a graph node.
-                         If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
-                         we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
-        split_hyphenated: bool, default=False
-            Whether or not to tokenize segments of hyphenated words separately (“school” “-“ “aged”, “frog” “-“ “lipped”)
-        normalize: bool, default=False
-            Whether to convert bracket (`(`) to  -LRB-, and etc.
-        verbase: int, default=0
-            Whether to output log infors. Set 1 to output more infos.
+        split_hyphenated: bool
+        normalize: bool
+
         Returns
         -------
-        joint_graph: GraphData
-            The merged graph data-structure.
-        """
-        cls.verbase = verbase
+        parsed_results: dict
+            key, value
+            "node_num": int
+                the node amount
+            "node_content": list[dict]
+                The list consisting node information. Each node is organized by a dict.
+                'token': str
+                    word token
+                'position_id': int
+                    the word's position id in original sentence. eg: I am a dog. position_id: 0, 1, 2, 3
+                'id': int,
+                    the node token's id which will be used in GraphData
+                "sentence_id": int
+                    The sentence's id in the whole text.
+            "graph_content": list[dict]
+                The list consisting edge information. Each edge is organized by a dict.
+                "edge_type": str
+                    The edge type token, eg: 'nsubj'
+                'src': int
+                    The source node ``id``
+                'tgt': int
+                    The target node ``id``
+        '''
         splitHyphenated_option = "true" if split_hyphenated else "false"
         normalize_option = "true" if normalize else "false"
         props = {
@@ -117,11 +108,11 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             for tokens in dep_dict["sentences"][s_id]['tokens']:
                 unique_hash[(tokens['index'], tokens['word'])] = node_id
                 node = {
-                        'token': tokens["word"],
-                        'position_id': tokens["index"] - 1,
-                        'id': node_id,
-                        "sentence_id": s_id
-                    }
+                    'token': tokens["word"],
+                    'position_id': tokens["index"] - 1,
+                    'id': node_id,
+                    "sentence_id": s_id
+                }
                 node_item.append(node)
                 node_id += 1
 
@@ -151,10 +142,64 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 "node_content": node_item,
                 "node_num": node_id
             })
+            return parsed_results
+
+    @classmethod
+    def topology(cls, raw_text_data, nlp_processor, merge_strategy, edge_strategy, split_hyphenated=False,
+                 normalize=False, sequential_link=True, verbase=0):
+        """
+            Graph building method.
+
+        Parameters
+        ----------
+        raw_text_data: str or list[list]
+            Raw text data, it can be multi-sentences.
+            When it is ``str`` type, it is the raw text.
+            When it is ``list[list]`` type, it is the tokenized token lists.
+        nlp_processor: StanfordCoreNLP
+            NLP parsing tools
+        merge_strategy: None or str, option=[None, "tailhead", "sequential", "user_define"]
+            Strategy to merge sub-graphs into one graph
+            ``None``: It will be the default option. We will do as ``"tailhead"``.
+            ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
+            ``"sequential"``: If sub-graph has ``a1, a2, ..., an`` nodes, and sub-graph has ``b1, b2, ..., bm`` nodes.
+                              We will link ``a1, a2``, ``a2, a3``, ..., ``an-1, an``, \
+                              ``an, b1``, ``b1, b2``, ..., ``bm-1, bm``.
+            ``"user_define"``: We will give this option to the user. User can override this method to define your merge
+                               strategy.
+        edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
+            Strategy to process edge.
+            ``None``: It will be the default option. We will do as ``"homogeneous"``.
+            ``"homogeneous"``: We will drop the edge type information.
+                               If there is a linkage among node ``i`` and node ``j``, we will add an edge whose weight
+                               is ``1.0``. Otherwise there is no edge.
+            ``heterogeneous``: We will keep the edge type information.
+                               An edge will have type information like ``n_subj``.
+            ``as_node``: We will view the edge as a graph node.
+                         If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
+                         we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
+        split_hyphenated: bool, default=False
+            Whether or not to tokenize segments of hyphenated words separately (“school” “-“ “aged”, “frog” “-“ “lipped”)
+        normalize: bool, default=False
+            Whether to convert bracket (`(`) to  -LRB-, and etc.
+        sequential_link: bool, default=True
+            Whether to link node tokens sequentially (note that it is bidirectional)
+        verbase: int, default=0
+            Whether to output log infors. Set 1 to output more infos.
+        Returns
+        -------
+        joint_graph: GraphData
+            The merged graph data-structure.
+        """
+        cls.verbase = verbase
+
+        parsed_results = cls.parsing(raw_text_data=raw_text_data, nlp_processor=nlp_processor,
+                                     split_hyphenated=split_hyphenated, normalize=normalize)
 
         sub_graphs = []
         for sent_id, parsed_sent in enumerate(parsed_results):
-            graph = cls._construct_static_graph(parsed_sent, edge_strategy=edge_strategy)
+            graph = cls._construct_static_graph(parsed_sent, edge_strategy=edge_strategy,
+                                                sequential_link=sequential_link)
             sub_graphs.append(graph)
         joint_graph = cls._graph_connect(sub_graphs, merge_strategy)
         return joint_graph
@@ -232,7 +277,14 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         if sequential_list and len(sequential_list) > 1:
             for st, ed in zip(sequential_list[:-1], sequential_list[1:]):
-                ret_graph.add_edge(st, ed)
+                try:
+                    ret_graph.edge_ids(st, ed)
+                except:
+                    ret_graph.add_edge(st, ed)
+                try:
+                    ret_graph.edge_ids(ed, st)
+                except:
+                    ret_graph.add_edge(ed, st)
         return ret_graph
 
     @classmethod
@@ -348,7 +400,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             print(g.get_all_edges())
             for i in range(g.get_edge_num()):
                 print(i, g.edge_attributes[i])
-
         return g
 
     def forward(self, batch_graphdata: list):
@@ -359,19 +410,14 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
             num_nodes.append(g.get_node_num())
             node_size.extend([1 for i in range(num_nodes[-1])])
-        graph_list = [g.to_dgl() for g in batch_graphdata]
-        bg = dgl.batch(graph_list, edge_attrs=None)
+
+        batch_gd = to_batch(batch_graphdata)
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(bg.ndata['token_id'], node_size, num_nodes)
+        node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
+        batch_gd.node_features["node_feat"] = node_emb
 
-        bg.ndata["node_feat"] = node_emb
-
-        return bg
-        # dgl_list = dgl.unbatch(bg)
-        # for g, dg in zip(batch_graphdata, dgl_list):
-        #     g.node_features["node_emb"] = dg.ndata["node_emb"]
-        # return batch_graphdata
+        return batch_gd
 
     # def forward(self, batch_graphdata: list):
     #     node_size = []

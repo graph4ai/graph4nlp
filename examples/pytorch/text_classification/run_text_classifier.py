@@ -96,7 +96,8 @@ class ModelHandler:
         dataset = TrecDataset(root_dir="examples/pytorch/text_classification/data/trec",
                               topology_builder=DependencyBasedGraphConstruction,
                               topology_subdir='DependencyGraph',
-                              pretrained_word_emb_file=self.config.pre_word_emb_file)
+                              pretrained_word_emb_file=self.config.pre_word_emb_file,
+                              val_split_ratio=self.config.val_split_ratio)
         data_size = len(dataset)
         self.train_dataloader = DataLoader(dataset[dataset.split_ids['train']], batch_size=self.config.batch_size, shuffle=True,
                                            num_workers=1,
@@ -235,6 +236,8 @@ if __name__ == "__main__":
                         help='dropout ratio (default: 0.5)')
     parser.add_argument('--batch_size', type=int, default=32,
                         help='input batch size for training (default: 32)')
+    parser.add_argument('--val_split_ratio', type=float, default=0.2,
+                        help='validation set split ratio (default: 0.2)')
     parser.add_argument('--epochs', type=int, default=100,
                         help='number of epochs to train (default: 100)')
     parser.add_argument('--seed', type=int, default=1234,

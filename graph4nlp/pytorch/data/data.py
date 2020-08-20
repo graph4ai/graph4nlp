@@ -549,8 +549,8 @@ class GraphData(object):
 
         # Consistency check
         # 0. check if both graphs have nodes
-        # assert self.get_edge_num() > 0 and graph.get_node_num() > 0, \
-        #     "Both participants of the union operation should contain at least 1 node."
+        assert self.get_node_num() > 0 and graph.get_node_num() > 0, \
+            "Both participants of the union operation should contain at least 1 node."
 
         # 1. check if node feature names are consistent
         for feat_name in graph.node_features.keys():

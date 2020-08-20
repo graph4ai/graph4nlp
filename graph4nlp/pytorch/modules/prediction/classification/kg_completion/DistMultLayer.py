@@ -47,7 +47,7 @@ class DistMultLayer(KGCompletionLayerBase):
             assert num_relations != None
             assert embedding_dim != None
             self.rel_emb = nn.Embedding(num_relations, embedding_dim)
-            self.reset_parameters()
+            # self.reset_parameters()
         self.loss_name = loss_name
         self.reset_parameters()
 

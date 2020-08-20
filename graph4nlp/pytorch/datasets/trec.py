@@ -24,12 +24,9 @@ class TrecDataset(Text2LabelDataset):
         super(TrecDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
-        self.data = torch.load(os.path.join(self.processed_dir, self.processed_file_names['data']))
-        self.split_ids = torch.load(os.path.join(self.processed_dir, self.processed_file_names['split_ids']))
-        self.build_vocab()
 
 
 if __name__ == '__main__':
     from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-    a = TrecDataset(root_dir='../test/dataset/jobs', topology_builder=DependencyBasedGraphConstruction,
+    a = TrecDataset(root_dir='examples/pytorch/text_classification/data/trec', topology_builder=DependencyBasedGraphConstruction,
                     topology_subdir='DependencyGraph')

@@ -132,6 +132,10 @@ class StaticGraphConstructionBase(GraphConstructionBase):
         raise NotImplementedError()
 
     @classmethod
+    def parsing(cls, **kwargs):
+        raise NotImplementedError()
+
+    @classmethod
     def topology(cls, **kwargs):
         raise NotImplementedError()
 
