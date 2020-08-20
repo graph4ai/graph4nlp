@@ -1,17 +1,16 @@
-from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.datasets.jobs import JobsDataset
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
-from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
-from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-
+import dgl
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 import torch.optim as optim
-import dgl
+from torch.utils.data import DataLoader
 
+from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
+from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
+from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 
 
 class ExpressionAccuracy(EvaluationMetricBase):
@@ -136,11 +135,13 @@ class Jobs:
     def _build_dataloader(self):
         dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
                               topology_builder=DependencyBasedGraphConstruction,
-                              topology_subdir='DependencyGraph', share_vocab=True)
+                              topology_subdir='DependencyGraph', share_vocab=True, val_split_ratio=0.2)
 
-        self.train_dataloader = DataLoader(dataset.split_subset('train'), batch_size=24, shuffle=True, num_workers=1,
+        self.train_dataloader = DataLoader(dataset.train, batch_size=24, shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.split_subset('test'), batch_size=24, shuffle=True, num_workers=1,
+        self.val_dataloader = DataLoader(dataset.val, batch_size=24, shuffle=True, num_workers=1,
+                                         collate_fn=dataset.collate_fn)
+        self.test_dataloader = DataLoader(dataset.test, batch_size=24, shuffle=True, num_workers=1,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
 
@@ -168,15 +169,17 @@ class Jobs:
                 loss.backward()
                 self.optimizer.step()
             if epoch > 4:
-                score = self.evaluate()
+                score = self.evaluate(self.val_dataloader)
+                if score > max_score:
+                    torch.save(self.model.state_dict(), 'best_model.pt')
                 max_score = max(max_score, score)
         return max_score
 
-    def evaluate(self):
+    def evaluate(self, dataloader):
         self.model.eval()
         pred_collect = []
         gt_collect = []
-        for data in self.test_dataloader:
+        for data in dataloader:
             graph_list, tgt = data
             prob = self.model(graph_list, require_loss=False)
             pred = logits2seq(prob)
@@ -200,3 +203,6 @@ if __name__ == "__main__":
     runner = Jobs(args)
     max_score = runner.train()
     print("Train finish, best score: {:.3f}".format(max_score))
+    runner.model.load_state_dict(torch.load('best_model.pt'))
+    test_score = runner.evaluate(runner.test_dataloader)
+    print("Test score: {:.3f}".format(test_score))

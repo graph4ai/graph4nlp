@@ -18,7 +18,7 @@ class JobsDataset(Text2TextDataset):
     @property
     def processed_file_names(self):
         """At least 3 reserved keys should be fiiled: 'vocab', 'data' and 'split_ids'."""
-        return {'vocab': 'vocab.pt', 'data': 'data.pt', 'split_ids': 'split_ids.pt'}
+        return {'vocab': 'vocab.pt', 'data': 'data.pt'}
 
     def download(self):
         # raise NotImplementedError(
@@ -31,10 +31,6 @@ class JobsDataset(Text2TextDataset):
         super(JobsDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
-        # After initializing, load the preprocessed files.
-        self.data = torch.load(self.processed_file_paths['data'])
-        self.split_ids = torch.load(self.processed_file_paths['split_ids'])
-        self.build_vocab()
 
 
 if __name__ == '__main__':
