@@ -235,7 +235,7 @@ if __name__ == "__main__":
                         help='dropout ratio (default: 0.5)')
     parser.add_argument('--batch_size', type=int, default=32,
                         help='input batch size for training (default: 32)')
-    parser.add_argument('--epochs', type=int, default=80,
+    parser.add_argument('--epochs', type=int, default=100,
                         help='number of epochs to train (default: 100)')
     parser.add_argument('--seed', type=int, default=1234,
                         help='random seed (default: 1234)')
