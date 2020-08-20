@@ -3,6 +3,7 @@ import copy
 import os
 
 import numpy as np
+import random
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
