@@ -2,6 +2,7 @@
 .idea
 *.pt
 *.pkl
+*.pth
 .vector_cache/
 log.txt
 # Byte-compiled / optimized / DLL files
