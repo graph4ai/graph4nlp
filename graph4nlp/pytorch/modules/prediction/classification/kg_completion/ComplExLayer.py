@@ -42,8 +42,8 @@ class ComplExLayer(KGCompletionLayerBase):
         if self.rel_emb_from_gnn == False:
             assert num_relations != None
             assert embedding_dim != None
-            self.emb_rel_real = torch.nn.Embedding(num_relations, Config.embedding_dim)
-            self.emb_rel_img = torch.nn.Embedding(num_relations, Config.embedding_dim)
+            self.emb_rel_real = torch.nn.Embedding(num_relations, embedding_dim)
+            self.emb_rel_img = torch.nn.Embedding(num_relations, embedding_dim)
             self.reset_parameters()
         self.loss_name = loss_name
         self.reset_parameters()

@@ -87,7 +87,7 @@ class Graph2seq(nn.Module):
                            'seq_info_encode_strategy': "bilstm"}
         self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                vocab=vocab.in_word_vocab,
-                                                               hidden_size=hidden_size, dropout=0.2, use_cuda=True,
+                                                               hidden_size=hidden_size, dropout=0.2, use_cuda=False,
                                                                fix_word_emb=False)
         self.gnn = None
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
@@ -136,7 +136,8 @@ class Jobs:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
+        # dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
+        dataset = JobsDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/graph4nlp/pytorch/test/dataset/jobs",
                               topology_builder=DependencyBasedGraphConstruction,
                               topology_subdir='DependencyGraph', share_vocab=True)
         data_size = len(dataset)
@@ -149,7 +150,7 @@ class Jobs:
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-        self.model = Graph2seq(self.vocab).cuda()
+        self.model = Graph2seq(self.vocab)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -165,7 +166,7 @@ class Jobs:
             print("Epoch: {}".format(epoch))
             for data in self.train_dataloader:
                 graph_list, tgt = data
-                tgt = tgt.cuda()
+                # tgt = tgt.cuda()
                 _, loss = self.model(graph_list, tgt, require_loss=True)
                 print(loss)
                 self.optimizer.zero_grad()
