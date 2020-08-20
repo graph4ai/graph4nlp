@@ -47,4 +47,3 @@ class EarlyStopping:
     def load_checkpoint(self, model):
         model.load_state_dict(torch.load(self.save_model_path))
         print('Loaded model from {}'.format(self.save_model_path))
-        return model

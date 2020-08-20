@@ -11,7 +11,6 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 import torch.backends.cudnn as cudnn
 import dgl
 
-from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.datasets.trec import TrecDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
@@ -63,18 +62,14 @@ class TextClassifier(nn.Module):
 
     def forward(self, graph_list, tgt=None, require_loss=True):
         # graph embedding construction
-        batch_dgl_graph = self.graph_topology(graph_list)
-        # convert DGLGraph to GraphData
-        batch_graph = GraphData()
-        batch_graph.from_dgl(batch_dgl_graph)
+        batch_gd = self.graph_topology(graph_list)
 
         # run GNN
-        self.gnn(batch_graph)
-        batch_dgl_graph.ndata['node_emb'] = batch_graph.node_features['node_emb']
+        self.gnn(batch_gd)
 
         # run graph classifier
-        self.clf(batch_dgl_graph)
-        logits = batch_dgl_graph.graph_attributes['logits']
+        self.clf(batch_gd)
+        logits = batch_gd.graph_attributes['logits']
 
         if require_loss:
             loss = self.loss(logits, tgt)
@@ -98,15 +93,22 @@ class ModelHandler:
                               topology_subdir='DependencyGraph',
                               pretrained_word_emb_file=self.config.pre_word_emb_file,
                               val_split_ratio=self.config.val_split_ratio)
-        data_size = len(dataset)
-        self.train_dataloader = DataLoader(dataset[dataset.split_ids['train']], batch_size=self.config.batch_size, shuffle=True,
+        self.train_dataloader = DataLoader(dataset.train, batch_size=self.config.batch_size, shuffle=True,
                                            num_workers=1,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset[dataset.split_ids['test']], batch_size=self.config.batch_size, shuffle=True,
+        self.val_dataloader = DataLoader(dataset.val, batch_size=self.config.batch_size, shuffle=False,
+                                          num_workers=1,
+                                          collate_fn=dataset.collate_fn)
+        self.test_dataloader = DataLoader(dataset.test, batch_size=self.config.batch_size, shuffle=False,
                                           num_workers=1,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
         self.config.num_classes = dataset.num_classes
+        self.num_train = len(dataset.train)
+        self.num_val = len(dataset.val)
+        self.num_test = len(dataset.test)
+        print('Train size: {}, Val size: {}, Test size: {}'
+            .format(self.num_train, self.num_val, self.num_test))
 
     def _build_model(self):
         self.model = TextClassifier(self.vocab, self.config).to(self.config.device)
@@ -122,7 +124,6 @@ class ModelHandler:
         self.metric = Accuracy(['accuracy'])
 
     def train(self):
-        max_score = -1
         dur = []
         for epoch in range(self.config.epochs):
             self.model.train()
@@ -145,20 +146,20 @@ class ModelHandler:
                 if i > 10: # TODO
                     break
 
-            val_acc = self.evaluate()
+            val_acc = self.evaluate(self.val_dataloader)
             self.scheduler.step(val_acc)
-            print("Epoch {:05d} | Time(s) {:.4f} | Loss {:.4f} | TrainAcc {:.4f} | ValAcc {:.4f}".
-              format(epoch, np.mean(dur), np.mean(train_loss), np.mean(train_acc), val_acc))
+            print("Epoch: [{} / {}] | Time: {:.4f}s | Loss: {:.4f} | Train Acc: {:.4f} | Val Acc: {:.4f}".
+              format(epoch + 1, self.config.epochs, np.mean(dur), np.mean(train_loss), np.mean(train_acc), val_acc))
 
             if self.stopper.step(val_acc, self.model):
                 break
 
-    def evaluate(self):
+    def evaluate(self, dataloader):
         self.model.eval()
         with torch.no_grad():
             pred_collect = []
             gt_collect = []
-            for data in self.test_dataloader:
+            for data in self.dataloader:
                 graph_list, tgt = data
                 logits = self.model(graph_list, require_loss=False)
                 pred_collect.append(logits)
@@ -167,11 +168,20 @@ class ModelHandler:
             pred_collect = torch.max(torch.cat(pred_collect, 0), dim=-1)[1].cpu()
             gt_collect = torch.cat(gt_collect, 0).cpu()
             score = self.metric.calculate_scores(ground_truth=gt_collect, predict=pred_collect)[0]
-            print("accuracy: {:.3f}".format(score))
+
             return score
 
+    def test(self):
+        t0 = time.time()
+        acc = runner.evaluate(runner.test_dataloader)
+        dur = time.time() - t0
+        print("Test examples: {} | Time: {:.4f}s |  Test Acc: {:.4f}".
+          format(runner.num_test, dur, acc))
+
+        return acc
+
 def main(args):
-    # Configure
+    # configure
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
@@ -185,13 +195,12 @@ def main(args):
 
     runner = ModelHandler(args)
     runner.train()
-    print('Restored best saved model')
-    runner.model = runner.stopper.load_checkpoint(runner.model)
+    # restored best saved model
+    runner.stopper.load_checkpoint(runner.model)
+    runner.test()
+
     print('Removed best saved model file to save disk space')
     os.remove(runner.stopper.save_model_path)
-
-    acc = runner.evaluate()
-    print("Test Accuracy {:.4f}".format(acc))
 
 
 if __name__ == "__main__":

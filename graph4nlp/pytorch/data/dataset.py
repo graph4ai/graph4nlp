@@ -903,23 +903,20 @@ class Text2LabelDataset(Dataset):
         list
             The indices of data items in the file w.r.t. the whole dataset.
         """
-        current_index = len(self.data)
-        subset_indices = []
+        data = []
         with open(file_path, 'r') as f:
             lines = f.readlines()
             for line in lines:
                 input, output = line.split('\t')
                 data_item = Text2LabelDataItem(input_text=input.strip(), output_label=output.strip(), tokenizer=self.tokenizer)
-                self.data[current_index] = data_item
-                subset_indices.append(current_index)
-                current_index += 1
+                data.append(data_item)
 
-        return subset_indices
+        return data
 
     def build_vocab(self):
-        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        data_for_vocab = self.train
         if self.use_val_for_vocab:
-            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
+            data_for_vocab = data_for_vocab + self.val
 
         vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
                                        data_set=data_for_vocab,
@@ -933,12 +930,16 @@ class Text2LabelDataset(Dataset):
         self.vocab_model = vocab_model
 
         # label encoding
+        all_labels = {item.output_label for item in self.train + self.test}
+        if 'val' in self.__dict__:
+            all_labels = all_labels.union({item.output_label for item in self.val})
+
         self.le = preprocessing.LabelEncoder()
-        self.le.fit([item.output_label for item in self.data.values()])
+        self.le.fit(list(all_labels))
         self.num_classes = len(self.le.classes_)
 
-    def vectorization(self):
-        for item in self.data.values():
+    def vectorization(self, data_items):
+        for item in data_items:
             graph: GraphData = item.graph
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
