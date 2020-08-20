@@ -95,7 +95,7 @@ class Graph2seq(nn.Module):
                                          word_emb=self.word_emb, vocab=self.vocab.in_word_vocab,
                                          attention_type="sep_diff_encoder_type", fuse_strategy="concatenate",
                                          rnn_emb_input_size=hidden_size,
-                                         tgt_emb_as_output_layer=True, device=self.graph_topology.device)
+                                         tgt_emb_as_output_layer=True, device=self.graph_topology.device).to(device)
         self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
 
     def forward(self, graph_list, tgt=None, require_loss=True):
