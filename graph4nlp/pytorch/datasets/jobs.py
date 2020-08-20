@@ -17,7 +17,8 @@ class JobsDataset(Text2TextDataset):
 
     @property
     def processed_file_names(self):
-        return {'vocab': 'vocab.pt', 'data': 'data.pt'}
+        """At least 3 reserved keys should be fiiled: 'vocab', 'data' and 'split_ids'."""
+        return {'vocab': 'vocab.pt', 'data': 'data.pt', 'split_ids': 'split_ids.pt'}
 
     def download(self):
         # raise NotImplementedError(
@@ -35,9 +36,5 @@ class JobsDataset(Text2TextDataset):
 
 
 if __name__ == '__main__':
-    jd = JobsDataset(root_dir='../test/dataset/jobs', topology_builder=DependencyBasedGraphConstruction,
-                topology_subdir='DependencyGraph')
-
-    jd10 = jd[:10]
-
-    a = 0
+    a = JobsDataset(root_dir='../test/dataset/jobs', topology_builder=DependencyBasedGraphConstruction,
+                    topology_subdir='DependencyGraph')
