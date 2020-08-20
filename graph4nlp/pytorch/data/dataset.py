@@ -483,14 +483,9 @@ class TextToTreeDataset(Dataset):
 
     def build_vocab(self):
         saved_vocab_file = self.processed_file_paths['vocab']
-        if os.path.exists(saved_vocab_file):
-            print('Loading pre-built vocab model stored in {}'.format(saved_vocab_file))
-            self.src_vocab_model, self.tgt_vocab_model = pickle.load(open(saved_vocab_file, 'rb'))
-            return True
-
         data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
         if self.use_val_for_vocab:
-            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
+            data_for_vocab = data_for_vocab + [self.data[idx] for idx in self.split_ids['val']]
 
         src_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.enc_emb_size)
         tgt_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.dec_emb_size)
@@ -520,12 +515,11 @@ class TextToTreeDataset(Dataset):
 
         self.src_vocab_model = src_vocab_model
         self.tgt_vocab_model = tgt_vocab_model
-        # print(self.src_vocab_model.symbol2idx)
         return True
 
     def vectorization(self):
-        for i in range(len(self.data)):
-            graph: GraphData = self.data[i].graph
+        for item in self.data.values():
+            graph: GraphData = item.graph
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
                 node_token = graph.node_attributes[node_idx]['token']
@@ -535,10 +529,10 @@ class TextToTreeDataset(Dataset):
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features['token_id'] = token_matrix
 
-            tgt = self.data[i].output_text
+            tgt = item.output_text
             tgt_list = self.tgt_vocab_model.get_symbol_idx_for_list(tgt.split())
             output_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), self.tgt_vocab_model)
-            self.data[i].output_tree = output_tree
+            item.output_tree = output_tree
 
         torch.save(self.data, self.processed_file_paths['data'])
 

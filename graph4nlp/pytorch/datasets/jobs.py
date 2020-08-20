@@ -61,7 +61,7 @@ class JobsDatasetForTree(TextToTreeDataset):
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
         self.data = torch.load(os.path.join(self.processed_dir, self.processed_file_names['data']))
         self.split_ids = torch.load(os.path.join(self.processed_dir, self.processed_file_names['split_ids']))
-        self.build_vocab()
+        self.src_vocab_model, self.tgt_vocab_model = pickle.load(open(self.processed_file_paths['vocab'], 'rb'))
 
 if __name__ == '__main__':
     a = JobsDatasetForTree(root_dir='/Users/lishucheng/Desktop/g4nlp/graph4nlp/graph4nlp/pytorch/test/dataset/jobs', topology_builder=ConstituencyBasedGraphConstruction,
