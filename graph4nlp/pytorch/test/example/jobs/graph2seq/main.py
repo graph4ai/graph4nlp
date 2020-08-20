@@ -2,7 +2,7 @@ import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
-os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
+# os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -193,20 +193,6 @@ class Jobs:
         score = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
         print("accuracy: {:.3f}".format(score))
         return score
-
-
-# def preprocess():
-#     raw_dir = "graph4nlp/pytorch/test/dataset/jobs/raw"
-#     data = []
-#     with open("{}/{}.txt".format(raw_dir, "train"), "r") as f:
-#         for line in f:
-#             l_list = line.split("\t")
-#             w_list = l_list[0]
-#             r_list = l_list[1]
-#             data.append((w_list, r_list))
-#
-#     seq_data = data
-#     torch.save(seq_data, os.path.join(raw_dir, 'sequence.pt'))
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ import dgl
 import torch
 from stanfordcorenlp import StanfordCoreNLP
 
-from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.data.data import GraphData, to_batch, from_batch
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from .base import StaticGraphConstructionBase
 
@@ -358,19 +358,23 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
             num_nodes.append(g.get_node_num())
             node_size.extend([1 for i in range(num_nodes[-1])])
-        graph_list = [g.to_dgl() for g in batch_graphdata]
-        bg = dgl.batch(graph_list, edge_attrs=None)
+
+        batch_gd = to_batch(batch_graphdata)
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(bg.ndata['token_id'], node_size, num_nodes)
+        node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
+        batch_gd.node_features["node_feat"] = node_emb
 
-        bg.ndata["node_feat"] = node_emb
+        # graph_list = [g.to_dgl() for g in batch_graphdata]
+        #
+        # bg = dgl.batch(graph_list, edge_attrs=None)
+        # node_size = torch.Tensor(node_size).to(self.device).int()
+        # num_nodes = torch.Tensor(num_nodes).to(self.device).int()
+        # node_emb = self.embedding_layer(bg.ndata['token_id'], node_size, num_nodes)
 
-        return bg
-        # dgl_list = dgl.unbatch(bg)
-        # for g, dg in zip(batch_graphdata, dgl_list):
-        #     g.node_features["node_emb"] = dg.ndata["node_emb"]
-        # return batch_graphdata
+        # bg.ndata["node_feat"] = node_emb
+
+        return batch_gd
 
     def embedding(self, node_attributes, edge_attributes):
         node_emb, edge_emb = self.embedding_layer(
