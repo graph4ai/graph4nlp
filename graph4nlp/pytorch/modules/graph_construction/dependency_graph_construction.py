@@ -1,11 +1,10 @@
 import copy
 import json
 
-import dgl
 import torch
 from stanfordcorenlp import StanfordCoreNLP
 
-from graph4nlp.pytorch.data.data import GraphData, to_batch, from_batch
+from graph4nlp.pytorch.data.data import GraphData, to_batch
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from .base import StaticGraphConstructionBase
 
@@ -48,7 +47,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
     @classmethod
     def topology(cls, raw_text_data, nlp_processor, merge_strategy, edge_strategy, split_hyphenated=False,
-                 normalize=False, verbase=0):
+                 normalize=False, sequential_link=True, verbase=0):
         """
             Graph building method.
 
@@ -82,6 +81,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             Whether or not to tokenize segments of hyphenated words separately (“school” “-“ “aged”, “frog” “-“ “lipped”)
         normalize: bool, default=False
             Whether to convert bracket (`(`) to  -LRB-, and etc.
+        sequential_link: bool, default=True
+            Whether to link node tokens sequentially (note that it is bidirectional)
         verbase: int, default=0
             Whether to output log infors. Set 1 to output more infos.
         Returns
@@ -116,11 +117,11 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             for tokens in dep_dict["sentences"][s_id]['tokens']:
                 unique_hash[(tokens['index'], tokens['word'])] = node_id
                 node = {
-                        'token': tokens["word"],
-                        'position_id': tokens["index"] - 1,
-                        'id': node_id,
-                        "sentence_id": s_id
-                    }
+                    'token': tokens["word"],
+                    'position_id': tokens["index"] - 1,
+                    'id': node_id,
+                    "sentence_id": s_id
+                }
                 node_item.append(node)
                 node_id += 1
 
@@ -153,7 +154,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         sub_graphs = []
         for sent_id, parsed_sent in enumerate(parsed_results):
-            graph = cls._construct_static_graph(parsed_sent, edge_strategy=edge_strategy)
+            graph = cls._construct_static_graph(parsed_sent, edge_strategy=edge_strategy,
+                                                sequential_link=sequential_link)
             sub_graphs.append(graph)
         joint_graph = cls._graph_connect(sub_graphs, merge_strategy)
         return joint_graph
@@ -231,7 +233,14 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         if sequential_list and len(sequential_list) > 1:
             for st, ed in zip(sequential_list[:-1], sequential_list[1:]):
-                ret_graph.add_edge(st, ed)
+                try:
+                    ret_graph.edge_ids(st, ed)
+                except:
+                    ret_graph.add_edge(st, ed)
+                try:
+                    ret_graph.edge_ids(ed, st)
+                except:
+                    ret_graph.add_edge(ed, st)
         return ret_graph
 
     @classmethod
@@ -347,7 +356,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             print(g.get_all_edges())
             for i in range(g.get_edge_num()):
                 print(i, g.edge_attributes[i])
-
         return g
 
     def forward(self, batch_graphdata: list):
@@ -364,15 +372,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
         node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
         batch_gd.node_features["node_feat"] = node_emb
-
-        # graph_list = [g.to_dgl() for g in batch_graphdata]
-        #
-        # bg = dgl.batch(graph_list, edge_attrs=None)
-        # node_size = torch.Tensor(node_size).to(self.device).int()
-        # num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        # node_emb = self.embedding_layer(bg.ndata['token_id'], node_size, num_nodes)
-
-        # bg.ndata["node_feat"] = node_emb
 
         return batch_gd
 
