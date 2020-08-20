@@ -1,6 +1,7 @@
 import copy
 import json
 import random
+import dgl
 
 import networkx as nx
 import networkx.algorithms as nxalg
@@ -12,7 +13,9 @@ from stanfordcorenlp import StanfordCoreNLP
 
 from .base import StaticGraphConstructionBase
 from .embedding_construction import EmbeddingConstruction
-from ...data.data import GraphData
+from graph4nlp.pytorch.data.data import GraphData, to_batch, from_batch
+from .base import StaticGraphConstructionBase
+
 
 """TODO: some design choice:
             - replace constituent tag "." with "const_period"
@@ -37,7 +40,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     Methods
     -------
 
-    topology(paragraph, nlp_processor, merge_strategy=None, edge_strategy=None)
+    topology(raw_text_data, nlp_processor, merge_strategy=None, edge_strategy=None)
         Generate graph structure with nlp parser like ``CoreNLP`` etc.
 
     _construct_static_graph(parsed_object, sub_sentence_id, edge_strategy=None)
@@ -53,25 +56,27 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         Generate graph topology and embeddings.
     """
 
-    def __init__(self, word_vocab, embedding_styles, hidden_size,
-                 fix_word_emb=True, dropout=None, use_cuda=True):
-        super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab,
-                                                                 embedding_styles,
-                                                                 hidden_size,
-                                                                 fix_word_emb=fix_word_emb,
-                                                                 dropout=dropout,
-                                                                 use_cuda=use_cuda)
+    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, dropout=None, use_cuda=True):
+        super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
+                                                               embedding_styles=embedding_style,
+                                                               hidden_size=hidden_size,
+                                                               fix_word_emb=fix_word_emb,
+                                                               dropout=dropout, use_cuda=use_cuda)
+        self.vocab = vocab
+        self.device = self.embedding_layer.device
+
     @classmethod
     def topology(cls,
-                 paragraph,
+                 raw_text_data,
                  nlp_processor,
                  merge_strategy=None,
-                 edge_strategy=None):
-        """topology This function generate a graph strcuture from a raw paragraph.
+                 edge_strategy=None,
+                 verbase=True):
+        """topology This function generate a graph strcuture from a raw text data.
 
         Parameters
         ----------
-        paragraph : string
+        raw_text_data : string
             A string to be used to construct a static graph, can be composed of multiple strings
 
         nlp_processor : object
@@ -108,7 +113,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         """
         output_graph_list = []
         output = nlp_processor.annotate(
-            paragraph.strip(),
+            raw_text_data.strip(),
             properties={
                 'annotators': "tokenize,ssplit,pos,parse",
                 "tokenize.options":
@@ -122,14 +127,21 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             output_graph_list.append(
                 cls._construct_static_graph(parsed_output[index], index))
         ret_graph = cls._graph_connect(output_graph_list)
+        if verbase:
+            print('--------------------------------------')
+            for _edge in ret_graph.get_all_edges():
+                print(ret_graph.nodes[_edge[0]].attributes['token'],
+                      "\t---\t", ret_graph.nodes[_edge[1]].attributes['token'])
+            print('--------------------------------------')
+
         return ret_graph
 
     @classmethod
     def _construct_static_graph(cls,
-                               parsed_object,
-                               sub_sentence_id,
-                               edge_strategy=None,
-                               sequential_link=True):
+                                parsed_object,
+                                sub_sentence_id,
+                                edge_strategy=None,
+                                sequential_link=True):
         parsed_sentence_data = parsed_object['parse']
         for punc in [u'(', u')']:
             parsed_sentence_data = parsed_sentence_data.replace(
@@ -164,7 +176,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                     res_graph.add_edge(node_1, res_graph.get_node_num() - 1)
                 pstack.push(node_1)
             idx += 1
-        
+
         if sequential_link:
             _len_single_graph = res_graph.get_node_num()
             _cnt_node = 0
@@ -220,16 +232,17 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
 
             graph_i_nodes_attributes = {}
             for dict_item in graph_list[index].node_attributes.items():
-                graph_i_nodes_attributes[dict_item[0] + len_merged_graph] = dict_item[1]
+                graph_i_nodes_attributes[dict_item[0] +
+                                         len_merged_graph] = dict_item[1]
             merged_graph.node_attributes.update(graph_i_nodes_attributes)
-        
+
         _cnt_edge_num = 0
         for g_idx in range(_len_graph_):
-            print(g_idx)
             tmp_edges = graph_list[g_idx].get_all_edges()
             current_node_num = graph_list[g_idx].get_node_num()
             for _edge in tmp_edges:
-                merged_graph.add_edge(_edge[0]+_cnt_edge_num, _edge[1]+_cnt_edge_num)
+                merged_graph.add_edge(
+                    _edge[0]+_cnt_edge_num, _edge[1]+_cnt_edge_num)
             _cnt_edge_num += current_node_num
 
         for index in range(_len_graph_ - 1):
@@ -246,25 +259,23 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             merged_graph.add_edge(tail_node, head_node)
         return merged_graph
 
+    def forward(self, batch_graphdata: list):
+        node_size = []
+        num_nodes = []
+
+        for g in batch_graphdata:
+            g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
+            num_nodes.append(g.get_node_num())
+            node_size.extend([1 for i in range(num_nodes[-1])])
+
+        batch_gd = to_batch(batch_graphdata)
+        node_size = torch.Tensor(node_size).to(self.device).int()
+        num_nodes = torch.Tensor(num_nodes).to(self.device).int()
+        node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
+        batch_gd.node_features["node_feat"] = node_emb
+        return batch_gd
+
     def embedding(self, node_attributes, edge_attributes):
         node_emb, edge_emb = self.embedding_layer(
             node_attributes, edge_attributes)
         return node_emb, edge_emb
-
-    def forward(self, raw_sentence_data, nlp_parser):
-        output_graph = self.topology(raw_sentence_data,
-                                     nlp_processor=nlp_parser)
-        # self.vocab.randomize_embeddings(self.word_emb_size)
-        # self.embedding_layer = EmbeddingConstruction(self.vocab, self.embedding_style['word_emb_type'], self.embedding_style[
-        #                                              'node_edge_level_emb_type'], self.embedding_style['graph_level_emb_type'], self.hidden_size)
-
-        # input_node_attributes = torch.LongTensor(
-        #     [[i[1]['wordid'] for i in output_graph.node_attributes.items()]])
-        # graph_num = torch.LongTensor([1])
-        # node_num = torch.LongTensor([output_graph.get_node_num()])
-
-        # node_feat = self.embedding_layer(
-        #     input_tensor=input_node_attributes, node_size=node_num, graph_size=graph_num)
-        # output_graph.node_features['node_feat'] = node_feat
-        # output_graph.node_features['node_meb'] = self.vocab.embeddings
-        return output_graph
