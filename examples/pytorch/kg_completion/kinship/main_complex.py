@@ -9,7 +9,7 @@ from graph4nlp.pytorch.modules.graph_embedding.gat import GAT, GATLayer
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGELayer
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN, GGNNLayer
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-from graph4nlp.pytorch.modules.prediction.classification.kg_completion.DistMult import DistMult
+from graph4nlp.pytorch.modules.prediction.classification.kg_completion.ComplEx import ComplEx
 
 import torch
 import torch.nn as nn
@@ -18,14 +18,13 @@ import torch.optim as optim
 import dgl
 import numpy as np
 import copy
-import random
 
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import EmbeddingConstruction
 from graph4nlp.pytorch.modules.loss.kg_loss import *
 
 class RankingAndHits(EvaluationMetricBase):
-    def __init__(self, model_path='best_graph2distmult', batch_size=64):
+    def __init__(self, model_path='best_graph2complex', batch_size=64):
         super(RankingAndHits, self).__init__()
         self.batch_size = batch_size
         self.best_mrr = 0.
@@ -157,12 +156,10 @@ class RankingAndHits(EvaluationMetricBase):
         print('-' * 50)
         print('')
 
-# TODO: 1. initialize graph.node_features['edge_feat']/self.distmult.rel_emb with self.embedding_layer
-# TODO: 2. learn graph.node_features['edge_emb'] from GNN (edge2node)
 
-class Graph2DistMult(nn.Module):
+class Graph2ComplEx(nn.Module):
     def __init__(self, vocab, num_entities, hidden_size=300, num_relations=None, direction_option='uni', loss_name='BCELoss'):
-        super(Graph2DistMult, self).__init__()
+        super(Graph2ComplEx, self).__init__()
         self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         self.vocab = vocab
         self.num_entities = num_entities
@@ -182,7 +179,7 @@ class Graph2DistMult(nn.Module):
                                                      device=self.device)
 
         # self.gnn_encoder = GAT(2, hidden_size, hidden_size, hidden_size, [2, 1], direction_option=direction_option)
-        self.num_layers = 1 # ggnn
+        self.num_layers = 2 # ggnn
         # self.num_layers = 1 # gat uni/bi_fuse/bi_sep
         # self.num_layers = 2 # graphsage
         self.direction_option = direction_option
@@ -203,7 +200,7 @@ class Graph2DistMult(nn.Module):
         self.bn_list = nn.ModuleList([torch.nn.BatchNorm1d(hidden_size)
                                       for i in range(self.num_layers)])  # necessary for this task
 
-        self.distmult = DistMult(rel_emb_from_gnn=False, num_relations=num_relations,
+        self.complex = ComplEx(rel_emb_from_gnn=False, num_relations=num_relations,
                                  embedding_dim=hidden_size, loss_name=loss_name)
 
         self.loss_name = loss_name
@@ -301,7 +298,8 @@ class Graph2DistMult(nn.Module):
             else:
                 raise RuntimeError('Unknown `bidirection` value: {}'.format(self.direction_option))
 
-        kg_graph.node_features['node_emb'] = node_embs
+        kg_graph.node_features['node_emb_real'] = node_embs
+        kg_graph.node_features['node_emb_img'] = node_embs
         # ================================================================================
 
         # kg_graph = self.gnn_encoder(kg_graph)
@@ -312,7 +310,7 @@ class Graph2DistMult(nn.Module):
         kg_graph.graph_attributes['multi_binary_label'] = e2_multi
 
         # down-task
-        kg_graph = self.distmult(kg_graph)
+        kg_graph = self.complex(kg_graph)
         if require_loss:
             if self.loss_name == "SoftplusLoss" or self.loss_name == "SigmoidLoss":
                 loss = self.loss(kg_graph.graph_attributes['p_score'],
@@ -344,7 +342,7 @@ class Kinship:
         self.num_relations = dataset.KG_graph.graph_attributes['num_relations']
         self.kg_graph = dataset.KG_graph
 
-        self.train_dataloader = DataLoader(dataset[:(dataset.split_ids['train'][-1]+1)//2], batch_size=64, shuffle=True,
+        self.train_dataloader = DataLoader(dataset[:dataset.split_ids['train'][-1]+1], batch_size=64, shuffle=True,
                                            num_workers=1,
                                            collate_fn=dataset.collate_fn)
         self.test_dataloader = DataLoader(dataset[dataset.split_ids['train'][-1]+1:], batch_size=64, shuffle=True,
@@ -353,7 +351,7 @@ class Kinship:
         self.vocab = dataset.vocab_model
 
     def _build_model(self):# BCELoss SigmoidLoss
-        self.model = Graph2DistMult(self.vocab,
+        self.model = Graph2ComplEx(self.vocab,
                                     num_entities=self.num_entities,
                                     num_relations=self.num_relations,
                                     loss_name='BCELoss',
@@ -361,7 +359,7 @@ class Kinship:
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
-        self.optimizer = optim.Adam(parameters, lr=2e-3, weight_decay=1e-3)
+        self.optimizer = optim.Adam(parameters, lr=2e-3)
 
     def _build_evaluation(self):
         self.metrics = [RankingAndHits()]
@@ -379,22 +377,7 @@ class Kinship:
                 rel = torch.cat([rel, rel_eval]).to(self.device)
                 e2_multi = torch.cat([e2_multi, e1_multi], dim=0).to(self.device)
                 # e2_multi_tensor_idx = torch.cat([e2_multi_tensor_idx, e1_multi_tensor_idx]).to(self.device)
-
-                # TODO
-                if random.randint(0, 1) == 0:
-                    e1 = torch.cat([e1]).to(self.device)
-                    rel = torch.cat([rel]).to(self.device)
-                    e2_multi = torch.cat([e2_multi], dim=0).to(self.device)
-                else:
-                    e1 = torch.cat([e2]).to(self.device)
-                    rel = torch.cat([rel_eval]).to(self.device)
-                    e2_multi = torch.cat([e1_multi], dim=0).to(self.device)
-
-                # c = torch.randperm(e1.size()[0])
-                # e1 = e1[c]
-                # rel = rel[c]
-                # e2_multi = e2_multi[c]
-
+                
                 # e1 = e1.to(self.device)
                 # rel = rel.to(self.device)
                 # e2_multi = e2_multi.to(self.device)
@@ -444,4 +427,4 @@ if __name__ == "__main__":
     # max_score = runner.test()
     print("Train finish, best MRR: {:.3f}".format(max_score))
 
-# nohup python -m examples.pytorch.kg_completion.kinship.main >> distmult_bce_gat_uni.log 2>&1 &
+# nohup python -m examples.pytorch.kg_completion.kinship.main >> complex_bce_gat_uni.log 2>&1 &

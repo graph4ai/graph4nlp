@@ -743,13 +743,101 @@ class KGCompletionDataset(Dataset):
         if 'KG_graph' in self.processed_file_names.keys():
             torch.save(self.KG_graph, os.path.join(self.processed_dir, self.processed_file_names['KG_graph']))
 
+    # @staticmethod
+    # def collate_fn(data_list: [KGDataItem]):
+    #     # graph_data = [item.graph for item in data_list]
+    #     e1 = torch.tensor([item.e1_tensor for item in data_list])
+    #     rel = torch.tensor([item.rel_tensor for item in data_list])
+    #     # e2_multi_tensor_idx = torch.tensor([item.e2_multi_tensor_idx for item in data_list])
+    #
+    #     e2_multi_tensor_idx_len = [item.e2_multi_tensor_idx.shape[0] for item in data_list]
+    #     max_e2_multi_tensor_idx_len = max(e2_multi_tensor_idx_len)
+    #     e2_multi_tensor_idx_pad = []
+    #     for item in data_list:
+    #         if item.e2_multi_tensor_idx.shape[0] < max_e2_multi_tensor_idx_len:
+    #             need_pad_length = max_e2_multi_tensor_idx_len - item.e2_multi_tensor_idx.shape[0]
+    #             pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+    #             e2_multi_tensor_idx_pad.append(torch.cat((item.e2_multi_tensor_idx, pad.long()), dim=0).unsqueeze(0))
+    #         elif item.e2_multi_tensor_idx.shape[0] == max_e2_multi_tensor_idx_len:
+    #             e2_multi_tensor_idx_pad.append(item.e2_multi_tensor_idx.unsqueeze(0))
+    #         else:
+    #             raise RuntimeError("Size mismatch error")
+    #
+    #     e2_multi_tensor_idx = torch.cat(e2_multi_tensor_idx_pad, dim=0)
+    #
+    #     # do padding here
+    #     e2_multi_len = [item.e2_multi_tensor.shape[0] for item in data_list]
+    #     max_e2_multi_len = max(e2_multi_len)
+    #     e2_multi_pad = []
+    #     for item in data_list:
+    #         if item.e2_multi_tensor.shape[0] < max_e2_multi_len:
+    #             need_pad_length = max_e2_multi_len - item.e2_multi_tensor.shape[0]
+    #             pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+    #             e2_multi_pad.append(torch.cat((item.e2_multi_tensor, pad.long()), dim=0).unsqueeze(0))
+    #         elif item.e2_multi_tensor.shape[0] == max_e2_multi_len:
+    #             e2_multi_pad.append(item.e2_multi_tensor.unsqueeze(0))
+    #         else:
+    #             raise RuntimeError("Size mismatch error")
+    #
+    #     e2_multi = torch.cat(e2_multi_pad, dim=0)
+    #
+    #     # # do padding here
+    #     # seq_len = [item.output_tensor.shape[0] for item in data_list]
+    #     # max_seq_len = max(seq_len)
+    #     # tgt_seq_pad = []
+    #     # for item in data_list:
+    #     #     if item.output_tensor.shape[0] < max_seq_len:
+    #     #         need_pad_length = max_seq_len - item.output_tensor.shape[0]
+    #     #         pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+    #     #         tgt_seq_pad.append(torch.cat((item.output_tensor, pad.long()), dim=0).unsqueeze(0))
+    #     #     elif item.output_tensor.shape[0] == max_seq_len:
+    #     #         tgt_seq_pad.append(item.output_tensor.unsqueeze(0))
+    #     #     else:
+    #     #         raise RuntimeError("Size mismatch error")
+    #     #
+    #     # tgt_seq = torch.cat(tgt_seq_pad, dim=0)
+    #     return [e1, rel, e2_multi, e2_multi_tensor_idx]
+
     @staticmethod
     def collate_fn(data_list: [KGDataItem]):
         # graph_data = [item.graph for item in data_list]
         e1 = torch.tensor([item.e1_tensor for item in data_list])
+        e2 = torch.tensor([item.e2_tensor for item in data_list])
         rel = torch.tensor([item.rel_tensor for item in data_list])
-        # e2_multi_tensor_idx = torch.tensor([item.e2_multi_tensor_idx for item in data_list])
+        rel_eval = torch.tensor([item.rel_eval_tensor for item in data_list])
 
+        # do padding here
+        e1_multi_tensor_idx_len = [item.e1_multi_tensor_idx.shape[0] for item in data_list]
+        max_e1_multi_tensor_idx_len = max(e1_multi_tensor_idx_len)
+        e1_multi_tensor_idx_pad = []
+        for item in data_list:
+            if item.e1_multi_tensor_idx.shape[0] < max_e1_multi_tensor_idx_len:
+                need_pad_length = max_e1_multi_tensor_idx_len - item.e1_multi_tensor_idx.shape[0]
+                pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+                e1_multi_tensor_idx_pad.append(torch.cat((item.e1_multi_tensor_idx, pad.long()), dim=0).unsqueeze(0))
+            elif item.e1_multi_tensor_idx.shape[0] == max_e1_multi_tensor_idx_len:
+                e1_multi_tensor_idx_pad.append(item.e1_multi_tensor_idx.unsqueeze(0))
+            else:
+                raise RuntimeError("Size mismatch error")
+
+        e1_multi_tensor_idx = torch.cat(e1_multi_tensor_idx_pad, dim=0)
+
+        e1_multi_len = [item.e1_multi_tensor.shape[0] for item in data_list]
+        max_e1_multi_len = max(e1_multi_len)
+        e1_multi_pad = []
+        for item in data_list:
+            if item.e1_multi_tensor.shape[0] < max_e1_multi_len:
+                need_pad_length = max_e1_multi_len - item.e1_multi_tensor.shape[0]
+                pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
+                e1_multi_pad.append(torch.cat((item.e1_multi_tensor, pad.long()), dim=0).unsqueeze(0))
+            elif item.e1_multi_tensor.shape[0] == max_e1_multi_len:
+                e1_multi_pad.append(item.e1_multi_tensor.unsqueeze(0))
+            else:
+                raise RuntimeError("Size mismatch error")
+
+        e1_multi = torch.cat(e1_multi_pad, dim=0)
+
+        # do padding here
         e2_multi_tensor_idx_len = [item.e2_multi_tensor_idx.shape[0] for item in data_list]
         max_e2_multi_tensor_idx_len = max(e2_multi_tensor_idx_len)
         e2_multi_tensor_idx_pad = []
@@ -765,7 +853,6 @@ class KGCompletionDataset(Dataset):
 
         e2_multi_tensor_idx = torch.cat(e2_multi_tensor_idx_pad, dim=0)
 
-        # do padding here
         e2_multi_len = [item.e2_multi_tensor.shape[0] for item in data_list]
         max_e2_multi_len = max(e2_multi_len)
         e2_multi_pad = []
@@ -781,19 +868,4 @@ class KGCompletionDataset(Dataset):
 
         e2_multi = torch.cat(e2_multi_pad, dim=0)
 
-        # # do padding here
-        # seq_len = [item.output_tensor.shape[0] for item in data_list]
-        # max_seq_len = max(seq_len)
-        # tgt_seq_pad = []
-        # for item in data_list:
-        #     if item.output_tensor.shape[0] < max_seq_len:
-        #         need_pad_length = max_seq_len - item.output_tensor.shape[0]
-        #         pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-        #         tgt_seq_pad.append(torch.cat((item.output_tensor, pad.long()), dim=0).unsqueeze(0))
-        #     elif item.output_tensor.shape[0] == max_seq_len:
-        #         tgt_seq_pad.append(item.output_tensor.unsqueeze(0))
-        #     else:
-        #         raise RuntimeError("Size mismatch error")
-        #
-        # tgt_seq = torch.cat(tgt_seq_pad, dim=0)
-        return [e1, rel, e2_multi, e2_multi_tensor_idx]
+        return [e1, rel, e2_multi, e2_multi_tensor_idx, e2, rel_eval, e1_multi, e1_multi_tensor_idx]
