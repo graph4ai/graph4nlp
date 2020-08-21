@@ -7,8 +7,14 @@ import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 
+from collections import Counter
+import pickle
+
 from ..data.data import GraphData
 from ..modules.utils.vocab_utils import VocabModel, Vocab
+
+from ..modules.utils.tree_utils import Vocab as VocabForTree
+from ..modules.utils.tree_utils import Tree
 
 import json
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
@@ -42,6 +48,41 @@ class Text2TextDataItem(DataItem):
         for i in range(g.get_node_num()):
             if self.tokenizer is None:
                 tokenized_token = g.node_attributes[i]['token'].strip().split(' ')
+            else:
+                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
+
+            input_tokens.extend(tokenized_token)
+
+        if self.tokenizer is None:
+            output_tokens = self.output_text.strip().split(' ')
+        else:
+            output_tokens = self.tokenizer(self.output_text)
+
+        if self.share_vocab:
+            return input_tokens + output_tokens
+        else:
+            return input_tokens, output_tokens
+
+
+class Text2TreeDataItem(DataItem):
+    def __init__(self, input_text, output_text, output_tree, tokenizer, share_vocab=True):
+        super(Text2TreeDataItem, self).__init__(input_text, tokenizer)
+        self.output_text = output_text
+        self.share_vocab = share_vocab
+        self.output_tree = output_tree
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens and output tokens
+        """
+        g: GraphData = self.graph
+
+        input_tokens = []
+        for i in range(g.get_node_num()):
+            if self.tokenizer is None:
+                tokenized_token = self.output_text.strip().split(' ')
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
 
@@ -373,6 +414,110 @@ class Text2TextDataset(Dataset):
         tgt_seq = torch.cat(tgt_seq_pad, dim=0)
         return [graph_data, tgt_seq]
 
+
+class TextToTreeDataset(Dataset):
+    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
+        self.data_item_type = Text2TreeDataItem
+        self.share_vocab = share_vocab
+        super(TextToTreeDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+
+        For Text2TreeDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
+
+        Examples
+        --------
+        input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
+
+        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
+
+        Parameters
+        ----------
+        file_path: str
+            The path of the input file.
+
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
+        """
+        current_index = len(self.data)
+        subset_indices = []
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                input, output = line.split('\t')
+                data_item = Text2TreeDataItem(input_text=input, output_text=output, output_tree=None, tokenizer=self.tokenizer,
+                                              share_vocab=self.share_vocab)
+                self.data[current_index] = data_item
+                subset_indices.append(current_index)
+                current_index += 1
+        return subset_indices
+
+    def build_vocab(self):
+        saved_vocab_file = self.processed_file_paths['vocab']
+        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        if self.use_val_for_vocab:
+            data_for_vocab = data_for_vocab + [self.data[idx] for idx in self.split_ids['val']]
+
+        src_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.enc_emb_size)
+        tgt_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.dec_emb_size)
+
+        if self.share_vocab:
+            all_words = Counter()
+        else:
+            all_words = [Counter(), Counter()]
+
+        for instance in data_for_vocab:
+            extracted_tokens = instance.extract()
+            if self.share_vocab:
+                all_words.update(extracted_tokens)
+            else:
+                all_words[0].update(extracted_tokens[0])
+                all_words[1].update(extracted_tokens[1])
+        
+        if self.share_vocab:
+            src_vocab_model.init_from_list(list(all_words.items()), min_freq=1, max_vocab_size=100000)
+            tgt_vocab_model = src_vocab_model
+        else:
+            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=2, max_vocab_size=100000)
+            tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=1, max_vocab_size=100000)
+
+        print('Saving vocab model to {}'.format(saved_vocab_file))
+        pickle.dump((src_vocab_model, tgt_vocab_model), open(saved_vocab_file, 'wb'))
+
+        self.src_vocab_model = src_vocab_model
+        self.tgt_vocab_model = tgt_vocab_model
+        return True
+
+    def vectorization(self):
+        for item in self.data.values():
+            graph: GraphData = item.graph
+            token_matrix = []
+            for node_idx in range(graph.get_node_num()):
+                node_token = graph.node_attributes[node_idx]['token']
+                node_token_id = self.src_vocab_model.get_symbol_idx(node_token)
+                graph.node_attributes[node_idx]['token_id'] = node_token_id
+                token_matrix.append([node_token_id])
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features['token_id'] = token_matrix
+
+            tgt = item.output_text
+            tgt_list = self.tgt_vocab_model.get_symbol_idx_for_list(tgt.split())
+            output_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), self.tgt_vocab_model)
+            item.output_tree = output_tree
+
+        torch.save(self.data, self.processed_file_paths['data'])
+
+    @staticmethod
+    def collate_fn(data_list: [Text2TreeDataItem]):
+        graph_data = [item.graph for item in data_list]
+        output_tree_list = [item.output_tree for item in data_list]
+        return [graph_data, output_tree_list]
 
 class KGDataItem(DataItem):
     def __init__(self, e1, rel, e2, rel_eval, e2_multi, e1_multi, share_vocab=True, split_token=' '):
