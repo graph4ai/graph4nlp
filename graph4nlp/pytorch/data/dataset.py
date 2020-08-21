@@ -18,6 +18,8 @@ from ..modules.utils.tree_utils import Tree
 
 import json
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+
 
 class DataItem(object):
     def __init__(self, input_text, tokenizer):
@@ -390,28 +392,16 @@ class Text2TextDataset(Dataset):
             tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
             tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
-            tgt_token_id = torch.from_numpy(tgt_token_id)
             item.output_tensor = tgt_token_id
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
         graph_data = [item.graph for item in data_list]
 
-        # do padding here
-        seq_len = [item.output_tensor.shape[0] for item in data_list]
-        max_seq_len = max(seq_len)
-        tgt_seq_pad = []
-        for item in data_list:
-            if item.output_tensor.shape[0] < max_seq_len:
-                need_pad_length = max_seq_len - item.output_tensor.shape[0]
-                pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-                tgt_seq_pad.append(torch.cat((item.output_tensor, pad.long()), dim=0).unsqueeze(0))
-            elif item.output_tensor.shape[0] == max_seq_len:
-                tgt_seq_pad.append(item.output_tensor.unsqueeze(0))
-            else:
-                raise RuntimeError("Size mismatch error")
+        output_numpy = [item.output_np for item in data_list]
+        output_pad = pad_2d_vals_no_size(output_numpy)
 
-        tgt_seq = torch.cat(tgt_seq_pad, dim=0)
+        tgt_seq = torch.from_numpy(output_pad).long()
         return [graph_data, tgt_seq]
 
 
@@ -646,14 +636,15 @@ class KGCompletionDataset(Dataset):
         if self.use_val_for_vocab:
             data_for_vocab = data_for_vocab + self.val
 
-        vocab_model = VocabModel.build(saved_vocab_file=os.path.join(self.processed_dir, self.processed_file_names['vocab']),
-                               data_set=data_for_vocab,
-                               tokenizer=self.tokenizer,
-                               lower_case=self.lower_case,
-                               max_word_vocab_size=None,
-                               min_word_vocab_freq=1,
-                               pretrained_word_emb_file=self.pretrained_word_emb_file,
-                               word_emb_size=300)
+        vocab_model = VocabModel.build(
+            saved_vocab_file=os.path.join(self.processed_dir, self.processed_file_names['vocab']),
+            data_set=data_for_vocab,
+            tokenizer=self.tokenizer,
+            lower_case=self.lower_case,
+            max_word_vocab_size=None,
+            min_word_vocab_freq=1,
+            pretrained_word_emb_file=self.pretrained_word_emb_file,
+            word_emb_size=300)
         self.vocab_model = vocab_model
 
         return self.vocab_model
@@ -726,7 +717,8 @@ class KGCompletionDataset(Dataset):
         self.KG_graph = GraphData()
         self.parsed_results['node_num'] = len(self.graph_nodes)
         self.parsed_results['graph_nodes'] = self.graph_nodes
-        self.KG_graph = IEBasedGraphConstruction._construct_static_graph(self.parsed_results, edge_strategy=self.edge_strategy)
+        self.KG_graph = IEBasedGraphConstruction._construct_static_graph(self.parsed_results,
+                                                                         edge_strategy=self.edge_strategy)
         self.KG_graph.graph_attributes['num_entities'] = len(self.graph_nodes)
         self.KG_graph.graph_attributes['num_relations'] = len(self.graph_edges)
         self.KG_graph.graph_attributes['graph_nodes'] = self.graph_nodes
@@ -747,10 +739,10 @@ class KGCompletionDataset(Dataset):
         """
         `self.parsed_results` is an intermediate dict that contains all the information of the KG graph.
         `self.parsed_results['graph_content']` is a list of dict.
-        
+
         Each dict in `self.parsed_results['graph_content']` contains information about a triple 
         (src_ent, rel, tgt_ent).
-        
+
         `self.parsed_results['graph_nodes']` contains all nodes in the KG graph.
         `self.parsed_results['node_num']` is the number of nodes in the KG graph.
         """
@@ -802,17 +794,22 @@ class KGCompletionDataset(Dataset):
             rel_eval = item.rel_eval
             item.rel_eval_tensor = torch.tensor(self.graph_edges.index(rel_eval), dtype=torch.long)
 
+
             e2_multi = item.e2_multi
             item.e2_multi_tensor = torch.zeros(1, len(self.graph_nodes)).\
+
                 scatter_(1,
-                         torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long).view(1, -1),
+                         torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long).view(1,
+                                                                                                                    -1),
                          torch.ones(1, len(e2_multi.split()))).squeeze()
+
             item.e2_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long)
 
             e1_multi = item.e1_multi
             item.e1_multi_tensor = torch.zeros(1, len(self.graph_nodes)). \
                 scatter_(1,
-                         torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()], dtype=torch.long).view(1, -1),
+                         torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()], dtype=torch.long).view(1,
+                                                                                                                    -1),
                          torch.ones(1, len(e1_multi.split()))).squeeze()
             item.e1_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()],
                                                             dtype=torch.long)
