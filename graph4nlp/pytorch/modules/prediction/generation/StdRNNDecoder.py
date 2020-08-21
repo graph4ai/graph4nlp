@@ -94,7 +94,7 @@ class StdRNNDecoder(RNNDecoderBase):
                 self.enc_attention = Attention(hidden_size=self.decoder_hidden_size,
                                                query_size=query_size,
                                                memory_size=decoder_input_size, has_bias=True,
-                                               attention_funtion=attention_function, dropout=dropout)
+                                               attention_funtion=attention_function)
                 self.out_logits_size += self.decoder_input_size
             elif attention_type == "sep_diff_encoder_type":
                 assert isinstance(rnn_emb_input_size, int)
@@ -102,11 +102,11 @@ class StdRNNDecoder(RNNDecoderBase):
                 self.enc_attention = Attention(hidden_size=self.decoder_hidden_size,
                                                query_size=query_size,
                                                memory_size=decoder_input_size, has_bias=True,
-                                               attention_funtion=attention_function, dropout=dropout)
+                                               attention_funtion=attention_function)
                 self.out_logits_size += self.decoder_input_size
                 self.rnn_attention = Attention(hidden_size=self.decoder_hidden_size, query_size=query_size,
                                                memory_size=rnn_emb_input_size, has_bias=True,
-                                               attention_funtion=attention_function, dropout=dropout)
+                                               attention_funtion=attention_function)
                 if self.fuse_strategy == "concatenate":
                     self.out_logits_size += self.rnn_emb_input_size
                 else:
@@ -116,7 +116,7 @@ class StdRNNDecoder(RNNDecoderBase):
                 assert node_type_num >= 1
                 attn_modules = [Attention(hidden_size=self.decoder_hidden_size, query_size=query_size,
                                           memory_size=decoder_input_size, has_bias=True,
-                                          attention_funtion=attention_function, dropout=dropout)
+                                          attention_funtion=attention_function)
                                 for _ in range(node_type_num)]
                 self.node_type_num = node_type_num
                 self.attn_modules = nn.ModuleList(attn_modules)
