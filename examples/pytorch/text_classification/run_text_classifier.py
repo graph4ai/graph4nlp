@@ -22,6 +22,8 @@ from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda, EarlyStopping
 from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 
 class TextClassifier(nn.Module):
@@ -163,13 +165,13 @@ class ModelHandler:
                               pretrained_word_emb_file=self.config.pre_word_emb_file,
                               val_split_ratio=self.config.val_split_ratio)
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config.batch_size, shuffle=True,
-                                           num_workers=1,
+                                           num_workers=12,
                                            collate_fn=dataset.collate_fn)
         self.val_dataloader = DataLoader(dataset.val, batch_size=self.config.batch_size, shuffle=False,
-                                          num_workers=1,
+                                          num_workers=12,
                                           collate_fn=dataset.collate_fn)
         self.test_dataloader = DataLoader(dataset.test, batch_size=self.config.batch_size, shuffle=False,
-                                          num_workers=1,
+                                          num_workers=12,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
         self.config.num_classes = dataset.num_classes
@@ -212,9 +214,6 @@ class ModelHandler:
                 train_acc.append(self.metric.calculate_scores(ground_truth=tgt.cpu(), predict=pred.cpu())[0])
                 dur.append(time.time() - t0)
 
-                if i > 10: # TODO
-                    break
-
             val_acc = self.evaluate(self.val_dataloader)
             self.scheduler.step(val_acc)
             print("Epoch: [{} / {}] | Time: {:.4f}s | Loss: {:.4f} | Train Acc: {:.4f} | Val Acc: {:.4f}".
@@ -233,8 +232,6 @@ class ModelHandler:
                 logits = self.model(graph_list, require_loss=False)
                 pred_collect.append(logits)
                 gt_collect.append(tgt)
-                if i > 10: # TODO
-                    break
 
             pred_collect = torch.max(torch.cat(pred_collect, 0), dim=-1)[1].cpu()
             gt_collect = torch.cat(gt_collect, 0).cpu()
