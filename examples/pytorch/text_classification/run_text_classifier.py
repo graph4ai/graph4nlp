@@ -13,6 +13,8 @@ import dgl
 
 from graph4nlp.pytorch.datasets.trec import TrecDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedGraphConstruction, NodeEmbeddingBasedRefinedGraphConstruction
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
@@ -25,16 +27,61 @@ from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
 class TextClassifier(nn.Module):
     def __init__(self, vocab, config):
         super(TextClassifier, self).__init__()
-
+        self.config = config
         self.vocab = vocab
         embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
                            'seq_info_encode_strategy': "bilstm"}
-        self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
-                                                               vocab=vocab.in_word_vocab,
-                                                               hidden_size=config.num_hidden,
-                                                               dropout=0.2,
-                                                               fix_word_emb=False,
-                                                               device=config.device)
+
+        if config.graph_type == 'dependency':
+            self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
+                                                                   vocab=vocab.in_word_vocab,
+                                                                   hidden_size=config.num_hidden,
+                                                                   dropout=0.2,
+                                                                   fix_word_emb=config.fix_word_emb,
+                                                                   device=config.device)
+        elif config.graph_type == 'constituency':
+            self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
+                                                                   vocab=vocab.in_word_vocab,
+                                                                   hidden_size=config.num_hidden,
+                                                                   dropout=0.2,
+                                                                   fix_word_emb=config.fix_word_emb,
+                                                                   device=config.device)
+        elif config.graph_type == 'node_emb':
+            self.graph_topology = NodeEmbeddingBasedGraphConstruction(
+                                    vocab.in_word_vocab,
+                                    embedding_style,
+                                    sim_metric_type=config.gl_metric_type,
+                                    num_heads=config.gl_num_heads,
+                                    top_k_neigh=config.gl_top_k,
+                                    epsilon_neigh=config.gl_epsilon,
+                                    smoothness_ratio=config.gl_smoothness_ratio,
+                                    connectivity_ratio=config.gl_connectivity_ratio,
+                                    sparsity_ratio=config.gl_sparsity_ratio,
+                                    input_size=hidden_size,
+                                    hidden_size=config.gl_num_hidden,
+                                    fix_word_emb=config.fix_word_emb,
+                                    dropout=None,
+                                    device=device)
+        elif config.graph_type == 'node_emb_refined':
+            self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
+                                    vocab.in_word_vocab,
+                                    embedding_style,
+                                    config.init_adj_alpha,
+                                    sim_metric_type=config.gl_metric_type,
+                                    num_heads=config.gl_num_heads,
+                                    top_k_neigh=config.gl_top_k,
+                                    epsilon_neigh=config.gl_epsilon,
+                                    smoothness_ratio=config.gl_smoothness_ratio,
+                                    connectivity_ratio=config.gl_connectivity_ratio,
+                                    sparsity_ratio=config.gl_sparsity_ratio,
+                                    input_size=hidden_size,
+                                    hidden_size=config.gl_num_hidden,
+                                    fix_word_emb=config.fix_word_emb,
+                                    dropout=None,
+                                    device=device)
+        else:
+            raise RuntimeError('Unknown graph_type: {}'.format(config.graph_type))
+
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
 
 
@@ -62,7 +109,12 @@ class TextClassifier(nn.Module):
 
     def forward(self, graph_list, tgt=None, require_loss=True):
         # graph embedding construction
-        batch_gd = self.graph_topology(graph_list)
+        if self.config.graph_type == 'node_emb':
+            batch_gd = self.graph_topology(node_feat, node_mask=None)
+        elif self.config.graph_type == 'node_emb_refined':
+            batch_gd = self.graph_topology(node_feat, graph_list, node_mask=None)
+        else:
+            batch_gd = self.graph_topology(graph_list)
 
         # run GNN
         self.gnn(batch_gd)
@@ -88,9 +140,26 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
+        if self.config.graph_type == 'dependency':
+            topology_builder = DependencyBasedGraphConstruction
+            graph_type = 'static'
+        elif self.config.graph_type == 'constituency':
+            topology_builder = ConstituencyBasedGraphConstruction
+            graph_type = 'static'
+        elif self.config.graph_type == 'node_emb':
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+            graph_type = 'dynamic'
+        elif self.config.graph_type == 'node_emb_refined':
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            graph_type = 'dynamic'
+        else:
+            raise RuntimeError('Unknown graph_type: {}'.format(config.graph_type))
+
+        topology_subdir = '{}_based_graph'.format(self.config.graph_type)
         dataset = TrecDataset(root_dir="examples/pytorch/text_classification/data/trec",
-                              topology_builder=DependencyBasedGraphConstruction,
-                              topology_subdir='DependencyGraph',
+                              topology_builder=topology_builder,
+                              topology_subdir=topology_subdir,
+                              graph_type=graph_type,
                               pretrained_word_emb_file=self.config.pre_word_emb_file,
                               val_split_ratio=self.config.val_split_ratio)
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config.batch_size, shuffle=True,
@@ -175,10 +244,10 @@ class ModelHandler:
 
     def test(self):
         t0 = time.time()
-        acc = runner.evaluate(runner.test_dataloader)
+        acc = self.evaluate(self.test_dataloader)
         dur = time.time() - t0
         print("Test examples: {} | Time: {:.4f}s |  Test Acc: {:.4f}".
-          format(runner.num_test, dur, acc))
+          format(self.num_test, dur, acc))
 
         return acc
 
@@ -206,13 +275,35 @@ def main(args):
 
 
 if __name__ == "__main__":
-    # Training settings
-    parser = argparse.ArgumentParser(description='GAT')
-    # register_data_args(parser)
+    # Settings
+    parser = argparse.ArgumentParser()
     parser.add_argument("--no_cuda", action="store_true", default=False,
                         help="use CPU")
     parser.add_argument("--gpu", type=int, default=-1,
                         help="which GPU to use.")
+    # graph construction
+    parser.add_argument("--graph_type", type=str, default='dependency',
+                        help="graph construction type (`dependency`, `constituency`, `node_emb`, `node_emb_refined`)")
+    # dynamic graph construction
+    parser.add_argument("--gl_metric_type", type=str, default='weighted_cosine',
+                        help=r"similarity metric type for dynamic graph construction")
+    parser.add_argument("--gl_top_k", type=int,
+                        help="top k for graph sparsification")
+    parser.add_argument("--gl_num_hidden", type=int, default=16,
+                        help="number of hidden units for dynamic graph construction")
+    parser.add_argument("--gl_num_heads", type=int, default=1,
+                        help="num of heads for dynamic graph construction")
+    parser.add_argument("--gl_epsilon", type=float,
+                        help="epsilon for graph sparsification")
+    parser.add_argument("--gl_smoothness_ratio", type=float,
+                        help="smoothness ratio for graph regularization loss")
+    parser.add_argument("--gl_connectivity_ratio", type=float,
+                        help="connectivity ratio for graph regularization loss")
+    parser.add_argument("--gl_sparsity_ratio", type=float,
+                        help="sparsity ratio for graph regularization loss")
+    parser.add_argument("--init_adj_alpha", type=float, default=0.8,
+                        help="alpha ratio for combining initial graph adjacency matrix")
+    # gnn
     parser.add_argument("--graph_pooling", type=str, default='max_pool',
                         help="graph pooling (`avg_pool`, `max_pool`)")
     parser.add_argument("--direction_option", type=str, default='uni',
@@ -231,6 +322,7 @@ if __name__ == "__main__":
                         help="input feature dropout")
     parser.add_argument("--attn_drop", type=float, default=.6,
                         help="attention dropout")
+    # training
     parser.add_argument("--lr", type=float, default=0.001,
                         help="learning rate")
     parser.add_argument('--weight_decay', type=float, default=5e-4,
@@ -257,6 +349,8 @@ if __name__ == "__main__":
                         help='number of workers (default: 0)')
     # parser.add_argument('--dataset', type=str, default="",
     #                     help='dataset name')
+    parser.add_argument("--fix_word_emb", action="store_true", default=False,
+                        help="fix pretrained word embeddings")
     parser.add_argument('--pre_word_emb_file', type=str,
                         help='path to the pretrained word embedding file')
     parser.add_argument('--save_model_path', type=str, default="checkpoint",

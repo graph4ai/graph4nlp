@@ -242,8 +242,9 @@ class Dataset(torch.utils.data.Dataset):
                                                        verbase=False)
                 item.graph = graph
         elif self.graph_type == 'dynamic':
-            # TODO: Implement this
-            pass
+            for item in data_items:
+                graph = self.topology_builder.raw_text_to_init_graph(item.input_text)
+                item.graph = graph
         else:
             raise NotImplementedError('Currently only static and dynamic are supported!')
 

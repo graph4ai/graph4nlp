@@ -24,9 +24,3 @@ class TrecDataset(Text2LabelDataset):
         super(TrecDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
-
-
-if __name__ == '__main__':
-    from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-    a = TrecDataset(root_dir='examples/pytorch/text_classification/data/trec', topology_builder=DependencyBasedGraphConstruction,
-                    topology_subdir='DependencyGraph')
