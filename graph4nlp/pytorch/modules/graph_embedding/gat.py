@@ -46,6 +46,7 @@ class GAT(GNNBase):
         Number of heads per GAT layer. If ``int`` is given, all layers are forced to have the same number of heads.
     direction_option: str
         Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
+        Default : ``'bi_fuse'``.
     feat_drop : float, optional
         Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
@@ -65,7 +66,7 @@ class GAT(GNNBase):
                 hidden_size,
                 output_size,
                 heads,
-                direction_option='uni',
+                direction_option='bi_fuse',
                 feat_drop=0.,
                 attn_drop=0.,
                 negative_slope=0.2,
@@ -189,6 +190,7 @@ class GATLayer(GNNLayerBase):
         Number of heads in Multi-Head Attention.
     direction_option: str
         Whether use unidirectional (i.e., regular) or bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
+        Default: ``'bi_fuse'``.
     feat_drop : float, optional
         Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
@@ -206,15 +208,15 @@ class GATLayer(GNNLayerBase):
                 input_size,
                 output_size,
                 num_heads,
-                direction_option='uni',
+                direction_option='bi_fuse',
                 feat_drop=0.,
                 attn_drop=0.,
                 negative_slope=0.2,
                 residual=False,
                 activation=None):
         super(GATLayer, self).__init__()
-        if direction_option == 'uni':
-            self.model = UniGATLayerConv(input_size,
+        if direction_option == 'undirected':
+            self.model = UndirectedGATLayerConv(input_size,
                                         output_size,
                                         num_heads,
                                         feat_drop=feat_drop,
@@ -264,7 +266,7 @@ class GATLayer(GNNLayerBase):
         """
         return self.model(graph, feat)
 
-class UniGATLayerConv(GNNLayerBase):
+class UndirectedGATLayerConv(GNNLayerBase):
     r"""Apply `Graph Attention Network <https://arxiv.org/abs/1710.10903>`__
     over an input signal.
 
@@ -311,7 +313,7 @@ class UniGATLayerConv(GNNLayerBase):
                 negative_slope=0.2,
                 residual=False,
                 activation=None):
-        super(UniGATLayerConv, self).__init__()
+        super(UndirectedGATLayerConv, self).__init__()
         self.model = GATConv(input_size, output_size, num_heads, feat_drop,
                             attn_drop, negative_slope, residual, activation)
 
