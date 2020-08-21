@@ -289,7 +289,7 @@ class Graph2ComplEx(nn.Module):
 
             if self.direction_option == 'bi_sep':
                 for i in range(self.num_layers):
-                    h = self.gnn_encoder_real[i](dgl_graph, (feat_in,feat_out))
+                    h = self.gnn_encoder[i](dgl_graph, (feat_in,feat_out))
                     # feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0].squeeze())), 0.25, train=require_loss)  # GAT
                     # feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1].squeeze())), 0.25, train=require_loss)  # GAT
                     # feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0])), 0.25, train=require_loss)  # GraphSage
