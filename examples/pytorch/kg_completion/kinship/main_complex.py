@@ -4,7 +4,7 @@ import os
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 
 from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.datasets.kinship import KinshipDataset, KinshipTestDataset
+from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT, GATLayer
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGELayer
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN, GGNNLayer
@@ -164,7 +164,8 @@ class Graph2ComplEx(nn.Module):
         self.vocab = vocab
         self.num_entities = num_entities
 
-        self.node_emb = nn.Embedding(num_entities, hidden_size)
+        self.node_emb_real = nn.Embedding(num_entities, hidden_size)
+        self.node_emb_img = nn.Embedding(num_entities, hidden_size)
 
         embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
                            'seq_info_encode_strategy': "none"}
@@ -187,7 +188,10 @@ class Graph2ComplEx(nn.Module):
         # self.gnn_encoder = GGNN(1, hidden_size, hidden_size, direction_option=direction_option)
         # self.gnn_encoder = GGNNLayer(hidden_size, hidden_size, direction_option, n_steps=1, n_etypes=1, bias=True)
 
-        self.gnn_encoder = nn.ModuleList(
+        self.gnn_encoder_real = nn.ModuleList(
+            [GGNNLayer(hidden_size, hidden_size, direction_option, n_steps=1, n_etypes=1, bias=True)
+             for i in range(self.num_layers)])
+        self.gnn_encoder_img = nn.ModuleList(
             [GGNNLayer(hidden_size, hidden_size, direction_option, n_steps=1, n_etypes=1, bias=True)
              for i in range(self.num_layers)])
         # self.gnn_encoder = nn.ModuleList(
@@ -197,7 +201,10 @@ class Graph2ComplEx(nn.Module):
         #     [GraphSAGELayer(hidden_size, hidden_size, aggregator_type='mean',
         #                     direction_option=direction_option)
         #      for i in range(self.num_layers)])
-        self.bn_list = nn.ModuleList([torch.nn.BatchNorm1d(hidden_size)
+        self.bn_list_real = nn.ModuleList([torch.nn.BatchNorm1d(hidden_size)
+                                      for i in range(self.num_layers)])  # necessary for this task
+
+        self.bn_list_img = nn.ModuleList([torch.nn.BatchNorm1d(hidden_size)
                                       for i in range(self.num_layers)])  # necessary for this task
 
         self.complex = ComplEx(rel_emb_from_gnn=False, num_relations=num_relations,
@@ -240,14 +247,16 @@ class Graph2ComplEx(nn.Module):
         return node_feat
 
     def reset_parameters(self):
-        nn.init.xavier_normal_(self.node_emb.weight.data)
+        nn.init.xavier_normal_(self.node_emb_img.weight.data)
+        nn.init.xavier_normal_(self.node_emb_real.weight.data)
         # xavier_normal_(self.emb_rel.weight.data)
 
     def forward(self, kg_graph, e1, rel, e2_multi=None, require_loss=True):
         # kg_graph.node_features['node_feat'] = self.node_emb.weight
         kg_graph.node_features['node_feat'] = self.embedding(kg_graph)
 
-        # kg_graph.node_features['node_emb'] = self.node_emb.weight
+        # kg_graph.node_features['node_emb_real'] = self.node_emb_real.weight
+        # kg_graph.node_features['node_emb_img'] = self.node_emb_img.weight
 
         list_e_r_pair_idx = list(zip(e1.squeeze().tolist(), rel.squeeze().tolist()))
 
@@ -257,13 +266,17 @@ class Graph2ComplEx(nn.Module):
         dgl_graph = kg_graph.to_dgl()
 
         if self.direction_option == 'uni':
-            node_embs = kg_graph.node_features['node_feat']
+            node_embs_real = kg_graph.node_features['node_feat']
+            node_embs_img = kg_graph.node_features['node_feat']
             for i in range(self.num_layers):
                 # node_embs = self.gnn_encoder[i](dgl_graph, node_embs).squeeze() # GAT
                 # node_embs = self.gnn_encoder[i](dgl_graph, node_embs) # GraphSage
                 # node_embs = torch.dropout(torch.tanh(self.bn_list[i](node_embs)), 0.25, train=require_loss)  # GraphSage
-                node_embs = self.gnn_encoder[i](dgl_graph, node_embs) # GGNN
-                node_embs = torch.dropout(torch.tanh(self.bn_list[i](node_embs)), 0.25, train=require_loss)  # GGNN
+                node_embs_real = self.gnn_encoder_real[i](dgl_graph, node_embs_real) # GGNN
+                node_embs_real = torch.dropout(torch.tanh(self.bn_list_real[i](node_embs_real)), 0.25, train=require_loss)  # GGNN
+
+                node_embs_img = self.gnn_encoder_img[i](dgl_graph, node_embs_img)  # GGNN
+                node_embs_img = torch.dropout(torch.tanh(self.bn_list_img[i](node_embs_img)), 0.25, train=require_loss)  # GGNN
                 # node_embs = torch.dropout(torch.tanh(self.bn_list[i](node_embs)), 0.25, train=require_loss)
         else:
             assert node_feats.shape[1] == self.hidden_size
@@ -276,7 +289,7 @@ class Graph2ComplEx(nn.Module):
 
             if self.direction_option == 'bi_sep':
                 for i in range(self.num_layers):
-                    h = self.gnn_encoder[i](dgl_graph, (feat_in,feat_out))
+                    h = self.gnn_encoder_real[i](dgl_graph, (feat_in,feat_out))
                     # feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0].squeeze())), 0.25, train=require_loss)  # GAT
                     # feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1].squeeze())), 0.25, train=require_loss)  # GAT
                     # feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0])), 0.25, train=require_loss)  # GraphSage
@@ -298,8 +311,8 @@ class Graph2ComplEx(nn.Module):
             else:
                 raise RuntimeError('Unknown `bidirection` value: {}'.format(self.direction_option))
 
-        kg_graph.node_features['node_emb_real'] = node_embs
-        kg_graph.node_features['node_emb_img'] = node_embs
+        kg_graph.node_features['node_emb_real'] = node_embs_real
+        kg_graph.node_features['node_emb_img'] = node_embs_img
         # ================================================================================
 
         # kg_graph = self.gnn_encoder(kg_graph)
@@ -332,20 +345,25 @@ class Kinship:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = KinshipDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship",
-                                  topology_builder=None,
-                                  topology_subdir='e_rel_to_e',
-                                  share_vocab=True)
+        dataset = KinshipDataset(
+            root_dir='/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship',
+            topology_builder=None,
+            topology_subdir='e1rel_to_e2')
 
         # TODO: When edge2node is True, num_entities != train_set.KG_graph.get_node_num()
         self.num_entities = dataset.KG_graph.graph_attributes['num_entities']
         self.num_relations = dataset.KG_graph.graph_attributes['num_relations']
         self.kg_graph = dataset.KG_graph
 
-        self.train_dataloader = DataLoader(dataset[:dataset.split_ids['train'][-1]+1], batch_size=64, shuffle=True,
+        self.train_dataloader = DataLoader(dataset.train, batch_size=64, shuffle=True,
                                            num_workers=1,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset[dataset.split_ids['train'][-1]+1:], batch_size=64, shuffle=True,
+
+        self.val_dataloader = DataLoader(dataset.val, batch_size=64, shuffle=True,
+                                         num_workers=1,
+                                         collate_fn=dataset.collate_fn)
+
+        self.test_dataloader = DataLoader(dataset.test, batch_size=64, shuffle=True,
                                           num_workers=1,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
@@ -400,8 +418,8 @@ class Kinship:
         self.model.eval()
 
         self.metrics[0].calculate_scores(self.model,
-                                         self.test_dataloader,
-                                         name='test',
+                                         self.val_dataloader,
+                                         name='validation',
                                          kg_graph=self.kg_graph,
                                          device=self.device)
 
