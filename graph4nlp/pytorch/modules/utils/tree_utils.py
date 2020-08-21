@@ -113,7 +113,7 @@ class Tree():
 
 
 class Vocab():
-    def __init__(self):
+    def __init__(self, lower_case=True, pretrained_embedding_fn=None, embedding_dims=300):
         self.symbol2idx = {}
         self.idx2symbol = {}
         self.vocab_size = 0
@@ -129,6 +129,12 @@ class Vocab():
         self.add_symbol(self.end_token)
         self.add_symbol(self.unk_token)
         self.add_symbol(self.non_terminal_token)
+
+        self.lower_case = lower_case
+        self.embedding_dims = embedding_dims
+        self.embeddings = None
+
+        self.pretrained_embedding_fn = pretrained_embedding_fn
 
     def add_symbol(self, s):
         if s not in self.symbol2idx:
@@ -158,6 +164,23 @@ class Vocab():
                     self.add_symbol(l_list[0])
                 if self.vocab_size > max_vocab_size:
                     break
+        if self.pretrained_embedding_fn is None:
+            self.randomize_embeddings(self.embedding_dims)
+        else:
+            print("loadding pretrained embedding file in {}".format(self.pretrained_embedding_fn))
+            self.load_embeddings(self.pretrained_embedding_fn)
+
+    def init_from_list(self, arr, min_freq=1, max_vocab_size=100000):
+        for word_, c_ in arr:
+            if c_ >= min_freq:
+                self.add_symbol(word_)
+            if self.vocab_size > max_vocab_size:
+                break
+        if self.pretrained_embedding_fn is None:
+            self.randomize_embeddings(self.embedding_dims)
+        else:
+            print("loadding pretrained embedding file in {}".format(self.pretrained_embedding_fn))
+            self.load_embeddings(self.pretrained_embedding_fn)
 
     def get_symbol_idx_for_list(self, l):
         r = []
@@ -172,8 +195,48 @@ class Vocab():
             r.append(self.get_idx_symbol(l[i]))
         return r
 
+    def load_embeddings(self, file_path, scale=0.08, dtype=np.float32):
+        """Load pretrained word embeddings for initialization"""
+        hit_words = set()
+        vocab_size = len(self)
+        with open(file_path, 'rb') as f:
+            for line in f:
+                line = line.split()
+                word = line[0].decode('utf-8')
+                if self.lower_case:
+                    word = word.lower()
 
-class DataLoader():
+                idx = self.get_symbol_idx(word)
+                if idx == self.get_symbol_idx(self.unk_token) or idx in hit_words:
+                    continue
+
+                vec = np.array(line[1:], dtype=dtype)
+                if self.embeddings is None:
+                    n_dims = len(vec)
+                    self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=(vocab_size, n_dims)),
+                                               dtype=dtype)
+                    self.embeddings[self.get_symbol_idx(self.pad_token)] = np.zeros(n_dims)
+                self.embeddings[idx] = vec
+                hit_words.add(idx)
+        print('Pretrained word embeddings hit ratio: {}'.format(len(hit_words) / len(self.index2word)))
+
+    def randomize_embeddings(self, n_dims, scale=0.08):
+        """Use random word embeddings for initialization."""
+        vocab_size = self.vocab_size
+        shape = (vocab_size, n_dims)
+        self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=shape), dtype=np.float32)
+        self.embeddings[self.get_symbol_idx(self.pad_token)] = np.zeros(n_dims)
+
+    def __getitem__(self, item):
+        if type(item) is int:
+            return self.get_idx_symbol(item)
+        return self.get_symbol_idx(item)
+
+    def __len__(self):
+        return self.vocab_size
+
+
+class DataLoaderForSeqEncoder():
     def __init__(self, data_dir, use_copy, src_vocab_file, tgt_vocab_file, data_file, mode, min_freq, max_vocab_size, batch_size, device):
         self.mode = mode
         self.device = device
@@ -293,6 +356,109 @@ class DataLoader():
     def random_batch(self):
         p = randint(0, self.num_batch-1)
         return self.enc_batch_list[p], self.enc_len_batch_list[p], self.dec_batch_list[p]
+
+    def all_batch(self):
+        r = []
+        for p in range(self.num_batch):
+            r.append([self.enc_batch_list[p],
+                      self.enc_len_batch_list[p], self.dec_batch_list[p]])
+        return r
+
+
+class DataLoaderForGraphEncoder():
+    def __init__(self, use_copy, dataset, mode, batch_size, device, ids_for_select):
+        self.mode = mode
+        self.device = device
+        self.use_copy = use_copy
+        self.batch_size = batch_size
+        self.src_vocab = dataset.src_vocab_model
+        self.tgt_vocab = dataset.tgt_vocab_model
+
+        if self.use_copy:
+            self.share_vocab = self.tgt_vocab
+        
+        self.data = [dataset.data[idx] for idx in ids_for_select]
+        # for item in self.data:
+        #     print(item.input_text)
+
+        self.data = [(item.graph, item.output_text, item.output_tree) for item in self.data]
+
+
+        if self.mode == "test":
+            assert(batch_size == 1)
+
+        if self.mode == "train" and len(self.data) % batch_size != 0:
+            n = len(self.data)
+            for i in range(batch_size - len(self.data) % batch_size):
+                self.data.insert(n-i-1, copy.deepcopy(self.data[n-i-1]))
+
+        self.enc_batch_list = []
+        self.enc_len_batch_list = []
+        self.dec_batch_list = []
+
+        p = 0
+        while p + batch_size <= len(self.data):
+            vectorized_batch_graph = []
+            tree_batch = []
+            enc_len_batch = 0
+
+            for i in range(batch_size):
+                graph_item = self.data[p + i][0]
+                vectorized_batch_graph.append(graph_item)
+                enc_len_batch += graph_item.get_node_num()
+                tree_batch.append(self.data[p+i][2])
+            
+            self.enc_batch_list.append(vectorized_batch_graph)
+            self.enc_len_batch_list.append(enc_len_batch)
+            self.dec_batch_list.append(tree_batch)
+            p += batch_size
+
+        self.num_batch = len(self.enc_batch_list)
+        assert(len(self.enc_batch_list) == len(self.dec_batch_list))
+
+
+    def random_batch(self):
+        p = randint(0, self.num_batch-1)
+        return self.enc_batch_list[p], self.enc_len_batch_list[p], self.dec_batch_list[p]
+    
+    @staticmethod
+    def get_input_text_batch(batch_graph_list, use_copy, vocab):
+        if use_copy == False:
+            return None
+        batch_intput_text_list = []
+        max_batch_len = 0
+        for graph_i in batch_graph_list:
+            node_list = graph_i.node_attributes
+            node_list_tmp_1 = []
+            for i_ in node_list.values():
+                if i_['type'] == 0:
+                    node_list_tmp_1.append(i_)
+            max_sentence_id = np.max([item['sentence_id'] for item in node_list_tmp_1]) + 1
+
+            str_i = []
+            if vocab.get_symbol_idx(".") == vocab.get_symbol_idx(vocab.unk_token):
+                delimiter = []
+            else:
+                delimiter = [vocab.get_symbol_idx(".") ]
+
+            for sentence_id in range(max_sentence_id):
+                sentence_str = [item['token_id'] for item in node_list_tmp_1 if item['sentence_id']==sentence_id]
+                if sentence_id == max_sentence_id-1:
+                    str_i = str_i + sentence_str
+                else:
+                    str_i = str_i + sentence_str + delimiter
+            batch_intput_text_list.append(str_i)
+            if graph_i.get_node_num() > max_batch_len:
+                max_batch_len = graph_i.get_node_num()
+
+        ret_tensor = torch.zeros((len(batch_graph_list), max_batch_len), dtype=torch.long)
+        for index_1 in range(ret_tensor.size(0)):
+            for index_2 in range(ret_tensor.size(1)):
+                if index_2 < len(batch_intput_text_list[index_1]):
+                    ret_tensor[index_1][index_2] = batch_intput_text_list[index_1][index_2]
+                else:
+                    ret_tensor[index_1][index_2] = vocab.get_symbol_idx(vocab.pad_token)
+        return ret_tensor
 
     def all_batch(self):
         r = []

@@ -7,8 +7,14 @@ import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 
+from collections import Counter
+import pickle
+
 from ..data.data import GraphData
 from ..modules.utils.vocab_utils import VocabModel, Vocab
+
+from ..modules.utils.tree_utils import Vocab as VocabForTree
+from ..modules.utils.tree_utils import Tree
 
 import json
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
@@ -44,6 +50,41 @@ class Text2TextDataItem(DataItem):
         for i in range(g.get_node_num()):
             if self.tokenizer is None:
                 tokenized_token = g.node_attributes[i]['token'].strip().split(' ')
+            else:
+                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
+
+            input_tokens.extend(tokenized_token)
+
+        if self.tokenizer is None:
+            output_tokens = self.output_text.strip().split(' ')
+        else:
+            output_tokens = self.tokenizer(self.output_text)
+
+        if self.share_vocab:
+            return input_tokens + output_tokens
+        else:
+            return input_tokens, output_tokens
+
+
+class Text2TreeDataItem(DataItem):
+    def __init__(self, input_text, output_text, output_tree, tokenizer, share_vocab=True):
+        super(Text2TreeDataItem, self).__init__(input_text, tokenizer)
+        self.output_text = output_text
+        self.share_vocab = share_vocab
+        self.output_tree = output_tree
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens and output tokens
+        """
+        g: GraphData = self.graph
+
+        input_tokens = []
+        for i in range(g.get_node_num()):
+            if self.tokenizer is None:
+                tokenized_token = self.output_text.strip().split(' ')
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
 
@@ -146,6 +187,8 @@ class Dataset(torch.utils.data.Dataset):
         self.test = data['test']
         if 'val' in data.keys():
             self.val = data['val']
+
+        self.KG_graph = torch.load(self.processed_file_paths['KG_graph'])
 
         self.build_vocab()
 
@@ -362,6 +405,110 @@ class Text2TextDataset(Dataset):
         return [graph_data, tgt_seq]
 
 
+class TextToTreeDataset(Dataset):
+    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
+        self.data_item_type = Text2TreeDataItem
+        self.share_vocab = share_vocab
+        super(TextToTreeDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+
+        For Text2TreeDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
+
+        Examples
+        --------
+        input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
+
+        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
+
+        Parameters
+        ----------
+        file_path: str
+            The path of the input file.
+
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
+        """
+        current_index = len(self.data)
+        subset_indices = []
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                input, output = line.split('\t')
+                data_item = Text2TreeDataItem(input_text=input, output_text=output, output_tree=None, tokenizer=self.tokenizer,
+                                              share_vocab=self.share_vocab)
+                self.data[current_index] = data_item
+                subset_indices.append(current_index)
+                current_index += 1
+        return subset_indices
+
+    def build_vocab(self):
+        saved_vocab_file = self.processed_file_paths['vocab']
+        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        if self.use_val_for_vocab:
+            data_for_vocab = data_for_vocab + [self.data[idx] for idx in self.split_ids['val']]
+
+        src_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.enc_emb_size)
+        tgt_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.dec_emb_size)
+
+        if self.share_vocab:
+            all_words = Counter()
+        else:
+            all_words = [Counter(), Counter()]
+
+        for instance in data_for_vocab:
+            extracted_tokens = instance.extract()
+            if self.share_vocab:
+                all_words.update(extracted_tokens)
+            else:
+                all_words[0].update(extracted_tokens[0])
+                all_words[1].update(extracted_tokens[1])
+        
+        if self.share_vocab:
+            src_vocab_model.init_from_list(list(all_words.items()), min_freq=1, max_vocab_size=100000)
+            tgt_vocab_model = src_vocab_model
+        else:
+            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=2, max_vocab_size=100000)
+            tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=1, max_vocab_size=100000)
+
+        print('Saving vocab model to {}'.format(saved_vocab_file))
+        pickle.dump((src_vocab_model, tgt_vocab_model), open(saved_vocab_file, 'wb'))
+
+        self.src_vocab_model = src_vocab_model
+        self.tgt_vocab_model = tgt_vocab_model
+        return True
+
+    def vectorization(self):
+        for item in self.data.values():
+            graph: GraphData = item.graph
+            token_matrix = []
+            for node_idx in range(graph.get_node_num()):
+                node_token = graph.node_attributes[node_idx]['token']
+                node_token_id = self.src_vocab_model.get_symbol_idx(node_token)
+                graph.node_attributes[node_idx]['token_id'] = node_token_id
+                token_matrix.append([node_token_id])
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features['token_id'] = token_matrix
+
+            tgt = item.output_text
+            tgt_list = self.tgt_vocab_model.get_symbol_idx_for_list(tgt.split())
+            output_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), self.tgt_vocab_model)
+            item.output_tree = output_tree
+
+        torch.save(self.data, self.processed_file_paths['data'])
+
+    @staticmethod
+    def collate_fn(data_list: [Text2TreeDataItem]):
+        graph_data = [item.graph for item in data_list]
+        output_tree_list = [item.output_tree for item in data_list]
+        return [graph_data, output_tree_list]
+
 class KGDataItem(DataItem):
     def __init__(self, e1, rel, e2, rel_eval, e2_multi, e1_multi, share_vocab=True, split_token=' '):
         super(KGDataItem, self).__init__(input_text=None, tokenizer=None)
@@ -458,13 +605,12 @@ class KGCompletionDataset(Dataset):
         list
             The indices of data items in the file w.r.t. the whole dataset.
         """
-        current_index = len(self.data)
-        subset_indices = []
+        data = []
         with open(file_path, 'r') as f:
             lines = f.readlines()
             for line in lines:
                 line_dict = json.loads(line)
-                self.data[current_index] = KGDataItem(e1=line_dict['e1'],
+                data_item = KGDataItem(e1=line_dict['e1'],
                                                       e2=line_dict['e2'],
                                                       rel=line_dict['rel'],
                                                       rel_eval=line_dict['rel_eval'],
@@ -472,83 +618,23 @@ class KGCompletionDataset(Dataset):
                                                       e1_multi=line_dict['e2_multi2'],
                                                       share_vocab=self.share_vocab,
                                                       split_token=self.split_token)
-                subset_indices.append(current_index)
-                current_index += 1
+                data.append(data_item)
 
-                for e2 in line_dict['e2_multi1'].split(' '):
-                    triple = [line_dict['e1'], line_dict['rel'], e2]
-                    self.build_parsed_results(triple)
+                if 'train' in file_path:
+                    for e2 in line_dict['e2_multi1'].split(' '):
+                        triple = [line_dict['e1'], line_dict['rel'], e2]
+                        self.build_parsed_results(triple)
 
-                    # if self.edge_strategy is None:
-                    #     if triple[0] not in self.graph_nodes:
-                    #         self.graph_nodes.append(triple[0])
-                    #
-                    #     if triple[2] not in self.graph_nodes:
-                    #         self.graph_nodes.append(triple[2])
-                    #
-                    #     if triple[1] not in self.graph_edges:
-                    #         self.graph_edges.append(triple[1])
-                    #
-                    #     triple_info = {'edge_tokens': triple[1],
-                    #                    'src': {
-                    #                        'tokens': triple[0],
-                    #                        'id': self.graph_nodes.index(triple[0])
-                    #                    },
-                    #                    'tgt': {
-                    #                        'tokens': triple[2],
-                    #                        'id': self.graph_nodes.index(triple[2])
-                    #                    }}
-                    #     if triple_info not in self.parsed_results['graph_content']:
-                    #         self.parsed_results['graph_content'].append(triple_info)
-                    # elif self.edge_strategy == "as_node":
-                    #     if triple[0] not in self.graph_nodes:
-                    #         self.graph_nodes.append(triple[0])
-                    #
-                    #     if triple[1] not in self.graph_nodes:
-                    #         self.graph_nodes.append(triple[1])
-                    #
-                    #     if triple[2] not in self.graph_nodes:
-                    #         self.graph_nodes.append(triple[2])
-                    #
-                    #     triple_info_0_1 = {'edge_tokens': [],
-                    #                        'src': {
-                    #                            'tokens': triple[0],
-                    #                            'id': self.graph_nodes.index(triple[0]),
-                    #                            'type': 'ent_node'
-                    #                        },
-                    #                        'tgt': {
-                    #                            'tokens': triple[1],
-                    #                            'id': self.graph_nodes.index(triple[1]),
-                    #                            'type': 'edge_node'
-                    #                        }}
-                    #
-                    #     triple_info_1_2 = {'edge_tokens': [],
-                    #                        'src': {
-                    #                            'tokens': triple[1],
-                    #                            'id': self.graph_nodes.index(triple[1]),
-                    #                            'type': 'edge_node'
-                    #                        },
-                    #                        'tgt': {
-                    #                            'tokens': triple[2],
-                    #                            'id': self.graph_nodes.index(triple[2]),
-                    #                            'type': 'ent_node'
-                    #                        }}
-                    #
-                    #     if triple_info_0_1 not in self.parsed_results['graph_content']:
-                    #         self.parsed_results['graph_content'].append(triple_info_0_1)
-                    #     if triple_info_1_2 not in self.parsed_results['graph_content']:
-                    #         self.parsed_results['graph_content'].append(triple_info_1_2)
+                    for e1 in line_dict['e2_multi2'].split(' '):
+                        triple = [line_dict['e2'], line_dict['rel_eval'], e1]
+                        self.build_parsed_results(triple)
 
-                for e1 in line_dict['e2_multi2'].split(' '):
-                    triple = [line_dict['e2'], line_dict['rel_eval'], e1]
-                    self.build_parsed_results(triple)
-
-        return subset_indices
+        return data
 
     def build_vocab(self):
-        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        data_for_vocab = self.train
         if self.use_val_for_vocab:
-            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
+            data_for_vocab = data_for_vocab + self.val
 
         vocab_model = VocabModel.build(
             saved_vocab_file=os.path.join(self.processed_dir, self.processed_file_names['vocab']),
@@ -639,7 +725,11 @@ class KGCompletionDataset(Dataset):
         self.KG_graph.graph_attributes['graph_edges'] = self.graph_edges
 
     def _process(self):
-        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths]):
+        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
+            if 'val_split_ratio' in self.__dict__:
+                UserWarning(
+                    "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
+                    "already been split.")
             return
 
         os.makedirs(self.processed_dir, exist_ok=True)
@@ -662,57 +752,69 @@ class KGCompletionDataset(Dataset):
         self.read_raw_data()
         self.build_topology()
         self.build_vocab()
-        self.vectorization()
 
-    def vectorization(self):
-        graph: GraphData = self.KG_graph
-        token_matrix = []
-        for node_idx in range(graph.get_node_num()):
-            node_token = graph.node_attributes[node_idx]['token']
-            node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
-            graph.node_attributes[node_idx]['token_id'] = node_token_id
-            token_matrix.append([node_token_id])
-        token_matrix = torch.tensor(token_matrix, dtype=torch.long)
-        graph.node_features['token_id'] = token_matrix
+        self.vec_graph = False
+        self.vectorization(self.train)
+        self.vectorization(self.test)
+        if 'val' in self.__dict__:
+            self.vectorization(self.val)
 
-        for i in range(len(self.data)):
-            e1 = self.data[i].e1
-            self.data[i].e1_tensor = torch.tensor(self.graph_nodes.index(e1), dtype=torch.long)
+        data_to_save = {'train': self.train, 'test': self.test}
+        if 'val' in self.__dict__:
+            data_to_save['val'] = self.val
+        torch.save(data_to_save, self.processed_file_paths['data'])
 
-            e2 = self.data[i].e2
-            self.data[i].e2_tensor = torch.tensor(self.graph_nodes.index(e2), dtype=torch.long)
+    def vectorization(self, data_items):
+        if self.vec_graph==False:
+            graph: GraphData = self.KG_graph
+            token_matrix = []
+            for node_idx in range(graph.get_node_num()):
+                node_token = graph.node_attributes[node_idx]['token']
+                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
+                graph.node_attributes[node_idx]['token_id'] = node_token_id
+                token_matrix.append([node_token_id])
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features['token_id'] = token_matrix
+            self.vec_graph = True
+            torch.save(self.KG_graph, os.path.join(self.processed_dir, self.processed_file_names['KG_graph']))
 
-            rel = self.data[i].rel
+        for item in data_items:
+            e1 = item.e1
+            item.e1_tensor = torch.tensor(self.graph_nodes.index(e1), dtype=torch.long)
+
+            e2 = item.e2
+            item.e2_tensor = torch.tensor(self.graph_nodes.index(e2), dtype=torch.long)
+
+            rel = item.rel
             if self.edge_strategy == "as_node":
-                self.data[i].rel_tensor = torch.tensor(self.graph_nodes.index(rel), dtype=torch.long)
+                item.rel_tensor = torch.tensor(self.graph_nodes.index(rel), dtype=torch.long)
             else:
-                self.data[i].rel_tensor = torch.tensor(self.graph_edges.index(rel), dtype=torch.long)
+                item.rel_tensor = torch.tensor(self.graph_edges.index(rel), dtype=torch.long)
 
-            rel_eval = self.data[i].rel_eval
-            self.data[i].rel_eval_tensor = torch.tensor(self.graph_edges.index(rel_eval), dtype=torch.long)
+            rel_eval = item.rel_eval
+            item.rel_eval_tensor = torch.tensor(self.graph_edges.index(rel_eval), dtype=torch.long)
 
-            e2_multi = self.data[i].e2_multi
-            self.data[i].e2_multi_tensor = torch.zeros(1, len(self.graph_nodes)). \
+
+            e2_multi = item.e2_multi
+            item.e2_multi_tensor = torch.zeros(1, len(self.graph_nodes)).\
+
                 scatter_(1,
                          torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long).view(1,
                                                                                                                     -1),
                          torch.ones(1, len(e2_multi.split()))).squeeze()
-            self.data[i].e2_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()],
-                                                            dtype=torch.long)
 
-            e1_multi = self.data[i].e1_multi
-            self.data[i].e1_multi_tensor = torch.zeros(1, len(self.graph_nodes)). \
+            item.e2_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long)
+
+            e1_multi = item.e1_multi
+            item.e1_multi_tensor = torch.zeros(1, len(self.graph_nodes)). \
                 scatter_(1,
                          torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()], dtype=torch.long).view(1,
                                                                                                                     -1),
                          torch.ones(1, len(e1_multi.split()))).squeeze()
-            self.data[i].e1_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()],
+            item.e1_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()],
                                                             dtype=torch.long)
 
-        torch.save(self.data, os.path.join(self.processed_dir, self.processed_file_names['data']))
-        torch.save(self.split_ids, os.path.join(self.processed_dir, self.processed_file_names['split_ids']))
-        if 'KG_graph' in self.processed_file_names.keys():
-            torch.save(self.KG_graph, os.path.join(self.processed_dir, self.processed_file_names['KG_graph']))
+
 
     # @staticmethod
     # def collate_fn(data_list: [KGDataItem]):

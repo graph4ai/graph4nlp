@@ -97,7 +97,10 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             'outputFormat': 'json'
         }
         coref_json = nlp_processor.annotate(raw_text_data.strip(), properties=props_coref)
-        coref_dict = json.loads(coref_json)
+        try:
+            coref_dict = json.loads(coref_json)
+        except:
+            a = 0
 
         # Extract and preserve necessary parsing results from coref_dict['sentences']
         # sent_dict['tokenWords']: list of tokens in a sentence
