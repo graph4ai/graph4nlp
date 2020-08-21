@@ -1,5 +1,4 @@
 import abc
-import copy
 import os
 
 import numpy as np
@@ -48,7 +47,7 @@ class Text2TextDataItem(DataItem):
         input_tokens = []
         for i in range(g.get_node_num()):
             if self.tokenizer is None:
-                tokenized_token = self.output_text.strip().split(' ')
+                tokenized_token = g.node_attributes[i]['token'].strip().split(' ')
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
 
@@ -136,7 +135,7 @@ class Dataset(torch.utils.data.Dataset):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def vectorization(self):
+    def vectorization(self, data_items):
         """Convert tokens to indices which can be processed by downstream models."""
         raise NotImplementedError
 
@@ -162,9 +161,7 @@ class Dataset(torch.utils.data.Dataset):
                  **kwargs):
         super(Dataset, self).__init__()
 
-        self.data = {}  # The dictionary maintaining data and indices.
-        self.split_ids = {}  # The dictionary indicating the indices of each split subset.
-        self.root = root    # The root directory where the dataset is located.
+        self.root = root  # The root directory where the dataset is located.
 
         # Processing-specific attributes
         self.tokenizer = tokenizer
@@ -181,6 +178,15 @@ class Dataset(torch.utils.data.Dataset):
             self._download()
 
         self._process()
+
+        # After initialization, load the preprocessed files.
+        data = torch.load(self.processed_file_paths['data'])
+        self.train = data['train']
+        self.test = data['test']
+        if 'val' in data.keys():
+            self.val = data['val']
+
+        self.build_vocab()
 
     @property
     def raw_dir(self) -> str:
@@ -222,18 +228,29 @@ class Dataset(torch.utils.data.Dataset):
         defined by the user, indicating the indices of each subset (e.g. train, val and test).
 
         """
-        for split_name, file_path in self.raw_file_paths.items():
-            self.split_ids[split_name] = self.parse_file(file_path)
-        torch.save(self.split_ids, self.processed_file_paths['split_ids'])
+        self.train = self.parse_file(self.raw_file_paths['train'])
+        self.test = self.parse_file(self.raw_file_paths['test'])
+        if 'val' in self.raw_file_paths.keys():
+            self.val = self.parse_file(self.raw_file_paths['val'])
+        elif 'val_split_ratio' in self.__dict__:
+            if self.val_split_ratio > 0:
+                new_train_length = int((1 - self.val_split_ratio) * len(self.train))
+                import random
+                old_train_set = self.train
+                random.shuffle(old_train_set)
+                self.val = old_train_set[new_train_length:]
+                self.train = old_train_set[:new_train_length]
 
-    def build_topology(self):
+    def build_topology(self, data_items):
         """
         Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
         DataItem.
         """
         if self.graph_type == 'static':
+            print('Connecting to stanfordcorenlp server...')
             processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
-            for item in self.data.values():
+            print('CoreNLP server connected.')
+            for item in data_items:
                 graph = self.topology_builder.topology(raw_text_data=item.input_text, nlp_processor=processor,
                                                        merge_strategy=self.merge_strategy,
                                                        edge_strategy=self.edge_strategy,
@@ -251,87 +268,50 @@ class Dataset(torch.utils.data.Dataset):
         the vocabulary. Otherwise only the training set is used.
 
         """
-        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        data_for_vocab = self.train
         if self.use_val_for_vocab:
-            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
+            data_for_vocab = self.val + data_for_vocab
 
         vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
                                        data_set=data_for_vocab,
                                        tokenizer=self.tokenizer,
                                        lower_case=self.lower_case,
-                                       max_word_vocab_size=None,
-                                       min_word_vocab_freq=1,
+                                       max_word_vocab_size=self.max_word_vocab_size,
+                                       min_word_vocab_freq=self.min_word_vocab_size,
                                        pretrained_word_emb_file=self.pretrained_word_emb_file,
-                                       word_emb_size=300)
+                                       word_emb_size=self.word_emb_size)
         self.vocab_model = vocab_model
 
         return self.vocab_model
 
     def _process(self):
         if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
+            if 'val_split_ratio' in self.__dict__:
+                UserWarning(
+                    "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
+                    "already been split.")
             return
 
         os.makedirs(self.processed_dir, exist_ok=True)
 
         self.read_raw_data()
-        self.build_topology()
+
+        self.build_topology(self.train)
+        self.build_topology(self.test)
+        if 'val' in self.__dict__:
+            self.build_topology(self.val)
+
         self.build_vocab()
-        self.vectorization()
 
-    @property
-    def indices(self):
-        if self.__indices__ is not None:
-            return self.__indices__
-        else:
-            self.__dict__['indices'] = list(self.data.keys())
-            return list(self.data.keys())
+        self.vectorization(self.train)
+        self.vectorization(self.test)
+        if 'val' in self.__dict__:
+            self.vectorization(self.val)
 
-    def index_select(self, idx):
-        indices = self.indices
-
-        if isinstance(idx, slice):
-            indices = indices[idx]
-        elif torch.is_tensor(idx):
-            if idx.dtype == torch.long:
-                if len(idx.shape) == 0:
-                    idx = idx.unsqueeze(0)
-                return self.index_select(idx.tolist())
-            elif idx.dtype == torch.bool or idx.dtype == torch.uint8:
-                return self.index_select(idx.nonzero().flatten().tolist())
-        elif isinstance(idx, list) or isinstance(idx, tuple):
-            indices = [indices[i] for i in idx]
-        else:
-            raise IndexError(
-                'Only integers, slices (`:`), list, tuples, and long or bool '
-                'tensors are valid indices (got {}).'.format(
-                    type(idx).__name__))
-
-        dataset = copy.copy(self)
-        dataset.__indices__ = indices
-        return dataset
-
-    def shuffle(self, return_perm=False):
-        perm = torch.randperm(len(self))
-        dataset = self.index_select(perm)
-        return (dataset, perm) if return_perm is True else dataset
-
-    def __len__(self):
-        if self.__indices__ is not None:
-            return len(self.__indices__)
-        else:
-            return self.len()
-
-    def __getitem__(self, index):
-        if not isinstance(index, int):
-            return self.index_select(index)
-        else:
-            return self.get(self.indices[index])
-
-    def get(self, index: int):
-        return self.data[index]
-
-    def len(self):
-        return len(self.data)
+        data_to_save = {'train': self.train, 'test': self.test}
+        if 'val' in self.__dict__:
+            data_to_save['val'] = self.val
+        torch.save(data_to_save, self.processed_file_paths['data'])
 
 
 class Text2TextDataset(Dataset):
@@ -364,23 +344,20 @@ class Text2TextDataset(Dataset):
         list
             The indices of data items in the file w.r.t. the whole dataset.
         """
-        current_index = len(self.data)
-        subset_indices = []
+        data = []
         with open(file_path, 'r') as f:
             lines = f.readlines()
             for line in lines:
                 input, output = line.split('\t')
                 data_item = Text2TextDataItem(input_text=input, output_text=output, tokenizer=self.tokenizer,
                                               share_vocab=self.share_vocab)
-                self.data[current_index] = data_item
-                subset_indices.append(current_index)
-                current_index += 1
-        return subset_indices
+                data.append(data_item)
+        return data
 
     def build_vocab(self):
-        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        data_for_vocab = self.train
         if self.use_val_for_vocab:
-            data_for_vocab += [self.data[idx] for idx in self.split_ids['val']]
+            data_for_vocab = data_for_vocab + self.val
 
         vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
                                        data_set=data_for_vocab,
@@ -395,8 +372,8 @@ class Text2TextDataset(Dataset):
 
         return self.vocab_model
 
-    def vectorization(self):
-        for item in self.data.values():
+    def vectorization(self, data_items):
+        for item in data_items:
             graph: GraphData = item.graph
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
@@ -413,8 +390,6 @@ class Text2TextDataset(Dataset):
             tgt_token_id = np.array(tgt_token_id)
             tgt_token_id = torch.from_numpy(tgt_token_id)
             item.output_tensor = tgt_token_id
-
-        torch.save(self.data, self.processed_file_paths['data'])
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):

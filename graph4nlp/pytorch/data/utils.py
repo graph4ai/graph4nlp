@@ -57,6 +57,6 @@ def entail_zero_padding(old_tensor: torch.Tensor, num_rows: int):
         return None
 
     if len(old_tensor.shape) == 1:
-        return torch.cat((old_tensor, torch.zeros(1)))
+        return torch.cat((old_tensor, torch.zeros(1).to(dtype=old_tensor.dtype, device=old_tensor.device)))
     else:
-        return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:]), dtype=old_tensor.dtype).to(old_tensor.device)), dim=0)
+        return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:])).to(dtype=old_tensor.dtype, device=old_tensor.device)), dim=0)
