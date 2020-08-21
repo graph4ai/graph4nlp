@@ -194,13 +194,13 @@ class Jobs:
         else:
             enc_emb_size = 150
             tgt_emb_size = 150
-        # dataset = JobsDatasetForTree(root_dir=self.data_dir,
-        #                       topology_builder=ConstituencyBasedGraphConstruction,
-        #                       topology_subdir='ConstituencyGraph', share_vocab=use_copy, enc_emb_size=enc_emb_size, dec_emb_size=tgt_emb_size)
-
         dataset = JobsDatasetForTree(root_dir=self.data_dir,
-                              topology_builder=DependencyBasedGraphConstruction,
-                              topology_subdir='DependencyGraph', share_vocab=use_copy, enc_emb_size=enc_emb_size, dec_emb_size=tgt_emb_size)
+                              topology_builder=ConstituencyBasedGraphConstruction,
+                              topology_subdir='ConstituencyGraph', share_vocab=use_copy, enc_emb_size=enc_emb_size, dec_emb_size=tgt_emb_size)
+
+        # dataset = JobsDatasetForTree(root_dir=self.data_dir,
+        #                       topology_builder=DependencyBasedGraphConstruction,
+        #                       topology_subdir='DependencyGraph', share_vocab=use_copy, enc_emb_size=enc_emb_size, dec_emb_size=tgt_emb_size)
 
         self.train_data_loader = DataLoaderForGraphEncoder(
             use_copy=use_copy, dataset=dataset, mode="train", batch_size=20, device=self.device, ids_for_select=dataset.split_ids['train'])
