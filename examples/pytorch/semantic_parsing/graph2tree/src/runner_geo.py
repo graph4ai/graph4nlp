@@ -10,15 +10,14 @@ import torch.nn.functional as F
 import torch.nn.init as init
 import torch.optim as optim
 from stanfordcorenlp import StanfordCoreNLP
-# from torch.utils.data import DataLoader
 
-from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.test.example.jobs.graph2tree.test_dataset import GeoDataset
+from graph4nlp.pytorch.data.data import GraphData, from_batch
+
+from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
+from graph4nlp.pytorch.datasets.geo import GeoDatasetForTree
 
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import \
-    DependencyBasedGraphConstruction
-
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
@@ -27,28 +26,9 @@ from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import \
     StdTreeDecoder
 
 from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
-# from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-
 
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask, dropout
 from graph4nlp.pytorch.modules.utils.tree_utils import DataLoaderForGraphEncoder, Tree, Vocab, to_cuda
-
-
-class ExpressionAccuracy(EvaluationMetricBase):
-    def __init__(self):
-        super(ExpressionAccuracy, self).__init__()
-
-    def calculate_scores(self, ground_truth, predict):
-        correct = 0
-        assert len(ground_truth) == len(predict)
-        for gt, pred in zip(ground_truth, predict):
-            print("ground truth: ", gt)
-            print("prediction: ", pred)
-
-            if gt == pred:
-                correct += 1.
-        return correct / len(ground_truth)
-
 
 class Graph2Tree(nn.Module):
     def __init__(self, src_vocab,
@@ -79,6 +59,7 @@ class Graph2Tree(nn.Module):
                            'seq_info_encode_strategy': "bilstm"}
 
         # TODO: specify two encoder RNN dropout ratios.
+        
         self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                vocab=self.src_vocab,
                                                                hidden_size=enc_hidden_size, dropout=enc_dropout_input, use_cuda=(
@@ -146,24 +127,11 @@ class Graph2Tree(nn.Module):
                                           tgt_vocab=self.tgt_vocab)
 
     def forward(self, graph_list, tgt_tree_batch):
-        batch_dgl_graph = self.graph_topology(graph_list)
-        # do graph nn here
-        # convert DGLGraph to GraphData
-        batch_graph = GraphData()
-        batch_graph.from_dgl(batch_dgl_graph)
-
-        # run GNN
+        batch_graph = self.graph_topology(graph_list)
         batch_graph = self.encoder(batch_graph)
-        batch_dgl_graph.ndata['node_emb'] = batch_graph.node_features['node_emb']
-        batch_dgl_graph.ndata['rnn_emb'] = batch_graph.node_features['node_feat']
+        batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
-        dgl_graph_list = dgl.unbatch(batch_dgl_graph)
-        for g, dg in zip(graph_list, dgl_graph_list):
-            g.node_features["node_emb"] = dg.ndata["node_emb"]
-            g.node_features["rnn_emb"] = dg.ndata["rnn_emb"]
-
-        # down-task
-        loss = self.decoder(graph_list, tgt_tree_batch=tgt_tree_batch, enc_batch=DataLoaderForGraphEncoder.get_input_text_batch(graph_list, self.use_copy, self.src_vocab))
+        loss = self.decoder(from_batch(batch_graph), tgt_tree_batch=tgt_tree_batch, enc_batch=DataLoaderForGraphEncoder.get_input_text_batch(graph_list, self.use_copy, self.src_vocab))
         return loss
 
     def init(self):
@@ -201,15 +169,15 @@ class Geo:
         self.device = device
         self.use_copy = use_copy
 
-        self.data_dir = "/home/lishucheng/Graph4AI/graph4ai/graph4nlp/pytorch/test/generation/tree_decoder/data/geo880"
+        self.data_dir = "/Users/lishucheng/Desktop/g4nlp/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/geo"
+        # self.data_dir = "/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/geo"
 
-        # self.checkpoint_dir = "/Users/lishucheng/Desktop/g4nlp/graph4nlp/graph4nlp/pytorch/test/example/jobs/graph2tree/checkpoint_dir"
-        self.checkpoint_dir = "/home/lishucheng/Graph4AI/graph4ai/graph4nlp/pytorch/test/example/jobs/graph2tree/checkpoint_dir"
+        self.checkpoint_dir = "/Users/lishucheng/Desktop/g4nlp/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_geo"
+        # self.checkpoint_dir = "/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_geo"
 
         self._build_dataloader()
         self._build_model()
         self._build_optimizer()
-        self._build_evaluation()
 
     def _build_dataloader(self):
         use_copy = self.use_copy
@@ -219,17 +187,20 @@ class Geo:
         else:
             enc_emb_size = 150
             tgt_emb_size = 150
-        # dataset = GeoDataset(root_dir='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/pytorch/test/generation/tree_decoder/data/geo880',
+        # dataset = GeoDatasetForTree(root_dir=self.data_dir,
         #                       topology_builder=ConstituencyBasedGraphConstruction,
         #                       topology_subdir='ConstituencyGraph', share_vocab=use_copy, enc_emb_size=enc_emb_size, dec_emb_size=tgt_emb_size)
-        dataset = GeoDataset(root_dir='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/pytorch/test/generation/tree_decoder/data/geo880',
+
+        dataset = GeoDatasetForTree(root_dir=self.data_dir,
                               topology_builder=DependencyBasedGraphConstruction,
                               topology_subdir='DependencyGraph', share_vocab=use_copy, enc_emb_size=enc_emb_size, dec_emb_size=tgt_emb_size)
-        data_size = len(dataset)
+
         self.train_data_loader = DataLoaderForGraphEncoder(
-            use_copy=use_copy, dataset=dataset, mode="train", batch_size=20, device=None, train_sample_number=600)
+            use_copy=use_copy, dataset=dataset, mode="train", batch_size=20, device=self.device, ids_for_select=dataset.split_ids['train'])
+        print("train sample size:", len(self.train_data_loader.data))
         self.test_data_loader = DataLoaderForGraphEncoder(
-            use_copy=use_copy, dataset=dataset, mode="test", batch_size=1, device=None, train_sample_number=600)
+            use_copy=use_copy, dataset=dataset, mode="test", batch_size=1, device=self.device, ids_for_select=dataset.split_ids['test'])
+        print("test sample size:", len(self.test_data_loader.data))
 
         self.src_vocab = self.train_data_loader.src_vocab
         self.tgt_vocab = self.train_data_loader.tgt_vocab
@@ -294,9 +265,6 @@ class Geo:
         self.optimizer = optim.Adam(
             parameters, lr=optim_state['learningRate'], weight_decay=optim_state['weight_decay'])
 
-    def _build_evaluation(self):
-        self.metrics = [ExpressionAccuracy()]
-
     def train(self, eva_every=1):
         '''eva_every: N, int. Do evaluation every N epochs.'''
         max_epochs = 300
@@ -341,14 +309,16 @@ class Geo:
                 if loss_to_print < min_loss:
                     min_loss = loss_to_print
                     best_index = i
-                if i - best_index > (max_epochs//5)*self.train_data_loader.num_batch:
-                    print("Training loss does not decrease in {} epochs".format((max_epochs//5)))
+                # if i - best_index > (max_epochs//5)*self.train_data_loader.num_batch:
+                if True and epoch > 20:
+                    # print("Training loss does not decrease in {} epochs".format((max_epochs//5)))
                     checkpoint = {}
                     checkpoint["model"] = self.model
                     checkpoint["epoch"] = epoch
                     torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                     test_index = i
-                    break
+                    self.test(test_index)
+                    # break
 
                 loss_to_print = 0
                 start_time = time.time()

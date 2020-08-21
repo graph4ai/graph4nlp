@@ -655,7 +655,7 @@ def from_batch(batch: GraphData) -> list:
         #   a. calculate the starting and ending node index in the batch
         g = GraphData()
         node_st_idx = 0 if i == 0 else node_indices[i - 1]
-        node_ed_idx = node_indices[i]
+        node_ed_idx = node_indices[i] + 1 if i == 0 else node_indices[i]
         #   b. extract the corresponding edge indices
 
         #   c. copy data

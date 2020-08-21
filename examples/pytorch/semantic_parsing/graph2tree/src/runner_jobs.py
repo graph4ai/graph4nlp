@@ -309,14 +309,16 @@ class Jobs:
                 if loss_to_print < min_loss:
                     min_loss = loss_to_print
                     best_index = i
-                if i - best_index > (max_epochs//10)*self.train_data_loader.num_batch:
-                    print("Training loss does not decrease in {} epochs".format(10))
+                # if i - best_index > (max_epochs//5)*self.train_data_loader.num_batch:
+                if True and epoch > 20:
+                    # print("Training loss does not decrease in {} epochs".format((max_epochs//5)))
                     checkpoint = {}
                     checkpoint["model"] = self.model
                     checkpoint["epoch"] = epoch
                     torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                     test_index = i
-                    break
+                    self.test(test_index)
+                    # break
 
                 loss_to_print = 0
                 start_time = time.time()
