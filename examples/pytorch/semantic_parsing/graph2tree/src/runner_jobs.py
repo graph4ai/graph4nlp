@@ -78,8 +78,8 @@ class Graph2Tree(nn.Module):
 
 
         # self.encoder = GAT(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, [2, 1], direction_option=direction_option)
-        # self.encoder = GGNN(2, enc_hidden_size, enc_hidden_size, direction_option=direction_option)
-        # self.encoder = GraphSAGE(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, 'mean', direction_option=direction_option) # aggregate type: 'mean','gcn','pool','lstm'
+        self.encoder = GGNN(2, enc_hidden_size, enc_hidden_size, direction_option=direction_option)
+        # self.encoder = GraphSAGE(2, enc_hidden_size, enc_hidden_size, dec_hidden_size, 'mean', direction_option=direction_option) # aggregate type: 'mean','gcn','pool','lstm'
 
         self.criterion = nn.NLLLoss(size_average=False)
 
