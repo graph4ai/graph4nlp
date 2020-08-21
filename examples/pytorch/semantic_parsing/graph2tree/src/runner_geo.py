@@ -21,6 +21,8 @@ from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction 
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
+from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
+from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
 
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import \
     StdTreeDecoder
@@ -71,9 +73,13 @@ class Graph2Tree(nn.Module):
         #                                                            self.device != None),
         #                                                        fix_word_emb=False)
         # self.gnn = None
+
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
-        self.encoder = GAT(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, [
-            2, 1], direction_option=direction_option)
+
+
+        # self.encoder = GAT(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, [2, 1], direction_option=direction_option)
+        self.encoder = GGNN(2, enc_hidden_size, enc_hidden_size, direction_option=direction_option)
+        # self.encoder = GraphSAGE(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, 'mean', direction_option=direction_option) # aggregate type: 'mean','gcn','pool','lstm'
 
         self.criterion = nn.NLLLoss(size_average=False)
 
@@ -167,7 +173,8 @@ class Geo:
         torch.backends.cudnn.deterministic = True
 
         self.device = device
-        self.use_copy = use_copy
+        # self.use_copy = use_copy
+        self.use_copy = False
 
         self.data_dir = "/Users/lishucheng/Desktop/g4nlp/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/geo"
         # self.data_dir = "/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/geo"
@@ -216,8 +223,8 @@ class Geo:
             input_size = self.share_vocab.vocab_size
             output_size = self.share_vocab.vocab_size
             # enc_hidden_size = 150
-            enc_hidden_size = 150
-            dec_hidden_size = 300
+            enc_hidden_size = 300
+            dec_hidden_size = 600
         else:
             input_size = self.src_vocab.vocab_size
             output_size = self.tgt_vocab.vocab_size
@@ -310,7 +317,8 @@ class Geo:
                     min_loss = loss_to_print
                     best_index = i
                 # if i - best_index > (max_epochs//5)*self.train_data_loader.num_batch:
-                if True and epoch > 20:
+                # if True and epoch > 20:
+                if True:
                     # print("Training loss does not decrease in {} epochs".format((max_epochs//5)))
                     checkpoint = {}
                     checkpoint["model"] = self.model
@@ -465,28 +473,18 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
     # initialize the rnn state to all zeros
     prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
     prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
-    enc_outputs = torch.zeros(
-        (1, enc_w_list.size(1), dec_hidden_size), requires_grad=False)
+    if use_copy:
+        enc_outputs = torch.zeros((1, enc_w_list.size(1), dec_hidden_size), requires_grad=False)
 
-    batch_dgl_graph = model.graph_topology(input_graph_list)
-    batch_graph = GraphData()
-    batch_graph.from_dgl(batch_dgl_graph)
-
-    # run GNN
+    batch_graph = model.graph_topology(input_graph_list)
     batch_graph = model.encoder(batch_graph)
-    batch_dgl_graph.ndata['node_emb'] = batch_graph.node_features['node_emb']
-    batch_dgl_graph.ndata['rnn_emb'] = batch_graph.node_features['node_feat']
+    batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
-    dgl_graph_list = dgl.unbatch(batch_dgl_graph)
-    for g, dg in zip(input_graph_list, dgl_graph_list):
-        g.node_features["node_emb"] = dg.ndata["node_emb"]
-        g.node_features["rnn_emb"] = dg.ndata["rnn_emb"]
-    
-    graph_node_embedding = model.decoder._extract_params(input_graph_list)['graph_node_embedding']
+    graph_node_embedding = model.decoder._extract_params(from_batch(batch_graph))['graph_node_embedding']
     graph_level_embedding = torch.max(graph_node_embedding, 1)[0]
     rnn_node_embedding = torch.zeros_like(graph_node_embedding, requires_grad=False)
 
-    assert(graph_node_embedding.size() == enc_outputs.size())
+    assert(use_copy == False or graph_node_embedding.size() == enc_outputs.size())
     assert(graph_level_embedding.size() == prev_c.size())
 
     enc_outputs = graph_node_embedding
@@ -500,16 +498,14 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
 
     # decode
     queue_decode = []
-    queue_decode.append(
-        {"s": (prev_c, prev_h), "parent": 0, "child_index": 1, "t": Tree()})
+    queue_decode.append({"s": (prev_c, prev_h), "parent": 0, "child_index": 1, "t": Tree()})
     head = 1
     while head <= len(queue_decode) and head <= max_dec_tree_depth:
         s = queue_decode[head-1]["s"]
         parent_h = s[1]
         t = queue_decode[head-1]["t"]
 
-        sibling_state = torch.zeros(
-            (1, dec_hidden_size), dtype=torch.float, requires_grad=False)
+        sibling_state = torch.zeros((1, dec_hidden_size), dtype=torch.float, requires_grad=False)
         sibling_state = to_cuda(sibling_state, device)
 
         flag_sibling = False
@@ -521,11 +517,9 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
             sibling_state = queue_decode[sibling_index]["s"][1]
 
         if head == 1:
-            prev_word = torch.tensor([form_manager.get_symbol_idx(
-                form_manager.start_token)], dtype=torch.long)
+            prev_word = torch.tensor([form_manager.get_symbol_idx(form_manager.start_token)], dtype=torch.long)
         else:
-            prev_word = torch.tensor(
-                [form_manager.get_symbol_idx('(')], dtype=torch.long)
+            prev_word = torch.tensor([form_manager.get_symbol_idx('(')], dtype=torch.long)
 
         to_cuda(prev_word, device)
 
@@ -533,16 +527,13 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
 
         if use_copy:
             enc_context = None
-            input_mask = create_mask(torch.LongTensor(
-                [enc_outputs.size(1)]*enc_outputs.size(0)), enc_outputs.size(1), device)
+            input_mask = create_mask(torch.LongTensor([enc_outputs.size(1)]*enc_outputs.size(0)), enc_outputs.size(1), device)
             decoder_state = (s[0].unsqueeze(0), s[1].unsqueeze(0))
 
         while True:
             if not use_copy:
-                curr_c, curr_h = mode.decoder.rnn(
-                    prev_word, s[0], s[1], parent_h, sibling_state)
-                prediction = model.decoder.attention(
-                    enc_outputs, curr_h, torch.tensor(0))
+                curr_c, curr_h = model.decoder.rnn(prev_word, s[0], s[1], parent_h, sibling_state)
+                prediction = model.decoder.attention(enc_outputs, curr_h, torch.tensor(0))
                 s = (curr_c, curr_h)
                 _, _prev_word = prediction.max(1)
                 prev_word = _prev_word
@@ -570,8 +561,10 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
                 break
             elif int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
                 #print("we predicted N");exit()
-                queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone(
-                )), "parent": head, "child_index": i_child, "t": Tree()})
+                if use_copy:
+                    queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                else:
+                    queue_decode.append({"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
                 t.add_child(int(prev_word[0]))
             else:
                 t.add_child(int(prev_word[0]))
