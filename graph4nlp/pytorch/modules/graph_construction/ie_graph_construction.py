@@ -23,11 +23,12 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, dropout=None, use_cuda=True):
+    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, word_dropout=None, dropout=None, use_cuda=True):
         super(IEBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                        embedding_styles=embedding_style,
                                                        hidden_size=hidden_size,
                                                        fix_word_emb=fix_word_emb,
+                                                       word_dropout=word_dropout,
                                                        dropout=dropout, use_cuda=use_cuda)
         self.vocab = vocab
         self.verbase = 1

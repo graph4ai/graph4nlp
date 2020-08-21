@@ -9,7 +9,6 @@ from torch.utils.data import DataLoader
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import torch.backends.cudnn as cudnn
-import dgl
 
 from graph4nlp.pytorch.datasets.trec import TrecDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -24,7 +23,6 @@ from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda, EarlyStopping
 from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
-
 
 
 class WeightedGCNLayer(nn.Module):
@@ -42,28 +40,29 @@ class WeightedGCNLayer(nn.Module):
 
             return new_node_vec
 
-
 class TextClassifier(nn.Module):
     def __init__(self, vocab, config):
         super(TextClassifier, self).__init__()
         self.config = config
         self.vocab = vocab
-        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
-                           'seq_info_encode_strategy': "bilstm"}
+        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': config.node_edge_emb_strategy,
+                           'seq_info_encode_strategy': config.seq_info_encode_strategy}
 
         if config.graph_type == 'dependency':
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=vocab.in_word_vocab,
                                                                    hidden_size=config.num_hidden,
-                                                                   dropout=0.2,
-                                                                   fix_word_emb=config.fix_word_emb,
+                                                                   word_dropout=config.word_drop,
+                                                                   dropout=config.rnn_drop,
+                                                                   fix_word_emb=not config.no_fix_word_emb,
                                                                    device=config.device)
         elif config.graph_type == 'constituency':
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=vocab.in_word_vocab,
                                                                    hidden_size=config.num_hidden,
-                                                                   dropout=0.2,
-                                                                   fix_word_emb=config.fix_word_emb,
+                                                                   word_dropout=config.word_drop,
+                                                                   dropout=config.rnn_drop,
+                                                                   fix_word_emb=not config.no_fix_word_emb,
                                                                    device=config.device)
         elif config.graph_type == 'node_emb':
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
@@ -78,8 +77,9 @@ class TextClassifier(nn.Module):
                                     sparsity_ratio=config.gl_sparsity_ratio,
                                     input_size=config.num_hidden,
                                     hidden_size=config.gl_num_hidden,
-                                    fix_word_emb=config.fix_word_emb,
-                                    dropout=None,
+                                    fix_word_emb=not config.no_fix_word_emb,
+                                    word_dropout=config.word_drop,
+                                    dropout=config.rnn_drop,
                                     device=config.device)
         elif config.graph_type == 'node_emb_refined':
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
@@ -95,8 +95,9 @@ class TextClassifier(nn.Module):
                                     sparsity_ratio=config.gl_sparsity_ratio,
                                     input_size=config.num_hidden,
                                     hidden_size=config.gl_num_hidden,
-                                    fix_word_emb=config.fix_word_emb,
-                                    dropout=None,
+                                    fix_word_emb=not config.no_fix_word_emb,
+                                    word_dropout=config.word_drop,
+                                    dropout=config.rnn_drop,
                                     device=config.device)
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(config.graph_type))
@@ -121,7 +122,7 @@ class TextClassifier(nn.Module):
                         [config.num_hidden],
                         graph_pool_type=config.graph_pooling,
                         dim=config.num_hidden,
-                        use_linear_proj=True)
+                        use_linear_proj=config.max_pool_linear_proj)
 
         self.loss = GeneralLoss('CrossEntropy')
 
@@ -180,15 +181,16 @@ class ModelHandler:
                               topology_subdir=topology_subdir,
                               graph_type=graph_type,
                               pretrained_word_emb_file=self.config.pre_word_emb_file,
-                              val_split_ratio=self.config.val_split_ratio)
+                              val_split_ratio=self.config.val_split_ratio,
+                              seed=self.config.seed)
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config.batch_size, shuffle=True,
-                                           num_workers=12,
+                                           num_workers=self.config.num_workers,
                                            collate_fn=dataset.collate_fn)
         self.val_dataloader = DataLoader(dataset.val, batch_size=self.config.batch_size, shuffle=False,
-                                          num_workers=12,
+                                          num_workers=self.config.num_workers,
                                           collate_fn=dataset.collate_fn)
         self.test_dataloader = DataLoader(dataset.test, batch_size=self.config.batch_size, shuffle=False,
-                                          num_workers=12,
+                                          num_workers=self.config.num_workers,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
         self.config.num_classes = dataset.num_classes
@@ -278,6 +280,40 @@ def main(args):
     else:
         args.device = torch.device('cpu')
 
+
+    args.save_model_path = '{save_model_path}_{seed}_{dataset}_{gnn}_{direction_option}_{graph_type}'\
+                            '_{gl_top_k}_{gl_num_heads}_{gl_epsilon}_{gl_smoothness_ratio}_{gl_connectivity_ratio}'\
+                            '_{gl_sparsity_ratio}_{init_adj_alpha}_{graph_pooling}_{num_heads}'\
+                            '_{num_out_heads}_{num_layers}_{num_hidden}_{node_edge_emb_strategy}'\
+                            '_{seq_info_encode_strategy}_{batch_size}_{val_split_ratio}_{no_fix_word_emb}'\
+                            '_{word_drop}_{rnn_drop}'.format(
+                            save_model_path=args.save_model_path,
+                            seed=args.seed,
+                            dataset=args.dataset,
+                            gnn='gat',
+                            direction_option=args.direction_option,
+                            graph_type=args.graph_type,
+                            gl_top_k=args.gl_top_k,
+                            gl_num_heads=args.gl_num_heads,
+                            gl_epsilon=args.gl_epsilon,
+                            gl_smoothness_ratio=args.gl_smoothness_ratio,
+                            gl_connectivity_ratio=args.gl_connectivity_ratio,
+                            gl_sparsity_ratio=args.gl_sparsity_ratio,
+                            init_adj_alpha=args.init_adj_alpha,
+                            graph_pooling=args.graph_pooling,
+                            num_heads=args.num_heads,
+                            num_out_heads=args.num_out_heads,
+                            num_layers=args.num_layers,
+                            num_hidden=args.num_hidden,
+                            node_edge_emb_strategy=args.node_edge_emb_strategy,
+                            seq_info_encode_strategy=args.seq_info_encode_strategy,
+                            batch_size=args.batch_size,
+                            val_split_ratio=args.val_split_ratio,
+                            no_fix_word_emb=args.no_fix_word_emb,
+                            word_drop=args.word_drop,
+                            rnn_drop=args.rnn_drop
+                            )
+
     runner = ModelHandler(args)
     runner.train()
     # restored best saved model
@@ -320,6 +356,8 @@ if __name__ == "__main__":
     # gnn
     parser.add_argument("--graph_pooling", type=str, default='max_pool',
                         help="graph pooling (`avg_pool`, `max_pool`)")
+    parser.add_argument("--max_pool_linear_proj", action="store_true", default=False,
+                        help="use linear projectioni for max pooling")
     parser.add_argument("--direction_option", type=str, default='uni',
                         help="direction type (`uni`, `bi_fuse`, `bi_sep`)")
     parser.add_argument("--num_heads", type=int, default=8,
@@ -336,11 +374,20 @@ if __name__ == "__main__":
                         help="input feature dropout")
     parser.add_argument("--attn_drop", type=float, default=.6,
                         help="attention dropout")
+    # graph embedding construction
+    parser.add_argument("--node_edge_emb_strategy", type=str, default='mean',
+                        help="node edge embedding strategy for graph embedding construction ('mean', 'lstm', 'gru', 'bilstm' and 'bigru')")
+    parser.add_argument("--seq_info_encode_strategy", type=str, default='none',
+                        help="sequence info encoding strategy for graph embedding construction ('none', 'lstm', 'gru', 'bilstm' and 'bigru')")
+    parser.add_argument("--word_drop", type=float,
+                        help="word embedding dropout")
+    parser.add_argument("--rnn_drop", type=float, default=0.2,
+                        help="RNN dropout")
     # training
     parser.add_argument("--lr", type=float, default=0.001,
                         help="learning rate")
-    parser.add_argument('--weight_decay', type=float, default=5e-4,
-                        help="weight decay")
+    # parser.add_argument('--weight_decay', type=float, default=5e-4,
+    #                     help="weight decay")
     parser.add_argument('--negative_slope', type=float, default=0.2,
                         help="the negative slope of leaky relu")
     parser.add_argument("--patience", type=int, default=10,
@@ -349,25 +396,25 @@ if __name__ == "__main__":
                         help="learning rate patience")
     parser.add_argument("--lr_reduce_factor", type=float, default=0.5,
                         help="learning rate reduce factor")
-    parser.add_argument('--drop_ratio', type=float, default=0.5,
-                        help='dropout ratio (default: 0.5)')
-    parser.add_argument('--batch_size', type=int, default=32,
-                        help='input batch size for training (default: 32)')
+    # parser.add_argument('--drop_ratio', type=float, default=0.5,
+    #                     help='dropout ratio (default: 0.5)')
+    parser.add_argument('--batch_size', type=int, default=50,
+                        help='input batch size for training (default: 50)')
     parser.add_argument('--val_split_ratio', type=float, default=0.2,
                         help='validation set split ratio (default: 0.2)')
-    parser.add_argument('--epochs', type=int, default=100,
+    parser.add_argument('--epochs', type=int, default=500,
                         help='number of epochs to train (default: 100)')
     parser.add_argument('--seed', type=int, default=1234,
                         help='random seed (default: 1234)')
-    parser.add_argument('--num_workers', type=int, default=0,
-                        help='number of workers (default: 0)')
-    # parser.add_argument('--dataset', type=str, default="",
-    #                     help='dataset name')
-    parser.add_argument("--fix_word_emb", action="store_true", default=False,
-                        help="fix pretrained word embeddings")
+    parser.add_argument('--num_workers', type=int, default=8,
+                        help='number of workers (default: 8)')
+    parser.add_argument('--dataset', type=str, default="trec",
+                        help='dataset name')
+    parser.add_argument("--no_fix_word_emb", action="store_true", default=False,
+                        help="Not fix pretrained word embeddings")
     parser.add_argument('--pre_word_emb_file', type=str,
                         help='path to the pretrained word embedding file')
-    parser.add_argument('--save_model_path', type=str, default="checkpoint",
+    parser.add_argument('--save_model_path', type=str, default="text_clf_ckpt",
                         help="path to the best saved model")
 
     args = parser.parse_args()

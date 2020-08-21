@@ -30,13 +30,15 @@ class GraphConstructionBase(nn.Module):
         The hidden size of RNN layer, default: ``None``.
     fix_word_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``True``.
+    word_dropout : float, optional
+        Dropout ratio for word embedding, default: ``None``.
     dropout : float, optional
-        Dropout ratio, default: ``None``.
+        Dropout ratio for RNN embedding, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
     def __init__(self, word_vocab, embedding_styles, hidden_size=None,
-                        fix_word_emb=True, dropout=None, device=None):
+                        fix_word_emb=True, word_dropout=None, dropout=None, device=None):
         super(GraphConstructionBase, self).__init__()
         self.embedding_layer = EmbeddingConstruction(word_vocab,
                                         embedding_styles['word_emb_type'],
@@ -44,6 +46,7 @@ class GraphConstructionBase(nn.Module):
                                         embedding_styles['seq_info_encode_strategy'],
                                         hidden_size=hidden_size,
                                         fix_word_emb=fix_word_emb,
+                                        word_dropout=word_dropout,
                                         dropout=dropout,
                                         device=device)
 
@@ -121,11 +124,12 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     """
 
     def __init__(self, word_vocab, embedding_styles, hidden_size,
-                 fix_word_emb=True, dropout=None, device=None):
+                 fix_word_emb=True, word_dropout=None, dropout=None, device=None):
         super(StaticGraphConstructionBase, self).__init__(word_vocab,
                                                            embedding_styles,
                                                            hidden_size,
                                                            fix_word_emb=fix_word_emb,
+                                                           word_dropout=word_dropout,
                                                            dropout=dropout,
                                                            device=device)
 
@@ -197,8 +201,10 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         The dimension of hidden layers, default: ``None``.
     fix_word_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``False``.
+    word_dropout : float, optional
+        Dropout ratio for word embedding, default: ``None``.
     dropout : float, optional
-        Dropout ratio, default: ``None``.
+        Dropout ratio for RNN embedding, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
@@ -215,6 +221,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                 input_size=None,
                 hidden_size=None,
                 fix_word_emb=False,
+                word_dropout=None,
                 dropout=None,
                 device=None):
         super(DynamicGraphConstructionBase, self).__init__(
@@ -222,6 +229,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                                                     embedding_styles,
                                                     hidden_size=hidden_size,
                                                     fix_word_emb=fix_word_emb,
+                                                    word_dropout=word_dropout,
                                                     dropout=dropout,
                                                     device=device)
         assert top_k_neigh is None or epsilon_neigh is None, \

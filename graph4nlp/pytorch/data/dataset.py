@@ -143,11 +143,12 @@ class Dataset(torch.utils.data.Dataset):
                  lower_case=True,
                  pretrained_word_emb_file=None,
                  use_val_for_vocab=False,
+                 seed=1234,
                  **kwargs):
         super(Dataset, self).__init__()
 
         self.root = root  # The root directory where the dataset is located.
-
+        self.seed = seed
         # Processing-specific attributes
         self.tokenizer = tokenizer
         self.lower_case = lower_case
@@ -221,6 +222,7 @@ class Dataset(torch.utils.data.Dataset):
             if self.val_split_ratio > 0:
                 new_train_length = int((1 - self.val_split_ratio) * len(self.train))
                 import random
+                random.seed(self.seed)
                 old_train_set = self.train
                 random.shuffle(old_train_set)
                 self.val = old_train_set[new_train_length:]
@@ -923,10 +925,10 @@ class Text2LabelDataset(Dataset):
                                        data_set=data_for_vocab,
                                        tokenizer=self.tokenizer,
                                        lower_case=self.lower_case,
-                                       max_word_vocab_size=None,
-                                       min_word_vocab_freq=1,
+                                       max_word_vocab_size=self.max_word_vocab_size,
+                                       min_word_vocab_freq=self.min_word_vocab_freq,
                                        pretrained_word_emb_file=self.pretrained_word_emb_file,
-                                       word_emb_size=300,
+                                       word_emb_size=self.word_emb_size,
                                        share_vocab=True)
         self.vocab_model = vocab_model
 

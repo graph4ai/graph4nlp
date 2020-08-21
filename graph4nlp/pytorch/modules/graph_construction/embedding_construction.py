@@ -65,8 +65,10 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         The hidden size of RNN layer, default: ``None``.
     fix_word_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``True``.
+    word_dropout : float, optional
+        Dropout ratio for word embedding, default: ``None``.
     dropout : float, optional
-        Dropout ratio, default: ``None``.
+        Dropout ratio for RNN embedding, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
@@ -75,6 +77,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                         seq_info_encode_strategy,
                         hidden_size=None,
                         fix_word_emb=True,
+                        word_dropout=None,
                         dropout=None,
                         device=None):
         super(EmbeddingConstruction, self).__init__()

@@ -12,15 +12,19 @@ class TrecDataset(Text2LabelDataset):
 
     @property
     def processed_file_names(self):
-        """At least 3 reserved keys should be fiiled: 'vocab', 'data' and 'split_ids'."""
-        return {'vocab': 'vocab.pt', 'data': 'data.pt', 'split_ids': 'split_ids.pt'}
+        """At least 3 reserved keys should be fiiled: 'vocab' and 'data'."""
+        return {'vocab': 'vocab.pt', 'data': 'data.pt'}
 
     def download(self):
         raise NotImplementedError(
             'This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
 
     def __init__(self, root_dir, topology_builder=None, topology_subdir=None, graph_type='static',
-                 edge_strategy=None, merge_strategy='tailhead', **kwargs):
+                 edge_strategy=None, merge_strategy='tailhead', max_word_vocab_size=None,
+                 min_word_vocab_freq=1, word_emb_size=None, **kwargs):
         super(TrecDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
-                                          edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
+                                          edge_strategy=edge_strategy, merge_strategy=merge_strategy,
+                                          max_word_vocab_size=max_word_vocab_size,
+                                          min_word_vocab_freq=min_word_vocab_freq,
+                                          word_emb_size=word_emb_size, **kwargs)

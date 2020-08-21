@@ -20,11 +20,12 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, word_dropout=None, dropout=None, device=None):
         super(DependencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
+                                                               word_dropout=word_dropout,
                                                                dropout=dropout, device=device)
         self.vocab = vocab
         self.verbase = 1
