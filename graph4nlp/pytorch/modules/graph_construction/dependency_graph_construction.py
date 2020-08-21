@@ -58,7 +58,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         Returns
         -------
-        parsed_results: dict
+        parsed_results: list[dict]
+            Each sentence is a dict. All sentences are packed by a list.
             key, value
             "node_num": int
                 the node amount
