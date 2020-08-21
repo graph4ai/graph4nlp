@@ -19,7 +19,7 @@ We take exact match accuracy as metric.
 
 | Methods\Datasets | JOBS | GEO | ATIS |  
 | ---- | ---- | ---- | ---- |
-| CONS-Graph | - | - | - |
+| CONS-Graph | 81.4 | - | - |
 | DEP-Graph | - | - | - |
 
 
