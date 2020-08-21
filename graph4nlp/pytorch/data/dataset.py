@@ -958,4 +958,5 @@ class Text2LabelDataset(Dataset):
 
         tgt = [item.output for item in data_list]
         tgt_tensor = torch.LongTensor(tgt)
+
         return [graph_data, tgt_tensor]

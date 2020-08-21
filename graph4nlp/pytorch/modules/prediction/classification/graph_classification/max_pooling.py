@@ -35,22 +35,14 @@ class MaxPooling(PoolingBase):
         torch.Tensor
             The output feature.
         """
-        # # use DGLGraph
-        # graph_list = dgl.unbatch(graph)
-        # output_feat = []
-        # for g in graph_list:
-        #     feat_tensor = g.ndata[feat]
-        #     if self.linear is not None:
-        #         feat_tensor = self.linear(feat_tensor)
-
-        #     output_feat.append(torch.max(feat_tensor, dim=0)[0])
-
-
-        # use GraphData
         graph_list = from_batch(graph)
         output_feat = []
         for g in graph_list:
-            output_feat.append(torch.max(g.ndata[feat], dim=0)[0])
+            feat_tensor = g.node_features[feat]
+            if self.linear is not None:
+                feat_tensor = self.linear(feat_tensor)
+
+            output_feat.append(torch.max(feat_tensor, dim=0)[0])
 
         output_feat = torch.stack(output_feat, 0)
 

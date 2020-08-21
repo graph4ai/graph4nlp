@@ -159,11 +159,13 @@ class ModelHandler:
         with torch.no_grad():
             pred_collect = []
             gt_collect = []
-            for data in self.dataloader:
+            for i, data in enumerate(dataloader):
                 graph_list, tgt = data
                 logits = self.model(graph_list, require_loss=False)
                 pred_collect.append(logits)
                 gt_collect.append(tgt)
+                if i > 10: # TODO
+                    break
 
             pred_collect = torch.max(torch.cat(pred_collect, 0), dim=-1)[1].cpu()
             gt_collect = torch.cat(gt_collect, 0).cpu()
