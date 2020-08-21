@@ -30,7 +30,7 @@ class GraphSAGE(GNNBase):
         specifies the input feature size on both the source and destination nodes.  If
         a scalar is given, the source and destination node feature size would take the
         same value.
-        
+
         If aggregator type is ``gcn``, the feature size of source and destination nodes
         are required to be the same.
     hidden_size: int list of int
@@ -45,7 +45,7 @@ class GraphSAGE(GNNBase):
     feat_drop : float, optional
         Dropout rate on feature, defaults: ``0``.
     aggregator_type : str
-        Aggregator type to use (``mean``, ``gcn``, ``pool``, ``lstm``).     
+        Aggregator type to use (``mean``, ``gcn``, ``pool``, ``lstm``).
     bias : bool
         If True, adds a learnable bias to the output. Default: ``True``.
     norm : callable activation function/layer or None, optional
@@ -71,13 +71,13 @@ class GraphSAGE(GNNBase):
         self.GraphSAGE_layers = nn.ModuleList()
         if self.direction_option == 'bi_sep':
                output_size=int(output_size/2)
-               
+
         #transform the hidden size format
         if self.num_layers>1 and type(hidden_size) is int:
             hidden_size=[hidden_size for i in range(self.num_layers-1)]
-            
-               
-        if self.num_layers>1:       
+
+
+        if self.num_layers>1:
             # input projection
             self.GraphSAGE_layers.append(GraphSAGELayer(input_size,
                                             hidden_size[0],
@@ -107,44 +107,44 @@ class GraphSAGE(GNNBase):
                                         bias=True,
                                         norm=None,
                                         activation=None))
-       
+
     def forward(self, graph):
         r"""Compute GraphSAGE layer.
 
         Parameters
         ----------
         graph : GraphData
-            The graph with node feature stored in the feature field named as 
+            The graph with node feature stored in the feature field named as
             "node_feat".
             The node features are used for message passing.
- 
+
         Returns
         -------
         graph : GraphData
             The graph with generated node embedding stored in the feature field
             named as "node_emb".
-        """        
-        
+        """
+
         h=graph.node_features['node_feat'] #get the node feature tensor from graph
         g = graph.to_dgl() #transfer the current NLPgraph to DGL graph
 
         # output projection
-        if self.num_layers>1:          
+        if self.num_layers>1:
           for l in range(0,self.num_layers - 1):
               h = self.GraphSAGE_layers[l](g, h)
-            
+
         logits = self.GraphSAGE_layers[-1](g, h)
 
         if self.direction_option == 'bi_sep':
             logits = torch.cat(logits, -1)
         else:
             logits = logits
-            
+
         graph.node_features['node_emb']=logits #put the results into the NLPGraph
 
         return graph
-    
-    
+
+
 
 class GraphSAGELayer(GNNLayerBase):
     r"""A unified wrapper for `GraphSAGE Network <https://arxiv.org/pdf/1706.02216.pdf>`__
@@ -175,7 +175,7 @@ class GraphSAGELayer(GNNLayerBase):
     feat_drop : float, optional
         Dropout rate on feature, defaults: ``0``.
     aggregator_type : str
-        Aggregator type to use (``mean``, ``gcn``, ``pool``, ``lstm``).     
+        Aggregator type to use (``mean``, ``gcn``, ``pool``, ``lstm``).
     bias : bool
         If True, adds a learnable bias to the output. Default: ``True``.
     norm : callable activation function/layer or None, optional
@@ -277,7 +277,7 @@ class UniGraphSAGELayerConv(GNNLayerBase):
 
     def forward(self, graph, feat):
         return self.model(graph, feat)
-    
+
 
 class BiSepGraphSAGELayerConv(GNNLayerBase):
     r"""Bidirection version GraphSAGE layer from paper `Inductive Representation Learning on
@@ -338,14 +338,14 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
                 self.fc_pool_bw = nn.Linear(self._in_src_size, self._in_src_size)
         if aggregator_type == 'lstm':
                 self.lstm_fw = nn.LSTM(self._in_src_size, self._in_src_size, batch_first=True)
-                self.lstm_bw = nn.LSTM(self._in_src_size, self._in_src_size, batch_first=True)       
+                self.lstm_bw = nn.LSTM(self._in_src_size, self._in_src_size, batch_first=True)
         if aggregator_type != 'gcn':
                 self.fc_self_fw = nn.Linear(self._in_dst_size, output_size, bias=bias)
-                self.fc_self_bw = nn.Linear(self._in_dst_size, output_size, bias=bias)               
-        
+                self.fc_self_bw = nn.Linear(self._in_dst_size, output_size, bias=bias)
+
         self.fc_neigh_fw = nn.Linear(self._in_src_size, output_size, bias=bias)
         self.fc_neigh_bw = nn.Linear(self._in_src_size, output_size, bias=bias)
-        
+
         self.reset_parameters()
 
 
@@ -372,9 +372,9 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
         batch_size = m.shape[0]
         h = (m.new_zeros((1, batch_size, self._in_src_size)),
              m.new_zeros((1, batch_size, self._in_src_size)))
-        _, (rst, _) = self.lstm_fw(m, h)        
+        _, (rst, _) = self.lstm_fw(m, h)
         return {'neigh': rst.squeeze(0)}
-    
+
     def _lstm_reducer_bw(self, nodes):
         """LSTM reducer
         NOTE(zihao): lstm reducer with default schedule (degree bucketing)
@@ -384,9 +384,9 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
         batch_size = m.shape[0]
         h = (m.new_zeros((1, batch_size, self._in_src_size)),
              m.new_zeros((1, batch_size, self._in_src_size)))
-        _, (rst, _) = self.lstm_bw(m, h)        
-        return {'neigh': rst.squeeze(0)}  
-    
+        _, (rst, _) = self.lstm_bw(m, h)
+        return {'neigh': rst.squeeze(0)}
+
     def message_reduce(self,graph,direction,feat):
        if isinstance(feat, tuple):
         feat_src = self.feat_drop(feat[0])
@@ -412,7 +412,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
          if direction=='fw':
              graph.srcdata['h'] = F.relu(self.fc_pool_fw(feat_src))
          elif direction=='bw':
-             graph.srcdata['h'] = F.relu(self.fc_pool_bw(feat_src))  
+             graph.srcdata['h'] = F.relu(self.fc_pool_bw(feat_src))
          graph.update_all(fn.copy_src('h', 'm'), fn.max('m', 'neigh'))
          h_neigh = graph.dstdata['neigh']
        elif self._aggre_type == 'lstm':
@@ -421,12 +421,12 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
            graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_fw)
          elif direction=='bw':
            graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_bw)
-           
+
          h_neigh = graph.dstdata['neigh']
        else:
         raise KeyError('Aggregator type {} not recognized.'.format(self._aggre_type))
 
-       return h_neigh,h_self    
+       return h_neigh,h_self
 
     def forward(self,graph,feat):
         r"""
@@ -442,39 +442,39 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
             If a pair of torch.Tensor is given, the pair must contain two tensors of shape
             :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
-        
+
         Returns
         -------
         The output feature of shape :math:`(N, D_{out})` where :math:`D_{out}`
-        is size of output feature.       
+        is size of output feature.
         """
         if isinstance(feat,list):   #judge whether the the input is the initial node feature or the two outputs from the last BisepGraphSAGELayer
-           feat_fw, feat_bw = feat 
+           feat_fw, feat_bw = feat
         else:
            feat_fw = feat
            feat_bw = feat
-           
+
         self.forward_graph = graph
         self.backward_graph = graph.reverse()
         f_graph = self.forward_graph.local_var()
         b_graph = self.forward_graph.local_var()
 
- 
+
 
         # update node part:
         h_neigh_fw,h_self_fw = self.message_reduce(f_graph,'fw',feat_fw)
         h_neigh_bw,h_self_bw = self.message_reduce(b_graph,'bw',feat_bw)
-    
+
         # GraphSAGE GCN does not require fc_self.
-    
-        
+
+
         if self._aggre_type == 'gcn':
             rst_fw = self.fc_neigh_fw(h_neigh_fw)
-            rst_bw = self.fc_neigh_bw(h_neigh_bw)  
+            rst_bw = self.fc_neigh_bw(h_neigh_bw)
         else:
             rst_fw = self.fc_self_fw(h_self_fw) + self.fc_neigh_fw(h_neigh_fw)
             rst_bw = self.fc_self_bw(h_self_bw) + self.fc_neigh_bw(h_neigh_bw)
-    
+
         # activation
         if self.activation is not None:
             rst_fw = self.activation(rst_fw)
@@ -483,7 +483,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
         if self.norm is not None:
             rst_fw = self.norm(rst_fw)
             rst_bw = self.norm(rst_bw)
-            
+
         return [rst_fw,rst_bw]
 
 
@@ -546,15 +546,15 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
                 self.fc_pool_bw = nn.Linear(self._in_src_size, self._in_src_size)
         if aggregator_type == 'lstm':
                 self.lstm_fw = nn.LSTM(self._in_src_size, self._in_src_size, batch_first=True)
-                self.lstm_bw = nn.LSTM(self._in_src_size, self._in_src_size, batch_first=True)       
+                self.lstm_bw = nn.LSTM(self._in_src_size, self._in_src_size, batch_first=True)
         if aggregator_type != 'gcn':
                 self.fc_self_fw = nn.Linear(self._in_dst_size, output_size, bias=bias)
-                self.fc_self_bw = nn.Linear(self._in_dst_size, output_size, bias=bias)               
-        
+                self.fc_self_bw = nn.Linear(self._in_dst_size, output_size, bias=bias)
+
         self.fc_neigh = nn.Linear(self._in_src_size, output_size, bias=bias)
-        
+
         self.fuse_linear=nn.Linear(4*self._in_src_size, self._in_src_size, bias=bias)
-        
+
         self.reset_parameters()
 
 
@@ -581,9 +581,9 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
         batch_size = m.shape[0]
         h = (m.new_zeros((1, batch_size, self._in_src_size)),
              m.new_zeros((1, batch_size, self._in_src_size)))
-        _, (rst, _) = self.lstm_fw(m, h)        
+        _, (rst, _) = self.lstm_fw(m, h)
         return {'neigh': rst.squeeze(0)}
-    
+
     def _lstm_reducer_bw(self, nodes):
         """LSTM reducer
         NOTE(zihao): lstm reducer with default schedule (degree bucketing)
@@ -593,8 +593,8 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
         batch_size = m.shape[0]
         h = (m.new_zeros((1, batch_size, self._in_src_size)),
              m.new_zeros((1, batch_size, self._in_src_size)))
-        _, (rst, _) = self.lstm_bw(m, h)        
-        return {'neigh': rst.squeeze(0)}    
+        _, (rst, _) = self.lstm_bw(m, h)
+        return {'neigh': rst.squeeze(0)}
 
     def forward(self,graph,feat):
         r"""
@@ -610,18 +610,18 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
             If a pair of torch.Tensor is given, the pair must contain two tensors of shape
             :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
-        
+
         Returns
         -------
         The output feature of shape :math:`(N, D_{out})` where :math:`D_{out}`
-        is size of output feature.       
+        is size of output feature.
         """
         if feat is list:   #judge whether the the input is the initial node feature or the two outputs from the last BisepGraphSAGELayer
-           feat_fw, feat_bw = feat 
+           feat_fw, feat_bw = feat
         else:
            feat_fw = feat
            feat_bw = feat
-           
+
         self.forward_graph = graph
         self.backward_graph = graph.reverse()
         f_graph = self.forward_graph.local_var()
@@ -635,18 +635,18 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
               z=self.activation(self.fuse_linear(torch.cat([cat,sum,diff],dim=1)))
             else:
               z=self.fuse_linear(torch.cat([cat,sum,diff],dim=1))
- 
+
             return z*forward_message+(1-z)*backward_message
- 
+
         def message_reduce(self,graph,direction):
            if isinstance(feat, tuple):
             feat_src = self.feat_drop(feat[0])
             feat_dst = self.feat_drop(feat[1])
            else:
             feat_src = feat_dst = self.feat_drop(feat)
-    
+
            h_self = feat_dst
-    
+
            if self._aggre_type == 'mean':
              graph.srcdata['h'] = feat_src
              graph.update_all(fn.copy_src('h', 'm'), fn.mean('m', 'neigh'))
@@ -663,7 +663,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
              if direction=='fw':
                  graph.srcdata['h'] = F.relu(self.fc_pool_fw(feat_src))
              elif direction=='bw':
-                 graph.srcdata['h'] = F.relu(self.fc_pool_bw(feat_src))  
+                 graph.srcdata['h'] = F.relu(self.fc_pool_bw(feat_src))
              graph.update_all(fn.copy_src('h', 'm'), fn.max('m', 'neigh'))
              h_neigh = graph.dstdata['neigh']
            elif self._aggre_type == 'lstm':
@@ -672,32 +672,32 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
                graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_fw)
              elif direction=='bw':
                graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_bw)
-               
+
              h_neigh = graph.dstdata['neigh']
            else:
             raise KeyError('Aggregator type {} not recognized.'.format(self._aggre_type))
-    
+
            return h_neigh,h_self
-       
+
         # update node part:
         h_neigh_fw,h_self_fw = message_reduce(self,f_graph,'fw')
         h_neigh_bw,h_self_bw = message_reduce(self, b_graph,'bw')
 
-        #fuse the two directions' information 
-        h_neigh_fused=fuse(self,h_neigh_fw,h_neigh_bw)  
-        # GraphSAGE GCN does not require fc_self.          
-        if self._aggre_type == 'gcn':                       
+        #fuse the two directions' information
+        h_neigh_fused=fuse(self,h_neigh_fw,h_neigh_bw)
+        # GraphSAGE GCN does not require fc_self.
+        if self._aggre_type == 'gcn':
             rst_fused = self.fc_neigh(h_neigh_fused)
         else:
             rst_fused = self.fc_self_fw(h_self_fw) + self.fc_neigh(h_neigh_fused)
-    
+
         # activation
         if self.activation is not None:
             rst_fused = self.activation(rst_fused)
             # normalization
         if self.norm is not None:
             rst_fused = self.norm(rst_fused)
-            
+
         return rst_fused
 
 

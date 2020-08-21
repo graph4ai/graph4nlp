@@ -30,6 +30,6 @@ def convert_adj_to_graph(adj, mask_off_val):
     graph_data.from_scipy_sparse_matrix(binarized_adj)
     edge_weight = adj[adj != mask_off_val]
 
-    graph_data.edge_features['a'] = edge_weight
+    graph_data.edge_features['edge_weight'] = edge_weight
 
     return graph_data
