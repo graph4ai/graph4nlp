@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 
 
@@ -14,6 +15,16 @@ def normalize_adj(mx):
     r_mat_inv_sqrt = torch.diag(r_inv_sqrt)
 
     return torch.mm(torch.mm(mx, r_mat_inv_sqrt).transpose(-1, -2), r_mat_inv_sqrt)
+
+def sparse_mx_to_torch_sparse_tensor(sparse_mx):
+    """Convert a scipy sparse matrix to a torch sparse tensor."""
+    sparse_mx = sparse_mx.tocoo().astype(np.float32)
+    indices = torch.from_numpy(
+        np.vstack((sparse_mx.row, sparse_mx.col)).astype(np.int64))
+    values = torch.from_numpy(sparse_mx.data)
+    shape = torch.Size(sparse_mx.shape)
+
+    return torch.sparse.FloatTensor(indices, values, shape)
 
 class EarlyStopping:
     def __init__(self, save_model_path, patience=10):

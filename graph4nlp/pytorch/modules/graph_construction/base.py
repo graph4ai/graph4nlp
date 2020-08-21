@@ -1,5 +1,6 @@
 from nltk.tokenize import word_tokenize
 import numpy as np
+from scipy import sparse
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -7,7 +8,7 @@ import torch.nn.functional as F
 from .embedding_construction import EmbeddingConstruction
 from ...data.data import GraphData
 from ..utils.constants import INF
-from ..utils.generic_utils import to_cuda
+from ..utils.generic_utils import sparse_mx_to_torch_sparse_tensor, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
 
 class GraphConstructionBase(nn.Module):
@@ -491,3 +492,14 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         dists = -2 * torch.matmul(trans_X, X.transpose(-1, -2)) + norm.unsqueeze(0) + norm.unsqueeze(1)
 
         return dists
+
+    def _get_node_mask_for_batch_graph(self, num_nodes):
+        node_mask = []
+        for i in range(num_nodes.shape[0]): # batch
+            graph_node_num = num_nodes[i].item()
+            node_mask.append(sparse.coo_matrix(np.ones((graph_node_num, graph_node_num))))
+
+        node_mask = sparse.block_diag(node_mask)
+        node_mask = to_cuda(sparse_mx_to_torch_sparse_tensor(node_mask).to_dense(), self.device)
+
+        return node_mask

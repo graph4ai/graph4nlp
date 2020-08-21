@@ -57,11 +57,11 @@ class TextClassifier(nn.Module):
                                     smoothness_ratio=config.gl_smoothness_ratio,
                                     connectivity_ratio=config.gl_connectivity_ratio,
                                     sparsity_ratio=config.gl_sparsity_ratio,
-                                    input_size=hidden_size,
+                                    input_size=config.num_hidden,
                                     hidden_size=config.gl_num_hidden,
                                     fix_word_emb=config.fix_word_emb,
                                     dropout=None,
-                                    device=device)
+                                    device=config.device)
         elif config.graph_type == 'node_emb_refined':
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
                                     vocab.in_word_vocab,
@@ -74,11 +74,11 @@ class TextClassifier(nn.Module):
                                     smoothness_ratio=config.gl_smoothness_ratio,
                                     connectivity_ratio=config.gl_connectivity_ratio,
                                     sparsity_ratio=config.gl_sparsity_ratio,
-                                    input_size=hidden_size,
+                                    input_size=config.num_hidden,
                                     hidden_size=config.gl_num_hidden,
                                     fix_word_emb=config.fix_word_emb,
                                     dropout=None,
-                                    device=device)
+                                    device=config.device)
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(config.graph_type))
 
@@ -110,9 +110,9 @@ class TextClassifier(nn.Module):
     def forward(self, graph_list, tgt=None, require_loss=True):
         # graph embedding construction
         if self.config.graph_type == 'node_emb':
-            batch_gd = self.graph_topology(node_feat, node_mask=None)
+            batch_gd = self.graph_topology(graph_list)
         elif self.config.graph_type == 'node_emb_refined':
-            batch_gd = self.graph_topology(node_feat, graph_list, node_mask=None)
+            batch_gd = self.graph_topology(graph_list, graph_list, node_mask=None)
         else:
             batch_gd = self.graph_topology(graph_list)
 
@@ -289,7 +289,7 @@ if __name__ == "__main__":
                         help=r"similarity metric type for dynamic graph construction")
     parser.add_argument("--gl_top_k", type=int,
                         help="top k for graph sparsification")
-    parser.add_argument("--gl_num_hidden", type=int, default=16,
+    parser.add_argument("--gl_num_hidden", type=int, default=128,
                         help="number of hidden units for dynamic graph construction")
     parser.add_argument("--gl_num_heads", type=int, default=1,
                         help="num of heads for dynamic graph construction")

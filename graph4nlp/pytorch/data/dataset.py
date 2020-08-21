@@ -948,7 +948,7 @@ class Text2LabelDataset(Dataset):
                 node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
                 graph.node_attributes[node_idx]['token_id'] = node_token_id
                 token_matrix.append([node_token_id])
-            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            token_matrix = torch.LongTensor(token_matrix)
             graph.node_features['token_id'] = token_matrix
 
             item.output = self.le.transform([item.output_label])[0]
