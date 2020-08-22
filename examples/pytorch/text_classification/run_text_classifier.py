@@ -13,6 +13,7 @@ import torch.backends.cudnn as cudnn
 from graph4nlp.pytorch.datasets.trec import TrecDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedGraphConstruction, NodeEmbeddingBasedRefinedGraphConstruction
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
@@ -58,6 +59,14 @@ class TextClassifier(nn.Module):
                                                                    device=config.device)
         elif config.graph_type == 'constituency':
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
+                                                                   vocab=vocab.in_word_vocab,
+                                                                   hidden_size=config.num_hidden,
+                                                                   word_dropout=config.word_drop,
+                                                                   dropout=config.rnn_drop,
+                                                                   fix_word_emb=not config.no_fix_word_emb,
+                                                                   device=config.device)
+        elif config.graph_type == 'ie':
+            self.graph_topology = IEBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=vocab.in_word_vocab,
                                                                    hidden_size=config.num_hidden,
                                                                    word_dropout=config.word_drop,
@@ -112,9 +121,9 @@ class TextClassifier(nn.Module):
                     config.num_hidden,
                     heads,
                     direction_option=config.direction_option,
-                    feat_drop=config.in_drop,
-                    attn_drop=config.attn_drop,
-                    negative_slope=config.negative_slope,
+                    feat_drop=config.gnn_drop,
+                    attn_drop=config.gat_attn_drop,
+                    negative_slope=config.gat_negative_slope,
                     residual=config.residual,
                     activation=F.elu)
         self.clf = FeedForwardNN(2 * config.num_hidden if config.direction_option == 'bi_sep' else config.num_hidden,
@@ -165,6 +174,9 @@ class ModelHandler:
             graph_type = 'static'
         elif self.config.graph_type == 'constituency':
             topology_builder = ConstituencyBasedGraphConstruction
+            graph_type = 'static'
+        elif self.config.graph_type == 'ie':
+            topology_builder = IEBasedGraphConstruction
             graph_type = 'static'
         elif self.config.graph_type == 'node_emb':
             topology_builder = NodeEmbeddingBasedGraphConstruction
@@ -235,7 +247,7 @@ class ModelHandler:
 
             val_acc = self.evaluate(self.val_dataloader)
             self.scheduler.step(val_acc)
-            print("Epoch: [{} / {}] | Time: {:.4f}s | Loss: {:.4f} | Train Acc: {:.4f} | Val Acc: {:.4f}".
+            print("Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} | Train Acc: {:.4f} | Val Acc: {:.4f}".
               format(epoch + 1, self.config.epochs, np.mean(dur), np.mean(train_loss), np.mean(train_acc), val_acc))
 
             if self.stopper.step(val_acc, self.model):
@@ -259,15 +271,20 @@ class ModelHandler:
             return score
 
     def test(self):
+        # restored best saved model
+        self.stopper.load_checkpoint(self.model)
+
         t0 = time.time()
         acc = self.evaluate(self.test_dataloader)
         dur = time.time() - t0
-        print("Test examples: {} | Time: {:.4f}s |  Test Acc: {:.4f}".
+        print("Test examples: {} | Time: {:.2f}s |  Test Acc: {:.4f}".
           format(self.num_test, dur, acc))
 
         return acc
 
 def main(args):
+    import datetime
+
     # configure
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -280,13 +297,14 @@ def main(args):
     else:
         args.device = torch.device('cpu')
 
-
-    args.save_model_path = '{save_model_path}_{seed}_{dataset}_{gnn}_{direction_option}_{graph_type}'\
+    ts = datetime.datetime.now().timestamp()
+    args.save_model_path = '{ts}_{save_model_path}_{seed}_{dataset}_{gnn}_{direction_option}_{graph_type}'\
                             '_{gl_top_k}_{gl_num_heads}_{gl_epsilon}_{gl_smoothness_ratio}_{gl_connectivity_ratio}'\
                             '_{gl_sparsity_ratio}_{init_adj_alpha}_{graph_pooling}_{num_heads}'\
                             '_{num_out_heads}_{num_layers}_{num_hidden}_{node_edge_emb_strategy}'\
                             '_{seq_info_encode_strategy}_{batch_size}_{val_split_ratio}_{no_fix_word_emb}'\
-                            '_{word_drop}_{rnn_drop}'.format(
+                            '_{word_drop}_{rnn_drop}_{gnn_drop}_{gat_attn_drop}_{gat_negative_slope}'.format(
+                            ts=ts,
                             save_model_path=args.save_model_path,
                             seed=args.seed,
                             dataset=args.dataset,
@@ -311,17 +329,21 @@ def main(args):
                             val_split_ratio=args.val_split_ratio,
                             no_fix_word_emb=args.no_fix_word_emb,
                             word_drop=args.word_drop,
-                            rnn_drop=args.rnn_drop
+                            rnn_drop=args.rnn_drop,
+                            gnn_drop=args.gnn_drop,
+                            gat_attn_drop=args.gat_attn_drop,
+                            gat_negative_slope=args.gat_negative_slope
                             )
 
     runner = ModelHandler(args)
+    t0 = time.time()
+
     runner.train()
-    # restored best saved model
-    runner.stopper.load_checkpoint(runner.model)
     runner.test()
 
     print('Removed best saved model file to save disk space')
     os.remove(runner.stopper.save_model_path)
+    print('Total runtime: {:.2f}s'.format(time.time() - t0))
 
 
 if __name__ == "__main__":
@@ -333,13 +355,13 @@ if __name__ == "__main__":
                         help="which GPU to use.")
     # graph construction
     parser.add_argument("--graph_type", type=str, default='dependency',
-                        help="graph construction type (`dependency`, `constituency`, `node_emb`, `node_emb_refined`)")
+                        help="graph construction type (`dependency`, `constituency`, `ie`, `node_emb`, `node_emb_refined`)")
     # dynamic graph construction
     parser.add_argument("--gl_metric_type", type=str, default='weighted_cosine',
                         help=r"similarity metric type for dynamic graph construction")
     parser.add_argument("--gl_top_k", type=int,
                         help="top k for graph sparsification")
-    parser.add_argument("--gl_num_hidden", type=int, default=128,
+    parser.add_argument("--gl_num_hidden", type=int, default=300,
                         help="number of hidden units for dynamic graph construction")
     parser.add_argument("--gl_num_heads", type=int, default=1,
                         help="num of heads for dynamic graph construction")
@@ -354,13 +376,13 @@ if __name__ == "__main__":
     parser.add_argument("--init_adj_alpha", type=float, default=0.8,
                         help="alpha ratio for combining initial graph adjacency matrix")
     # gnn
-    parser.add_argument("--graph_pooling", type=str, default='max_pool',
+    parser.add_argument("--graph_pooling", type=str, default='avg_pool',
                         help="graph pooling (`avg_pool`, `max_pool`)")
     parser.add_argument("--max_pool_linear_proj", action="store_true", default=False,
                         help="use linear projectioni for max pooling")
     parser.add_argument("--direction_option", type=str, default='uni',
                         help="direction type (`uni`, `bi_fuse`, `bi_sep`)")
-    parser.add_argument("--num_heads", type=int, default=8,
+    parser.add_argument("--num_heads", type=int, default=1,
                         help="number of hidden attention heads")
     parser.add_argument("--num_out_heads", type=int, default=1,
                         help="number of output attention heads")
@@ -370,26 +392,26 @@ if __name__ == "__main__":
                         help="number of hidden units")
     parser.add_argument("--residual", action="store_true", default=False,
                         help="use residual connection")
-    parser.add_argument("--in_drop", type=float, default=.6,
+    parser.add_argument("--gnn_drop", type=float, default=.6,
                         help="input feature dropout")
-    parser.add_argument("--attn_drop", type=float, default=.6,
+    parser.add_argument("--gat_attn_drop", type=float, default=.3,
                         help="attention dropout")
+    parser.add_argument('--gat_negative_slope', type=float, default=0.2,
+                        help="the negative slope of leaky relu")
     # graph embedding construction
     parser.add_argument("--node_edge_emb_strategy", type=str, default='mean',
                         help="node edge embedding strategy for graph embedding construction ('mean', 'lstm', 'gru', 'bilstm' and 'bigru')")
     parser.add_argument("--seq_info_encode_strategy", type=str, default='none',
                         help="sequence info encoding strategy for graph embedding construction ('none', 'lstm', 'gru', 'bilstm' and 'bigru')")
-    parser.add_argument("--word_drop", type=float,
+    parser.add_argument("--word_drop", type=float, default=0.4,
                         help="word embedding dropout")
-    parser.add_argument("--rnn_drop", type=float, default=0.2,
+    parser.add_argument("--rnn_drop", type=float, default=0.1,
                         help="RNN dropout")
     # training
     parser.add_argument("--lr", type=float, default=0.001,
                         help="learning rate")
     # parser.add_argument('--weight_decay', type=float, default=5e-4,
     #                     help="weight decay")
-    parser.add_argument('--negative_slope', type=float, default=0.2,
-                        help="the negative slope of leaky relu")
     parser.add_argument("--patience", type=int, default=10,
                         help="early stopping patience")
     parser.add_argument("--lr_patience", type=int, default=2,

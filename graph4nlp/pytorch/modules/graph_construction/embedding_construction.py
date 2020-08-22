@@ -3,7 +3,8 @@ from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 import dgl
 
-from ..utils.generic_utils import to_cuda
+from ..utils.generic_utils import to_cuda, dropout_fn
+
 
 class EmbeddingConstructionBase(nn.Module):
     """
@@ -83,6 +84,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         super(EmbeddingConstruction, self).__init__()
         self.device = device
         self.word_dropout = word_dropout
+        self.dropout = dropout
         self.node_edge_emb_strategy = node_edge_emb_strategy
         self.seq_info_encode_strategy = seq_info_encode_strategy
 
@@ -187,12 +189,12 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             feat.append(word_emb_layer(input_tensor))
 
         feat = torch.cat(feat, dim=-1)
-        # if word_dropout is not None:
-        #     dropout
+        feat = dropout_fn(feat, self.word_dropout, shared_axes=[-2], training=self.training)
 
         feat = self.node_edge_emb_layer(feat, item_size)
         if self.node_edge_emb_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
-            feat = feat[-1]
+            feat = dropout_fn(feat[-1], self.dropout, training=self.training)
+
 
         if self.seq_info_encode_layer is None:
             return feat
@@ -213,7 +215,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             new_feat = torch.stack(new_feat, 0)
             new_feat = self.seq_info_encode_layer(new_feat, num_items)
             if self.seq_info_encode_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
-                new_feat = new_feat[0]
+                new_feat = dropout_fn(new_feat[0], self.dropout, training=self.training)
+
 
             # batching
             ret_feat = []
@@ -225,65 +228,65 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             return ret_feat
 
 
-    def forward2(self, graph, feat_name, item_size,
-                    num_items, out_feat_name='node_feat'):
-        """Compute initial node/edge embeddings.
+    # def forward2(self, graph, feat_name, item_size,
+    #                 num_items, out_feat_name='node_feat'):
+    #     """Compute initial node/edge embeddings.
 
-        Parameters
-        ----------
-        graph : GraphData
-            The input graph data.
-        feat_name : str
-            The field name for extracting the word sequence tensor.
-        item_size : torch.LongTensor
-            The length of word sequence per item with shape :math:`(N)`
-            where :math:`N` is the number of total items in the batched graph.
-        num_items : torch.LongTensor
-            The number of items per graph with shape :math:`(B,)`
-            where :math:`B` is the number of graphs in the batched graph.
+    #     Parameters
+    #     ----------
+    #     graph : GraphData
+    #         The input graph data.
+    #     feat_name : str
+    #         The field name for extracting the word sequence tensor.
+    #     item_size : torch.LongTensor
+    #         The length of word sequence per item with shape :math:`(N)`
+    #         where :math:`N` is the number of total items in the batched graph.
+    #     num_items : torch.LongTensor
+    #         The number of items per graph with shape :math:`(B,)`
+    #         where :math:`B` is the number of graphs in the batched graph.
 
-        Returns
-        -------
-        GraphData
-            The output graph data containing initial item embeddings.
-        """
-        input_tensor = graph.ndata[feat_name]
-        feat = []
-        for word_emb_layer in self.word_emb_layers:
-            feat.append(word_emb_layer(input_tensor))
+    #     Returns
+    #     -------
+    #     GraphData
+    #         The output graph data containing initial item embeddings.
+    #     """
+    #     input_tensor = graph.ndata[feat_name]
+    #     feat = []
+    #     for word_emb_layer in self.word_emb_layers:
+    #         feat.append(word_emb_layer(input_tensor))
 
-        feat = torch.cat(feat, dim=-1)
-        feat = self.node_edge_emb_layer(feat, item_size)
-        if self.node_edge_emb_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
-            feat = feat[-1]
+    #     feat = torch.cat(feat, dim=-1)
+    #     feat = self.node_edge_emb_layer(feat, item_size)
+    #     if self.node_edge_emb_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
+    #         feat = feat[-1]
 
-        graph.ndata[out_feat_name] = feat
-        if self.seq_info_encode_layer is not None:
-            graph_list = dgl.unbatch(graph)
+    #     graph.ndata[out_feat_name] = feat
+    #     if self.seq_info_encode_layer is not None:
+    #         graph_list = dgl.unbatch(graph)
 
-            max_num_items = torch.max(num_items).item()
-            new_feat = []
-            for i, each in enumerate(graph_list):
-                tmp_feat = each.ndata[out_feat_name]
-                if tmp_feat.shape[0] < max_num_items:
-                    tmp_feat = torch.cat([tmp_feat, to_cuda(torch.zeros(
-                        max_num_items - tmp_feat.shape[0], tmp_feat.shape[1]), self.device)], 0)
-                new_feat.append(tmp_feat)
+    #         max_num_items = torch.max(num_items).item()
+    #         new_feat = []
+    #         for i, each in enumerate(graph_list):
+    #             tmp_feat = each.ndata[out_feat_name]
+    #             if tmp_feat.shape[0] < max_num_items:
+    #                 tmp_feat = torch.cat([tmp_feat, to_cuda(torch.zeros(
+    #                     max_num_items - tmp_feat.shape[0], tmp_feat.shape[1]), self.device)], 0)
+    #             new_feat.append(tmp_feat)
 
-            new_feat = torch.stack(new_feat, 0)
-            new_feat = self.seq_info_encode_layer(new_feat, num_items)
-            if self.seq_info_encode_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
-                new_feat = new_feat[0]
+    #         new_feat = torch.stack(new_feat, 0)
+    #         new_feat = self.seq_info_encode_layer(new_feat, num_items)
+    #         if self.seq_info_encode_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
+    #             new_feat = new_feat[0]
 
-            ret_feat = []
-            for i in range(new_feat.shape[0]):
-                ret_feat.append(new_feat[i][:num_items[i].item()])
+    #         ret_feat = []
+    #         for i in range(new_feat.shape[0]):
+    #             ret_feat.append(new_feat[i][:num_items[i].item()])
 
-            ret_feat = torch.cat(ret_feat, 0)
+    #         ret_feat = torch.cat(ret_feat, 0)
 
-            graph.ndata[out_feat_name] = ret_feat
+    #         graph.ndata[out_feat_name] = ret_feat
 
-        return graph
+    #     return graph
 
 class WordEmbedding(nn.Module):
     """Word embedding class.
