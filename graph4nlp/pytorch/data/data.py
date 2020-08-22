@@ -4,9 +4,11 @@ import dgl
 import numpy as np
 import scipy.sparse
 import torch
+import warnings
+from typing import Collection
 
-from .utils import SizeMismatchException, NodeNotFoundException, EdgeNotFoundException
-from .utils import entail_zero_padding, slice_to_list
+from .utils import SizeMismatchException, EdgeNotFoundException
+from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list, reverse_index
 from .views import NodeView, NodeFeatView, EdgeView
 
 EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
@@ -22,7 +24,7 @@ nids_eid_mapping_factory = dict
 edge_feature_factory = dict
 edge_attribute_factory = dict
 single_edge_attr_factory = dict
-res_init_edge_features = {'edge_feat': None, 'edge_emb': None}
+res_init_edge_features = {'edge_feat': None, 'edge_emb': None, 'edge_weight': None}
 res_init_edge_attributes = {'edge_attr': None}
 
 graph_data_factory = dict
@@ -42,11 +44,7 @@ class GraphData(object):
         self._edge_features = edge_feature_factory(res_init_edge_features)
         self._edge_attributes = edge_attribute_factory()
         self.graph_attributes = graph_data_factory()
-
-    # # Graph level data
-    # @property
-    # def graph_attributes(self):
-    #     return self._graph_attributes
+        self.batch = None
 
     # Node operations
     @property
@@ -81,6 +79,7 @@ class GraphData(object):
         node_num: int
             The number of nodes to be added
         """
+        assert node_num > 0, "The number of nodes to be added should be greater than 0. (Got {})".format(node_num)
         current_num_nodes = self.get_node_num()
 
         # Create placeholders in the node attribute dictionary
@@ -164,7 +163,7 @@ class GraphData(object):
                 # If the shape of the new feature does not match the number of existing nodes, then error occurs
                 if (not isinstance(nodes, slice)) or (
                         len(slice_to_list(nodes, self.get_node_num())) != self.get_node_num()):
-                    raise SizeMismatchException(
+                    raise ValueError(
                         'The new feature `{}\' should cover all existing {} nodes!'.format(key, self.get_node_num()))
 
         # Modification
@@ -176,10 +175,8 @@ class GraphData(object):
 
             assert isinstance(value, torch.Tensor), "`{}' is not a tensor. Node features are expected to be tensor."
             if key not in self._node_features or self._node_features[key] is None:
-                # self._node_features[key] = None
                 self._node_features[key] = value
             else:
-                # self._node_features[key][nodes] = None
                 if nodes == slice(None, None, None):
                     self._node_features[key] = value
                 else:
@@ -204,7 +201,8 @@ class GraphData(object):
 
         Parameters
         ----------
-        nodes: int or slice
+        nodes: int
+         or slice
             The given node index
 
         Returns
@@ -247,7 +245,7 @@ class GraphData(object):
 
     def add_edge(self, src: int, tgt: int):
         """
-        Add one edge.
+        Add one edge to the graph.
 
         Parameters
         ----------
@@ -255,13 +253,23 @@ class GraphData(object):
             Source node index
         tgt: int
             Target node index
+
+        Raises
+        ------
+        ValueError
+            If one of the endpoints of the edge doesn't exist in the graph.
         """
         # Consistency check
         if (src not in range(self.get_node_num())) or (tgt not in range(self.get_node_num())):
-            raise NodeNotFoundException('Endpoint not in the graph.')
+            raise ValueError('Endpoint not in the graph.')
+
+        # Duplicate edge check. If the edge to be added already exists in the graph, then skip it.
+        endpoint_tuple = (src, tgt)
+        if endpoint_tuple in self._nids_eid_mapping.keys():
+            warnings.warn('Edge {} is already in the graph. Skipping this edge.'.format(endpoint_tuple), Warning)
+            return
 
         # Append to the mapping list
-        endpoint_tuple = (src, tgt)
         eid = self.get_edge_num()
         self._eid_nids_mapping[eid] = endpoint_tuple
         self._nids_eid_mapping[endpoint_tuple] = eid
@@ -277,35 +285,25 @@ class GraphData(object):
         for key in self._edge_features.keys():
             self._edge_features[key] = entail_zero_padding(self._edge_features[key], 1)
 
-    def add_edges(self, src: list, tgt: list):
+    def add_edges(self, src: int or list, tgt: int or list):
         """
         Add a bunch of edges to the graph.
 
         Parameters
         ----------
-        src: list of int
+        src: int or list
             Source node indices
-        tgt: list of int
+        tgt: int or list
             Target node indices
 
         Raises
         ------
-        SizeMismatchException
+        ValueError
             If the lengths of `src` and `tgt` don't match or one of the list contains no element.
         """
-        if len(src) == 0:
-            raise SizeMismatchException('No endpoint in `src`.')
-        elif len(tgt) == 0:
-            raise SizeMismatchException('No endpoint in `tgt`.')
-        else:
-            if len(src) != len(tgt) and len(src) > 1 and len(tgt) > 1:
-                raise SizeMismatchException('The numbers of nodes in `src` and `tgt` don\'t match.')
-            if len(src) == 1:
-                src = [src[0]] * len(tgt)
-            elif len(tgt) == 1:
-                tgt = [tgt[0]] * len(src)
-            for src_idx, tgt_idx in zip(src, tgt):
-                self.add_edge(src_idx, tgt_idx)
+        src, tgt = check_and_expand(int_to_list(src), int_to_list(tgt))
+        for src_idx, tgt_idx in zip(src, tgt):
+            self.add_edge(src_idx, tgt_idx)
 
     def edge_ids(self, src: int or list, tgt: int or list) -> list:
         """
@@ -322,57 +320,33 @@ class GraphData(object):
         -------
         list
             The index of corresponding edges.
-        """
-        if isinstance(src, int):
-            if isinstance(tgt, int):
-                try:
-                    return [self._nids_eid_mapping[(src, tgt)]]
-                except KeyError:
-                    raise EdgeNotFoundException('Edge {} does not exist!'.format((src, tgt)))
-            elif isinstance(tgt, list):
-                eid_list = []
-                try:
-                    for tgt_idx in tgt:
-                        eid_list.append(self._nids_eid_mapping[(src, tgt_idx)])
-                except KeyError:
-                    raise EdgeNotFoundException('Edge {} does not exist!'.format((src, tgt)))
-                return eid_list
-            else:
-                raise AssertionError("`tgt' must be int or list!")
-        elif isinstance(src, list):
-            if isinstance(tgt, int):
-                eid_list = []
-                try:
-                    for src_idx in src:
-                        eid_list.append(self._nids_eid_mapping[(src_idx, tgt)])
-                except KeyError:
-                    raise EdgeNotFoundException('Edge {} does not exist!'.format((src, tgt)))
-                return eid_list
-            elif isinstance(tgt, list):
-                if not len(src) == len(tgt):
-                    raise SizeMismatchException("The length of `src' and `tgt' don't match!")
-                eid_list = []
-                try:
-                    for src_idx, tgt_idx in zip(src, tgt):
-                        eid_list.append(self._nids_eid_mapping[(src_idx, tgt_idx)])
-                except KeyError:
-                    raise EdgeNotFoundException('Edge {} does not exist!'.format((src, tgt)))
-                return eid_list
-            else:
-                raise AssertionError("`tgt' must be int or list!")
-        else:
-            raise AssertionError("`src' must be int or list!")
 
-    def get_all_edges(self):
+        Raises
+        ------
+        EdgeNotFoundException
+            If the edge is not in the graph.
+        """
+        assert isinstance(src, int) or isinstance(src, list), "`src` should be either int or list."
+        assert isinstance(tgt, int) or isinstance(tgt, list), "`tgt` should be either int or list."
+        src, tgt = check_and_expand(int_to_list(src), int_to_list(tgt))
+        eid_list = []
+        try:
+            for src_idx, tgt_idx in zip(src, tgt):
+                eid_list.append(self._nids_eid_mapping[(src_idx, tgt_idx)])
+        except KeyError:
+            raise EdgeNotFoundException('Edge {} does not exist!'.format((src, tgt)))
+        return eid_list
+
+    def get_all_edges(self) -> list:
         """
         Get all the edges in the graph
 
         Returns
         -------
         edges: list
-            List of edges
+            List of edges. Each edge is in the shape of the endpoint tuple (src, dst).
         """
-        edges = list()
+        edges = []
         for i in range(self.get_edge_num()):
             edges.append((self._edge_indices.src[i], self._edge_indices.tgt[i]))
         return edges
@@ -405,6 +379,7 @@ class GraphData(object):
         return ret
 
     def get_edge_feature_names(self):
+        """Get all the names of edge features"""
         return self._edge_features.keys()
 
     def set_edge_feature(self, edges: int or slice or list, new_data: dict):
@@ -435,10 +410,15 @@ class GraphData(object):
         # Modification
         for key, value in new_data.items():
             assert isinstance(value, torch.Tensor), "`{}' is not a tensor. Node features are expected to be tensor."
+
             assert value.shape[0] == self.get_edge_num(), "Length of the feature vector does not match the edge number." \
                                                           "Got tensor '{}' of shape {} but the graph has only {} edges.".format(
                 key, value.shape, self.get_edge_num())
+
             if key not in self._edge_features or self._edge_features[key] is None:
+                self._edge_features[key] = value
+            elif edges == slice(None, None, None):
+                # Same as node features, if the edges to be modified is all the edges in the graph.
                 self._edge_features[key] = value
             else:
                 self._edge_features[key][edges] = value
@@ -469,7 +449,6 @@ class GraphData(object):
         for key, value in self._edge_features.items():
             if value is not None:
                 dgl_g.edata[key] = value
-
         return dgl_g
 
     def from_dgl(self, dgl_g: dgl.DGLGraph):
@@ -481,7 +460,8 @@ class GraphData(object):
         dgl_g: dgl.DGLGraph
             The source graph
         """
-        assert self.get_edge_num() == 0 and self.get_node_num() == 0, 'Not an empty graph.'
+        assert self.get_edge_num() == 0 and self.get_node_num() == 0, \
+            'This graph isn\'t an empty graph. Please use an empty graph for conversion.'
 
         # Add nodes
         self.add_nodes(dgl_g.number_of_nodes())
@@ -510,7 +490,6 @@ class GraphData(object):
                     edge_weight.append(adj[i][j])
         edge_weight = torch.stack(edge_weight, dim=0)
         self.edge_features['edge_weight'] = edge_weight
-        # self.edge_features['edge_weight'][-1] = adj[i][j]
 
     def from_scipy_sparse_matrix(self, adj: scipy.sparse.coo_matrix):
         assert adj.shape[0] == adj.shape[1], 'Adjancecy is not a square.'
@@ -602,6 +581,93 @@ class GraphData(object):
         for edge_idx in range(append_edge_st_idx, append_edge_ed_idx):
             self.edge_attributes[edge_idx] = graph.edge_attributes[edge_idx - append_edge_st_idx]
 
+    def split(self, node_st_idx: int, node_ed_idx: int):
+        """
+        Given the starting and ending indices of the nodes, split it out of the large graph.
+
+        The corresponding subgraph indicated by the node indices should be a connected component of the large graph and
+        should have no connection to other nodes in the graph. Otherwise it cannot be split from the large graph without
+        information loss.
+
+        The node indices indicate by `node_st_idx` and `node_ed_idx` is the closed set [`node_st_idx`, `node_ed_idx`].
+
+        Parameters
+        ----------
+        node_st_idx: int
+            The starting node index of the subgraph in the large graph.
+        node_ed_idx: int
+            The ending node index of the subgraph in the large graph.
+
+        Returns
+        -------
+        GraphData
+            The extracted subgraph.
+
+        Raises
+        ------
+        ValueError
+            If the subgraph has connection with other nodes in the large graph.
+        """
+        assert node_ed_idx >= node_st_idx, "Got node_ed_idx({}) > node_st_idx({}). " \
+                                           "The subgraph should contain at least 1 node.".format(node_ed_idx,
+                                                                                                 node_st_idx)
+        # extract the corresponding edges from the large graph
+        all_edges = self.get_all_edges()
+        node_idx_range = range(node_st_idx, node_ed_idx + 1)
+        subgraph_edges = []
+        for i in range(len(all_edges)):
+            current_edge: (int, int) = all_edges[i]
+            src, tgt = current_edge
+            if src not in node_idx_range and tgt not in node_idx_range:
+                continue
+            elif src in node_idx_range and tgt in node_idx_range:
+                subgraph_edges.append(current_edge)
+            else:
+                raise ValueError("The subgraph to be extracted has connection with other nodes in the large graph.")
+        # convert the edge from node index tuples to edge indices
+        subgraph_edge_src = [src for (src, tgt) in subgraph_edges]
+        subgraph_edge_tgt = [tgt for (src, tgt) in subgraph_edges]
+        subgraph_edge_ids = self.edge_ids(subgraph_edge_src, subgraph_edge_tgt)
+        subgraph_edge_st_idx = min(subgraph_edge_ids)
+        subgraph_edge_ed_idx = max(subgraph_edge_ids)
+        # build the subgraph
+        subgraph = GraphData()
+        subgraph.add_nodes(node_ed_idx - node_st_idx + 1)
+        for src, tgt in subgraph_edges:
+            subgraph.add_edge(src - node_st_idx, tgt - node_st_idx)
+        # copy features and attributes
+        for k, v in self._node_features.items():
+            if v is not None:
+                subgraph.node_features[k] = v[node_st_idx:node_ed_idx + 1]
+        for k, v in self._edge_features.items():
+            if v is not None:
+                subgraph.edge_features[k] = v[subgraph_edge_st_idx:subgraph_edge_ed_idx + 1]
+        for i in range(node_st_idx, node_ed_idx + 1, 1):
+            subgraph.node_attributes[i - node_st_idx] = self._node_attributes[i]
+        for i in range(subgraph_edge_st_idx, subgraph_edge_ed_idx + 1, 1):
+            subgraph.edge_attributes[i - subgraph_edge_st_idx] = self._edge_attributes[i]
+        return subgraph
+
+
+
+def from_dgl(g: dgl.DGLGraph) -> GraphData:
+    """
+    Convert a dgl.DGLGraph to a GraphData object.
+
+    Parameters
+    ----------
+    g: dgl.DGLGraph
+        The source graph in DGLGraph format.
+
+    Returns
+    -------
+    GraphData
+        The converted graph in GraphData format.
+    """
+    graph = GraphData()
+    graph.from_dgl(g)
+    return graph
+
 
 def to_batch(graphs: list = None) -> GraphData:
     """
@@ -618,7 +684,7 @@ def to_batch(graphs: list = None) -> GraphData:
         The large graph containing all the graphs in the batch.
     """
     import copy
-    batch = copy.deepcopy(graphs[0])
+    batch = copy.copy(graphs[0])
     batch.batch = [0] * graphs[0].get_node_num()
     for i in range(1, len(graphs)):
         batch.union(graphs[i])
@@ -627,72 +693,29 @@ def to_batch(graphs: list = None) -> GraphData:
 
 
 def from_batch(batch: GraphData) -> list:
-    def rindex(mylist, myvalue):
-        # todo: value not found error
-        if myvalue not in mylist:
-            raise ValueError
-        return len(mylist) - mylist[::-1].index(myvalue) - 1
-
     graphs = []
     batch_size = max(batch.batch) + 1
-    # TODO: Consistency check: a graph should contain at least 2 nodes and 1 edges
     # 1. calculate the number of nodes in the batch and get a list indicating #nodes of each graph.
     num_nodes = []
     node_indices = []
     for i in range(batch_size):
         try:
-            end_node_index = rindex(batch.batch, i)
+            end_node_index = reverse_index(batch.batch, i)
         except ValueError:
-            ValueError("Graph #{} has no nodes. All graphs in a batch should contain at least one node.".format(i))
+            raise ValueError(
+                "Graph #{} has no nodes. All graphs in a batch should contain at least one node.".format(i))
         node_indices.append(end_node_index)
         if i == 0:  # the first graph
             num_nodes.append(end_node_index + 1)
         else:
-            num_nodes.append(end_node_index - num_nodes[-1])
+            num_nodes.append(end_node_index + 1 - num_nodes[-1])
 
     # 2. iterate each sub-graph to extract them
     for i in range(batch_size):
         #   a. calculate the starting and ending node index in the batch
-        g = GraphData()
-        node_st_idx = 0 if i == 0 else node_indices[i - 1]
-        node_ed_idx = node_indices[i] + 1 if i == 0 else node_indices[i]
-        #   b. extract the corresponding edge indices
-
-        #   c. copy data
-        #       i. add nodes
-        g.add_nodes(node_ed_idx - node_st_idx)
-        #       ii. add node features
-        for feat_name in batch.node_features.keys():
-            if batch.node_features[feat_name] is None:
-                continue
-            else:
-                g.node_features[feat_name] = batch.node_features[feat_name][node_st_idx:node_ed_idx]
-        #       iii. add node attributes
-        for i in range(node_st_idx, node_ed_idx):
-            g.node_attributes[i - node_st_idx] = batch.node_attributes[i]
-        #       iv. add edges
-        batch_edges = batch.edges()
-        edge_idx = []
-        for i in range(len(batch_edges)):
-            edge = batch_edges[i]
-            if edge[0] in range(node_st_idx, node_ed_idx) and edge[1] in range(node_st_idx, node_ed_idx):
-                edge_idx.append(i)
-                g.add_edge(edge[0] - node_st_idx, edge[1] - node_st_idx)
-        if len(edge_idx) == 0:
-            graphs.append(g)
-            continue
-        edge_st_idx = min(edge_idx)
-        edge_ed_idx = max(edge_idx) + 1
-        # 5. add edge features
-        for feat_name in batch.edge_features.keys():
-            if batch.edge_features[feat_name] is None:
-                continue
-            else:
-                g.edge_features[feat_name] = batch.edge_features[feat_name][node_st_idx:node_ed_idx]
-        # 6. add edge attributes
-        for i in range(edge_st_idx, edge_ed_idx):
-            g.edge_attributes[i - edge_st_idx] = batch.edge_attributes[i]
-        graphs.append(g)
+        node_st_idx = 0 if i == 0 else node_indices[i - 1] + 1
+        node_ed_idx = node_indices[i]
+        graphs.append(batch.split(node_st_idx=node_st_idx, node_ed_idx=node_ed_idx))
 
     assert len(graphs) == batch_size
     return graphs

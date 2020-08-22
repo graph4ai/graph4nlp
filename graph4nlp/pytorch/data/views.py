@@ -58,11 +58,11 @@ class NodeFeatView(object):
         self._graph = graph
         self._nodes = nodes
 
-    def __getitem__(self, item):
-        return self._graph.get_node_features(self._nodes)[item]
+    def __getitem__(self, feature_name):
+        return self._graph.get_node_features(self._nodes)[feature_name]
 
-    def __setitem__(self, key, value):
-        return self._graph.set_node_features(self._nodes, {key: value})
+    def __setitem__(self, feature_name, feature_value):
+        return self._graph.set_node_features(self._nodes, {feature_name: feature_value})
 
     def __repr__(self):
         return repr(self._graph.get_node_features(self._nodes))

@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -98,24 +98,12 @@ class Graph2seq(nn.Module):
         self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
 
     def forward(self, graph_list, tgt=None, require_loss=True):
-        batch_dgl_graph = self.graph_topology(graph_list)
-        # do graph nn here
-        # convert DGLGraph to GraphData
-        batch_graph = GraphData()
-        batch_graph.from_dgl(batch_dgl_graph)
-
-        # run GNN
+        batch_graph = self.graph_topology(graph_list)
         batch_graph = self.gnn_encoder(batch_graph)
-        batch_dgl_graph.ndata['node_emb'] = batch_graph.node_features['node_emb']
-        batch_dgl_graph.ndata['rnn_emb'] = batch_graph.node_features['node_feat']
-
-        dgl_graph_list = dgl.unbatch(batch_dgl_graph)
-        for g, dg in zip(graph_list, dgl_graph_list):
-            g.node_features["node_emb"] = dg.ndata["node_emb"]
-            g.node_features["rnn_emb"] = dg.ndata["rnn_emb"]
+        batch_graph.node_features['rnn_emb'] = batch_graph.node_features['node_feat']
 
         # down-task
-        prob, _, _ = self.seq_decoder(graph_list, tgt_seq=tgt)
+        prob, _, _ = self.seq_decoder(from_batch(batch_graph), tgt_seq=tgt)
         if require_loss:
             loss = self.loss_calc(prob, tgt)
             return prob, loss
