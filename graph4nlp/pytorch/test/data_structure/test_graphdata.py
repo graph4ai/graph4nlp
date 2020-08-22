@@ -24,8 +24,10 @@ def test_add_nodes():
     assert g.node_features['node_emb'] is None
     assert g.node_attributes[0]['node_attr'] is None
 
+    g.node_features['zero'] = torch.zeros(10)
     g.add_nodes(9)
     assert g.get_node_num() == 19
+    assert torch.all(torch.eq(g.node_features['zero'][10:], torch.zeros(9)))
 
 
 def test_set_node_features():
@@ -196,13 +198,18 @@ def test_conversion_dgl():
 
 def test_batch():
     g_list = []
+    batched_edges = []
+    graph_edges_list = []
     for i in range(5):
         g = GraphData()
         g.add_nodes(10)
-        for i in range(10):
-            g.add_edge(src=i, tgt=(i + 1) % 10)
+        for j in range(10):
+            g.add_edge(src=j, tgt=(j + 1) % 10)
+            batched_edges.append((i * 10 + j, i * 10 + ((j + 1) % 10)))
+        g.node_features['idx'] = torch.ones(10) * i
+        g.edge_features['idx'] = torch.ones(10) * i
+        graph_edges_list.append(g.get_all_edges())
         g_list.append(g)
-    edges = g.get_all_edges()
 
     # Test to_batch
     batch = to_batch(g_list)
@@ -214,11 +221,14 @@ def test_batch():
 
     assert batch.batch == target_batch_idx
     assert batch.get_node_num() == 50
-    assert batch.get_all_edges() ==
+    assert batch.get_all_edges() == batched_edges
 
     # Test from_batch
     graph_list = from_batch(batch)
 
     for i in range(len(graph_list)):
         g = graph_list[i]
-        assert
+        assert g.get_all_edges() == graph_edges_list[i]
+        assert g.get_node_num() == 10
+        assert torch.all(torch.eq(g.node_features['idx'], torch.ones(10) * i))
+        assert torch.all(torch.eq(g.edge_features['idx'], torch.ones(10) * i))

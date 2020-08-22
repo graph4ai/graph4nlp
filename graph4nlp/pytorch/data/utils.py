@@ -79,8 +79,34 @@ def entail_zero_padding(old_tensor: torch.Tensor, num_rows: int):
         return None
 
     if len(old_tensor.shape) == 1:
-        return torch.cat((old_tensor, torch.zeros(1).to(dtype=old_tensor.dtype, device=old_tensor.device)))
+        return torch.cat((old_tensor, torch.zeros(num_rows).to(dtype=old_tensor.dtype, device=old_tensor.device)))
     else:
         return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:])).to(dtype=old_tensor.dtype,
                                                                                         device=old_tensor.device)),
                          dim=0)
+
+
+def reverse_index(l: list, v):
+    """
+    Find the index of the last occurrence of an element in a list.
+
+    Parameters
+    ----------
+    l: list
+        The container of all elements
+    v: object
+        The element to be found
+
+    Returns
+    -------
+    int:
+        The index of the last occurrence of `v` in `l`.
+
+    Raises
+    ------
+    ValueError
+        If the element is not found in the list.
+    """
+    if v not in l:
+        raise ValueError
+    return len(l) - l[::-1].index(v) - 1
