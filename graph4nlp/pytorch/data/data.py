@@ -695,7 +695,6 @@ def to_batch(graphs: list = None) -> GraphData:
 def from_batch(batch: GraphData) -> list:
     graphs = []
     batch_size = max(batch.batch) + 1
-    # TODO: Consistency check: a graph should contain at least 1 node
     # 1. calculate the number of nodes in the batch and get a list indicating #nodes of each graph.
     num_nodes = []
     node_indices = []
