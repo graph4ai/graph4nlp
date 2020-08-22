@@ -32,7 +32,7 @@ java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -t
 
 GAT
 ```python
-python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --direction_option uni --graph_type dependency --gpu 3 --num_heads 8 --num_out_heads 1 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.2
+python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --direction_option uni --graph_type dependency --gpu 0 --num_heads 1 --num_out_heads 2 --num_hidden 300 --rnn_drop 0.1
 
 
 ```
@@ -47,12 +47,9 @@ TREC Results
 | IE     |   |   |  |  |  |   |  |  |  
 
 
-fix word_emb
-bs: 50
-avg_pool
+rnn_drop 0.3
 
-
-GAT-Undirected : 0.906
+GAT-Undirected : 0.920
 
 
 

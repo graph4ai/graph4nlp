@@ -82,6 +82,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                         device=None):
         super(EmbeddingConstruction, self).__init__()
         self.device = device
+        self.word_dropout = word_dropout
         self.node_edge_emb_strategy = node_edge_emb_strategy
         self.seq_info_encode_strategy = seq_info_encode_strategy
 
@@ -186,6 +187,9 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             feat.append(word_emb_layer(input_tensor))
 
         feat = torch.cat(feat, dim=-1)
+        # if word_dropout is not None:
+        #     dropout
+
         feat = self.node_edge_emb_layer(feat, item_size)
         if self.node_edge_emb_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
             feat = feat[-1]

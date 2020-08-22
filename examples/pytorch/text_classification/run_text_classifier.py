@@ -366,7 +366,7 @@ if __name__ == "__main__":
                         help="number of output attention heads")
     parser.add_argument("--num_layers", type=int, default=2,
                         help="number of hidden layers")
-    parser.add_argument("--num_hidden", type=int, default=128,
+    parser.add_argument("--num_hidden", type=int, default=300,
                         help="number of hidden units")
     parser.add_argument("--residual", action="store_true", default=False,
                         help="use residual connection")
