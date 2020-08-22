@@ -160,10 +160,12 @@ class Dataset(torch.utils.data.Dataset):
                  lower_case=True,
                  pretrained_word_emb_file=None,
                  use_val_for_vocab=False,
+                 seed=1234,
                  **kwargs):
         super(Dataset, self).__init__()
 
         self.root = root  # The root directory where the dataset is located.
+        self.seed = seed
 
         # Processing-specific attributes
         self.tokenizer = tokenizer
@@ -240,6 +242,7 @@ class Dataset(torch.utils.data.Dataset):
             if self.val_split_ratio > 0:
                 new_train_length = int((1 - self.val_split_ratio) * len(self.train))
                 import random
+                random.seed(self.seed)
                 old_train_set = self.train
                 random.shuffle(old_train_set)
                 self.val = old_train_set[new_train_length:]
@@ -469,7 +472,7 @@ class TextToTreeDataset(Dataset):
             else:
                 all_words[0].update(extracted_tokens[0])
                 all_words[1].update(extracted_tokens[1])
-        
+
         if self.share_vocab:
             src_vocab_model.init_from_list(list(all_words.items()), min_freq=1, max_vocab_size=100000)
             tgt_vocab_model = src_vocab_model
@@ -740,7 +743,7 @@ class KGCompletionDataset(Dataset):
         `self.parsed_results` is an intermediate dict that contains all the information of the KG graph.
         `self.parsed_results['graph_content']` is a list of dict.
 
-        Each dict in `self.parsed_results['graph_content']` contains information about a triple 
+        Each dict in `self.parsed_results['graph_content']` contains information about a triple
         (src_ent, rel, tgt_ent).
 
         `self.parsed_results['graph_nodes']` contains all nodes in the KG graph.
@@ -797,7 +800,6 @@ class KGCompletionDataset(Dataset):
 
             e2_multi = item.e2_multi
             item.e2_multi_tensor = torch.zeros(1, len(self.graph_nodes)).\
-
                 scatter_(1,
                          torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long).view(1,
                                                                                                                     -1),
