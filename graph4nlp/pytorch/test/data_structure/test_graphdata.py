@@ -194,5 +194,31 @@ def test_conversion_dgl():
     assert g1.get_all_edges() == g.get_all_edges()
 
 
-def test_to_batch():
-    pass
+def test_batch():
+    g_list = []
+    for i in range(5):
+        g = GraphData()
+        g.add_nodes(10)
+        for i in range(10):
+            g.add_edge(src=i, tgt=(i + 1) % 10)
+        g_list.append(g)
+    edges = g.get_all_edges()
+
+    # Test to_batch
+    batch = to_batch(g_list)
+
+    target_batch_idx = []
+    for i in range(5):
+        for j in range(10):
+            target_batch_idx.append(i)
+
+    assert batch.batch == target_batch_idx
+    assert batch.get_node_num() == 50
+    assert batch.get_all_edges() ==
+
+    # Test from_batch
+    graph_list = from_batch(batch)
+
+    for i in range(len(graph_list)):
+        g = graph_list[i]
+        assert

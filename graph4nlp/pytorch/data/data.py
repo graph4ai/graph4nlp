@@ -24,7 +24,7 @@ nids_eid_mapping_factory = dict
 edge_feature_factory = dict
 edge_attribute_factory = dict
 single_edge_attr_factory = dict
-res_init_edge_features = {'edge_feat': None, 'edge_emb': None}
+res_init_edge_features = {'edge_feat': None, 'edge_emb': None, 'edge_weight': None}
 res_init_edge_attributes = {'edge_attr': None}
 
 graph_data_factory = dict
@@ -652,7 +652,7 @@ def from_batch(batch: GraphData) -> list:
         #   a. calculate the starting and ending node index in the batch
         g = GraphData()
         node_st_idx = 0 if i == 0 else node_indices[i - 1]
-        node_ed_idx = node_indices[i]
+        node_ed_idx = node_indices[i] + 1
         #   b. extract the corresponding edge indices
 
         #   c. copy data
@@ -686,7 +686,7 @@ def from_batch(batch: GraphData) -> list:
             if batch.edge_features[feat_name] is None:
                 continue
             else:
-                g.edge_features[feat_name] = batch.edge_features[feat_name][node_st_idx:node_ed_idx]
+                g.edge_features[feat_name] = batch.edge_features[feat_name][edge_st_idx:edge_ed_idx]
         # 6. add edge attributes
         for i in range(edge_st_idx, edge_ed_idx):
             g.edge_attributes[i - edge_st_idx] = batch.edge_attributes[i]
