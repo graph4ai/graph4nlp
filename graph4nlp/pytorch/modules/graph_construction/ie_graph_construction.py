@@ -358,7 +358,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
     @classmethod
     def _construct_static_graph(cls, parsed_object, edge_strategy=None):
         """
-            Build dependency-parsing-tree based graph for single sentence.
 
         Parameters
         ----------
