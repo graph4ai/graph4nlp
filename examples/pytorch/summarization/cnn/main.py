@@ -3,7 +3,7 @@ import os
 # os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
-from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.data.data import GraphData, from_batch
 from graph4nlp.pytorch.datasets.cnn import CNNDataset
 from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
@@ -89,7 +89,6 @@ class Graph2seq(nn.Module):
                                                                vocab=vocab.in_word_vocab,
                                                                hidden_size=hidden_size, dropout=0.2, use_cuda=False,
                                                                fix_word_emb=False)
-        self.gnn = None
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
         self.gnn_encoder = GAT(2, hidden_size, hidden_size, hidden_size, [2, 1], direction_option=direction_option)
         self.seq_decoder = StdRNNDecoder(max_decoder_step=50,
@@ -102,24 +101,12 @@ class Graph2seq(nn.Module):
         self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
 
     def forward(self, graph_list, tgt=None, require_loss=True):
-        batch_dgl_graph = self.graph_topology(graph_list)
-        # do graph nn here
-        # convert DGLGraph to GraphData
-        batch_graph = GraphData()
-        batch_graph.from_dgl(batch_dgl_graph)
-
-        # run GNN
+        batch_graph = self.graph_topology(graph_list)
         batch_graph = self.gnn_encoder(batch_graph)
-        batch_dgl_graph.ndata['node_emb'] = batch_graph.node_features['node_emb']
-        batch_dgl_graph.ndata['rnn_emb'] = batch_graph.node_features['node_feat']
-
-        dgl_graph_list = dgl.unbatch(batch_dgl_graph)
-        for g, dg in zip(graph_list, dgl_graph_list):
-            g.node_features["node_emb"] = dg.ndata["node_emb"]
-            g.node_features["rnn_emb"] = dg.ndata["rnn_emb"]
+        batch_graph.node_features['rnn_emb'] = batch_graph.node_features['node_feat']
 
         # down-task
-        prob, _, _ = self.seq_decoder(graph_list, tgt_seq=tgt)
+        prob, _, _ = self.seq_decoder(from_batch(batch_graph), tgt_seq=tgt)
         if require_loss:
             loss = self.loss_calc(prob, tgt)
             return prob, loss
@@ -138,16 +125,24 @@ class CNN:
     def _build_dataloader(self):
         # dataset = CNNDataset(root_dir="graph4nlp/pytorch/test/dataset/CNN",
         dataset = CNNDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/summarization/cnn",
-                              topology_builder=IEBasedGraphConstruction,
-                              topology_subdir='IEGraph', share_vocab=True)
-        data_size = len(dataset)
-        self.train_dataloader = DataLoader(dataset[:data_size-1], batch_size=4, shuffle=True,
-                                           num_workers=1,
+                             topology_builder=IEBasedGraphConstruction,
+                             topology_subdir='IEGraph_edge_info',
+                             share_vocab=True)
+        # dataset = CNNDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/summarization/cnn",
+        #                      topology_builder=IEBasedGraphConstruction,
+        #                      topology_subdir='IEGraph_as_node',
+        #                      share_vocab=True,
+        #                      edge_strategy='as_node')
+        self.train_dataloader = DataLoader(dataset.train, batch_size=4,
+                                           shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset[data_size-1:], batch_size=4, shuffle=True,
-                                          num_workers=1,
+        self.val_dataloader = DataLoader(dataset.val, batch_size=4,
+                                         shuffle=True, num_workers=1,
+                                         collate_fn=dataset.collate_fn)
+        self.test_dataloader = DataLoader(dataset.test, batch_size=4,
+                                          shuffle=True, num_workers=1,
                                           collate_fn=dataset.collate_fn)
-        self.vocab = dataset.vocab
+        self.vocab = dataset.vocab_model
 
     def _build_model(self):
         self.model = Graph2seq(self.vocab)
@@ -168,7 +163,7 @@ class CNN:
                 graph_list, tgt = data
                 # tgt = tgt.cuda()
                 _, loss = self.model(graph_list, tgt, require_loss=True)
-                print(loss)
+                print(loss.item())
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()

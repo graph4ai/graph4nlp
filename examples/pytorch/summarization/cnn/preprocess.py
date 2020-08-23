@@ -32,7 +32,10 @@ for f_name in stories:
         examples.append(example_dict)
 
 with open('raw/train.json', 'w+') as f:
-    json.dump(examples[:-1], f, indent=1)
+    json.dump(examples[:-2], f, indent=1)
+
+with open('raw/val.json', 'w+') as f:
+    json.dump(examples[-2:-1], f, indent=1)
 
 with open('raw/test.json', 'w+') as f:
     json.dump(examples[-1:], f, indent=1)
