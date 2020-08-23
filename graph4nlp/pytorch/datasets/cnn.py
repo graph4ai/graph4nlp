@@ -13,7 +13,7 @@ class CNNDataset(Text2TextDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        return {'train': 'train.json', 'test': 'test.json'}
+        return {'train': 'train.json', 'test': 'test.json', 'val': 'val.json'}
 
     @property
     def processed_file_names(self):
@@ -29,9 +29,6 @@ class CNNDataset(Text2TextDataset):
         super(CNNDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
-        self.data = torch.load(os.path.join(self.processed_dir, self.processed_file_names['data']))
-        # self.build_vocab()
-        self.vocab = pickle.load(open(os.path.join(self.processed_dir, self.processed_file_names['vocab']), 'rb'))
 
     def parse_file(self, file_path) -> list:
         """
@@ -57,8 +54,7 @@ class CNNDataset(Text2TextDataset):
         list
             The indices of data items in the file w.r.t. the whole dataset.
         """
-        current_index = len(self.data)
-        subset_indices = []
+        data = []
         with open(file_path, 'r') as f:
             examples = json.load(f)
             for example_dict in examples:
@@ -66,10 +62,8 @@ class CNNDataset(Text2TextDataset):
                 output = example_dict['highlight'][0][0]
                 data_item = Text2TextDataItem(input_text=input, output_text=output, tokenizer=self.tokenizer,
                                               share_vocab=self.share_vocab)
-                self.data[current_index] = data_item
-                subset_indices.append(current_index)
-                current_index += 1
-        return subset_indices
+                data.append(data_item)
+        return data
 
 
 if __name__ == '__main__':

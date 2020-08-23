@@ -190,7 +190,8 @@ class Dataset(torch.utils.data.Dataset):
         if 'val' in data.keys():
             self.val = data['val']
 
-        self.KG_graph = torch.load(self.processed_file_paths['KG_graph'])
+        if 'KG_graph' in self.processed_file_paths.keys():
+            self.KG_graph = torch.load(self.processed_file_paths['KG_graph'])
 
         self.build_vocab()
 
@@ -380,22 +381,48 @@ class Text2TextDataset(Dataset):
         return self.vocab_model
 
     def vectorization(self, data_items):
+        if type(self.topology_builder) == type(IEBasedGraphConstruction):
+            use_ie = True
+        else:
+            use_ie = False
         for item in data_items:
             graph: GraphData = item.graph
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
                 node_token = graph.node_attributes[node_idx]['token']
-                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
+                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token, use_ie)
                 graph.node_attributes[node_idx]['token_id'] = node_token_id
                 token_matrix.append([node_token_id])
-            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
-            graph.node_features['token_id'] = token_matrix
+            if type(self.topology_builder) == type(IEBasedGraphConstruction):
+                for i in range(len(token_matrix)):
+                    token_matrix[i] = np.array(token_matrix[i][0])
+                token_matrix = pad_2d_vals_no_size(token_matrix)
+                token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+                graph.node_features['token_id'] = token_matrix
+                pass
+            else:
+                token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+                graph.node_features['token_id'] = token_matrix
+
+            if 'token' in graph.edge_attributes[0].keys() and use_ie:
+                edge_token_matrix = []
+                for edge_idx in range(graph.get_edge_num()):
+                    edge_token = graph.edge_attributes[edge_idx]['token']
+                    edge_token_id = self.vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
+                    graph.edge_attributes[edge_idx]['token_id'] = edge_token_id
+                    edge_token_matrix.append([edge_token_id])
+                if type(self.topology_builder) == type(IEBasedGraphConstruction):
+                    for i in range(len(edge_token_matrix)):
+                        edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
+                    edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
+                    edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
+                    graph.edge_features['token_id'] = edge_token_matrix
 
             tgt = item.output_text
             tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
             tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
-            item.output_tensor = tgt_token_id
+            item.output_np = tgt_token_id
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
