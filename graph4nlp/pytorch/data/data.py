@@ -522,7 +522,19 @@ class GraphData(object):
 
     def from_graphdata(self, src):
         """Build a clone from a source GraphData"""
-
+        self.add_nodes(src.get_node_num())
+        for src_node, tgt_node in src.get_all_edges():
+            self.add_edge(src_node, tgt_node)
+        for i in range(src.get_node_num()):
+            self._node_attributes[i] = src.node_attributes[i]
+        for feat_name in src.get_node_feature_names():
+            self._node_features[feat_name] = src.node_features[feat_name]
+        for i in range(src.get_edge_num()):
+            self._edge_attributes[i] = src.edge_attributes[i]
+        for feat_name in src.get_edge_feature_names():
+            self._edge_features[feat_name] = src.edge_features[feat_name]
+        for k, v in src.graph_attributes.items():
+            self.graph_attributes[k] = v
 
     def union(self, graph):
         """
@@ -690,7 +702,7 @@ def to_batch(graphs: list = None) -> GraphData:
     GraphData
         The large graph containing all the graphs in the batch.
     """
-    batch = GraphData()
+    batch = GraphData(graphs[0])
     batch.batch = [0] * graphs[0].get_node_num()
     for i in range(1, len(graphs)):
         batch.union(graphs[i])

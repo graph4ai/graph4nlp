@@ -2,7 +2,6 @@ from ...data.data import GraphData, from_batch, to_batch, from_dgl
 from ...data.utils import EdgeNotFoundException
 import torch
 import torch.nn as nn
-import unittest
 import pytest
 
 
