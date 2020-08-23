@@ -18,7 +18,7 @@ class UniGGNNLayerConv(GNNLayerBase):
        a_{i}^{t} & = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
 
        h_{i}^{t+1} & = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
-       
+
     Attributes
     ----------
     input_size: int
@@ -91,18 +91,18 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
        a_{i, \vdash}^{t}-a_{i, \dashv}^{t}])
 
        h_{i}^{t+1} & = \mathrm{GRU}(e_{i}^{t}, h_{i}^{t})
-       
+
     Attributes
     ----------
     input_size: int
         Input feature size.
-        
+
     output_size: int
         Output feature size.
-        
+
     n_etypes: int
         Number of edge types. Default: 1.
-        
+
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
 
@@ -202,7 +202,7 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
         fuse_vector = torch.cat(
             [agg_in, agg_out, agg_in * agg_out, agg_in - agg_out], dim=-1)
         fuse_gate_vector = torch.sigmoid(self.fuse_linear(fuse_vector))
-        emb_fused = fuse_gate_vector * agg_out + (1 - fuse_gate_vector) * agg_out
+        emb_fused = fuse_gate_vector * agg_in + (1 - fuse_gate_vector) * agg_out
 
         # update
         rst = self.gru(emb_fused, feat_in)
@@ -230,18 +230,18 @@ class BiSepGGNNLayerConv(GNNLayerBase):
 
        h_{i, \dashv}^{t+1} & = \mathrm{GRU}_{\dashv}(a_{i, \dashv}^{t},
        h_{i, \dashv}^{t})
-    
+
     Attributes
     ----------
     input_size: int
         Input feature size.
-        
+
     output_size: int
         Output feature size.
-        
+
     n_etypes: int
         Number of edge types. Default: 1.
-        
+
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
 

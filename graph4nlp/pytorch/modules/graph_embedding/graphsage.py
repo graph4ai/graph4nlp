@@ -69,8 +69,8 @@ class GraphSAGE(GNNBase):
         self.num_layers = num_layers
         self.direction_option = direction_option
         self.GraphSAGE_layers = nn.ModuleList()
-        if self.direction_option == 'bi_sep':
-               output_size=int(output_size/2)
+        # if self.direction_option == 'bi_sep':
+        #        output_size=int(output_size/2)
 
         #transform the hidden size format
         if self.num_layers>1 and type(hidden_size) is int:
@@ -84,9 +84,9 @@ class GraphSAGE(GNNBase):
                                             aggregator_type,
                                             direction_option=self.direction_option,
                                             feat_drop=feat_drop,
-                                            bias=True,
-                                            norm=None,
-                                            activation=None))
+                                            bias=bias,
+                                            norm=norm,
+                                            activation=activation))
         # hidden layers
         for l in range(1, self.num_layers - 1):
             # due to multi-head, the input_size = hidden_size * num_heads
@@ -95,18 +95,18 @@ class GraphSAGE(GNNBase):
                                             aggregator_type,
                                             direction_option=self.direction_option,
                                             feat_drop=feat_drop,
-                                            bias=True,
-                                            norm=None,
-                                            activation=None))
+                                            bias=bias,
+                                            norm=norm,
+                                            activation=activation))
         # output projection
         self.GraphSAGE_layers.append(GraphSAGELayer(hidden_size[-1] if self.num_layers > 1 else input_size,
                                         output_size,
                                         aggregator_type,
                                         direction_option=self.direction_option,
                                         feat_drop=feat_drop,
-                                        bias=True,
-                                        norm=None,
-                                        activation=None))
+                                        bias=bias,
+                                        norm=norm,
+                                        activation=activation))
 
     def forward(self, graph):
         r"""Compute GraphSAGE layer.

@@ -11,12 +11,9 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 import torch.backends.cudnn as cudnn
 
 from graph4nlp.pytorch.datasets.trec import TrecDataset
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedGraphConstruction, NodeEmbeddingBasedRefinedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
-from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
+from graph4nlp.pytorch.modules.graph_embedding import GAT, GraphSAGE, GGNN
 from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
@@ -115,17 +112,38 @@ class TextClassifier(nn.Module):
 
 
         heads = [config.num_heads] * (config.num_layers - 1) + [config.num_out_heads]
-        self.gnn = GAT(config.num_layers,
-                    config.num_hidden,
-                    config.num_hidden,
-                    config.num_hidden,
-                    heads,
-                    direction_option=config.direction_option,
-                    feat_drop=config.gnn_drop,
-                    attn_drop=config.gat_attn_drop,
-                    negative_slope=config.gat_negative_slope,
-                    residual=config.residual,
-                    activation=F.elu)
+        if config.gnn == 'gat':
+            self.gnn = GAT(config.num_layers,
+                        config.num_hidden,
+                        config.num_hidden,
+                        config.num_hidden,
+                        heads,
+                        direction_option=config.direction_option,
+                        feat_drop=config.gnn_drop,
+                        attn_drop=config.gat_attn_drop,
+                        negative_slope=config.gat_negative_slope,
+                        residual=config.residual,
+                        activation=F.elu)
+        elif config.gnn == 'graphsage':
+            self.gnn = GraphSAGE(config.num_layers,
+                        config.num_hidden,
+                        config.num_hidden,
+                        config.num_hidden,
+                        config.graphsage_aggreagte_type,
+                        direction_option=config.direction_option,
+                        feat_drop=config.gnn_drop,
+                        bias=True,
+                        norm=None,
+                        activation=F.relu)
+        elif config.gnn == 'ggnn':
+            self.gnn = GGNN(config.num_layers,
+                        config.num_hidden,
+                        config.num_hidden,
+                        direction_option=config.direction_option,
+                        bias=True)
+        else:
+            raise RuntimeError('Unknown gnn type: {}'.format(config.gnn))
+
         self.clf = FeedForwardNN(2 * config.num_hidden if config.direction_option == 'bi_sep' else config.num_hidden,
                         config.num_classes,
                         [config.num_hidden],
@@ -194,6 +212,7 @@ class ModelHandler:
                               graph_type=graph_type,
                               pretrained_word_emb_file=self.config.pre_word_emb_file,
                               val_split_ratio=self.config.val_split_ratio,
+                              merge_strategy='global' if self.config.graph_type == 'ie' else 'tailhead',
                               seed=self.config.seed)
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config.batch_size, shuffle=True,
                                            num_workers=self.config.num_workers,
@@ -308,7 +327,7 @@ def main(args):
                             save_model_path=args.save_model_path,
                             seed=args.seed,
                             dataset=args.dataset,
-                            gnn='gat',
+                            gnn=args.gnn,
                             direction_option=args.direction_option,
                             graph_type=args.graph_type,
                             gl_top_k=args.gl_top_k,
@@ -376,6 +395,8 @@ if __name__ == "__main__":
     parser.add_argument("--init_adj_alpha", type=float, default=0.8,
                         help="alpha ratio for combining initial graph adjacency matrix")
     # gnn
+    parser.add_argument("--gnn", type=str, default='gat',
+                        help="GNN variant (`gat`, `graphsage`, `ggnn`)")
     parser.add_argument("--graph_pooling", type=str, default='avg_pool',
                         help="graph pooling (`avg_pool`, `max_pool`)")
     parser.add_argument("--max_pool_linear_proj", action="store_true", default=False,
@@ -398,6 +419,8 @@ if __name__ == "__main__":
                         help="attention dropout")
     parser.add_argument('--gat_negative_slope', type=float, default=0.2,
                         help="the negative slope of leaky relu")
+    parser.add_argument("--graphsage_aggreagte_type", type=str, default='lstm',
+                        help="graphsage aggreagte type (`mean`, `gcn`, `pool`, `lstm`)")
     # graph embedding construction
     parser.add_argument("--node_edge_emb_strategy", type=str, default='mean',
                         help="node edge embedding strategy for graph embedding construction ('mean', 'lstm', 'gru', 'bilstm' and 'bigru')")
