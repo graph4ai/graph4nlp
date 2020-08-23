@@ -34,14 +34,18 @@ def evaluate(model, g, labels, mask):
 
 class GNNClassifier(nn.Module):
     def __init__(self,
-                num_layers,
-                input_size,
-                output_size,
-                n_class,
-                direction_option):
+                 num_layers,
+                 input_size,
+                 output_size,
+                 n_class,
+                 direction_option,
+                 drop=0.,
+                 use_edge_weight=False):
         super(GNNClassifier, self).__init__()
         self.direction_option = direction_option
-        self.model = GGNN(num_layers, input_size, output_size, direction_option=direction_option)
+        self.model = GGNN(num_layers, input_size, output_size,
+                          dropout=drop, direction_option=direction_option,
+                          use_edge_weight=use_edge_weight)
 
         if self.direction_option == 'bi_sep':
             self.fc = nn.Linear(2 * output_size, n_class)
@@ -191,7 +195,9 @@ def main(args, seed):
                           num_feats,
                           args.num_hidden,
                           n_classes,
-                          args.direction_option)
+                          args.direction_option,
+                          drop=args.drop,
+                          use_edge_weight=args.use_edge_weight)
 
 
     print(model)
@@ -263,7 +269,7 @@ if __name__ == '__main__':
                         help="which GPU to use.")
     parser.add_argument("--epochs", type=int, default=200,
                         help="number of training epochs")
-    parser.add_argument("--direction-option", type=str, default='uni',
+    parser.add_argument("--direction-option", type=str, default='undirected',
                         help="direction type (`undirected`, `bi_fuse`, `bi_sep`)")
     parser.add_argument("--num-heads", type=int, default=8,
                         help="number of hidden attention heads")
@@ -275,10 +281,12 @@ if __name__ == '__main__':
                         help="number of hidden units")
     parser.add_argument("--residual", action="store_true", default=False,
                         help="use residual connection")
-    parser.add_argument("--in-drop", type=float, default=.6,
+    parser.add_argument("--drop", type=float, default=.3,
                         help="input feature dropout")
-    parser.add_argument("--attn-drop", type=float, default=.6,
-                        help="attention dropout")
+    parser.add_argument("--use_edge_weight", type=bool, default=False,
+                        help="use edge weight")
+    # parser.add_argument("--attn-drop", type=float, default=.6,
+    #                     help="attention dropout")
     parser.add_argument("--lr", type=float, default=0.005,
                         help="learning rate")
     parser.add_argument('--weight-decay', type=float, default=5e-4,
