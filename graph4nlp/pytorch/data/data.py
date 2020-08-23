@@ -1,11 +1,10 @@
+import warnings
 from collections import namedtuple
 
 import dgl
 import numpy as np
 import scipy.sparse
 import torch
-import warnings
-from typing import Collection
 
 from .utils import SizeMismatchException, EdgeNotFoundException
 from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list, reverse_index
@@ -35,7 +34,7 @@ class GraphData(object):
     Represent a single graph with additional attributes.
     """
 
-    def __init__(self):
+    def __init__(self, src=None):
         self._node_attributes = node_attr_factory()
         self._node_features = node_feat_factory(res_init_node_features)
         self._edge_indices = EdgeIndex(src=[], tgt=[])
@@ -45,6 +44,11 @@ class GraphData(object):
         self._edge_attributes = edge_attribute_factory()
         self.graph_attributes = graph_data_factory()
         self.batch = None
+        if src is not None:
+            if isinstance(src, GraphData):
+                self.from_graphdata(src)
+            else:
+                raise NotImplementedError
 
     # Node operations
     @property
@@ -516,6 +520,22 @@ class GraphData(object):
         matrix = scipy.sparse.coo_matrix((data, (row, col)), shape=(self.get_node_num(), self.get_node_num()))
         return matrix
 
+    def from_graphdata(self, src):
+        """Build a clone from a source GraphData"""
+        self.add_nodes(src.get_node_num())
+        for src_node, tgt_node in src.get_all_edges():
+            self.add_edge(src_node, tgt_node)
+        for i in range(src.get_node_num()):
+            self._node_attributes[i] = src.node_attributes[i]
+        for feat_name in src.get_node_feature_names():
+            self._node_features[feat_name] = src.node_features[feat_name]
+        for i in range(src.get_edge_num()):
+            self._edge_attributes[i] = src.edge_attributes[i]
+        for feat_name in src.get_edge_feature_names():
+            self._edge_features[feat_name] = src.edge_features[feat_name]
+        for k, v in src.graph_attributes.items():
+            self.graph_attributes[k] = v
+
     def union(self, graph):
         """
         Merge a graph into current graph.
@@ -649,7 +669,6 @@ class GraphData(object):
         return subgraph
 
 
-
 def from_dgl(g: dgl.DGLGraph) -> GraphData:
     """
     Convert a dgl.DGLGraph to a GraphData object.
@@ -683,8 +702,7 @@ def to_batch(graphs: list = None) -> GraphData:
     GraphData
         The large graph containing all the graphs in the batch.
     """
-    import copy
-    batch = copy.copy(graphs[0])
+    batch = GraphData(graphs[0])
     batch.batch = [0] * graphs[0].get_node_num()
     for i in range(1, len(graphs)):
         batch.union(graphs[i])
@@ -719,3 +737,13 @@ def from_batch(batch: GraphData) -> list:
 
     assert len(graphs) == batch_size
     return graphs
+
+
+# Testing code
+if __name__ == '__main__':
+    a1 = GraphData()
+    a1.add_nodes(10)
+    a2 = GraphData()
+    a2.add_nodes(15)
+    a3 = to_batch([a1, a2])
+    print(len(a1.node_attributes), len(a2.node_attributes), len(a3.node_attributes))
