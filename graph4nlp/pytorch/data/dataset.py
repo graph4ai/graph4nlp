@@ -190,7 +190,8 @@ class Dataset(torch.utils.data.Dataset):
         if 'val' in data.keys():
             self.val = data['val']
 
-        self.KG_graph = torch.load(self.processed_file_paths['KG_graph'])
+        if 'KG_graph' in self.processed_file_paths.keys():
+            self.KG_graph = torch.load(self.processed_file_paths['KG_graph'])
 
         self.build_vocab()
 
