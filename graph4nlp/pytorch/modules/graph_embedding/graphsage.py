@@ -65,9 +65,9 @@ class GraphSAGE(GNNBase):
                 bias=True,
                 norm=None,
                 activation=None,
-                use_weight=False):
+                use_edge_weight=False):
         super(GraphSAGE, self).__init__()
-        self.use_weight=use_weight
+        self.use_edge_weight=use_edge_weight
         self.num_layers = num_layers
         self.direction_option = direction_option
         self.GraphSAGE_layers = nn.ModuleList()
@@ -128,7 +128,7 @@ class GraphSAGE(GNNBase):
         h=graph.node_features['node_feat'] #get the node feature tensor from graph
         g = graph.to_dgl() #transfer the current NLPgraph to DGL graph
         edge_weight=None
-        if self.use_weight==True:
+        if self.use_edge_weight==True:
             edge_weight = graph.edge_features['edge_weight']
         # output projection
         if self.num_layers>1:          
@@ -346,7 +346,7 @@ class UndirectedGraphSAGELayerConv(GNNLayerBase):
 
         if self._aggre_type == 'mean':
             graph.srcdata['h'] = feat_src
-            if edge_weight==None:
+            if edge_weight is None:
                graph.update_all(fn.copy_src('h', 'm'), fn.mean('m', 'neigh'))
             else:
                graph.edata['edge_weight']=edge_weight
@@ -356,7 +356,7 @@ class UndirectedGraphSAGELayerConv(GNNLayerBase):
             check_eq_shape(feat)
             graph.srcdata['h'] = feat_src
             graph.dstdata['h'] = feat_dst     # same as above if homogeneous
-            if edge_weight == None:
+            if edge_weight is None:
                graph.update_all(fn.copy_src('h', 'm'), fn.sum('m', 'neigh'))
             else:
                graph.edata['edge_weight']=edge_weight
@@ -366,7 +366,7 @@ class UndirectedGraphSAGELayerConv(GNNLayerBase):
             h_neigh = (graph.dstdata['neigh'] + graph.dstdata['h']) / (degs.unsqueeze(-1) + 1)
         elif self._aggre_type == 'pool':
             graph.srcdata['h'] = F.relu(self.fc_pool(feat_src))
-            if edge_weight==None:
+            if edge_weight is None:
                graph.update_all(fn.copy_src('h', 'm'), fn.max('m', 'neigh'))
             else:
                graph.edata['edge_weight']=edge_weight
@@ -374,7 +374,7 @@ class UndirectedGraphSAGELayerConv(GNNLayerBase):
             h_neigh = graph.dstdata['neigh']
         elif self._aggre_type == 'lstm':
             graph.srcdata['h'] = feat_src
-            if edge_weight == None:
+            if edge_weight is None:
                 graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer)
             else:
                graph.edata['edge_weight']=edge_weight
@@ -517,7 +517,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
        
        if self._aggre_type == 'mean':
          graph.srcdata['h'] = feat_src
-         if edge_weight==None:
+         if edge_weight is None:
              graph.update_all(fn.copy_src('h', 'm'), fn.mean('m', 'neigh'))
          else:
              graph.edata['edge_weight']=edge_weight
@@ -527,7 +527,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
          check_eq_shape(feat)
          graph.srcdata['h'] = feat_src
          graph.dstdata['h'] = feat_dst  # same as above if homogeneous
-         if edge_weight==None:
+         if edge_weight is None:
              graph.update_all(fn.copy_src('h', 'm'), fn.sum('m', 'neigh'))
          else:
              graph.edata['edge_weight']=edge_weight
@@ -540,7 +540,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
              graph.srcdata['h'] = F.relu(self.fc_pool_fw(feat_src))
          elif direction=='bw':
              graph.srcdata['h'] = F.relu(self.fc_pool_bw(feat_src))  
-         if edge_weight==None:
+         if edge_weight is None:
              graph.update_all(fn.copy_src('h', 'm'), fn.max('m', 'neigh'))
          else:
              graph.edata['edge_weight']=edge_weight
@@ -549,13 +549,13 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
        elif self._aggre_type == 'lstm':
          graph.srcdata['h'] = feat_src
          if direction=='fw':
-           if edge_weight==None:
+           if edge_weight is None:
                graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_fw)
            else:
               graph.edata['edge_weight']=edge_weight
               graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_fw)           
          elif direction=='bw':
-           if edge_weight==None: 
+           if edge_weight is None: 
               graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_bw)
            else:
               graph.edata['edge_weight']=edge_weight
@@ -792,7 +792,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
     
            if self._aggre_type == 'mean':
              graph.srcdata['h'] = feat_src
-             if edge_weight==None:
+             if edge_weight is None:
                graph.update_all(fn.copy_src('h', 'm'), fn.mean('m', 'neigh'))
              else:
                graph.edata['edge_weight']=edge_weight
@@ -802,7 +802,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
              check_eq_shape(feat)
              graph.srcdata['h'] = feat_src
              graph.dstdata['h'] = feat_dst  # same as above if homogeneous
-             if edge_weight==None:
+             if edge_weight is None:
                  graph.update_all(fn.copy_src('h', 'm'), fn.sum('m', 'neigh'))
              else:
                graph.edata['edge_weight']=edge_weight
@@ -816,7 +816,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
              elif direction=='bw':
                  graph.srcdata['h'] = F.relu(self.fc_pool_bw(feat_src)) 
                  
-             if edge_weight==None:
+             if edge_weight is None:
                 graph.update_all(fn.copy_src('h', 'm'), fn.max('m', 'neigh'))
              else:
                graph.edata['edge_weight']=edge_weight
@@ -825,13 +825,13 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
            elif self._aggre_type == 'lstm':
              graph.srcdata['h'] = feat_src
              if direction=='fw':
-               if edge_weight==None:
+               if edge_weight is None:
                    graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_fw)
                else:
                    graph.edata['edge_weight']=edge_weight
                    graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_fw)                   
              elif direction=='bw':
-               if edge_weight==None:
+               if edge_weight is None:
                    graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_bw)
                else:
                    graph.edata['edge_weight']=edge_weight
@@ -863,5 +863,3 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
             rst_fused = self.norm(rst_fused)
             
         return rst_fused
-
-
