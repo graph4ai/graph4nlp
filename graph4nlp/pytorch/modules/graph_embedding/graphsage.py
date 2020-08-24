@@ -815,7 +815,6 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
                  graph.srcdata['h'] = F.relu(self.fc_pool_fw(feat_src))
              elif direction=='bw':
                  graph.srcdata['h'] = F.relu(self.fc_pool_bw(feat_src))
-
              if edge_weight is None:
                 graph.update_all(fn.copy_src('h', 'm'), fn.max('m', 'neigh'))
              else:
@@ -863,4 +862,3 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
             rst_fused = self.norm(rst_fused)
 
         return rst_fused
-
