@@ -141,7 +141,7 @@ class TextClassifier(nn.Module):
                         bias=True,
                         norm=None,
                         activation=F.relu,
-                        use_weight=use_edge_weight)
+                        use_edge_weight=use_edge_weight)
         elif config.gnn == 'ggnn':
             self.gnn = GGNN(config.num_layers,
                         config.num_hidden,
