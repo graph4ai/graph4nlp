@@ -8,8 +8,30 @@ class SizeMismatchException(Exception):
 class NodeNotFoundException(Exception):
     pass
 
+
 class EdgeNotFoundException(Exception):
     pass
+
+
+def int_to_list(x: int or list):
+    assert isinstance(x, list) or isinstance(x, int)
+    return x if isinstance(x, list) else [x]
+
+
+def check_and_expand(x: list, y: list):
+    assert isinstance(x, list) and isinstance(y, list)
+    max_len = max(len(x), len(y))
+    if len(x) == len(y):
+        return x, y
+    elif len(x) * len(y) == max_len:  # Which means at least one of the list is of length 1
+        if len(x) == 1:
+            x = x * max_len
+        else:
+            y = y * max_len
+        return x, y
+    else:
+        raise ValueError(
+            'The two lists {} and {} cannot be automatically broadcasted to the same length.'.format(x, y))
 
 
 def slice_to_list(sl, max_len):
@@ -57,6 +79,33 @@ def entail_zero_padding(old_tensor: torch.Tensor, num_rows: int):
         return None
 
     if len(old_tensor.shape) == 1:
-        return torch.cat((old_tensor, torch.zeros(1).to(dtype=old_tensor.dtype, device=old_tensor.device)))
+        return torch.cat((old_tensor, torch.zeros(num_rows).to(dtype=old_tensor.dtype, device=old_tensor.device)))
     else:
-        return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:])).to(dtype=old_tensor.dtype, device=old_tensor.device)), dim=0)
+        return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:])).to(dtype=old_tensor.dtype,
+                                                                                device=old_tensor.device)), dim=0)
+
+
+def reverse_index(l: list, v):
+    """
+    Find the index of the last occurrence of an element in a list.
+
+    Parameters
+    ----------
+    l: list
+        The container of all elements
+    v: object
+        The element to be found
+
+    Returns
+    -------
+    int:
+        The index of the last occurrence of `v` in `l`.
+
+    Raises
+    ------
+    ValueError
+        If the element is not found in the list.
+    """
+    if v not in l:
+        raise ValueError
+    return len(l) - l[::-1].index(v) - 1

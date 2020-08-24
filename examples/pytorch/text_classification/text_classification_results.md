@@ -33,29 +33,29 @@ Dependency graph:
 
 GAT-Undirected
 ```python
-python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type dependency --gpu 0 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option uni --gnn gat
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type dependency --gpu 0 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option undirected --gnn gat
 ```
 
 GAT-BiSep
 ```python
-python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type dependency --gpu 1 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option bi_sep --gnn gat
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type dependency --gpu 1 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option bi_sep --gnn gat
 ```
 
 GAT-BiFuse
 ```python
-python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type dependency --gpu 1 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option bi_fuse --gnn gat
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type dependency --gpu 1 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option bi_fuse --gnn gat
 ```
 
 
 GGNN-Undirected
 ```python
-python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type dependency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --direction_option uni --gnn ggnn --gpu 0
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type dependency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --direction_option undirected --gnn ggnn --gpu 0
 ```
 
 
 GraphSAGE-Undirected
 ```python
-python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type dependency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option uni --gnn graphsage --gpu 0
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type dependency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --gpu 0
 ```
 
 
@@ -63,7 +63,7 @@ Constituency graph:
 
 GAT-Undirected
 ```python
-python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type constituency --gpu 0 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option uni --gnn gat
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type constituency --gpu 0 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option undirected --gnn gat
 ```
 
 
@@ -81,7 +81,7 @@ python -m examples.pytorch.text_classification.run_text_classifier --pre_word_em
 
 GraphSAGE-Undirected
 ```python
-python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type constituency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option uni --gnn graphsage --gpu 0
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type constituency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --gpu 0
 ```
 
 GraphSAGE-BiFuse
@@ -96,15 +96,15 @@ python -m examples.pytorch.text_classification.run_text_classifier --pre_word_em
 
 GGNN-Undirected
 ```python
-python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type constituency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --direction_option uni --gnn ggnn --gpu 1
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type constituency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --direction_option undirected --gnn ggnn --gpu 1
 ```
 
 
-IE graph:
+<!-- IE graph:
 
 GAT-Undirected
 ```python
-python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy none --graph_pooling avg_pool --graph_type ie --gpu 1 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option uni --gnn gat
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy none --graph_pooling avg_pool --graph_type ie --gpu 1 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option undirected --gnn gat
 ```
 
 
@@ -117,7 +117,7 @@ GAT-BiFuse
 ```python
 python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy none --graph_pooling avg_pool --graph_type ie --gpu 1 --num_heads 1 --num_out_heads 2 --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --gat_attn_drop 0.3 --direction_option bi_fuse --gnn gat
 ```
-
+ -->
 
 TREC Results
 -------

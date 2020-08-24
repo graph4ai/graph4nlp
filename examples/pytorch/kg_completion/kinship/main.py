@@ -4,7 +4,7 @@ import os
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 
 from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.datasets.kinship import KinshipDataset, KinshipTestDataset
+from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT, GATLayer
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGELayer
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN, GGNNLayer
@@ -334,20 +334,24 @@ class Kinship:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = KinshipDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship",
-                                  topology_builder=None,
-                                  topology_subdir='e_rel_to_e',
-                                  share_vocab=True)
+        dataset = KinshipDataset(root_dir='/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship',
+                                 topology_builder=None,
+                                 topology_subdir='e1rel_to_e2')
 
         # TODO: When edge2node is True, num_entities != train_set.KG_graph.get_node_num()
         self.num_entities = dataset.KG_graph.graph_attributes['num_entities']
         self.num_relations = dataset.KG_graph.graph_attributes['num_relations']
         self.kg_graph = dataset.KG_graph
 
-        self.train_dataloader = DataLoader(dataset[:(dataset.split_ids['train'][-1]+1)//2], batch_size=64, shuffle=True,
+        self.train_dataloader = DataLoader(dataset.train, batch_size=64, shuffle=True,
                                            num_workers=1,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset[dataset.split_ids['train'][-1]+1:], batch_size=64, shuffle=True,
+
+        self.val_dataloader = DataLoader(dataset.val, batch_size=64, shuffle=True,
+                                          num_workers=1,
+                                          collate_fn=dataset.collate_fn)
+
+        self.test_dataloader = DataLoader(dataset.test, batch_size=64, shuffle=True,
                                           num_workers=1,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
@@ -361,7 +365,7 @@ class Kinship:
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
-        self.optimizer = optim.Adam(parameters, lr=2e-3, weight_decay=1e-3)
+        self.optimizer = optim.Adam(parameters, lr=2e-3)
 
     def _build_evaluation(self):
         self.metrics = [RankingAndHits()]
@@ -417,8 +421,8 @@ class Kinship:
         self.model.eval()
 
         self.metrics[0].calculate_scores(self.model,
-                                         self.test_dataloader,
-                                         name='test',
+                                         self.val_dataloader,
+                                         name='validation',
                                          kg_graph=self.kg_graph,
                                          device=self.device)
 

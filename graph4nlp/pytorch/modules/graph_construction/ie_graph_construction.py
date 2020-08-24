@@ -2,13 +2,13 @@ import json
 
 from stanfordcorenlp import StanfordCoreNLP
 
-from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.data.data import GraphData, to_batch
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from .base import StaticGraphConstructionBase
 import dgl
 import networkx as nx
-from ...data.data import GraphData, to_batch
-
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
+import numpy as np
 import torch
 
 
@@ -50,6 +50,98 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             self.vocab.word_vocab._add_words([attr["token"]])
 
     @classmethod
+    def parsing(cls, all_sent_triples_list, edge_strategy):
+        """
+        Parameters
+        ----------
+        all_sent_triples_list: list
+        edge_strategy: str
+
+        Returns
+        -------
+        parsed_results: dict
+            parsed_results is an intermediate dict that contains all the information of
+            the constructed IE graph for a piece of raw text input.
+
+            `parsed_results['graph_content']` is a list of dict.
+
+            Each dict in `parsed_results['graph_content']` contains information about a
+            triple (src_ent, rel, tgt_ent).
+
+            `parsed_results['graph_nodes']` contains all nodes in the KG graph.
+
+            `parsed_results['node_num']` is the number of nodes in the KG graph.
+        """
+
+        parsed_results = {}
+        parsed_results['graph_content'] = []
+        graph_nodes = []
+        for triple in all_sent_triples_list:
+            if edge_strategy is None:
+                if triple[0] not in graph_nodes:
+                    graph_nodes.append(triple[0])
+
+                if triple[2] not in graph_nodes:
+                    graph_nodes.append(triple[2])
+
+                triple_info = {'edge_tokens': triple[1],
+                               'src': {
+                                   'tokens': triple[0],
+                                   'id': graph_nodes.index(triple[0])
+                               },
+                               'tgt': {
+                                   'tokens': triple[2],
+                                   'id': graph_nodes.index(triple[2])
+                               }}
+                if triple_info not in parsed_results['graph_content']:
+                    parsed_results['graph_content'].append(triple_info)
+            elif edge_strategy == "as_node":
+                if triple[0] not in graph_nodes:
+                    graph_nodes.append(triple[0])
+
+                if triple[1] not in graph_nodes:
+                    graph_nodes.append(triple[1])
+
+                if triple[2] not in graph_nodes:
+                    graph_nodes.append(triple[2])
+
+                triple_info_0_1 = {'edge_tokens': [],
+                                   'src': {
+                                       'tokens': triple[0],
+                                       'id': graph_nodes.index(triple[0]),
+                                       'type': 'ent_node'
+                                   },
+                                   'tgt': {
+                                       'tokens': triple[1],
+                                       'id': graph_nodes.index(triple[1]),
+                                       'type': 'edge_node'
+                                   }}
+
+                triple_info_1_2 = {'edge_tokens': [],
+                                   'src': {
+                                       'tokens': triple[1],
+                                       'id': graph_nodes.index(triple[1]),
+                                       'type': 'edge_node'
+                                   },
+                                   'tgt': {
+                                       'tokens': triple[2],
+                                       'id': graph_nodes.index(triple[2]),
+                                       'type': 'ent_node'
+                                   }}
+
+                if triple_info_0_1 not in parsed_results['graph_content']:
+                    parsed_results['graph_content'].append(triple_info_0_1)
+                if triple_info_1_2 not in parsed_results['graph_content']:
+                    parsed_results['graph_content'].append(triple_info_1_2)
+            else:
+                raise NotImplementedError()
+
+        parsed_results['node_num'] = len(graph_nodes)
+        parsed_results['graph_nodes'] = graph_nodes
+
+        return parsed_results
+
+    @classmethod
     def topology(cls, raw_text_data, nlp_processor, merge_strategy, edge_strategy, verbase=True):
         """
             Graph building method.
@@ -62,7 +154,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         nlp_processor: StanfordCoreNLP
             NLP parsing tools
 
-        merge_strategy: None or str, option=[None, "share_common_tokens", "user_define"]
+        merge_strategy: None or str, option=[None, "global", "user_define"]
             Strategy to merge sub-graphs into one graph
             ``None``:  Do not add additional nodes and edges.
 
@@ -168,11 +260,11 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
 
                 # If two triples have the same subject and relation,
                 # only preserve the one has longer object
-                if sbj+'_'+rel not in all_sent_triples.keys():
-                    all_sent_triples[sbj+'_'+rel] = [sbj, rel, obj]
+                if sbj+'<TSEP>'+rel not in all_sent_triples.keys():
+                    all_sent_triples[sbj+'<TSEP>'+rel] = [sbj, rel, obj]
                 else:
-                    if len(obj)>len(all_sent_triples[sbj+'_'+rel][2]):
-                        all_sent_triples[sbj + '_' + rel] = [sbj, rel, obj]
+                    if len(obj)>len(all_sent_triples[sbj+'<TSEP>'+rel][2]):
+                        all_sent_triples[sbj + '<TSEP>' + rel] = [sbj, rel, obj]
 
         all_sent_triples_list = list(all_sent_triples.values())  # triples extracted from all sentences
 
@@ -197,77 +289,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         global_triples = cls._graph_connect(all_sent_triples_list, merge_strategy)
         all_sent_triples_list.extend(global_triples)
 
-        # + `parsed_results` is an intermediate dict that contains all the information of the constructed IE graph
-        # for a piece of raw text input.
-        # + `parsed_results['graph_content']` is a list of dict.
-        # + Each dict in `parsed_results['graph_content']` contains information about a triple (src_ent, rel, tgt_ent).
-        # + `parsed_results['graph_nodes']` contains all nodes in the KG graph.
-        # + `parsed_results['node_num']` is the number of nodes in the KG graph.
-        parsed_results = {}
-        parsed_results['graph_content'] = []
-        graph_nodes = []
-        for triple in all_sent_triples_list:
-            if edge_strategy is None:
-                if triple[0] not in graph_nodes:
-                    graph_nodes.append(triple[0])
-
-                if triple[2] not in graph_nodes:
-                    graph_nodes.append(triple[2])
-
-                triple_info = {'edge_tokens': triple[1],
-                               'src': {
-                                   'tokens': triple[0],
-                                   'id': graph_nodes.index(triple[0])
-                               },
-                               'tgt': {
-                                   'tokens': triple[2],
-                                   'id': graph_nodes.index(triple[2])
-                               }}
-                if triple_info not in parsed_results['graph_content']:
-                    parsed_results['graph_content'].append(triple_info)
-            elif edge_strategy == "as_node":
-                if triple[0] not in graph_nodes:
-                    graph_nodes.append(triple[0])
-
-                if triple[1] not in graph_nodes:
-                    graph_nodes.append(triple[1])
-
-                if triple[2] not in graph_nodes:
-                    graph_nodes.append(triple[2])
-
-                triple_info_0_1 = {'edge_tokens': [],
-                               'src': {
-                                   'tokens': triple[0],
-                                   'id': graph_nodes.index(triple[0]),
-                                   'type': 'ent_node'
-                               },
-                               'tgt': {
-                                   'tokens': triple[1],
-                                   'id': graph_nodes.index(triple[1]),
-                                   'type': 'edge_node'
-                               }}
-
-                triple_info_1_2 = {'edge_tokens': [],
-                                   'src': {
-                                       'tokens': triple[1],
-                                       'id': graph_nodes.index(triple[1]),
-                                       'type': 'edge_node'
-                                   },
-                                   'tgt': {
-                                       'tokens': triple[2],
-                                       'id': graph_nodes.index(triple[2]),
-                                       'type': 'ent_node'
-                                   }}
-
-                if triple_info_0_1 not in parsed_results['graph_content']:
-                    parsed_results['graph_content'].append(triple_info_0_1)
-                if triple_info_1_2 not in parsed_results['graph_content']:
-                    parsed_results['graph_content'].append(triple_info_1_2)
-            else:
-                raise NotImplementedError()
-
-        parsed_results['node_num'] = len(graph_nodes)
-        parsed_results['graph_nodes'] = graph_nodes
+        parsed_results = cls.parsing(all_sent_triples_list, edge_strategy)
 
         graph = cls._construct_static_graph(parsed_results, edge_strategy=edge_strategy)
 
@@ -337,7 +359,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
     @classmethod
     def _construct_static_graph(cls, parsed_object, edge_strategy=None):
         """
-            Build dependency-parsing-tree based graph for single sentence.
 
         Parameters
         ----------
@@ -393,7 +414,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         triple_list: list of [subject, relation, object]
             A list of all triples extracted from ``raw_text_data`` using coref and openie.
 
-        merge_strategy: None or str, option=[None, "tailhead", "sequential", "user_define"]
+        merge_strategy: None or str, option=[None, "global", "user_define"]
             Strategy to merge sub-graphs into one graph
             ``None``:  Do not add additional nodes and edges.
 
@@ -434,22 +455,53 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
     #         self.embedding(g)
     #     graph_list = [g.to_dgl() for g in batch_graphdata]
     #     bg = dgl.batch(graph_list, edge_attrs=None)
-
     #     return bg
 
     def forward(self, batch_graphdata: list):
         node_size = []
+        edge_size = []
         num_nodes = []
+        num_edges = []
+
+        token_id_max_len = 0
+        edge_token_id_max_len = 0
+        for g in batch_graphdata:
+            token_id_len = g.node_features['token_id'].size()[1]
+            if token_id_max_len < token_id_len:
+                token_id_max_len = token_id_len
+            if 'token' in batch_graphdata[0].edge_attributes[0].keys():
+                edge_token_id_len = g.edge_features['token_id'].size()[1]
+                if edge_token_id_max_len < edge_token_id_len:
+                    edge_token_id_max_len = edge_token_id_len
 
         for g in batch_graphdata:
+            g.node_features['token_id'] = torch.tensor(pad_2d_vals(np.array(g.node_features['token_id']),
+                                                       g.node_features['token_id'].size()[0],
+                                                       token_id_max_len),
+                                                       dtype=torch.int64)
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
             num_nodes.append(g.get_node_num())
-            node_size.extend([1 for i in range(num_nodes[-1])])
+            node_size.extend([len(g.node_attributes[i]['token_id']) for i in range(num_nodes[-1])])
+
+            if 'token' in g.edge_attributes[0].keys():
+                g.edge_features['token_id'] = torch.tensor(pad_2d_vals(np.array(g.edge_features['token_id']),
+                                                                       g.edge_features['token_id'].size()[0],
+                                                                       edge_token_id_max_len),
+                                                           dtype=torch.int64)
+                g.edge_features['token_id'] = g.edge_features['token_id'].to(self.device)
+                num_edges.append(g.get_edge_num())
+                edge_size.extend([len(g.edge_attributes[i]['token_id']) for i in range(num_edges[-1])])
+
 
         batch_gd = to_batch(batch_graphdata)
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
         node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
         batch_gd.node_features["node_feat"] = node_emb
+        if edge_size != [] and num_edges != []:
+            edge_size = torch.Tensor(edge_size).to(self.device).int()
+            num_edges = torch.Tensor(num_edges).to(self.device).int()
+            edge_emb = self.embedding_layer(batch_gd.edge_features["token_id"].long(), edge_size, num_edges)
+            batch_gd.edge_features["edge_feat"] = edge_emb
 
         return batch_gd
