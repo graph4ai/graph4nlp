@@ -347,7 +347,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         ret_graph = GraphData()
         ret_graph.add_nodes(len(token_list))
 
-        for idx, token in enumerate(token_list[:-1]):
+        for idx, token in enumerate(len(token_list) - 1):
             ret_graph.add_edge(idx, idx + 1)
             ret_graph.node_attributes[idx]['token'] = token
 

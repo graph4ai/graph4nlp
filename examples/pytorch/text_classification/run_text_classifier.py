@@ -46,6 +46,10 @@ class TextClassifier(nn.Module):
         embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': config.node_edge_emb_strategy,
                            'seq_info_encode_strategy': config.seq_info_encode_strategy}
 
+        assert not (config.graph_type in ('node_emb', 'node_emb_refined') and config.gnn == 'gat'), \
+                                'dynamic graph construction does not support GAT'
+
+        use_edge_weight = False
         if config.graph_type == 'dependency':
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=vocab.in_word_vocab,
@@ -87,6 +91,7 @@ class TextClassifier(nn.Module):
                                     word_dropout=config.word_drop,
                                     dropout=config.rnn_drop,
                                     device=config.device)
+            use_edge_weight = True
         elif config.graph_type == 'node_emb_refined':
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
                                     vocab.in_word_vocab,
@@ -105,6 +110,7 @@ class TextClassifier(nn.Module):
                                     word_dropout=config.word_drop,
                                     dropout=config.rnn_drop,
                                     device=config.device)
+            use_edge_weight = True
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(config.graph_type))
 
@@ -134,14 +140,16 @@ class TextClassifier(nn.Module):
                         feat_drop=config.gnn_drop,
                         bias=True,
                         norm=None,
-                        activation=F.relu)
+                        activation=F.relu,
+                        use_weight=use_edge_weight)
         elif config.gnn == 'ggnn':
             self.gnn = GGNN(config.num_layers,
                         config.num_hidden,
                         config.num_hidden,
                         dropout=config.gnn_drop,
                         direction_option=config.direction_option,
-                        bias=True)
+                        bias=True,
+                        use_edge_weight=use_edge_weight)
         else:
             raise RuntimeError('Unknown gnn type: {}'.format(config.gnn))
 

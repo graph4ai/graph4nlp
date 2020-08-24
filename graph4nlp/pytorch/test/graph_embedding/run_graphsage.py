@@ -45,7 +45,7 @@ class GNNClassifier(nn.Module):
                 direction_option):
         super(GNNClassifier, self).__init__()
         self.direction_option = direction_option
-    
+
         self.model = GraphSAGE(num_layers,
                     input_size,
                     hidden_size,
@@ -55,13 +55,13 @@ class GNNClassifier(nn.Module):
                     feat_drop=0.6,
                     bias=True,
                     activation=nn.ReLU)
-        
+
         self.fc = nn.Linear(output_size, num_class)
 
     def forward(self, graph):
-        out_graph = self.model(graph)            
+        out_graph = self.model(graph)
         return self.fc(out_graph.node_features['node_emb'])
-        
+
 def prepare_dgl_graph_data(args):
     data = load_data(args)
     features = torch.FloatTensor(data.features)
@@ -187,7 +187,7 @@ def main(args, seed):
     test_mask = test_mask.to(device)
 
     g.ndata['node_feat'] = features
-    
+
     model = GNNClassifier(args.num_layers,
             num_feats,
             args.hidden_size,
@@ -198,7 +198,7 @@ def main(args, seed):
 
     G=GraphData()
     G.from_dgl(g)
-    
+
     print(model)
     model.to(device)
 
@@ -254,8 +254,8 @@ def main(args, seed):
     print("Test Accuracy {:.4f}".format(acc))
 
     return acc
-    
-        
+
+
 if __name__ == '__main__':
     # For test purpose
 
@@ -307,6 +307,6 @@ if __name__ == '__main__':
 
     print("\nTest Accuracy ({} runs): mean {:.4f}, std {:.4f}".format(args.num_runs, np.mean(scores), np.std(scores)))
 
-    
 
- 
+
+
