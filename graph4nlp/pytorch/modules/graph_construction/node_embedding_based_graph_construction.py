@@ -1,11 +1,10 @@
-import numpy as np
 import torch
 from torch import nn
 
 from .base import DynamicGraphConstructionBase
 from ..utils.generic_utils import normalize_adj, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
-from .utils import convert_adj_to_graph, convert_adj_to_dgl_graph
+from .utils import convert_adj_to_graph
 from ...data.data import to_batch
 
 
@@ -91,20 +90,15 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
 
     def forward(self, batch_graphdata: list):
         """Compute graph topology and initial node embeddings.
+
         Parameters
         ----------
-        node_word_idx : torch.LongTensor
-            The input word index node features.
-        node_size : torch.LongTensor
-            Indicate the length of word sequences for nodes.
-        num_nodes : torch.LongTensor
-            Indicate the number of nodes.
-        node_mask : torch.Tensor, optional
-            The node mask matrix, default: ``None``.
+        batch_graphdata : list of GraphData
+            The input graph data list.
         Returns
         -------
         GraphData
-            The constructed graph.
+            The constructed batched graph.
         """
         node_size = []
         num_nodes = []
@@ -156,13 +150,8 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         else:
             adj = torch.softmax(adj, dim=-1)
 
-        # 1) use GraphData
         graph_data = convert_adj_to_graph(adj, 0)
         graph_data.graph_attributes['graph_reg'] = graph_reg
-
-        # # 2) use DGLGraph
-        # dgl_graph = convert_adj_to_dgl_graph(adj, 0)
-        # dgl_graph.graph_reg = graph_reg
 
         return graph_data
 

@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import sparse
 import torch
 
 
@@ -15,6 +16,15 @@ def normalize_adj(mx):
     r_mat_inv_sqrt = torch.diag(r_inv_sqrt)
 
     return torch.mm(torch.mm(mx, r_mat_inv_sqrt).transpose(-1, -2), r_mat_inv_sqrt)
+
+def normalize_sparse_adj(mx):
+    """Row-normalize sparse matrix: symmetric normalized Laplacian"""
+    rowsum = np.array(mx.sum(1))
+    r_inv_sqrt = np.power(rowsum, -0.5).flatten()
+    r_inv_sqrt[np.isinf(r_inv_sqrt)] = 0.
+    r_mat_inv_sqrt = sparse.diags(r_inv_sqrt)
+
+    return mx.dot(r_mat_inv_sqrt).transpose().dot(r_mat_inv_sqrt)
 
 def sparse_mx_to_torch_sparse_tensor(sparse_mx):
     """Convert a scipy sparse matrix to a torch sparse tensor."""

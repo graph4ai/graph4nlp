@@ -165,12 +165,7 @@ class TextClassifier(nn.Module):
 
     def forward(self, graph_list, tgt=None, require_loss=True):
         # graph embedding construction
-        if self.config.graph_type == 'node_emb':
-            batch_gd = self.graph_topology(graph_list)
-        elif self.config.graph_type == 'node_emb_refined':
-            batch_gd = self.graph_topology(graph_list, graph_list, node_mask=None)
-        else:
-            batch_gd = self.graph_topology(graph_list)
+        batch_gd = self.graph_topology(graph_list)
 
         # run GNN
         self.gnn(batch_gd)

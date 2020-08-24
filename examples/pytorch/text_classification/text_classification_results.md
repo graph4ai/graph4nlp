@@ -120,6 +120,19 @@ GraphSAGE-Undirected
 python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb --gl_num_heads 1 --gl_epsilon 0.7 --gpu 1
 ```
 
+
+
+
+Node embedding based refined dynamic graph:
+
+
+
+```python
+python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb_refined --gl_num_heads 1 --gl_epsilon 0.7 --gpu 1 --init_adj_alpha 0.2
+```
+
+
+
 <!-- IE graph:
 
 GAT-Undirected
@@ -174,6 +187,12 @@ GGNN-Undirected: 0.934
 GGNN-BiSep: 0.924
 GGNN-BiFuse: 0.934
 
+
+node_emb:
+
+GraphSAGE-Undirected: 
+
+epsilon 0.8: 0.928
 
 
 

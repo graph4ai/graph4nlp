@@ -8,8 +8,9 @@ import torch.nn.functional as F
 from .embedding_construction import EmbeddingConstruction
 from ...data.data import GraphData
 from ..utils.constants import INF
-from ..utils.generic_utils import sparse_mx_to_torch_sparse_tensor, to_cuda
+from ..utils.generic_utils import normalize_sparse_adj, sparse_mx_to_torch_sparse_tensor, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
+
 
 class GraphConstructionBase(nn.Module):
     """Base class for graph construction.
@@ -347,9 +348,9 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         ret_graph = GraphData()
         ret_graph.add_nodes(len(token_list))
 
-        for idx, token in enumerate(len(token_list) - 1):
+        for idx in range(len(token_list) - 1):
             ret_graph.add_edge(idx, idx + 1)
-            ret_graph.node_attributes[idx]['token'] = token
+            ret_graph.node_attributes[idx]['token'] = token_list[idx]
 
         ret_graph.node_attributes[idx + 1]['token'] = token_list[-1]
 
@@ -511,3 +512,10 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         node_mask = to_cuda(sparse_mx_to_torch_sparse_tensor(node_mask).to_dense(), self.device)
 
         return node_mask
+
+    def _get_normalized_init_adj(self, graph):
+        adj = graph.scipy_sparse_adj()
+        adj = normalize_sparse_adj(adj)
+        adj = to_cuda(sparse_mx_to_torch_sparse_tensor(adj), self.device)
+
+        return adj
