@@ -87,8 +87,6 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
             :math:`D_{out}` is size of output feature.
         """
         etypes = torch.tensor([0] * graph.number_of_edges(), dtype=torch.int64)  # [B, E]. E is the number of edges.
-        if type(edge_weight) == type(None):
-            edge_weight = torch.tensor([1] * graph.number_of_edges(), dtype=torch.float32).view(-1, 1)
 
         assert graph.is_homograph(), \
             "not a homograph; convert it with to_homo and pass in the edge type as argument"
@@ -101,10 +99,16 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
             for i in range(self._n_etypes):
                 eids = (etypes == i).nonzero().view(-1)
                 if len(eids) > 0:
-                    graph.apply_edges(
-                        lambda edges: {'W_e*h': self.linears[i](edges.src['h']) * edge_weight},
-                        eids
-                    )
+                    if type(edge_weight) == type(None):
+                        graph.apply_edges(
+                            lambda edges: {'W_e*h': self.linears[i](edges.src['h'])},
+                            eids
+                        )
+                    else:
+                        graph.apply_edges(
+                            lambda edges: {'W_e*h': self.linears[i](edges.src['h']) * edge_weight},
+                            eids
+                        )
             graph.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
             a = graph.ndata.pop('a')  # (N, D)
             feat = self.gru(a, feat)
@@ -210,8 +214,6 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
         """
         feat_in, feat_out = node_feats  # feat_in == feat_out
         etypes = torch.LongTensor([0] * graph.number_of_edges())  # [B, E]. E is the number of edges.
-        if type(edge_weight) == type(None):
-            edge_weight = torch.tensor([1] * graph.number_of_edges(), dtype=torch.float32).view(-1, 1)
 
         # forward aggregation
         graph_in = graph
@@ -234,10 +236,16 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
         for i in range(self._n_etypes):
             eids = (etypes == i).nonzero().view(-1)
             if len(eids) > 0:
-                graph_out.apply_edges(
-                    lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight},
-                    eids
-                )
+                if type(edge_weight) == type(None):
+                    graph_out.apply_edges(
+                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h'])},
+                        eids
+                    )
+                else:
+                    graph_out.apply_edges(
+                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight},
+                        eids
+                    )
         graph_out.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
         agg_out = graph_out.ndata.pop('a')  # (N, D)
 
@@ -345,8 +353,6 @@ class BiSepGGNNLayerConv(GNNLayerBase):
     def forward(self, graph, node_feats, edge_weight=None):
         feat_in, feat_out = node_feats
         etypes = torch.LongTensor([0] * graph.number_of_edges())  # [B, E]. E is the number of edges.
-        if type(edge_weight) == type(None):
-            edge_weight = torch.tensor([1] * graph.number_of_edges(), dtype=torch.float32).view(-1, 1)
 
         graph_in = graph
         graph_in = graph_in.local_var()
@@ -368,10 +374,16 @@ class BiSepGGNNLayerConv(GNNLayerBase):
         for i in range(self._n_etypes):
             eids = (etypes == i).nonzero().view(-1)
             if len(eids) > 0:
-                graph_out.apply_edges(
-                    lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight},
-                    eids
-                )
+                if type(edge_weight) == type(None):
+                    graph_out.apply_edges(
+                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h'])},
+                        eids
+                    )
+                else:
+                    graph_out.apply_edges(
+                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight},
+                        eids
+                    )
         graph_out.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
         a_out = graph_out.ndata.pop('a')  # (N, D)
         emb_out = self.gru_out(a_out, feat_out)
