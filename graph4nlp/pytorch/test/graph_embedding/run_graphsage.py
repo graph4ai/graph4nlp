@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jul 23 16:55:36 2020
 
-@author: XiaojieGuo
-"""
 import os
 import argparse
 import numpy as np
@@ -54,10 +49,11 @@ class GNNClassifier(nn.Module):
                     direction_option=direction_option,
                     feat_drop=0.6,
                     bias=True,
-                    activation=nn.ReLU)
-        
-        self.fc = nn.Linear(output_size, num_class)
-
+                    activation=nn.ReLU())
+        if self.direction_option=='bi_sep':
+            self.fc = nn.Linear(output_size*2, num_class)
+        else:
+            self.fc = nn.Linear(output_size, num_class)
     def forward(self, graph):
         out_graph = self.model(graph)            
         return self.fc(out_graph.node_features['node_emb'])
@@ -306,6 +302,10 @@ if __name__ == '__main__':
         scores.append(main(args, seed))
 
     print("\nTest Accuracy ({} runs): mean {:.4f}, std {:.4f}".format(args.num_runs, np.mean(scores), np.std(scores)))
+
+    
+
+ 
 
     
 
