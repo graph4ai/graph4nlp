@@ -71,8 +71,6 @@ class GraphSAGE(GNNBase):
         self.num_layers = num_layers
         self.direction_option = direction_option
         self.GraphSAGE_layers = nn.ModuleList()
-        #if self.direction_option == 'bi_sep':
-        #       output_size=int(output_size/2)
                
         #transform the hidden size format
         if self.num_layers>1 and type(hidden_size) is int:
@@ -86,9 +84,9 @@ class GraphSAGE(GNNBase):
                                             aggregator_type,
                                             direction_option=self.direction_option,
                                             feat_drop=feat_drop,
-                                            bias,
-                                            norm,
-                                            activation))
+                                            bias=bias,
+                                            norm=norm,
+                                            activation=activation))
         # hidden layers
         for l in range(1, self.num_layers - 1):
             # due to multi-head, the input_size = hidden_size * num_heads
@@ -97,18 +95,18 @@ class GraphSAGE(GNNBase):
                                             aggregator_type,
                                             direction_option=self.direction_option,
                                             feat_drop=feat_drop,
-                                            bias,
-                                            norm,
-                                            activation))
+                                            bias=bias,
+                                            norm=norm,
+                                            activation=activation))
         # output projection
         self.GraphSAGE_layers.append(GraphSAGELayer(hidden_size[-1] if self.num_layers > 1 else input_size,
                                         output_size,
                                         aggregator_type,
                                         direction_option=self.direction_option,
                                         feat_drop=feat_drop,
-                                        bias,
-                                        norm,
-                                        activation))
+                                        bias=bias,
+                                        norm=norm,
+                                        activation=activation))
        
     def forward(self, graph):
         r"""Compute GraphSAGE layer.
@@ -275,7 +273,7 @@ class UndirectedGraphSAGELayerConv(GNNLayerBase):
                  bias=True,
                  norm=None,
                  activation=None):
-        super(SAGEConv, self).__init__()
+        super(UndirectedGraphSAGELayerConv, self).__init__()
 
         self._in_src_feats, self._in_dst_feats = expand_as_pair(in_feats)
         self._out_feats = out_feats
@@ -348,7 +346,7 @@ class UndirectedGraphSAGELayerConv(GNNLayerBase):
 
         if self._aggre_type == 'mean':
             graph.srcdata['h'] = feat_src
-            if egde_weight==None:
+            if edge_weight==None:
                graph.update_all(fn.copy_src('h', 'm'), fn.mean('m', 'neigh'))
             else:
                graph.edata['edge_weight']=edge_weight
@@ -519,7 +517,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
        
        if self._aggre_type == 'mean':
          graph.srcdata['h'] = feat_src
-         if edge_weight!=None:
+         if edge_weight==None:
              graph.update_all(fn.copy_src('h', 'm'), fn.mean('m', 'neigh'))
          else:
              graph.edata['edge_weight']=edge_weight
@@ -529,7 +527,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
          check_eq_shape(feat)
          graph.srcdata['h'] = feat_src
          graph.dstdata['h'] = feat_dst  # same as above if homogeneous
-         if edge_weight!=None:
+         if edge_weight==None:
              graph.update_all(fn.copy_src('h', 'm'), fn.sum('m', 'neigh'))
          else:
              graph.edata['edge_weight']=edge_weight
@@ -542,7 +540,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
              graph.srcdata['h'] = F.relu(self.fc_pool_fw(feat_src))
          elif direction=='bw':
              graph.srcdata['h'] = F.relu(self.fc_pool_bw(feat_src))  
-         if edge_weight!=None:
+         if edge_weight==None:
              graph.update_all(fn.copy_src('h', 'm'), fn.max('m', 'neigh'))
          else:
              graph.edata['edge_weight']=edge_weight
@@ -551,13 +549,13 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
        elif self._aggre_type == 'lstm':
          graph.srcdata['h'] = feat_src
          if direction=='fw':
-           if edge_weight!=None:
+           if edge_weight==None:
                graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_fw)
            else:
               graph.edata['edge_weight']=edge_weight
               graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_fw)           
          elif direction=='bw':
-           if edge_weight!=None: 
+           if edge_weight==None: 
               graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_bw)
            else:
               graph.edata['edge_weight']=edge_weight
@@ -783,7 +781,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
  
             return z*forward_message+(1-z)*backward_message
  
-        def message_reduce(self,graph,feat,edge_weight):
+        def message_reduce(self,graph,feat,direction,edge_weight):
            if isinstance(feat, tuple):
             feat_src = self.feat_drop(feat[0])
             feat_dst = self.feat_drop(feat[1])
@@ -846,8 +844,8 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
            return h_neigh,h_self
        
         # update node part:
-        h_neigh_fw,h_self_fw = message_reduce(self,f_graph,'fw')
-        h_neigh_bw,h_self_bw = message_reduce(self, b_graph,'bw')
+        h_neigh_fw,h_self_fw = message_reduce(self,f_graph,feat_fw,'fw',edge_weight)
+        h_neigh_bw,h_self_bw = message_reduce(self, b_graph,feat_bw,'bw',edge_weight)
 
         #fuse the two directions' information 
         h_neigh_fused=fuse(self,h_neigh_fw,h_neigh_bw)  
