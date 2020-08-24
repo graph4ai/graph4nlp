@@ -190,7 +190,7 @@ def main(args, seed):
     g = GraphData()
     g.from_dgl(dgl_graph)
 
-    g.edge_features['edge_weight'] = torch.tensor([1] * g.number_of_edges(), dtype=torch.float32).view(-1, 1).to(device)
+    g.edge_features['edge_weight'] = torch.tensor([1] * g.get_edge_num(), dtype=torch.float32).view(-1, 1).to(device)
 
     # create model
     model = GNNClassifier(args.num_layers,
