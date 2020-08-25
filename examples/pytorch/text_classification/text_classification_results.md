@@ -239,7 +239,7 @@ epsilon 0.6, head 4: 0.936
 epsilon 0.6, head 6: 0.930
 epsilon 0.5, head 1: 0.932
 epsilon 0.5, head 2: 0.924
-epsilon 0.5, head 4: 
+epsilon 0.5, head 4: 0.928
 epsilon 0.5, head 6: 0.926
 
 
