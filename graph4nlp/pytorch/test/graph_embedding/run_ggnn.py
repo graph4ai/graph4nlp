@@ -43,7 +43,7 @@ class GNNClassifier(nn.Module):
                  use_edge_weight=False):
         super(GNNClassifier, self).__init__()
         self.direction_option = direction_option
-        self.model = GGNN(num_layers, input_size, output_size,
+        self.model = GGNN(num_layers, input_size, output_size, n_etypes=2,
                           dropout=drop, direction_option=direction_option,
                           use_edge_weight=use_edge_weight)
 
@@ -190,6 +190,20 @@ def main(args, seed):
     g = GraphData()
     g.from_dgl(dgl_graph)
 
+    edge_types = []
+    directed_edges = []
+    for edge in g.edges():
+        if edge not in directed_edges and \
+                (edge[1], edge[0]) not in directed_edges:
+            directed_edges.append(edge)
+            edge_types.append(0)
+        else:
+            edge_types.append(1)
+
+    if args.num_etypes == 2:
+        g.edge_features['etype'] = torch.tensor(edge_types, dtype=torch.long).to(device)
+    else:
+        g.edge_features['etype'] = torch.LongTensor([0] * g.get_edge_num()).to(device)
     g.edge_features['edge_weight'] = torch.tensor([1] * g.get_edge_num(), dtype=torch.float32).view(-1, 1).to(device)
 
     # create model
@@ -279,17 +293,19 @@ if __name__ == '__main__':
                         help="number of output attention heads")
     parser.add_argument("--num-layers", type=int, default=2,
                         help="number of hidden layers")
+    parser.add_argument("--num-etypes", type=int, default=2,
+                        help="number of edge types")
     parser.add_argument("--num-hidden", type=int, default=1433,
                         help="number of hidden units")
     parser.add_argument("--residual", action="store_true", default=False,
                         help="use residual connection")
-    parser.add_argument("--drop", type=float, default=.3,
+    parser.add_argument("--drop", type=float, default=0.,
                         help="input feature dropout")
     parser.add_argument("--use_edge_weight", type=bool, default=False,
                         help="use edge weight")
     # parser.add_argument("--attn-drop", type=float, default=.6,
     #                     help="attention dropout")
-    parser.add_argument("--lr", type=float, default=0.005,
+    parser.add_argument("--lr", type=float, default=0.002,
                         help="learning rate")
     parser.add_argument('--weight-decay', type=float, default=5e-4,
                         help="weight decay")

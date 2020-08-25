@@ -24,13 +24,13 @@ Run with following:
 #### Cora
 
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option undirected --early-stop
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option undirected --early-stop --num-etypes 1
 ```
 ```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option bi_sep --early-stop
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option bi_fuse --early-stop
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option bi_sep --early-stop --num-etypes 1
 ```
 
 #### Citeseer
@@ -71,7 +71,7 @@ Results
 
 | Dataset  |    GGNN-undirected    |   GGNN-BiSep   |   GGNN-BiFuse  |
 | -------- | -------------- | -------------- | -------------- |
-| Cora     | 0.7740 (0.01)  | 0.7882 (0.01)  | 0.7468 (0.02)  |
+| Cora     | 0.7590 (0.02)  | 0.7998 (0.004)  | 0.8010 (0.008)  |
 | Citeseer | 0.6094 (0.02)  | 0.6122 (0.03)  | 0.6230 (0.02)  |
 | Pubmed   | 0.7684 (0.01)  | 0.7736 (0.01)  | 0.7676 (0.01)  |
 
