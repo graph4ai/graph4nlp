@@ -258,8 +258,17 @@ class Dataset(torch.utils.data.Dataset):
             print('Connecting to stanfordcorenlp server...')
             processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
             print('CoreNLP server connected.')
+            processor_args = {
+                'annotators': 'ssplit,tokenize,depparse',
+                "tokenize.options":
+                    "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                "tokenize.whitespace": False,
+                'ssplit.isOneSentence': False,
+                'outputFormat': 'json'
+            }
             for item in data_items:
-                graph = self.topology_builder.topology(raw_text_data=item.input_text, nlp_processor=processor,
+                graph = self.topology_builder.topology(raw_text_data=item.input_text,
+                                                       nlp_processor=processor, processor_args=processor_args,
                                                        merge_strategy=self.merge_strategy,
                                                        edge_strategy=self.edge_strategy,
                                                        verbase=False)
@@ -381,7 +390,7 @@ class Text2TextDataset(Dataset):
         return self.vocab_model
 
     def vectorization(self, data_items):
-        if type(self.topology_builder) == type(IEBasedGraphConstruction):
+        if isinstance(self.topology_builder, IEBasedGraphConstruction):
             use_ie = True
         else:
             use_ie = False
@@ -393,7 +402,7 @@ class Text2TextDataset(Dataset):
                 node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token, use_ie)
                 graph.node_attributes[node_idx]['token_id'] = node_token_id
                 token_matrix.append([node_token_id])
-            if type(self.topology_builder) == type(IEBasedGraphConstruction):
+            if isinstance(self.topology_builder, IEBasedGraphConstruction):
                 for i in range(len(token_matrix)):
                     token_matrix[i] = np.array(token_matrix[i][0])
                 token_matrix = pad_2d_vals_no_size(token_matrix)
@@ -404,14 +413,14 @@ class Text2TextDataset(Dataset):
                 token_matrix = torch.tensor(token_matrix, dtype=torch.long)
                 graph.node_features['token_id'] = token_matrix
 
-            if 'token' in graph.edge_attributes[0].keys() and use_ie:
+            if use_ie and 'token' in graph.edge_attributes[0].keys():
                 edge_token_matrix = []
                 for edge_idx in range(graph.get_edge_num()):
                     edge_token = graph.edge_attributes[edge_idx]['token']
                     edge_token_id = self.vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
                     graph.edge_attributes[edge_idx]['token_id'] = edge_token_id
                     edge_token_matrix.append([edge_token_id])
-                if type(self.topology_builder) == type(IEBasedGraphConstruction):
+                if isinstance(self.topology_builder, IEBasedGraphConstruction):
                     for i in range(len(edge_token_matrix)):
                         edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
                     edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
