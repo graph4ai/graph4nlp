@@ -49,8 +49,8 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
     def __init__(self,
                  input_size,
                  output_size,
-                 n_steps=1,
-                 n_etypes=1,
+                 n_steps,
+                 n_etypes,
                  bias=True):
         super(UndirectedGGNNLayerConv, self).__init__()
         self._in_feats = input_size
@@ -71,13 +71,20 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
             init.xavier_normal_(linear.weight, gain=gain)
             init.zeros_(linear.bias)
 
-    def forward(self, graph, feat, edge_weight=None):
+    def forward(self, graph, feat, etypes=None, edge_weight=None):
         """Compute Gated Graph Convolution layer.
+
         Parameters
         ----------
-        graph: dgl.DGLGraph
-        feat: torch.Tensor
-            The shape of feat is :math:`(N, D_{in})`.
+        graph : DGLGraph
+            The graph.
+        feat : torch.Tensor
+            The input feature of shape :math:`(N, D_{in})` where :math:`N`
+            is the number of nodes of the graph and :math:`D_{in}` is the
+            input feature size.
+        etypes : torch.LongTensor
+            The edge type tensor of shape :math:`(E,)` where :math:`E` is
+            the number of edges of the graph.
         edge_weight: torch.Tensor
             The shape of edge_weight is :math:`(N_E, 1)`. N_E is the number of edges in graph.
         Returns
@@ -86,8 +93,6 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
             The output feature of shape :math:`(N, D_{out})` where
             :math:`D_{out}` is size of output feature.
         """
-        etypes = torch.tensor([0] * graph.number_of_edges(), dtype=torch.int64)  # [B, E]. E is the number of edges.
-
         assert graph.is_homograph(), \
             "not a homograph; convert it with to_homo and pass in the edge type as argument"
         graph = graph.local_var()
@@ -99,7 +104,7 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
             for i in range(self._n_etypes):
                 eids = (etypes == i).nonzero().view(-1)
                 if len(eids) > 0:
-                    if type(edge_weight) == type(None):
+                    if edge_weight is None:
                         graph.apply_edges(
                             lambda edges: {'W_e*h': self.linears[i](edges.src['h'])},
                             eids
@@ -197,7 +202,7 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
             nn.init.xavier_normal_(linear.weight, gain=gain)
             nn.init.zeros_(linear.bias)
 
-    def forward(self, graph, node_feats, edge_weight=None):
+    def forward(self, graph, node_feats, etypes=None, edge_weight=None):
         """
         Parameters
         ----------
@@ -213,7 +218,7 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
             :math:`D_{out}` is size of output feature.
         """
         feat_in, feat_out = node_feats  # feat_in == feat_out
-        etypes = torch.LongTensor([0] * graph.number_of_edges())  # [B, E]. E is the number of edges.
+        # etypes = torch.LongTensor([0] * graph.number_of_edges())  # [B, E]. E is the number of edges.
 
         # forward aggregation
         graph_in = graph
@@ -222,10 +227,16 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
         for i in range(self._n_etypes):
             eids = (etypes == i).nonzero().view(-1)
             if len(eids) > 0:
-                graph_in.apply_edges(
-                    lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight},
-                    eids
-                )
+                if edge_weight is None:
+                    graph_in.apply_edges(
+                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h'])},
+                        eids
+                    )
+                else:
+                    graph_in.apply_edges(
+                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight},
+                        eids
+                    )
         graph_in.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
         agg_in = graph_in.ndata.pop('a')  # (N, D)
 
@@ -236,7 +247,7 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
         for i in range(self._n_etypes):
             eids = (etypes == i).nonzero().view(-1)
             if len(eids) > 0:
-                if type(edge_weight) == type(None):
+                if edge_weight is None:
                     graph_out.apply_edges(
                         lambda edges: {'W_e*h': self.linears_out[i](edges.src['h'])},
                         eids
@@ -350,9 +361,9 @@ class BiSepGGNNLayerConv(GNNLayerBase):
         # nn.init.xavier_normal_(self.update_in.weight, gain=gain)
         # nn.init.xavier_normal_(self.update_out.weight, gain=gain)
 
-    def forward(self, graph, node_feats, edge_weight=None):
+    def forward(self, graph, node_feats, etypes=None, edge_weight=None):
         feat_in, feat_out = node_feats
-        etypes = torch.LongTensor([0] * graph.number_of_edges())  # [B, E]. E is the number of edges.
+        # etypes = torch.LongTensor([0] * graph.number_of_edges())  # [B, E]. E is the number of edges.
 
         graph_in = graph
         graph_in = graph_in.local_var()
@@ -360,10 +371,16 @@ class BiSepGGNNLayerConv(GNNLayerBase):
         for i in range(self._n_etypes):
             eids = (etypes == i).nonzero().view(-1)
             if len(eids) > 0:
-                graph_in.apply_edges(
-                    lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight},
-                    eids
-                )
+                if edge_weight is None:
+                    graph_in.apply_edges(
+                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h'])},
+                        eids
+                    )
+                else:
+                    graph_in.apply_edges(
+                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight},
+                        eids
+                    )
         graph_in.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
         a_in = graph_in.ndata.pop('a')  # (N, D)
         emb_in = self.gru_in(a_in, feat_in)
@@ -426,13 +443,13 @@ class GGNNLayer(GNNLayerBase):
         if direction_option == 'undirected':
             self.model = UndirectedGGNNLayerConv(input_size, output_size, n_steps=n_steps, n_etypes=n_etypes, bias=bias)
         elif direction_option == 'bi_sep':
-            self.model = BiSepGGNNLayerConv(input_size, output_size, bias=bias)
+            self.model = BiSepGGNNLayerConv(input_size, output_size, n_etypes, bias=bias)
         elif direction_option == 'bi_fuse':
-            self.model = BiFuseGGNNLayerConv(input_size, output_size, bias=bias)
+            self.model = BiFuseGGNNLayerConv(input_size, output_size, n_etypes, bias=bias)
         else:
             raise RuntimeError('Unknown `bidirection` value: {}'.format(direction_option))
 
-    def forward(self, graph, node_feats, edge_weight=None):
+    def forward(self, graph, node_feats, etypes=None, edge_weight=None):
         """
 
         Parameters
@@ -445,7 +462,7 @@ class GGNNLayer(GNNLayerBase):
         -------
         torch.Tensor
         """
-        return self.model(graph, node_feats, edge_weight)
+        return self.model(graph, node_feats, etypes, edge_weight)
 
 
 class GGNN(GNNBase):
@@ -493,7 +510,7 @@ class GGNN(GNNBase):
             self.models = GGNNLayer(input_size, output_size, direction_option, n_steps=num_layers, n_etypes=n_etypes,
                                     bias=bias)
         else:
-            self.models = GGNNLayer(output_size, output_size, direction_option, bias=bias)
+            self.models = GGNNLayer(output_size, output_size, direction_option, n_etypes=n_etypes, bias=bias)
 
     def forward(self, graph: GraphData):
         r"""
@@ -512,6 +529,7 @@ class GGNN(GNNBase):
 
         """
         node_feats = graph.node_features['node_feat']
+        etypes = graph.edge_features['etype']
         if self.use_edge_weight:
             edge_weight = graph.edge_features['edge_weight']
         else:
@@ -520,7 +538,7 @@ class GGNN(GNNBase):
         dgl_graph = graph.to_dgl()
 
         if self.direction_option == 'undirected':
-            node_embs = self.models(dgl_graph, node_feats, edge_weight)
+            node_embs = self.models(dgl_graph, node_feats, etypes, edge_weight)
         else:
             assert node_feats.shape[1] == self.input_size
 
@@ -533,7 +551,7 @@ class GGNN(GNNBase):
             for i in range(self.num_layers):
                 feat_in = self.dropout(feat_in)
                 feat_out = self.dropout(feat_out)
-                h = self.models(dgl_graph, (feat_in, feat_out), edge_weight)
+                h = self.models(dgl_graph, (feat_in, feat_out), etypes, edge_weight)
                 feat_in = h[0]
                 feat_out = h[1]
 
