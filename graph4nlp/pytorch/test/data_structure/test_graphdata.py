@@ -231,3 +231,12 @@ def test_batch():
         assert g.get_node_num() == 10
         assert torch.all(torch.eq(g.node_features['idx'], torch.ones(10) * i))
         assert torch.all(torch.eq(g.edge_features['idx'], torch.ones(10) * i))
+
+    # Test graph with 0 edges
+    gl = [GraphData() for _ in range(5)]
+    for i in range(5):
+        gl[i].add_nodes(1)
+    b = to_batch(gl)
+    gll = from_batch(b)
+    for i in range(5):
+        print(gll[i].get_edge_num())
