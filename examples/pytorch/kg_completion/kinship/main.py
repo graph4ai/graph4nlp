@@ -259,7 +259,7 @@ class Graph2DistMult(nn.Module):
         node_feats = kg_graph.node_features['node_feat']
         dgl_graph = kg_graph.to_dgl()
 
-        if self.direction_option == 'uni':
+        if self.direction_option == 'undirected':
             node_embs = kg_graph.node_features['node_feat']
             for i in range(self.num_layers):
                 # node_embs = self.gnn_encoder[i](dgl_graph, node_embs).squeeze() # GAT
@@ -361,7 +361,7 @@ class Kinship:
                                     num_entities=self.num_entities,
                                     num_relations=self.num_relations,
                                     loss_name='BCELoss',
-                                    direction_option='uni').to(self.device)
+                                    direction_option='bi_fuse').to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
