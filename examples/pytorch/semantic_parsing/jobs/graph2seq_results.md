@@ -32,16 +32,30 @@ Dependency
 
 | Dataset  |      GAT-Uni     |   GAT-BiSep   |  GAT-BiFuse   |
 | -------- | ---------------- | ------------- | ------------- |
-| Jobs     |       90.0       |       92.9    |      90.0     |
+| Jobs     |       91.4       |       92.9    |      90.0     |
 
 | Dataset  |      GGNN-Uni    |   GGNN-BiSep  |  GGNN-BiFuse  |
 | -------- | ---------------- | ------------- | ------------- |
-| Jobs     |       87.9       |       89.3    |      87.1     |
+| Jobs     |       92.9       |       91.4    |      91.4     |
 
 | Dataset  |  Graphsage-Uni   | Graphsage-BiSep   |  Graphsage-BiFuse   |
 | -------- | ---------------- | ------------- | ------------- |
-| Jobs     |       90.7       |       90.7    |      91.4     |
+| Jobs     |       92.1       |       92.1    |      90.7     |
 
+
+Cos
+
+| Dataset  |      GAT-Uni     |   GAT-BiSep   |  GAT-BiFuse   |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       91.4       |           |           |
+
+| Dataset  |      GGNN-Uni    |   GGNN-BiSep  |  GGNN-BiFuse  |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       91.4       |           |           |
+
+| Dataset  |  Graphsage-Uni   | Graphsage-BiSep   |  Graphsage-BiFuse   |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       87.9       |     89.3      |      90.7     |
 TODO
 -------
 

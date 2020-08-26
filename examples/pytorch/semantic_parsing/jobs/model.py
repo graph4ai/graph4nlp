@@ -1,5 +1,6 @@
 from graph4nlp.pytorch.data.data import from_batch, GraphData
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
@@ -9,22 +10,27 @@ import torch.nn.functional as F
 
 
 class Graph2seq(nn.Module):
-    def __init__(self, vocab, hidden_size=300, direction_option='undirected'):
+    def __init__(self, vocab, hidden_size=300, direction_option='undirected', device=None):
         super(Graph2seq, self).__init__()
 
         self.vocab = vocab
         embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
                            'seq_info_encode_strategy': "bilstm"}
-        self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
+        # self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
+        #                                                        vocab=vocab.in_word_vocab,
+        #                                                        hidden_size=hidden_size, dropout=0.2, device=device,
+        #                                                        fix_word_emb=False)
+        self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                vocab=vocab.in_word_vocab,
-                                                               hidden_size=hidden_size, dropout=0.2, use_cuda=True,
+                                                               hidden_size=hidden_size, dropout=0.2, device=device,
                                                                fix_word_emb=False)
+
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
-        self.gnn_encoder = GAT(3, hidden_size, hidden_size, hidden_size, [2, 2, 1], direction_option=direction_option,
-                               feat_drop=0.2, attn_drop=0.2, activation=F.relu, residual=True)
-        # self.gnn_encoder = GGNN(3, hidden_size, hidden_size, direction_option=direction_option)
+        # self.gnn_encoder = GAT(3, hidden_size, hidden_size, hidden_size, [2, 2, 1], direction_option=direction_option,
+        #                        feat_drop=0.2, attn_drop=0.2, activation=F.relu, residual=True)
+        self.gnn_encoder = GGNN(3, hidden_size, hidden_size, direction_option=direction_option, dropout=0.2)
         # self.gnn_encoder = GraphSAGE(3, hidden_size, hidden_size, hidden_size, aggregator_type="lstm",
-        #                              direction_option=direction_option, feat_drop=0.4)
+        #                              direction_option=direction_option, feat_drop=0.2, activation=nn.ReLU(), bias=True)
         self.seq_decoder = StdRNNDecoder(max_decoder_step=50,
                                          decoder_input_size=2*hidden_size if direction_option == 'bi_sep' else hidden_size,
                                          decoder_hidden_size=hidden_size, graph_pooling_strategy=None,

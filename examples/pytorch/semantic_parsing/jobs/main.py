@@ -1,10 +1,11 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 
 import numpy as np
 import torch
@@ -48,9 +49,12 @@ class Jobs:
 
     def _build_dataloader(self):
 
+        # dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
+        #                       topology_builder=DependencyBasedGraphConstruction,
+        #                       topology_subdir='DependencyGraph', share_vocab=True)
         dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
-                              topology_builder=DependencyBasedGraphConstruction,
-                              topology_subdir='DependencyGraph', share_vocab=True)
+                              topology_builder=ConstituencyBasedGraphConstruction,
+                              topology_subdir='ConstituencyGraph', share_vocab=True)
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=24, shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
@@ -63,7 +67,7 @@ class Jobs:
         self.vocab.in_word_vocab.embeddings = pretrained_weight.numpy()
 
     def _build_model(self):
-        self.model = Graph2seq(self.vocab).to(self.device)
+        self.model = Graph2seq(self.vocab, device=self.device).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -158,5 +162,5 @@ if __name__ == "__main__":
     runner = Jobs(opt)
     max_score = runner.train()
     print("Train finish, best val score: {:.3f}".format(max_score))
-    runner.load_checkpoint("best_all.pth")
+    runner.load_checkpoint("best.pth")
     runner.evaluate(split="test")
