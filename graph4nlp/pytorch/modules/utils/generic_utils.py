@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import sparse
 import torch
+import torch.nn as nn
 
 
 def to_cuda(x, device=None):
@@ -58,6 +59,18 @@ def dropout_fn(x, drop_prob, shared_axes=[], training=False):
     mask = mask.expand_as(x)
 
     return x * mask
+
+class Identity(nn.Module):
+    """A placeholder identity operator that is argument-insensitive.
+    (Identity has already been supported by PyTorch 1.2, we will directly
+    import torch.nn.Identity in the future)
+    """
+    def __init__(self):
+        super(Identity, self).__init__()
+
+    def forward(self, x):
+        """Return input"""
+        return x
 
 class EarlyStopping:
     def __init__(self, save_model_path, patience=10):
