@@ -67,6 +67,30 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         self.device = self.embedding_layer.device
 
     @classmethod
+    def parsing(cls, raw_text_data, nlp_processor, split_hyphenated=True, normalize=True):
+        '''
+        Parameters
+        ----------
+        raw_text_data: str
+        nlp_processor: StanfordCoreNLP
+        split_hyphenated: bool
+        normalize: bool
+        '''
+        output = nlp_processor.annotate(
+            raw_text_data.strip(),
+            properties={
+                'annotators': "tokenize,ssplit,pos,parse",
+                "tokenize.options":
+                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                "tokenize.whitespace": False,
+                'ssplit.isOneSentence': False,
+                'outputFormat': 'json'
+            })
+        parsed_output = json.loads(output)['sentences']
+        return parsed_output
+
+
+    @classmethod
     def topology(cls,
                  raw_text_data,
                  nlp_processor,
@@ -113,17 +137,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             A customized graph data structure
         """
         output_graph_list = []
-        output = nlp_processor.annotate(
-            raw_text_data.strip(),
-            properties={
-                'annotators': "tokenize,ssplit,pos,parse",
-                "tokenize.options":
-                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
-                "tokenize.whitespace": False,
-                'ssplit.isOneSentence': False,
-                'outputFormat': 'json'
-            })
-        parsed_output = json.loads(output)['sentences']
+        parsed_output = cls.parsing(raw_text_data, nlp_processor)
         for index in range(len(parsed_output)):
             output_graph_list.append(
                 cls._construct_static_graph(parsed_output[index], index))
