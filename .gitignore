@@ -4,7 +4,9 @@
 *.pkl
 *.pth
 .vector_cache/
+# igore log files
 log.txt
+examples/pytorch/semantic_parsing/jobs/log/*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

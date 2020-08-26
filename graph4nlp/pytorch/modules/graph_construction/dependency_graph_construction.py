@@ -46,15 +46,14 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             self.vocab.word_vocab._add_words([attr["token"]])
 
     @classmethod
-    def parsing(cls, raw_text_data, nlp_processor, split_hyphenated, normalize):
+    def parsing(cls, raw_text_data, nlp_processor, processor_args):
         '''
 
         Parameters
         ----------
         raw_text_data: str
         nlp_processor: StanfordCoreNLP
-        split_hyphenated: bool
-        normalize: bool
+        processor_args: dict
 
         Returns
         -------
@@ -82,19 +81,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 'tgt': int
                     The target node ``id``
         '''
-        splitHyphenated_option = "true" if split_hyphenated else "false"
-        normalize_option = "true" if normalize else "false"
-        props = {
-            'annotators': 'ssplit,tokenize,depparse',
-            "tokenize.options":
-                "splitHyphenated={},normalizeParentheses={},normalizeOtherBrackets={}".format(splitHyphenated_option,
-                                                                                              normalize_option,
-                                                                                              normalize_option),
-            "tokenize.whitespace": False,
-            'ssplit.isOneSentence': False,
-            'outputFormat': 'json'
-        }
-        dep_json = nlp_processor.annotate(raw_text_data.strip(), properties=props)
+        dep_json = nlp_processor.annotate(raw_text_data.strip(), properties=processor_args)
         dep_dict = json.loads(dep_json)
 
         parsed_results = []
@@ -145,8 +132,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             return parsed_results
 
     @classmethod
-    def topology(cls, raw_text_data, nlp_processor, merge_strategy, edge_strategy, split_hyphenated=False,
-                 normalize=False, sequential_link=True, verbase=0):
+    def topology(cls, raw_text_data, nlp_processor, processor_args, merge_strategy, edge_strategy, sequential_link=True, verbase=0):
         """
             Graph building method.
 
@@ -158,13 +144,12 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             When it is ``list[list]`` type, it is the tokenized token lists.
         nlp_processor: StanfordCoreNLP
             NLP parsing tools
-        merge_strategy: None or str, option=[None, "tailhead", "sequential", "user_define"]
+        processor_args: dict
+            The configure dict for StanfordCoreNLP.annotate
+        merge_strategy: None or str, option=[None, "tailhead", "user_define"]
             Strategy to merge sub-graphs into one graph
             ``None``: It will be the default option. We will do as ``"tailhead"``.
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
-            ``"sequential"``: If sub-graph has ``a1, a2, ..., an`` nodes, and sub-graph has ``b1, b2, ..., bm`` nodes.
-                              We will link ``a1, a2``, ``a2, a3``, ..., ``an-1, an``, \
-                              ``an, b1``, ``b1, b2``, ..., ``bm-1, bm``.
             ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
         edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
@@ -178,10 +163,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
-        split_hyphenated: bool, default=False
-            Whether or not to tokenize segments of hyphenated words separately (“school” “-“ “aged”, “frog” “-“ “lipped”)
-        normalize: bool, default=False
-            Whether to convert bracket (`(`) to  -LRB-, and etc.
+
         sequential_link: bool, default=True
             Whether to link node tokens sequentially (note that it is bidirectional)
         verbase: int, default=0
@@ -194,7 +176,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         cls.verbase = verbase
 
         parsed_results = cls.parsing(raw_text_data=raw_text_data, nlp_processor=nlp_processor,
-                                     split_hyphenated=split_hyphenated, normalize=normalize)
+                                     processor_args=processor_args)
 
         sub_graphs = []
         for sent_id, parsed_sent in enumerate(parsed_results):
@@ -296,7 +278,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         ----------
         nx_graph_list: list[GraphData]
             The list of all sub-graphs.
-        merge_strategy: None or str, option=[None, "tailhead", "sequential", "user_define"]
+        merge_strategy: None or str, option=[None, "tailhead", "user_define"]
             Strategy to merge sub-graphs into one graph
             ``None``: It will be the default option. We will do as ``"tailhead"``.
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
@@ -412,6 +394,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             node_size.extend([1 for i in range(num_nodes[-1])])
 
         batch_gd = to_batch(batch_graphdata)
+        b_node = batch_gd.get_node_num()
+        assert b_node == sum(num_nodes), print(b_node, sum(num_nodes))
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
         node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
