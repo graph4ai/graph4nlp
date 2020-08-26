@@ -405,7 +405,7 @@ if __name__ == "__main__":
                         help="graph pooling (`avg_pool`, `max_pool`)")
     parser.add_argument("--max_pool_linear_proj", action="store_true", default=False,
                         help="use linear projectioni for max pooling")
-    parser.add_argument("--direction_option", type=str, default='undirected',
+    parser.add_argument("--direction_option", type=str, default='bi_sep',
                         help="direction type (`undirected`, `bi_fuse`, `bi_sep`)")
     parser.add_argument("--num_heads", type=int, default=1,
                         help="number of hidden attention heads")
