@@ -34,21 +34,16 @@ class CNNDataset(Text2TextDataset):
         """
         Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
         base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
-
         For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
         record of data. The input and output is separated by a tab(\t).
-
         Examples
         --------
         input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
-
         DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
-
         Parameters
         ----------
         file_path: str
             The path of the input file.
-
         Returns
         -------
         list
