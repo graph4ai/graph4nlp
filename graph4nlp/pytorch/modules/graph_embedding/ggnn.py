@@ -462,6 +462,8 @@ class GGNNLayer(GNNLayerBase):
         -------
         torch.Tensor
         """
+        if etypes==None:
+            etypes = torch.tensor([0] * graph.number_of_edges(), dtype=torch.long)
         return self.model(graph, node_feats, etypes, edge_weight)
 
 
@@ -503,6 +505,7 @@ class GGNN(GNNBase):
         self.output_size = output_size
         self.dropout = nn.Dropout(dropout)
         self.use_edge_weight = use_edge_weight
+        self.n_etypes = n_etypes
 
         assert self.output_size >= self.input_size
 
@@ -528,6 +531,9 @@ class GGNN(GNNBase):
             named `node_emb`.
 
         """
+        if self.n_etypes==1:
+            graph.edge_features['etype'] = torch.tensor([0] * graph.get_edge_num(), dtype=torch.long)
+
         node_feats = graph.node_features['node_feat']
         etypes = graph.edge_features['etype']
         if self.use_edge_weight:
