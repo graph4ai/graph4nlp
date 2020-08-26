@@ -182,7 +182,7 @@ class Graph2DistMult(nn.Module):
                                                      device=self.device)
 
         # self.gnn_encoder = GAT(2, hidden_size, hidden_size, hidden_size, [2, 1], direction_option=direction_option)
-        self.num_layers = 1 # ggnn
+        self.num_layers = 2 # ggnn
         # self.num_layers = 1 # gat uni/bi_fuse/bi_sep
         # self.num_layers = 2 # graphsage
         self.direction_option = direction_option
@@ -368,10 +368,10 @@ class Kinship:
         self.optimizer = optim.Adam(parameters, lr=2e-3)
 
     def _build_evaluation(self):
-        self.metrics = [RankingAndHits()]
+        self.metrics = [RankingAndHits( model_path='best_graph2distmult_'+self.model.direction_option+'_'+self.model.loss_name)]
 
     def train(self):
-        for epoch in range(200):
+        for epoch in range(50):
             self.model.train()
             loss_list = []
 
@@ -445,7 +445,7 @@ class Kinship:
 if __name__ == "__main__":
     runner = Kinship()
     max_score = runner.train()
-    # max_score = runner.test()
+    max_score = runner.test()
     print("Train finish, best MRR: {:.3f}".format(max_score))
 
 # nohup python -m examples.pytorch.kg_completion.kinship.main >> distmult_bce_gat_uni.log 2>&1 &

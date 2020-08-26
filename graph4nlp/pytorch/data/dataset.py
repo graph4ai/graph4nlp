@@ -381,7 +381,7 @@ class Text2TextDataset(Dataset):
         return self.vocab_model
 
     def vectorization(self, data_items):
-        if type(self.topology_builder) == type(IEBasedGraphConstruction):
+        if isinstance(self.topology_builder, IEBasedGraphConstruction):
             use_ie = True
         else:
             use_ie = False
@@ -393,7 +393,7 @@ class Text2TextDataset(Dataset):
                 node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token, use_ie)
                 graph.node_attributes[node_idx]['token_id'] = node_token_id
                 token_matrix.append([node_token_id])
-            if type(self.topology_builder) == type(IEBasedGraphConstruction):
+            if isinstance(self.topology_builder, IEBasedGraphConstruction):
                 for i in range(len(token_matrix)):
                     token_matrix[i] = np.array(token_matrix[i][0])
                 token_matrix = pad_2d_vals_no_size(token_matrix)
@@ -411,7 +411,7 @@ class Text2TextDataset(Dataset):
                     edge_token_id = self.vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
                     graph.edge_attributes[edge_idx]['token_id'] = edge_token_id
                     edge_token_matrix.append([edge_token_id])
-                if type(self.topology_builder) == type(IEBasedGraphConstruction):
+                if isinstance(self.topology_builder, IEBasedGraphConstruction):
                     for i in range(len(edge_token_matrix)):
                         edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
                     edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
