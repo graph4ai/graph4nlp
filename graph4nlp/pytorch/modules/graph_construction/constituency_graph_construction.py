@@ -56,12 +56,11 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         Generate graph topology and embeddings.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, word_dropout=None, dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, dropout=None, device=None):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
-                                                               word_dropout=word_dropout,
                                                                dropout=dropout, device=device)
         self.vocab = vocab
         assert(self.embedding_layer.device == device)
@@ -108,13 +107,10 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         nlp_processor : object
             A parser used to parse sentence string to parsing trees like dependency parsing tree or constituency parsing tree
 
-        merge_strategy : None or str, option=[None, "tailhead", "sequential", "user_define"]
+        merge_strategy : None or str, option=[None, "tailhead", "user_define"]
             Strategy to merge sub-graphs into one graph
             ``None``: It will be the default option. We will do as ``"tailhead"``.
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
-            ``"sequential"``: If sub-graph has ``a1, a2, ..., an`` nodes, and sub-graph has ``b1, b2, ..., bm`` nodes.
-                              We will link ``a1, a2``, ``a2, a3``, ..., ``an-1, an``, \
-                              ``an, b1``, ``b1, b2``, ..., ``bm-1, bm``.
             ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
 
@@ -157,7 +153,9 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                                 parsed_object,
                                 sub_sentence_id,
                                 edge_strategy=None,
-                                sequential_link=True):
+                                sequential_link=True,
+                                bisequential_link=True,
+                                top_down=False):
         parsed_sentence_data = parsed_object['parse']
         for punc in [u'(', u')']:
             parsed_sentence_data = parsed_sentence_data.replace(
@@ -177,7 +175,10 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                 if pstack.size() > 1:
                     node_2 = pstack.pop()
                     node_1 = pstack.pop()
-                    res_graph.add_edge(node_1, node_2)
+                    if top_down:
+                        res_graph.add_edge(node_1, node_2)
+                    else:
+                        res_graph.add_edge(node_2, node_1)
                     pstack.push(node_1)
                     pstack.push(node_2)
             elif parse_list[idx] == ')':
@@ -189,7 +190,10 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                 ) - 1] = {'token': parse_list[idx], 'type': 0, 'position_id': cnt_word_node, 'sentence_id': sub_sentence_id, 'tail': False, 'head': False}
                 node_1 = pstack.pop()
                 if node_1 != res_graph.get_node_num() - 1:
-                    res_graph.add_edge(node_1, res_graph.get_node_num() - 1)
+                    if top_down:
+                        res_graph.add_edge(node_1, res_graph.get_node_num() - 1)
+                    else:
+                        res_graph.add_edge(res_graph.get_node_num() - 1, node_1)
                 pstack.push(node_1)
             idx += 1
 
@@ -206,6 +210,8 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                         node_2_idx = idx
                 if node_1_idx != -1 and node_2_idx != -1:
                     res_graph.add_edge(node_1_idx, node_2_idx)
+                    if bisequential_link:
+                        res_graph.add_edge(node_2_idx, node_1_idx)
                 if _cnt_node >= _len_single_graph:
                     break
                 _cnt_node += 1
@@ -229,12 +235,18 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         return res_graph
 
     @classmethod
-    def _graph_connect(cls, graph_list, merge_strategy=None):
+    def _graph_connect(cls, graph_list, merge_strategy=None, bisequential_link=True, reformalize=True):
         """
         Parameters
         ----------
         graph_list : list
             A graph list to be merged
+        
+        bisequential_link : bool
+            whether add bi-direnctional links between word nodes
+        
+        reformalize : bool
+            If true, separate word nodes and non-terminal nodes in ``graph.node_attributes`` and put word nodes in the front position
 
         Returns
         -------
@@ -273,6 +285,38 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                 if node_attr_item[1]['sentence_id'] == index and node_attr_item[1]['type'] == 0 and node_attr_item[1]['tail'] == True:
                     tail_node = node_attr_item[0]
             merged_graph.add_edge(tail_node, head_node)
+            if bisequential_link:
+                merged_graph.add_edge(head_node, tail_node)
+        
+        if reformalize:
+            new_dict_for_word_nodes = copy.deepcopy(merged_graph.node_attributes)
+
+            dict_for_word_nodes = {}
+            dict_for_non_ternimal_nodes = {}
+            for i in new_dict_for_word_nodes.items():
+                if i[1]['type'] == 0:
+                    dict_for_word_nodes[i[0]] = i[1]
+                else:
+                    dict_for_non_ternimal_nodes[i[0]] = i[1]
+            merged_graph.node_attributes.clear()
+            merged_graph.node_attributes.update({**dict_for_word_nodes, **dict_for_non_ternimal_nodes})
+
+            node_id_map = {}
+            cnt = 0
+            for i in merged_graph.node_attributes.items():
+                node_id_map[i[0]] = cnt
+                cnt += 1
+
+            for i in range(merged_graph.get_edge_num()):
+                merged_graph._edge_indices.src[i] = node_id_map[merged_graph._edge_indices.src[i]]
+                merged_graph._edge_indices.tgt[i] = node_id_map[merged_graph._edge_indices.tgt[i]]
+            
+            reformalize_graph_attributes = {}
+            for i in merged_graph.node_attributes.items():
+                reformalize_graph_attributes[node_id_map[i[0]]] = copy.deepcopy(i[1])
+
+            merged_graph.node_attributes.clear()
+            merged_graph.node_attributes.update(reformalize_graph_attributes)
         return merged_graph
 
     def forward(self, batch_graphdata: list):
