@@ -37,13 +37,14 @@ class GNNClassifier(nn.Module):
                  num_layers,
                  input_size,
                  output_size,
+                 n_etypes,
                  n_class,
                  direction_option,
                  drop=0.,
                  use_edge_weight=False):
         super(GNNClassifier, self).__init__()
         self.direction_option = direction_option
-        self.model = GGNN(num_layers, input_size, output_size, n_etypes=2,
+        self.model = GGNN(num_layers, input_size, output_size, n_etypes=n_etypes,
                           dropout=drop, direction_option=direction_option,
                           use_edge_weight=use_edge_weight)
 
@@ -202,14 +203,15 @@ def main(args, seed):
 
     if args.num_etypes == 2:
         g.edge_features['etype'] = torch.tensor(edge_types, dtype=torch.long).to(device)
-    else:
-        g.edge_features['etype'] = torch.LongTensor([0] * g.get_edge_num()).to(device)
+    # else:
+    #     g.edge_features['etype'] = torch.LongTensor([0] * g.get_edge_num()).to(device)
     g.edge_features['edge_weight'] = torch.tensor([1] * g.get_edge_num(), dtype=torch.float32).view(-1, 1).to(device)
 
     # create model
     model = GNNClassifier(args.num_layers,
                           num_feats,
                           args.num_hidden,
+                          args.num_etypes,
                           n_classes,
                           args.direction_option,
                           drop=args.drop,
