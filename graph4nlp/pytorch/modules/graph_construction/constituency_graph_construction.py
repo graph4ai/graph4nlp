@@ -56,11 +56,12 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         Generate graph topology and embeddings.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, word_dropout=None, dropout=None, device=None):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
+                                                               word_dropout=word_dropout,
                                                                dropout=dropout, device=device)
         self.vocab = vocab
         assert(self.embedding_layer.device == device)

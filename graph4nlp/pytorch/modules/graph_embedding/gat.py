@@ -46,7 +46,7 @@ class GAT(GNNBase):
         Number of heads per GAT layer. If ``int`` is given, all layers are forced to have the same number of heads.
     direction_option: str
         Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
-        Default : ``'bi_fuse'``.
+        Default : ``'bi_sep'``.
     feat_drop : float, optional
         Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
@@ -66,7 +66,7 @@ class GAT(GNNBase):
                 hidden_size,
                 output_size,
                 heads,
-                direction_option='bi_fuse',
+                direction_option='bi_sep',
                 feat_drop=0.,
                 attn_drop=0.,
                 negative_slope=0.2,
@@ -190,7 +190,7 @@ class GATLayer(GNNLayerBase):
         Number of heads in Multi-Head Attention.
     direction_option: str
         Whether use unidirectional (i.e., regular) or bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
-        Default: ``'bi_fuse'``.
+        Default: ``'bi_sep'``.
     feat_drop : float, optional
         Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
@@ -208,7 +208,7 @@ class GATLayer(GNNLayerBase):
                 input_size,
                 output_size,
                 num_heads,
-                direction_option='bi_fuse',
+                direction_option='bi_sep',
                 feat_drop=0.,
                 attn_drop=0.,
                 negative_slope=0.2,
