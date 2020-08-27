@@ -22,13 +22,12 @@ pip install torch==1.2.0 requests dgl
 Conll Results
 -------
 
-| GraphType\GNN  |  GAT-Undirected   |  GAT-BiSep    | GAT-BiFuse   | GraphSAGE-Undirected   |  GraphSAGE-BiSep    | GraphSAGE-BiFuse   |  GGNN-Undirected   |  GGNN-BiSep    | GGNN-BiFuse   | 
+| GraphType\GNN  | GAT-Undirected   |  GAT-BiSep    | GAT-BiFuse   | GraphSAGE-Undirected   |  GraphSAGE-BiSep    | GraphSAGE-BiFuse   |  GGNN-Undirected   |  GGNN-BiSep    | GGNN-BiFuse   | 
 | ------------- |  -------------| ------------- |  -------------|  ------------- | ------------- |  -------------| ------------- | -------------  | ------------- |  
 | Dependency_graph     |   |   |  |  |  |    |  | |   |
 | Line_graph        |   |   |  |  |  |    |  | |   |
 | NodeEmb | N/A  | N/A | N/A | - | - | -  |  | - |  - |
-| only_bilstm | 75.00%|
-
+|Only_bilstm| 75.00%|
 
 
 
