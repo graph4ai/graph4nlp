@@ -17,7 +17,7 @@ class CNNDataset(Text2TextDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        return {'train': 'train.json', 'test': 'test.json', 'val': 'val.json'}
+        return {'train': 'test.json', 'test': 'test.json', 'val': 'val.json'}
 
     @property
     def processed_file_names(self):
@@ -42,11 +42,47 @@ class CNNDataset(Text2TextDataset):
         if self.graph_type == 'static':
             print('Connecting to stanfordcorenlp server...')
             processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+
+            if self.topology_builder == IEBasedGraphConstruction:
+                props_coref = {
+                    'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
+                    "tokenize.options":
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
+                props_openie = {
+                    'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
+                    "tokenize.options":
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json',
+                    "openie.triple.strict": "true"
+                }
+                processor_args = [props_coref, props_openie]
+            elif self.topology_builder == DependencyBasedGraphConstruction:
+                processor_args = {
+                    'annotators': 'ssplit,tokenize,depparse',
+                    "tokenize.options":
+                        "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
+            elif self.topology_builder == ConstituencyBasedGraphConstruction:
+                processor_args={}
+            else:
+                raise NotImplementedError
+
             print('CoreNLP server connected.')
             pop_idxs = []
             for idx, item in enumerate(data_items):
                 try:
-                    graph = self.topology_builder.topology(raw_text_data=item.input_text, nlp_processor=processor,
+                    graph = self.topology_builder.topology(raw_text_data=item.input_text,
+                                                           nlp_processor=processor,
+                                                           processor_args=processor_args,
                                                            merge_strategy=self.merge_strategy,
                                                            edge_strategy=self.edge_strategy,
                                                            verbase=False)
@@ -137,7 +173,7 @@ if __name__ == '__main__':
     if args.parser=='IE':
         start_time = time.time()
         cnn_ie = CNNDataset(root_dir=dataset_root, topology_builder=IEBasedGraphConstruction,
-                    topology_subdir='IEGraph')
+                    topology_subdir='IEGraph_s')
         end_time = time.time() # 333.8594479560852
         # 141.86208820343018 [:10]
     elif args.parser=='DEP':
