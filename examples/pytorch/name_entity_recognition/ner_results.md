@@ -27,7 +27,7 @@ Conll Results
 | Dependency_graph     |   |   |  |  |  |    |  | |   |
 | Line_graph        |   |   |  |  |  |    |  | |   |
 | NodeEmb | N/A  | N/A | N/A | - | - | -  |  | - |  - |
-|Only_bilstm| 75.00%|
+|Only_bilstm| 74.26%|
 
 
 
@@ -44,7 +44,7 @@ Dependency graph:
 
 bilstm
 ```python
-python -m examples.pytorch.name_entity_recognition.run_ner --seq_info_encode_strategy bilstm  --graph_type line_graph --gpu 0 --init_hidden_size 300 --lstm_hidden_size 50 --drop 0.2 --lr 0.01 --batch_size 150
+python -m examples.pytorch.name_entity_recognition.run_ner --seq_info_encode_strategy bilstm  --graph_type line_graph --gpu 0 --init_hidden_size 300 --lstm_hidden_size 80 --drop 0.2 --lr 0.01 --batch_size 150
 ```
 
 
