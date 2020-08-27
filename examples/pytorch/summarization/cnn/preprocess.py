@@ -11,9 +11,9 @@ for f_name in stories:
     with open(root_dir+f_name, 'r') as f:
         text = f.readlines()
         print(len(' '.join(text).split(' ')))
-        if len(' '.join(text).split(' ')) > 900:
-            num_skip_long_input = num_skip_long_input + 1
-            continue
+        # if len(' '.join(text).split(' ')) > 1500:
+        #     num_skip_long_input = num_skip_long_input + 1
+        #     continue
         example_dict = {'article':[],
                         'highlight':[]}
         is_hightlight = False
