@@ -56,11 +56,12 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         Generate graph topology and embeddings.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, word_dropout=None, dropout=None, device=None):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
+                                                               word_dropout=word_dropout,
                                                                dropout=dropout, device=device)
         self.vocab = vocab
         assert(self.embedding_layer.device == device)
@@ -242,10 +243,10 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         ----------
         graph_list : list
             A graph list to be merged
-        
+
         bisequential_link : bool
             whether add bi-direnctional links between word nodes
-        
+
         reformalize : bool
             If true, separate word nodes and non-terminal nodes in ``graph.node_attributes`` and put word nodes in the front position
 
@@ -288,7 +289,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             merged_graph.add_edge(tail_node, head_node)
             if bisequential_link:
                 merged_graph.add_edge(head_node, tail_node)
-        
+
         if reformalize:
             new_dict_for_word_nodes = copy.deepcopy(merged_graph.node_attributes)
 
@@ -311,7 +312,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             for i in range(merged_graph.get_edge_num()):
                 merged_graph._edge_indices.src[i] = node_id_map[merged_graph._edge_indices.src[i]]
                 merged_graph._edge_indices.tgt[i] = node_id_map[merged_graph._edge_indices.tgt[i]]
-            
+
             reformalize_graph_attributes = {}
             for i in merged_graph.node_attributes.items():
                 reformalize_graph_attributes[node_id_map[i[0]]] = copy.deepcopy(i[1])

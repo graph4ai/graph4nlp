@@ -260,7 +260,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             for i in range(len_.shape[0]):
                 tmp_feat = new_feat[i][:len_[i]]
                 if len(tmp_feat) < num_items[i].item():
-                    tmp_feat = torch.cat([tmp_feat, new_feat_list[i][num_word_items[i]: num_items[i]]], 0)
+                    tmp_feat = torch.cat([tmp_feat, new_feat_list[i][len_[i]: num_items[i]]], 0)
 
                 ret_feat.append(tmp_feat)
 
