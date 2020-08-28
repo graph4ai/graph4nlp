@@ -1,31 +1,15 @@
 # Results On Jobs640
 
-We take exact match accuracy as metric.
-
-## Use-Bi-LSTM-as-Encoder:
-| Methods\Datasets | JOBS | GEO | ATIS |  
+## Constituency Graph
+| Encoder\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |
-| Seq2Tree | 0.9 | - | - |
+| GAT | - | - | - |
+| GGNN | 91.4 | 91.4 | 90.0 |
+| GraphSage | - | - | - |
 
-## Use-GAT-as-GNN-Encoder
-
-| Methods\Datasets | JOBS | GEO | ATIS |  
-| ---- | ---- | ---- | ---- |
-| CONS-Graph | 0.807 | 0.564 | - |
-| DEP-Graph | 0.793 | 0.568 | - |
-
-
-## Use-GGNN-as-GNN-Encoder
-
-| Methods\Datasets | JOBS | GEO | ATIS |  
-| ---- | ---- | ---- | ---- |
-| CONS-Graph | 81.4 | - | - |
-| DEP-Graph | - | - | - |
-
-
-## Use-GraphSAGE-as-GNN-Encoder
-
-| Methods\Datasets | JOBS | GEO | ATIS |  
-| ---- | ---- | ---- | ---- |
-| CONS-Graph | - | - | - |
-| DEP-Graph | - | - | - |
+## Dependency Graph
+| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- |  
+| GAT | - | - | - |  
+| GGNN | 89.3 | 90.0 | 90.7 |  
+| GraphSage | 87.9 | 89.3 | 87.9 |  
