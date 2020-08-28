@@ -45,7 +45,7 @@ class JobsDatasetForTree(TextToTreeDataset):
     @property
     def processed_file_names(self):
         """At least 3 reserved keys should be fiiled: 'vocab', 'data' and 'split_ids'."""
-        return {'vocab': 'vocab.pt', 'data': 'data.pt', 'split_ids': 'split_ids.pt'}
+        return {'vocab': 'vocab.pt', 'data': 'data.pt'}
 
     def download(self):
         # raise NotImplementedError(
@@ -57,9 +57,6 @@ class JobsDatasetForTree(TextToTreeDataset):
         super(JobsDatasetForTree, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
-        self.data = torch.load(os.path.join(self.processed_dir, self.processed_file_names['data']))
-        self.split_ids = torch.load(os.path.join(self.processed_dir, self.processed_file_names['split_ids']))
-        self.src_vocab_model, self.tgt_vocab_model = pickle.load(open(self.processed_file_paths['vocab'], 'rb'))
 
 if __name__ == '__main__':
     jobs_dataset = JobsDataset(root_dir='../test/dataset/jobs', topology_builder=DependencyBasedGraphConstruction,

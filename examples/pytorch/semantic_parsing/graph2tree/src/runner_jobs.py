@@ -69,8 +69,7 @@ class Graph2Tree(nn.Module):
         #                                                        fix_word_emb=False)
         self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                vocab=self.src_vocab,
-                                                               hidden_size=enc_hidden_size, dropout=enc_dropout_input, use_cuda=(
-                                                                   self.device != None),
+                                                               hidden_size=enc_hidden_size, dropout=enc_dropout_input, device=device,
                                                                fix_word_emb=False)
         # self.gnn = None
 
@@ -203,10 +202,10 @@ class Jobs:
         #                       topology_subdir='DependencyGraph', share_vocab=use_copy, enc_emb_size=enc_emb_size, dec_emb_size=tgt_emb_size)
 
         self.train_data_loader = DataLoaderForGraphEncoder(
-            use_copy=use_copy, dataset=dataset, mode="train", batch_size=20, device=self.device, ids_for_select=dataset.split_ids['train'])
+            use_copy=use_copy, data=dataset.train, dataset=dataset, mode="train", batch_size=20, device=self.device)
         print("train sample size:", len(self.train_data_loader.data))
         self.test_data_loader = DataLoaderForGraphEncoder(
-            use_copy=use_copy, dataset=dataset, mode="test", batch_size=1, device=self.device, ids_for_select=dataset.split_ids['test'])
+            use_copy=use_copy, data=dataset.test, dataset=dataset, mode="test", batch_size=1, device=self.device)
         print("test sample size:", len(self.test_data_loader.data))
 
         self.src_vocab = self.train_data_loader.src_vocab
