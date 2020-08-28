@@ -6,7 +6,17 @@ import torch
 def to_cuda(x, device=None):
     if device:
         x = x.to(device)
+
     return x
+
+def create_mask(x, N, device=None):
+    if isinstance(x, torch.Tensor):
+        x = x.data
+    mask = np.zeros((len(x), N))
+    for i in range(len(x)):
+        mask[i, :x[i]] = 1
+
+    return to_cuda(torch.Tensor(mask), device)
 
 def normalize_adj(mx):
     """Row-normalize matrix: symmetric normalized Laplacian"""

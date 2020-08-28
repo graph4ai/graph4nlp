@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 import dgl
 
-from ..utils.generic_utils import to_cuda, dropout_fn
+from ..utils.generic_utils import to_cuda, dropout_fn, create_mask
 
 
 class EmbeddingConstructionBase(nn.Module):
@@ -149,6 +149,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         else:
             raise RuntimeError('Unknown node_edge_emb_strategy: {}'.format(node_edge_emb_strategy))
 
+
         if seq_info_encode_strategy == 'none':
             self.seq_info_encode_layer = None
         elif seq_info_encode_strategy == 'lstm':
@@ -194,7 +195,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         else:
             raise RuntimeError('Unknown seq_info_encode_strategy: {}'.format(seq_info_encode_strategy))
 
-    def forward(self, input_tensor, item_size, num_items):
+    def forward(self, input_tensor, item_size, num_items, num_word_items=None):
         """Compute initial node/edge embeddings.
 
         Parameters
@@ -208,6 +209,12 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         num_items : torch.LongTensor
             The number of items per graph with shape :math:`(B,)`
             where :math:`B` is the number of graphs in the batched graph.
+        num_word_items : torch.LongTensor
+            The number of word items (that are extracted from the raw text)
+            per graph with shape :math:`(B,)` where :math:`B` is the number
+            of graphs in the batched graph. We assume that the word items are
+            not reordered and interpolated, and always appear before the non-word
+            items in the graph. Default: ``None``.
 
         Returns
         -------
@@ -231,27 +238,31 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         else:
             # unbatching
             max_num_items = torch.max(num_items).item()
-            new_feat = []
+            new_feat_list = []
             start_idx = 0
             for i in range(num_items.shape[0]):
                 tmp_feat = feat[int(start_idx): int(start_idx + num_items[i].item())]
                 start_idx += num_items[i].item()
                 if num_items[i].item() < max_num_items:
                     tmp_feat = torch.cat([tmp_feat, to_cuda(torch.zeros(
-                        int(max_num_items - num_items[i].item()), tmp_feat.shape[1]), self.device)], 0)
-                new_feat.append(tmp_feat)
+                        int(max_num_items - num_items[i]), tmp_feat.shape[1]), self.device)], 0)
+                new_feat_list.append(tmp_feat)
 
             # computation
-            new_feat = torch.stack(new_feat, 0)
-            new_feat = self.seq_info_encode_layer(new_feat, num_items)
+            len_ = num_word_items if num_word_items is not None else num_items
+            new_feat = torch.stack(new_feat_list, 0)
+            new_feat = self.seq_info_encode_layer(new_feat, len_)
             if self.seq_info_encode_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
                 new_feat = new_feat[0]
 
-
             # batching
             ret_feat = []
-            for i in range(num_items.shape[0]):
-                ret_feat.append(new_feat[i][:num_items[i].item()])
+            for i in range(len_.shape[0]):
+                tmp_feat = new_feat[i][:len_[i]]
+                if len(tmp_feat) < num_items[i].item():
+                    tmp_feat = torch.cat([tmp_feat, new_feat_list[i][num_word_items[i]: num_items[i]]], 0)
+
+                ret_feat.append(tmp_feat)
 
             ret_feat = torch.cat(ret_feat, 0)
 
