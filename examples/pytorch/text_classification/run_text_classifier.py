@@ -43,8 +43,12 @@ class TextClassifier(nn.Module):
         super(TextClassifier, self).__init__()
         self.config = config
         self.vocab = vocab
-        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': config.node_edge_emb_strategy,
-                           'seq_info_encode_strategy': config.seq_info_encode_strategy}
+        embedding_style = {'word_emb_type': 'w2v',
+                            'node_edge_emb_strategy': config.node_edge_emb_strategy,
+                            'seq_info_encode_strategy': config.seq_info_encode_strategy,
+                            'num_rnn_layers_for_node_edge_emb': 1,
+                            'num_rnn_layers_for_seq_info_encode': 1
+                           }
 
         assert not (config.graph_type in ('node_emb', 'node_emb_refined') and config.gnn == 'gat'), \
                                 'dynamic graph construction does not support GAT'

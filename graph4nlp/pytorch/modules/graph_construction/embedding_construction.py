@@ -64,6 +64,10 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         tokens extracted from the raw text.
     hidden_size : int, optional
         The hidden size of RNN layer, default: ``None``.
+    num_rnn_layers_for_node_edge_emb : int, optional
+        The number of RNN layers, only used when RNN is employed for ``node_edge_emb_strategy``, default: ``1``.
+    num_rnn_layers_for_seq_info_encode : int, optional
+        The number of RNN layers, only used when RNN is employed for ``seq_info_encode_strategy``, default: ``1``.
     fix_word_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``True``.
     word_dropout : float, optional
@@ -77,6 +81,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                         node_edge_emb_strategy,
                         seq_info_encode_strategy,
                         hidden_size=None,
+                        num_rnn_layers_for_node_edge_emb=1,
+                        num_rnn_layers_for_seq_info_encode=1,
                         fix_word_emb=True,
                         word_dropout=None,
                         dropout=None,
@@ -107,27 +113,39 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         elif node_edge_emb_strategy == 'lstm':
             self.node_edge_emb_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1],
-                                    hidden_size, dropout=dropout,
+                                    hidden_size,
                                     bidirectional=False,
-                                    rnn_type='lstm', device=device)
+                                    num_layers=num_rnn_layers_for_node_edge_emb,
+                                    rnn_type='lstm',
+                                    dropout=dropout,
+                                    device=device)
         elif node_edge_emb_strategy == 'bilstm':
             self.node_edge_emb_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1],
-                                    hidden_size, dropout=dropout,
+                                    hidden_size,
                                     bidirectional=True,
-                                    rnn_type='lstm', device=device)
+                                    num_layers=num_rnn_layers_for_node_edge_emb,
+                                    rnn_type='lstm',
+                                    dropout=dropout,
+                                    device=device)
         elif node_edge_emb_strategy == 'gru':
             self.node_edge_emb_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1],
-                                    hidden_size, dropout=dropout,
+                                    hidden_size,
                                     bidirectional=False,
-                                    rnn_type='gru', device=device)
+                                    num_layers=num_rnn_layers_for_node_edge_emb,
+                                    rnn_type='gru',
+                                    dropout=dropout,
+                                    device=device)
         elif node_edge_emb_strategy == 'bigru':
             self.node_edge_emb_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1],
-                                    hidden_size, dropout=dropout,
+                                    hidden_size,
                                     bidirectional=True,
-                                    rnn_type='gru', device=device)
+                                    num_layers=num_rnn_layers_for_node_edge_emb,
+                                    rnn_type='gru',
+                                    dropout=dropout,
+                                    device=device)
         else:
             raise RuntimeError('Unknown node_edge_emb_strategy: {}'.format(node_edge_emb_strategy))
 
@@ -137,30 +155,42 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             self.seq_info_encode_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1] \
                                     if node_edge_emb_strategy == 'mean' else hidden_size,
-                                    hidden_size, dropout=dropout,
+                                    hidden_size,
                                     bidirectional=False,
-                                    rnn_type='lstm', device=device)
+                                    num_layers=num_rnn_layers_for_seq_info_encode,
+                                    rnn_type='lstm',
+                                    dropout=dropout,
+                                    device=device)
         elif seq_info_encode_strategy == 'bilstm':
             self.seq_info_encode_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1] \
                                     if node_edge_emb_strategy == 'mean' else hidden_size,
-                                    hidden_size, dropout=dropout,
+                                    hidden_size,
                                     bidirectional=True,
-                                    rnn_type='lstm', device=device)
+                                    num_layers=num_rnn_layers_for_seq_info_encode,
+                                    rnn_type='lstm',
+                                    dropout=dropout,
+                                    device=device)
         elif seq_info_encode_strategy == 'gru':
             self.seq_info_encode_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1] \
                                     if node_edge_emb_strategy == 'mean' else hidden_size,
-                                    hidden_size, dropout=dropout,
+                                    hidden_size,
                                     bidirectional=False,
-                                    rnn_type='gru', device=device)
+                                    num_layers=num_rnn_layers_for_seq_info_encode,
+                                    rnn_type='gru',
+                                    dropout=dropout,
+                                    device=device)
         elif seq_info_encode_strategy == 'bigru':
             self.seq_info_encode_layer = RNNEmbedding(
                                     word_vocab.embeddings.shape[1] \
                                     if node_edge_emb_strategy == 'mean' else hidden_size,
-                                    hidden_size, dropout=dropout,
+                                    hidden_size,
                                     bidirectional=True,
-                                    rnn_type='gru', device=device)
+                                    num_layers=num_rnn_layers_for_seq_info_encode,
+                                    rnn_type='gru',
+                                    dropout=dropout,
+                                    device=device)
         else:
             raise RuntimeError('Unknown seq_info_encode_strategy: {}'.format(seq_info_encode_strategy))
 
@@ -193,7 +223,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
         feat = self.node_edge_emb_layer(feat, item_size)
         if self.node_edge_emb_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
-            feat = dropout_fn(feat[-1], self.dropout, training=self.training)
+            feat = feat[-1]
 
 
         if self.seq_info_encode_layer is None:
@@ -215,7 +245,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             new_feat = torch.stack(new_feat, 0)
             new_feat = self.seq_info_encode_layer(new_feat, num_items)
             if self.seq_info_encode_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
-                new_feat = dropout_fn(new_feat[0], self.dropout, training=self.training)
+                new_feat = new_feat[0]
 
 
             # batching
@@ -227,66 +257,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
             return ret_feat
 
-
-    # def forward2(self, graph, feat_name, item_size,
-    #                 num_items, out_feat_name='node_feat'):
-    #     """Compute initial node/edge embeddings.
-
-    #     Parameters
-    #     ----------
-    #     graph : GraphData
-    #         The input graph data.
-    #     feat_name : str
-    #         The field name for extracting the word sequence tensor.
-    #     item_size : torch.LongTensor
-    #         The length of word sequence per item with shape :math:`(N)`
-    #         where :math:`N` is the number of total items in the batched graph.
-    #     num_items : torch.LongTensor
-    #         The number of items per graph with shape :math:`(B,)`
-    #         where :math:`B` is the number of graphs in the batched graph.
-
-    #     Returns
-    #     -------
-    #     GraphData
-    #         The output graph data containing initial item embeddings.
-    #     """
-    #     input_tensor = graph.ndata[feat_name]
-    #     feat = []
-    #     for word_emb_layer in self.word_emb_layers:
-    #         feat.append(word_emb_layer(input_tensor))
-
-    #     feat = torch.cat(feat, dim=-1)
-    #     feat = self.node_edge_emb_layer(feat, item_size)
-    #     if self.node_edge_emb_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
-    #         feat = feat[-1]
-
-    #     graph.ndata[out_feat_name] = feat
-    #     if self.seq_info_encode_layer is not None:
-    #         graph_list = dgl.unbatch(graph)
-
-    #         max_num_items = torch.max(num_items).item()
-    #         new_feat = []
-    #         for i, each in enumerate(graph_list):
-    #             tmp_feat = each.ndata[out_feat_name]
-    #             if tmp_feat.shape[0] < max_num_items:
-    #                 tmp_feat = torch.cat([tmp_feat, to_cuda(torch.zeros(
-    #                     max_num_items - tmp_feat.shape[0], tmp_feat.shape[1]), self.device)], 0)
-    #             new_feat.append(tmp_feat)
-
-    #         new_feat = torch.stack(new_feat, 0)
-    #         new_feat = self.seq_info_encode_layer(new_feat, num_items)
-    #         if self.seq_info_encode_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
-    #             new_feat = new_feat[0]
-
-    #         ret_feat = []
-    #         for i in range(new_feat.shape[0]):
-    #             ret_feat.append(new_feat[i][:num_items[i].item()])
-
-    #         ret_feat = torch.cat(ret_feat, 0)
-
-    #         graph.ndata[out_feat_name] = ret_feat
-
-    #     return graph
 
 class WordEmbedding(nn.Module):
     """Word embedding class.
@@ -315,8 +285,6 @@ class WordEmbedding(nn.Module):
                             _weight=torch.from_numpy(pretrained_word_emb).float()
                             if pretrained_word_emb is not None else None)
         self.device = device
-        if self.device:
-            self.word_emb_layer = self.word_emb_layer.to(self.device)
 
         if fix_word_emb:
             print('[ Fix word embeddings ]')
@@ -392,9 +360,14 @@ class RNNEmbedding(nn.Module):
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
-    def __init__(self, input_size, hidden_size,
-                    dropout=None, bidirectional=False,
-                    rnn_type='lstm', device=None):
+    def __init__(self,
+                input_size,
+                hidden_size,
+                bidirectional=False,
+                num_layers=1,
+                rnn_type='lstm',
+                dropout=None,
+                device=None):
         super(RNNEmbedding, self).__init__()
         if not rnn_type in ('lstm', 'gru'):
             raise RuntimeError('rnn_type is expected to be lstm or gru, got {}'.format(rnn_type))
@@ -407,15 +380,14 @@ class RNNEmbedding(nn.Module):
         if bidirectional and hidden_size % 2 != 0:
             raise RuntimeError('hidden_size is expected to be even in the bidirectional mode!')
 
+        self.device = device
         self.dropout = dropout
         self.rnn_type = rnn_type
-        self.device = device
-        self.hidden_size = hidden_size // 2 if bidirectional else hidden_size
+        self.num_layers = num_layers
         self.num_directions = 2 if bidirectional else 1
+        self.hidden_size = hidden_size // 2 if bidirectional else hidden_size
         model = nn.LSTM if rnn_type == 'lstm' else nn.GRU
-        self.model = model(input_size, self.hidden_size, 1, batch_first=True, bidirectional=bidirectional)
-        if self.device:
-            self.model = self.model.to(self.device)
+        self.model = model(input_size, self.hidden_size, num_layers, batch_first=True, bidirectional=bidirectional)
 
     def forward(self, x, x_len):
         """Apply the RNN network to a sequence of word embeddings.
@@ -437,21 +409,21 @@ class RNNEmbedding(nn.Module):
         sorted_x_len, indx = torch.sort(x_len, 0, descending=True)
         x = pack_padded_sequence(x[indx], sorted_x_len.data.tolist(), batch_first=True)
 
-        h0 = to_cuda(torch.zeros(self.num_directions, x_len.size(0), self.hidden_size), self.device)
+        h0 = to_cuda(torch.zeros(self.num_directions * self.num_layers, x_len.size(0), self.hidden_size), self.device)
         if self.rnn_type == 'lstm':
-            c0 = to_cuda(torch.zeros(self.num_directions, x_len.size(0), self.hidden_size), self.device)
+            c0 = to_cuda(torch.zeros(self.num_directions * self.num_layers, x_len.size(0), self.hidden_size), self.device)
             packed_h, (packed_h_t, _) = self.model(x, (h0, c0))
-            if self.num_directions == 2:
-                packed_h_t = torch.cat([packed_h_t[i] for i in range(packed_h_t.size(0))], -1)
-            else:
-                packed_h_t = packed_h_t.squeeze(0)
-
         else:
             packed_h, packed_h_t = self.model(x, h0)
-            if self.num_directions == 2:
-                packed_h_t = packed_h_t.transpose(0, 1).contiguous().view(query_lengths.size(0), -1)
-            else:
-                packed_h_t = packed_h_t.squeeze(0)
+
+        if self.num_layers > 1:
+            # use the last RNN layer hidden state
+            packed_h_t = packed_h_t.view(self.num_layers, self.num_directions, -1, self.hidden_size)[-1]
+
+        if self.num_directions == 2:
+            packed_h_t = torch.cat((packed_h_t[-1], packed_h_t[-2]), 1)
+        else:
+            packed_h_t = packed_h_t[-1]
 
         hh, _ = pad_packed_sequence(packed_h, batch_first=True)
 
@@ -459,5 +431,9 @@ class RNNEmbedding(nn.Module):
         _, inverse_indx = torch.sort(indx, 0)
         restore_hh = hh[inverse_indx]
         restore_packed_h_t = packed_h_t[inverse_indx]
+
+        # add dropout
+        restore_hh = dropout_fn(restore_hh, self.dropout, shared_axes=[-2], training=self.training)
+        restore_packed_h_t = dropout_fn(restore_packed_h_t, self.dropout, training=self.training)
 
         return restore_hh, restore_packed_h_t
