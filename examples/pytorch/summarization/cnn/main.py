@@ -5,6 +5,7 @@ import os
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.datasets.cnn import CNNDataset
 from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
@@ -80,19 +81,31 @@ class Graph2seqLoss(nn.Module):
 
 
 class Graph2seq(nn.Module):
-    def __init__(self, vocab, device, hidden_size=300, direction_option='bi_sep'):
+    def __init__(self, vocab, device, hidden_size=300, direction_option='bi_sep', parser='IE'):
         super(Graph2seq, self).__init__()
         self.device = device
         self.vocab = vocab
+        self.parser = parser
 
         embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
                            'seq_info_encode_strategy': "bilstm"}
-        self.graph_topology = IEBasedGraphConstruction(embedding_style=embedding_style,
-                                                       vocab=vocab.in_word_vocab,
-                                                       hidden_size=hidden_size,
-                                                       dropout=0.2,
-                                                       use_cuda=(self.device==torch.device('cuda')),
-                                                       fix_word_emb=False)
+
+        if self.parser=='IE':
+            self.graph_topology = IEBasedGraphConstruction(embedding_style=embedding_style,
+                                                           vocab=vocab.in_word_vocab,
+                                                           hidden_size=hidden_size,
+                                                           dropout=0.2,
+                                                           device=device,
+                                                           fix_word_emb=False)
+        elif self.parser=='DEP':
+            self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
+                                                                   vocab=vocab.in_word_vocab,
+                                                                   hidden_size=hidden_size,
+                                                                   dropout=0.2,
+                                                                   device=device,
+                                                                   fix_word_emb=False)
+        else:
+            raise NotImplementedError()
 
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
 
@@ -126,32 +139,43 @@ class Graph2seq(nn.Module):
 
 
 class CNN:
-    def __init__(self, device=None):
+    def __init__(self, device=None, parser='IE'):
         super(CNN, self).__init__()
         self.device = device
+        self.parser = parser
         self._build_dataloader()
         self._build_model()
         self._build_optimizer()
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = CNNDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/summarization/cnn",
-                             topology_builder=IEBasedGraphConstruction,
-                             topology_subdir='IEGraph_1',
-                             share_vocab=True)
-        self.train_dataloader = DataLoader(dataset.train, batch_size=32,
+        if self.parser=='IE':
+            dataset = CNNDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/summarization/cnn",
+                                 topology_builder=IEBasedGraphConstruction,
+                                 topology_subdir='IEGraph_1',
+                                 share_vocab=True)
+        elif self.parser=='DEP':
+            dataset = CNNDataset(root_dir="/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/summarization/cnn",
+                                 topology_builder=DependencyBasedGraphConstruction,
+                                 topology_subdir='DepGraph',
+                                 share_vocab=True)
+        else:
+            raise NotImplementedError()
+
+        self.train_dataloader = DataLoader(dataset.train, batch_size=64,
                                            shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
-        self.val_dataloader = DataLoader(dataset.val, batch_size=32,
+        self.val_dataloader = DataLoader(dataset.val, batch_size=64,
                                          shuffle=True, num_workers=1,
                                          collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=32,
+        self.test_dataloader = DataLoader(dataset.test, batch_size=64,
                                           shuffle=True, num_workers=1,
                                           collate_fn=dataset.collate_fn)
+
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-        self.model = to_cuda(Graph2seq(self.vocab, device=self.device), self.device)
+        self.model = to_cuda(Graph2seq(self.vocab, device=self.device, parser=self.parser), self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -204,16 +228,22 @@ class CNN:
                     f.write(line)
 
         score = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)[0][0]
-        print("accuracy: {:.3f}".format(score))
+        print("bleu_3: {:.3f}".format(score))
         return score
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--parser', type=str, default='IE')
+    args = parser.parse_args()
+
     if torch.cuda.is_available():
         device = torch.device('cuda')
     else:
         device = torch.device('cpu')
-    runner = CNN(device)
+    runner = CNN(device, args.parser)
     max_score = runner.train()
     print("Train finish, best score: {:.3f}".format(max_score))
     runner.model.load_state_dict(torch.load('best_cnn_model.pt'))
