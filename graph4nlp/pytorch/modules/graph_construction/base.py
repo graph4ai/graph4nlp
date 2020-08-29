@@ -25,6 +25,10 @@ class GraphConstructionBase(nn.Module):
         - ``seq_info_encode_strategy`` : Specify strategies of encoding
             sequential information in raw text data including "none",
             "lstm", "gru", "bilstm" and "bigru".
+        - ``num_rnn_layers_for_node_edge_emb``: Specify the number of
+            RNN layers for ``node_edge_emb_strategy`` when RNN is used.
+        - ``num_rnn_layers_for_seq_info_encode``: Specify the number of
+            RNN layers for ``seq_info_encode_strategy`` when RNN is used.
     hidden_size : int, optional
         The hidden size of RNN layer, default: ``None``.
     fix_word_emb : boolean, optional
@@ -44,6 +48,8 @@ class GraphConstructionBase(nn.Module):
                                         embedding_styles['node_edge_emb_strategy'],
                                         embedding_styles['seq_info_encode_strategy'],
                                         hidden_size=hidden_size,
+                                        num_rnn_layers_for_node_edge_emb=embedding_styles.get('num_rnn_layers_for_node_edge_emb', 1),
+                                        num_rnn_layers_for_seq_info_encode=embedding_styles.get('num_rnn_layers_for_seq_info_encode', 1),
                                         fix_word_emb=fix_word_emb,
                                         word_dropout=word_dropout,
                                         dropout=dropout,

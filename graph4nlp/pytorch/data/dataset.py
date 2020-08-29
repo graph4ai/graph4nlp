@@ -19,6 +19,8 @@ from ..modules.utils.tree_utils import Tree
 
 import json
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 
 
@@ -283,18 +285,51 @@ class Dataset(torch.utils.data.Dataset):
         if self.graph_type == 'static':
             print('Connecting to stanfordcorenlp server...')
             processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+
+            if self.topology_builder == IEBasedGraphConstruction:
+                props_coref = {
+                    'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
+                    "tokenize.options":
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
+                props_openie = {
+                    'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
+                    "tokenize.options":
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json',
+                    "openie.triple.strict": "true"
+                }
+                processor_args = [props_coref, props_openie]
+            elif self.topology_builder == DependencyBasedGraphConstruction:
+                processor_args = {
+                    'annotators': 'ssplit,tokenize,depparse',
+                    "tokenize.options":
+                        "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
+            elif self.topology_builder == ConstituencyBasedGraphConstruction:
+                processor_args = {
+                    'annotators': "tokenize,ssplit,pos,parse",
+                    "tokenize.options":
+                    "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
+            else:
+                raise NotImplementedError
             print('CoreNLP server connected.')
-            processor_args = {
-                'annotators': 'ssplit,tokenize,depparse',
-                "tokenize.options":
-                    "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
-                "tokenize.whitespace": False,
-                'ssplit.isOneSentence': False,
-                'outputFormat': 'json'
-            }
             for item in data_items:
                 graph = self.topology_builder.topology(raw_text_data=item.input_text,
-                                                       nlp_processor=processor, processor_args=processor_args,
+                                                       nlp_processor=processor,
+                                                       processor_args=processor_args,
                                                        merge_strategy=self.merge_strategy,
                                                        edge_strategy=self.edge_strategy,
                                                        verbase=False)
@@ -452,7 +487,7 @@ class Text2TextDataset(Dataset):
         return self.vocab_model
 
     def vectorization(self, data_items):
-        if isinstance(self.topology_builder, IEBasedGraphConstruction):
+        if self.topology_builder == IEBasedGraphConstruction:
             use_ie = True
         else:
             use_ie = False
@@ -464,7 +499,7 @@ class Text2TextDataset(Dataset):
                 node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token, use_ie)
                 graph.node_attributes[node_idx]['token_id'] = node_token_id
                 token_matrix.append([node_token_id])
-            if isinstance(self.topology_builder, IEBasedGraphConstruction):
+            if self.topology_builder == IEBasedGraphConstruction:
                 for i in range(len(token_matrix)):
                     token_matrix[i] = np.array(token_matrix[i][0])
                 token_matrix = pad_2d_vals_no_size(token_matrix)
@@ -482,7 +517,7 @@ class Text2TextDataset(Dataset):
                     edge_token_id = self.vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
                     graph.edge_attributes[edge_idx]['token_id'] = edge_token_id
                     edge_token_matrix.append([edge_token_id])
-                if isinstance(self.topology_builder, IEBasedGraphConstruction):
+                if self.topology_builder == IEBasedGraphConstruction:
                     for i in range(len(edge_token_matrix)):
                         edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
                     edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
@@ -536,24 +571,20 @@ class TextToTreeDataset(Dataset):
         list
             The indices of data items in the file w.r.t. the whole dataset.
         """
-        current_index = len(self.data)
-        subset_indices = []
+        data = []
         with open(file_path, 'r') as f:
             lines = f.readlines()
             for line in lines:
                 input, output = line.split('\t')
                 data_item = Text2TreeDataItem(input_text=input, output_text=output, output_tree=None, tokenizer=self.tokenizer,
                                               share_vocab=self.share_vocab)
-                self.data[current_index] = data_item
-                subset_indices.append(current_index)
-                current_index += 1
-        return subset_indices
+                data.append(data_item)
+        return data
 
     def build_vocab(self):
-        saved_vocab_file = self.processed_file_paths['vocab']
-        data_for_vocab = [self.data[idx] for idx in self.split_ids['train']]
+        data_for_vocab = self.train
         if self.use_val_for_vocab:
-            data_for_vocab = data_for_vocab + [self.data[idx] for idx in self.split_ids['val']]
+            data_for_vocab = data_for_vocab + self.val
 
         src_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.enc_emb_size)
         tgt_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.dec_emb_size)
@@ -578,15 +609,12 @@ class TextToTreeDataset(Dataset):
             src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=2, max_vocab_size=100000)
             tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=1, max_vocab_size=100000)
 
-        print('Saving vocab model to {}'.format(saved_vocab_file))
-        pickle.dump((src_vocab_model, tgt_vocab_model), open(saved_vocab_file, 'wb'))
-
         self.src_vocab_model = src_vocab_model
         self.tgt_vocab_model = tgt_vocab_model
-        return True
+        return self.src_vocab_model
 
-    def vectorization(self):
-        for item in self.data.values():
+    def vectorization(self, data_items):
+        for item in data_items:
             graph: GraphData = item.graph
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
@@ -601,8 +629,6 @@ class TextToTreeDataset(Dataset):
             tgt_list = self.tgt_vocab_model.get_symbol_idx_for_list(tgt.split())
             output_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), self.tgt_vocab_model)
             item.output_tree = output_tree
-
-        torch.save(self.data, self.processed_file_paths['data'])
 
     @staticmethod
     def collate_fn(data_list: [Text2TreeDataItem]):

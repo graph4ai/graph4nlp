@@ -181,15 +181,13 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         """
         cls.verbase = verbase
 
+        if isinstance(processor_args, list):
+            props_coref = processor_args[0]
+            props_openie = processor_args[1]
+        else:
+            raise RuntimeError('processor_args for IEBasedGraphConstruction shouble be a list of dict.')
+
         # Do coreference resolution on the whole 'raw_text_data'
-        props_coref = {
-            'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
-            "tokenize.options":
-                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
-            "tokenize.whitespace": False,
-            'ssplit.isOneSentence': False,
-            'outputFormat': 'json'
-        }
         coref_json = nlp_processor.annotate(raw_text_data.strip(), properties=props_coref)
         coref_dict = json.loads(coref_json)
 
@@ -235,16 +233,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             sentences[sent_id]['resolvedText'] = ' '.join(sentences[sent_id]['tokenWords'])
 
         # use OpenIE to extract triples from resolvedText
-        props_openie = {
-            'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
-            "tokenize.options":
-                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
-            "tokenize.whitespace": False,
-            'ssplit.isOneSentence': False,
-            'outputFormat': 'json',
-            "openie.triple.strict": "true"
-        }
-
         all_sent_triples = {}
         for sent in sentences:
             resolved_sent = sent['resolvedText']
