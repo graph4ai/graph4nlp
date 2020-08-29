@@ -594,8 +594,8 @@ class Text2TextDataset(Dataset):
                     graph.edge_features['token_id'] = edge_token_matrix
 
             tgt = item.output_text
-            tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
-            tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
+            tgt_token_id = self.vocab_model.out_word_vocab.to_index_sequence(tgt)
+            tgt_token_id.append(self.vocab_model.out_word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
             item.output_np = tgt_token_id
 

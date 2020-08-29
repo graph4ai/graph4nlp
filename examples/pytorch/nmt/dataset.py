@@ -4,14 +4,19 @@ import torch
 import os
 import json
 from stanfordcorenlp import StanfordCoreNLP
+from multiprocessing import Pool
+
+from multiprocessing import Process
+import multiprocessing
+import tqdm
 
 
 class EuroparlNMTDataset(Text2TextDataset):
     def __init__(self, root_dir, topology_builder, topology_subdir=None, graph_type='static',
-                 edge_strategy=None, merge_strategy='tailhead', **kwargs):
-        super(EuroparlNMTDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder, share_vocab=False,
+                 edge_strategy=None, merge_strategy='tailhead', share_vocab=False):
+        super(EuroparlNMTDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder, share_vocab=share_vocab,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
-                                          edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
+                                          edge_strategy=edge_strategy, merge_strategy=merge_strategy)
 
     @property
     def raw_file_names(self):
@@ -36,49 +41,73 @@ class EuroparlNMTDataset(Text2TextDataset):
                 continue
             dataitem = Text2TextDataItem(input_text=item[0], output_text=item[1], tokenizer=self.tokenizer, share_vocab=self.share_vocab)
             data.append(dataitem)
-        if len(data) > 10000:
-            data = data[0:10000]
         return data
+
+    @staticmethod
+    def process(data_item, port):
+        processor_args = {
+            'annotators': 'ssplit,tokenize,depparse',
+            "tokenize.options":
+                "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+            "tokenize.whitespace": False,
+            'ssplit.isOneSentence': False,
+            'outputFormat': 'json'
+        }
+        print('Connecting to stanfordcorenlp server...')
+        processor = StanfordCoreNLP('http://localhost', port=int(port), timeout=1000)
+        processor.switch_language("fr")
+        print('CoreNLP server connected.')
+        cnt = 0
+        all = len(data_item)
+        ret = []
+        # print(id(data_item[0]), data_item[0].input_text)
+        for item in data_item:
+            if cnt % 1000 == 0:
+                print("Port {}, processing: {} / {}".format(port, cnt, all))
+            cnt += 1
+            # print(item.input_text)
+            graph = DependencyBasedGraphConstruction.topology(raw_text_data=item.input_text,
+                                                               nlp_processor=processor, processor_args=processor_args,
+                                                               merge_strategy="tailhead",
+                                                               edge_strategy=None,
+                                                               verbase=False)
+            ret.append(graph)
+        print("Port {}, finish".format(port))
+        return ret
+
+
 
     def build_topology(self, data_items):
         """
         Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
         DataItem.
         """
-        if self.graph_type == 'static':
-            print('Connecting to stanfordcorenlp server...')
-            processor = StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
-            print('CoreNLP server connected.')
-            processor_args = {
-                'annotators': 'ssplit,tokenize,depparse',
-                "tokenize.options":
-                    "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
-                "tokenize.whitespace": False,
-                'ssplit.isOneSentence': False,
-                'outputFormat': 'json'
-            }
-            cnt = 0
-            for item in data_items:
-                if cnt % 100 == 0:
-                    print(cnt, len(data_items))
-                cnt += 1
-                graph = self.topology_builder.topology(raw_text_data=item.input_text,
-                                                       nlp_processor=processor, processor_args=processor_args,
-                                                       merge_strategy=self.merge_strategy,
-                                                       edge_strategy=self.edge_strategy,
-                                                       verbase=False)
-                item.graph = graph
-        elif self.graph_type == 'dynamic':
-            for item in data_items:
-                graph = self.topology_builder.raw_text_to_init_graph(item.input_text)
-                item.graph = graph
-        else:
-            raise NotImplementedError('Currently only static and dynamic are supported!')
+        # print(id(data_items[0]), data_items[0].input_text)
+
+        total = len(data_items)
+        pool = Pool(10)
+        res_l = []
+        for i in range(10):
+            start_index = total * i // 10
+            end_index = total * (i + 1) // 10
+            r = pool.apply_async(self.process, args=(data_items[start_index:end_index], 9000+i))
+            res_l.append(r)
+        pool.close()
+        pool.join()
+
+        for i in range(10):
+            start_index = total * i // 10
+            end_index = total * (i + 1) // 10
+
+            res = res_l[i].get()
+            datas = data_items[start_index:end_index]
+            for data, graph in zip(datas, res):
+                data.graph = graph
 
 
 if __name__ == "__main__":
     dataset = EuroparlNMTDataset(root_dir="/home/shiina/shiina/lib/dataset",
                                  topology_builder=DependencyBasedGraphConstruction,
-                                 topology_subdir='DependencyGraph')
+                                 topology_subdir='DependencyGraphWhole', share_vocab=False)
 
 
