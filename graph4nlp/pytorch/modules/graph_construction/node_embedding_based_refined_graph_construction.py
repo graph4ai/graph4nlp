@@ -122,26 +122,27 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         GraphData
             The constructed graph.
         """
-        adj = self.compute_similarity_metric(node_emb, node_mask)
-        adj = self.sparsify_graph(adj)
-        graph_reg = self.compute_graph_regularization(adj, node_emb)
+        raw_adj = self.compute_similarity_metric(node_emb, node_mask)
+        raw_adj = self.sparsify_graph(raw_adj)
+        graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
 
         if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
-            try:
-                assert adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
-            except:
-                import pdb;pdb.set_trace()
-            adj = adj / torch.clamp(torch.sum(adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
+            assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
+            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
+            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=0, keepdim=True), min=VERY_SMALL_NUMBER)
         elif self.sim_metric_type == 'cosine':
-            adj = (adj > 0).float()
-            adj = normalize_adj(adj)
+            raw_adj = (raw_adj > 0).float()
+            adj = normalize_adj(raw_adj)
+            reverse_adj = adj
         else:
-            adj = torch.softmax(adj, dim=-1)
+            adj = torch.softmax(raw_adj, dim=-1)
+            reverse_adj = torch.softmax(raw_adj, dim=0)
 
         if self.alpha_fusion is not None:
             adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * adj, self.alpha_fusion * init_norm_adj)
+            reverse_adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * reverse_adj, self.alpha_fusion * init_norm_adj)
 
-        graph_data = convert_adj_to_graph(adj, 0)
+        graph_data = convert_adj_to_graph(adj, reverse_adj, 0)
         graph_data.graph_attributes['graph_reg'] = graph_reg
 
         return graph_data
@@ -201,6 +202,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
 
             for idx in range(len(token_list) - 1):
                 graph.add_edge(idx, idx + 1)
+                graph.add_edge(idx + 1, idx)
                 graph.node_attributes[idx]['token'] = token_list[idx]
 
             graph.node_attributes[idx + 1]['token'] = token_list[-1]
