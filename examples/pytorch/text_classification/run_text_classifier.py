@@ -194,29 +194,42 @@ class ModelHandler:
         if self.config.graph_type == 'dependency':
             topology_builder = DependencyBasedGraphConstruction
             graph_type = 'static'
+            merge_strategy = 'tailhead'
         elif self.config.graph_type == 'constituency':
             topology_builder = ConstituencyBasedGraphConstruction
             graph_type = 'static'
+            merge_strategy = 'tailhead'
         elif self.config.graph_type == 'ie':
             topology_builder = IEBasedGraphConstruction
             graph_type = 'static'
+            merge_strategy = 'global'
         elif self.config.graph_type == 'node_emb':
             topology_builder = NodeEmbeddingBasedGraphConstruction
             graph_type = 'dynamic'
+            merge_strategy = None
         elif self.config.graph_type == 'node_emb_refined':
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             graph_type = 'dynamic'
+            if self.config.init_graph_type == 'ie':
+                merge_strategy = 'global'
+            else:
+                merge_strategy = 'tailhead'
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(config.graph_type))
 
         topology_subdir = '{}_based_graph'.format(self.config.graph_type)
+        if self.config.graph_type == 'node_emb_refined':
+            topology_subdir += '_{}'.format(self.config.init_graph_type)
+
         dataset = TrecDataset(root_dir="examples/pytorch/text_classification/data/trec",
                               topology_builder=topology_builder,
                               topology_subdir=topology_subdir,
                               graph_type=graph_type,
                               pretrained_word_emb_file=self.config.pre_word_emb_file,
                               val_split_ratio=self.config.val_split_ratio,
-                              merge_strategy='global' if self.config.graph_type == 'ie' else 'tailhead',
+                              merge_strategy=merge_strategy,
+                              dynamic_graph_type=self.config.graph_type if self.config.graph_type in ('node_emb', 'node_emb_refined') else None,
+                              init_graph_type=self.config.init_graph_type if self.config.graph_type == 'node_emb_refined' else None,
                               seed=self.config.seed)
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config.batch_size, shuffle=True,
                                            num_workers=self.config.num_workers,
@@ -321,7 +334,7 @@ def main(args):
         args.device = torch.device('cpu')
 
     ts = datetime.datetime.now().timestamp()
-    args.save_model_path = '{ts}_{save_model_path}_{seed}_{dataset}_{gnn}_{direction_option}_{graph_type}'\
+    args.save_model_path = '{ts}_{save_model_path}_{seed}_{dataset}_{gnn}_{direction_option}_{graph_type}_{init_graph_type}'\
                             '_{gl_top_k}_{gl_num_heads}_{gl_epsilon}_{gl_smoothness_ratio}_{gl_connectivity_ratio}'\
                             '_{gl_sparsity_ratio}_{init_adj_alpha}_{graph_pooling}_{num_heads}'\
                             '_{num_out_heads}_{num_layers}_{num_hidden}_{node_edge_emb_strategy}'\
@@ -334,6 +347,7 @@ def main(args):
                             gnn=args.gnn,
                             direction_option=args.direction_option,
                             graph_type=args.graph_type,
+                            init_graph_type=args.init_graph_type,
                             gl_top_k=args.gl_top_k,
                             gl_num_heads=args.gl_num_heads,
                             gl_epsilon=args.gl_epsilon,
@@ -379,6 +393,8 @@ if __name__ == "__main__":
     # graph construction
     parser.add_argument("--graph_type", type=str, default='dependency',
                         help="graph construction type (`dependency`, `constituency`, `ie`, `node_emb`, `node_emb_refined`)")
+    parser.add_argument("--init_graph_type", type=str, default='dependency',
+                        help="graph construction type (`dependency`, `constituency`, `ie`, `line`)")
     # dynamic graph construction
     parser.add_argument("--gl_metric_type", type=str, default='weighted_cosine',
                         help=r"similarity metric type for dynamic graph construction")

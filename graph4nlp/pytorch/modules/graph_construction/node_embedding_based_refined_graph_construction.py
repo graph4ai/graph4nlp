@@ -1,7 +1,12 @@
+from nltk.tokenize import word_tokenize
 import torch
 from torch import nn
 
+from ...data.data import GraphData
 from .base import DynamicGraphConstructionBase
+from .dependency_graph_construction import DependencyBasedGraphConstruction
+from .constituency_graph_construction import ConstituencyBasedGraphConstruction
+from .ie_graph_construction import IEBasedGraphConstruction
 from ..utils.generic_utils import normalize_adj, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
@@ -159,3 +164,62 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             The initial node embeddings.
         """
         return self.embedding_layer(node_word_idx, node_size, num_nodes)
+
+
+    @classmethod
+    def init_topology(cls,
+                    raw_text_data,
+                    init_graph_type='line',
+                    lower_case=True,
+                    tokenizer=word_tokenize,
+                    nlp_processor=None,
+                    processor_args=None,
+                    merge_strategy=None,
+                    edge_strategy=None,
+                    verbase=False):
+        """Convert raw text data to initial node set graph.
+
+        Parameters
+        ----------
+        raw_text_data : str
+            The raw text data.
+        lower_case : boolean
+            Specify whether to lower case the input text, default: ``True``.
+
+        Returns
+        -------
+        GraphData
+            The constructed graph.
+        """
+        if init_graph_type == 'line':
+            if lower_case:
+                raw_text_data = raw_text_data.lower()
+
+            token_list = tokenizer(raw_text_data.strip())
+            graph = GraphData()
+            graph.add_nodes(len(token_list))
+
+            for idx in range(len(token_list) - 1):
+                graph.add_edge(idx, idx + 1)
+                graph.node_attributes[idx]['token'] = token_list[idx]
+
+            graph.node_attributes[idx + 1]['token'] = token_list[-1]
+        elif init_graph_type in ('dependency', 'constituency', 'ie'):
+            if init_graph_type == 'dependency':
+                topology_fn = DependencyBasedGraphConstruction.topology
+            elif init_graph_type == 'constituency':
+                topology_fn = ConstituencyBasedGraphConstruction.topology
+            else:
+                topology_fn = IEBasedGraphConstruction.topology
+
+            graph = topology_fn(raw_text_data=raw_text_data,
+                               nlp_processor=nlp_processor,
+                               processor_args=processor_args,
+                               merge_strategy=merge_strategy,
+                               edge_strategy=edge_strategy,
+                               verbase=verbase)
+
+        else:
+            raise RuntimeError('Unknown init_graph_type: {}'.format(init_graph_type))
+
+        return graph

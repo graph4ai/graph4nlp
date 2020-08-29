@@ -1,6 +1,8 @@
+from nltk.tokenize import word_tokenize
 import torch
 from torch import nn
 
+from ...data.data import GraphData
 from .base import DynamicGraphConstructionBase
 from ..utils.generic_utils import normalize_adj, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
@@ -61,32 +63,6 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
                                                             word_vocab,
                                                             embedding_styles,
                                                             **kwargs)
-
-    # def forward(self, node_word_idx, node_size, num_nodes, node_mask=None):
-    #     """Compute graph topology and initial node embeddings.
-
-    #     Parameters
-    #     ----------
-    #     node_word_idx : torch.LongTensor
-    #         The input word index node features.
-    #     node_size : torch.LongTensor
-    #         Indicate the length of word sequences for nodes.
-    #     num_nodes : torch.LongTensor
-    #         Indicate the number of nodes.
-    #     node_mask : torch.Tensor, optional
-    #         The node mask matrix, default: ``None``.
-
-    #     Returns
-    #     -------
-    #     GraphData
-    #         The constructed graph.
-    #     """
-    #     node_emb = self.embedding(node_word_idx, node_size, num_nodes)
-
-    #     dgl_graph = self.topology(node_emb, node_mask)
-    #     dgl_graph.ndata['node_feat'] = node_emb
-
-    #     return dgl_graph
 
     def forward(self, batch_graphdata: list):
         """Compute graph topology and initial node embeddings.
@@ -174,3 +150,32 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             The initial node embeddings.
         """
         return self.embedding_layer(node_word_idx, node_size, num_nodes)
+
+
+    @classmethod
+    def init_topology(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize):
+        """Convert raw text data to initial node set graph.
+
+        Parameters
+        ----------
+        raw_text_data : str
+            The raw text data.
+        lower_case : boolean
+            Specify whether to lower case the input text, default: ``True``.
+
+        Returns
+        -------
+        GraphData
+            The constructed graph.
+        """
+        if lower_case:
+            raw_text_data = raw_text_data.lower()
+
+        token_list = tokenizer(raw_text_data.strip())
+        graph = GraphData()
+        graph.add_nodes(len(token_list))
+
+        for idx in range(len(token_list)):
+            graph.node_attributes[idx]['token'] = token_list[idx]
+
+        return graph

@@ -95,6 +95,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     def topology(cls,
                  raw_text_data,
                  nlp_processor,
+                 processor_args=None,
                  merge_strategy=None,
                  edge_strategy=None,
                  verbase=True):

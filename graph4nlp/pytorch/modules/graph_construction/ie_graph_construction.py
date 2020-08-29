@@ -142,7 +142,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         return parsed_results
 
     @classmethod
-    def topology(cls, raw_text_data, nlp_processor, merge_strategy, edge_strategy, verbase=True):
+    def topology(cls, raw_text_data, nlp_processor, processor_args, merge_strategy, edge_strategy, verbase=True):
         """
             Graph building method.
 
