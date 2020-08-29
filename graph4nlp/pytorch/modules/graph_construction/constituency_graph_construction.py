@@ -56,11 +56,12 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         Generate graph topology and embeddings.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, word_dropout=None, dropout=None, device=None):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
+                                                               word_dropout=word_dropout,
                                                                dropout=dropout, device=device)
         self.vocab = vocab
         assert(self.embedding_layer.device == device)
@@ -94,6 +95,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     def topology(cls,
                  raw_text_data,
                  nlp_processor,
+                 processor_args=None,
                  merge_strategy=None,
                  edge_strategy=None,
                  verbase=True):
@@ -241,10 +243,10 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         ----------
         graph_list : list
             A graph list to be merged
-        
+
         bisequential_link : bool
             whether add bi-direnctional links between word nodes
-        
+
         reformalize : bool
             If true, separate word nodes and non-terminal nodes in ``graph.node_attributes`` and put word nodes in the front position
 
@@ -287,7 +289,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             merged_graph.add_edge(tail_node, head_node)
             if bisequential_link:
                 merged_graph.add_edge(head_node, tail_node)
-        
+
         if reformalize:
             new_dict_for_word_nodes = copy.deepcopy(merged_graph.node_attributes)
 
@@ -310,7 +312,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             for i in range(merged_graph.get_edge_num()):
                 merged_graph._edge_indices.src[i] = node_id_map[merged_graph._edge_indices.src[i]]
                 merged_graph._edge_indices.tgt[i] = node_id_map[merged_graph._edge_indices.tgt[i]]
-            
+
             reformalize_graph_attributes = {}
             for i in merged_graph.node_attributes.items():
                 reformalize_graph_attributes[node_id_map[i[0]]] = copy.deepcopy(i[1])
@@ -322,16 +324,19 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     def forward(self, batch_graphdata: list):
         node_size = []
         num_nodes = []
+        num_word_nodes = [] # number of nodes that are extracted from the raw text in each graph
 
         for g in batch_graphdata:
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
             num_nodes.append(g.get_node_num())
+            num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))
             node_size.extend([1 for i in range(num_nodes[-1])])
 
         batch_gd = to_batch(batch_graphdata)
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
+        num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
+        node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes, num_word_items=num_word_nodes)
         batch_gd.node_features["node_feat"] = node_emb
         return batch_gd
 
