@@ -47,11 +47,11 @@ Cos
 
 | Dataset  |      GAT-Uni     |   GAT-BiSep   |  GAT-BiFuse   |
 | -------- | ---------------- | ------------- | ------------- |
-| Jobs     |       91.4       |           |           |
+| Jobs     |       91.4       |               |               |
 
 | Dataset  |      GGNN-Uni    |   GGNN-BiSep  |  GGNN-BiFuse  |
 | -------- | ---------------- | ------------- | ------------- |
-| Jobs     |       91.4       |           |           |
+| Jobs     |       91.4       |               |               |
 
 | Dataset  |  Graphsage-Uni   | Graphsage-BiSep   |  Graphsage-BiFuse   |
 | -------- | ---------------- | ------------- | ------------- |
