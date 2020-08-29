@@ -285,8 +285,27 @@ class Dataset(torch.utils.data.Dataset):
         if self.graph_type == 'static':
             print('Connecting to stanfordcorenlp server...')
             processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
-            print('CoreNLP server connected.')
-            if self.topology_builder == DependencyBasedGraphConstruction:
+
+            if self.topology_builder == IEBasedGraphConstruction:
+                props_coref = {
+                    'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
+                    "tokenize.options":
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
+                props_openie = {
+                    'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
+                    "tokenize.options":
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json',
+                    "openie.triple.strict": "true"
+                }
+                processor_args = [props_coref, props_openie]
+            elif self.topology_builder == DependencyBasedGraphConstruction:
                 processor_args = {
                     'annotators': 'ssplit,tokenize,depparse',
                     "tokenize.options":
@@ -296,21 +315,21 @@ class Dataset(torch.utils.data.Dataset):
                     'outputFormat': 'json'
                 }
             elif self.topology_builder == ConstituencyBasedGraphConstruction:
-                processor_args={
+                processor_args = {
                     'annotators': "tokenize,ssplit,pos,parse",
                     "tokenize.options":
-                    "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                    "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
                     "tokenize.whitespace": False,
                     'ssplit.isOneSentence': False,
                     'outputFormat': 'json'
                 }
             else:
-                raise NotImplementedError("Please specify your own processor args in your graph constrcution module!")
-            
-
+                raise NotImplementedError
+            print('CoreNLP server connected.')
             for item in data_items:
                 graph = self.topology_builder.topology(raw_text_data=item.input_text,
-                                                       nlp_processor=processor, processor_args=processor_args,
+                                                       nlp_processor=processor,
+                                                       processor_args=processor_args,
                                                        merge_strategy=self.merge_strategy,
                                                        edge_strategy=self.edge_strategy,
                                                        verbase=False)
