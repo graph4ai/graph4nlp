@@ -82,8 +82,7 @@ def entail_zero_padding(old_tensor: torch.Tensor, num_rows: int):
         return torch.cat((old_tensor, torch.zeros(num_rows).to(dtype=old_tensor.dtype, device=old_tensor.device)))
     else:
         return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:])).to(dtype=old_tensor.dtype,
-                                                                                        device=old_tensor.device)),
-                         dim=0)
+                                                                                device=old_tensor.device)), dim=0)
 
 
 def reverse_index(l: list, v):

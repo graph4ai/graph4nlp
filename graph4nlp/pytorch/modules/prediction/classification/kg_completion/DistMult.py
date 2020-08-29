@@ -94,7 +94,7 @@ class DistMult(KGCompletionBase):
         else:
             raise RuntimeError("'list_e_r_pair_idx' or 'list_e_e_pair_idx' should be given.")
 
-        if multi_label==None:
+        if multi_label is None:
             input_graph.graph_attributes['logits'] = self.classifier(node_emb,
                                                                   rel_emb,
                                                                   list_e_r_pair_idx,

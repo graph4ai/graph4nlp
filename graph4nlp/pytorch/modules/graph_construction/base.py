@@ -1,5 +1,6 @@
 from nltk.tokenize import word_tokenize
 import numpy as np
+from scipy import sparse
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -7,8 +8,9 @@ import torch.nn.functional as F
 from .embedding_construction import EmbeddingConstruction
 from ...data.data import GraphData
 from ..utils.constants import INF
-from ..utils.generic_utils import to_cuda
+from ..utils.generic_utils import normalize_sparse_adj, sparse_mx_to_torch_sparse_tensor, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
+
 
 class GraphConstructionBase(nn.Module):
     """Base class for graph construction.
@@ -25,24 +27,33 @@ class GraphConstructionBase(nn.Module):
         - ``seq_info_encode_strategy`` : Specify strategies of encoding
             sequential information in raw text data including "none",
             "lstm", "gru", "bilstm" and "bigru".
+        - ``num_rnn_layers_for_node_edge_emb``: Specify the number of
+            RNN layers for ``node_edge_emb_strategy`` when RNN is used.
+        - ``num_rnn_layers_for_seq_info_encode``: Specify the number of
+            RNN layers for ``seq_info_encode_strategy`` when RNN is used.
     hidden_size : int, optional
         The hidden size of RNN layer, default: ``None``.
     fix_word_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``True``.
+    word_dropout : float, optional
+        Dropout ratio for word embedding, default: ``None``.
     dropout : float, optional
-        Dropout ratio, default: ``None``.
+        Dropout ratio for RNN embedding, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
     def __init__(self, word_vocab, embedding_styles, hidden_size=None,
-                        fix_word_emb=True, dropout=None, device=None):
+                        fix_word_emb=True, word_dropout=None, dropout=None, device=None):
         super(GraphConstructionBase, self).__init__()
         self.embedding_layer = EmbeddingConstruction(word_vocab,
                                         embedding_styles['word_emb_type'],
                                         embedding_styles['node_edge_emb_strategy'],
                                         embedding_styles['seq_info_encode_strategy'],
                                         hidden_size=hidden_size,
+                                        num_rnn_layers_for_node_edge_emb=embedding_styles.get('num_rnn_layers_for_node_edge_emb', 1),
+                                        num_rnn_layers_for_seq_info_encode=embedding_styles.get('num_rnn_layers_for_seq_info_encode', 1),
                                         fix_word_emb=fix_word_emb,
+                                        word_dropout=word_dropout,
                                         dropout=dropout,
                                         device=device)
 
@@ -120,15 +131,12 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     """
 
     def __init__(self, word_vocab, embedding_styles, hidden_size,
-                 fix_word_emb=True, dropout=None, use_cuda=True):
-        if use_cuda:
-            device = torch.device('cuda')
-        else:
-            device = torch.device('cpu')
+                 fix_word_emb=True, word_dropout=None, dropout=None, device=None):
         super(StaticGraphConstructionBase, self).__init__(word_vocab,
                                                            embedding_styles,
                                                            hidden_size,
                                                            fix_word_emb=fix_word_emb,
+                                                           word_dropout=word_dropout,
                                                            dropout=dropout,
                                                            device=device)
 
@@ -200,8 +208,10 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         The dimension of hidden layers, default: ``None``.
     fix_word_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``False``.
+    word_dropout : float, optional
+        Dropout ratio for word embedding, default: ``None``.
     dropout : float, optional
-        Dropout ratio, default: ``None``.
+        Dropout ratio for RNN embedding, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
@@ -218,6 +228,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                 input_size=None,
                 hidden_size=None,
                 fix_word_emb=False,
+                word_dropout=None,
                 dropout=None,
                 device=None):
         super(DynamicGraphConstructionBase, self).__init__(
@@ -225,6 +236,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                                                     embedding_styles,
                                                     hidden_size=hidden_size,
                                                     fix_word_emb=fix_word_emb,
+                                                    word_dropout=word_dropout,
                                                     dropout=dropout,
                                                     device=device)
         assert top_k_neigh is None or epsilon_neigh is None, \
@@ -342,9 +354,9 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         ret_graph = GraphData()
         ret_graph.add_nodes(len(token_list))
 
-        for idx, token in enumerate(token_list[:-1]):
+        for idx in range(len(token_list) - 1):
             ret_graph.add_edge(idx, idx + 1)
-            ret_graph.node_attributes[idx]['token'] = token
+            ret_graph.node_attributes[idx]['token'] = token_list[idx]
 
         ret_graph.node_attributes[idx + 1]['token'] = token_list[-1]
 
@@ -495,3 +507,21 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         dists = -2 * torch.matmul(trans_X, X.transpose(-1, -2)) + norm.unsqueeze(0) + norm.unsqueeze(1)
 
         return dists
+
+    def _get_node_mask_for_batch_graph(self, num_nodes):
+        node_mask = []
+        for i in range(num_nodes.shape[0]): # batch
+            graph_node_num = num_nodes[i].item()
+            node_mask.append(sparse.coo_matrix(np.ones((graph_node_num, graph_node_num))))
+
+        node_mask = sparse.block_diag(node_mask)
+        node_mask = to_cuda(sparse_mx_to_torch_sparse_tensor(node_mask).to_dense(), self.device)
+
+        return node_mask
+
+    def _get_normalized_init_adj(self, graph):
+        adj = graph.scipy_sparse_adj()
+        adj = normalize_sparse_adj(adj)
+        adj = to_cuda(sparse_mx_to_torch_sparse_tensor(adj), self.device)
+
+        return adj

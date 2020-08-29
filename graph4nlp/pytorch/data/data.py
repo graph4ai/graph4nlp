@@ -1,3 +1,7 @@
+"""
+The Graph4NLP library uses the class `GraphData` as the representation for structured data (graphs).
+
+"""
 import warnings
 from collections import namedtuple
 
@@ -10,8 +14,15 @@ from .utils import SizeMismatchException, EdgeNotFoundException
 from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list, reverse_index
 from .views import NodeView, NodeFeatView, EdgeView
 
+"""
+An edge in the endpoint node indices form is represented as `EdgeIndex`. 
+It is a tuple consisting of 2 elements, namely `src` and `tgt`.
+"""
 EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
 
+"""
+
+"""
 node_feat_factory = dict
 node_attr_factory = dict
 single_node_attr_factory = dict
@@ -35,6 +46,7 @@ class GraphData(object):
     """
 
     def __init__(self, src=None):
+        # Initialize internal data storages.
         self._node_attributes = node_attr_factory()
         self._node_features = node_feat_factory(res_init_node_features)
         self._edge_indices = EdgeIndex(src=[], tgt=[])
@@ -645,27 +657,32 @@ class GraphData(object):
             else:
                 raise ValueError("The subgraph to be extracted has connection with other nodes in the large graph.")
         # convert the edge from node index tuples to edge indices
-        subgraph_edge_src = [src for (src, tgt) in subgraph_edges]
-        subgraph_edge_tgt = [tgt for (src, tgt) in subgraph_edges]
-        subgraph_edge_ids = self.edge_ids(subgraph_edge_src, subgraph_edge_tgt)
-        subgraph_edge_st_idx = min(subgraph_edge_ids)
-        subgraph_edge_ed_idx = max(subgraph_edge_ids)
+        no_edge = False
+        if len(subgraph_edges) != 0:
+            subgraph_edge_src = [src for (src, tgt) in subgraph_edges]
+            subgraph_edge_tgt = [tgt for (src, tgt) in subgraph_edges]
+            subgraph_edge_ids = self.edge_ids(subgraph_edge_src, subgraph_edge_tgt)
+            subgraph_edge_st_idx = min(subgraph_edge_ids)
+            subgraph_edge_ed_idx = max(subgraph_edge_ids)
+        else:
+            no_edge = True
         # build the subgraph
         subgraph = GraphData()
         subgraph.add_nodes(node_ed_idx - node_st_idx + 1)
-        for src, tgt in subgraph_edges:
-            subgraph.add_edge(src - node_st_idx, tgt - node_st_idx)
-        # copy features and attributes
         for k, v in self._node_features.items():
             if v is not None:
                 subgraph.node_features[k] = v[node_st_idx:node_ed_idx + 1]
-        for k, v in self._edge_features.items():
-            if v is not None:
-                subgraph.edge_features[k] = v[subgraph_edge_st_idx:subgraph_edge_ed_idx + 1]
         for i in range(node_st_idx, node_ed_idx + 1, 1):
             subgraph.node_attributes[i - node_st_idx] = self._node_attributes[i]
-        for i in range(subgraph_edge_st_idx, subgraph_edge_ed_idx + 1, 1):
-            subgraph.edge_attributes[i - subgraph_edge_st_idx] = self._edge_attributes[i]
+
+        if not no_edge:
+            for src, tgt in subgraph_edges:
+                subgraph.add_edge(src - node_st_idx, tgt - node_st_idx)
+            for k, v in self._edge_features.items():
+                if v is not None:
+                    subgraph.edge_features[k] = v[subgraph_edge_st_idx:subgraph_edge_ed_idx + 1]
+            for i in range(subgraph_edge_st_idx, subgraph_edge_ed_idx + 1, 1):
+                subgraph.edge_attributes[i - subgraph_edge_st_idx] = self._edge_attributes[i]
         return subgraph
 
 

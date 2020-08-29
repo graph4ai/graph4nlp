@@ -291,7 +291,7 @@ if __name__ == '__main__':
                         help="which GPU to use.")
     parser.add_argument("--epochs", type=int, default=200,
                         help="number of training epochs")
-    parser.add_argument("--direction-option", type=str, default='bi_fuse',
+    parser.add_argument("--direction-option", type=str, default='bi_sep',
                         help="direction type (`'undirected'`, `'bi_fuse'`, `'bi_sep'`)")
     parser.add_argument("--num-heads", type=int, default=8,
                         help="number of hidden attention heads")

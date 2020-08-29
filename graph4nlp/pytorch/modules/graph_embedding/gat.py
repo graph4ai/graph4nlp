@@ -9,6 +9,7 @@ from dgl.utils import expand_as_pair
 
 from .base import GNNLayerBase, GNNBase
 from ...data.data import GraphData
+from ..utils.generic_utils import Identity
 
 
 class GAT(GNNBase):
@@ -46,7 +47,7 @@ class GAT(GNNBase):
         Number of heads per GAT layer. If ``int`` is given, all layers are forced to have the same number of heads.
     direction_option: str
         Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
-        Default : ``'bi_fuse'``.
+        Default : ``'bi_sep'``.
     feat_drop : float, optional
         Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
@@ -66,7 +67,7 @@ class GAT(GNNBase):
                 hidden_size,
                 output_size,
                 heads,
-                direction_option='bi_fuse',
+                direction_option='bi_sep',
                 feat_drop=0.,
                 attn_drop=0.,
                 negative_slope=0.2,
@@ -190,7 +191,7 @@ class GATLayer(GNNLayerBase):
         Number of heads in Multi-Head Attention.
     direction_option: str
         Whether use unidirectional (i.e., regular) or bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
-        Default: ``'bi_fuse'``.
+        Default: ``'bi_sep'``.
     feat_drop : float, optional
         Dropout rate on feature, default: ``0``.
     attn_drop : float, optional
@@ -208,7 +209,7 @@ class GATLayer(GNNLayerBase):
                 input_size,
                 output_size,
                 num_heads,
-                direction_option='bi_fuse',
+                direction_option='bi_sep',
                 feat_drop=0.,
                 attn_drop=0.,
                 negative_slope=0.2,
@@ -424,8 +425,6 @@ class BiFuseGATLayerConv(GNNLayerBase):
                 self.res_fc = Identity()
         else:
             self.register_buffer('res_fc', None)
-            self.register_buffer('res_fc_fw', None)
-            self.register_buffer('res_fc_bw', None)
         self.reset_parameters()
         self.activation = activation
 
@@ -449,12 +448,6 @@ class BiFuseGATLayerConv(GNNLayerBase):
         nn.init.xavier_normal_(self.attn_r_bw, gain=gain)
         if isinstance(self.res_fc, nn.Linear):
             nn.init.xavier_normal_(self.res_fc.weight, gain=gain)
-
-        if isinstance(self.res_fc_fw, nn.Linear):
-            nn.init.xavier_normal_(self.res_fc_fw.weight, gain=gain)
-
-        if isinstance(self.res_fc_bw, nn.Linear):
-            nn.init.xavier_normal_(self.res_fc_bw.weight, gain=gain)
 
         if hasattr(self, 'fuse_linear'):
             nn.init.xavier_normal_(self.fuse_linear.weight, gain=gain)
@@ -651,7 +644,6 @@ class BiSepGATLayerConv(GNNLayerBase):
             else:
                 self.res_fc_fw = self.res_fc_bw = Identity()
         else:
-            self.register_buffer('res_fc', None)
             self.register_buffer('res_fc_fw', None)
             self.register_buffer('res_fc_bw', None)
         self.reset_parameters()
@@ -673,8 +665,6 @@ class BiSepGATLayerConv(GNNLayerBase):
         nn.init.xavier_normal_(self.attn_l_bw, gain=gain)
         nn.init.xavier_normal_(self.attn_r_fw, gain=gain)
         nn.init.xavier_normal_(self.attn_r_bw, gain=gain)
-        if isinstance(self.res_fc, nn.Linear):
-            nn.init.xavier_normal_(self.res_fc.weight, gain=gain)
 
         if isinstance(self.res_fc_fw, nn.Linear):
             nn.init.xavier_normal_(self.res_fc_fw.weight, gain=gain)
