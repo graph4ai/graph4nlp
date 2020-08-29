@@ -9,6 +9,7 @@ from dgl.utils import expand_as_pair
 
 from .base import GNNLayerBase, GNNBase
 from ...data.data import GraphData
+from ..utils.generic_utils import Identity
 
 
 class GAT(GNNBase):
@@ -424,8 +425,6 @@ class BiFuseGATLayerConv(GNNLayerBase):
                 self.res_fc = Identity()
         else:
             self.register_buffer('res_fc', None)
-            self.register_buffer('res_fc_fw', None)
-            self.register_buffer('res_fc_bw', None)
         self.reset_parameters()
         self.activation = activation
 
@@ -449,12 +448,6 @@ class BiFuseGATLayerConv(GNNLayerBase):
         nn.init.xavier_normal_(self.attn_r_bw, gain=gain)
         if isinstance(self.res_fc, nn.Linear):
             nn.init.xavier_normal_(self.res_fc.weight, gain=gain)
-
-        if isinstance(self.res_fc_fw, nn.Linear):
-            nn.init.xavier_normal_(self.res_fc_fw.weight, gain=gain)
-
-        if isinstance(self.res_fc_bw, nn.Linear):
-            nn.init.xavier_normal_(self.res_fc_bw.weight, gain=gain)
 
         if hasattr(self, 'fuse_linear'):
             nn.init.xavier_normal_(self.fuse_linear.weight, gain=gain)
@@ -651,7 +644,6 @@ class BiSepGATLayerConv(GNNLayerBase):
             else:
                 self.res_fc_fw = self.res_fc_bw = Identity()
         else:
-            self.register_buffer('res_fc', None)
             self.register_buffer('res_fc_fw', None)
             self.register_buffer('res_fc_bw', None)
         self.reset_parameters()
@@ -673,8 +665,6 @@ class BiSepGATLayerConv(GNNLayerBase):
         nn.init.xavier_normal_(self.attn_l_bw, gain=gain)
         nn.init.xavier_normal_(self.attn_r_fw, gain=gain)
         nn.init.xavier_normal_(self.attn_r_bw, gain=gain)
-        if isinstance(self.res_fc, nn.Linear):
-            nn.init.xavier_normal_(self.res_fc.weight, gain=gain)
 
         if isinstance(self.res_fc_fw, nn.Linear):
             nn.init.xavier_normal_(self.res_fc_fw.weight, gain=gain)
