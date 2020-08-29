@@ -1,12 +1,23 @@
 import numpy as np
 from scipy import sparse
 import torch
+import torch.nn as nn
 
 
 def to_cuda(x, device=None):
     if device:
         x = x.to(device)
+
     return x
+
+def create_mask(x, N, device=None):
+    if isinstance(x, torch.Tensor):
+        x = x.data
+    mask = np.zeros((len(x), N))
+    for i in range(len(x)):
+        mask[i, :x[i]] = 1
+
+    return to_cuda(torch.Tensor(mask), device)
 
 def normalize_adj(mx):
     """Row-normalize matrix: symmetric normalized Laplacian"""
@@ -58,6 +69,18 @@ def dropout_fn(x, drop_prob, shared_axes=[], training=False):
     mask = mask.expand_as(x)
 
     return x * mask
+
+class Identity(nn.Module):
+    """A placeholder identity operator that is argument-insensitive.
+    (Identity has already been supported by PyTorch 1.2, we will directly
+    import torch.nn.Identity in the future)
+    """
+    def __init__(self):
+        super(Identity, self).__init__()
+
+    def forward(self, x):
+        """Return input"""
+        return x
 
 class EarlyStopping:
     def __init__(self, save_model_path, patience=10):
