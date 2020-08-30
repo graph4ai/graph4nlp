@@ -25,9 +25,9 @@ Conll Results
 | GraphType\GNN  | GAT-Undirected   |  GAT-BiSep    | GAT-BiFuse   | GraphSAGE-Undirected   |  GraphSAGE-BiSep    | GraphSAGE-BiFuse   |  GGNN-Undirected   |  GGNN-BiSep    | GGNN-BiFuse   | 
 | ------------- |  -------------| ------------- |  -------------|  ------------- | ------------- |  -------------| ------------- | -------------  | ------------- |  
 | Dependency_graph     |   |   |  |  |  |    |  | |   |
-| Line_graph        |   |   |  |  |  |    |  | |   |
+| Line_graph        |   |   |  |74.72|  |73.10|  | |   |
 | NodeEmb | N/A  | N/A | N/A | - | - | -  |  | - |  - |
-|Only_bilstm| 74.26%|
+|Only_bilstm| 75.64%|
 
 
 
