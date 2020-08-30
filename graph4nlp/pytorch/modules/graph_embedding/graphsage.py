@@ -6,20 +6,17 @@ from dgl.nn.pytorch import SAGEConv
 from dgl.utils import expand_as_pair
 from .base import GNNLayerBase, GNNBase
 from dgl.utils import expand_as_pair,check_eq_shape
+import warnings
 
 class GraphSAGE(GNNBase):
     r"""Multi-layered `GraphSAGE Network <https://arxiv.org/pdf/1706.02216.pdf>`__
     Support both unidirectional (i.e., regular) and bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
-
     .. math::
         h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
         \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
-
         h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
         (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
-
         h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
-
     Parameters
     ----------
     num_layers: int
@@ -30,7 +27,6 @@ class GraphSAGE(GNNBase):
         specifies the input feature size on both the source and destination nodes.  If
         a scalar is given, the source and destination node feature size would take the
         same value.
-
         If aggregator type is ``gcn``, the feature size of source and destination nodes
         are required to be the same.
     hidden_size: int list of int
@@ -110,14 +106,12 @@ class GraphSAGE(GNNBase):
 
     def forward(self, graph):
         r"""Compute GraphSAGE layer.
-
         Parameters
         ----------
         graph : GraphData
             The graph with node feature stored in the feature field named as
             "node_feat".
             The node features are used for message passing.
-
         Returns
         -------
         graph : GraphData
@@ -128,14 +122,16 @@ class GraphSAGE(GNNBase):
         h=graph.node_features['node_feat'] #get the node feature tensor from graph
         g = graph.to_dgl() #transfer the current NLPgraph to DGL graph
         edge_weight=None
+        reverse_edge_weight=None
         if self.use_edge_weight==True:
             edge_weight = graph.edge_features['edge_weight']
+            reverse_edge_weight = graph.edge_features['reverse_edge_weight']
         # output projection
         if self.num_layers>1:
           for l in range(0,self.num_layers - 1):
-              h = self.GraphSAGE_layers[l](g, h, edge_weight)
+              h = self.GraphSAGE_layers[l](g, h, edge_weight,reverse_edge_weight)
 
-        logits = self.GraphSAGE_layers[-1](g, h, edge_weight)
+        logits = self.GraphSAGE_layers[-1](g, h, edge_weight,reverse_edge_weight)
 
         if self.direction_option == 'bi_sep':
             logits = torch.cat(logits, -1)
@@ -151,17 +147,12 @@ class GraphSAGE(GNNBase):
 class GraphSAGELayer(GNNLayerBase):
     r"""A unified wrapper for `GraphSAGE Network <https://arxiv.org/pdf/1706.02216.pdf>`__
     Support both unidirectional (i.e., regular) and bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
-
     .. math::
         h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
         \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
-
         h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
         (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
-
         h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
-
-
     Parameters
     ----------
     input_size : int, or pair of ints
@@ -223,32 +214,26 @@ class GraphSAGELayer(GNNLayerBase):
         else:
             raise RuntimeError('Unknown `direction_option` value: {}'.format(direction_option))
 
-    def forward(self, graph, feat, edge_weight=None):
-        return self.model(graph, feat, edge_weight)
+    def forward(self, graph, feat, edge_weight=None,reverse_edge_weight=None):
+        return self.model(graph, feat, edge_weight,reverse_edge_weight)
 
 class UndirectedGraphSAGELayerConv(GNNLayerBase):
     r"""GraphSAGE layer from paper `Inductive Representation Learning on
     Large Graphs <https://arxiv.org/pdf/1706.02216.pdf>`__.
-
     .. math::
         h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
         \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
-
         h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
         (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
-
         h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
-
     Parameters
     ----------
     input_size : int, or pair of ints
         Input feature size.
-
         If the layer is to be applied on a unidirectional bipartite graph, ``in_feats``
         specifies the input feature size on both the source and destination nodes.  If
         a scalar is given, the source and destination node feature size would take the
         same value.
-
         If aggregator type is ``gcn``, the feature size of source and destination nodes
         are required to be the same.
     out_size : int
@@ -314,9 +299,8 @@ class UndirectedGraphSAGELayerConv(GNNLayerBase):
         _, (rst, _) = self.lstm(m, h)
         return {'neigh': rst.squeeze(0)}
 
-    def forward(self, graph, feat, edge_weight=None):
+    def forward(self, graph, feat, edge_weight=None,reverse_edge_weight=None):
         r"""Compute GraphSAGE layer.
-
         Parameters
         ----------
         graph : DGLGraph
@@ -401,26 +385,20 @@ class UndirectedGraphSAGELayerConv(GNNLayerBase):
 class BiSepGraphSAGELayerConv(GNNLayerBase):
     r"""Bidirection version GraphSAGE layer from paper `Inductive Representation Learning on
     Large Graphs <https://arxiv.org/pdf/1706.02216.pdf>`__.
-
     .. math::
         h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
         \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
-
         h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
         (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
-
         h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
-
     Parameters
     ----------
     input_size : int, or pair of ints
         Input feature size.
-
         If the layer is to be applied on a unidirectional bipartite graph, ``in_feats``
         specifies the input feature size on both the source and destination nodes.  If
         a scalar is given, the source and destination node feature size would take the
         same value.
-
         If aggregator type is ``gcn``, the feature size of source and destination nodes
         are required to be the same.
     output_size : int
@@ -521,7 +499,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
              graph.update_all(fn.copy_src('h', 'm'), fn.mean('m', 'neigh'))
          else:
              graph.edata['edge_weight']=edge_weight
-             graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), fn.mean('m', 'neigh'))
+             graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), fn.sum('m', 'neigh'))
          h_neigh = graph.dstdata['neigh']
        elif self._aggre_type == 'gcn':
          check_eq_shape(feat)
@@ -529,12 +507,13 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
          graph.dstdata['h'] = feat_dst  # same as above if homogeneous
          if edge_weight is None:
              graph.update_all(fn.copy_src('h', 'm'), fn.sum('m', 'neigh'))
+             # divide in_degrees
+             degs = graph.in_degrees().to(feat_dst)
+             h_neigh = (graph.dstdata['neigh'] + graph.dstdata['h']) / (degs.unsqueeze(-1) + 1)             
          else:
              graph.edata['edge_weight']=edge_weight
              graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), fn.sum('m', 'neigh'))
-         # divide in_degrees
-         degs = graph.in_degrees().to(feat_dst)
-         h_neigh = (graph.dstdata['neigh'] + graph.dstdata['h']) / (degs.unsqueeze(-1) + 1)
+
        elif self._aggre_type == 'pool':
          if direction=='fw':
              graph.srcdata['h'] = F.relu(self.fc_pool_fw(feat_src))
@@ -552,12 +531,14 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
            if edge_weight is None:
                graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_fw)
            else:
+              warnings.warn(warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning)) 
               graph.edata['edge_weight']=edge_weight
               graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_fw)
          elif direction=='bw':
            if edge_weight is None:
               graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_bw)
            else:
+              warnings.warn(warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning)) 
               graph.edata['edge_weight']=edge_weight
               graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_bw)
 
@@ -568,10 +549,9 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
 
        return h_neigh,h_self
 
-    def forward(self,graph,feat,edge_weight=None):
+    def forward(self,graph,feat,edge_weight=None,reverse_edge_weight=None):
         r"""
         Compute node embeddings from both directions in bidirection seperated GraphSAGE
-
         Parameters
         ----------
         graph : DGLGraph
@@ -584,7 +564,6 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
             :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
         edge_weighht: torch.tensor
                Only needed when consider the edge weights in message passing.
-
         Returns
         -------
         The output feature of shape :math:`(N, D_{out})` where :math:`D_{out}`
@@ -605,7 +584,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
 
         # update node part:
         h_neigh_fw,h_self_fw = self.message_reduce(f_graph,'fw',feat_fw,edge_weight)
-        h_neigh_bw,h_self_bw = self.message_reduce(b_graph,'bw',feat_bw,edge_weight)
+        h_neigh_bw,h_self_bw = self.message_reduce(b_graph,'bw',feat_bw,reverse_edge_weight)
 
         # GraphSAGE GCN does not require fc_self.
 
@@ -632,26 +611,20 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
 class BiFuseGraphSAGELayerConv(GNNLayerBase):
     r"""Bidirection version GraphSAGE layer from paper `Inductive Representation Learning on
     Large Graphs <https://arxiv.org/pdf/1706.02216.pdf>`__.
-
     .. math::
         h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
         \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
-
         h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
         (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
-
         h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
-
     Parameters
     ----------
     input_size : int, or pair of ints
         Input feature size.
-
         If the layer is to be applied on a unidirectional bipartite graph, ``in_feats``
         specifies the input feature size on both the source and destination nodes.  If
         a scalar is given, the source and destination node feature size would take the
         same value.
-
         If aggregator type is ``gcn``, the feature size of source and destination nodes
         are required to be the same.
     output_size : int
@@ -738,10 +711,9 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
         _, (rst, _) = self.lstm_bw(m, h)
         return {'neigh': rst.squeeze(0)}
 
-    def forward(self,graph,feat,edge_weight):
+    def forward(self,graph,feat,edge_weight=None, reverse_edge_weight=None):
         r"""
         Compute node embeddings from both directions in bidirection seperated GraphSAGE
-
         Parameters
         ----------
         graph : DGLGraph
@@ -796,7 +768,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
                graph.update_all(fn.copy_src('h', 'm'), fn.mean('m', 'neigh'))
              else:
                graph.edata['edge_weight']=edge_weight
-               graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), fn.mean('m', 'neigh'))
+               graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), fn.sum('m', 'neigh'))
              h_neigh = graph.dstdata['neigh']
            elif self._aggre_type == 'gcn':
              check_eq_shape(feat)
@@ -804,12 +776,12 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
              graph.dstdata['h'] = feat_dst  # same as above if homogeneous
              if edge_weight is None:
                  graph.update_all(fn.copy_src('h', 'm'), fn.sum('m', 'neigh'))
+                 # divide in_degrees
+                 degs = graph.in_degrees().to(feat_dst)
+                 h_neigh = (graph.dstdata['neigh'] + graph.dstdata['h']) / (degs.unsqueeze(-1) + 1)                      
              else:
-               graph.edata['edge_weight']=edge_weight
-               graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), fn.sum('m', 'neigh'))
-             # divide in_degrees
-             degs = graph.in_degrees().to(feat_dst)
-             h_neigh = (graph.dstdata['neigh'] + graph.dstdata['h']) / (degs.unsqueeze(-1) + 1)
+                 graph.edata['edge_weight']=edge_weight
+                 graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), fn.sum('m', 'neigh'))
            elif self._aggre_type == 'pool':
              if direction=='fw':
                  graph.srcdata['h'] = F.relu(self.fc_pool_fw(feat_src))
@@ -827,12 +799,14 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
                if edge_weight is None:
                    graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_fw)
                else:
+                   warnings.warn(warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning))
                    graph.edata['edge_weight']=edge_weight
                    graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_fw)
              elif direction=='bw':
                if edge_weight is None:
                    graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_bw)
                else:
+                   warnings.warn(warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning))                   
                    graph.edata['edge_weight']=edge_weight
                    graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_bw)
 
@@ -844,7 +818,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
 
         # update node part:
         h_neigh_fw,h_self_fw = message_reduce(self,f_graph,feat_fw,'fw',edge_weight)
-        h_neigh_bw,h_self_bw = message_reduce(self, b_graph,feat_bw,'bw',edge_weight)
+        h_neigh_bw,h_self_bw = message_reduce(self, b_graph,feat_bw,'bw',reverse_edge_weight)
 
         #fuse the two directions' information
         h_neigh_fused=fuse(self,h_neigh_fw,h_neigh_bw)
