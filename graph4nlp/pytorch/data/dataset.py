@@ -335,9 +335,44 @@ class Dataset(torch.utils.data.Dataset):
                                                        verbase=False)
                 item.graph = graph
         elif self.graph_type == 'dynamic':
-            for item in data_items:
-                graph = self.topology_builder.raw_text_to_init_graph(item.input_text)
-                item.graph = graph
+            if self.dynamic_graph_type == 'node_emb':
+                for item in data_items:
+                    graph = self.topology_builder.init_topology(item.input_text,
+                                                                lower_case=self.lower_case,
+                                                                tokenizer=self.tokenizer)
+                    item.graph = graph
+
+            elif self.dynamic_graph_type == 'node_emb_refined':
+                if self.init_graph_type != 'line':
+                    print('Connecting to stanfordcorenlp server...')
+                    processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+                    print('CoreNLP server connected.')
+                    processor_args = {
+                        'annotators': 'ssplit,tokenize,depparse',
+                        "tokenize.options":
+                            "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                        "tokenize.whitespace": False,
+                        'ssplit.isOneSentence': False,
+                        'outputFormat': 'json'
+                    }
+                else:
+                    processor = None
+                    processor_args = None
+
+                for item in data_items:
+                    graph = self.topology_builder.init_topology(item.input_text,
+                                                                init_graph_type=self.init_graph_type,
+                                                                lower_case=self.lower_case,
+                                                                tokenizer=self.tokenizer,
+                                                                nlp_processor=processor,
+                                                                processor_args=processor_args,
+                                                                merge_strategy=self.merge_strategy,
+                                                                edge_strategy=self.edge_strategy,
+                                                                verbase=False)
+                    item.graph = graph
+            else:
+                raise RuntimeError('Unknown dynamic_graph_type: {}'.format(self.dynamic_graph_type))
+
         else:
             raise NotImplementedError('Currently only static and dynamic are supported!')
 

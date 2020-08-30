@@ -146,17 +146,15 @@ python -m examples.pytorch.text_classification.run_text_classifier --pre_word_em
 
 Node embedding based dynamic graph:
 
-
 GGNN-Undirected
 ```python
 python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --direction_option undirected --gnn ggnn --graph_type node_emb --gl_num_heads 1 --gl_epsilon 0.7
 ```
 
 
-
 GraphSAGE-Undirected
 ```python
-python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb --gl_num_heads 4 --gl_epsilon 0.8 --gl_smoothness_ratio 0.1 --gl_connectivity_ratio 0. --gl_sparsity_ratio 0.
+python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb --gl_num_heads 4 --gl_epsilon 0.5 --gl_smoothness_ratio 0.1 --gl_connectivity_ratio 0. --gl_sparsity_ratio 0.  --gpu 1 
 ```
 
 
@@ -164,12 +162,19 @@ python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_
 
 Node embedding based refined dynamic graph:
 
-GraphSAGE-Undirected
+```python
+python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb_refined --init_graph_type line --gl_num_heads 1 --gl_epsilon 0.5 --gpu 1 --init_adj_alpha 0.2
+```
+
 
 ```python
 python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb_refined --gl_num_heads 1 --gl_epsilon 0.7 --init_adj_alpha 0.2
 ```
 
+
+```python
+python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb_refined --init_graph_type constituency --gl_num_heads 1 --gl_epsilon 0.5 --gpu 1 --init_adj_alpha 0.2
+```
 
 
 <!-- IE graph:
