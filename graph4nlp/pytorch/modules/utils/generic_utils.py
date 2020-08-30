@@ -28,6 +28,21 @@ def normalize_adj(mx):
 
     return torch.mm(torch.mm(mx, r_mat_inv_sqrt).transpose(-1, -2), r_mat_inv_sqrt)
 
+
+# def normalize_adj(mx):
+#     """Normalize matrix: asymmetric normalized Laplacian"""
+#     rowsum = mx.sum(1)
+#     r_inv_sqrt = torch.pow(rowsum, -0.5).flatten()
+#     r_inv_sqrt[torch.isinf(r_inv_sqrt)] = 0.
+#     r_mat_inv_sqrt = torch.diag(r_inv_sqrt)
+
+#     colsum = mx.sum(0)
+#     c_inv_sqrt = torch.pow(colsum, -0.5).flatten()
+#     c_inv_sqrt[torch.isinf(c_inv_sqrt)] = 0.
+#     c_mat_inv_sqrt = torch.diag(c_inv_sqrt)
+
+#     return torch.mm(torch.mm(r_mat_inv_sqrt, mx), c_mat_inv_sqrt)
+
 def normalize_sparse_adj(mx):
     """Row-normalize sparse matrix: symmetric normalized Laplacian"""
     rowsum = np.array(mx.sum(1))
