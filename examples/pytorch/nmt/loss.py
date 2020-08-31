@@ -12,7 +12,7 @@ class Graph2seqLoss(nn.Module):
         self.vocab = vocab
 
     def forward(self, prob, gt):
-        assert prob.shape[0:1] == gt.shape[0:1]
+        assert prob.shape[0:2] == gt.shape[0:2]
         assert len(prob.shape) == 3
         log_prob = torch.log(prob + self.VERY_SMALL_NUMBER)
         batch_size = gt.shape[0]

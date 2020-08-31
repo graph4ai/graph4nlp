@@ -10,7 +10,7 @@ def get_args():
     parser.add_argument('--hidden-size', type=int, default=300, help='')
     parser.add_argument('--dropout', type=float, default=0.2, help='')
     parser.add_argument('--learning-rate', type=float, default=1e-3, help='')
-    parser.add_argument("--loss-display-step", type=int, default=10, help=' ')
+    parser.add_argument("--loss-display-step", type=int, default=100, help=' ')
     parser.add_argument("--eval-display-number", type=int, default=3, help="")
     parser.add_argument("--lr-start-decay-epoch", type=int, default=20, help="")
     parser.add_argument("--lr-decay-rate", type=float, default=0.9)

@@ -5,6 +5,7 @@ import os
 import json
 from stanfordcorenlp import StanfordCoreNLP
 from multiprocessing import Pool
+import numpy as np
 
 from multiprocessing import Process
 import multiprocessing
@@ -36,11 +37,18 @@ class EuroparlNMTDataset(Text2TextDataset):
         with open(files, "r") as f:
             datalist = json.load(f)
         data = []
+        max_len = -1
         for item in datalist:
             if item[0].strip() == "" or item[1].strip() == "":
                 continue
+            input_tokens = item[0].split(" ")
+            if len(input_tokens) >= 50:
+                continue
+            max_len = max(max_len, len(input_tokens))
             dataitem = Text2TextDataItem(input_text=item[0], output_text=item[1], tokenizer=self.tokenizer, share_vocab=self.share_vocab)
             data.append(dataitem)
+        if len(data) > 200000:
+            data = data[:200000]
         return data
 
     @staticmethod
@@ -108,6 +116,6 @@ class EuroparlNMTDataset(Text2TextDataset):
 if __name__ == "__main__":
     dataset = EuroparlNMTDataset(root_dir="/home/shiina/shiina/lib/dataset",
                                  topology_builder=DependencyBasedGraphConstruction,
-                                 topology_subdir='DependencyGraphWhole', share_vocab=False)
+                                 topology_subdir='DependencyGraph20', share_vocab=False)
 
 

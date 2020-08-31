@@ -1,5 +1,5 @@
-import torch.multiprocessing
-torch.multiprocessing.set_sharing_strategy('file_system')
+# import torch.multiprocessing
+# torch.multiprocessing.set_sharing_strategy('file_system')
 from examples.pytorch.nmt.dataset import EuroparlNMTDataset
 from examples.pytorch.nmt.model import Graph2seq
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -12,7 +12,7 @@ import torch.optim as optim
 from .config import get_args
 from .utils import get_log, wordid2str
 from graph4nlp.pytorch.modules.evaluation.bleu import BLEU
-
+import time
 
 class NMT:
     def __init__(self, opt):
@@ -47,11 +47,11 @@ class NMT:
 
         dataset = EuroparlNMTDataset(root_dir="/home/shiina/shiina/lib/dataset",
                                      topology_builder=DependencyBasedGraphConstruction,
-                                     topology_subdir='DependencyGraph', share_vocab=False)
+                                     topology_subdir='DependencyGraph20', share_vocab=False)
 
-        self.train_dataloader = DataLoader(dataset.train, batch_size=24, shuffle=True, num_workers=5,
+        self.train_dataloader = DataLoader(dataset.train, batch_size=50, shuffle=True, num_workers=5,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=24, shuffle=False, num_workers=5,
+        self.test_dataloader = DataLoader(dataset.test, batch_size=50, shuffle=False, num_workers=5,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
 
@@ -71,7 +71,7 @@ class NMT:
         for epoch in range(200):
             self.model.train()
             self.train_epoch(epoch, split="train")
-            self._adjust_lr(epoch)
+            # self._adjust_lr(epoch)
             if epoch >= 0:
                 score = self.evaluate(split="test")
                 if score >= max_score:
@@ -104,19 +104,23 @@ class NMT:
         loss_collect = []
         dataloader = self.train_dataloader
         step_all_train = len(dataloader)
+        start = time.time()
         for step, data in enumerate(dataloader):
             graph_list, tgt = data
             tgt = tgt.to(self.device)
             _, loss = self.model(graph_list, tgt, require_loss=True)
             loss_collect.append(loss.item())
             if step % self.opt.loss_display_step == 0 and step != 0:
-                self.logger.info("Epoch {}: [{} / {}] loss: {:.3f}".format(epoch, step, step_all_train,
-                                                                           np.mean(loss_collect)))
+                end = time.time()
+                self.logger.info("Epoch {}: [{} / {}] loss: {:.3f}, time cost: {:.3f}".format(epoch, step, step_all_train,
+                                                                           np.mean(loss_collect), end-start))
+                start = time.time()
                 loss_collect = []
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
 
+    @torch.no_grad()
     def evaluate(self, split="val"):
         self.model.eval()
         pred_collect = []

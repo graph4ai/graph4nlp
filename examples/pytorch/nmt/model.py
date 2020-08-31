@@ -22,9 +22,9 @@ class Graph2seq(nn.Module):
                                                                hidden_size=hidden_size, dropout=0.2, device=device,
                                                                fix_word_emb=False)
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
-        self.gnn_encoder = GAT(3, hidden_size, hidden_size, hidden_size, [2, 2, 1], direction_option=direction_option,
-                               feat_drop=0.2, attn_drop=0.2, activation=F.relu, residual=True)
-        # self.gnn_encoder = GGNN(3, hidden_size, hidden_size, direction_option=direction_option)
+        # self.gnn_encoder = GAT(3, hidden_size, hidden_size, hidden_size, [2, 2, 1], direction_option=direction_option,
+        #                        feat_drop=0.2, attn_drop=0.2, activation=F.relu, residual=True)
+        self.gnn_encoder = GGNN(3, hidden_size, hidden_size, direction_option=direction_option, dropout=0.2)
         # self.gnn_encoder = GraphSAGE(3, hidden_size, hidden_size, hidden_size, aggregator_type="lstm",
         #                              direction_option=direction_option, feat_drop=0.4)
         self.seq_decoder = StdRNNDecoder(max_decoder_step=200,
@@ -48,6 +48,7 @@ class Graph2seq(nn.Module):
         # down-task
         prob, enc_attn_weights, coverage_vectors = self.seq_decoder(from_batch(batch_graph), tgt_seq=tgt)
         if require_loss:
+
             loss = self.loss_calc(prob, tgt)
             # cover_loss = self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
             return prob, loss
