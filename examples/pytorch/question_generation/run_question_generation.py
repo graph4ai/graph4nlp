@@ -51,7 +51,7 @@ class QGModel(nn.Module):
                                                                    vocab=vocab.in_word_vocab,
                                                                    hidden_size=config['num_hidden'],
                                                                    word_dropout=config['word_dropout'],
-                                                                   dropout=config['rnn_dropout'],
+                                                                   dropout=config['enc_rnn_dropout'],
                                                                    fix_word_emb=not config['no_fix_word_emb'],
                                                                    device=config['device'])
         elif config['graph_type'] == 'constituency':
@@ -59,7 +59,7 @@ class QGModel(nn.Module):
                                                                    vocab=vocab.in_word_vocab,
                                                                    hidden_size=config['num_hidden'],
                                                                    word_dropout=config['word_dropout'],
-                                                                   dropout=config['rnn_dropout'],
+                                                                   dropout=config['enc_rnn_dropout'],
                                                                    fix_word_emb=not config['no_fix_word_emb'],
                                                                    device=config['device'])
         elif config['graph_type'] == 'ie':
@@ -67,7 +67,7 @@ class QGModel(nn.Module):
                                                                    vocab=vocab.in_word_vocab,
                                                                    hidden_size=config['num_hidden'],
                                                                    word_dropout=config['word_dropout'],
-                                                                   dropout=config['rnn_dropout'],
+                                                                   dropout=config['enc_rnn_dropout'],
                                                                    fix_word_emb=not config['no_fix_word_emb'],
                                                                    device=config['device'])
         elif config['graph_type'] == 'node_emb':
@@ -85,7 +85,7 @@ class QGModel(nn.Module):
                                     hidden_size=config['gl_num_hidden'],
                                     fix_word_emb=not config['no_fix_word_emb'],
                                     word_dropout=config['word_dropout'],
-                                    dropout=config['rnn_dropout'],
+                                    dropout=config['enc_rnn_dropout'],
                                     device=config['device'])
             use_edge_weight = True
         elif config['graph_type'] == 'node_emb_refined':
@@ -104,7 +104,7 @@ class QGModel(nn.Module):
                                     hidden_size=config['gl_num_hidden'],
                                     fix_word_emb=not config['no_fix_word_emb'],
                                     word_dropout=config['word_dropout'],
-                                    dropout=config['rnn_dropout'],
+                                    dropout=config['enc_rnn_dropout'],
                                     device=config['device'])
             use_edge_weight = True
         else:
@@ -149,16 +149,21 @@ class QGModel(nn.Module):
         else:
             raise RuntimeError('Unknown gnn type: {}'.format(config['gnn']))
 
-        self.seq_decoder = StdRNNDecoder(max_decoder_step=50,
-                                         decoder_input_size=2*hidden_size if direction_option == 'bi_sep' else hidden_size,
-                                         decoder_hidden_size=hidden_size, graph_pooling_strategy=None,
-                                         word_emb=self.word_emb, vocab=self.vocab.in_word_vocab,
-                                         attention_type="sep_diff_encoder_type", fuse_strategy="concatenate",
-                                         rnn_emb_input_size=hidden_size, use_coverage=True,
-                                         tgt_emb_as_output_layer=True, device=self.graph_topology.device,
-                                         dropout=0.3)
+        self.seq_decoder = StdRNNDecoder(max_decoder_step=config['max_out_len'],
+                                         decoder_input_size=2 * config['num_hidden'] if config['gnn_direction_option'] == 'bi_sep' else config['num_hidden'],
+                                         decoder_hidden_size=config['num_hidden'],
+                                         graph_pooling_strategy=config['graph_pooling_strategy'],
+                                         word_emb=self.word_emb,
+                                         vocab=self.vocab.in_word_vocab,
+                                         attention_type=config['dec_attention_type'],
+                                         fuse_strategy=config['dec_fuse_strategy'],
+                                         rnn_emb_input_size=config['num_hidden'],
+                                         use_coverage=config['use_coverage'],
+                                         tgt_emb_as_output_layer=config['tgt_emb_as_output_layer'],
+                                         dropout=config['dec_rnn_dropout'],
+                                         device=config['device'])
         self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
-        self.loss_cover = CoverageLoss(0.3)
+        self.loss_cover = CoverageLoss(config['coverage_loss_ratio'])
 
 
     def forward(self, graph_list, tgt=None, require_loss=True):
