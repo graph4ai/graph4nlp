@@ -14,6 +14,31 @@
 | GGNN | 89.3 | 90.0 | 90.7 |  
 | GraphSage | 90.0 | 90.7 | 89.3 |  
 
+## Dynamic Graph
+| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- |  
+| GAT | - | - | - |  
+| GGNN | - | - | - |  
+| GraphSage | - | - | - |  
+
+## Ablation study for tree decoder
+
+## Constituency Graph
+| Encoder\fuse_strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- |
+| GGNN w/ sibling feeding | 91.4 | 91.4 | 90.0 |  
+| GGNN w/o sibling feeding | 90.7 | 91.4 | 89.3 |  
+| GraphSage w/ sibling feeding | 90.7 | 90.7 | 90.0 |
+| GraphSage w/o sibling feeding | - | - | - |
+
+## Use as-node in dependency graph construction
+
+| Methods\fuse_strategy | graph constrcution strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- | ---- |
+| GraphSage | only connection | 90.0 | 90.7 | 89.3 |  
+| GraphSage | as node | 90.0 | 90.7 | 89.3 |  
+
+
 # Results on Mawps
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |  

@@ -22,6 +22,7 @@ from graph4nlp.pytorch.datasets.geo import GeoDatasetForTree
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
 
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
@@ -74,6 +75,13 @@ class Graph2Tree(nn.Module):
                                                                 vocab=self.src_vocab,
                                                                 hidden_size=enc_hidden_size, dropout=dropout_for_word_embedding, device=device,
                                                                 fix_word_emb=False)
+        elif graph_construction_type == "DynamicGraph":
+            self.graph_topology = NodeEmbeddingBasedGraphConstruction(word_vocab=self.src_vocab, 
+                                                                embedding_styles=embedding_style, 
+                                                                input_size=enc_hidden_size, 
+                                                                hidden_size=enc_hidden_size,
+                                                                top_k_neigh=200,
+                                                                device=device)
 
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
 
@@ -201,6 +209,10 @@ class Jobs:
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=ConstituencyBasedGraphConstruction,
                                 topology_subdir='ConstituencyGraph', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+        elif self.opt.graph_construction_type == "DynamicGraph":
+            dataset = JobsDatasetForTree(root_dir=self.data_dir,
+                                topology_builder=NodeEmbeddingBasedGraphConstruction,
+                                topology_subdir='DynamicGraph', graph_type='dynamic', dynamic_graph_type='node_emb', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)  
 
         self.train_data_loader = DataLoaderForGraphEncoder(
             use_copy=use_copy, data=dataset.train, dataset=dataset, mode="train", batch_size=20, device=self.device)

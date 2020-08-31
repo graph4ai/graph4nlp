@@ -1,7 +1,12 @@
+from nltk.tokenize import word_tokenize
 import torch
 from torch import nn
 
+from ...data.data import GraphData
 from .base import DynamicGraphConstructionBase
+from .dependency_graph_construction import DependencyBasedGraphConstruction
+from .constituency_graph_construction import ConstituencyBasedGraphConstruction
+from .ie_graph_construction import IEBasedGraphConstruction
 from ..utils.generic_utils import normalize_adj, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
@@ -117,26 +122,27 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         GraphData
             The constructed graph.
         """
-        adj = self.compute_similarity_metric(node_emb, node_mask)
-        adj = self.sparsify_graph(adj)
-        graph_reg = self.compute_graph_regularization(adj, node_emb)
+        raw_adj = self.compute_similarity_metric(node_emb, node_mask)
+        raw_adj = self.sparsify_graph(raw_adj)
+        graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
 
         if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
-            try:
-                assert adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
-            except:
-                import pdb;pdb.set_trace()
-            adj = adj / torch.clamp(torch.sum(adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
+            assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
+            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
+            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=0, keepdim=True), min=VERY_SMALL_NUMBER)
         elif self.sim_metric_type == 'cosine':
-            adj = (adj > 0).float()
-            adj = normalize_adj(adj)
+            raw_adj = (raw_adj > 0).float()
+            adj = normalize_adj(raw_adj)
+            reverse_adj = adj
         else:
-            adj = torch.softmax(adj, dim=-1)
+            adj = torch.softmax(raw_adj, dim=-1)
+            reverse_adj = torch.softmax(raw_adj, dim=0)
 
         if self.alpha_fusion is not None:
             adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * adj, self.alpha_fusion * init_norm_adj)
+            reverse_adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * reverse_adj, self.alpha_fusion * init_norm_adj)
 
-        graph_data = convert_adj_to_graph(adj, 0)
+        graph_data = convert_adj_to_graph(adj, reverse_adj, 0)
         graph_data.graph_attributes['graph_reg'] = graph_reg
 
         return graph_data
@@ -159,3 +165,63 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             The initial node embeddings.
         """
         return self.embedding_layer(node_word_idx, node_size, num_nodes)
+
+
+    @classmethod
+    def init_topology(cls,
+                    raw_text_data,
+                    init_graph_type='line',
+                    lower_case=True,
+                    tokenizer=word_tokenize,
+                    nlp_processor=None,
+                    processor_args=None,
+                    merge_strategy=None,
+                    edge_strategy=None,
+                    verbase=False):
+        """Convert raw text data to initial node set graph.
+
+        Parameters
+        ----------
+        raw_text_data : str
+            The raw text data.
+        lower_case : boolean
+            Specify whether to lower case the input text, default: ``True``.
+
+        Returns
+        -------
+        GraphData
+            The constructed graph.
+        """
+        if init_graph_type == 'line':
+            if lower_case:
+                raw_text_data = raw_text_data.lower()
+
+            token_list = tokenizer(raw_text_data.strip())
+            graph = GraphData()
+            graph.add_nodes(len(token_list))
+
+            for idx in range(len(token_list) - 1):
+                graph.add_edge(idx, idx + 1)
+                graph.add_edge(idx + 1, idx)
+                graph.node_attributes[idx]['token'] = token_list[idx]
+
+            graph.node_attributes[idx + 1]['token'] = token_list[-1]
+        elif init_graph_type in ('dependency', 'constituency', 'ie'):
+            if init_graph_type == 'dependency':
+                topology_fn = DependencyBasedGraphConstruction.topology
+            elif init_graph_type == 'constituency':
+                topology_fn = ConstituencyBasedGraphConstruction.topology
+            else:
+                topology_fn = IEBasedGraphConstruction.topology
+
+            graph = topology_fn(raw_text_data=raw_text_data,
+                               nlp_processor=nlp_processor,
+                               processor_args=processor_args,
+                               merge_strategy=merge_strategy,
+                               edge_strategy=edge_strategy,
+                               verbase=verbase)
+
+        else:
+            raise RuntimeError('Unknown init_graph_type: {}'.format(init_graph_type))
+
+        return graph
