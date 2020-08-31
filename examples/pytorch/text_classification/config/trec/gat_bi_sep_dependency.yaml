@@ -32,10 +32,10 @@ seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph e
 # GNN
 gnn: 'gat'
 gnn_direction_option: 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
-gnn_num_layers: # 2 # number of GNN layers
+gnn_num_layers: # 1 # number of GNN layers
       - 1
-      - 2
-      - 3
+      # - 2
+      # - 3
 num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
 max_pool_linear_proj: false # use linear projectioni for max pooling
@@ -50,7 +50,10 @@ gat_attn_dropout: # 0.3 # GAT attention dropout
       # - 0.2
       - 0.3
       # - 0.4
-gat_negative_slope: 0.2 # the negative slope of leaky relu
+gat_negative_slope: # 0.2 # the negative slope of leaky relu
+      # - 0.1
+      - 0.2
+      # - 0.3
 gat_num_heads: # 1 # number of hidden attention heads
       - 1
       - 2
@@ -77,5 +80,5 @@ lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers
 
 
-gpu: 1
+gpu: 0
 no_cuda: false

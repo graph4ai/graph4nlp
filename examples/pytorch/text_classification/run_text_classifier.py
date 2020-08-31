@@ -297,7 +297,7 @@ class ModelHandler:
             if self.stopper.step(val_acc, self.model):
                 break
 
-        return stopper.best_score
+        return self.stopper.best_score
 
     def evaluate(self, dataloader):
         self.model.eval()
