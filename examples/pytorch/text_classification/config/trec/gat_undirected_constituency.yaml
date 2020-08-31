@@ -6,8 +6,7 @@ save_model_path: 'text_clf_ckpt'
 
 
 # Graph construction
-graph_type: # 'constituency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
-    - 'constituency'
+graph_type: 'constituency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
 
 # Dynamic graph construction
 init_graph_type: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
@@ -31,16 +30,9 @@ seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph e
 
 
 # GNN
-gnn: # 'gat'
-    - 'gat'
-gnn_direction_option: # 'undirected' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
-    - 'undirected'
-gnn_num_layers: # 2 # number of GNN layers
-    # - 1
-    - 2
-    - 3
-    - 4
-    # - 5
+gnn: 'gat'
+gnn_direction_option: 'undirected' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
+gnn_num_layers: 2 # number of GNN layers
 num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
 max_pool_linear_proj: false # use linear projectioni for max pooling
@@ -69,4 +61,4 @@ num_workers: 8 # number of data loader workers
 gpu: 3
 no_cuda: false
 
-# num_gnn_layers 1: 0.930
+# num_gnn_layers 2: 0.932
