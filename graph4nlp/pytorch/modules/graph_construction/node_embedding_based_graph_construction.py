@@ -1,6 +1,8 @@
+from nltk.tokenize import word_tokenize
 import torch
 from torch import nn
 
+from ...data.data import GraphData
 from .base import DynamicGraphConstructionBase
 from ..utils.generic_utils import normalize_adj, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
@@ -62,32 +64,6 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
                                                             embedding_styles,
                                                             **kwargs)
 
-    # def forward(self, node_word_idx, node_size, num_nodes, node_mask=None):
-    #     """Compute graph topology and initial node embeddings.
-
-    #     Parameters
-    #     ----------
-    #     node_word_idx : torch.LongTensor
-    #         The input word index node features.
-    #     node_size : torch.LongTensor
-    #         Indicate the length of word sequences for nodes.
-    #     num_nodes : torch.LongTensor
-    #         Indicate the number of nodes.
-    #     node_mask : torch.Tensor, optional
-    #         The node mask matrix, default: ``None``.
-
-    #     Returns
-    #     -------
-    #     GraphData
-    #         The constructed graph.
-    #     """
-    #     node_emb = self.embedding(node_word_idx, node_size, num_nodes)
-
-    #     dgl_graph = self.topology(node_emb, node_mask)
-    #     dgl_graph.ndata['node_feat'] = node_emb
-
-    #     return dgl_graph
-
     def forward(self, batch_graphdata: list):
         """Compute graph topology and initial node embeddings.
 
@@ -137,20 +113,23 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         GraphData
             The constructed graph.
         """
-        adj = self.compute_similarity_metric(node_emb, node_mask)
-        adj = self.sparsify_graph(adj)
-        graph_reg = self.compute_graph_regularization(adj, node_emb)
+        raw_adj = self.compute_similarity_metric(node_emb, node_mask)
+        raw_adj = self.sparsify_graph(raw_adj)
+        graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
 
         if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
-            assert adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
-            adj = adj / torch.clamp(torch.sum(adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
+            assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
+            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
+            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=0, keepdim=True), min=VERY_SMALL_NUMBER)
         elif self.sim_metric_type == 'cosine':
-            adj = (adj > 0).float()
-            adj = normalize_adj(adj)
+            raw_adj = (raw_adj > 0).float()
+            adj = normalize_adj(raw_adj)
+            reverse_adj = adj
         else:
-            adj = torch.softmax(adj, dim=-1)
+            adj = torch.softmax(raw_adj, dim=-1)
+            reverse_adj = torch.softmax(raw_adj, dim=0)
 
-        graph_data = convert_adj_to_graph(adj, 0)
+        graph_data = convert_adj_to_graph(adj, reverse_adj, 0)
         graph_data.graph_attributes['graph_reg'] = graph_reg
 
         return graph_data
@@ -174,3 +153,32 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             The initial node embeddings.
         """
         return self.embedding_layer(node_word_idx, node_size, num_nodes)
+
+
+    @classmethod
+    def init_topology(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize):
+        """Convert raw text data to initial node set graph.
+
+        Parameters
+        ----------
+        raw_text_data : str
+            The raw text data.
+        lower_case : boolean
+            Specify whether to lower case the input text, default: ``True``.
+
+        Returns
+        -------
+        GraphData
+            The constructed graph.
+        """
+        if lower_case:
+            raw_text_data = raw_text_data.lower()
+
+        token_list = tokenizer(raw_text_data.strip())
+        graph = GraphData()
+        graph.add_nodes(len(token_list))
+
+        for idx in range(len(token_list)):
+            graph.node_attributes[idx]['token'] = token_list[idx]
+
+        return graph
