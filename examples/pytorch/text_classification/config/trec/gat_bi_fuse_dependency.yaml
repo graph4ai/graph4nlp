@@ -32,6 +32,7 @@ seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph e
 # GNN
 gnn: 'gat'
 gnn_direction_option: 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
+<<<<<<< Updated upstream
 gnn_num_layers: # 1 # number of GNN layers
       - 1
       # - 2
@@ -65,6 +66,21 @@ gat_num_out_heads: # 2 # number of output attention heads
       # - 4
       # - 6
 gat_residual: false # use gat_residual connection
+=======
+gnn_num_layers: 1 # number of GNN layers
+num_hidden: 300 # number of hidden units
+graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
+max_pool_linear_proj: false # use linear projectioni for max pooling
+gnn_dropout: 0.6 # 0.6 # GNN input feature dropout
+
+# GAT
+gat_attn_dropout: 0.3 # 0.3 # GAT attention dropout
+gat_negative_slope: 0.1 # 0.1 # the negative slope of leaky relu
+gat_num_heads: 1 # 1 # number of hidden attention heads
+gat_num_out_heads: 2 # 2 # number of output attention heads
+gat_residual: # false # use gat_residual connection
+      - true
+>>>>>>> Stashed changes
 # GraphSAGE
 graphsage_aggreagte_type: null # graphsage aggreagte type ('mean', 'gcn', 'pool', 'lstm')
 

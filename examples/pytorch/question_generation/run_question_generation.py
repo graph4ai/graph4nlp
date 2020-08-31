@@ -161,9 +161,6 @@ class QGModel(nn.Module):
         self.loss_cover = CoverageLoss(0.3)
 
 
-        # self.loss = GeneralLoss('CrossEntropy')
-
-
     def forward(self, graph_list, tgt=None, require_loss=True):
         # graph embedding construction
         batch_gd = self.graph_topology(graph_list)
@@ -276,6 +273,14 @@ class ModelHandler:
                 logits, loss = self.model(graph_list, tgt, require_loss=True)
                 self.optimizer.zero_grad()
                 loss.backward()
+                if self.config.get('grad_clipping', None) not in (None, 0):
+                    # Clip gradients
+                    parameters = [p for p in self.model.parameters() if p.requires_grad]
+                    # if self.config['use_bert'] and self.config.get('finetune_bert', None):
+                    #     parameters += [p for p in self.config['bert_model'].parameters() if p.requires_grad]
+
+                    torch.nn.utils.clip_grad_norm_(parameters, self.config['grad_clipping'])
+
                 self.optimizer.step()
                 train_loss.append(loss.item())
 
