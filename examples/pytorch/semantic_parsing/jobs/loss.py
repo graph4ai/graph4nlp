@@ -22,7 +22,7 @@ class Graph2seqLoss(nn.Module):
 
         prob_select = torch.gather(log_prob.view(batch_size * step, -1), 1, gt.view(-1, 1))
 
-        prob_select_masked = - torch.masked_select(prob_select, mask.view(-1, 1).bool())
+        prob_select_masked = - torch.masked_select(prob_select, mask.view(-1, 1).byte())
         loss = torch.mean(prob_select_masked)
         return loss
 

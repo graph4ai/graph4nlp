@@ -18,15 +18,13 @@ from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_embedding import GAT, GraphSAGE, GGNN
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
-from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
 from examples.pytorch.semantic_parsing.jobs.loss import Graph2seqLoss, CoverageLoss
+from examples.pytorch.semantic_parsing.jobs.evaluation import ExpressionAccuracy
+from examples.pytorch.semantic_parsing.jobs.utils import wordid2str
 
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
-
-
 
 
 
@@ -149,7 +147,7 @@ class QGModel(nn.Module):
         else:
             raise RuntimeError('Unknown gnn type: {}'.format(config['gnn']))
 
-        self.seq_decoder = StdRNNDecoder(max_decoder_step=config['max_out_len'],
+        self.seq_decoder = StdRNNDecoder(max_decoder_step=config['max_dec_steps'],
                                          decoder_input_size=2 * config['num_hidden'] if config['gnn_direction_option'] == 'bi_sep' else config['num_hidden'],
                                          decoder_hidden_size=config['num_hidden'],
                                          graph_pooling_strategy=config['graph_pooling_strategy'],
@@ -262,14 +260,13 @@ class ModelHandler:
             patience=self.config['lr_patience'], verbose=True)
 
     def _build_evaluation(self):
-        self.metric = Accuracy(['accuracy'])
+        self.metric = ExpressionAccuracy()
 
     def train(self):
         dur = []
         for epoch in range(self.config['epochs']):
             self.model.train()
             train_loss = []
-            train_acc = []
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
                 graph_list, tgt = data
@@ -289,13 +286,12 @@ class ModelHandler:
                 train_loss.append(loss.item())
 
                 pred = torch.max(logits, dim=-1)[1].cpu()
-                train_acc.append(self.metric.calculate_scores(ground_truth=tgt.cpu(), predict=pred.cpu())[0])
                 dur.append(time.time() - t0)
 
             val_acc = self.evaluate(self.val_dataloader)
             self.scheduler.step(val_acc)
-            print("Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} | Train Acc: {:.4f} | Val Acc: {:.4f}".
-              format(epoch + 1, self.config['epochs'], np.mean(dur), np.mean(train_loss), np.mean(train_acc), val_acc))
+            print("Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} | Val Acc: {:.4f}".
+              format(epoch + 1, self.config['epochs'], np.mean(dur), np.mean(train_loss), val_acc))
 
             if self.stopper.step(val_acc, self.model):
                 break
@@ -309,13 +305,16 @@ class ModelHandler:
             gt_collect = []
             for i, data in enumerate(dataloader):
                 graph_list, tgt = data
-                logits = self.model(graph_list, require_loss=False)
-                pred_collect.append(logits)
-                gt_collect.append(tgt)
+                prob = self.model(graph_list, require_loss=False)
+                pred = prob.argmax(dim=-1)
 
-            pred_collect = torch.max(torch.cat(pred_collect, 0), dim=-1)[1].cpu()
-            gt_collect = torch.cat(gt_collect, 0).cpu()
-            score = self.metric.calculate_scores(ground_truth=gt_collect, predict=pred_collect)[0]
+                pred_str = wordid2str(pred.detach().cpu(), self.vocab.in_word_vocab)
+                tgt_str = wordid2str(tgt, self.vocab.in_word_vocab)
+                pred_collect.extend(pred_str)
+                gt_collect.extend(tgt_str)
+
+
+            score = self.metric.calculate_scores(ground_truth=gt_collect, predict=pred_collect)
 
             return score
 

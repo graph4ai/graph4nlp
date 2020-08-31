@@ -7,7 +7,6 @@ save_model_path: 'text_clf_ckpt'
 # Preprocessing
 top_word_vocab: 70000
 min_word_freq: 1
-max_dec_steps: 41 # Including the EOS symbol
 
 
 
@@ -93,7 +92,7 @@ num_workers: 8 # number of data loader workers
 # Beam search
 beam_size: 5
 min_out_len: 4 # Only for beam search
-max_out_len: 40 # Only for beam search
+max_dec_steps: 50 # Only for beam search
 block_ngram_repeat: 0 # Block repetition of ngrams during decoding. (To turn it off, set it to 0)
 
 gpu: 1
