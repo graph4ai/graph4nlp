@@ -13,37 +13,26 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import torch.backends.cudnn as cudnn
 
-from graph4nlp.pytorch.datasets.trec import TrecDataset
+from graph4nlp.pytorch.datasets.jobs import JobsDataset
+from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_embedding import GAT, GraphSAGE, GGNN
-from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
+from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
-from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
+from examples.pytorch.semantic_parsing.jobs.loss import Graph2seqLoss, CoverageLoss
+
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 
-class WeightedGCNLayer(nn.Module):
-    def __init__(self, input_size, output_size):
-        super(WeightedGCNLayer, self).__init__()
-        self.linear_out = nn.Linear(input_size, output_size, bias=False)
-
-    def forward(self, dgl_graph, node_emb):
-        with dgl_graph.local_scope():
-            dgl_graph.srcdata.update({'ft': node_emb})
-            dgl_graph.update_all(fn.u_mul_e('ft', 'edge_weight', 'm'),
-                                     fn.sum('m', 'ft'))
-            agg_vec = dgl_graph.dstdata['ft']
-            new_node_vec = self.linear_out(agg_vec)
-
-            return new_node_vec
 
 
-class TextClassifier(nn.Module):
+
+class QGModel(nn.Module):
     def __init__(self, vocab, config):
-        super(TextClassifier, self).__init__()
+        super(QGModel, self).__init__()
         self.config = config
         self.vocab = vocab
         embedding_style = {'word_emb_type': 'w2v',
@@ -160,14 +149,19 @@ class TextClassifier(nn.Module):
         else:
             raise RuntimeError('Unknown gnn type: {}'.format(config['gnn']))
 
-        self.clf = FeedForwardNN(2 * config['num_hidden'] if config['gnn_direction_option'] == 'bi_sep' else config['num_hidden'],
-                        config['num_classes'],
-                        [config['num_hidden']],
-                        graph_pool_type=config['graph_pooling'],
-                        dim=config['num_hidden'],
-                        use_linear_proj=config['max_pool_linear_proj'])
+        self.seq_decoder = StdRNNDecoder(max_decoder_step=50,
+                                         decoder_input_size=2*hidden_size if direction_option == 'bi_sep' else hidden_size,
+                                         decoder_hidden_size=hidden_size, graph_pooling_strategy=None,
+                                         word_emb=self.word_emb, vocab=self.vocab.in_word_vocab,
+                                         attention_type="sep_diff_encoder_type", fuse_strategy="concatenate",
+                                         rnn_emb_input_size=hidden_size, use_coverage=True,
+                                         tgt_emb_as_output_layer=True, device=self.graph_topology.device,
+                                         dropout=0.3)
+        self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
+        self.loss_cover = CoverageLoss(0.3)
 
-        self.loss = GeneralLoss('CrossEntropy')
+
+        # self.loss = GeneralLoss('CrossEntropy')
 
 
     def forward(self, graph_list, tgt=None, require_loss=True):
@@ -176,16 +170,17 @@ class TextClassifier(nn.Module):
 
         # run GNN
         self.gnn(batch_gd)
+        batch_gd.node_features['rnn_emb'] = batch_gd.node_features['node_feat']
 
-        # run graph classifier
-        self.clf(batch_gd)
-        logits = batch_gd.graph_attributes['logits']
-
+        # seq decoder
+        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(from_batch(batch_gd), tgt_seq=tgt)
         if require_loss:
-            loss = self.loss(logits, tgt)
-            return logits, loss
+            loss = self.loss_calc(prob, tgt)
+            # TODO: coverage loss
+            # cover_loss = self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
+            return prob, loss
         else:
-            return logits
+            return prob
 
 
 class ModelHandler:
@@ -228,7 +223,7 @@ class ModelHandler:
         if self.config['graph_type'] == 'node_emb_refined':
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
-        dataset = TrecDataset(root_dir="examples/pytorch/text_classification/data/trec",
+        dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
                               topology_builder=topology_builder,
                               topology_subdir=topology_subdir,
                               graph_type=graph_type,
@@ -256,7 +251,7 @@ class ModelHandler:
             .format(self.num_train, self.num_val, self.num_test))
 
     def _build_model(self):
-        self.model = TextClassifier(self.vocab, self.config).to(self.config['device'])
+        self.model = QGModel(self.vocab, self.config).to(self.config['device'])
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
