@@ -66,5 +66,5 @@ lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers
 
 
-gpu: 3
+gpu: -1
 no_cuda: false

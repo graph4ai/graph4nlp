@@ -96,10 +96,13 @@ lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers
 
 
-gpu: 1
+gpu: -1
 no_cuda: false
+<<<<<<< Updated upstream
 
 
 # gnn_num_layers 1, gat_negative_slope 0.1: 0.95
 # gnn_num_layers 1, gat_negative_slope 0.2, gnn_dropout 0.4, gat_attn_dropout 0.2: 0.95
 # gnn_num_layers 1, gat_negative_slope 0.2, gnn_dropout 0.7, gat_attn_dropout 0.3: 0.95
+=======
+>>>>>>> Stashed changes

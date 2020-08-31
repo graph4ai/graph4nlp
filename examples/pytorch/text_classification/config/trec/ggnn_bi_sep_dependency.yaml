@@ -18,7 +18,7 @@ gl_num_hidden: 300 # number of hidden units for dynamic graph construction
 gl_smoothness_ratio: null # smoothness ratio for graph regularization loss
 gl_sparsity_ratio: null # sparsity ratio for graph regularization loss
 gl_connectivity_ratio: null # connectivity ratio for graph regularization loss
-init_adj_alpha: 0.8 # alpha ratio for combining initial graph adjacency matrix
+init_adj_alpha: null # alpha ratio for combining initial graph adjacency matrix
 
 
 # Graph embedding construction
@@ -30,6 +30,7 @@ seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph e
 
 
 # GNN
+<<<<<<< Updated upstream
 gnn: # 'ggnn'
       - 'ggnn'
 gnn_direction_option: # 'bi_sep' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
@@ -49,6 +50,15 @@ gnn_dropout: # 0.6 # GNN input feature dropout
       - 0.5
       - 0.6
       - 0.7
+=======
+gnn: 'ggnn'
+gnn_direction_option: 'bi_sep' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
+gnn_num_layers: 1 # number of GNN layers
+num_hidden: 300 # number of hidden units
+graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
+max_pool_linear_proj: false # use linear projectioni for max pooling
+gnn_dropout: 0.2 # 0.2 # GNN input feature dropout
+>>>>>>> Stashed changes
 
 
 # GAT
@@ -66,13 +76,22 @@ seed: 1234
 batch_size: 50 # batch size
 epochs: 500 # number of maximal training epochs
 patience: 10
+<<<<<<< Updated upstream
 lr: 0.001 # learning rate
+=======
+lr: 0.002 # 0.002 # learning rate
+>>>>>>> Stashed changes
 lr_patience: 2
 lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers
 
 
+<<<<<<< Updated upstream
 gpu: 2
 no_cuda: false
 
 # gnn_num_layers 1, gnn_dropout 0.1, 0.2, 0.4: 0.936
+=======
+gpu: -1
+no_cuda: false
+>>>>>>> Stashed changes

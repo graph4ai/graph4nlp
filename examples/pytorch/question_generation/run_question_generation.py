@@ -240,7 +240,6 @@ class ModelHandler:
                                           num_workers=self.config['num_workers'],
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
-        self.config['num_classes'] = dataset.num_classes
         self.num_train = len(dataset.train)
         self.num_val = len(dataset.val)
         self.num_test = len(dataset.test)
