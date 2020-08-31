@@ -30,10 +30,12 @@ seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph e
 
 
 # GNN
-gnn: 'ggnn'
-gnn_direction_option: 'bi_sep' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
+gnn: # 'ggnn'
+      - 'ggnn'
+gnn_direction_option: # 'bi_sep' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
+      - 'bi_sep'
 gnn_num_layers: # 1 # number of GNN layers
-      - 1
+      # - 1
       - 2
       - 3
 num_hidden: 300 # number of hidden units
@@ -72,3 +74,5 @@ num_workers: 8 # number of data loader workers
 
 gpu: 2
 no_cuda: false
+
+# gnn_num_layers 1, gnn_dropout 0.1, 0.2, 0.4: 0.936
