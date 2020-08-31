@@ -36,7 +36,6 @@ gnn_direction_option: # 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 
       - 'bi_fuse'
 gnn_num_layers: # 1 # number of GNN layers
       - 1
-      - 2
 num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
 max_pool_linear_proj: false # use linear projectioni for max pooling
@@ -57,9 +56,7 @@ seed: 1234
 batch_size: 50 # batch size
 epochs: 500 # number of maximal training epochs
 patience: 10
-lr: # 0.001 # learning rate
-      - 0.0005
-      - 0.002
+lr: 0.001 # learning rate
 lr_patience: 2
 lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers

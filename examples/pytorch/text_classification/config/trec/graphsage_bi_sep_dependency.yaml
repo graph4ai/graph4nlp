@@ -55,9 +55,7 @@ seed: 1234
 batch_size: 50 # batch size
 epochs: 500 # number of maximal training epochs
 patience: 10
-lr: # 0.001 # learning rate
-      - 0.002
-      - 0.0005
+lr: 0.001 # learning rate
 lr_patience: 2
 lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers

@@ -34,14 +34,14 @@ init_adj_alpha: # null # alpha ratio for combining initial graph adjacency matri
 
 
 # Graph embedding construction
-word_dropout: # 0.4 # word embedding dropout
+word_dropout: 0.4 # word embedding dropout
       # - 0.2
       # - 0.3
-      - 0.4
+      # - 0.4
       # - 0.5
-rnn_dropout: # 0.1 # RNN dropout
+rnn_dropout: 0.1 # RNN dropout
       # - 0.
-      - 0.1
+      # - 0.1
       # - 0.2
       # - 0.3
 no_fix_word_emb: false # Not fix pretrained word embeddings (default: false)
@@ -54,13 +54,11 @@ gnn: #
       - 'graphsage'
 gnn_direction_option: # 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
       - 'undirected'
-gnn_num_layers: # 2 # 2 # number of GNN layers
-      - 2
+gnn_num_layers: 2 # 2 # number of GNN layers
 num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
 max_pool_linear_proj: false # use linear projectioni for max pooling
-gnn_dropout: # 0.3 # 0.3 # GNN input feature dropout
-      - 0.3
+gnn_dropout: 0.3 # 0.3 # GNN input feature dropout
 
 # GAT
 gat_attn_dropout: null # GAT attention dropout
@@ -77,10 +75,7 @@ seed: 1234
 batch_size: 50 # batch size
 epochs: 500 # number of maximal training epochs
 patience: 10
-lr: # 0.001 # learning rate
-      - 0.001
-      # - 0.002
-      # - 0.0005
+lr: 0.001 # learning rate
 lr_patience: 2
 lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers
