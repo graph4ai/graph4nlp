@@ -59,12 +59,5 @@ lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers
 
 
-gpu: 1
+gpu: -1
 no_cuda: false
-
-
-# gnn_num_layers 1, gat_negative_slope 0.1: 0.95
-# gnn_dropout 0.4, gat_attn_dropout 0.2 -> gnn_num_layers 1, gat_negative_slope 0.2: 0.95
-# gnn_dropout 0.7, gat_attn_dropout 0.3 -> gnn_num_layers 1, gat_negative_slope 0.2: 0.95
-# gat_num_heads 2, gat_num_out_heads 2 -> gnn_num_layers 1, gat_negative_slope 0.2, gnn_dropout 0.6, gat_attn_dropout 0.3: 0.950
-
