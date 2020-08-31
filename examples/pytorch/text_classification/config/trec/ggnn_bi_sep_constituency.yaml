@@ -6,7 +6,8 @@ save_model_path: 'text_clf_ckpt'
 
 
 # Graph construction
-graph_type: 'dependency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
+graph_type: #'constituency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
+  - 'constituency'
 
 # Dynamic graph construction
 init_graph_type: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
@@ -30,15 +31,19 @@ seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph e
 
 
 # GNN
-gnn: # 'graphsage'
-  - 'graphsage'
-gnn_direction_option: #'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
-  - 'bi_fuse'
-gnn_num_layers: 1 # number of GNN layers
+gnn: #
+  - 'ggnn'
+gnn_direction_option: #'bi_sep' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
+  - 'bi_sep'
+gnn_num_layers: #1 # number of GNN layers
+  - 1
+  - 2
+  - 3
 num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
 max_pool_linear_proj: false # use linear projectioni for max pooling
-gnn_dropout: 0.4 # 0.4 # GNN input feature dropout
+gnn_dropout: 0.2 # 0.2 # GNN input feature dropout
+
 
 # GAT
 gat_attn_dropout: null # GAT attention dropout
@@ -47,7 +52,7 @@ gat_num_heads: null # number of hidden attention heads
 gat_num_out_heads: null # number of output attention heads
 gat_residual: false # use gat_residual connection
 # GraphSAGE
-graphsage_aggreagte_type: 'lstm' # graphsage aggreagte type ('mean', 'gcn', 'pool', 'lstm')
+graphsage_aggreagte_type: null # graphsage aggreagte type ('mean', 'gcn', 'pool', 'lstm')
 
 
 # Training
@@ -55,11 +60,14 @@ seed: 1234
 batch_size: 50 # batch size
 epochs: 500 # number of maximal training epochs
 patience: 10
-lr: 0.001 # learning rate
+lr: #0.002 # 0.002 # learning rate
+  - 0.001
+  - 0.002
+  - 0.0005
 lr_patience: 2
 lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers
 
 
-gpu: 0
+gpu: -1
 no_cuda: false
