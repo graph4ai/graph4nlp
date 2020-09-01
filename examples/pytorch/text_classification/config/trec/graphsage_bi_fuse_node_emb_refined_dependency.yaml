@@ -93,3 +93,8 @@ num_workers: 8 # number of data loader workers
 gpu: 1
 no_cuda: false
 
+# TODO:
+# gl_num_heads 1, gl_epsilon 0.6: 0.930
+# gl_num_heads 2, gl_epsilon 0.8: 0.922
+# gl_num_heads [1], gl_epsilon [0.4]
+# gl_num_heads [2], gl_epsilon [0.6 ~ 0.4]

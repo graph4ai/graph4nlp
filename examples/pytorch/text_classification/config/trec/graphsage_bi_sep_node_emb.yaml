@@ -87,3 +87,6 @@ no_cuda: false
 
 # gl_epsilon 0.8, gl_num_heads 1: 0.926
 # gl_epsilon 0.6, gl_num_heads 2: 0.932
+# TODO:
+# gl_num_heads [1], gl_epsilon [0.4]
+# gl_num_heads [2], gl_epsilon [0.8, 0.7, 0.4]
