@@ -13,7 +13,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import torch.backends.cudnn as cudnn
 
-from graph4nlp.pytorch.datasets.jobs import JobsDataset
+from graph4nlp.pytorch.datasets.squad import SQuADDataset
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import RNNEmbedding
@@ -177,7 +177,7 @@ class QGModel(nn.Module):
         self.loss_cover = CoverageLoss(config['coverage_loss_ratio'])
 
 
-    def forward(self, graph_list, tgt=None, require_loss=True):
+    def forward(self, graph_list, answer, tgt=None, require_loss=True):
         # graph embedding construction
         batch_gd = self.graph_topology(graph_list)
 
@@ -270,12 +270,11 @@ class ModelHandler:
         if self.config['graph_type'] == 'node_emb_refined':
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
-        dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
+        dataset = SQuADDataset(root_dir='examples/pytorch/question_generation/data/squad_split2',
                               topology_builder=topology_builder,
                               topology_subdir=topology_subdir,
                               graph_type=graph_type,
                               pretrained_word_emb_file=self.config['pre_word_emb_file'],
-                              val_split_ratio=self.config['val_split_ratio'],
                               merge_strategy=merge_strategy,
                               dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
                               init_graph_type=self.config['init_graph_type'] if self.config['graph_type'] == 'node_emb_refined' else None,
@@ -316,9 +315,10 @@ class ModelHandler:
             train_loss = []
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
-                graph_list, tgt = data
+                graph_list, answer, tgt = data
+                answer = to_cuda(answer, self.config['device'])
                 tgt = to_cuda(tgt, self.config['device'])
-                logits, loss = self.model(graph_list, tgt, require_loss=True)
+                logits, loss = self.model(graph_list, answer, tgt, require_loss=True)
                 self.optimizer.zero_grad()
                 loss.backward()
                 if self.config.get('grad_clipping', None) not in (None, 0):
@@ -351,8 +351,8 @@ class ModelHandler:
             pred_collect = []
             gt_collect = []
             for i, data in enumerate(dataloader):
-                graph_list, tgt = data
-                prob = self.model(graph_list, require_loss=False)
+                graph_list, answer, tgt = data
+                prob = self.model(graph_list, answer, require_loss=False)
                 pred = prob.argmax(dim=-1)
 
                 pred_str = wordid2str(pred.detach().cpu(), self.vocab.in_word_vocab)

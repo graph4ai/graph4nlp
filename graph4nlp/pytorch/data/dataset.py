@@ -129,6 +129,43 @@ class Text2LabelDataItem(DataItem):
         return input_tokens
 
 
+class DoubleText2TextDataItem(DataItem):
+    def __init__(self, input_text, input_text2, output_text, tokenizer, share_vocab=True):
+        super(DoubleText2TextDataItem, self).__init__(input_text, tokenizer)
+        self.input_text2 = input_text2
+        self.output_text = output_text
+        self.share_vocab = share_vocab
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens and output tokens
+        """
+        g: GraphData = self.graph
+
+        input_tokens = []
+        for i in range(g.get_node_num()):
+            if self.tokenizer is None:
+                tokenized_token = g.node_attributes[i]['token'].strip().split()
+            else:
+                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
+
+            input_tokens.extend(tokenized_token)
+
+        if self.tokenizer is None:
+            input_tokens.extend(self.input_text2.strip().split())
+            output_tokens = self.output_text.strip().split()
+        else:
+            input_tokens.extend(self.tokenizer(self.input_text2))
+            output_tokens = self.tokenizer(self.output_text)
+
+        if self.share_vocab:
+            return input_tokens + output_tokens
+        else:
+            return input_tokens, output_tokens
+
+
 class Dataset(torch.utils.data.Dataset):
     """
     Base class for datasets.
@@ -1132,8 +1169,7 @@ class Text2LabelDataset(Dataset):
         """
         data = []
         with open(file_path, 'r') as f:
-            lines = f.readlines()
-            for line in lines:
+            for line in f:
                 input, output = line.split('\t')
                 data_item = Text2LabelDataItem(input_text=input.strip(), output_label=output.strip(), tokenizer=self.tokenizer)
                 data.append(data_item)
@@ -1187,3 +1223,128 @@ class Text2LabelDataset(Dataset):
         tgt_tensor = torch.LongTensor(tgt)
 
         return [graph_data, tgt_tensor]
+
+
+
+class DoubleText2TextDataset(Dataset):
+    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
+        self.data_item_type = DoubleText2TextDataItem
+        self.share_vocab = share_vocab
+        super(DoubleText2TextDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+
+        For DoubleText2TextDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
+        # TODO: update example
+
+        Examples
+        --------
+        input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
+
+        DataItem: input_text="list job use languageid0", input_text2="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
+
+        Parameters
+        ----------
+        file_path: str
+            The path of the input file.
+
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
+        """
+        data = []
+        with open(file_path, 'r') as f:
+            for line in f:
+                input, input2, output = line.split('\t')
+                data_item = DoubleText2TextDataItem(input_text=input.strip(), input_text2=input2.strip(), output_text=output.strip(), tokenizer=self.tokenizer,
+                                              share_vocab=self.share_vocab)
+                data.append(data_item)
+        return data
+
+    def build_vocab(self):
+        data_for_vocab = self.train
+        if self.use_val_for_vocab:
+            data_for_vocab = data_for_vocab + self.val
+
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=self.max_word_vocab_size,
+                                       min_word_vocab_freq=self.min_word_vocab_freq,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       word_emb_size=self.word_emb_size,
+                                       share_vocab=self.share_vocab)
+        self.vocab_model = vocab_model
+
+        return self.vocab_model
+
+    def vectorization(self, data_items):
+        if self.topology_builder == IEBasedGraphConstruction:
+            use_ie = True
+        else:
+            use_ie = False
+        for item in data_items:
+            graph: GraphData = item.graph
+            token_matrix = []
+            for node_idx in range(graph.get_node_num()):
+                node_token = graph.node_attributes[node_idx]['token']
+                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token, use_ie)
+                graph.node_attributes[node_idx]['token_id'] = node_token_id
+                token_matrix.append([node_token_id])
+            if self.topology_builder == IEBasedGraphConstruction:
+                for i in range(len(token_matrix)):
+                    token_matrix[i] = np.array(token_matrix[i][0])
+                token_matrix = pad_2d_vals_no_size(token_matrix)
+                token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+                graph.node_features['token_id'] = token_matrix
+                pass
+            else:
+                token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+                graph.node_features['token_id'] = token_matrix
+
+            if use_ie and 'token' in graph.edge_attributes[0].keys():
+                edge_token_matrix = []
+                for edge_idx in range(graph.get_edge_num()):
+                    edge_token = graph.edge_attributes[edge_idx]['token']
+                    edge_token_id = self.vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
+                    graph.edge_attributes[edge_idx]['token_id'] = edge_token_id
+                    edge_token_matrix.append([edge_token_id])
+                if self.topology_builder == IEBasedGraphConstruction:
+                    for i in range(len(edge_token_matrix)):
+                        edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
+                    edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
+                    edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
+                    graph.edge_features['token_id'] = edge_token_matrix
+
+
+            input_text2 = item.input_text2
+            input_token_id2 = self.vocab_model.in_word_vocab.to_index_sequence(input_text2)
+            input_token_id2.append(self.vocab_model.in_word_vocab.EOS)
+            input_token_id2 = np.array(input_token_id2)
+            item.input_np2 = input_token_id2
+
+            tgt = item.output_text
+            tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
+            tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
+            tgt_token_id = np.array(tgt_token_id)
+            item.output_np = tgt_token_id
+
+    @staticmethod
+    def collate_fn(data_list: [Text2TextDataItem]):
+        graph_data = [item.graph for item in data_list]
+
+        input_numpy2 = [item.input_np2 for item in data_list]
+        input_pad2 = pad_2d_vals_no_size(input_numpy2)
+        input_seq2 = torch.from_numpy(input_pad2).long()
+
+        output_numpy = [item.output_np for item in data_list]
+        output_pad = pad_2d_vals_no_size(output_numpy)
+        tgt_seq = torch.from_numpy(output_pad).long()
+
+        return [graph_data, input_seq2, tgt_seq]
