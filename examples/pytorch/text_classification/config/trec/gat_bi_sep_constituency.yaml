@@ -71,4 +71,4 @@ num_workers: 0 # number of data loader workers
 gpu: -1
 no_cuda: false
 
-# gnn_num_layers 2, lr 0.001: 0.932
+# gnn_num_layers 3, lr 0.001: 0.940
