@@ -341,20 +341,51 @@ class Dataset(torch.utils.data.Dataset):
                                                                 lower_case=self.lower_case,
                                                                 tokenizer=self.tokenizer)
                     item.graph = graph
-
             elif self.dynamic_graph_type == 'node_emb_refined':
                 if self.init_graph_type != 'line':
                     print('Connecting to stanfordcorenlp server...')
                     processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+
+                    if self.init_graph_type == 'ie':
+                        props_coref = {
+                            'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
+                            "tokenize.options":
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
+                        props_openie = {
+                            'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
+                            "tokenize.options":
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json',
+                            "openie.triple.strict": "true"
+                        }
+                        processor_args = [props_coref, props_openie]
+                    elif self.init_graph_type == 'dependency':
+                        processor_args = {
+                            'annotators': 'ssplit,tokenize,depparse',
+                            "tokenize.options":
+                                "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
+                    elif self.init_graph_type == 'constituency':
+                        processor_args = {
+                            'annotators': "tokenize,ssplit,pos,parse",
+                            "tokenize.options":
+                            "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
+                    else:
+                        raise NotImplementedError
                     print('CoreNLP server connected.')
-                    processor_args = {
-                        'annotators': 'ssplit,tokenize,depparse',
-                        "tokenize.options":
-                            "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
-                        "tokenize.whitespace": False,
-                        'ssplit.isOneSentence': False,
-                        'outputFormat': 'json'
-                    }
                 else:
                     processor = None
                     processor_args = None
