@@ -24,8 +24,8 @@ Conll Results
 
 | GraphType\GNN  | GAT-Undirected   |  GAT-BiSep    | GAT-BiFuse   | GraphSAGE-Undirected   |  GraphSAGE-BiSep    | GraphSAGE-BiFuse   |  GGNN-Undirected   |  GGNN-BiSep    | GGNN-BiFuse   | 
 | ------------- |  -------------| ------------- |  -------------|  ------------- | ------------- |  -------------| ------------- | -------------  | ------------- |  
-| Dependency_graph     |   |   |  |  |  |    |  | |   |
-| Line_graph        |   |   |  |74.72%|74.40%|73.10%|76.13%| |75.75%|
+| Dependency_graph     |   |   |  |78.11%|77.53%  |77.55%|  | |   |
+| Line_graph        |75.89% |76.29%|76.27%|74.72%|74.40%|73.10%|76.13%|73.20%|75.75%|
 | NodeEmb | N/A  | N/A | N/A | - | - | -  |  | - |  - |
 |Only_bilstm| 75.64%|
 
@@ -40,11 +40,37 @@ How to run
 Run with following:
 
 
-Dependency graph:
+Dpendency_graph (graphsage):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner --seq_info_encode_strategy bilstm  --graph_type dependency_graph --gpu 0 --init_hidden_size 400 --hidden_size 128 --drop 0.2 --lr 0.01 --batch_size 100 --gnn_type graphsage --direction_option undirected
+```
+Dpendency_graph (ggnn):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner --seq_info_encode_strategy bilstm  --graph_type dependency_graph --gpu 0 --init_hidden_size 400 --hidden_size 128 --drop 0.2 --lr 0.01 --batch_size 100 --gnn_type ggnn --direction_option undirected
+```
+
+Dpendency_graph (gat):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner --seq_info_encode_strategy bilstm  --graph_type dependency_graph --gpu 0 --init_hidden_size 400 --hidden_size 128 --drop 0.2 --lr 0.001 --batch_size 100 --gnn_type gat --direction_option undirected 
+```
+
+Line_graph (graphsage):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner --seq_info_encode_strategy bilstm  --graph_type line_graph --gpu 0 --init_hidden_size 400 --hidden_size 128 --drop 0.2 --lr 0.01 --batch_size 100 --gnn_type graphsage --direction_option undirected
+```
+Line_graph (ggnn):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner --seq_info_encode_strategy bilstm  --graph_type line_graph --gpu 0 --init_hidden_size 400 --hidden_size 128 --drop 0.2 --lr 0.01 --batch_size 100 --gnn_type ggnn --direction_option undirected
+```
+
+Line_graph (gat):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner --seq_info_encode_strategy bilstm  --graph_type line_graph --gpu 0 --init_hidden_size 400 --hidden_size 128 --drop 0.2 --lr 0.001 --batch_size 100 --gnn_type gat --direction_option undirected 
+```
 
 bilstm
 ```python
-python -m examples.pytorch.name_entity_recognition.run_ner --seq_info_encode_strategy bilstm  --graph_type line_graph --gpu 0 --init_hidden_size 300 --lstm_hidden_size 80 --drop 0.2 --lr 0.01 --batch_size 150
+python -m examples.pytorch.name_entity_recognition.run_ner --seq_info_encode_strategy bilstm  --gpu 0 --init_hidden_size 400 --hidden_size 128 --drop 0.2 --lr 0.01 --batch_size 100
 ```
 
 
