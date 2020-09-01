@@ -16,6 +16,7 @@ import torch.backends.cudnn as cudnn
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.graph_construction import *
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import RNNEmbedding
 from graph4nlp.pytorch.modules.graph_embedding import GAT, GraphSAGE, GGNN
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
@@ -110,6 +111,18 @@ class QGModel(nn.Module):
 
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
 
+        self.ans_rnn_encoder = RNNEmbedding(
+                                    self.vocab.in_word_vocab.embeddings.shape[1],
+                                    config['num_hidden'],
+                                    bidirectional=True,
+                                    num_layers=1,
+                                    rnn_type='lstm',
+                                    dropout=config['enc_rnn_dropout'],
+                                    device=config['device'])
+
+        # soft-alignment between question and answer
+        self.ques2ans_attn = Question2AnswerAttention(config['num_hidden'], config['num_hidden'])
+
 
         if config['gnn'] == 'gat':
             heads = [config['gat_num_heads']] * (config['gnn_num_layers'] - 1) + [config['gat_num_out_heads']]
@@ -168,6 +181,10 @@ class QGModel(nn.Module):
         # graph embedding construction
         batch_gd = self.graph_topology(graph_list)
 
+        # answer alignment
+        # self.ans_rnn_encoder()
+
+
         # run GNN
         self.gnn(batch_gd)
         batch_gd.node_features['rnn_emb'] = batch_gd.node_features['node_feat']
@@ -181,6 +198,36 @@ class QGModel(nn.Module):
             return prob, loss
         else:
             return prob
+
+
+class Question2AnswerAttention(nn.Module):
+    def __init__(self, dim, hidden_size):
+        super(Question2AnswerAttention, self).__init__()
+        self.linear_sim = nn.Linear(dim, hidden_size, bias=False)
+
+    def forward(self, context, answers, out_answers, ans_mask=None):
+        """
+        Parameters
+        :context, (batch_size, L, dim)
+        :answers, (batch_size, N, dim)
+        :out_answers, (batch_size, N, dim)
+        :ans_mask, (batch_size, N)
+
+        Returns
+        :ques_emb, (batch_size, L, dim)
+        """
+        context_fc = torch.relu(self.linear_sim(context))
+        questions_fc = torch.relu(self.linear_sim(answers))
+
+        # shape: (batch_size, L, N)
+        attention = torch.matmul(context_fc, questions_fc.transpose(-1, -2))
+        if ans_mask is not None:
+            attention = attention.masked_fill_(1 - ans_mask.byte().unsqueeze(1), -INF)
+        prob = torch.softmax(attention, dim=-1)
+        # shape: (batch_size, L, dim)
+        ques_emb = torch.matmul(prob, out_answers)
+
+        return ques_emb
 
 
 class ModelHandler:
