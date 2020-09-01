@@ -5,6 +5,7 @@ import pickle
 
 
 from graph4nlp.pytorch.data.dataset import Text2TextDataset, TextToTreeDataset
+from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 
@@ -28,12 +29,48 @@ class JobsDataset(Text2TextDataset):
         #     'This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
         return
 
-    def __init__(self, root_dir, topology_builder=None, topology_subdir=None, graph_type='static',
-                 edge_strategy=None, merge_strategy='tailhead', **kwargs):
+    def __init__(self, root_dir, topology_builder, topology_subdir, graph_type='static',
+                 edge_strategy=None, merge_strategy='tailhead', share_vocab=False, dynamic_graph_type=None,
+                 init_graph_type=None):
+        """
+
+        Parameters
+        ----------
+        root_dir: str
+            The path of dataset.
+        topology_builder: GraphConstructionBase
+            The graph construction class.
+        topology_subdir: str
+            The directory name of processed path.
+        graph_type: str, default='static'
+            The graph type. Expected in ('static', 'dynamic')
+        edge_strategy: str, default=None
+            The edge strategy. Expected in (None, 'homogeneous', 'as_node'). If set `None`, it will be 'homogeneous'.
+        merge_strategy: str, default=None
+            The strategy to merge sub-graphs. Expected in (None, 'tailhead', 'user_define').
+            If set `None`, it will be 'tailhead'.
+        share_vocab: bool, default=False
+            Whether to share the input vocabulary with the output vocabulary.
+        dynamic_graph_type: str, default=None
+            The dynamic graph type. It is only available when `graph_type` is set 'dynamic'.
+            Expected in (None, 'node_emb', 'node_emb_refined').
+        init_graph_type: str, default=None
+            The initial graph topology. It is only available when `graph_type` is set 'dynamic'.
+            Expected in (None, 'dependency', 'constituency')
+        """
         # Initialize the dataset. If the preprocessed files are not found, then do the preprocessing and save them.
         super(JobsDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
-                                          edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
+                                          edge_strategy=edge_strategy, merge_strategy=merge_strategy,
+                                          share_vocab=share_vocab, dynamic_graph_type=dynamic_graph_type,
+                                          init_graph_type=init_graph_type)
+
+    @classmethod
+    def from_args(cls, args, topology_builder):
+        return cls(root_dir=args.root_dir, topology_builder=topology_builder, topology_subdir=args.topology_subdir,
+                   graph_type=args.graph_type, edge_strategy=args.edge_strategy, merge_strategy=args.merge_strategy,
+                   share_vocab=args.share_vocab, dynamic_graph_type=args.dynamic_graph_type,
+                   init_graph_type=args.init_graph_type)
 
 
 class JobsDatasetForTree(TextToTreeDataset):

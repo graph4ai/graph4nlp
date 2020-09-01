@@ -1,0 +1,8 @@
+topology_type: 'node_emb'
+graph_type: 'dynamic'
+root_dir: "graph4nlp/pytorch/test/dataset/jobs"
+topology_subdir: 'NodeEmbGraph'
+merge_strategy: 'tailhead'
+dynamic_graph_type: 'node_emb'
+init_graph_type: null
+share_vocab: True

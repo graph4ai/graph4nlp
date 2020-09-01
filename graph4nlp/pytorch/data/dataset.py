@@ -20,6 +20,7 @@ import json
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from ..modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 
 

@@ -28,6 +28,9 @@ python -m examples.pytorch.semantic_parsing.jobs.main
 Results
 -------
 
+As_node(Dep + GAT): 90.0 90.0 89.1
+
+
 Dependency
 
 | Dataset  |      GAT-Uni     |   GAT-BiSep   |  GAT-BiFuse   |
@@ -47,15 +50,47 @@ Cos
 
 | Dataset  |      GAT-Uni     |   GAT-BiSep   |  GAT-BiFuse   |
 | -------- | ---------------- | ------------- | ------------- |
-| Jobs     |       91.4       |               |               |
+| Jobs     |       91.4       |     91.4      |     92.1      |
 
 | Dataset  |      GGNN-Uni    |   GGNN-BiSep  |  GGNN-BiFuse  |
 | -------- | ---------------- | ------------- | ------------- |
-| Jobs     |       91.4       |               |               |
+| Jobs     |       91.4       |      91.4     |     90.0      |
 
 | Dataset  |  Graphsage-Uni   | Graphsage-BiSep   |  Graphsage-BiFuse   |
 | -------- | ---------------- | ------------- | ------------- |
-| Jobs     |       87.9       |     89.3      |      90.7     |
+| Jobs     |       90.7       |     90.7      |      90.7     |
+
+
+Dynamic: node_emb
+
+| Dataset  |      GAT-Uni     |   GAT-BiSep   |  GAT-BiFuse   |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       92.1       |    92.9       |     90.0      |
+
+| Dataset  |      GGNN-Uni    |   GGNN-BiSep  |  GGNN-BiFuse  |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       92.1      |      93.6     |     93.6      |
+
+| Dataset  |  Graphsage-Uni   | Graphsage-BiSep   |  Graphsage-BiFuse   |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       92.9       |     92.1      |      92.9     |
+
+Dynamic Refine(dep initial 0.2)
+
+| Dataset  |      GAT-Uni     |   GAT-BiSep   |  GAT-BiFuse   |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       91.4       |    92.9       |     90.0      |
+
+| Dataset  |      GGNN-Uni    |   GGNN-BiSep  |  GGNN-BiFuse  |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       92.9      |       93.1     |      92.9      |
+
+| Dataset  |  Graphsage-Uni   | Graphsage-BiSep   |  Graphsage-BiFuse   |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       91.4       |     92.1      |      91.4     |
+
+
+
 TODO
 -------
 

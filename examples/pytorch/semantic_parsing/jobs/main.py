@@ -1,18 +1,20 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
-from .config import get_args
+from .args import get_args
 from .evaluation import ExpressionAccuracy
 from .utils import get_log, wordid2str
 from .model import Graph2seq
@@ -48,13 +50,17 @@ class Jobs:
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
-
-        # dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
-        #                       topology_builder=DependencyBasedGraphConstruction,
-        #                       topology_subdir='DependencyGraph', share_vocab=True)
-        dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
-                              topology_builder=ConstituencyBasedGraphConstruction,
-                              topology_subdir='ConstituencyGraph', share_vocab=True)
+        if self.opt.topology_type == "dependency":
+            topology_builder = DependencyBasedGraphConstruction
+        elif self.opt.topology_type == "constituency":
+            topology_builder = ConstituencyBasedGraphConstruction
+        elif self.opt.topology_type == "node_emb":
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+        elif self.opt.topology_type == "node_emb_refined":
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+        else:
+            raise NotImplementedError()
+        dataset = JobsDataset.from_args(args=self.opt, topology_builder=topology_builder)
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=24, shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
@@ -67,7 +73,7 @@ class Jobs:
         self.vocab.in_word_vocab.embeddings = pretrained_weight.numpy()
 
     def _build_model(self):
-        self.model = Graph2seq(self.vocab, device=self.device).to(self.device)
+        self.model = Graph2seq.from_args(vocab=self.vocab, args=self.opt, device=self.device).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]

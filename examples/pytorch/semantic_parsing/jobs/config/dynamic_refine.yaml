@@ -1,0 +1,12 @@
+topology_type: 'node_emb_refined'
+graph_type: 'dynamic'
+root_dir: "graph4nlp/pytorch/test/dataset/jobs"
+topology_subdir: 'NodeEmbGraphRefine'
+merge_strategy: 'tailhead'
+dynamic_graph_type: 'node_emb_refined'
+init_graph_type: 'dependency'
+share_vocab: True
+
+gnn: "GGNN"
+
+log_file: "examples/pytorch/semantic_parsing/jobs/log/ggnn_true_refine.txt"
