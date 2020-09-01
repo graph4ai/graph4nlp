@@ -48,7 +48,16 @@ Run with following:
 ```java
 java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
 ```
-Dependency graph:
+
+```python
+python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec/XYZ.yaml --grid_search
+```
+
+
+
+
+
+<!-- Dependency graph:
 
 GAT-Undirected
 ```python
@@ -195,7 +204,7 @@ graphsage undirected, init_graph_type line, gl_epsilon 0.7, init_adj_alpha 0.2: 
 
 graphsage undirected, init_graph_type dependency, gl_epsilon 0.5, init_adj_alpha 0.2, new_norm: 0.918
 
-graphsage undirected, init_graph_type line, gl_epsilon 0.7, init_adj_alpha 0.2, new_norm: 0.918
+graphsage undirected, init_graph_type line, gl_epsilon 0.7, init_adj_alpha 0.2, new_norm: 0.918 -->
 
 
 
