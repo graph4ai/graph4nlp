@@ -6,7 +6,8 @@ save_model_path: 'text_clf_ckpt'
 
 
 # Graph construction
-graph_type: 'dependency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
+graph_type: # 'dependency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
+      - 'dependency'
 
 # Dynamic graph construction
 init_graph_type: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
@@ -22,16 +23,8 @@ init_adj_alpha: 0.8 # alpha ratio for combining initial graph adjacency matrix
 
 
 # Graph embedding construction
-word_dropout: # 0.4 # word embedding dropout
-      - 0.2
-      - 0.3
-      - 0.4
-      - 0.5
-rnn_dropout: # 0.1 # RNN dropout
-      - 0.
-      - 0.1
-      - 0.2
-      - 0.3
+word_dropout: 0.4 # 0.4 # word embedding dropout
+rnn_dropout: 0.1 # 0.1 # RNN dropout
 no_fix_word_emb: false # Not fix pretrained word embeddings (default: false)
 node_edge_emb_strategy: 'mean' # node edge embedding strategy for graph embedding construction ('mean', 'lstm', 'gru', 'bilstm' and 'bigru')
 seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph embedding construction ('none', 'lstm', 'gru', 'bilstm' and 'bigru')
@@ -42,7 +35,9 @@ gnn: #
       - 'ggnn'
 gnn_direction_option: # 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
       - 'bi_fuse'
-gnn_num_layers: 2 # 2 # number of GNN layers
+gnn_num_layers: # 2 # 2 # number of GNN layers
+      # - 1
+      - 2
 num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
 max_pool_linear_proj: false # use linear projectioni for max pooling
@@ -65,14 +60,14 @@ epochs: 500 # number of maximal training epochs
 patience: 10
 lr: # 0.001 # learning rate
       - 0.001
-      # - 0.002
-      # - 0.0005
+      - 0.002
+      - 0.0005
 lr_patience: 2
 lr_reduce_factor: 0.5
-num_workers: 8 # number of data loader workers
+num_workers: 0 # number of data loader workers
 
 
-gpu: 0
+gpu: 2
 no_cuda: false
 
 # gnn_num_layers 2, gnn_dropout 0.3, 0.5: 0.938
