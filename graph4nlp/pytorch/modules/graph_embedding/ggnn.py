@@ -111,7 +111,7 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
                         )
                     else:
                         graph.apply_edges(
-                            lambda edges: {'W_e*h': self.linears[i](edges.src['h']) * edge_weight},
+                            lambda edges: {'W_e*h': self.linears[i](edges.src['h']) * edge_weight.unsqueeze(1)},
                             eids
                         )
             graph.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
@@ -234,7 +234,7 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
                     )
                 else:
                     graph_in.apply_edges(
-                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight},
+                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight.unsqueeze(1)},
                         eids
                     )
         graph_in.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
@@ -254,7 +254,7 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
                     )
                 else:
                     graph_out.apply_edges(
-                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight},
+                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight.unsqueeze(1)},
                         eids
                     )
         graph_out.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
@@ -378,7 +378,7 @@ class BiSepGGNNLayerConv(GNNLayerBase):
                     )
                 else:
                     graph_in.apply_edges(
-                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight},
+                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight.unsqueeze(1)},
                         eids
                     )
         graph_in.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
@@ -398,7 +398,7 @@ class BiSepGGNNLayerConv(GNNLayerBase):
                     )
                 else:
                     graph_out.apply_edges(
-                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight},
+                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight.unsqueeze(1)},
                         eids
                     )
         graph_out.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
