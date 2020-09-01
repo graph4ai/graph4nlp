@@ -86,3 +86,4 @@ gpu: 3
 no_cuda: false
 
 # gl_epsilon 0.8, gl_num_heads 1: 0.926
+# gl_epsilon 0.6, gl_num_heads 2: 0.932

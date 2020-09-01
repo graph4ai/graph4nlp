@@ -29,14 +29,13 @@ TREC Results
 | GraphType\GNN  |  GAT-Undirected   |  GAT-BiSep    | GAT-BiFuse   | GraphSAGE-Undirected   |  GraphSAGE-BiSep    | GraphSAGE-BiFuse   |  GGNN-Undirected   |  GGNN-BiSep    | GGNN-BiFuse   | 
 | ------------- |  -------------| ------------- |  -------------|  ------------- | ------------- |  -------------| ------------- | -------------  | ------------- |  
 | Dependency     | 0.934*  | 0.948*  | 0.950* | 0.946 | 0.944* |  0.942  | 0.934 | 0.946* |  0.938* |
-| Constituency | 0.922  | 0.942 | 0.948 | 0.942 |0.944 | 0.946  | 0.934 | 0.924 |  0.934 |
-| Constituency (word & non-word nodes) | 0.932*  | 0.942* | 0.938* | 0.934 |0.928 | 0.942*  | 0.920 |0.944* |  0.916 |
-| NodeEmb | N/A  | N/A | N/A | 0.936 | - | -  |  | - |  - |
-| NodeEmbRefined (line) | N/A  | N/A | N/A | 0.936 |- |   -|  | - | -  |
-| NodeEmbRefined (dependency) | N/A  | N/A | N/A | |- |   -|  | - | -  |
-| NodeEmbRefined (constituency) | N/A  | N/A | N/A |  |- |   -|  | - | -  |
+| Constituency (word & non-word nodes) | 0.932*  | 0.942* | 0.938* | 0.934 |0.928 | 0.942*  | 0.920 |0.944* |  0.940* |
+| NodeEmb | N/A  | N/A | N/A | 0.936 | 0.932 | 0.928  |  | | |
+| NodeEmbRefined (dependency) | N/A  | N/A | N/A |0.928 |0.928 |   |  |  |   |
 
-
+<!-- | NodeEmbRefined (constituency) | N/A  | N/A | N/A |  | |   |  |  |  | -->
+<!-- | Constituency | 0.922  | 0.942 | 0.948 | 0.942 |0.944 | 0.946  | 0.934 | 0.924 |  0.934 | -->
+<!-- | NodeEmbRefined (line) | N/A  | N/A | N/A | 0.936 |- |   -|  | - | -  | -->
 
 
 
