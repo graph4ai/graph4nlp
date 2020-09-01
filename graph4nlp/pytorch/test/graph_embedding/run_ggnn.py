@@ -206,6 +206,7 @@ def main(args, seed):
     # else:
     #     g.edge_features['etype'] = torch.LongTensor([0] * g.get_edge_num()).to(device)
     g.edge_features['edge_weight'] = torch.tensor([1] * g.get_edge_num(), dtype=torch.float32).view(-1, 1).to(device)
+    g.edge_features['reverse_edge_weight'] = torch.tensor([1] * g.get_edge_num(), dtype=torch.float32).view(-1, 1).to(device)
 
     # create model
     model = GNNClassifier(args.num_layers,
@@ -297,7 +298,7 @@ if __name__ == '__main__':
                         help="number of hidden layers")
     parser.add_argument("--num-etypes", type=int, default=2,
                         help="number of edge types")
-    parser.add_argument("--num-hidden", type=int, default=1433,
+    parser.add_argument("--num-hidden", type=int, default=1435,
                         help="number of hidden units")
     parser.add_argument("--residual", action="store_true", default=False,
                         help="use residual connection")
