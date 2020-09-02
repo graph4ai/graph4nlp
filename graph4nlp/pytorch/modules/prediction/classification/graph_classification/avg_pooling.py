@@ -1,3 +1,4 @@
+import time
 import torch
 import dgl
 from dgl.nn.pytorch.glob import AvgPooling as DGLAvgPooling
@@ -31,11 +32,12 @@ class AvgPooling(PoolingBase):
         torch.Tensor
             The output feature.
         """
+        t0 = time.time()
         graph_list = from_batch(graph)
         output_feat = []
         for g in graph_list:
             output_feat.append(g.node_features[feat].mean(dim=0))
 
         output_feat = torch.stack(output_feat, 0)
-
+        print('Average pooling runtime: {:.2f}s'.format(time.time() - t0))
         return output_feat

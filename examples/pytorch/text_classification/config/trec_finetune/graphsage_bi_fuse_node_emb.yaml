@@ -2,7 +2,7 @@
 dataset: 'trec'
 val_split_ratio: 0.2 # validation set split ratio (default: 0.2)
 pre_word_emb_file: '/home/cheny39/Research/Resource/glove-vectors/glove.840B.300d.txt' # path to the pretrained word embedding file
-out_dir: 'out/trec/graphsage_undirected_node_emb_ckpt'
+out_dir: 'out/trec/graphsage_bi_fuse_node_emb_ckpt'
 
 
 # Graph construction
@@ -13,15 +13,15 @@ graph_type: # 'node_emb' # graph construction type ('dependency', 'constituency'
 init_graph_type: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
 gl_metric_type: 'weighted_cosine' # similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', 'rbf_kernel', 'cosine')
 gl_epsilon: # null # epsilon for graph sparsification
-      - 0.8
-      - 0.7
-      - 0.6
-      - 0.5
+      # - 0.8
+      # - 0.7
+      # - 0.6
+      # - 0.5
       - 0.4
+      - 0.3
 gl_top_k: null # top k for graph sparsification
 gl_num_heads: # 1 # num of heads for dynamic graph construction
       - 1
-      - 2
 gl_num_hidden: 300 # number of hidden units for dynamic graph construction
 gl_smoothness_ratio: null # smoothness ratio for graph regularization loss
 gl_sparsity_ratio: null # sparsity ratio for graph regularization loss
@@ -41,9 +41,8 @@ seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph e
 gnn: #
       - 'graphsage'
 gnn_direction_option: # 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
-      - 'undirected'
-gnn_num_layers: # 2 # 2 # number of GNN layers
-      - 2
+      - 'bi_fuse'
+gnn_num_layers: 1 # 1 # number of GNN layers
 num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
 max_pool_linear_proj: false # use linear projectioni for max pooling
@@ -71,13 +70,13 @@ lr: # 0.001 # learning rate
       # - 0.0005
 lr_patience: 2
 lr_reduce_factor: 0.5
-num_workers: 8 # number of data loader workers
+num_workers: 1 # number of data loader workers
 
 
-gpu: 0
+gpu: -1
 no_cuda: false
 
-# gl_epsilon 0.6, gl_num_heads 1: 0.934
+# gl_epsilon 0.5, 0.7, 0.8, gl_num_heads 1: 0.928
 # TODO:
-# gl_num_heads [1], gl_epsilon [0.5, 0.4]
+# gl_num_heads [1], gl_epsilon [0.4]
 # gl_num_heads [2], gl_epsilon [0.8 ~ 0.4]

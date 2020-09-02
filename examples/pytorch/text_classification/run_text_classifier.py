@@ -178,11 +178,16 @@ class TextClassifier(nn.Module):
         batch_gd = self.graph_topology(graph_list)
 
         # run GNN
+        t0 = time.time()
         self.gnn(batch_gd)
+        t1 = time.time()
+        print('GNN embedding runtime: {:.2f}s'.format(t1 - t0))
 
         # run graph classifier
         self.clf(batch_gd)
         logits = batch_gd.graph_attributes['logits']
+        t2 = time.time()
+        print('Graph pooling & clf runtime: {:.2f}s'.format(t2 - t1))
 
         if require_loss:
             loss = self.loss(logits, tgt)
@@ -278,17 +283,17 @@ class ModelHandler:
     def train(self):
         dur = []
         for epoch in range(self.config['epochs']):
-            # TODO
-            if epoch > 1:
-                break
+            # # TODO
+            # if epoch > 0:
+            #     break
             self.model.train()
             train_loss = []
             train_acc = []
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
-                # TODO
-                if i > 1:
-                    break
+                # # TODO
+                # if i > 0:
+                #     break
                 graph_list, tgt = data
                 tgt = to_cuda(tgt, self.config['device'])
                 logits, loss = self.model(graph_list, tgt, require_loss=True)
