@@ -1,4 +1,3 @@
-import time
 from nltk.tokenize import word_tokenize
 import torch
 from torch import nn
@@ -86,7 +85,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         """
         node_size = []
         num_nodes = []
-        t0 = time.time()
 
         for g in batch_graphdata:
             g.node_features['token_id'] = to_cuda(g.node_features['token_id'], self.device)
@@ -97,9 +95,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         num_nodes = to_cuda(torch.Tensor(num_nodes), self.device).int()
         batch_gd = to_batch(batch_graphdata)
         node_emb = self.embedding(batch_gd.node_features['token_id'].long(), node_size, num_nodes)
-
-        t1 = time.time()
-        print('Embedding construction runtime: {:.2f}s'.format(t1 - t0))
 
         init_norm_adj = self._get_normalized_init_adj(batch_gd)
         node_mask = self._get_node_mask_for_batch_graph(num_nodes)
@@ -126,7 +121,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         GraphData
             The constructed graph.
         """
-        t0 = time.time()
         raw_adj = self.compute_similarity_metric(node_emb, node_mask)
         raw_adj = self.sparsify_graph(raw_adj)
         graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
@@ -147,11 +141,8 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * adj, self.alpha_fusion * init_norm_adj)
             reverse_adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * reverse_adj, self.alpha_fusion * init_norm_adj)
 
-        t1 = time.time()
         graph_data = convert_adj_to_graph(adj, reverse_adj, 0)
         graph_data.graph_attributes['graph_reg'] = graph_reg
-        t2 = time.time()
-        print('Dynamic topology construction runtime: learn_adj: {:.2f}s | adj2graphdata: {:.2f}s'.format(t1 - t0, t2 - t1))
 
         return graph_data
 
