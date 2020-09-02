@@ -116,6 +116,7 @@ venv.bak/
 
 # data directory
 _download
+out/
 
 # CTags & CScope
 tags
