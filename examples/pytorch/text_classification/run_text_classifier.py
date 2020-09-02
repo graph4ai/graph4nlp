@@ -21,6 +21,8 @@ from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
 from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
+from graph4nlp.pytorch.modules.utils.logger import Logger
+from graph4nlp.pytorch.modules.utils import constants as Constants
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -192,6 +194,8 @@ class ModelHandler:
     def __init__(self, config):
         super(ModelHandler, self).__init__()
         self.config = config
+        self.logger = Logger(config['out_dir'], config={k:v for k, v in config.items() if k != 'device'}, overwrite=True)
+        self.logger.write(config['out_dir'])
         self._build_dataloader()
         self._build_model()
         self._build_optimizer()
@@ -228,7 +232,7 @@ class ModelHandler:
         if self.config['graph_type'] == 'node_emb_refined':
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
-        dataset = TrecDataset(root_dir="examples/pytorch/text_classification/data/trec",
+        dataset = TrecDataset(root_dir='examples/pytorch/text_classification/data/trec',
                               topology_builder=topology_builder,
                               topology_subdir=topology_subdir,
                               graph_type=graph_type,
@@ -254,6 +258,8 @@ class ModelHandler:
         self.num_test = len(dataset.test)
         print('Train size: {}, Val size: {}, Test size: {}'
             .format(self.num_train, self.num_val, self.num_test))
+        self.logger.write('Train size: {}, Val size: {}, Test size: {}'
+            .format(self.num_train, self.num_val, self.num_test))
 
     def _build_model(self):
         self.model = TextClassifier(self.vocab, self.config).to(self.config['device'])
@@ -261,7 +267,7 @@ class ModelHandler:
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
         self.optimizer = optim.Adam(parameters, lr=self.config['lr'])
-        self.stopper = EarlyStopping('{}.{}'.format(self.config['save_model_path'], self.config['seed']), patience=self.config['patience'])
+        self.stopper = EarlyStopping(os.path.join(self.config['out_dir'], Constants._SAVED_WEIGHTS_FILE), patience=self.config['patience'])
         self.scheduler = ReduceLROnPlateau(self.optimizer, mode='max', factor=self.config['lr_reduce_factor'], \
             patience=self.config['lr_patience'], verbose=True)
 
@@ -290,8 +296,10 @@ class ModelHandler:
 
             val_acc = self.evaluate(self.val_dataloader)
             self.scheduler.step(val_acc)
-            print("Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} | Train Acc: {:.4f} | Val Acc: {:.4f}".
+            print('Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} | Train Acc: {:.4f} | Val Acc: {:.4f}'.
               format(epoch + 1, self.config['epochs'], np.mean(dur), np.mean(train_loss), np.mean(train_acc), val_acc))
+            self.logger.write('Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} | Train Acc: {:.4f} | Val Acc: {:.4f}'.
+                        format(epoch + 1, self.config['epochs'], np.mean(dur), np.mean(train_loss), np.mean(train_acc), val_acc))
 
             if self.stopper.step(val_acc, self.model):
                 break
@@ -322,7 +330,9 @@ class ModelHandler:
         t0 = time.time()
         acc = self.evaluate(self.test_dataloader)
         dur = time.time() - t0
-        print("Test examples: {} | Time: {:.2f}s |  Test Acc: {:.4f}".
+        print('Test examples: {} | Time: {:.2f}s |  Test Acc: {:.4f}'.
+          format(self.num_test, dur, acc))
+        self.logger.write('Test examples: {} | Time: {:.2f}s |  Test Acc: {:.4f}'.
           format(self.num_test, dur, acc))
 
         return acc
@@ -342,8 +352,8 @@ def main(config):
         config['device'] = torch.device('cpu')
 
     ts = datetime.datetime.now().timestamp()
-    config['save_model_path'] += '_{}'.format(ts)
-
+    config['out_dir'] += '_{}'.format(ts)
+    print('\n' + config['out_dir'])
 
     runner = ModelHandler(config)
     t0 = time.time()
@@ -353,7 +363,10 @@ def main(config):
 
     print('Removed best saved model file to save disk space')
     os.remove(runner.stopper.save_model_path)
-    print('Total runtime: {:.2f}s'.format(time.time() - t0))
+    runtime = time.time() - t0
+    print('Total runtime: {:.2f}s'.format(runtime))
+    runner.logger.write('Total runtime: {:.2f}s\n'.format(runtime))
+    runner.logger.close()
 
     return val_acc, test_acc
 
@@ -370,48 +383,55 @@ def get_args():
     return args
 
 
-def get_config(config_path="config.yml"):
-    with open(config_path, "r") as setting:
+def get_config(config_path='config.yml'):
+    with open(config_path, 'r') as setting:
         config = yaml.load(setting)
 
     return config
 
 
 def print_config(config):
-    print("**************** MODEL CONFIGURATION ****************")
+    print('**************** MODEL CONFIGURATION ****************')
     for key in sorted(config.keys()):
         val = config[key]
-        keystr = "{}".format(key) + (" " * (24 - len(key)))
-        print("{} -->   {}".format(keystr, val))
-    print("**************** MODEL CONFIGURATION ****************")
+        keystr = '{}'.format(key) + (' ' * (24 - len(key)))
+        print('{} -->   {}'.format(keystr, val))
+    print('**************** MODEL CONFIGURATION ****************')
 
 
 def grid_search_main(config):
     grid_search_hyperparams = []
+    log_path = config['out_dir']
     for k, v in config.items():
         if isinstance(v, list):
             grid_search_hyperparams.append(k)
+            log_path += '_{}_{}'.format(k, v)
+
+    logger = Logger(log_path, config=config, overwrite=True)
 
     best_config = None
     best_score = -1
     configs = grid(config)
     for cnf in configs:
-        print('\n')
         for k in grid_search_hyperparams:
-            cnf['save_model_path'] += '_{}_{}'.format(k, cnf[k])
-        print(cnf['save_model_path'])
+            cnf['out_dir'] += '_{}_{}'.format(k, cnf[k])
 
         val_score, test_score = main(cnf)
         if best_score < test_score:
             best_score = test_score
             best_config = cnf
             print('Found a better configuration: {}'.format(best_score))
+            logger.write('Found a better configuration: {}'.format(best_score))
 
     print('\nBest configuration:')
+    logger.write('\nBest configuration:')
     for k in grid_search_hyperparams:
         print('{}: {}'.format(k, best_config[k]))
+        logger.write('{}: {}'.format(k, best_config[k]))
 
     print('Best score: {}'.format(best_score))
+    logger.write('Best score: {}\n'.format(best_score))
+    logger.close()
 
 
 if __name__ == '__main__':

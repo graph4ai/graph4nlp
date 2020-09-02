@@ -23,33 +23,54 @@ pip install torch==1.1.0 requests dgl
 
 
 
+How to run
+----------
+
+<!-- Run with following:
+
+```java
+java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
+```
+
+Run the model:
+
+```python
+python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec/XYZ.yaml
+```
+
+ -->
+Run the model with grid search:
+
+```python
+python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec_finetune/XYZ.yaml --grid_search
+```
+
+
 TREC Results
 -------
 
 | GraphType\GNN  |  GAT-Undirected   |  GAT-BiSep    | GAT-BiFuse   | GraphSAGE-Undirected   |  GraphSAGE-BiSep    | GraphSAGE-BiFuse   |  GGNN-Undirected   |  GGNN-BiSep    | GGNN-BiFuse   | 
 | ------------- |  -------------| ------------- |  -------------|  ------------- | ------------- |  -------------| ------------- | -------------  | ------------- |  
-| Dependency     | 0.934*  | 0.948*  | 0.950* | 0.946 | 0.944* |  0.942  | 0.934 | 0.946* |  0.914 |
-| Constituency | 0.922  | 0.942 | 0.948 | 0.942 |0.944 | 0.946  | 0.934 | 0.924 |  0.934 |
-| Constituency (word & non-word nodes) | 0.932*  | 0.926 | 0.938 | 0.934 |0.928 | 0.930  | 0.920 |0.932 |  0.916 |
-| NodeEmb | N/A  | N/A | N/A | 0.936 | - | -  |  | - |  - |
-| NodeEmbRefined (line) | N/A  | N/A | N/A | 0.936 |- |   -|  | - | -  |
-| NodeEmbRefined (dependency) | N/A  | N/A | N/A | |- |   -|  | - | -  |
-| NodeEmbRefined (constituency) | N/A  | N/A | N/A |  |- |   -|  | - | -  |
+| Dependency     | 0.934*  | 0.948*  | 0.950* | 0.946* | 0.944* |  0.942  | 0.934 | 0.946* |  0.938* |
+| Constituency (word & non-word nodes) | 0.932*  | 0.942* | 0.938* | 0.934 |0.928 | 0.944*  | 0.920 |0.944* |  0.940* |
+| NodeEmb | N/A  | N/A | N/A | 0.936 | 0.932 | 0.928  |  | | |
+| NodeEmbRefined (dependency) | N/A  | N/A | N/A |0.928 |0.928 | 0.930  |  |  |   |
+<!-- | NodeEmbRefined (constituency) | N/A  | N/A | N/A |  | |   |  |  |  | -->
+<!-- | Constituency | 0.922  | 0.942 | 0.948 | 0.942 |0.944 | 0.946  | 0.934 | 0.924 |  0.934 | -->
+<!-- | NodeEmbRefined (line) | N/A  | N/A | N/A | 0.936 |- |   -|  | - | -  | -->
+
+Note: 
+-------
+- results denoted with '*' were hyperparameter fine-tuned with grid search extensively.
 
 
 
 
 
 
-How to run
-----------
 
-Run with following:
 
-```java
-java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
-```
-Dependency graph:
+<!-- Dependency graph:
 
 GAT-Undirected
 ```python
@@ -196,7 +217,7 @@ graphsage undirected, init_graph_type line, gl_epsilon 0.7, init_adj_alpha 0.2: 
 
 graphsage undirected, init_graph_type dependency, gl_epsilon 0.5, init_adj_alpha 0.2, new_norm: 0.918
 
-graphsage undirected, init_graph_type line, gl_epsilon 0.7, init_adj_alpha 0.2, new_norm: 0.918
+graphsage undirected, init_graph_type line, gl_epsilon 0.7, init_adj_alpha 0.2, new_norm: 0.918 -->
 
 
 
@@ -290,7 +311,3 @@ seq_info_encode_strategy: none
 GAT-Undirected: 0.582
 GAT-BiSep: 0.666
 GAT-BiFuse: 0.796 -->
-
-
-
-

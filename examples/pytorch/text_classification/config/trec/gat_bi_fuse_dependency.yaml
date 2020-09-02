@@ -2,7 +2,7 @@
 dataset: 'trec'
 val_split_ratio: 0.2 # validation set split ratio (default: 0.2)
 pre_word_emb_file: '/home/cheny39/Research/Resource/glove-vectors/glove.840B.300d.txt' # path to the pretrained word embedding file
-save_model_path: 'text_clf_ckpt'
+out_dir: 'out/trec/gat_bi_fuse_dependency_ckpt'
 
 
 # Graph construction
@@ -32,41 +32,6 @@ seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph e
 # GNN
 gnn: 'gat'
 gnn_direction_option: 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
-<<<<<<< Updated upstream
-gnn_num_layers: # 1 # number of GNN layers
-      - 1
-      # - 2
-      # - 3
-num_hidden: 300 # number of hidden units
-graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
-max_pool_linear_proj: false # use linear projectioni for max pooling
-gnn_dropout: # 0.6 # GNN input feature dropout
-      # - 0.3
-      # - 0.4
-      # - 0.5
-      - 0.6
-      - 0.7
-# GAT
-gat_attn_dropout: # 0.3 # GAT attention dropout
-      # - 0.2
-      # - 0.3
-      - 0.4
-gat_negative_slope: # 0.2 # the negative slope of leaky relu
-      # - 0.1
-      - 0.2
-      # - 0.3
-gat_num_heads: # 1 # number of hidden attention heads
-      - 1
-      # - 2
-      # - 4
-      # - 8
-gat_num_out_heads: # 2 # number of output attention heads
-      # - 1
-      - 2
-      # - 4
-      # - 6
-gat_residual: false # use gat_residual connection
-=======
 gnn_num_layers: 1 # number of GNN layers
 num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
@@ -78,9 +43,7 @@ gat_attn_dropout: 0.3 # 0.3 # GAT attention dropout
 gat_negative_slope: 0.1 # 0.1 # the negative slope of leaky relu
 gat_num_heads: 1 # 1 # number of hidden attention heads
 gat_num_out_heads: 2 # 2 # number of output attention heads
-gat_residual: # false # use gat_residual connection
-      - true
->>>>>>> Stashed changes
+gat_residual: false # use gat_residual connection
 # GraphSAGE
 graphsage_aggreagte_type: null # graphsage aggreagte type ('mean', 'gcn', 'pool', 'lstm')
 
@@ -98,11 +61,3 @@ num_workers: 8 # number of data loader workers
 
 gpu: -1
 no_cuda: false
-<<<<<<< Updated upstream
-
-
-# gnn_num_layers 1, gat_negative_slope 0.1: 0.95
-# gnn_num_layers 1, gat_negative_slope 0.2, gnn_dropout 0.4, gat_attn_dropout 0.2: 0.95
-# gnn_num_layers 1, gat_negative_slope 0.2, gnn_dropout 0.7, gat_attn_dropout 0.3: 0.95
-=======
->>>>>>> Stashed changes

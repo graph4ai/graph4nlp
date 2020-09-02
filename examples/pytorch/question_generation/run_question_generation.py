@@ -23,10 +23,8 @@ from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlySt
 from examples.pytorch.semantic_parsing.jobs.loss import Graph2seqLoss, CoverageLoss
 from examples.pytorch.semantic_parsing.jobs.evaluation import ExpressionAccuracy
 from examples.pytorch.semantic_parsing.jobs.utils import wordid2str
-
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
-
 
 
 class QGModel(nn.Module):
@@ -123,7 +121,6 @@ class QGModel(nn.Module):
         # soft-alignment between question and answer
         self.ques2ans_attn = Question2AnswerAttention(config['num_hidden'], config['num_hidden'])
 
-
         if config['gnn'] == 'gat':
             heads = [config['gat_num_heads']] * (config['gnn_num_layers'] - 1) + [config['gat_num_out_heads']]
             self.gnn = GAT(config['gnn_num_layers'],
@@ -183,7 +180,6 @@ class QGModel(nn.Module):
 
         # answer alignment
         # self.ans_rnn_encoder()
-
 
         # run GNN
         self.gnn(batch_gd)
