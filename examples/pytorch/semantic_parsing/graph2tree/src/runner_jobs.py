@@ -36,6 +36,10 @@ from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask, dropout
 from graph4nlp.pytorch.modules.utils.tree_utils import DataLoaderForGraphEncoder, Tree, Vocab, to_cuda
 
+import warnings
+
+warnings.filterwarnings('ignore')
+
 class Graph2Tree(nn.Module):
     def __init__(self, src_vocab,
                  tgt_vocab,
@@ -86,9 +90,9 @@ class Graph2Tree(nn.Module):
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
 
         if gnn_type == "GAT":
-            self.encoder = GAT(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, [2, 1], direction_option=direction_option, feat_drop=enc_dropout_for_feature, attn_drop=enc_dropout_for_attn, activation=F.relu, residual=False)
+            self.encoder = GAT(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, [1], direction_option=direction_option, feat_drop=enc_dropout_for_feature, attn_drop=enc_dropout_for_attn, activation=F.relu, residual=True)
         elif gnn_type == "GGNN":
-            self.encoder = GGNN(3, enc_hidden_size, enc_hidden_size, dropout=enc_dropout_for_feature, direction_option=direction_option)
+            self.encoder = GGNN(2, enc_hidden_size, enc_hidden_size, dropout=enc_dropout_for_feature, direction_option=direction_option)
         elif gnn_type == "SAGE":
             self.encoder = GraphSAGE(1, enc_hidden_size, enc_hidden_size, enc_hidden_size, 'lstm', direction_option=direction_option, feat_drop=enc_dropout_for_feature, activation=F.relu) # aggregate type: 'mean','gcn','pool','lstm'
         else:
@@ -204,7 +208,7 @@ class Jobs:
         if self.opt.graph_construction_type == "DependencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=DependencyBasedGraphConstruction,
-                                topology_subdir='DependencyGraph', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+                                topology_subdir='DependencyGraph', edge_strategy='as_node', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
         elif self.opt.graph_construction_type == "ConstituencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=ConstituencyBasedGraphConstruction,
@@ -315,7 +319,6 @@ class Jobs:
 
             # get indexed tgt sequence
             reference = model.tgt_vocab.get_symbol_idx_for_list(x[1].split())
-            reference = torch.tensor(reference, dtype=torch.long, device=device)
 
             # get input graph list
             input_graph_list = [x[0]]
@@ -539,12 +542,10 @@ def compute_accuracy(candidate_list, reference_list, form_manager):
 def compute_tree_accuracy(candidate_list_, reference_list_, form_manager):
     candidate_list = []
     for i in range(len(candidate_list_)):
-        candidate_list.append(Tree.norm_tree(
-            candidate_list_[i], form_manager).to_list(form_manager))
+        candidate_list.append(candidate_list_[i])
     reference_list = []
     for i in range(len(reference_list_)):
-        reference_list.append(Tree.norm_tree(
-            reference_list_[i], form_manager).to_list(form_manager))
+        reference_list.append(reference_list_[i])
     return compute_accuracy(candidate_list, reference_list, form_manager)
 
 
