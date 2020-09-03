@@ -608,9 +608,9 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-use_copy',type=bool, default=False, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str, 
-            default='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/mawps', help='data path')
+            default='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/math_word_problem/data/mawps', help='data path')
     main_arg_parser.add_argument('-checkpoint_dir',type=str, 
-            default= '/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_mawps', help='output directory where checkpoints get written')
+            default= '/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/math_word_problem/checkpoint_dir_mawps', help='output directory where checkpoints get written')
     
     main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")    
 
