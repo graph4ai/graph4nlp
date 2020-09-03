@@ -14,14 +14,20 @@ import torch.nn.init as init
 import torch.optim as optim
 from stanfordcorenlp import StanfordCoreNLP
 
+import sympy
+from random import randint
+from sympy.parsing.sympy_parser import parse_expr
+
+
 from graph4nlp.pytorch.data.data import GraphData, from_batch
 
-from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
 from graph4nlp.pytorch.datasets.geo import GeoDatasetForTree
+from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
 
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
@@ -34,6 +40,10 @@ from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
 
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask, dropout
 from graph4nlp.pytorch.modules.utils.tree_utils import DataLoaderForGraphEncoder, Tree, Vocab, to_cuda
+
+import warnings
+
+warnings.filterwarnings('ignore')
 
 class Graph2Tree(nn.Module):
     def __init__(self, src_vocab,
@@ -74,13 +84,20 @@ class Graph2Tree(nn.Module):
                                                                 vocab=self.src_vocab,
                                                                 hidden_size=enc_hidden_size, dropout=dropout_for_word_embedding, device=device,
                                                                 fix_word_emb=False)
+        elif graph_construction_type == "DynamicGraph":
+            self.graph_topology = NodeEmbeddingBasedGraphConstruction(word_vocab=self.src_vocab, 
+                                                                embedding_styles=embedding_style, 
+                                                                input_size=enc_hidden_size, 
+                                                                hidden_size=enc_hidden_size,
+                                                                top_k_neigh=200,
+                                                                device=device)
 
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
 
         if gnn_type == "GAT":
-            self.encoder = GAT(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, [2, 1], direction_option=direction_option, feat_drop=enc_dropout_for_feature, attn_drop=enc_dropout_for_attn, activation=F.relu, residual=False)
+            self.encoder = GAT(1, enc_hidden_size, enc_hidden_size, enc_hidden_size, [1], direction_option=direction_option, feat_drop=enc_dropout_for_feature, attn_drop=enc_dropout_for_attn, activation=F.relu, residual=True)
         elif gnn_type == "GGNN":
-            self.encoder = GGNN(3, enc_hidden_size, enc_hidden_size, dropout=enc_dropout_for_feature, direction_option=direction_option)
+            self.encoder = GGNN(1, enc_hidden_size, enc_hidden_size, dropout=enc_dropout_for_feature, direction_option=direction_option)
         elif gnn_type == "SAGE":
             self.encoder = GraphSAGE(1, enc_hidden_size, enc_hidden_size, enc_hidden_size, 'lstm', direction_option=direction_option, feat_drop=enc_dropout_for_feature, activation=F.relu) # aggregate type: 'mean','gcn','pool','lstm'
         else:
@@ -166,9 +183,9 @@ class Graph2Tree(nn.Module):
         # print('--------------------------------------------------------------')
 
 
-class Jobs:
+class Mawps:
     def __init__(self, opt=None):
-        super(Jobs, self).__init__()
+        super(Mawps, self).__init__()
         self.opt = opt
         
         seed = opt.seed
@@ -194,20 +211,27 @@ class Jobs:
         use_copy = self.use_copy
 
         if self.opt.graph_construction_type == "DependencyGraph":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
+            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=DependencyBasedGraphConstruction,
-                                topology_subdir='DependencyGraph', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+                                topology_subdir='DependencyGraph', edge_strategy='as_node', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
         elif self.opt.graph_construction_type == "ConstituencyGraph":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
+            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=ConstituencyBasedGraphConstruction,
                                 topology_subdir='ConstituencyGraph', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+        elif self.opt.graph_construction_type == "DynamicGraph":
+            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
+                                topology_builder=NodeEmbeddingBasedGraphConstruction,
+                                topology_subdir='DynamicGraph', graph_type='dynamic', dynamic_graph_type='node_emb', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)  
 
         self.train_data_loader = DataLoaderForGraphEncoder(
-            use_copy=use_copy, data=dataset.train, dataset=dataset, mode="train", batch_size=20, device=self.device)
+            use_copy=use_copy, data=dataset.train, dataset=dataset, mode="train", batch_size=self.opt.batch_size, device=self.device)
         print("train sample size:", len(self.train_data_loader.data))
         self.test_data_loader = DataLoaderForGraphEncoder(
             use_copy=use_copy, data=dataset.test, dataset=dataset, mode="test", batch_size=1, device=self.device)
         print("test sample size:", len(self.test_data_loader.data))
+        self.dev_data_loader = DataLoaderForGraphEncoder(
+            use_copy=use_copy, data=dataset.val, dataset=dataset, mode="eval", batch_size=1, device=self.device)
+        print("dev sample size:", len(self.dev_data_loader.data))
 
         self.src_vocab = self.train_data_loader.src_vocab
         self.tgt_vocab = self.train_data_loader.tgt_vocab
@@ -263,6 +287,7 @@ class Jobs:
 
     def train(self):
         best_acc = -1
+        best_model = None
 
         print("-------------\nStarting training.")
         for epoch in range(self.opt.max_epochs):
@@ -274,17 +299,20 @@ class Jobs:
             if epoch > 20:
                 # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                 # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
-                test_acc = self.eval((self.model))
+                test_acc = self.eval(self.model, self.dev_data_loader)
                 if test_acc > best_acc:
                     best_acc = test_acc
+                    best_model = self.model
+        self.evel(best_model, self.test_data_loader)
+
         print(best_acc)
 
-    def eval(self, model):
+    def eval(self, model, data_lr):
         device = model.device
 
         max_dec_seq_length = 50
         max_dec_tree_depth = 20
-        use_copy = self.test_data_loader.use_copy
+        use_copy = data_lr.use_copy
         enc_emb_size = model.src_vocab.embedding_dims
         tgt_emb_size = model.tgt_vocab.embedding_dims
 
@@ -296,14 +324,13 @@ class Jobs:
         reference_list = []
         candidate_list = []
 
-        data = self.test_data_loader.data
+        data = data_lr.data
 
         for i in range(len(data)):
             x = data[i]
 
             # get indexed tgt sequence
             reference = model.tgt_vocab.get_symbol_idx_for_list(x[1].split())
-            reference = torch.tensor(reference, dtype=torch.long, device=device)
 
             # get input graph list
             input_graph_list = [x[0]]
@@ -496,16 +523,53 @@ class AttnUnit(nn.Module):
         return pred
 
 
-def is_all_same(c1, c2):
+def is_all_same(c1, c2, form_manager):
+    all_same = False
     if len(c1) == len(c2):
         all_same = True
         for j in range(len(c1)):
             if c1[j] != c2[j]:
                 all_same = False
                 break
-        return all_same
-    else:
+    if all_same == False:
+        if is_solution_same(c1, c2, form_manager):
+            return True
         return False
+    else:
+        return True
+
+
+def is_solution_same(i1, i2, form_manager):
+    c1 = " ".join([form_manager.get_idx_symbol(x) for x in i1])
+    c2 = " ".join([form_manager.get_idx_symbol(x) for x in i2])
+    if ('=' not in c1) or ('=' not in c2):
+        return False
+    elif (form_manager.unk_token in c1) or (form_manager.unk_token in c2):
+        return False
+    else:
+        try:
+            s1 = c1.split('=')
+            s2 = c2.split('=')
+            eq1 = []
+            eq2 = []
+            x = sympy.Symbol('x')
+            eq1.append(parse_expr(s1[0]))
+            eq1.append(parse_expr(s1[1]))
+            eq2.append(parse_expr(s2[0]))
+            eq2.append(parse_expr(s2[1]))
+            res1 = sympy.solve(sympy.Eq(eq1[0], eq1[1]), x)
+            res2 = sympy.solve(sympy.Eq(eq2[0], eq2[1]), x)
+
+            if not res1 or not res2:
+                return False
+            if res1[0] == res2[0]:
+                print("Excution_true: ", c1, '\t', c2)
+            return res1[0] == res2[0]
+
+        except BaseException:
+            print("Excution_error: ", c1, '\t', c2)
+            return False
+
 
 
 def compute_accuracy(candidate_list, reference_list, form_manager):
@@ -516,7 +580,7 @@ def compute_accuracy(candidate_list, reference_list, form_manager):
     len_min = min(len(candidate_list), len(reference_list))
     c = 0
     for i in range(len_min):
-        if is_all_same(candidate_list[i], reference_list[i]):
+        if is_all_same(candidate_list[i], reference_list[i], form_manager):
             c = c+1
         else:
             pass
@@ -527,16 +591,15 @@ def compute_accuracy(candidate_list, reference_list, form_manager):
 def compute_tree_accuracy(candidate_list_, reference_list_, form_manager):
     candidate_list = []
     for i in range(len(candidate_list_)):
-        candidate_list.append(Tree.norm_tree(
-            candidate_list_[i], form_manager).to_list(form_manager))
+        candidate_list.append(candidate_list_[i])
     reference_list = []
     for i in range(len(reference_list_)):
-        reference_list.append(Tree.norm_tree(
-            reference_list_[i], form_manager).to_list(form_manager))
+        reference_list.append(reference_list_[i])
     return compute_accuracy(candidate_list, reference_list, form_manager)
 
 
 if __name__ == "__main__":
+    time.sleep(3)
     start = time.time()
     main_arg_parser = argparse.ArgumentParser(description="parser")
     
@@ -545,35 +608,35 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-use_copy',type=bool, default=False, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str, 
-            default='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs', help='data path')
+            default='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/mawps', help='data path')
     main_arg_parser.add_argument('-checkpoint_dir',type=str, 
-            default= '/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs', help='output directory where checkpoints get written')
+            default= '/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_mawps', help='output directory where checkpoints get written')
     
-    main_arg_parser.add_argument('-gnn_type', type=str, default="GAT")    
+    main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")    
 
     main_arg_parser.add_argument('-enc_emb_size', type=int, default=300)
     main_arg_parser.add_argument('-tgt_emb_size', type=int, default=300)
 
     main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
-    main_arg_parser.add_argument('-dec_hidden_size', type=int, default=600)
+    main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
-    main_arg_parser.add_argument('-graph_construction_type', type=str, default="DependencyGraph")
+    main_arg_parser.add_argument('-graph_construction_type', type=str, default="ConstituencyGraph")
 
-    main_arg_parser.add_argument('-batch_size', type=int, default=20)
+    main_arg_parser.add_argument('-batch_size', type=int, default=30)
 
     main_arg_parser.add_argument('-dropout_for_word_embedding',type=float, default=0.1)
 
     main_arg_parser.add_argument('-enc_dropout_for_feature',type=float, default=0)
-    main_arg_parser.add_argument('-enc_dropout_for_attn',type=float, default=0.1)
+    main_arg_parser.add_argument('-enc_dropout_for_attn',type=float, default=0)
     
-    main_arg_parser.add_argument('-direction_option',type=str, default="bi_sep")
+    main_arg_parser.add_argument('-direction_option',type=str, default="undirected")
 
     main_arg_parser.add_argument('-dec_dropout_input',type=float, default=0.1)
     main_arg_parser.add_argument('-dec_dropout_output',type=float, default=0.3)
 
-    main_arg_parser.add_argument('-max_dec_seq_length',type=int, default=50)
-    main_arg_parser.add_argument('-max_dec_tree_depth_for_train',type=int, default=50)
-    main_arg_parser.add_argument('-max_dec_tree_depth_for_test',type=int, default=20)
+    main_arg_parser.add_argument('-max_dec_seq_length',type=int, default=35)
+    main_arg_parser.add_argument('-max_dec_tree_depth_for_train',type=int, default=35)
+    main_arg_parser.add_argument('-max_dec_tree_depth_for_test',type=int, default=10)
 
     main_arg_parser.add_argument('-teacher_force_ratio',type=float, default=1.0)
 
@@ -581,12 +644,12 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-learning_rate',type=float, default=1e-3,help='learning rate')
     main_arg_parser.add_argument('-weight_decay',type=float, default=0)
 
-    main_arg_parser.add_argument('-max_epochs',type=int, default=600,help='number of full passes through the training data')
+    main_arg_parser.add_argument('-max_epochs',type=int, default=400,help='number of full passes through the training data')
     main_arg_parser.add_argument('-grad_clip',type=int, default=5,help='clip gradients at this value')
 
     args = main_arg_parser.parse_args()
 
-    runner = Jobs(opt=args)
+    runner = Mawps(opt=args)
     max_score = runner.train()
 
     end = time.time()
