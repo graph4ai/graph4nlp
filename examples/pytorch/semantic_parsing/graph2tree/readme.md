@@ -38,11 +38,4 @@
 | GraphSage | only connection | 90.0 | 90.7 | 89.3 |  
 | GraphSage | as node | 90.0 | 90.0 | 89.3 |  
 
-
-# Results on Mawps
-| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
-| ---- | ---- | ---- | ---- |  
-| GraphSage | 76.4 | 77.2 | 76.8 |  
-
-
 <!-- SAGE + undirected + constituency   -->

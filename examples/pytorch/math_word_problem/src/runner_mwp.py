@@ -285,7 +285,7 @@ class Mawps:
         return loss_to_print/self.train_data_loader.num_batch
 
 
-    def train(self):
+    def train(self, do_test=True):
         best_acc = -1
         best_model = None
 
@@ -299,13 +299,12 @@ class Mawps:
             if epoch > 20:
                 # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                 # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
-                test_acc = self.eval(self.model, self.dev_data_loader)
-                if test_acc > best_acc:
-                    best_acc = test_acc
+                eval_acc = self.eval(self.model, self.dev_data_loader)
+                if eval_acc > best_acc:
+                    best_acc = eval_acc
                     best_model = self.model
-        self.evel(best_model, self.test_data_loader)
-
-        print(best_acc)
+        if do_test:
+            self.eval(best_model, self.test_data_loader)
 
     def eval(self, model, data_lr):
         device = model.device
