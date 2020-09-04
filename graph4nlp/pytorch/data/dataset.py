@@ -1343,16 +1343,22 @@ class DoubleText2TextDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
-        graph_data = [item.graph for item in data_list]
+        graph_data = []
+        input_tensor2, input_length2 = [], []
+        tgt_tensor, tgt_text = [], []
+        for item in data_list:
+            graph_data.append(item.graph)
+            input_tensor2.append(item.input_np2)
+            input_length2.append(len(item.input_np2))
+            tgt_tensor.append(item.output_np)
+            tgt_text.append(item.output_text)
 
-        input_numpy2 = [item.input_np2 for item in data_list]
-        input_pad2 = pad_2d_vals_no_size(input_numpy2)
-        input_seq2 = torch.from_numpy(input_pad2).long()
+        input_tensor2 = torch.LongTensor(pad_2d_vals_no_size(input_tensor2))
+        input_length2 = torch.LongTensor(input_length2)
+        tgt_tensor = torch.LongTensor(pad_2d_vals_no_size(tgt_tensor))
 
-        output_numpy = [item.output_np for item in data_list]
-        output_pad = pad_2d_vals_no_size(output_numpy)
-        tgt_seq = torch.from_numpy(output_pad).long()
-
-        tgt_text = [item.output_text for item in data_list]
-
-        return [graph_data, input_seq2, tgt_seq, tgt_text]
+        return {'graph_data': graph_data,
+                'input_tensor2': input_tensor2,
+                'tgt_tensor': tgt_tensor,
+                'tgt_text': tgt_text,
+                'input_length2': input_length2}

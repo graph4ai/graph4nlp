@@ -5,6 +5,7 @@ import argparse
 import yaml
 
 import numpy as np
+from scipy import sparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -19,7 +20,7 @@ from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import RNNEmbedding
 from graph4nlp.pytorch.modules.graph_embedding import GAT, GraphSAGE, GGNN
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
-from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
+from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, dropout_fn, sparse_mx_to_torch_sparse_tensor, EarlyStopping
 from examples.pytorch.semantic_parsing.jobs.loss import Graph2seqLoss, CoverageLoss
 from graph4nlp.pytorch.modules.evaluation import BLEU, METEOR, ROUGE
 from graph4nlp.pytorch.modules.utils.logger import Logger
@@ -119,8 +120,10 @@ class QGModel(nn.Module):
                                     dropout=config['enc_rnn_dropout'],
                                     device=config['device'])
 
-        # soft-alignment between question and answer
-        self.ques2ans_attn = Question2AnswerAttention(config['num_hidden'], config['num_hidden'])
+        # soft-alignment between context and answer
+        self.ctx2ans_attn = Context2AnswerAttention(config['num_hidden'], config['num_hidden'])
+        self.fuse_ctx_ans = nn.Linear(2 * config['num_hidden'], config['num_hidden'], bias=False)
+
 
         if config['gnn'] == 'gat':
             heads = [config['gat_num_heads']] * (config['gnn_num_layers'] - 1) + [config['gat_num_out_heads']]
@@ -175,56 +178,81 @@ class QGModel(nn.Module):
         self.loss_cover = CoverageLoss(config['coverage_loss_ratio'])
 
 
-    def forward(self, graph_list, answer, tgt=None, require_loss=True):
+    def forward(self, data, require_loss=True):
+        num_graph_nodes = []
+        for g in data['graph_data']:
+            num_graph_nodes.append(g.get_node_num())
+
         # graph embedding construction
-        batch_gd = self.graph_topology(graph_list)
+        batch_gd = self.graph_topology(data['graph_data'])
 
         # answer alignment
-        # self.ans_rnn_encoder()
+        answer_feat = self.word_emb(data['input_tensor2'])
+        answer_feat = dropout_fn(answer_feat, self.config['word_dropout'], shared_axes=[-2], training=self.training)
+        answer_feat = self.ans_rnn_encoder(answer_feat, data['input_length2'])[0]
+        new_node_feat = self.answer_alignment(batch_gd.node_features['node_feat'], answer_feat, num_graph_nodes, data['input_length2'])
+        batch_gd.node_features['node_feat'] = new_node_feat
 
         # run GNN
         self.gnn(batch_gd)
         batch_gd.node_features['rnn_emb'] = batch_gd.node_features['node_feat']
 
         # seq decoder
-        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(from_batch(batch_gd), tgt_seq=tgt)
+        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(from_batch(batch_gd), tgt_seq=data['tgt_tensor'])
         if require_loss:
-            loss = self.loss_calc(prob, tgt)
-            # TODO: coverage loss
-            # cover_loss = self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
+            loss = self.loss_calc(prob, data['tgt_tensor'])
+            loss += self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
             return prob, loss
         else:
             return prob
 
 
-class Question2AnswerAttention(nn.Module):
+    def answer_alignment(self, node_feat, answer_feat, num_nodes, answer_length):
+        assert len(num_nodes) == len(answer_length)
+        mask = []
+        for i in range(len(num_nodes)): # batch
+            tmp_mask = np.ones((num_nodes[i], answer_feat.shape[1]))
+            tmp_mask[:, answer_length[i]:] = 0
+            mask.append(sparse.coo_matrix(tmp_mask))
+
+        mask = sparse.block_diag(mask)
+        mask = to_cuda(sparse_mx_to_torch_sparse_tensor(mask).to_dense(), self.config['device'])
+
+        answer_feat = answer_feat.reshape(-1, answer_feat.shape[-1])
+        ctx_aware_ans_feat = self.ctx2ans_attn(node_feat, answer_feat, answer_feat, mask)
+        new_node_feat = self.fuse_ctx_ans(torch.cat([node_feat, ctx_aware_ans_feat], -1))
+
+        return new_node_feat
+
+
+class Context2AnswerAttention(nn.Module):
     def __init__(self, dim, hidden_size):
-        super(Question2AnswerAttention, self).__init__()
+        super(Context2AnswerAttention, self).__init__()
         self.linear_sim = nn.Linear(dim, hidden_size, bias=False)
 
-    def forward(self, context, answers, out_answers, ans_mask=None):
+    def forward(self, context, answers, out_answers, mask=None):
         """
         Parameters
-        :context, (batch_size, L, dim)
-        :answers, (batch_size, N, dim)
-        :out_answers, (batch_size, N, dim)
-        :ans_mask, (batch_size, N)
+        :context, (L, dim)
+        :answers, (N, dim)
+        :out_answers, (N, dim)
+        :mask, (L, N)
 
         Returns
-        :ques_emb, (batch_size, L, dim)
+        :ques_emb, (L, dim)
         """
         context_fc = torch.relu(self.linear_sim(context))
         questions_fc = torch.relu(self.linear_sim(answers))
 
-        # shape: (batch_size, L, N)
+        # shape: (L, N)
         attention = torch.matmul(context_fc, questions_fc.transpose(-1, -2))
-        if ans_mask is not None:
-            attention = attention.masked_fill_(1 - ans_mask.bool().unsqueeze(1), -INF)
+        if mask is not None:
+            attention = attention.masked_fill_(~mask.bool(), -Constants.INF)
         prob = torch.softmax(attention, dim=-1)
-        # shape: (batch_size, L, dim)
-        ques_emb = torch.matmul(prob, out_answers)
+        # shape: (L, dim)
+        emb = torch.matmul(prob, out_answers)
 
-        return ques_emb
+        return emb
 
 
 class ModelHandler:
@@ -324,12 +352,8 @@ class ModelHandler:
             train_loss = []
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
-                if i > 1:
-                    break
-                graph_list, answer, tgt, _ = data
-                answer = to_cuda(answer, self.config['device'])
-                tgt = to_cuda(tgt, self.config['device'])
-                logits, loss = self.model(graph_list, answer, tgt, require_loss=True)
+                data = all_to_cuda(data, self.config['device'])
+                logits, loss = self.model(data, require_loss=True)
                 self.optimizer.zero_grad()
                 loss.backward()
                 if self.config.get('grad_clipping', None) not in (None, 0):
@@ -364,14 +388,14 @@ class ModelHandler:
             pred_collect = []
             gt_collect = []
             for i, data in enumerate(dataloader):
-                graph_list, answer, tgt, tgt_text = data
-                prob = self.model(graph_list, answer, require_loss=False)
+                data = all_to_cuda(data, self.config['device'])
+                prob = self.model(data, require_loss=False)
                 pred = prob.argmax(dim=-1)
 
                 pred_str = wordid2str(pred.detach().cpu(), self.vocab.in_word_vocab)
-                tgt_str = wordid2str(tgt, self.vocab.in_word_vocab)
+                tgt_str = wordid2str(data['tgt_tensor'], self.vocab.in_word_vocab)
                 pred_collect.extend(pred_str)
-                gt_collect.extend(tgt_text)
+                gt_collect.extend(data['tgt_text'])
 
             scores = self.evaluate_predictions(gt_collect, pred_collect)
 
@@ -457,6 +481,17 @@ def wordid2str(word_ids, vocab):
         ret.append(' '.join(ret_inst))
 
     return ret
+
+def all_to_cuda(data, device=None):
+    if isinstance(data, torch.Tensor):
+        data = to_cuda(data, device)
+    elif isinstance(data, (list, dict)):
+        keys = range(len(data)) if isinstance(data, list) else data.keys()
+        for k in keys:
+            if isinstance(data[k], torch.Tensor):
+                data[k] = to_cuda(data[k], device)
+
+    return data
 
 ################################################################################
 # ArgParse and Helper Functions #

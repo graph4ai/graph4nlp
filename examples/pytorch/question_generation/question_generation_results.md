@@ -6,16 +6,38 @@ Question generation results
 
 Dependencies
 ------------
-- torch v1.0: the autograd support for sparse mm is only available in v1.0.
-- requests
-- sklearn
+
+Install the required python packages:
 
 ```bash
-pip install torch==1.1.0 requests dgl
+pip install -r examples/pytorch/question_generation/requirements.txt
 ```
 
 
+How to run
+----------
 
+#### Start the StanfordCoreNLP server for data preprocessing:
+
+1) Download StanfordCoreNLP `https://stanfordnlp.github.io/CoreNLP/`
+2) Go to the root folder and start the server:
+
+```java
+    java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
+```
+
+#### Run the model with grid search:
+
+```python
+    python -m examples.pytorch.question_generation.run_question_generation -config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml --grid_search
+```
+
+Note: 
+1) `XYZ.yaml` should be replaced by the exact config file.
+2) You can find the output files in the `out/squad_split2/` folder. 
+3) You can save your time by downloading the preprocessed data for dependency graph from [here](https://drive.google.com/drive/folders/1UPrlBvzXXgmUqx41CzO6ULrA3E1v24P9?usp=sharing), and moving the `squad_split2` folder to `examples/pytorch/question_generation/data/`.
+
+<!-- 
 SQuAD-split2 Results
 -------
 
@@ -27,21 +49,7 @@ SQuAD-split2 Results
 | NodeEmbRefined (line) | N/A  | N/A | N/A |  |- |   -|  | - | -  |
 | NodeEmbRefined (dependency) | N/A  | N/A | N/A | |- |   -|  | - | -  |
 | NodeEmbRefined (constituency) | N/A  | N/A | N/A |  |- |   -|  | - | -  |
-
-
-
-
-
-
-How to run
-----------
-
-Run with following:
-
-```java
-java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
-```
-
+ -->
 
 
 

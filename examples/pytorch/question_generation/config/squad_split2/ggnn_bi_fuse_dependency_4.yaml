@@ -41,12 +41,12 @@ gnn: # 'ggnn'
 gnn_direction_option: # 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
       - 'bi_fuse'
 gnn_num_layers: # 3 # 3 # number of GNN layers
-      - 4
+      # - 4
       - 3
-      - 2
+      # - 2
 num_hidden: 300 # number of hidden units
 gnn_dropout: # 0.6 # GNN input feature dropout
-      - 0.
+      - 0
 
 
 # GAT
@@ -69,6 +69,10 @@ dec_fuse_strategy: # 'concatenate' # the strategy to fuse attention results gene
       - 'average'
 use_coverage: True
 coverage_loss_ratio: # 0.4 # coverage loss ratio
+      - 0.
+      - 0.1
+      - 0.2
+      - 0.3
       - 0.4
 tgt_emb_as_output_layer: True # When this option is set ``True``, the output projection layer(It is used to project RNN encoded representation to target sequence)'s weight will be shared with the target vocabulary's embedding.
 

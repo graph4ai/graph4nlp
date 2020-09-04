@@ -1,7 +1,7 @@
 # Data
 dataset: 'squad-split2'
 pre_word_emb_file: '/Users/hugo/Documents/Work/Research/Resources/glove-vectors/glove.840B.300d.txt' # path to the pretrained word embedding file
-out_dir: 'out/squad_split2/ggnn_bi_fuse_dependency_ckpt'
+out_dir: 'out/squad_split2/ggnn_bi_sep_dependency_ckpt'
 
 # Preprocessing
 top_word_vocab: 70000
@@ -39,7 +39,7 @@ seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph e
 gnn: # 'ggnn'
       - 'ggnn'
 gnn_direction_option: # 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
-      - 'bi_fuse'
+      - 'bi_sep'
 gnn_num_layers: # 3 # 3 # number of GNN layers
       - 4
       - 3
