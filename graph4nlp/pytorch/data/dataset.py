@@ -1329,6 +1329,12 @@ class DoubleText2TextDataset(Dataset):
             input_token_id2 = np.array(input_token_id2)
             item.input_np2 = input_token_id2
 
+
+            if self.lower_case:
+                item.output_text = item.output_text.lower()
+
+            item.output_text = ' '.join(self.tokenizer(item.output_text))
+
             tgt = item.output_text
             tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
             tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
@@ -1347,4 +1353,6 @@ class DoubleText2TextDataset(Dataset):
         output_pad = pad_2d_vals_no_size(output_numpy)
         tgt_seq = torch.from_numpy(output_pad).long()
 
-        return [graph_data, input_seq2, tgt_seq]
+        tgt_text = [item.output_text for item in data_list]
+
+        return [graph_data, input_seq2, tgt_seq, tgt_text]

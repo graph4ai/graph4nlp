@@ -21,8 +21,9 @@ from graph4nlp.pytorch.modules.graph_embedding import GAT, GraphSAGE, GGNN
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
 from examples.pytorch.semantic_parsing.jobs.loss import Graph2seqLoss, CoverageLoss
-from examples.pytorch.semantic_parsing.jobs.evaluation import ExpressionAccuracy
-from examples.pytorch.semantic_parsing.jobs.utils import wordid2str
+from graph4nlp.pytorch.modules.evaluation import BLEU, METEOR, ROUGE
+from graph4nlp.pytorch.modules.utils.logger import Logger
+from graph4nlp.pytorch.modules.utils import constants as Constants
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -218,7 +219,7 @@ class Question2AnswerAttention(nn.Module):
         # shape: (batch_size, L, N)
         attention = torch.matmul(context_fc, questions_fc.transpose(-1, -2))
         if ans_mask is not None:
-            attention = attention.masked_fill_(1 - ans_mask.byte().unsqueeze(1), -INF)
+            attention = attention.masked_fill_(1 - ans_mask.bool().unsqueeze(1), -INF)
         prob = torch.softmax(attention, dim=-1)
         # shape: (batch_size, L, dim)
         ques_emb = torch.matmul(prob, out_answers)
@@ -230,6 +231,8 @@ class ModelHandler:
     def __init__(self, config):
         super(ModelHandler, self).__init__()
         self.config = config
+        self.logger = Logger(config['out_dir'], config={k:v for k, v in config.items() if k != 'device'}, overwrite=True)
+        self.logger.write(config['out_dir'])
         self._build_dataloader()
         self._build_model()
         self._build_optimizer()
@@ -275,6 +278,12 @@ class ModelHandler:
                               dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
                               init_graph_type=self.config['init_graph_type'] if self.config['graph_type'] == 'node_emb_refined' else None,
                               seed=self.config['seed'])
+
+        # TODO: use small ratio of the data
+        dataset.train = dataset.train[:self.config['n_samples']]
+        dataset.val = dataset.val[:self.config['n_samples']]
+        dataset.test = dataset.test[:self.config['n_samples']]
+
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config['batch_size'], shuffle=True,
                                            num_workers=self.config['num_workers'],
                                            collate_fn=dataset.collate_fn)
@@ -290,6 +299,8 @@ class ModelHandler:
         self.num_test = len(dataset.test)
         print('Train size: {}, Val size: {}, Test size: {}'
             .format(self.num_train, self.num_val, self.num_test))
+        self.logger.write('Train size: {}, Val size: {}, Test size: {}'
+            .format(self.num_train, self.num_val, self.num_test))
 
     def _build_model(self):
         self.model = QGModel(self.vocab, self.config).to(self.config['device'])
@@ -297,12 +308,14 @@ class ModelHandler:
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
         self.optimizer = optim.Adam(parameters, lr=self.config['lr'])
-        self.stopper = EarlyStopping('{}.{}'.format(self.config['save_model_path'], self.config['seed']), patience=self.config['patience'])
+        self.stopper = EarlyStopping(os.path.join(self.config['out_dir'], Constants._SAVED_WEIGHTS_FILE), patience=self.config['patience'])
         self.scheduler = ReduceLROnPlateau(self.optimizer, mode='max', factor=self.config['lr_reduce_factor'], \
             patience=self.config['lr_patience'], verbose=True)
 
     def _build_evaluation(self):
-        self.metric = ExpressionAccuracy()
+        self.metrics = {'BLEU': BLEU(n_grams=[1, 2, 3, 4]),
+                        'METEOR': METEOR(),
+                        'ROUGE': ROUGE()}
 
     def train(self):
         dur = []
@@ -311,7 +324,9 @@ class ModelHandler:
             train_loss = []
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
-                graph_list, answer, tgt = data
+                if i > 1:
+                    break
+                graph_list, answer, tgt, _ = data
                 answer = to_cuda(answer, self.config['device'])
                 tgt = to_cuda(tgt, self.config['device'])
                 logits, loss = self.model(graph_list, answer, tgt, require_loss=True)
@@ -331,12 +346,14 @@ class ModelHandler:
                 pred = torch.max(logits, dim=-1)[1].cpu()
                 dur.append(time.time() - t0)
 
-            val_acc = self.evaluate(self.val_dataloader)
-            self.scheduler.step(val_acc)
-            print("Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} | Val Acc: {:.4f}".
-              format(epoch + 1, self.config['epochs'], np.mean(dur), np.mean(train_loss), val_acc))
+            val_scores = self.evaluate(self.val_dataloader)
+            self.scheduler.step(val_scores[self.config['early_stop_metric']])
+            format_str = 'Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} | Val scores:'.format(epoch + 1, self.config['epochs'], np.mean(dur), np.mean(train_loss))
+            format_str += self.metric_to_str(val_scores)
+            print(format_str)
+            self.logger.write(format_str)
 
-            if self.stopper.step(val_acc, self.model):
+            if self.stopper.step(val_scores[self.config['early_stop_metric']], self.model):
                 break
 
         return self.stopper.best_score
@@ -347,31 +364,51 @@ class ModelHandler:
             pred_collect = []
             gt_collect = []
             for i, data in enumerate(dataloader):
-                graph_list, answer, tgt = data
+                graph_list, answer, tgt, tgt_text = data
                 prob = self.model(graph_list, answer, require_loss=False)
                 pred = prob.argmax(dim=-1)
 
                 pred_str = wordid2str(pred.detach().cpu(), self.vocab.in_word_vocab)
                 tgt_str = wordid2str(tgt, self.vocab.in_word_vocab)
                 pred_collect.extend(pred_str)
-                gt_collect.extend(tgt_str)
+                gt_collect.extend(tgt_text)
 
+            scores = self.evaluate_predictions(gt_collect, pred_collect)
 
-            score = self.metric.calculate_scores(ground_truth=gt_collect, predict=pred_collect)
-
-            return score
+            return scores
 
     def test(self):
         # restored best saved model
         self.stopper.load_checkpoint(self.model)
 
         t0 = time.time()
-        acc = self.evaluate(self.test_dataloader)
+        scores = self.evaluate(self.test_dataloader)
         dur = time.time() - t0
-        print("Test examples: {} | Time: {:.2f}s |  Test Acc: {:.4f}".
-          format(self.num_test, dur, acc))
+        format_str = 'Test examples: {} | Time: {:.2f}s |  Test scores:'.format(self.num_test, dur)
+        format_str += self.metric_to_str(scores)
+        print(format_str)
+        self.logger.write(format_str)
 
-        return acc
+        return scores
+
+    def evaluate_predictions(self, ground_truth, predict):
+        output = {}
+        for name, scorer in self.metrics.items():
+            score = scorer.calculate_scores(ground_truth=ground_truth, predict=predict)
+            if name.upper() == 'BLEU':
+                for i in range(len(score[0])):
+                    output['BLEU_{}'.format(i + 1)] = score[0][i]
+            else:
+                output[name] = score[0]
+
+        return output
+
+    def metric_to_str(self, metrics):
+        format_str = ''
+        for k in metrics:
+            format_str += ' {} = {:0.5f},'.format(k.upper(), metrics[k])
+
+        return format_str[:-1]
 
 
 def main(config):
@@ -388,21 +425,38 @@ def main(config):
         config['device'] = torch.device('cpu')
 
     ts = datetime.datetime.now().timestamp()
-    config['save_model_path'] += '_{}'.format(ts)
-
+    config['out_dir'] += '_{}'.format(ts)
+    print('\n' + config['out_dir'])
 
     runner = ModelHandler(config)
     t0 = time.time()
 
-    val_acc = runner.train()
-    test_acc = runner.test()
+    val_score = runner.train()
+    test_scores = runner.test()
 
     print('Removed best saved model file to save disk space')
     os.remove(runner.stopper.save_model_path)
+    runtime = time.time() - t0
     print('Total runtime: {:.2f}s'.format(time.time() - t0))
+    runner.logger.write('Total runtime: {:.2f}s\n'.format(runtime))
+    runner.logger.close()
 
-    return val_acc, test_acc
+    return val_score, test_scores
 
+def wordid2str(word_ids, vocab):
+    ret = []
+    assert len(word_ids.shape) == 2, print(word_ids.shape)
+    for i in range(word_ids.shape[0]):
+        id_list = word_ids[i, :]
+        ret_inst = []
+        for j in range(id_list.shape[0]):
+            if id_list[j] == vocab.EOS:
+                break
+            token = vocab.getWord(id_list[j])
+            ret_inst.append(token)
+        ret.append(' '.join(ret_inst))
+
+    return ret
 
 ################################################################################
 # ArgParse and Helper Functions #
@@ -416,48 +470,57 @@ def get_args():
     return args
 
 
-def get_config(config_path="config.yml"):
-    with open(config_path, "r") as setting:
+def get_config(config_path='config.yml'):
+    with open(config_path, 'r') as setting:
         config = yaml.load(setting)
 
     return config
 
 
 def print_config(config):
-    print("**************** MODEL CONFIGURATION ****************")
+    print('**************** MODEL CONFIGURATION ****************')
     for key in sorted(config.keys()):
         val = config[key]
-        keystr = "{}".format(key) + (" " * (24 - len(key)))
-        print("{} -->   {}".format(keystr, val))
-    print("**************** MODEL CONFIGURATION ****************")
+        keystr = '{}'.format(key) + (' ' * (24 - len(key)))
+        print('{} -->   {}'.format(keystr, val))
+    print('**************** MODEL CONFIGURATION ****************')
 
 
 def grid_search_main(config):
     grid_search_hyperparams = []
+    log_path = config['out_dir']
     for k, v in config.items():
         if isinstance(v, list):
             grid_search_hyperparams.append(k)
+            log_path += '_{}_{}'.format(k, v)
+
+    logger = Logger(log_path, config=config, overwrite=True)
 
     best_config = None
     best_score = -1
+    best_scores = None
     configs = grid(config)
     for cnf in configs:
-        print('\n')
         for k in grid_search_hyperparams:
-            cnf['save_model_path'] += '_{}_{}'.format(k, cnf[k])
-        print(cnf['save_model_path'])
+            cnf['out_dir'] += '_{}_{}'.format(k, cnf[k])
 
-        val_score, test_score = main(cnf)
-        if best_score < test_score:
-            best_score = test_score
+        val_score, test_scores = main(cnf)
+        if best_score < test_scores[cnf['early_stop_metric']]:
+            best_score = test_scores[cnf['early_stop_metric']]
+            best_scores = test_scores
             best_config = cnf
-            print('Found a better configuration: {}'.format(best_score))
+            print('Found a better configuration: {}'.format(best_scores))
+            logger.write('Found a better configuration: {}'.format(best_scores))
 
     print('\nBest configuration:')
+    logger.write('\nBest configuration:')
     for k in grid_search_hyperparams:
         print('{}: {}'.format(k, best_config[k]))
+        logger.write('{}: {}'.format(k, best_config[k]))
 
-    print('Best score: {}'.format(best_score))
+    print('Best score: {}'.format(best_scores))
+    logger.write('Best score: {}\n'.format(best_scores))
+    logger.close()
 
 
 if __name__ == '__main__':

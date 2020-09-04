@@ -1,12 +1,12 @@
 # Data
 dataset: 'squad-split2'
 pre_word_emb_file: '/home/cheny39/Research/Resource/glove-vectors/glove.840B.300d.txt' # path to the pretrained word embedding file
-save_model_path: 'text_clf_ckpt'
+out_dir: 'out/squad_split2/ggnn_bi_fuse_dependency_ckpt'
 
 # Preprocessing
 top_word_vocab: 70000
 min_word_freq: 1
-
+n_samples: 100
 
 
 # Graph construction
@@ -46,13 +46,8 @@ num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
 max_pool_linear_proj: false # use linear projectioni for max pooling
 gnn_dropout: # 0.6 # GNN input feature dropout
+      - 0.
       - 0.1
-      - 0.2
-      - 0.3
-      - 0.4
-      - 0.5
-      - 0.6
-      - 0.7
 
 
 # GAT
@@ -78,9 +73,9 @@ tgt_emb_as_output_layer: true # When this option is set ``True``, the output pro
 # Training
 seed: 1234
 batch_size: 25 # batch size
-epochs: 100 # number of maximal training epochs
+epochs: 1 # number of maximal training epochs
 grad_clipping: 10
-eary_stop_metric: 'Bleu_4'
+early_stop_metric: 'BLEU_4'
 patience: 10
 lr: 0.001 # learning rate
 lr_patience: 2
@@ -94,5 +89,5 @@ min_out_len: 4 # Only for beam search
 max_dec_steps: 50 # Only for beam search
 block_ngram_repeat: 0 # Block repetition of ngrams during decoding. (To turn it off, set it to 0)
 
-gpu: 1
+gpu: -1
 no_cuda: false
