@@ -32,7 +32,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     Attributes
     ----------
     embedding_styles : (dict)
-        Specify embedding styles including ``word_emb_type``, ``node_edge_level_emb_type`` and ``graph_level_emb_type``.
+        Specify embedding styles including ``single_token_item``, ``emb_strategy``, ``num_rnn_layers``, ``bert_model_name`` and ``bert_lower_case``.
 
     vocab: (set, optional)
         Vocabulary including all words appeared in graphs.
@@ -56,13 +56,15 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         Generate graph topology and embeddings.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, word_dropout=None, dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
+                                                               fix_bert_emb=fix_bert_emb,
                                                                word_dropout=word_dropout,
-                                                               dropout=dropout, device=device)
+                                                               rnn_dropout=rnn_dropout,
+                                                               device=device)
         self.vocab = vocab
         assert(self.embedding_layer.device == device)
         self.device = self.embedding_layer.device

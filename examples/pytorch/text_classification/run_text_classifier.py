@@ -15,6 +15,7 @@ import torch.backends.cudnn as cudnn
 
 from graph4nlp.pytorch.datasets.trec import TrecDataset
 from graph4nlp.pytorch.modules.graph_construction import *
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
 from graph4nlp.pytorch.modules.graph_embedding import GAT, GraphSAGE, GGNN
 from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
@@ -48,11 +49,11 @@ class TextClassifier(nn.Module):
         super(TextClassifier, self).__init__()
         self.config = config
         self.vocab = vocab
-        embedding_style = {'word_emb_type': 'w2v',
-                            'node_edge_emb_strategy': config['node_edge_emb_strategy'],
-                            'seq_info_encode_strategy': config['seq_info_encode_strategy'],
-                            'num_rnn_layers_for_node_edge_emb': 1,
-                            'num_rnn_layers_for_seq_info_encode': 1
+        embedding_style = {'single_token_item': True if config['graph_type'] != 'ie' else False,
+                            'emb_strategy': config.get('emb_strategy', 'w2v_bilstm'),
+                            'num_rnn_layers': 1,
+                            'bert_model_name': config.get('bert_model_name', 'bert-base-uncased'),
+                            'bert_lower_case': True
                            }
 
         assert not (config['graph_type'] in ('node_emb', 'node_emb_refined') and config['gnn'] == 'gat'), \
@@ -64,24 +65,27 @@ class TextClassifier(nn.Module):
                                                                    vocab=vocab.in_word_vocab,
                                                                    hidden_size=config['num_hidden'],
                                                                    word_dropout=config['word_dropout'],
-                                                                   dropout=config['rnn_dropout'],
+                                                                   rnn_dropout=config['rnn_dropout'],
                                                                    fix_word_emb=not config['no_fix_word_emb'],
+                                                                   fix_bert_emb=not config.get('no_fix_bert_emb', False),
                                                                    device=config['device'])
         elif config['graph_type'] == 'constituency':
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=vocab.in_word_vocab,
                                                                    hidden_size=config['num_hidden'],
                                                                    word_dropout=config['word_dropout'],
-                                                                   dropout=config['rnn_dropout'],
+                                                                   rnn_dropout=config['rnn_dropout'],
                                                                    fix_word_emb=not config['no_fix_word_emb'],
+                                                                   fix_bert_emb=not config.get('no_fix_bert_emb', False),
                                                                    device=config['device'])
         elif config['graph_type'] == 'ie':
             self.graph_topology = IEBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=vocab.in_word_vocab,
                                                                    hidden_size=config['num_hidden'],
                                                                    word_dropout=config['word_dropout'],
-                                                                   dropout=config['rnn_dropout'],
+                                                                   rnn_dropout=config['rnn_dropout'],
                                                                    fix_word_emb=not config['no_fix_word_emb'],
+                                                                   fix_bert_emb=not config.get('no_fix_bert_emb', False),
                                                                    device=config['device'])
         elif config['graph_type'] == 'node_emb':
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
@@ -97,8 +101,9 @@ class TextClassifier(nn.Module):
                                     input_size=config['num_hidden'],
                                     hidden_size=config['gl_num_hidden'],
                                     fix_word_emb=not config['no_fix_word_emb'],
+                                    fix_bert_emb=not config.get('no_fix_bert_emb', False),
                                     word_dropout=config['word_dropout'],
-                                    dropout=config['rnn_dropout'],
+                                    rnn_dropout=config['rnn_dropout'],
                                     device=config['device'])
             use_edge_weight = True
         elif config['graph_type'] == 'node_emb_refined':
@@ -116,15 +121,23 @@ class TextClassifier(nn.Module):
                                     input_size=config['num_hidden'],
                                     hidden_size=config['gl_num_hidden'],
                                     fix_word_emb=not config['no_fix_word_emb'],
+                                    fix_bert_emb=not config.get('no_fix_bert_emb', False),
                                     word_dropout=config['word_dropout'],
-                                    dropout=config['rnn_dropout'],
+                                    rnn_dropout=config['rnn_dropout'],
                                     device=config['device'])
             use_edge_weight = True
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(config['graph_type']))
 
-        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
-
+        if 'w2v' in self.graph_topology.embedding_layer.word_emb_layers:
+            self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
+        else:
+            self.word_emb = WordEmbedding(
+                            self.vocab.in_word_vocab.embeddings.shape[0],
+                            self.vocab.in_word_vocab.embeddings.shape[1],
+                            pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
+                            fix_emb=not config['no_fix_word_emb'],
+                            device=config['device']).word_emb_layer
 
         if config['gnn'] == 'gat':
             heads = [config['gat_num_heads']] * (config['gnn_num_layers'] - 1) + [config['gat_num_out_heads']]

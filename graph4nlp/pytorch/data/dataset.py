@@ -13,7 +13,6 @@ import pickle
 
 from ..data.data import GraphData
 from ..modules.utils.vocab_utils import VocabModel, Vocab
-
 from ..modules.utils.tree_utils import Vocab as VocabForTree
 from ..modules.utils.tree_utils import Tree
 
@@ -1323,9 +1322,8 @@ class DoubleText2TextDataset(Dataset):
                     graph.edge_features['token_id'] = edge_token_matrix
 
 
-            input_text2 = item.input_text2
-            input_token_id2 = self.vocab_model.in_word_vocab.to_index_sequence(input_text2)
-            input_token_id2.append(self.vocab_model.in_word_vocab.EOS)
+            item.input_text2 = self.tokenizer(item.input_text2)
+            input_token_id2 = self.vocab_model.in_word_vocab.to_index_sequence_for_list(item.input_text2)
             input_token_id2 = np.array(input_token_id2)
             item.input_np2 = input_token_id2
 
@@ -1333,23 +1331,24 @@ class DoubleText2TextDataset(Dataset):
             if self.lower_case:
                 item.output_text = item.output_text.lower()
 
-            item.output_text = ' '.join(self.tokenizer(item.output_text))
+            item.output_text = self.tokenizer(item.output_text)
 
-            tgt = item.output_text
-            tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
+            tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence_for_list(item.output_text)
             tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
             item.output_np = tgt_token_id
+            item.output_text = ' '.join(item.output_text)
 
-    @staticmethod
-    def collate_fn(data_list: [Text2TextDataItem]):
+    # @staticmethod
+    def collate_fn(self, data_list: [Text2TextDataItem]):
         graph_data = []
-        input_tensor2, input_length2 = [], []
+        input_tensor2, input_length2, input_text2 = [], [], []
         tgt_tensor, tgt_text = [], []
         for item in data_list:
             graph_data.append(item.graph)
             input_tensor2.append(item.input_np2)
             input_length2.append(len(item.input_np2))
+            input_text2.append(item.input_text2)
             tgt_tensor.append(item.output_np)
             tgt_text.append(item.output_text)
 
@@ -1359,6 +1358,7 @@ class DoubleText2TextDataset(Dataset):
 
         return {'graph_data': graph_data,
                 'input_tensor2': input_tensor2,
+                'input_text2': input_text2,
                 'tgt_tensor': tgt_tensor,
                 'tgt_text': tgt_text,
                 'input_length2': input_length2}
