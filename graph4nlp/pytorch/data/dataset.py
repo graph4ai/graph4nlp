@@ -245,7 +245,7 @@ class Dataset(torch.utils.data.Dataset):
         if 'download' in self.__class__.__dict__.keys():
             self._download()
 
-        self._process()
+        self._process(**kwargs)
 
         # After initialization, load the preprocessed files.
         data = torch.load(self.processed_file_paths['data'])
@@ -313,7 +313,7 @@ class Dataset(torch.utils.data.Dataset):
                 self.val = old_train_set[new_train_length:]
                 self.train = old_train_set[:new_train_length]
 
-    def build_topology(self, data_items):
+    def build_topology(self, data_items, **kwargs):
         """
         Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
         DataItem.
@@ -378,7 +378,7 @@ class Dataset(torch.utils.data.Dataset):
                                                                 tokenizer=self.tokenizer)
                     item.graph = graph
             elif self.dynamic_graph_type == 'node_emb_refined':
-                if self.init_graph_type != 'line':
+                if self.init_graph_type in ('dependency', 'constituency', 'ie'):
                     print('Connecting to stanfordcorenlp server...')
                     processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
 
@@ -435,7 +435,8 @@ class Dataset(torch.utils.data.Dataset):
                                                                 processor_args=processor_args,
                                                                 merge_strategy=self.merge_strategy,
                                                                 edge_strategy=self.edge_strategy,
-                                                                verbase=False)
+                                                                verbase=False,
+                                                                **kwargs)
                     item.graph = graph
             else:
                 raise RuntimeError('Unknown dynamic_graph_type: {}'.format(self.dynamic_graph_type))
@@ -465,7 +466,7 @@ class Dataset(torch.utils.data.Dataset):
 
         return self.vocab_model
 
-    def _process(self):
+    def _process(self, **kwargs):
         if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
             if 'val_split_ratio' in self.__dict__:
                 UserWarning(
@@ -477,10 +478,10 @@ class Dataset(torch.utils.data.Dataset):
 
         self.read_raw_data()
 
-        self.build_topology(self.train)
-        self.build_topology(self.test)
+        self.build_topology(self.train, **kwargs)
+        self.build_topology(self.test, **kwargs)
         if 'val' in self.__dict__:
-            self.build_topology(self.val)
+            self.build_topology(self.val, **kwargs)
 
         self.build_vocab()
 
@@ -1168,7 +1169,12 @@ class Text2LabelDataset(Dataset):
         """
         data = []
         with open(file_path, 'r') as f:
+            # TODO
+            i = 0
             for line in f:
+                i += 1
+                if i > 20:
+                    break
                 input, output = line.split('\t')
                 data_item = Text2LabelDataItem(input_text=input.strip(), output_label=output.strip(), tokenizer=self.tokenizer)
                 data.append(data_item)
@@ -1339,8 +1345,8 @@ class DoubleText2TextDataset(Dataset):
             item.output_np = tgt_token_id
             item.output_text = ' '.join(item.output_text)
 
-    # @staticmethod
-    def collate_fn(self, data_list: [Text2TextDataItem]):
+    @staticmethod
+    def collate_fn(data_list: [Text2TextDataItem]):
         graph_data = []
         input_tensor2, input_length2, input_text2 = [], [], []
         tgt_tensor, tgt_text = [], []

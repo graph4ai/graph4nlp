@@ -30,46 +30,22 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             "lstm", "gru", "bilstm" and "bigru".
     alpha_fusion : float
         Specify the fusion value for combining initial and learned adjacency matrices.
-    sim_metric_type : str, optional
-        Specify similarity metric function type including "attention",
-        "weighted_cosine", "gat_attention", "rbf_kernel", and "cosine".
-        Default: ``"weighted_cosine"``.
-    num_heads : int, optional
-        Specify the number of heads for multi-head similarity metric
-        function, default: ``1``.
-    top_k_neigh : int, optional
-        Specify the top k value for knn neighborhood graph sparsificaiton,
-        default: ``None``.
-    epsilon_neigh : float, optional
-        Specify the epsilon value (i.e., between ``0`` and ``1``) for
-        epsilon neighborhood graph sparsificaiton, default: ``None``.
-    smoothness_ratio : float, optional
-        Specify the smoothness ratio (i.e., between ``0`` and ``1``)
-        for graph regularization on smoothness, default: ``None``.
-    connectivity_ratio : float, optional
-        Specify the connectivity ratio (i.e., between ``0`` and ``1``)
-        for graph regularization on connectivity, default: ``None``.
-    sparsity_ratio : float, optional
-        Specify the sparsity ratio (i.e., between ``0`` and ``1``)
-        for graph regularization on sparsity, default: ``None``.
-    input_size : int, optional
-        The dimension of input embeddings, default: ``None``.
-    hidden_size : int, optional
-        The dimension of hidden layers, default: ``None``.
-    fix_word_emb : boolean, optional
-        Specify whether to fix pretrained word embeddings, default: ``False``.
-    dropout : float, optional
-        Dropout ratio, default: ``None``.
-    device : torch.device, optional
-        Specify computation device (e.g., CPU), default: ``None`` for using CPU.
+    init_topology_builder : class
+        The initial graph topology builder.
     """
-    def __init__(self, word_vocab, embedding_styles, alpha_fusion, **kwargs):
+    def __init__(self,
+                word_vocab,
+                embedding_styles,
+                alpha_fusion,
+                init_topology_builder=None,
+                **kwargs):
         super(NodeEmbeddingBasedRefinedGraphConstruction, self).__init__(
                                                             word_vocab,
                                                             embedding_styles,
                                                             **kwargs)
         assert 0 <= alpha_fusion <= 1, 'alpha_fusion should be a `float` number between 0 and 1'
         self.alpha_fusion = alpha_fusion
+        self.init_topology_builder = init_topology_builder
 
     def forward(self, batch_graphdata: list):
         """Compute graph topology and initial node embeddings.
@@ -94,7 +70,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         node_size = to_cuda(torch.Tensor(node_size), self.device).int()
         num_nodes = to_cuda(torch.Tensor(num_nodes), self.device).int()
         batch_gd = to_batch(batch_graphdata)
-        node_emb = self.embedding(batch_gd.node_features['token_id'].long(), node_size, num_nodes)
+        node_emb = self.embedding(batch_gd, node_size, num_nodes)
 
         init_norm_adj = self._get_normalized_init_adj(batch_gd)
         node_mask = self._get_node_mask_for_batch_graph(num_nodes)
@@ -166,8 +142,8 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         return self.embedding_layer(node_word_idx, node_size, num_nodes)
 
 
-    @classmethod
-    def init_topology(cls,
+    # @classmethod
+    def init_topology(self,
                     raw_text_data,
                     init_graph_type='line',
                     lower_case=True,
@@ -176,8 +152,9 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
                     processor_args=None,
                     merge_strategy=None,
                     edge_strategy=None,
-                    verbase=False):
-        """Convert raw text data to initial node set graph.
+                    verbase=False,
+                    **kwargs):
+        """Convert raw text data to the initial graph.
 
         Parameters
         ----------
@@ -206,20 +183,18 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
 
             graph.node_attributes[idx + 1]['token'] = token_list[-1]
         elif init_graph_type in ('dependency', 'constituency', 'ie'):
-            if init_graph_type == 'dependency':
-                topology_fn = DependencyBasedGraphConstruction.topology
-            elif init_graph_type == 'constituency':
-                topology_fn = ConstituencyBasedGraphConstruction.topology
-            else:
-                topology_fn = IEBasedGraphConstruction.topology
-
-            graph = topology_fn(raw_text_data=raw_text_data,
-                               nlp_processor=nlp_processor,
-                               processor_args=processor_args,
-                               merge_strategy=merge_strategy,
-                               edge_strategy=edge_strategy,
-                               verbase=verbase)
-
+            graph = self.init_topology_builder.topology(
+                                raw_text_data=raw_text_data,
+                                nlp_processor=nlp_processor,
+                                processor_args=processor_args,
+                                merge_strategy=merge_strategy,
+                                edge_strategy=edge_strategy,
+                                verbase=verbase)
+        elif init_graph_type == 'udf':
+            # TODO: test
+            graph = self.init_topology_builder.init_topology(
+                                raw_text_data,
+                                **kwargs)
         else:
             raise RuntimeError('Unknown init_graph_type: {}'.format(init_graph_type))
 

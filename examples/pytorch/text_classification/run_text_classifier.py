@@ -107,10 +107,21 @@ class TextClassifier(nn.Module):
                                     device=config['device'])
             use_edge_weight = True
         elif config['graph_type'] == 'node_emb_refined':
+            if config['init_graph_type'] == 'dependency':
+                init_topology_builder = DependencyBasedGraphConstruction
+            elif config['init_graph_type'] == 'constituency':
+                init_topology_builder = ConstituencyBasedGraphConstruction
+            elif config['init_graph_type'] == 'ie':
+                init_topology_builder = IEBasedGraphConstruction
+            else:
+                init_topology_builder = NodeEmbeddingBasedGraphConstruction
+
+
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
                                     vocab.in_word_vocab,
                                     embedding_style,
                                     config['init_adj_alpha'],
+                                    init_topology_builder=init_topology_builder,
                                     sim_metric_type=config['gl_metric_type'],
                                     num_heads=config['gl_num_heads'],
                                     top_k_neigh=config['gl_top_k'],
@@ -254,7 +265,8 @@ class ModelHandler:
                               merge_strategy=merge_strategy,
                               dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
                               init_graph_type=self.config['init_graph_type'] if self.config['graph_type'] == 'node_emb_refined' else None,
-                              seed=self.config['seed'])
+                              seed=self.config['seed'],
+                              word_emb_size=300)
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config['batch_size'], shuffle=True,
                                            num_workers=self.config['num_workers'],
                                            collate_fn=dataset.collate_fn)

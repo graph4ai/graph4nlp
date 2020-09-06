@@ -180,13 +180,11 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``word_emb_type`` : Specify pretrained word embedding types
-            including "w2v" and/or "bert".
-        - ``node_edge_emb_strategy`` : Specify node/edge embedding
-            strategies including "mean", "lstm", "gru", "bilstm" and "bigru".
-        - ``seq_info_encode_strategy`` : Specify strategies of encoding
-            sequential information in raw text data including "none",
-            "lstm", "gru", "bilstm" and "bigru".
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``emb_strategy`` : specify the embedding construction strategy.
+        - ``num_rnn_layers``: specify the number of RNN layers.
+        - ``bert_model_name``: specify the BERT model name.
+        - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
     sim_metric_type : str, optional
         Specify similarity metric function type including "attention",
         "weighted_cosine", "gat_attention", "rbf_kernel", and "cosine".
@@ -217,6 +215,10 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         Specify whether to fix pretrained word embeddings, default: ``False``.
     fix_bert_emb : boolean, optional
         Specify whether to fix pretrained BERT embeddings, default: ``True``.
+    bert_model_name : str, optional
+        Specify the BERT model name, default: ``'bert-base-uncased'``.
+    bert_lower_case : bool, optional
+        Specify whether to lower case the input text for BERT embeddings, default: ``True``.
     word_dropout : float, optional
         Dropout ratio for word embedding, default: ``None``.
     rnn_dropout : float, optional
