@@ -6,15 +6,27 @@ import tqdm
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_raw_dataset_src', default='/home/shiina/shiina/lib/dataset/europarl-v7.fr-en.fr', type=str, help='path to the config file')
-    parser.add_argument('--train_raw_dataset_tgt', type=str, default='/home/shiina/shiina/lib/dataset/europarl-v7.fr-en.en', help='rank')
-    parser.add_argument('--train_output_dataset', type=str, default='/home/shiina/shiina/lib/dataset/raw/train.json', help="raw data path")
+    parser.add_argument('--train_raw_dataset_src', default='/home/shiina/nmt_data/wmt16_de_en/data/nc-v11/training-parallel-nc-v11/news-commentary-v11.de-en.de', type=str, help='path to the config file')
+    parser.add_argument('--train_raw_dataset_tgt', type=str, default='/home/shiina/nmt_data/wmt16_de_en/data/nc-v11/training-parallel-nc-v11/news-commentary-v11.de-en.en', help='rank')
+    parser.add_argument('--train_raw_dataset_xliff', default='/home/shiina/nmt_data/wmt16_de_en/data/nc-v11/training-parallel-nc-v11/news-commentary-v11.de-en.xliff', type=str, help='path to the config file')
 
-    parser.add_argument('--val_raw_dataset_src', default='/home/shiina/shiina/lib/dataset/test2011/newstest2011.fr',
+    parser.add_argument('--train_output_dataset', type=str, default='/home/shiina/shiina/lib/dataset/news-commentary-v11/de-en/raw/train.json', help="raw data path")
+
+
+    parser.add_argument('--val_raw_dataset_src', default='/home/shiina/nmt_data/wmt16_de_en/data/dev/dev/newstest2015.en',
                         type=str, help='path to the config file')
     parser.add_argument('--val_raw_dataset_tgt', type=str,
-                        default='/home/shiina/shiina/lib/dataset/test2011/newstest2011.en', help='rank')
-    parser.add_argument('--val_output_dataset', type=str, default='/home/shiina/shiina/lib/dataset/raw/test.json',
+                        default='/home/shiina/nmt_data/wmt16_de_en/data/dev/dev/newstest2015.de', help='rank')
+    parser.add_argument('--val_output_dataset', type=str, default='/home/shiina/shiina/lib/dataset/news-commentary-v11/de-en/raw/val.json',
+                        help="raw data path")
+
+    parser.add_argument('--test_raw_dataset_src',
+                        default='/home/shiina/nmt_data/wmt16_de_en/data/test/test/newstest2016.en',
+                        type=str, help='path to the config file')
+    parser.add_argument('--test_raw_dataset_tgt', type=str,
+                        default='/home/shiina/nmt_data/wmt16_de_en/data/test/test/newstest2016.de', help='rank')
+    parser.add_argument('--test_output_dataset', type=str,
+                        default='/home/shiina/shiina/lib/dataset/news-commentary-v11/de-en/raw/test.json',
                         help="raw data path")
 
     cfg = parser.parse_args()
@@ -23,9 +35,10 @@ def get_args():
 
 
 class TextProcessor:
-    def __init__(self, raw_dataset_src, raw_dataset_tgt, output_dataset):
+    def __init__(self, output_dataset, raw_dataset_xliff=None, raw_dataset_src=None, raw_dataset_tgt=None):
         self.raw_dataset_src = raw_dataset_src
         self.raw_dataset_tgt = raw_dataset_tgt
+        self.raw_dataset_xliff = raw_dataset_xliff
         self.output_dataset = output_dataset
 
     def _preprocess(self, lines):
@@ -55,8 +68,12 @@ class TextProcessor:
         return cleaned
 
     def run(self):
-        src_lines = self._read(self.raw_dataset_src)
-        tgt_lines = self._read(self.raw_dataset_tgt)
+        if self.raw_dataset_xliff is not None:
+            src_lines, tgt_lines = self._read_xliff(self.raw_dataset_xliff)
+        else:
+            src_lines = self._read(self.raw_dataset_src)
+            tgt_lines = self._read(self.raw_dataset_tgt)
+            print("-----", src_lines[0], "ooooo", tgt_lines[0])
         print(len(src_lines), len(tgt_lines))
         assert len(src_lines) == len(tgt_lines)
         output_content = []
@@ -69,6 +86,22 @@ class TextProcessor:
             json.dump(output_content, f)
         print("done")
 
+    def _read_xliff(self, path):
+        with open(path, "r") as f:
+            content = f.read()
+        items = re.findall(r'''<trans-unit id=.*?>(.*?)</trans-unit>''', content, flags=re.S|re.M)
+        src_list = []
+        tgt_list = []
+        for item in items:
+            src = re.findall("<source>(.*?)</source>", item, flags=re.S | re.M)[0]
+            tgt = re.findall("<target>(.*?)</target>", item, flags=re.S | re.M)[0]
+            src = src.strip()
+            tgt = tgt.strip()
+            src_list.append(tgt)
+            tgt_list.append(src)
+        print("--------", src_list[0], "oooo", tgt_list[0])
+        return src_list, tgt_list
+
     def _read(self, path):
         with open(path, "r") as f:
             content = f.read()
@@ -79,14 +112,16 @@ class TextProcessor:
 if __name__ == "__main__":
     opt = get_args()
     # process training set
-    # processor = TextProcessor(raw_dataset_src=opt.train_raw_dataset_src, raw_dataset_tgt=opt.train_raw_dataset_tgt,
-    #                           output_dataset=opt.train_output_dataset)
-    # processor.run()
+    processor = TextProcessor(raw_dataset_xliff=opt.train_raw_dataset_xliff,
+                              output_dataset=opt.train_output_dataset)
+    processor.run()
     # process validation set
     processor = TextProcessor(raw_dataset_src=opt.val_raw_dataset_src, raw_dataset_tgt=opt.val_raw_dataset_tgt,
                               output_dataset=opt.val_output_dataset)
     processor.run()
 
-
+    processor = TextProcessor(raw_dataset_src=opt.test_raw_dataset_src, raw_dataset_tgt=opt.test_raw_dataset_tgt,
+                              output_dataset=opt.test_output_dataset)
+    processor.run()
 
 

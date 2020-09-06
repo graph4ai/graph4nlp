@@ -11,7 +11,7 @@ from .loss import Graph2seqLoss
 
 
 class Graph2seq(nn.Module):
-    def __init__(self, vocab, device, hidden_size=512, direction_option='undirected'):
+    def __init__(self, vocab, device, hidden_size=300, direction_option='undirected'):
         super(Graph2seq, self).__init__()
 
         self.vocab = vocab
@@ -21,12 +21,14 @@ class Graph2seq(nn.Module):
                                                                vocab=vocab.in_word_vocab,
                                                                hidden_size=hidden_size, dropout=0.2, device=device,
                                                                fix_word_emb=False)
-        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
         # self.gnn_encoder = GAT(3, hidden_size, hidden_size, hidden_size, [2, 2, 1], direction_option=direction_option,
         #                        feat_drop=0.2, attn_drop=0.2, activation=F.relu, residual=True)
-        self.gnn_encoder = GGNN(3, hidden_size, hidden_size, direction_option=direction_option, dropout=0.2)
-        # self.gnn_encoder = GraphSAGE(3, hidden_size, hidden_size, hidden_size, aggregator_type="lstm",
-        #                              direction_option=direction_option, feat_drop=0.4)
+        # self.gnn_encoder = GGNN(3, hidden_size, hidden_size, direction_option=direction_option, dropout=0.2)
+        self.gnn_encoder = GraphSAGE(3, hidden_size, hidden_size, hidden_size, aggregator_type="lstm",
+                                     direction_option=direction_option, feat_drop=0.4)
+
+        self.word_emb = nn.Embedding(len(self.vocab.out_word_vocab), hidden_size)
+
         self.seq_decoder = StdRNNDecoder(max_decoder_step=200,
                                          decoder_input_size=2*hidden_size if direction_option == 'bi_sep' else hidden_size,
                                          decoder_hidden_size=hidden_size, graph_pooling_strategy=None,
@@ -50,7 +52,7 @@ class Graph2seq(nn.Module):
         if require_loss:
 
             loss = self.loss_calc(prob, tgt)
-            # cover_loss = self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
-            return prob, loss
+            cover_loss = self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
+            return prob, loss + cover_loss
         else:
             return prob

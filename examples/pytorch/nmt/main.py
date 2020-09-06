@@ -1,11 +1,14 @@
 # import torch.multiprocessing
 # torch.multiprocessing.set_sharing_strategy('file_system')
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+# os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
+
 from examples.pytorch.nmt.dataset import EuroparlNMTDataset
 from examples.pytorch.nmt.model import Graph2seq
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 
 import numpy as np
-import os
 import torch
 from torch.utils.data import DataLoader
 import torch.optim as optim
@@ -45,13 +48,15 @@ class NMT:
 
     def _build_dataloader(self):
 
-        dataset = EuroparlNMTDataset(root_dir="/home/shiina/shiina/lib/dataset",
+        dataset = EuroparlNMTDataset(root_dir="/home/shiina/shiina/lib/dataset/news-commentary-v11/de-en",
                                      topology_builder=DependencyBasedGraphConstruction,
-                                     topology_subdir='DependencyGraph20', share_vocab=False)
+                                     topology_subdir='DependencyGraph', share_vocab=False)
 
-        self.train_dataloader = DataLoader(dataset.train, batch_size=50, shuffle=True, num_workers=5,
+        self.train_dataloader = DataLoader(dataset.train, batch_size=30, shuffle=True, num_workers=10,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=50, shuffle=False, num_workers=5,
+        self.val_dataloader = DataLoader(dataset.val, batch_size=30, shuffle=False, num_workers=10,
+                                           collate_fn=dataset.collate_fn)
+        self.test_dataloader = DataLoader(dataset.test, batch_size=30, shuffle=False, num_workers=10,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
 
@@ -73,12 +78,13 @@ class NMT:
             self.train_epoch(epoch, split="train")
             # self._adjust_lr(epoch)
             if epoch >= 0:
-                score = self.evaluate(split="test")
+                score = self.evaluate(split="val")
                 if score >= max_score:
                     self.logger.info("Best model saved, epoch {}".format(epoch))
                     self.save_checkpoint("best.pth")
                     self._best_epoch = epoch
                 max_score = max(max_score, score)
+                score = self.evaluate(split="test")
             if epoch >= 30 and self._stop_condition(epoch):
                 break
         return max_score

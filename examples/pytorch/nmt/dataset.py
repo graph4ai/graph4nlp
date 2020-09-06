@@ -10,6 +10,7 @@ import numpy as np
 from multiprocessing import Process
 import multiprocessing
 import tqdm
+from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel, Vocab
 
 
 class EuroparlNMTDataset(Text2TextDataset):
@@ -22,7 +23,7 @@ class EuroparlNMTDataset(Text2TextDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        return {'train': 'train.json', 'test': 'test.json'}
+        return {'train': 'train.json', 'val': "val.json", 'test': 'test.json'}
 
     @property
     def processed_file_names(self):
@@ -45,10 +46,10 @@ class EuroparlNMTDataset(Text2TextDataset):
             if len(input_tokens) >= 50:
                 continue
             max_len = max(max_len, len(input_tokens))
-            dataitem = Text2TextDataItem(input_text=item[0], output_text=item[1], tokenizer=self.tokenizer, share_vocab=self.share_vocab)
+            dataitem = Text2TextDataItem(input_text=item[0], output_text=item[1], tokenizer=self.tokenizer,
+                                         share_vocab=self.share_vocab)
             data.append(dataitem)
-        if len(data) > 200000:
-            data = data[:200000]
+        print(len(data))
         return data
 
     @staticmethod
@@ -63,7 +64,7 @@ class EuroparlNMTDataset(Text2TextDataset):
         }
         print('Connecting to stanfordcorenlp server...')
         processor = StanfordCoreNLP('http://localhost', port=int(port), timeout=1000)
-        processor.switch_language("fr")
+        processor.switch_language("en")
         print('CoreNLP server connected.')
         cnt = 0
         all = len(data_item)
@@ -112,10 +113,27 @@ class EuroparlNMTDataset(Text2TextDataset):
             for data, graph in zip(datas, res):
                 data.graph = graph
 
+    def build_vocab(self):
+        data_for_vocab = self.train
+        data_for_vocab = data_for_vocab + self.val
+
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=None,
+                                       min_word_vocab_freq=3,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       word_emb_size=300,
+                                       share_vocab=self.share_vocab)
+        self.vocab_model = vocab_model
+
+        return self.vocab_model
+
 
 if __name__ == "__main__":
-    dataset = EuroparlNMTDataset(root_dir="/home/shiina/shiina/lib/dataset",
+    dataset = EuroparlNMTDataset(root_dir="/home/shiina/shiina/lib/dataset/news-commentary-v11/de-en",
                                  topology_builder=DependencyBasedGraphConstruction,
-                                 topology_subdir='DependencyGraph20', share_vocab=False)
+                                 topology_subdir='DependencyGraph', share_vocab=False)
 
 
