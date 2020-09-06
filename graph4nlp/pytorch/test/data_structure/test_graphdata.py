@@ -1,4 +1,4 @@
-from ...data.data import GraphData, from_batch, to_batch, from_dgl
+from ...data.data import GraphData, from_batch, to_batch, from_dgl, __new_from_batch
 from ...data.utils import EdgeNotFoundException
 import torch
 import torch.nn as nn
@@ -240,3 +240,53 @@ def test_batch():
     gll = from_batch(b)
     for i in range(5):
         print(gll[i].get_edge_num())
+
+
+def test_batch_new():
+    g_list = []
+    batched_edges = []
+    graph_edges_list = []
+    for i in range(5):
+        g = GraphData()
+        g.add_nodes(10)
+        for j in range(10):
+            g.add_edge(src=j, tgt=(j + 1) % 10)
+            batched_edges.append((i * 10 + j, i * 10 + ((j + 1) % 10)))
+        g.node_features['idx'] = torch.ones(10) * i
+        g.edge_features['idx'] = torch.ones(10) * i
+        graph_edges_list.append(g.get_all_edges())
+        g_list.append(g)
+
+    # Test to_batch
+    batch = to_batch(g_list)
+
+    target_batch_idx = []
+    for i in range(5):
+        for j in range(10):
+            target_batch_idx.append(i)
+
+    assert batch.batch == target_batch_idx
+    assert batch.get_node_num() == 50
+    assert batch.get_all_edges() == batched_edges
+
+    # Test from_batch
+    graph_list = __new_from_batch(batch)
+
+    for i in range(len(graph_list)):
+        g = graph_list[i]
+        assert g.get_all_edges() == graph_edges_list[i]
+        assert g.get_node_num() == 10
+        assert torch.all(torch.eq(g.node_features['idx'], torch.ones(10) * i))
+        assert torch.all(torch.eq(g.edge_features['idx'], torch.ones(10) * i))
+
+    # Test graph with 0 edges
+    gl = [GraphData() for _ in range(5)]
+    for i in range(5):
+        gl[i].add_nodes(1)
+    b = to_batch(gl)
+    gll = from_batch(b)
+    for i in range(5):
+        print(gll[i].get_edge_num())
+
+
+# def test_pressure_batch():
