@@ -245,7 +245,7 @@ class Dataset(torch.utils.data.Dataset):
         if 'download' in self.__class__.__dict__.keys():
             self._download()
 
-        self._process(**kwargs)
+        self._process()
 
         # After initialization, load the preprocessed files.
         data = torch.load(self.processed_file_paths['data'])
@@ -313,7 +313,7 @@ class Dataset(torch.utils.data.Dataset):
                 self.val = old_train_set[new_train_length:]
                 self.train = old_train_set[:new_train_length]
 
-    def build_topology(self, data_items, **kwargs):
+    def build_topology(self, data_items):
         """
         Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
         DataItem.
@@ -378,11 +378,11 @@ class Dataset(torch.utils.data.Dataset):
                                                                 tokenizer=self.tokenizer)
                     item.graph = graph
             elif self.dynamic_graph_type == 'node_emb_refined':
-                if self.init_graph_type in ('dependency', 'constituency', 'ie'):
+                if self.init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
                     print('Connecting to stanfordcorenlp server...')
                     processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
 
-                    if self.init_graph_type == 'ie':
+                    if self.init_topology_builder == IEBasedGraphConstruction:
                         props_coref = {
                             'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
                             "tokenize.options":
@@ -401,7 +401,7 @@ class Dataset(torch.utils.data.Dataset):
                             "openie.triple.strict": "true"
                         }
                         processor_args = [props_coref, props_openie]
-                    elif self.init_graph_type == 'dependency':
+                    elif self.init_topology_builder == DependencyBasedGraphConstruction:
                         processor_args = {
                             'annotators': 'ssplit,tokenize,depparse',
                             "tokenize.options":
@@ -410,7 +410,7 @@ class Dataset(torch.utils.data.Dataset):
                             'ssplit.isOneSentence': False,
                             'outputFormat': 'json'
                         }
-                    elif self.init_graph_type == 'constituency':
+                    elif self.init_topology_builder == ConstituencyBasedGraphConstruction:
                         processor_args = {
                             'annotators': "tokenize,ssplit,pos,parse",
                             "tokenize.options":
@@ -428,7 +428,7 @@ class Dataset(torch.utils.data.Dataset):
 
                 for item in data_items:
                     graph = self.topology_builder.init_topology(item.input_text,
-                                                                init_graph_type=self.init_graph_type,
+                                                                init_topology_builder=self.init_topology_builder,
                                                                 lower_case=self.lower_case,
                                                                 tokenizer=self.tokenizer,
                                                                 nlp_processor=processor,
@@ -436,7 +436,8 @@ class Dataset(torch.utils.data.Dataset):
                                                                 merge_strategy=self.merge_strategy,
                                                                 edge_strategy=self.edge_strategy,
                                                                 verbase=False,
-                                                                **kwargs)
+                                                                auxiliary_args=self.auxiliary_args)
+
                     item.graph = graph
             else:
                 raise RuntimeError('Unknown dynamic_graph_type: {}'.format(self.dynamic_graph_type))
@@ -466,7 +467,7 @@ class Dataset(torch.utils.data.Dataset):
 
         return self.vocab_model
 
-    def _process(self, **kwargs):
+    def _process(self):
         if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
             if 'val_split_ratio' in self.__dict__:
                 UserWarning(
@@ -478,10 +479,10 @@ class Dataset(torch.utils.data.Dataset):
 
         self.read_raw_data()
 
-        self.build_topology(self.train, **kwargs)
-        self.build_topology(self.test, **kwargs)
+        self.build_topology(self.train)
+        self.build_topology(self.test)
         if 'val' in self.__dict__:
-            self.build_topology(self.val, **kwargs)
+            self.build_topology(self.val)
 
         self.build_vocab()
 
@@ -1169,12 +1170,7 @@ class Text2LabelDataset(Dataset):
         """
         data = []
         with open(file_path, 'r') as f:
-            # TODO
-            i = 0
             for line in f:
-                i += 1
-                if i > 20:
-                    break
                 input, output = line.split('\t')
                 data_item = Text2LabelDataItem(input_text=input.strip(), output_label=output.strip(), tokenizer=self.tokenizer)
                 data.append(data_item)

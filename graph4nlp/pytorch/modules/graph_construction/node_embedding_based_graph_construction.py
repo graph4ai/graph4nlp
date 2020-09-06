@@ -124,7 +124,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
 
 
     @classmethod
-    def init_topology(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize, **kwargs):
+    def init_topology(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize):
         """Convert raw text data to the initial node set graph (i.e., no edge information).
 
         Parameters
@@ -136,7 +136,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             to get a list of tokens.
         lower_case : boolean
             Specify whether to lower case the input text, default: ``True``.
-        tokenization : callable, optional
+        tokenizer : callable, optional
             The tokenization function.
 
         Returns

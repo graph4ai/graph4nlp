@@ -30,14 +30,11 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             "lstm", "gru", "bilstm" and "bigru".
     alpha_fusion : float
         Specify the fusion value for combining initial and learned adjacency matrices.
-    init_topology_builder : class
-        The initial graph topology builder.
     """
     def __init__(self,
                 word_vocab,
                 embedding_styles,
                 alpha_fusion,
-                init_topology_builder=None,
                 **kwargs):
         super(NodeEmbeddingBasedRefinedGraphConstruction, self).__init__(
                                                             word_vocab,
@@ -45,7 +42,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
                                                             **kwargs)
         assert 0 <= alpha_fusion <= 1, 'alpha_fusion should be a `float` number between 0 and 1'
         self.alpha_fusion = alpha_fusion
-        self.init_topology_builder = init_topology_builder
 
     def forward(self, batch_graphdata: list):
         """Compute graph topology and initial node embeddings.
@@ -142,10 +138,10 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         return self.embedding_layer(node_word_idx, node_size, num_nodes)
 
 
-    # @classmethod
-    def init_topology(self,
+    @classmethod
+    def init_topology(cls,
                     raw_text_data,
-                    init_graph_type='line',
+                    init_topology_builder=None,
                     lower_case=True,
                     tokenizer=word_tokenize,
                     nlp_processor=None,
@@ -153,22 +149,28 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
                     merge_strategy=None,
                     edge_strategy=None,
                     verbase=False,
-                    **kwargs):
+                    auxiliary_args=None):
         """Convert raw text data to the initial graph.
 
         Parameters
         ----------
         raw_text_data : str
             The raw text data.
+        init_topology_builder : class, optional
+            The initial graph topology builder, default: ``None``.
         lower_case : boolean
             Specify whether to lower case the input text, default: ``True``.
+        tokenizer : callable, optional
+            The tokenization function.
+        auxiliary_args : dict, optional
+            The auxiliary args for init_topology_builder.topology, default: ``None``.
 
         Returns
         -------
         GraphData
             The constructed graph.
         """
-        if init_graph_type == 'line':
+        if init_topology_builder is None: # line graph
             if lower_case:
                 raw_text_data = raw_text_data.lower()
 
@@ -182,20 +184,17 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
                 graph.node_attributes[idx]['token'] = token_list[idx]
 
             graph.node_attributes[idx + 1]['token'] = token_list[-1]
-        elif init_graph_type in ('dependency', 'constituency', 'ie'):
-            graph = self.init_topology_builder.topology(
+        elif init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
+            graph = init_topology_builder.topology(
                                 raw_text_data=raw_text_data,
                                 nlp_processor=nlp_processor,
                                 processor_args=processor_args,
                                 merge_strategy=merge_strategy,
                                 edge_strategy=edge_strategy,
                                 verbase=verbase)
-        elif init_graph_type == 'udf':
-            # TODO: test
-            graph = self.init_topology_builder.init_topology(
-                                raw_text_data,
-                                **kwargs)
         else:
-            raise RuntimeError('Unknown init_graph_type: {}'.format(init_graph_type))
+            graph = init_topology_builder.topology(
+                                raw_text_data,
+                                auxiliary_args)
 
         return graph
