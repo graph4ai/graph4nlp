@@ -228,7 +228,6 @@ class ModelHandler:
         topology_subdir = '{}_based_graph'.format(self.config['graph_type'])
         if self.config['graph_type'] == 'node_emb_refined':
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
-
         dataset = TrecDataset(root_dir="examples/pytorch/text_classification/data/trec",
                               topology_builder=topology_builder,
                               topology_subdir=topology_subdir,
