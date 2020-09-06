@@ -18,7 +18,8 @@ _EOS_TOKEN = '</s>'
 
 
 # LOG FILES ##
-_CONFIG_FILE = "config.json"
-_SAVED_WEIGHTS_FILE = "params.saved"
+_CONFIG_FILE = 'config.json'
+_SAVED_WEIGHTS_FILE = 'params.saved'
+_SAVED_METRICS_FILE = 'metric.log'
 # _PREDICTION_FILE = "test_pred.txt"
 # _REFERENCE_FILE = "test_ref.txt"

@@ -13,14 +13,33 @@ Text classification results
 
 Dependencies
 ------------
-- torch v1.0: the autograd support for sparse mm is only available in v1.0.
-- requests
-- sklearn
 
 ```bash
-pip install torch==1.1.0 requests dgl
+pip install -r examples/pytorch/text_classification/requirements.txt
 ```
 
+
+How to run
+----------
+
+<!-- Run with following:
+
+```java
+java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
+```
+
+Run the model:
+
+```python
+python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec/XYZ.yaml
+```
+
+ -->
+Run the model with grid search:
+
+```python
+python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec_finetune/XYZ.yaml --grid_search
+```
 
 
 TREC Results
@@ -28,8 +47,8 @@ TREC Results
 
 | GraphType\GNN  |  GAT-Undirected   |  GAT-BiSep    | GAT-BiFuse   | GraphSAGE-Undirected   |  GraphSAGE-BiSep    | GraphSAGE-BiFuse   |  GGNN-Undirected   |  GGNN-BiSep    | GGNN-BiFuse   | 
 | ------------- |  -------------| ------------- |  -------------|  ------------- | ------------- |  -------------| ------------- | -------------  | ------------- |  
-| Dependency     | 0.934*  | 0.948*  | 0.950* | 0.946 | 0.944* |  0.942  | 0.934 | 0.946* |  0.938* |
-| Constituency (word & non-word nodes) | 0.932*  | 0.942* | 0.938* | 0.934 |0.928 | 0.942*  | 0.920 |0.944* |  0.940* |
+| Dependency     | 0.934*  | 0.948*  | 0.950* | 0.946* | 0.944* |  0.942  | 0.934 | 0.946* |  0.938* |
+| Constituency (word & non-word nodes) | 0.932*  | 0.942* | 0.938* | 0.934 |0.928 | 0.944*  | 0.920 |0.944* |  0.940* |
 | NodeEmb | N/A  | N/A | N/A | 0.936 | 0.932 | 0.928  |  | | |
 | NodeEmbRefined (dependency) | N/A  | N/A | N/A |0.928 |0.928 | 0.930  |  |  |   |
 <!-- | NodeEmbRefined (constituency) | N/A  | N/A | N/A |  | |   |  |  |  | -->
@@ -42,27 +61,6 @@ Note:
 
 
 
-How to run
-----------
-
-Run with following:
-
-```java
-java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
-```
-
-Run the model:
-
-```python
-python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec/XYZ.yaml
-```
-
-
-Run the model with grid search:
-
-```python
-python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec/XYZ.yaml --grid_search
-```
 
 
 
@@ -309,7 +307,3 @@ seq_info_encode_strategy: none
 GAT-Undirected: 0.582
 GAT-BiSep: 0.666
 GAT-BiFuse: 0.796 -->
-
-
-
-
