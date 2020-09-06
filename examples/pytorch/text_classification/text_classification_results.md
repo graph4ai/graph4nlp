@@ -28,14 +28,17 @@ TREC Results
 
 | GraphType\GNN  |  GAT-Undirected   |  GAT-BiSep    | GAT-BiFuse   | GraphSAGE-Undirected   |  GraphSAGE-BiSep    | GraphSAGE-BiFuse   |  GGNN-Undirected   |  GGNN-BiSep    | GGNN-BiFuse   | 
 | ------------- |  -------------| ------------- |  -------------|  ------------- | ------------- |  -------------| ------------- | -------------  | ------------- |  
-| Dependency     | 0.934  | 0.932  | 0.938 | 0.946 | 0.944 |  0.938  | 0.934 | 0.934 |  0.914 |
-| Constituency | 0.922  | 0.942 | 0.948 | 0.942 |0.944 | 0.946  | 0.934 | 0.924 |  0.934 |
-| Constituency (word & non-word nodes) | 0.932  | 0.926 | 0.938 |  |0.928 | 0.930  |  | |   |
-| NodeEmb | N/A  | N/A | N/A | 0.936 | - | -  |  | - |  - |
-| NodeEmbRefined | N/A  | N/A | N/A | 0.936 |- |   -|  | - | -  |
+| Dependency     | 0.934*  | 0.948*  | 0.950* | 0.946 | 0.944* |  0.942  | 0.934 | 0.946* |  0.938* |
+| Constituency (word & non-word nodes) | 0.932*  | 0.942* | 0.938* | 0.934 |0.928 | 0.942*  | 0.920 |0.944* |  0.940* |
+| NodeEmb | N/A  | N/A | N/A | 0.936 | 0.932 | 0.928  |  | | |
+| NodeEmbRefined (dependency) | N/A  | N/A | N/A |0.928 |0.928 | 0.930  |  |  |   |
+<!-- | NodeEmbRefined (constituency) | N/A  | N/A | N/A |  | |   |  |  |  | -->
+<!-- | Constituency | 0.922  | 0.942 | 0.948 | 0.942 |0.944 | 0.946  | 0.934 | 0.924 |  0.934 | -->
+<!-- | NodeEmbRefined (line) | N/A  | N/A | N/A | 0.936 |- |   -|  | - | -  | -->
 
-
-
+Note: 
+-------
+- results denoted with '*' were hyperparameter fine-tuned with grid search extensively.
 
 
 
@@ -47,7 +50,25 @@ Run with following:
 ```java
 java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
 ```
-Dependency graph:
+
+Run the model:
+
+```python
+python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec/XYZ.yaml
+```
+
+
+Run the model with grid search:
+
+```python
+python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec/XYZ.yaml --grid_search
+```
+
+
+
+
+
+<!-- Dependency graph:
 
 GAT-Undirected
 ```python
@@ -144,6 +165,17 @@ GGNN-Undirected
 python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type constituency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --direction_option undirected --gnn ggnn
 ```
 
+GGNN-BiSep
+```python
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type constituency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --direction_option bi_sep --gnn ggnn
+```
+
+GGNN-BiFuse
+```python
+python -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --graph_type constituency --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.6 --direction_option bi_fuse --gnn ggnn
+```
+
+
 Node embedding based dynamic graph:
 
 GGNN-Undirected
@@ -163,18 +195,29 @@ python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_
 Node embedding based refined dynamic graph:
 
 ```python
-python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb_refined --init_graph_type line --gl_num_heads 1 --gl_epsilon 0.5 --gpu 1 --init_adj_alpha 0.2
+python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb_refined --init_graph_type line --gl_num_heads 1 --gl_epsilon 0.7 --gpu 1 --init_adj_alpha 0.2
 ```
 
 
 ```python
-python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb_refined --gl_num_heads 1 --gl_epsilon 0.7 --init_adj_alpha 0.2
+python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb_refined --init_graph_type dependency --gl_num_heads 1 --gl_epsilon 0.5 --init_adj_alpha 0.2
 ```
 
 
 ```python
 python -m pdb -m examples.pytorch.text_classification.run_text_classifier --pre_word_emb_file ~/Research/Resource/glove-vectors/glove.840B.300d.txt --node_edge_emb_strategy mean --seq_info_encode_strategy bilstm --graph_pooling avg_pool --num_hidden 300 --word_drop 0.4 --rnn_drop 0.1 --gnn_drop 0.1 --graphsage_aggreagte_type lstm --direction_option undirected --gnn graphsage --graph_type node_emb_refined --init_graph_type constituency --gl_num_heads 1 --gl_epsilon 0.5 --gpu 1 --init_adj_alpha 0.2
 ```
+
+graphsage undirected, init_graph_type dependency, gl_epsilon 0.5, init_adj_alpha 0.2: 0.924
+
+
+graphsage undirected, init_graph_type line, gl_epsilon 0.7, init_adj_alpha 0.2: 0.924
+
+graphsage undirected, init_graph_type dependency, gl_epsilon 0.5, init_adj_alpha 0.2, new_norm: 0.918
+
+graphsage undirected, init_graph_type line, gl_epsilon 0.7, init_adj_alpha 0.2, new_norm: 0.918 -->
+
+
 
 
 <!-- IE graph:
