@@ -4,6 +4,7 @@ from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 import dgl
 
 from ..utils.generic_utils import to_cuda, dropout_fn, create_mask
+from ..utils.bert_utils import *
 
 
 class EmbeddingConstructionBase(nn.Module):
@@ -77,42 +78,62 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
-    def __init__(self, word_vocab, word_emb_type,
-                        node_edge_emb_strategy,
-                        seq_info_encode_strategy,
-                        hidden_size=None,
-                        num_rnn_layers_for_node_edge_emb=1,
-                        num_rnn_layers_for_seq_info_encode=1,
-                        fix_word_emb=True,
-                        word_dropout=None,
-                        dropout=None,
-                        device=None):
+    def __init__(self,
+                    word_vocab,
+                    word_emb_type,
+                    node_edge_emb_strategy,
+                    seq_info_encode_strategy,
+                    hidden_size=None,
+                    num_rnn_layers_for_node_edge_emb=1,
+                    num_rnn_layers_for_seq_info_encode=1,
+                    fix_word_emb=True,
+                    fix_bert_emb=True,
+                    bert_model_name='bert-base-uncased',
+                    bert_lower_case=True,
+                    word_dropout=None,
+                    dropout=None,
+                    device=None):
         super(EmbeddingConstruction, self).__init__()
         self.device = device
+        self.word_emb_type = word_emb_type
         self.word_dropout = word_dropout
         self.dropout = dropout
         self.node_edge_emb_strategy = node_edge_emb_strategy
         self.seq_info_encode_strategy = seq_info_encode_strategy
 
-        if isinstance(word_emb_type, str):
-            word_emb_type = [word_emb_type]
+        if isinstance(self.word_emb_type, str):
+            self.word_emb_type = [self.word_emb_type]
 
-        self.word_emb_layers = nn.ModuleList()
-        if 'w2v' in word_emb_type:
-            self.word_emb_layers.append(WordEmbedding(
+        assert len(set(self.word_emb_type) - {'w2v', 'node_edge_bert', 'seq_bert'}) == 0, 'unsupported word_emb_type: {}'.format(set(self.word_emb_type) - {'w2v', 'node_edge_bert', 'seq_bert'})
+        assert 'w2v' in self.word_emb_type or 'node_edge_bert' in self.word_emb_type, 'no word embedding layer defined'
+        assert not ('node_edge_bert' in self.word_emb_type and 'seq_bert' in self.word_emb_type), "cannot have both 'node_edge_bert' and 'seq_bert'"
+
+        word_emb_size = 0
+        self.word_emb_layers = nn.ModuleDict()
+        if 'w2v' in self.word_emb_type:
+            self.word_emb_layers['w2v'] = WordEmbedding(
                             word_vocab.embeddings.shape[0],
                             word_vocab.embeddings.shape[1],
                             pretrained_word_emb=word_vocab.embeddings,
-                            fix_word_emb=fix_word_emb, device=self.device))
+                            fix_emb=fix_word_emb, device=self.device)
+            word_emb_size += word_vocab.embeddings.shape[1]
 
-        if 'bert' in word_emb_type:
-            self.word_emb_layers.append(BertEmbedding(fix_word_emb))
+        if 'node_edge_bert' in self.word_emb_type:
+            self.word_emb_layers['node_edge_bert'] = BertEmbedding(name=bert_model_name,
+                                                            fix_emb=fix_bert_emb,
+                                                            lower_case=bert_lower_case)
+            word_emb_size += self.word_emb_layers['node_edge_bert'].bert_model.config.hidden_size
+
+        if 'seq_bert' in self.word_emb_type:
+            self.word_emb_layers['seq_bert'] = BertEmbedding(name=bert_model_name,
+                                                            fix_emb=fix_bert_emb,
+                                                            lower_case=bert_lower_case)
 
         if node_edge_emb_strategy == 'mean':
             self.node_edge_emb_layer = MeanEmbedding()
         elif node_edge_emb_strategy == 'lstm':
             self.node_edge_emb_layer = RNNEmbedding(
-                                    word_vocab.embeddings.shape[1],
+                                    word_emb_size,
                                     hidden_size,
                                     bidirectional=False,
                                     num_layers=num_rnn_layers_for_node_edge_emb,
@@ -121,7 +142,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                                     device=device)
         elif node_edge_emb_strategy == 'bilstm':
             self.node_edge_emb_layer = RNNEmbedding(
-                                    word_vocab.embeddings.shape[1],
+                                    word_emb_size,
                                     hidden_size,
                                     bidirectional=True,
                                     num_layers=num_rnn_layers_for_node_edge_emb,
@@ -130,7 +151,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                                     device=device)
         elif node_edge_emb_strategy == 'gru':
             self.node_edge_emb_layer = RNNEmbedding(
-                                    word_vocab.embeddings.shape[1],
+                                    word_emb_size,
                                     hidden_size,
                                     bidirectional=False,
                                     num_layers=num_rnn_layers_for_node_edge_emb,
@@ -139,7 +160,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                                     device=device)
         elif node_edge_emb_strategy == 'bigru':
             self.node_edge_emb_layer = RNNEmbedding(
-                                    word_vocab.embeddings.shape[1],
+                                    word_emb_size,
                                     hidden_size,
                                     bidirectional=True,
                                     num_layers=num_rnn_layers_for_node_edge_emb,
@@ -150,12 +171,15 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             raise RuntimeError('Unknown node_edge_emb_strategy: {}'.format(node_edge_emb_strategy))
 
 
+        rnn_input_size = word_emb_size if node_edge_emb_strategy == 'mean' else hidden_size
+        if 'seq_bert' in self.word_emb_type:
+            rnn_input_size += self.word_emb_layers['seq_bert'].bert_model.config.hidden_size
+
         if seq_info_encode_strategy == 'none':
             self.seq_info_encode_layer = None
         elif seq_info_encode_strategy == 'lstm':
             self.seq_info_encode_layer = RNNEmbedding(
-                                    word_vocab.embeddings.shape[1] \
-                                    if node_edge_emb_strategy == 'mean' else hidden_size,
+                                    rnn_input_size,
                                     hidden_size,
                                     bidirectional=False,
                                     num_layers=num_rnn_layers_for_seq_info_encode,
@@ -164,8 +188,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                                     device=device)
         elif seq_info_encode_strategy == 'bilstm':
             self.seq_info_encode_layer = RNNEmbedding(
-                                    word_vocab.embeddings.shape[1] \
-                                    if node_edge_emb_strategy == 'mean' else hidden_size,
+                                    rnn_input_size,
                                     hidden_size,
                                     bidirectional=True,
                                     num_layers=num_rnn_layers_for_seq_info_encode,
@@ -174,8 +197,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                                     device=device)
         elif seq_info_encode_strategy == 'gru':
             self.seq_info_encode_layer = RNNEmbedding(
-                                    word_vocab.embeddings.shape[1] \
-                                    if node_edge_emb_strategy == 'mean' else hidden_size,
+                                    rnn_input_size,
                                     hidden_size,
                                     bidirectional=False,
                                     num_layers=num_rnn_layers_for_seq_info_encode,
@@ -184,8 +206,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                                     device=device)
         elif seq_info_encode_strategy == 'bigru':
             self.seq_info_encode_layer = RNNEmbedding(
-                                    word_vocab.embeddings.shape[1] \
-                                    if node_edge_emb_strategy == 'mean' else hidden_size,
+                                    rnn_input_size,
                                     hidden_size,
                                     bidirectional=True,
                                     num_layers=num_rnn_layers_for_seq_info_encode,
@@ -195,15 +216,13 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         else:
             raise RuntimeError('Unknown seq_info_encode_strategy: {}'.format(seq_info_encode_strategy))
 
-    def forward(self, input_tensor, item_size, num_items, num_word_items=None):
+    def forward(self, batch_gd, item_size, num_items, num_word_items=None, raw_text_data=None):
         """Compute initial node/edge embeddings.
 
         Parameters
         ----------
-        input_tensor : torch.LongTensor
-            The input word sequence tensor with shape :math:`(N, L)` where
-            :math:`N` is the total number of items in the batched graph,
-            and :math:`L` is the word sequence length.
+        batch_gd : GraphData
+            The batched graph data.
         item_size : torch.LongTensor
             The length of word sequence per item with shape :math:`(N)`.
         num_items : torch.LongTensor
@@ -215,15 +234,24 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             of graphs in the batched graph. We assume that the word items are
             not reordered and interpolated, and always appear before the non-word
             items in the graph. Default: ``None``.
+        raw_text_data: list
+            The raw text data. Example: [['what', 'is', 'bert'], ['how', 'to', 'use', 'bert']].
+            Default: ``None``.
 
         Returns
         -------
         torch.Tensor
             The output item embeddings.
         """
+
         feat = []
-        for word_emb_layer in self.word_emb_layers:
-            feat.append(word_emb_layer(input_tensor))
+        if 'w2v' in self.word_emb_layers:
+            input_data = batch_gd.node_features['token_id'].long()
+            feat.append(self.word_emb_layers['w2v'](input_data))
+
+        if 'node_edge_bert' in self.word_emb_layers:
+            input_data = [[batch_gd.node_attributes[i]['token']] for i in range(batch_gd.get_node_num())]
+            feat.append(self.word_emb_layers['node_edge_bert'](input_data))
 
         feat = torch.cat(feat, dim=-1)
         feat = dropout_fn(feat, self.word_dropout, shared_axes=[-2], training=self.training)
@@ -240,27 +268,37 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             max_num_items = torch.max(num_items).item()
             new_feat_list = []
             start_idx = 0
+            raw_text_data = []
             for i in range(num_items.shape[0]):
-                tmp_feat = feat[int(start_idx): int(start_idx + num_items[i].item())]
-                start_idx += num_items[i].item()
+                tmp_feat = feat[start_idx: start_idx + num_items[i].item()]
                 if num_items[i].item() < max_num_items:
                     tmp_feat = torch.cat([tmp_feat, to_cuda(torch.zeros(
-                        int(max_num_items - num_items[i]), tmp_feat.shape[1]), self.device)], 0)
+                        max_num_items - num_items[i], tmp_feat.shape[1]), self.device)], 0)
                 new_feat_list.append(tmp_feat)
+
+                if 'seq_bert' in self.word_emb_layers:
+                    raw_text_data.append([batch_gd.node_attributes[j]['token'] for j in range(start_idx, start_idx + num_items[i].item())])
+
+                start_idx += num_items[i].item()
 
             # computation
             len_ = num_word_items if num_word_items is not None else num_items
             new_feat = torch.stack(new_feat_list, 0)
-            new_feat = self.seq_info_encode_layer(new_feat, len_)
+
+            if 'seq_bert' in self.word_emb_layers:
+                bert_feat = self.word_emb_layers['seq_bert'](raw_text_data)
+                new_feat = torch.cat([new_feat, bert_feat], -1)
+
+            rnn_state = self.seq_info_encode_layer(new_feat, len_)
             if self.seq_info_encode_strategy in ('lstm', 'bilstm', 'gru', 'bigru'):
-                new_feat = new_feat[0]
+                rnn_state = rnn_state[0]
 
             # batching
             ret_feat = []
             for i in range(len_.shape[0]):
-                tmp_feat = new_feat[i][:len_[i]]
+                tmp_feat = rnn_state[i][:len_[i]]
                 if len(tmp_feat) < num_items[i].item():
-                    tmp_feat = torch.cat([tmp_feat, new_feat_list[i][len_[i]: num_items[i]]], 0)
+                    tmp_feat = torch.cat([tmp_feat, new_feat[i, len_[i]: num_items[i]]], 0)
 
                 ret_feat.append(tmp_feat)
 
@@ -282,22 +320,22 @@ class WordEmbedding(nn.Module):
         The padding index, default: ``0``.
     pretrained_word_emb : numpy.ndarray, optional
         The pretrained word embeddings, default: ``None``.
-    fix_word_emb : boolean, optional
+    fix_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``True``.
 
     Examples
     ----------
-    >>> word_emb_layer = WordEmbedding(1000, 300, padding_idx=0, pretrained_word_emb=None, fix_word_emb=True)
+    >>> word_emb_layer = WordEmbedding(1000, 300, padding_idx=0, pretrained_word_emb=None, fix_emb=True)
     """
     def __init__(self, vocab_size, emb_size, padding_idx=0,
-                    pretrained_word_emb=None, fix_word_emb=True, device=None):
+                    pretrained_word_emb=None, fix_emb=True, device=None):
         super(WordEmbedding, self).__init__()
         self.word_emb_layer = nn.Embedding(vocab_size, emb_size, padding_idx=padding_idx,
                             _weight=torch.from_numpy(pretrained_word_emb).float()
                             if pretrained_word_emb is not None else None)
         self.device = device
 
-        if fix_word_emb:
+        if fix_emb:
             print('[ Fix word embeddings ]')
             for param in self.word_emb_layer.parameters():
                 param.requires_grad = False
@@ -320,12 +358,81 @@ class WordEmbedding(nn.Module):
 class BertEmbedding(nn.Module):
     """Bert embedding class.
     """
-    def __init__(self, fix_word_emb):
+    def __init__(self,
+                name='bert-base-uncased',
+                max_seq_len=500,
+                doc_stride=250,
+                fix_emb=True,
+                lower_case=True):
         super(BertEmbedding, self).__init__()
-        self.fix_word_emb = fix_word_emb
+        self.bert_max_seq_len = max_seq_len
+        self.bert_doc_stride = doc_stride
+        self.fix_emb = fix_emb
 
-    def forward(self):
-        raise NotImplementedError()
+        from transformers import BertModel
+        from transformers import BertTokenizer
+        print('[ Using pretrained BERT embeddings ]')
+        self.bert_tokenizer = BertTokenizer.from_pretrained(name, do_lower_case=lower_case)
+        self.bert_model = BertModel.from_pretrained(name)
+        if fix_emb:
+            print('[ Fix BERT layers ]')
+            self.bert_model.eval()
+            for param in self.bert_model.parameters():
+                param.requires_grad = False
+        else:
+            print('[ Finetune BERT layers ]')
+            self.bert_model.train()
+
+        # compute weighted average over BERT layers
+        self.logits_bert_layers = nn.Parameter(nn.init.xavier_uniform_(torch.Tensor(1, self.bert_model.config.num_hidden_layers)))
+
+
+    def forward(self, raw_text_data):
+        """Compute BERT embeddings for each word in text.
+
+        Parameters
+        ----------
+        raw_text_data : list
+            The raw text input data. Example: [['what', 'is', 'bert'], ['how', 'to', 'use', 'bert']].
+
+        Returns
+        -------
+        torch.Tensor
+            BERT embedding matrix.
+        """
+        bert_features = []
+        max_d_len = 0
+        for text in raw_text_data:
+            bert_features.append(convert_text_to_bert_features(text, self.bert_tokenizer, self.bert_max_seq_len, self.bert_doc_stride))
+            max_d_len = max(max_d_len, len(text))
+
+        max_bert_d_num_chunks = max([len(ex_bert_d) for ex_bert_d in bert_features])
+        max_bert_d_len = max([len(bert_d.input_ids) for ex_bert_d in bert_features for bert_d in ex_bert_d])
+        bert_xd = torch.LongTensor(len(raw_text_data), max_bert_d_num_chunks, max_bert_d_len).fill_(0)
+        bert_xd_mask = torch.LongTensor(len(raw_text_data), max_bert_d_num_chunks, max_bert_d_len).fill_(0)
+        for i, ex_bert_d in enumerate(bert_features): # Example level
+            for j, bert_d in enumerate(ex_bert_d): # Chunk level
+                bert_xd[i, j, :len(bert_d.input_ids)].copy_(torch.LongTensor(bert_d.input_ids))
+                bert_xd_mask[i, j, :len(bert_d.input_mask)].copy_(torch.LongTensor(bert_d.input_mask))
+
+        bert_xd = bert_xd.to(self.bert_model.device)
+        bert_xd_mask = bert_xd_mask.to(self.bert_model.device)
+
+        encoder_outputs = self.bert_model(bert_xd.view(-1, bert_xd.size(-1)),
+                                        token_type_ids=None,
+                                        attention_mask=bert_xd_mask.view(-1, bert_xd_mask.size(-1)),
+                                        output_hidden_states=True,
+                                        return_dict=True)
+        all_encoder_layers = encoder_outputs['hidden_states'][1:] # The first one is the input embedding
+        all_encoder_layers = torch.stack([x.view(bert_xd.shape + (-1,)) for x in all_encoder_layers], 0)
+        bert_xd_f = extract_bert_hidden_states(all_encoder_layers, max_d_len, bert_features, weighted_avg=True)
+
+        weights_bert_layers = torch.softmax(self.logits_bert_layers, dim=-1)
+        bert_xd_f = torch.mm(weights_bert_layers, bert_xd_f.view(bert_xd_f.size(0), -1)).view(bert_xd_f.shape[1:])
+
+        return bert_xd_f
+
+
 
 class MeanEmbedding(nn.Module):
     """Mean embedding class.

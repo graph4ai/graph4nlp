@@ -34,11 +34,13 @@ class QGModel(nn.Module):
         super(QGModel, self).__init__()
         self.config = config
         self.vocab = vocab
-        embedding_style = {'word_emb_type': 'w2v',
+        word_emb_type = ['w2v', config['word_bert_type']] if config.get('word_bert_type', None) else 'w2v'
+        embedding_style = {'word_emb_type': word_emb_type,
                             'node_edge_emb_strategy': config['node_edge_emb_strategy'],
                             'seq_info_encode_strategy': config['seq_info_encode_strategy'],
                             'num_rnn_layers_for_node_edge_emb': 1,
-                            'num_rnn_layers_for_seq_info_encode': 1
+                            'num_rnn_layers_for_seq_info_encode': 1,
+                            'bert_model_name': config.get('bert_model_name', 'bert-base-uncased')
                            }
 
         assert not (config['graph_type'] in ('node_emb', 'node_emb_refined') and config['gnn'] == 'gat'), \
@@ -109,7 +111,7 @@ class QGModel(nn.Module):
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(config['graph_type']))
 
-        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
+        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
 
         self.ans_rnn_encoder = RNNEmbedding(
                                     self.vocab.in_word_vocab.embeddings.shape[1],

@@ -401,7 +401,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
         num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes, num_word_items=num_word_nodes)
+        node_emb = self.embedding_layer(batch_gd, node_size, num_nodes, num_word_items=num_word_nodes)
         batch_gd.node_features["node_feat"] = node_emb
 
         return batch_gd

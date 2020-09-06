@@ -123,7 +123,7 @@ class TextClassifier(nn.Module):
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(config['graph_type']))
 
-        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
+        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
 
 
         if config['gnn'] == 'gat':
