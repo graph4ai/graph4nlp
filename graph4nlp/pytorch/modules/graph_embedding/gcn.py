@@ -1,4 +1,4 @@
-from dgl.nn import GraphConv
+from dgl.nn.pytorch import GraphConv
 
 import torch
 import torch.nn as nn
@@ -9,10 +9,49 @@ from ...data.data import GraphData
 from dgl.utils import expand_as_pair
 
 class GCN(GNNBase):
-    r"""Multi-layer GCN.
+    r"""Multi-layer Graph Convolutional Networks (GCN).
+    Support both `unidirectional GCN
+    <https://arxiv.org/pdf/1609.02907>`__ and bidirectional versions
+    including `GCN-BiSep` and `GCN-BiFuse`.
 
     Parameters
     ----------
+    num_layers: int
+        Number of GCN layers.
+
+    in_feats: int
+        Input feature size of the first GCN layer.
+
+    hidden_size: int
+        Hidden size per GCN layer.
+
+    out_feats: int
+        Output feature size of the final GCN layer.
+
+    direction_option: str
+        Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
+        Default : ``'bi_sep'``.
+
+    norm: str, optional
+        How to apply the normalizer. If is `'right'`, divide the aggregated messages
+        by each node's in-degrees, which is equivalent to averaging the received messages.
+        If is `'none'`, no normalization is applied. Default is `'both'`,
+        where the :math:`c_{ij}` in the paper is applied.
+
+    weight: bool, optional
+        If True, apply a linear layer. Otherwise, aggregating the messages
+        without a weight matrix.
+
+    bias: bool, optional
+        If True, adds a learnable bias to the output. Default: ``True``.
+
+    activation: callable activation function/layer or None, optional
+        If not None, applies an activation function to the updated node features.
+        Default: ``None``.
+
+    allow_zero_in_degree: bool, optional
+
+    use_edge_weight: bool, optional
     """
     def __init__(self,
                  num_layers,
@@ -69,7 +108,7 @@ class GCN(GNNBase):
                                         allow_zero_in_degree=allow_zero_in_degree))
 
     def forward(self, graph):
-        r"""Compute multi-layer graph attention network.
+        r"""Compute multi-layer graph convolutional networks.
 
         Parameters
         ----------
@@ -124,31 +163,46 @@ class GCNLayer(GNNLayerBase):
 
     Parameters
     ----------
-    input_size : int, or pair of ints
-        Input feature size.
-        If the layer is to be applied to a unidirectional bipartite graph, ``input_size``
-        specifies the input feature size on both the source and destination nodes.  If
-        a scalar is given, the source and destination node feature size would take the
-        same value.
-    output_size : int
-        Output feature size.
-    num_heads : int
-        Number of heads in Multi-Head Attention.
+    num_layers: int
+        Number of GCN layers.
+
+    in_feats: int
+        Input feature size of the first GCN layer.
+
+    hidden_size: int
+        Hidden size per GCN layer.
+
+    out_feats: int
+        Output feature size of the final GCN layer.
+
     direction_option: str
-        Whether use unidirectional (i.e., regular) or bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
-        Default: ``'bi_sep'``.
-    feat_drop : float, optional
-        Dropout rate on feature, default: ``0``.
-    attn_drop : float, optional
-        Dropout rate on attention weight, default: ``0``.
-    negative_slope : float, optional
-        LeakyReLU angle of negative slope, default: ``0.2``.
-    residual : bool, optional
-        If True, use residual connection.
-        Default: ``False``.
-    activation : callable activation function/layer or None, optional.
+        Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
+        Default : ``'bi_sep'``.
+
+    norm: str, optional
+        How to apply the normalizer. If is `'right'`, divide the aggregated messages
+        by each node's in-degrees, which is equivalent to averaging the received messages.
+        If is `'none'`, no normalization is applied. Default is `'both'`,
+        where the :math:`c_{ij}` in the paper is applied.
+
+    weight: bool, optional
+        If True, apply a linear layer. Otherwise, aggregating the messages
+        without a weight matrix.
+
+    bias: bool, optional
+        If True, adds a learnable bias to the output. Default: ``True``.
+
+    activation: callable activation function/layer or None, optional
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
+
+    allow_zero_in_degree : bool, optional
+        If there are 0-in-degree nodes in the graph, output for those nodes will be invalid
+        since no message will be passed to those nodes. This is harmful for some applications
+        causing silent performance regression. This module will raise a DGLError if it detects
+        0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
+        and let the users handle it by themselves. Default: ``False``.
+
     """
     def __init__(self,
                  in_feats,
@@ -188,23 +242,25 @@ class GCNLayer(GNNLayerBase):
             raise RuntimeError('Unknown `direction_option` value: {}'.format(direction_option))
 
     def forward(self, graph, feat, weight=None, edge_weight=None, reverse_edge_weight=None):
-        r"""Compute graph attention network layer.
+        r"""Compute graph convolutional network layer.
 
         Parameters
         ----------
         graph : DGLGraph
             The graph.
-        feat : torch.Tensor or pair of torch.Tensor
+
+        feat : torch.Tensor
             If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
-            If a pair of torch.Tensor is given, the pair must contain two tensors of shape
-            :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
 
-        Returns
-        -------
-        torch.Tensor
-            The output feature of shape :math:`(N, H, D_{out})` where :math:`H`
-            is the number of heads, and :math:`D_{out}` is size of output feature.
+        weight: torch.Tensor, optional
+            Optional external weight tensor.
+
+        edge_weight: torch.Tensor
+            Optional edge weight. edge_weight shape: "math:`(\text{num_edge}, 1)`.
+
+        reverse_edge_weight: torch.Tensor
+            Optional reverse edge weight. reverse_edge_weight shape: "math:`(\text{num_edge}, 1)`.
         """
         return self.model(graph, feat, weight, edge_weight, reverse_edge_weight)
 
@@ -224,13 +280,6 @@ class UndirectedGCNLayerConv(GNNLayerBase):
     :math:`c_{ij}` is the product of the square root of node degrees
     (i.e.,  :math:`c_{ij} = \sqrt{|\mathcal{N}(i)|}\sqrt{|\mathcal{N}(j)|}`),
     and :math:`\sigma` is an activation function.
-
-    .. math::
-       h_{i}^{0} & = [ x_i \| \mathbf{0} ]
-
-       a_{i}^{t} & = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
-
-       h_{i}^{t+1} & = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
 
     Parameters
     ----------
@@ -334,22 +383,24 @@ class UndirectedGCNLayerConv(GNNLayerBase):
     def forward(self, graph, feat, weight=None, edge_weight=None, reverse_edge_weight=None):
         r"""Compute graph convolution.
 
-        Notes
-        -----
-        * Input shape: :math:`(N, *, \text{in_feats})` where * means any number of additional
-          dimensions, :math:`N` is the number of nodes.
-        * Output shape: :math:`(N, *, \text{out_feats})` where all but the last dimension are
-          the same shape as the input.
-        * Weight shape: "math:`(\text{in_feats}, \text{out_feats})`.
-
         Parameters
         ----------
-        graph : DGLGraph
+        graph: DGLGraph
             The graph.
-        feat : torch.Tensor
-            The input feature
-        weight : torch.Tensor, optional
+
+        feat: torch.Tensor
+            If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
+            :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
+
+        weight: torch.Tensor, optional
             Optional external weight tensor.
+
+        edge_weight: torch.Tensor
+            Optional edge weight. edge_weight shape: "math:`(\text{num_edge}, 1)`.
+
+        reverse_edge_weight: torch.Tensor
+            Optional reverse edge weight. reverse_edge_weight shape: "math:`(\text{num_edge}, 1)`.
+            For undirected GCN layer, reverse_edge_weight must be `None`.
 
         Returns
         -------
@@ -435,34 +486,39 @@ class BiFuseGCNLayerConv(GNNLayerBase):
     r"""Bidirection version GCN layer from paper `GCN <https://arxiv.org/abs/1609.02907>`__.
 
     .. math::
-        h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
-        \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
-        h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
-        (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
-        h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
+        h_{i, \vdash}^{(l+1)} = \sigma(b^{(l)}_{\vdash} + \sum_{j\in\mathcal{N}_{\vdash}(i)}\frac{1}{c_{ij}}h_{j}^{(l)}W^{(l)}_{\vdash})
+
+        h_{i, \dashv}^{(l+1)} = \sigma(b^{(l)}_{\dashv} + \sum_{j\in\mathcal{N}_{\dashv}(i)}\frac{1}{c_{ij}}h_{j}^{(l)}W^{(l)}_{\dashv})
+
+        r_{i}^{l} &= \sigma (W_{f}[h_{i, \vdash}^{l};h_{i, \dashv}^{l};
+                h_{i, \vdash}^{l}*h_{i, \dashv}^{l};
+                h_{i, \vdash}^{l}-h_{i, \dashv}^{l}])
+
     Parameters
     ----------
-    input_size : int, or pair of ints
-        Input feature size.
-        If the layer is to be applied on a unidirectional bipartite graph, ``in_feats``
-        specifies the input feature size on both the source and destination nodes.  If
-        a scalar is given, the source and destination node feature size would take the
-        same value.
-        If aggregator type is ``gcn``, the feature size of source and destination nodes
-        are required to be the same.
-    output_size : int
-        Output feature size.
-    feat_drop : float
-        Dropout rate on features, default: ``0``.
-    aggregator_type : str
-        Aggregator type to use (``mean``, ``gcn``, ``pool``, ``lstm``).
-    bias : bool
+    in_feats : int
+        Input feature size; i.e, the number of dimensions of :math:`h_j^{(l)}`.
+    out_feats : int
+        Output feature size; i.e., the number of dimensions of :math:`h_i^{(l+1)}`.
+    norm : str, optional
+        How to apply the normalizer. If is `'right'`, divide the aggregated messages
+        by each node's in-degrees, which is equivalent to averaging the received messages.
+        If is `'none'`, no normalization is applied. Default is `'both'`,
+        where the :math:`c_{ij}` in the paper is applied.
+    weight : bool, optional
+        If True, apply a linear layer. Otherwise, aggregating the messages
+        without a weight matrix.
+    bias : bool, optional
         If True, adds a learnable bias to the output. Default: ``True``.
-    norm : callable activation function/layer or None, optional
-        If not None, applies normalization to the updated node features.
     activation : callable activation function/layer or None, optional
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
+    allow_zero_in_degree : bool, optional
+        If there are 0-in-degree nodes in the graph, output for those nodes will be invalid
+        since no message will be passed to those nodes. This is harmful for some applications
+        causing silent performance regression. This module will raise a DGLError if it detects
+        0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
+        and let the users handle it by themselves. Default: ``False``.
     """
 
     def __init__(self,
@@ -536,17 +592,21 @@ class BiFuseGCNLayerConv(GNNLayerBase):
 
         Parameters
         ----------
-        graph : DGLGraph
+        graph: DGLGraph
             The graph.
-        feat : torch.Tensor or pair of torch.Tensor
-            If a torch.Tensor is given, it represents the input feature of shape
-            :math:`(N, D_{in})`
-            where :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
-            If a pair of torch.Tensor is given, which is the case for bipartite graph, the pair
-            must contain two tensors of shape :math:`(N_{in}, D_{in_{src}})` and
-            :math:`(N_{out}, D_{in_{dst}})`.
-        weight_fw, weight_bw : torch.Tensor, optional
+
+        feat: torch.Tensor
+            If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
+            :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
+
+        weight: torch.Tensor, optional
             Optional external weight tensor.
+
+        edge_weight: torch.Tensor
+            Optional edge weight. edge_weight shape: "math:`(\text{num_edge}, 1)`.
+
+        reverse_edge_weight: torch.Tensor
+            Optional reverse edge weight. reverse_edge_weight shape: "math:`(\text{num_edge}, 1)`.
 
         Returns
         -------
@@ -699,11 +759,9 @@ class BiSepGCNLayerConv(GNNLayerBase):
     r"""Bidirection version GCN layer from paper `GCN <https://arxiv.org/abs/1609.02907>`__.
 
     .. math::
-        h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
-        \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
-        h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
-        (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
-        h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
+        h_{i, \vdash}^{(l+1)} = \sigma(b^{(l)}_{\vdash} + \sum_{j\in\mathcal{N}_{\vdash}(i)}\frac{1}{c_{ij}}h_{j, \vdash}^{(l)}W^{(l)}_{\vdash})
+
+        h_{i, \dashv}^{(l+1)} = \sigma(b^{(l)}_{\dashv} + \sum_{j\in\mathcal{N}_{\dashv}(i)}\frac{1}{c_{ij}}h_{j, \dashv}^{(l)}W^{(l)}_{\dashv})
     """
     def __init__(self,
                  in_feats,
@@ -774,17 +832,21 @@ class BiSepGCNLayerConv(GNNLayerBase):
 
         Parameters
         ----------
-        graph : DGLGraph
+        graph: DGLGraph
             The graph.
-        feat : torch.Tensor or pair of torch.Tensor
-            If a torch.Tensor is given, it represents the input feature of shape
-            :math:`(N, D_{in})`
-            where :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
-            If a pair of torch.Tensor is given, which is the case for bipartite graph, the pair
-            must contain two tensors of shape :math:`(N_{in}, D_{in_{src}})` and
-            :math:`(N_{out}, D_{in_{dst}})`.
-        weight_fw, weight_bw : torch.Tensor, optional
+
+        feat: torch.Tensor
+            If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
+            :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
+
+        weight: torch.Tensor, optional
             Optional external weight tensor.
+
+        edge_weight: torch.Tensor
+            Optional edge weight. edge_weight shape: "math:`(\text{num_edge}, 1)`.
+
+        reverse_edge_weight: torch.Tensor
+            Optional reverse edge weight. reverse_edge_weight shape: "math:`(\text{num_edge}, 1)`.
 
         Returns
         -------
