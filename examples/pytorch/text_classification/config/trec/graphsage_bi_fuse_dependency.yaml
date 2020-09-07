@@ -2,7 +2,7 @@
 dataset: 'trec'
 val_split_ratio: 0.2 # validation set split ratio (default: 0.2)
 pre_word_emb_file: '/home/cheny39/Research/Resource/glove-vectors/glove.840B.300d.txt' # path to the pretrained word embedding file
-save_model_path: 'text_clf_ckpt'
+out_dir: 'out/trec/graphsage_bi_fuse_dependency_ckpt'
 
 
 # Graph construction
