@@ -149,20 +149,23 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
                     merge_strategy=None,
                     edge_strategy=None,
                     verbase=False,
-                    auxiliary_args=None):
+                    init_topology_aux_args=None):
         """Convert raw text data to the initial graph.
 
         Parameters
         ----------
-        raw_text_data : str
-            The raw text data.
+        raw_text_data : str or list/tuple of str
+            The raw text data. When a list/tuple of tokens is provided, no
+            tokenization will be conducted and each token is a node
+            (used for line graph builder); otherwise, tokenization will
+            be conducted on the input string to get a list of tokens.
         init_topology_builder : class, optional
             The initial graph topology builder, default: ``None``.
         lower_case : boolean
             Specify whether to lower case the input text, default: ``True``.
         tokenizer : callable, optional
             The tokenization function.
-        auxiliary_args : dict, optional
+        init_topology_aux_args : dict, optional
             The auxiliary args for init_topology_builder.topology, default: ``None``.
 
         Returns
@@ -171,19 +174,22 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             The constructed graph.
         """
         if init_topology_builder is None: # line graph
-            if lower_case:
-                raw_text_data = raw_text_data.lower()
+            if isinstance(raw_text_data, str):
+                token_list = tokenizer(raw_text_data.strip())
+            elif isinstance(raw_text_data, (list, tuple)):
+                token_list = raw_text_data
+            else:
+                raise RuntimeError('raw_text_data must be str or list/tuple of str')
 
-            token_list = tokenizer(raw_text_data.strip())
             graph = GraphData()
             graph.add_nodes(len(token_list))
 
             for idx in range(len(token_list) - 1):
                 graph.add_edge(idx, idx + 1)
                 graph.add_edge(idx + 1, idx)
-                graph.node_attributes[idx]['token'] = token_list[idx]
+                graph.node_attributes[idx]['token'] = token_list[idx].lower() if lower_case else token_list[idx]
 
-            graph.node_attributes[idx + 1]['token'] = token_list[-1]
+            graph.node_attributes[idx + 1]['token'] = token_list[-1].lower() if lower_case else token_list[-1]
         elif init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
             graph = init_topology_builder.topology(
                                 raw_text_data=raw_text_data,
@@ -195,6 +201,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         else:
             graph = init_topology_builder.topology(
                                 raw_text_data,
-                                auxiliary_args)
+                                init_topology_aux_args)
 
         return graph

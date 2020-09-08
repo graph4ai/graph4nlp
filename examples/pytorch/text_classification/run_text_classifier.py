@@ -267,7 +267,7 @@ class ModelHandler:
                               seed=self.config['seed'],
                               word_emb_size=300,
                               init_topology_builder=init_topology_builder,
-                              auxiliary_args={'dummy_param': 0})
+                              init_topology_aux_args={'dummy_param': 0})
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config['batch_size'], shuffle=True,
                                            num_workers=self.config['num_workers'],
                                            collate_fn=dataset.collate_fn)

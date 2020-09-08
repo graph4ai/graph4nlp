@@ -436,7 +436,7 @@ class Dataset(torch.utils.data.Dataset):
                                                                 merge_strategy=self.merge_strategy,
                                                                 edge_strategy=self.edge_strategy,
                                                                 verbase=False,
-                                                                auxiliary_args=self.auxiliary_args)
+                                                                init_topology_aux_args=self.init_topology_aux_args)
 
                     item.graph = graph
             else:
