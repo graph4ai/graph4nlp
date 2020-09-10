@@ -66,6 +66,7 @@ dependencies:
     - requests==2.24.0
     - sentencepiece==0.1.91
     - stanfordcorenlp==3.9.1.1
+    - pyyaml=5.3.1
     - torchtext==0.7.0
     - urllib3==1.25.10
 prefix:
