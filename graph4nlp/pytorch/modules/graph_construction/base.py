@@ -18,41 +18,49 @@ class GraphConstructionBase(nn.Module):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``word_emb_type`` : Specify pretrained word embedding types
-            including "w2v" and/or "bert".
-        - ``node_edge_emb_strategy`` : Specify node/edge embedding
-            strategies including "mean", "lstm", "gru", "bilstm" and "bigru".
-        - ``seq_info_encode_strategy`` : Specify strategies of encoding
-            sequential information in raw text data including "none",
-            "lstm", "gru", "bilstm" and "bigru".
-        - ``num_rnn_layers_for_node_edge_emb``: Specify the number of
-            RNN layers for ``node_edge_emb_strategy`` when RNN is used.
-        - ``num_rnn_layers_for_seq_info_encode``: Specify the number of
-            RNN layers for ``seq_info_encode_strategy`` when RNN is used.
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``emb_strategy`` : specify the embedding construction strategy.
+        - ``num_rnn_layers``: specify the number of RNN layers.
+        - ``bert_model_name``: specify the BERT model name.
+        - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
     hidden_size : int, optional
         The hidden size of RNN layer, default: ``None``.
     fix_word_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``True``.
+    fix_bert_emb : boolean, optional
+        Specify whether to fix pretrained BERT embeddings, default: ``True``.
+    bert_model_name : str, optional
+        Specify the BERT model name, default: ``'bert-base-uncased'``.
+    bert_lower_case : bool, optional
+        Specify whether to lower case the input text for BERT embeddings, default: ``True``.
     word_dropout : float, optional
         Dropout ratio for word embedding, default: ``None``.
-    dropout : float, optional
+    rnn_dropout : float, optional
         Dropout ratio for RNN embedding, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
-    def __init__(self, word_vocab, embedding_styles, hidden_size=None,
-                        fix_word_emb=True, word_dropout=None, dropout=None, device=None):
+    def __init__(self,
+                word_vocab,
+                embedding_styles,
+                hidden_size=None,
+                fix_word_emb=True,
+                fix_bert_emb=True,
+                word_dropout=None,
+                rnn_dropout=None,
+                device=None):
         super(GraphConstructionBase, self).__init__()
         self.embedding_layer = EmbeddingConstruction(word_vocab,
-                                        embedding_styles['word_emb_type'],
-                                        embedding_styles['node_edge_emb_strategy'],
-                                        embedding_styles['seq_info_encode_strategy'],
+                                        embedding_styles['single_token_item'],
+                                        emb_strategy=embedding_styles['emb_strategy'],
                                         hidden_size=hidden_size,
-                                        num_rnn_layers_for_node_edge_emb=embedding_styles.get('num_rnn_layers_for_node_edge_emb', 1),
-                                        num_rnn_layers_for_seq_info_encode=embedding_styles.get('num_rnn_layers_for_seq_info_encode', 1),
+                                        num_rnn_layers=embedding_styles.get('num_rnn_layers', 1),
                                         fix_word_emb=fix_word_emb,
+                                        fix_bert_emb=fix_bert_emb,
+                                        bert_model_name=embedding_styles.get('bert_model_name', 'bert-base-uncased'),
+                                        bert_lower_case=embedding_styles.get('bert_lower_case', True),
                                         word_dropout=word_dropout,
-                                        dropout=dropout,
+                                        rnn_dropout=rnn_dropout,
                                         device=device)
 
     def forward(self, raw_text_data, **kwargs):
@@ -129,13 +137,14 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     """
 
     def __init__(self, word_vocab, embedding_styles, hidden_size,
-                 fix_word_emb=True, word_dropout=None, dropout=None, device=None):
+                 fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
         super(StaticGraphConstructionBase, self).__init__(word_vocab,
                                                            embedding_styles,
                                                            hidden_size,
                                                            fix_word_emb=fix_word_emb,
+                                                           fix_bert_emb=fix_bert_emb,
                                                            word_dropout=word_dropout,
-                                                           dropout=dropout,
+                                                           rnn_dropout=rnn_dropout,
                                                            device=device)
 
     def add_vocab(self, **kwargs):
@@ -206,9 +215,11 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         The dimension of hidden layers, default: ``None``.
     fix_word_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``False``.
+    fix_bert_emb : boolean, optional
+        Specify whether to fix pretrained BERT embeddings, default: ``True``.
     word_dropout : float, optional
         Dropout ratio for word embedding, default: ``None``.
-    dropout : float, optional
+    rnn_dropout : float, optional
         Dropout ratio for RNN embedding, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
@@ -226,16 +237,18 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                 input_size=None,
                 hidden_size=None,
                 fix_word_emb=False,
+                fix_bert_emb=False,
                 word_dropout=None,
-                dropout=None,
+                rnn_dropout=None,
                 device=None):
         super(DynamicGraphConstructionBase, self).__init__(
                                                     word_vocab,
                                                     embedding_styles,
                                                     hidden_size=hidden_size,
                                                     fix_word_emb=fix_word_emb,
+                                                    fix_bert_emb=fix_bert_emb,
                                                     word_dropout=word_dropout,
-                                                    dropout=dropout,
+                                                    rnn_dropout=rnn_dropout,
                                                     device=device)
         assert top_k_neigh is None or epsilon_neigh is None, \
             'top_k_neigh and epsilon_neigh cannot be activated at the same time!'
@@ -376,7 +389,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             attention = torch.mm(node_vec_norm, node_vec_norm.transpose(-1, -2)).detach()
 
         if node_mask is not None:
-            attention = attention.masked_fill_(1 - node_mask.byte(), self.mask_off_val)
+            attention = attention.masked_fill_(~node_mask.bool(), self.mask_off_val)
 
         return attention
 

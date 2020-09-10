@@ -349,7 +349,7 @@ class Vocab(object):
             sentence = sentence.lower()
 
         seq = []
-        for word in sentence.strip().split(' '):
+        for word in self.tokenizer(sentence):
             idx = self.getIndex(word)
             seq.append(idx)
         return seq

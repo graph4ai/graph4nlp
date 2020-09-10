@@ -13,14 +13,10 @@ Text classification results
 
 Dependencies
 ------------
-- torch v1.0: the autograd support for sparse mm is only available in v1.0.
-- requests
-- sklearn
 
 ```bash
-pip install torch==1.1.0 requests dgl
+pip install -r examples/pytorch/text_classification/requirements.txt
 ```
-
 
 
 How to run
@@ -311,7 +307,3 @@ seq_info_encode_strategy: none
 GAT-Undirected: 0.582
 GAT-BiSep: 0.666
 GAT-BiFuse: 0.796 -->
-
-
-
-
