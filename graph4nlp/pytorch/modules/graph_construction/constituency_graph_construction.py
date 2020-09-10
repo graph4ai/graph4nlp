@@ -32,7 +32,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     Attributes
     ----------
     embedding_styles : (dict)
-        Specify embedding styles including ``word_emb_type``, ``node_edge_level_emb_type`` and ``graph_level_emb_type``.
+        Specify embedding styles including ``single_token_item``, ``emb_strategy``, ``num_rnn_layers``, ``bert_model_name`` and ``bert_lower_case``.
 
     vocab: (set, optional)
         Vocabulary including all words appeared in graphs.
@@ -56,12 +56,15 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         Generate graph topology and embeddings.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
-                                                               dropout=dropout, device=device)
+                                                               fix_bert_emb=fix_bert_emb,
+                                                               word_dropout=word_dropout,
+                                                               rnn_dropout=rnn_dropout,
+                                                               device=device)
         self.vocab = vocab
         assert(self.embedding_layer.device == device)
         self.device = self.embedding_layer.device
@@ -153,7 +156,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         Parameters
         ----------
-        parsed_object : 
+        parsed_object :
             A parsed object of single sentence after external parser like ``CoreNLP``
 
         sub_sentence_id : int
@@ -161,10 +164,10 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         bisequential_link : bool
             Add bi-directional edges between word nodes, do not add if ``False``
-        
+
         top_down : bool
             Edge direction between nodes in constituency tree, if ``True``, add edges from top to down
-        
+
         add_pos_node : bool
             Add part-of-speech nodes or not
         """
@@ -254,10 +257,16 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         ----------
         graph_list : list
             A graph list to be merged
-        
+
         bisequential_link : bool
             whether add bi-direnctional links between word nodes
-        
+
+        reformalize : bool
+            If true, separate word nodes and non-terminal nodes in ``graph.node_attributes`` and put word nodes in the front position
+
+        bisequential_link : bool
+            whether add bi-direnctional links between word nodes
+
         reformalize : bool
             If true, separate word nodes and non-terminal nodes in ``graph.node_attributes`` and put word nodes in the front position
 
@@ -300,7 +309,6 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             merged_graph.add_edge(tail_node, head_node)
             if bisequential_link:
                 merged_graph.add_edge(head_node, tail_node)
-        
         if reformalize:
             new_dict_for_word_nodes = copy.deepcopy(merged_graph.node_attributes)
 
@@ -323,7 +331,6 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             for i in range(merged_graph.get_edge_num()):
                 merged_graph._edge_indices.src[i] = node_id_map[merged_graph._edge_indices.src[i]]
                 merged_graph._edge_indices.tgt[i] = node_id_map[merged_graph._edge_indices.tgt[i]]
-            
             reformalize_graph_attributes = {}
             for i in merged_graph.node_attributes.items():
                 reformalize_graph_attributes[node_id_map[i[0]]] = copy.deepcopy(i[1])
@@ -335,16 +342,19 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     def forward(self, batch_graphdata: list):
         node_size = []
         num_nodes = []
+        num_word_nodes = [] # number of nodes that are extracted from the raw text in each graph
 
         for g in batch_graphdata:
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
             num_nodes.append(g.get_node_num())
+            num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))
             node_size.extend([1 for i in range(num_nodes[-1])])
 
         batch_gd = to_batch(batch_graphdata)
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
+        num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
+        node_emb = self.embedding_layer(batch_gd, node_size, num_nodes, num_word_items=num_word_nodes)
         batch_gd.node_features["node_feat"] = node_emb
         return batch_gd
 

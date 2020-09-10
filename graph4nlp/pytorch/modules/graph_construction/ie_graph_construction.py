@@ -19,18 +19,20 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
     Parameters
     ----------
     embedding_style: dict
-        Specify embedding styles including ``word_emb_type``, ``node_edge_level_emb_type`` and ``graph_level_emb_type``.
+        Specify embedding styles including ``single_token_item``, ``emb_strategy``, ``num_rnn_layers``, ``bert_model_name`` and ``bert_lower_case``.
     vocab: VocabModel
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, word_dropout=None, dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
         super(IEBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                        embedding_styles=embedding_style,
                                                        hidden_size=hidden_size,
                                                        fix_word_emb=fix_word_emb,
+                                                       fix_bert_emb=fix_bert_emb,
                                                        word_dropout=word_dropout,
-                                                       dropout=dropout, device=device)
+                                                       rnn_dropout=rnn_dropout,
+                                                       device=device)
         self.vocab = vocab
         self.verbase = 1
         self.device = self.embedding_layer.device
@@ -142,7 +144,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         return parsed_results
 
     @classmethod
-    def topology(cls, raw_text_data, nlp_processor, merge_strategy, edge_strategy, verbase=True):
+    def topology(cls, raw_text_data, nlp_processor, processor_args, merge_strategy, edge_strategy, verbase=True):
         """
             Graph building method.
 
@@ -181,15 +183,13 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         """
         cls.verbase = verbase
 
+        if isinstance(processor_args, list):
+            props_coref = processor_args[0]
+            props_openie = processor_args[1]
+        else:
+            raise RuntimeError('processor_args for IEBasedGraphConstruction shouble be a list of dict.')
+
         # Do coreference resolution on the whole 'raw_text_data'
-        props_coref = {
-            'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
-            "tokenize.options":
-                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
-            "tokenize.whitespace": False,
-            'ssplit.isOneSentence': False,
-            'outputFormat': 'json'
-        }
         coref_json = nlp_processor.annotate(raw_text_data.strip(), properties=props_coref)
         coref_dict = json.loads(coref_json)
 
@@ -235,16 +235,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             sentences[sent_id]['resolvedText'] = ' '.join(sentences[sent_id]['tokenWords'])
 
         # use OpenIE to extract triples from resolvedText
-        props_openie = {
-            'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
-            "tokenize.options":
-                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
-            "tokenize.whitespace": False,
-            'ssplit.isOneSentence': False,
-            'outputFormat': 'json',
-            "openie.triple.strict": "true"
-        }
-
         all_sent_triples = {}
         for sent in sentences:
             resolved_sent = sent['resolvedText']
@@ -501,7 +491,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         if edge_size != [] and num_edges != []:
             edge_size = torch.Tensor(edge_size).to(self.device).int()
             num_edges = torch.Tensor(num_edges).to(self.device).int()
-            edge_emb = self.embedding_layer(batch_gd.edge_features["token_id"].long(), edge_size, num_edges)
+            edge_emb = self.embedding_layer(batch_gd, edge_size, num_edges)
             batch_gd.edge_features["edge_feat"] = edge_emb
 
         return batch_gd

@@ -94,8 +94,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         node_size = to_cuda(torch.Tensor(node_size), self.device).int()
         num_nodes = to_cuda(torch.Tensor(num_nodes), self.device).int()
         batch_gd = to_batch(batch_graphdata)
-
-        node_emb = self.embedding(batch_gd.node_features['token_id'].long(), node_size, num_nodes)
+        node_emb = self.embedding(batch_gd, node_size, num_nodes)
 
         init_norm_adj = self._get_normalized_init_adj(batch_gd)
         node_mask = self._get_node_mask_for_batch_graph(num_nodes)

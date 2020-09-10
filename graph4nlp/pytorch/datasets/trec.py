@@ -12,7 +12,7 @@ class TrecDataset(Text2LabelDataset):
 
     @property
     def processed_file_names(self):
-        """At least 3 reserved keys should be fiiled: 'vocab' and 'data'."""
+        """At least 2 reserved keys should be fiiled: 'vocab' and 'data'."""
         return {'vocab': 'vocab.pt', 'data': 'data.pt'}
 
     def download(self):
