@@ -1,6 +1,9 @@
 import os
 import random
 import time
+import pickle
+import argparse
+import copy
 
 import dgl
 import numpy as np
@@ -11,14 +14,20 @@ import torch.nn.init as init
 import torch.optim as optim
 from stanfordcorenlp import StanfordCoreNLP
 
+import sympy
+from random import randint
+from sympy.parsing.sympy_parser import parse_expr
+
+
 from graph4nlp.pytorch.data.data import GraphData, from_batch
 
-from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
 from graph4nlp.pytorch.datasets.geo import GeoDatasetForTree
+from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
 
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
@@ -32,6 +41,10 @@ from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask, dropout
 from graph4nlp.pytorch.modules.utils.tree_utils import DataLoaderForGraphEncoder, Tree, Vocab, to_cuda
 
+import warnings
+
+warnings.filterwarnings('ignore')
+
 class Graph2Tree(nn.Module):
     def __init__(self, src_vocab,
                  tgt_vocab,
@@ -40,16 +53,18 @@ class Graph2Tree(nn.Module):
                  dec_hidden_size,
                  dec_dropout_input,
                  dec_dropout_output,
-                 enc_dropout_input,
-                 enc_dropout_output,
-                 attn_dropout,
+                 dropout_for_word_embedding,
+                 enc_dropout_for_feature,
+                 enc_dropout_for_attn,
                  direction_option,
                  input_size,
                  output_size,
                  device,
                  teacher_force_ratio,
                  max_dec_seq_length,
-                 max_dec_tree_depth):
+                 max_dec_tree_depth,
+                 graph_construction_type,
+                 gnn_type):
         super(Graph2Tree, self).__init__()
 
         self.src_vocab = src_vocab
@@ -59,33 +74,40 @@ class Graph2Tree(nn.Module):
 
         embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
                            'seq_info_encode_strategy': "bilstm"}
-
-        # TODO: specify two encoder RNN dropout ratios.
-        
-        self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
-                                                               vocab=self.src_vocab,
-                                                               hidden_size=enc_hidden_size, dropout=enc_dropout_input, use_cuda=(
-                                                                   self.device != None),
-                                                               fix_word_emb=False)
-        # self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
-        #                                                        vocab=self.src_vocab,
-        #                                                        hidden_size=enc_hidden_size, dropout=enc_dropout_input, use_cuda=(
-        #                                                            self.device != None),
-        #                                                        fix_word_emb=False)
-        # self.gnn = None
+        if graph_construction_type == "DependencyGraph":
+            self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
+                                                                vocab=self.src_vocab,
+                                                                hidden_size=enc_hidden_size, dropout=dropout_for_word_embedding, device=device,
+                                                                fix_word_emb=False)
+        elif graph_construction_type == "ConstituencyGraph":
+            self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
+                                                                vocab=self.src_vocab,
+                                                                hidden_size=enc_hidden_size, dropout=dropout_for_word_embedding, device=device,
+                                                                fix_word_emb=False)
+        elif graph_construction_type == "DynamicGraph":
+            self.graph_topology = NodeEmbeddingBasedGraphConstruction(word_vocab=self.src_vocab, 
+                                                                embedding_styles=embedding_style, 
+                                                                input_size=enc_hidden_size, 
+                                                                hidden_size=enc_hidden_size,
+                                                                top_k_neigh=200,
+                                                                device=device)
 
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
 
-
-        # self.encoder = GAT(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, [2, 1], direction_option=direction_option)
-        self.encoder = GGNN(2, enc_hidden_size, enc_hidden_size, direction_option=direction_option)
-        # self.encoder = GraphSAGE(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, 'mean', direction_option=direction_option) # aggregate type: 'mean','gcn','pool','lstm'
-
+        if gnn_type == "GAT":
+            self.encoder = GAT(1, enc_hidden_size, enc_hidden_size, enc_hidden_size, [1], direction_option=direction_option, feat_drop=enc_dropout_for_feature, attn_drop=enc_dropout_for_attn, activation=F.relu, residual=True)
+        elif gnn_type == "GGNN":
+            self.encoder = GGNN(1, enc_hidden_size, enc_hidden_size, dropout=enc_dropout_for_feature, direction_option=direction_option)
+        elif gnn_type == "SAGE":
+            self.encoder = GraphSAGE(1, enc_hidden_size, enc_hidden_size, enc_hidden_size, 'lstm', direction_option=direction_option, feat_drop=enc_dropout_for_feature, activation=F.relu) # aggregate type: 'mean','gcn','pool','lstm'
+        else:
+            print("Wrong gnn type, please use GAT GGNN or SAGE")
+            raise NotImplementedError()
         self.criterion = nn.NLLLoss(size_average=False)
 
         if not use_copy:
             attn_unit = AttnUnit(
-                dec_hidden_size, output_size, "uniform", attn_dropout)
+                dec_hidden_size, output_size, "uniform", 0.1)
             self.decoder = StdTreeDecoder(attn=attn_unit,
                                           attn_type="uniform",
                                           embeddings=self.word_emb,
@@ -140,14 +162,13 @@ class Graph2Tree(nn.Module):
         loss = self.decoder(from_batch(batch_graph), tgt_tree_batch=tgt_tree_batch, enc_batch=DataLoaderForGraphEncoder.get_input_text_batch(graph_list, self.use_copy, self.src_vocab))
         return loss
 
-    def init(self):
+    def init(self, init_weight):
         to_cuda(self.encoder, self.device)
         to_cuda(self.decoder, self.device)
 
-        init_weight = 0.08
         print('--------------------------------------------------------------')
         for name, param in self.named_parameters():
-            print(name, param.size())
+            # print(name, param.size())
             if param.requires_grad:
                 if ("word_embedding" in name) or ("word_emb_layer" in name) or ("bert_embedding" in name):
                     pass
@@ -159,28 +180,28 @@ class Graph2Tree(nn.Module):
                             init.xavier_uniform_(param, gain=1.0)
                     else:
                         init.uniform_(param, -init_weight, init_weight)
-        print('--------------------------------------------------------------')
+        # print('--------------------------------------------------------------')
 
 
-class Geo:
-    def __init__(self, seed=1234, device=None, use_copy=True):
-        super(Geo, self).__init__()
-        seed = seed
+class Mawps:
+    def __init__(self, opt=None):
+        super(Mawps, self).__init__()
+        self.opt = opt
+        
+        seed = opt.seed
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
         torch.backends.cudnn.deterministic = True
 
-        self.device = device
-        # self.use_copy = use_copy
-        self.use_copy = False
-
-        self.data_dir = "/Users/lishucheng/Desktop/g4nlp/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/geo"
-        # self.data_dir = "/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/geo"
-
-        self.checkpoint_dir = "/Users/lishucheng/Desktop/g4nlp/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_geo"
-        # self.checkpoint_dir = "/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_geo"
+        if opt.gpuid == -1:
+            self.device = torch.device("cpu")
+        else:
+            self.device = torch.device("cuda:{}".format(opt.gpuid))
+        self.use_copy = opt.use_copy
+        self.data_dir = opt.data_dir
+        self.checkpoint_dir = opt.checkpoint_dir
 
         self._build_dataloader()
         self._build_model()
@@ -188,26 +209,29 @@ class Geo:
 
     def _build_dataloader(self):
         use_copy = self.use_copy
-        if use_copy:
-            enc_emb_size = 300
-            tgt_emb_size = 300
-        else:
-            enc_emb_size = 150
-            tgt_emb_size = 150
-        # dataset = GeoDatasetForTree(root_dir=self.data_dir,
-        #                       topology_builder=ConstituencyBasedGraphConstruction,
-        #                       topology_subdir='ConstituencyGraph', share_vocab=use_copy, enc_emb_size=enc_emb_size, dec_emb_size=tgt_emb_size)
 
-        dataset = GeoDatasetForTree(root_dir=self.data_dir,
-                              topology_builder=DependencyBasedGraphConstruction,
-                              topology_subdir='DependencyGraph', share_vocab=use_copy, enc_emb_size=enc_emb_size, dec_emb_size=tgt_emb_size)
+        if self.opt.graph_construction_type == "DependencyGraph":
+            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
+                                topology_builder=DependencyBasedGraphConstruction,
+                                topology_subdir='DependencyGraph', edge_strategy='as_node', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+        elif self.opt.graph_construction_type == "ConstituencyGraph":
+            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
+                                topology_builder=ConstituencyBasedGraphConstruction,
+                                topology_subdir='ConstituencyGraph', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+        elif self.opt.graph_construction_type == "DynamicGraph":
+            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
+                                topology_builder=NodeEmbeddingBasedGraphConstruction,
+                                topology_subdir='DynamicGraph', graph_type='dynamic', dynamic_graph_type='node_emb', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)  
 
         self.train_data_loader = DataLoaderForGraphEncoder(
-            use_copy=use_copy, dataset=dataset, mode="train", batch_size=20, device=self.device, ids_for_select=dataset.split_ids['train'])
+            use_copy=use_copy, data=dataset.train, dataset=dataset, mode="train", batch_size=self.opt.batch_size, device=self.device)
         print("train sample size:", len(self.train_data_loader.data))
         self.test_data_loader = DataLoaderForGraphEncoder(
-            use_copy=use_copy, dataset=dataset, mode="test", batch_size=1, device=self.device, ids_for_select=dataset.split_ids['test'])
+            use_copy=use_copy, data=dataset.test, dataset=dataset, mode="test", batch_size=1, device=self.device)
         print("test sample size:", len(self.test_data_loader.data))
+        self.dev_data_loader = DataLoaderForGraphEncoder(
+            use_copy=use_copy, data=dataset.val, dataset=dataset, mode="eval", batch_size=1, device=self.device)
+        print("dev sample size:", len(self.dev_data_loader.data))
 
         self.src_vocab = self.train_data_loader.src_vocab
         self.tgt_vocab = self.train_data_loader.tgt_vocab
@@ -217,197 +241,77 @@ class Geo:
 
     def _build_model(self):
         '''For encoder-decoder'''
-        # batch_size = self.train_data_loader.batch_size
-        use_copy = self.use_copy
-        if use_copy:
-            input_size = self.share_vocab.vocab_size
-            output_size = self.share_vocab.vocab_size
-            # enc_hidden_size = 150
-            enc_hidden_size = 300
-            dec_hidden_size = 600
-        else:
-            input_size = self.src_vocab.vocab_size
-            output_size = self.tgt_vocab.vocab_size
-            enc_hidden_size = 150
-            dec_hidden_size = 300
-
-        enc_dropout_input = 0
-        enc_dropout_output = 0
-
-        dec_dropout_input = 0.1
-        # dec_dropout_input = 0
-        dec_dropout_output = 0.3
-
-        attn_dropout = 0.1
-
-        # teacher_force_ratio = 0.3
-        teacher_force_ratio = 1
-
-        max_dec_seq_length = 100
-        max_dec_tree_depth = 100
-
         self.model = Graph2Tree(src_vocab=self.src_vocab,
                                 tgt_vocab=self.tgt_vocab,
                                 use_copy=self.use_copy,
-                                enc_hidden_size=enc_hidden_size,
-                                dec_hidden_size=dec_hidden_size,
-                                dec_dropout_input=dec_dropout_input,
-                                dec_dropout_output=dec_dropout_output,
-                                enc_dropout_input=enc_dropout_input,
-                                enc_dropout_output=enc_dropout_output,
-                                attn_dropout=attn_dropout,
-                                direction_option="bi_sep",
-                                input_size=input_size,
-                                output_size=output_size,
+                                enc_hidden_size=self.opt.enc_hidden_size,
+                                dec_hidden_size=self.opt.dec_hidden_size,
+                                dec_dropout_input=self.opt.dec_dropout_input,
+                                dec_dropout_output=self.opt.dec_dropout_output,
+                                dropout_for_word_embedding=self.opt.dropout_for_word_embedding,
+                                enc_dropout_for_feature=self.opt.enc_dropout_for_feature,
+                                enc_dropout_for_attn=self.opt.enc_dropout_for_attn,
+                                direction_option=self.opt.direction_option,
+                                input_size=self.src_vocab.vocab_size,
+                                output_size=self.tgt_vocab.vocab_size,
                                 device=self.device,
-                                teacher_force_ratio=teacher_force_ratio,
-                                max_dec_seq_length=max_dec_seq_length,
-                                max_dec_tree_depth=max_dec_tree_depth)
-        self.model.init()
+                                teacher_force_ratio=self.opt.teacher_force_ratio,
+                                max_dec_seq_length=self.opt.max_dec_seq_length,
+                                max_dec_tree_depth=self.opt.max_dec_tree_depth_for_train,
+                                graph_construction_type=self.opt.graph_construction_type,
+                                gnn_type=self.opt.gnn_type)
+        self.model.init(self.opt.init_weight)
+        self.model = to_cuda(self.model, self.device)
+        print(self.model)
 
     def _build_optimizer(self):
-        optim_state = {"learningRate": 1e-3,
-                       "weight_decay":  1e-5}
+        optim_state = {"learningRate": self.opt.learning_rate,
+                       "weight_decay": self.opt.weight_decay}
         parameters = [p for p in self.model.parameters() if p.requires_grad]
         self.optimizer = optim.Adam(
             parameters, lr=optim_state['learningRate'], weight_decay=optim_state['weight_decay'])
+        # self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size = self.opt.max_epochs//3, gamma=0.5)
 
-    def train(self, eva_every=1):
-        '''eva_every: N, int. Do evaluation every N epochs.'''
-        max_epochs = 300
-        epoch = 0
-        grad_clip = 5
-
-        print("-------------\nStarting training.")
-        self.model.train()
-
-        iterations = max_epochs * self.train_data_loader.num_batch
-        start_time = time.time()
-
-        min_loss = 99999.
-        best_index = -1
-        test_index = -1
-
-        checkpoint_dir = self.checkpoint_dir
-
-        print("Batch number per Epoch:", self.train_data_loader.num_batch)
-        print_every = eva_every * self.train_data_loader.num_batch
-
+    def train_epoch(self, epoch):
         loss_to_print = 0
-        for i in range(iterations):
-            epoch = i // self.train_data_loader.num_batch
-
+        for i in range(self.train_data_loader.num_batch):
             self.optimizer.zero_grad()
             batch_graph_list, _, batch_tree_list = self.train_data_loader.random_batch()
-
             loss = self.model(batch_graph_list, batch_tree_list)
-
             loss.backward()
-            torch.nn.utils.clip_grad_value_(
-                self.model.parameters(), grad_clip)
+            torch.nn.utils.clip_grad_value_(self.model.parameters(), self.opt.grad_clip)
             self.optimizer.step()
-
             loss_to_print += loss
+        return loss_to_print/self.train_data_loader.num_batch
 
-            if (i+1) % print_every == 0:
-                end_time = time.time()
-                print(("epochs = {}, {}/{}, train_loss = {}, time since last print = {}".format(epoch+1,  i+1,
-                                                                                                iterations, (loss_to_print / print_every), (end_time - start_time)/60)))
-                if loss_to_print < min_loss:
-                    min_loss = loss_to_print
-                    best_index = i
-                # if i - best_index > (max_epochs//5)*self.train_data_loader.num_batch:
-                # if True and epoch > 20:
-                if True:
-                    # print("Training loss does not decrease in {} epochs".format((max_epochs//5)))
-                    checkpoint = {}
-                    checkpoint["model"] = self.model
-                    checkpoint["epoch"] = epoch
-                    torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
-                    test_index = i
-                    self.test(test_index)
-                    # break
 
-                loss_to_print = 0
-                start_time = time.time()
+    def train(self, do_test=True):
+        best_acc = -1
+        best_model = None
 
-            if loss != loss:
-                print('loss is NaN.  This usually indicates a bug.')
-                break
-        self.test(test_index)
+        print("-------------\nStarting training.")
+        for epoch in range(self.opt.max_epochs):
+            self.model.train()
+            loss_to_print = self.train_epoch(epoch)
+            # self.scheduler.step()
+            print("epochs = {}, train_loss = {}".format(epoch, loss_to_print))
+            # print(self.scheduler.get_lr())
+            if epoch > 20:
+                # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
+                # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
+                eval_acc = self.eval(self.model, self.dev_data_loader)
+                if eval_acc > best_acc:
+                    best_acc = eval_acc
+                    best_model = self.model
+        if do_test:
+            self.eval(best_model, self.test_data_loader)
 
-    def evaluate(self):
-        device = None
-        max_dec_seq_length = 220
-        max_dec_tree_depth = 20
-        use_copy = self.train_data_loader.use_copy
-
-        if use_copy:
-            enc_emb_size = 300
-            tgt_emb_size = 300
-            enc_hidden_size = 150
-            dec_hidden_size = 300
-        else:
-            enc_emb_size = 150
-            tgt_emb_size = 150
-            enc_hidden_size = 150
-            dec_hidden_size = 300
-
-        encoder = self.encoder
-        tree_decoder = self.decoder
-
-        encoder.eval()
-        tree_decoder.eval()
-
-        reference_list = []
-        candidate_list = []
-
-        data = self.train_data_loader.data
-
-        for i in range(len(data)):
-            x = data[i]
-            reference = torch.tensor(x[1], dtype=torch.long)
-            input_word_list = x[0]
-            candidate = do_generate(use_copy, enc_hidden_size, dec_hidden_size, encoder, tree_decoder, input_word_list,
-                                    self.train_data_loader.src_vocab, self.train_data_loader.tgt_vocab, device, max_dec_seq_length, max_dec_tree_depth)
-            candidate = [int(c) for c in candidate]
-            num_left_paren = sum(
-                1 for c in candidate if self.train_data_loader.tgt_vocab.idx2symbol[int(c)] == "(")
-            num_right_paren = sum(
-                1 for c in candidate if self.train_data_loader.tgt_vocab.idx2symbol[int(c)] == ")")
-            diff = num_left_paren - num_right_paren
-            if diff > 0:
-                for i in range(diff):
-                    candidate.append(
-                        self.train_data_loader.tgt_vocab.symbol2idx[")"])
-            elif diff < 0:
-                candidate = candidate[:diff]
-            ref_str = convert_to_string(
-                reference, self.train_data_loader.tgt_vocab)
-            cand_str = convert_to_string(
-                candidate, self.train_data_loader.tgt_vocab)
-            reference_list.append(reference)
-            candidate_list.append(candidate)
-            # print(cand_str)
-
-        val_acc = compute_tree_accuracy(
-            candidate_list, reference_list, self.test_data_loader.tgt_vocab)
-        print("ACCURACY = {}\n".format(val_acc))
-        return val_acc
-
-    def test(self, fname_num):
-        try:
-            checkpoint = torch.load(
-                "{}/g2t".format(self.checkpoint_dir) + str(fname_num))
-        except BaseException:
-            return FileNotFoundError()
-
-        model = checkpoint["model"]
-
+    def eval(self, model, data_lr):
         device = model.device
-        max_dec_seq_length = 100
+
+        max_dec_seq_length = 50
         max_dec_tree_depth = 20
-        use_copy = self.test_data_loader.use_copy
+        use_copy = data_lr.use_copy
         enc_emb_size = model.src_vocab.embedding_dims
         tgt_emb_size = model.tgt_vocab.embedding_dims
 
@@ -419,20 +323,21 @@ class Geo:
         reference_list = []
         candidate_list = []
 
-        data = self.test_data_loader.data
+        data = data_lr.data
 
         for i in range(len(data)):
             x = data[i]
 
             # get indexed tgt sequence
             reference = model.tgt_vocab.get_symbol_idx_for_list(x[1].split())
-            reference = torch.tensor(reference, dtype=torch.long)
 
             # get input graph list
             input_graph_list = [x[0]]
 
             # get src sequence
             input_word_list = DataLoaderForGraphEncoder.get_input_text_batch(input_graph_list, use_copy, model.src_vocab)
+            if input_word_list:
+                input_word_list = to_cuda(input_word_list, device)
 
             candidate = do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, input_word_list,
                                     self.test_data_loader.src_vocab, self.test_data_loader.tgt_vocab, device, max_dec_seq_length, max_dec_tree_depth)
@@ -483,18 +388,16 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
     graph_node_embedding = model.decoder._extract_params(from_batch(batch_graph))['graph_node_embedding']
     graph_level_embedding = torch.max(graph_node_embedding, 1)[0]
     rnn_node_embedding = torch.zeros_like(graph_node_embedding, requires_grad=False)
+    rnn_node_embedding = to_cuda(rnn_node_embedding, device)
 
-    assert(use_copy == False or graph_node_embedding.size() == enc_outputs.size())
-    assert(graph_level_embedding.size() == prev_c.size())
+    # assert(use_copy == False or graph_node_embedding.size() == enc_outputs.size())
+    # assert(graph_level_embedding.size() == prev_c.size())
 
     enc_outputs = graph_node_embedding
     prev_c = graph_level_embedding
     prev_h = graph_level_embedding
 
     # print(form_manager.get_idx_symbol_for_list(enc_w_list[0]))
-    to_cuda(prev_c, device)
-    to_cuda(prev_h, device)
-    to_cuda(enc_outputs, device)
 
     # decode
     queue_decode = []
@@ -521,7 +424,7 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
         else:
             prev_word = torch.tensor([form_manager.get_symbol_idx('(')], dtype=torch.long)
 
-        to_cuda(prev_word, device)
+        prev_word = to_cuda(prev_word, device)
 
         i_child = 1
 
@@ -619,16 +522,53 @@ class AttnUnit(nn.Module):
         return pred
 
 
-def is_all_same(c1, c2):
+def is_all_same(c1, c2, form_manager):
+    all_same = False
     if len(c1) == len(c2):
         all_same = True
         for j in range(len(c1)):
             if c1[j] != c2[j]:
                 all_same = False
                 break
-        return all_same
-    else:
+    if all_same == False:
+        if is_solution_same(c1, c2, form_manager):
+            return True
         return False
+    else:
+        return True
+
+
+def is_solution_same(i1, i2, form_manager):
+    c1 = " ".join([form_manager.get_idx_symbol(x) for x in i1])
+    c2 = " ".join([form_manager.get_idx_symbol(x) for x in i2])
+    if ('=' not in c1) or ('=' not in c2):
+        return False
+    elif (form_manager.unk_token in c1) or (form_manager.unk_token in c2):
+        return False
+    else:
+        try:
+            s1 = c1.split('=')
+            s2 = c2.split('=')
+            eq1 = []
+            eq2 = []
+            x = sympy.Symbol('x')
+            eq1.append(parse_expr(s1[0]))
+            eq1.append(parse_expr(s1[1]))
+            eq2.append(parse_expr(s2[0]))
+            eq2.append(parse_expr(s2[1]))
+            res1 = sympy.solve(sympy.Eq(eq1[0], eq1[1]), x)
+            res2 = sympy.solve(sympy.Eq(eq2[0], eq2[1]), x)
+
+            if not res1 or not res2:
+                return False
+            if res1[0] == res2[0]:
+                print("Excution_true: ", c1, '\t', c2)
+            return res1[0] == res2[0]
+
+        except BaseException:
+            print("Excution_error: ", c1, '\t', c2)
+            return False
+
 
 
 def compute_accuracy(candidate_list, reference_list, form_manager):
@@ -639,7 +579,7 @@ def compute_accuracy(candidate_list, reference_list, form_manager):
     len_min = min(len(candidate_list), len(reference_list))
     c = 0
     for i in range(len_min):
-        if is_all_same(candidate_list[i], reference_list[i]):
+        if is_all_same(candidate_list[i], reference_list[i], form_manager):
             c = c+1
         else:
             pass
@@ -650,15 +590,66 @@ def compute_accuracy(candidate_list, reference_list, form_manager):
 def compute_tree_accuracy(candidate_list_, reference_list_, form_manager):
     candidate_list = []
     for i in range(len(candidate_list_)):
-        candidate_list.append(Tree.norm_tree(
-            candidate_list_[i], form_manager).to_list(form_manager))
+        candidate_list.append(candidate_list_[i])
     reference_list = []
     for i in range(len(reference_list_)):
-        reference_list.append(Tree.norm_tree(
-            reference_list_[i], form_manager).to_list(form_manager))
+        reference_list.append(reference_list_[i])
     return compute_accuracy(candidate_list, reference_list, form_manager)
 
 
 if __name__ == "__main__":
-    runner = Geo()
+    time.sleep(3)
+    start = time.time()
+    main_arg_parser = argparse.ArgumentParser(description="parser")
+    
+    main_arg_parser.add_argument('-gpuid', type=int, default=0, help='which gpu to use. -1 = use CPU')
+    main_arg_parser.add_argument('-seed',type=int, default=123, help='torch manual random number generator seed')
+    main_arg_parser.add_argument('-use_copy',type=bool, default=False, help='whether use copy mechanism')
+
+    main_arg_parser.add_argument('-data_dir', type=str, 
+            default='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/math_word_problem/data/mawps', help='data path')
+    main_arg_parser.add_argument('-checkpoint_dir',type=str, 
+            default= '/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/math_word_problem/checkpoint_dir_mawps', help='output directory where checkpoints get written')
+    
+    main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")    
+
+    main_arg_parser.add_argument('-enc_emb_size', type=int, default=300)
+    main_arg_parser.add_argument('-tgt_emb_size', type=int, default=300)
+
+    main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
+    main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
+
+    main_arg_parser.add_argument('-graph_construction_type', type=str, default="ConstituencyGraph")
+
+    main_arg_parser.add_argument('-batch_size', type=int, default=30)
+
+    main_arg_parser.add_argument('-dropout_for_word_embedding',type=float, default=0.1)
+
+    main_arg_parser.add_argument('-enc_dropout_for_feature',type=float, default=0)
+    main_arg_parser.add_argument('-enc_dropout_for_attn',type=float, default=0)
+    
+    main_arg_parser.add_argument('-direction_option',type=str, default="undirected")
+
+    main_arg_parser.add_argument('-dec_dropout_input',type=float, default=0.1)
+    main_arg_parser.add_argument('-dec_dropout_output',type=float, default=0.3)
+
+    main_arg_parser.add_argument('-max_dec_seq_length',type=int, default=35)
+    main_arg_parser.add_argument('-max_dec_tree_depth_for_train',type=int, default=35)
+    main_arg_parser.add_argument('-max_dec_tree_depth_for_test',type=int, default=10)
+
+    main_arg_parser.add_argument('-teacher_force_ratio',type=float, default=1.0)
+
+    main_arg_parser.add_argument('-init_weight',type=float, default=0.08,help='initailization weight')
+    main_arg_parser.add_argument('-learning_rate',type=float, default=1e-3,help='learning rate')
+    main_arg_parser.add_argument('-weight_decay',type=float, default=0)
+
+    main_arg_parser.add_argument('-max_epochs',type=int, default=400,help='number of full passes through the training data')
+    main_arg_parser.add_argument('-grad_clip',type=int, default=5,help='clip gradients at this value')
+
+    args = main_arg_parser.parse_args()
+
+    runner = Mawps(opt=args)
     max_score = runner.train()
+
+    end = time.time()
+    print("total time: {} minutes\n".format((end - start)/60))

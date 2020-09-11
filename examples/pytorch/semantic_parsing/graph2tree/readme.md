@@ -1,31 +1,41 @@
 # Results On Jobs640
 
-We take exact match accuracy as metric.
-
-## Use-Bi-LSTM-as-Encoder:
-| Methods\Datasets | JOBS | GEO | ATIS |  
+## Constituency Graph
+| Encoder\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |
-| Seq2Tree | 0.9 | - | - |
+| GAT | 89.3 | 92.1 | 90.7 |  
+| GGNN | 91.4 | 91.4 | 90.0 |
+| GraphSage | 90.7 | 90.7 | 90.0 |
 
-## Use-GAT-as-GNN-Encoder
+## Dependency Graph
+| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- |  
+| GAT | 90.7 | 91.4 | 90.0 |  
+| GGNN | 89.3 | 90.0 | 90.7 |  
+| GraphSage | 90.0 | 90.7 | 89.3 |  
 
-| Methods\Datasets | JOBS | GEO | ATIS |  
+## Dynamic Graph
+| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- |  
+| GAT | 90.0 | 90.7 | 91.4 |  
+| GGNN | 89.3 | 87.9 | 87.9 |  
+| GraphSage | 87.9 | 90.0 | 91.4 |  
+
+## Ablation study for tree decoder
+
+## Constituency Graph
+| Encoder\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |
-| CONS-Graph | 0.807 | 0.564 | - |
-| DEP-Graph | 0.793 | 0.568 | - |
+| GGNN w/ sibling feeding | 91.4 | 91.4 | 90.0 |  
+| GGNN w/o sibling feeding | 90.7 | 91.4 | 89.3 |  
+| GraphSage w/ sibling feeding | 90.7 | 90.7 | 90.0 |
+| GraphSage w/o sibling feeding | 90.7 | 89.3 | 90.7 |
 
+## Use as-node in dependency graph construction
 
-## Use-GGNN-as-GNN-Encoder
+| Methods\fuse_strategy | graph constrcution strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- | ---- |
+| GraphSage | only connection | 90.0 | 90.7 | 89.3 |  
+| GraphSage | as node | 90.0 | 90.0 | 89.3 |  
 
-| Methods\Datasets | JOBS | GEO | ATIS |  
-| ---- | ---- | ---- | ---- |
-| CONS-Graph | 81.4 | - | - |
-| DEP-Graph | - | - | - |
-
-
-## Use-GraphSAGE-as-GNN-Encoder
-
-| Methods\Datasets | JOBS | GEO | ATIS |  
-| ---- | ---- | ---- | ---- |
-| CONS-Graph | - | - | - |
-| DEP-Graph | - | - | - |
+<!-- SAGE + undirected + constituency   -->

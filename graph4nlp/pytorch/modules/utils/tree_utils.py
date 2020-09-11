@@ -366,7 +366,7 @@ class DataLoaderForSeqEncoder():
 
 
 class DataLoaderForGraphEncoder():
-    def __init__(self, use_copy, dataset, mode, batch_size, device, ids_for_select):
+    def __init__(self, use_copy, data, dataset, mode, batch_size, device):
         self.mode = mode
         self.device = device
         self.use_copy = use_copy
@@ -377,12 +377,7 @@ class DataLoaderForGraphEncoder():
         if self.use_copy:
             self.share_vocab = self.tgt_vocab
         
-        self.data = [dataset.data[idx] for idx in ids_for_select]
-        # for item in self.data:
-        #     print(item.input_text)
-
-        self.data = [(item.graph, item.output_text, item.output_tree) for item in self.data]
-
+        self.data = [(item.graph, item.output_text, item.output_tree) for item in data]
 
         if self.mode == "test":
             assert(batch_size == 1)
