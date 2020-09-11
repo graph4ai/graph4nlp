@@ -378,11 +378,11 @@ class Dataset(torch.utils.data.Dataset):
                                                                 tokenizer=self.tokenizer)
                     item.graph = graph
             elif self.dynamic_graph_type == 'node_emb_refined':
-                if self.init_graph_type != 'line':
+                if self.dynamic_init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
                     print('Connecting to stanfordcorenlp server...')
                     processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
 
-                    if self.init_graph_type == 'ie':
+                    if self.dynamic_init_topology_builder == IEBasedGraphConstruction:
                         props_coref = {
                             'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
                             "tokenize.options":
@@ -401,7 +401,7 @@ class Dataset(torch.utils.data.Dataset):
                             "openie.triple.strict": "true"
                         }
                         processor_args = [props_coref, props_openie]
-                    elif self.init_graph_type == 'dependency':
+                    elif self.dynamic_init_topology_builder == DependencyBasedGraphConstruction:
                         processor_args = {
                             'annotators': 'ssplit,tokenize,depparse',
                             "tokenize.options":
@@ -410,7 +410,7 @@ class Dataset(torch.utils.data.Dataset):
                             'ssplit.isOneSentence': False,
                             'outputFormat': 'json'
                         }
-                    elif self.init_graph_type == 'constituency':
+                    elif self.dynamic_init_topology_builder == ConstituencyBasedGraphConstruction:
                         processor_args = {
                             'annotators': "tokenize,ssplit,pos,parse",
                             "tokenize.options":
@@ -428,14 +428,16 @@ class Dataset(torch.utils.data.Dataset):
 
                 for item in data_items:
                     graph = self.topology_builder.init_topology(item.input_text,
-                                                                init_graph_type=self.init_graph_type,
+                                                                dynamic_init_topology_builder=self.dynamic_init_topology_builder,
                                                                 lower_case=self.lower_case,
                                                                 tokenizer=self.tokenizer,
                                                                 nlp_processor=processor,
                                                                 processor_args=processor_args,
                                                                 merge_strategy=self.merge_strategy,
                                                                 edge_strategy=self.edge_strategy,
-                                                                verbase=False)
+                                                                verbase=False,
+                                                                dynamic_init_topology_aux_args=self.dynamic_init_topology_aux_args)
+
                     item.graph = graph
             else:
                 raise RuntimeError('Unknown dynamic_graph_type: {}'.format(self.dynamic_graph_type))
@@ -1339,8 +1341,8 @@ class DoubleText2TextDataset(Dataset):
             item.output_np = tgt_token_id
             item.output_text = ' '.join(item.output_text)
 
-    # @staticmethod
-    def collate_fn(self, data_list: [Text2TextDataItem]):
+    @staticmethod
+    def collate_fn(data_list: [Text2TextDataItem]):
         graph_data = []
         input_tensor2, input_length2, input_text2 = [], [], []
         tgt_tensor, tgt_text = [], []

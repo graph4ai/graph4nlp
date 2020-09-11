@@ -25,38 +25,6 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         - ``seq_info_encode_strategy`` : Specify strategies of encoding
             sequential information in raw text data including "none",
             "lstm", "gru", "bilstm" and "bigru".
-    sim_metric_type : str, optional
-        Specify similarity metric function type including "attention",
-        "weighted_cosine", "gat_attention", "rbf_kernel", and "cosine".
-        Default: ``"weighted_cosine"``.
-    num_heads : int, optional
-        Specify the number of heads for multi-head similarity metric
-        function, default: ``1``.
-    top_k_neigh : int, optional
-        Specify the top k value for knn neighborhood graph sparsificaiton,
-        default: ``None``.
-    epsilon_neigh : float, optional
-        Specify the epsilon value (i.e., between ``0`` and ``1``) for
-        epsilon neighborhood graph sparsificaiton, default: ``None``.
-    smoothness_ratio : float, optional
-        Specify the smoothness ratio (i.e., between ``0`` and ``1``)
-        for graph regularization on smoothness, default: ``None``.
-    connectivity_ratio : float, optional
-        Specify the connectivity ratio (i.e., between ``0`` and ``1``)
-        for graph regularization on connectivity, default: ``None``.
-    sparsity_ratio : float, optional
-        Specify the sparsity ratio (i.e., between ``0`` and ``1``)
-        for graph regularization on sparsity, default: ``None``.
-    input_size : int, optional
-        The dimension of input embeddings, default: ``None``.
-    hidden_size : int, optional
-        The dimension of hidden layers, default: ``None``.
-    fix_word_emb : boolean, optional
-        Specify whether to fix pretrained word embeddings, default: ``False``.
-    dropout : float, optional
-        Dropout ratio, default: ``None``.
-    device : torch.device, optional
-        Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
     def __init__(self, word_vocab, embedding_styles, **kwargs):
         super(NodeEmbeddingBasedGraphConstruction, self).__init__(
@@ -157,28 +125,36 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
 
     @classmethod
     def init_topology(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize):
-        """Convert raw text data to initial node set graph.
+        """Convert raw text data to the initial node set graph (i.e., no edge information).
 
         Parameters
         ----------
-        raw_text_data : str
-            The raw text data.
+        raw_text_data : str or list/tuple of str
+            The raw text data. When a list/tuple of tokens is provided, no
+            tokenization will be conducted and each token is a node;
+            otherwise, tokenization will be conducted on the input string
+            to get a list of tokens.
         lower_case : boolean
             Specify whether to lower case the input text, default: ``True``.
+        tokenizer : callable, optional
+            The tokenization function.
 
         Returns
         -------
         GraphData
             The constructed graph.
         """
-        if lower_case:
-            raw_text_data = raw_text_data.lower()
+        if isinstance(raw_text_data, str):
+            token_list = tokenizer(raw_text_data.strip())
+        elif isinstance(raw_text_data, (list, tuple)):
+            token_list = raw_text_data
+        else:
+            raise RuntimeError('raw_text_data must be str or list/tuple of str')
 
-        token_list = tokenizer(raw_text_data.strip())
         graph = GraphData()
         graph.add_nodes(len(token_list))
 
         for idx in range(len(token_list)):
-            graph.node_attributes[idx]['token'] = token_list[idx]
+            graph.node_attributes[idx]['token'] = token_list[idx].lower() if lower_case else token_list[idx]
 
         return graph

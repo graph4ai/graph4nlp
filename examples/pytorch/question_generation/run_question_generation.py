@@ -295,6 +295,7 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
+        dynamic_init_topology_builder = None
         if self.config['graph_type'] == 'dependency':
             topology_builder = DependencyBasedGraphConstruction
             graph_type = 'static'
@@ -314,26 +315,37 @@ class ModelHandler:
         elif self.config['graph_type'] == 'node_emb_refined':
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             graph_type = 'dynamic'
-            if self.config['init_graph_type'] == 'ie':
+            merge_strategy = 'tailhead'
+
+            if self.config['init_graph_type'] == 'line':
+                dynamic_init_topology_builder = None
+            elif self.config['init_graph_type'] == 'dependency':
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif self.config['init_graph_type'] == 'constituency':
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            elif self.config['init_graph_type'] == 'ie':
                 merge_strategy = 'global'
+                dynamic_init_topology_builder = IEBasedGraphConstruction
             else:
-                merge_strategy = 'tailhead'
+                # dynamic_init_topology_builder
+                raise RuntimeError('Define your own dynamic_init_topology_builder')
         else:
-            raise RuntimeError('Unknown graph_type: {}'.format(config['graph_type']))
+            raise RuntimeError('Unknown graph_type: {}'.format(self.config['graph_type']))
 
         topology_subdir = '{}_based_graph'.format(self.config['graph_type'])
         if self.config['graph_type'] == 'node_emb_refined':
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
         dataset = SQuADDataset(root_dir='examples/pytorch/question_generation/data/squad_split2',
-                              topology_builder=topology_builder,
-                              topology_subdir=topology_subdir,
-                              graph_type=graph_type,
                               pretrained_word_emb_file=self.config['pre_word_emb_file'],
                               merge_strategy=merge_strategy,
+                              seed=self.config['seed'],
+                              graph_type=graph_type,
+                              topology_builder=topology_builder,
+                              topology_subdir=topology_subdir,
                               dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
-                              init_graph_type=self.config['init_graph_type'] if self.config['graph_type'] == 'node_emb_refined' else None,
-                              seed=self.config['seed'])
+                              dynamic_init_topology_builder=dynamic_init_topology_builder,
+                              dynamic_init_topology_aux_args={'dummy_param': 0})
 
         # TODO: use small ratio of the data
         dataset.train = dataset.train[:self.config['n_samples']]
