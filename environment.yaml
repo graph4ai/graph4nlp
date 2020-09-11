@@ -11,7 +11,7 @@ dependencies:
   - click=7.1.2=py_0
   - cudatoolkit=10.1.243=h6bb024c_0
   - decorator=4.4.2=py_0
-  - dgl-cuda10.1=0.5.1=py37_0
+  - dgl-cuda10.1=0.4.3post2=py37_0
   - freetype=2.10.2=h5ab3b9f_0
   - intel-openmp=2020.2=254
   - joblib=0.16.0=py_0
