@@ -215,7 +215,7 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        init_topology_builder = None
+        dynamic_init_topology_builder = None
         if self.config['graph_type'] == 'dependency':
             topology_builder = DependencyBasedGraphConstruction
             graph_type = 'static'
@@ -238,17 +238,17 @@ class ModelHandler:
             merge_strategy = 'tailhead'
 
             if self.config['init_graph_type'] == 'line':
-                init_topology_builder = None
+                dynamic_init_topology_builder = None
             elif self.config['init_graph_type'] == 'dependency':
-                init_topology_builder = DependencyBasedGraphConstruction
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
             elif self.config['init_graph_type'] == 'constituency':
-                init_topology_builder = ConstituencyBasedGraphConstruction
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             elif self.config['init_graph_type'] == 'ie':
                 merge_strategy = 'global'
-                init_topology_builder = IEBasedGraphConstruction
+                dynamic_init_topology_builder = IEBasedGraphConstruction
             else:
-                # init_topology_builder
-                raise RuntimeError('Define your own init_topology_builder')
+                # dynamic_init_topology_builder
+                raise RuntimeError('Define your own dynamic_init_topology_builder')
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(self.config['graph_type']))
 
@@ -257,17 +257,17 @@ class ModelHandler:
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
         dataset = TrecDataset(root_dir='examples/pytorch/text_classification/data/trec',
-                              topology_builder=topology_builder,
-                              topology_subdir=topology_subdir,
-                              graph_type=graph_type,
                               pretrained_word_emb_file=self.config['pre_word_emb_file'],
                               val_split_ratio=self.config['val_split_ratio'],
                               merge_strategy=merge_strategy,
-                              dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
                               seed=self.config['seed'],
                               word_emb_size=300,
-                              init_topology_builder=init_topology_builder,
-                              init_topology_aux_args={'dummy_param': 0})
+                              graph_type=graph_type,
+                              topology_builder=topology_builder,
+                              topology_subdir=topology_subdir,
+                              dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
+                              dynamic_init_topology_builder=dynamic_init_topology_builder,
+                              dynamic_init_topology_aux_args={'dummy_param': 0})
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config['batch_size'], shuffle=True,
                                            num_workers=self.config['num_workers'],
                                            collate_fn=dataset.collate_fn)

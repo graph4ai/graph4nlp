@@ -141,7 +141,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
     @classmethod
     def init_topology(cls,
                     raw_text_data,
-                    init_topology_builder=None,
                     lower_case=True,
                     tokenizer=word_tokenize,
                     nlp_processor=None,
@@ -149,7 +148,8 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
                     merge_strategy=None,
                     edge_strategy=None,
                     verbase=False,
-                    init_topology_aux_args=None):
+                    dynamic_init_topology_builder=None,
+                    dynamic_init_topology_aux_args=None):
         """Convert raw text data to the initial graph.
 
         Parameters
@@ -159,21 +159,21 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             tokenization will be conducted and each token is a node
             (used for line graph builder); otherwise, tokenization will
             be conducted on the input string to get a list of tokens.
-        init_topology_builder : class, optional
-            The initial graph topology builder, default: ``None``.
         lower_case : boolean
             Specify whether to lower case the input text, default: ``True``.
         tokenizer : callable, optional
             The tokenization function.
-        init_topology_aux_args : dict, optional
-            The auxiliary args for init_topology_builder.topology, default: ``None``.
+        dynamic_init_topology_builder : class, optional
+            The initial graph topology builder, default: ``None``.
+        dynamic_init_topology_aux_args : dict, optional
+            The auxiliary args for dynamic_init_topology_builder.topology, default: ``None``.
 
         Returns
         -------
         GraphData
             The constructed graph.
         """
-        if init_topology_builder is None: # line graph
+        if dynamic_init_topology_builder is None: # line graph
             if isinstance(raw_text_data, str):
                 token_list = tokenizer(raw_text_data.strip())
             elif isinstance(raw_text_data, (list, tuple)):
@@ -190,8 +190,8 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
                 graph.node_attributes[idx]['token'] = token_list[idx].lower() if lower_case else token_list[idx]
 
             graph.node_attributes[idx + 1]['token'] = token_list[-1].lower() if lower_case else token_list[-1]
-        elif init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
-            graph = init_topology_builder.topology(
+        elif dynamic_init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
+            graph = dynamic_init_topology_builder.topology(
                                 raw_text_data=raw_text_data,
                                 nlp_processor=nlp_processor,
                                 processor_args=processor_args,
@@ -199,8 +199,8 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
                                 edge_strategy=edge_strategy,
                                 verbase=verbase)
         else:
-            graph = init_topology_builder.topology(
+            graph = dynamic_init_topology_builder.topology(
                                 raw_text_data,
-                                init_topology_aux_args)
+                                dynamic_init_topology_aux_args)
 
         return graph
