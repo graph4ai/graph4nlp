@@ -362,8 +362,21 @@ def convert_to_string(idx_list, form_manager):
         w_list.append(form_manager.get_idx_symbol(int(idx_list[i])))
     return " ".join(w_list)
 
+import operator
+from queue import PriorityQueue
+class BeamSearchNode(object):
+    def __init__(self, hiddenstate, previousNode, wordId, logProb, length):
+        self.h = hiddenstate
+        self.prevNode = previousNode
+        self.wordid = wordId
+        self.logp = logProb
+        self.leng = length
 
-def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, enc_w_list, word_manager, form_manager, device, max_dec_seq_length, max_dec_tree_depth):
+    def eval(self, alpha=1.0):
+        reward = 0
+        return self.logp / float(self.leng - 1 + 1e-6) + alpha * reward
+
+def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, enc_w_list, word_manager, form_manager, device, max_dec_seq_length, max_dec_tree_depth, use_beam_search=True):
     # initialize the rnn state to all zeros
     prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
     prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
@@ -421,46 +434,144 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
             enc_context = None
             input_mask = create_mask(torch.LongTensor([enc_outputs.size(1)]*enc_outputs.size(0)), enc_outputs.size(1), device)
             decoder_state = (s[0].unsqueeze(0), s[1].unsqueeze(0))
-
-        while True:
-            if not use_copy:
-                curr_c, curr_h = model.decoder.rnn(prev_word, s[0], s[1], parent_h, sibling_state)
-                prediction = model.decoder.attention(enc_outputs, curr_h, torch.tensor(0))
-                s = (curr_c, curr_h)
-                _, _prev_word = prediction.max(1)
-                prev_word = _prev_word
-            else:
-                # print(form_manager.idx2symbol[np.array(prev_word)[0]])
-                decoder_embedded = model.decoder.embeddings(prev_word)
-                pred, decoder_state, _, _, enc_context = model.decoder.rnn(parent_h, sibling_state, decoder_embedded,
-                                                                          decoder_state,
-                                                                          enc_outputs.transpose(
-                                                                              0, 1),
-                                                                          None, None, input_mask=input_mask,
-                                                                          encoder_word_idx=enc_w_list,
-                                                                          ext_vocab_size=model.decoder.embeddings.num_embeddings,
-                                                                          log_prob=False,
-                                                                          prev_enc_context=enc_context,
-                                                                          encoder_outputs2=rnn_node_embedding.transpose(0, 1))
-
-                dec_next_state_1 = decoder_state[0].squeeze(0)
-                dec_next_state_2 = decoder_state[1].squeeze(0)
-
-                pred = torch.log(pred + 1e-31)
-                prev_word = pred.argmax(1)
-
-            if int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.end_token) or t.num_children >= max_dec_seq_length:
-                break
-            elif int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
-                #print("we predicted N");exit()
-                if use_copy:
-                    queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone()), "parent": head, "child_index": i_child, "t": Tree()})
+        if not use_beam_search:
+            while True:
+                if not use_copy:
+                    curr_c, curr_h = model.decoder.rnn(prev_word, s[0], s[1], parent_h, sibling_state)
+                    prediction = model.decoder.attention(enc_outputs, curr_h, torch.tensor(0))
+                    s = (curr_c, curr_h)
+                    _, _prev_word = prediction.max(1)
+                    prev_word = _prev_word
                 else:
-                    queue_decode.append({"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
-                t.add_child(int(prev_word[0]))
-            else:
-                t.add_child(int(prev_word[0]))
-            i_child = i_child + 1
+                    # print(form_manager.idx2symbol[np.array(prev_word)[0]])
+                    decoder_embedded = model.decoder.embeddings(prev_word)
+                    pred, decoder_state, _, _, enc_context = model.decoder.rnn(parent_h, sibling_state, decoder_embedded,
+                                                                              decoder_state,
+                                                                              enc_outputs.transpose(
+                                                                                  0, 1),
+                                                                              None, None, input_mask=input_mask,
+                                                                              encoder_word_idx=enc_w_list,
+                                                                              ext_vocab_size=model.decoder.embeddings.num_embeddings,
+                                                                              log_prob=False,
+                                                                              prev_enc_context=enc_context,
+                                                                              encoder_outputs2=rnn_node_embedding.transpose(0, 1))
+
+                    dec_next_state_1 = decoder_state[0].squeeze(0)
+                    dec_next_state_2 = decoder_state[1].squeeze(0)
+
+                    pred = torch.log(pred + 1e-31)
+                    prev_word = pred.argmax(1)
+
+                if int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.end_token) or t.num_children >= max_dec_seq_length:
+                    break
+                elif int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
+                    #print("we predicted N");exit()
+                    if use_copy:
+                        queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                    else:
+                        queue_decode.append({"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                    t.add_child(int(prev_word[0]))
+                else:
+                    t.add_child(int(prev_word[0]))
+                i_child = i_child + 1
+        else:
+            beam_width = 2
+            topk = 1
+            decoded_results = []
+        
+            # decoding goes sentence by sentence
+            assert(graph_node_embedding.size(0) == 1)
+            for idx in range(graph_node_embedding.size(0)):
+                decoder_hidden = (s[0], s[1])
+                decoder_input = prev_word
+        
+                # Number of sentence to generate
+                endnodes = []
+                number_required = min((topk + 1), topk - len(endnodes))
+        
+                # starting node -  hidden vector, previous node, word id, logp, length
+                node = BeamSearchNode(decoder_hidden, None, decoder_input, 0, 1)
+                nodes = PriorityQueue()
+        
+                # start the queue
+                nodes.put((-node.eval(), node))
+                qsize = 1
+        
+                # start beam search
+                while True:
+                    if qsize > max_dec_seq_length: break
+        
+                    # fetch the best node
+                    score, n = nodes.get()
+                    decoder_input = n.wordid
+                    decoder_hidden = n.h
+        
+                    if n.wordid.item() == form_manager.get_symbol_idx(form_manager.end_token) and n.prevNode != None:
+                        endnodes.append((score, n))
+                        # if we reached maximum # of sentences required
+                        if len(endnodes) >= number_required:
+                            break
+                        else:
+                            continue
+                        
+                    # decode for one step using decoder
+                    curr_c, curr_h = model.decoder.rnn(decoder_input, decoder_hidden[0], decoder_hidden[1], parent_h, sibling_state)
+                    prediction = model.decoder.attention(enc_outputs, curr_h, torch.tensor(0))
+                    decoder_hidden = (curr_c, curr_h)
+        
+                    # PUT HERE REAL BEAM SEARCH OF TOP
+                    log_prob, indexes = torch.topk(prediction, beam_width)
+                    nextnodes = []
+        
+                    for new_k in range(beam_width):
+                        decoded_t = torch.tensor([indexes[0][new_k]], dtype=torch.long)
+                        decoded_t = to_cuda(decoded_t, device)
+
+                        log_p = log_prob[0][new_k].item()
+        
+                        node = BeamSearchNode(decoder_hidden, n, decoded_t, n.logp + log_p, n.leng + 1)
+                        score = -node.eval()
+                        nextnodes.append((score, node))
+        
+                    # put them into queue
+                    for i in range(len(nextnodes)):
+                        score, nn = nextnodes[i]
+                        nodes.put((score, nn))
+                        # increase qsize
+                    qsize += len(nextnodes) - 1
+        
+                # choose nbest paths, back trace them
+                if len(endnodes) == 0:
+                    endnodes = [nodes.get() for _ in range(topk)]
+        
+                utterances = []
+                for score, n in sorted(endnodes, key=operator.itemgetter(0)):
+                    utterance = []
+                    utterance.append(n)
+                    # back trace
+                    while n.prevNode != None:
+                        n = n.prevNode
+                        utterance.append(n)
+        
+                    utterance = utterance[::-1]
+                    utterances.append(utterance)
+        
+                decoded_results.append(utterances)
+            assert(len(decoded_results) == 1 and len(utterances) == topk)
+            generated_sentence = decoded_results[0][0]
+
+            for node_i in generated_sentence:
+                if int(node_i.wordid.item()) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
+                    queue_decode.append({"s": (node_i.h[0].clone(), node_i.h[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                    t.add_child(int(node_i.wordid.item()))
+                    i_child = i_child + 1
+                elif int(node_i.wordid.item()) != form_manager.get_symbol_idx(form_manager.end_token) and \
+                        int(node_i.wordid.item()) != form_manager.get_symbol_idx(form_manager.start_token) and \
+                        int(node_i.wordid.item()) != form_manager.get_symbol_idx('('):
+                    t.add_child(int(node_i.wordid.item()))
+                    i_child = i_child + 1
+
+        
         head = head + 1
     # refine the root tree (TODO, what is this doing?)
     for i in range(len(queue_decode)-1, 0, -1):
@@ -562,15 +673,15 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-checkpoint_dir',type=str, 
             default= '/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs', help='output directory where checkpoints get written')
     
-    main_arg_parser.add_argument('-gnn_type', type=str, default="GAT")    
+    main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")    
 
     main_arg_parser.add_argument('-enc_emb_size', type=int, default=300)
     main_arg_parser.add_argument('-tgt_emb_size', type=int, default=300)
 
     main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
-    main_arg_parser.add_argument('-dec_hidden_size', type=int, default=600)
+    main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
-    main_arg_parser.add_argument('-graph_construction_type', type=str, default="DependencyGraph")
+    main_arg_parser.add_argument('-graph_construction_type', type=str, default="ConstituencyGraph")
 
     main_arg_parser.add_argument('-batch_size', type=int, default=20)
 
@@ -579,7 +690,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-enc_dropout_for_feature',type=float, default=0)
     main_arg_parser.add_argument('-enc_dropout_for_attn',type=float, default=0.1)
     
-    main_arg_parser.add_argument('-direction_option',type=str, default="bi_sep")
+    main_arg_parser.add_argument('-direction_option',type=str, default="undirected")
 
     main_arg_parser.add_argument('-dec_dropout_input',type=float, default=0.1)
     main_arg_parser.add_argument('-dec_dropout_output',type=float, default=0.3)

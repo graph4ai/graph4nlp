@@ -4,3 +4,5 @@
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |  
 | GraphSage | 76.4 | 77.2 | 76.8 |  
+| GGNN | 77.2 | 76.4 | 74.4 |  
+| GAT | 74.8 | 76.0 | 75.6 |  
