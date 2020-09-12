@@ -142,7 +142,7 @@ class StdRNNDecoder(RNNDecoderBase):
         # project logits to labels
         self.tgt_emb_as_output_layer = tgt_emb_as_output_layer
         if self.tgt_emb_as_output_layer:  # use pre_out layer
-            self.out_embed_size = self.decoder_hidden_size
+            self.out_embed_size = self.tgt_emb.weight.shape[1]
             self.pre_out = nn.Linear(self.out_logits_size, self.out_embed_size, bias=False)
             size_before_output = self.out_embed_size
         else:  # don't use pre_out layer
@@ -268,6 +268,8 @@ class StdRNNDecoder(RNNDecoderBase):
         attn_results_all = []
 
         for i in range(target_len):
+            if (decoder_input == self.vocab.PAD).all():
+                break
             dec_emb = self.tgt_emb(decoder_input)
             dec_emb = self.dropout(dec_emb)
             embed.append(dec_emb.unsqueeze(1))

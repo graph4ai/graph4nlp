@@ -7,6 +7,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 from examples.pytorch.nmt.dataset import EuroparlNMTDataset
 from examples.pytorch.nmt.model import Graph2seq
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 
 import numpy as np
 import torch
@@ -58,7 +59,24 @@ class NMT:
                                            collate_fn=dataset.collate_fn)
         self.test_dataloader = DataLoader(dataset.test, batch_size=30, shuffle=False, num_workers=10,
                                           collate_fn=dataset.collate_fn)
-        self.vocab = dataset.vocab_model
+        self.vocab: VocabModel = dataset.vocab_model
+        import torchtext.vocab as vocab
+        glove = vocab.GloVe
+        glove.url["de"] = "/home/shiina/shiina/lib/graph4nlp/.vector_cache/glove.de.300d.txt"
+        from .utils import get_glove_weights
+        en = glove(name='6B', dim=300)
+
+        pretrained_weight = get_glove_weights(en, self.vocab.in_word_vocab)
+        self.vocab.in_word_vocab.embeddings = pretrained_weight.numpy()
+        print("English word embedding loaded")
+
+        de = glove(name='de', dim=300)
+
+        pretrained_weight = get_glove_weights(de, self.vocab.out_word_vocab)
+        self.vocab.out_word_vocab.embeddings = pretrained_weight.numpy()
+        print("De word embedding loaded")
+
+
 
     def _build_model(self):
         self.model = Graph2seq(self.vocab, device=self.device).to(self.device)
@@ -76,7 +94,7 @@ class NMT:
         for epoch in range(200):
             self.model.train()
             self.train_epoch(epoch, split="train")
-            # self._adjust_lr(epoch)
+            self._adjust_lr(epoch)
             if epoch >= 0:
                 score = self.evaluate(split="val")
                 if score >= max_score:

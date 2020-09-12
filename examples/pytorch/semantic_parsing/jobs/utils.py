@@ -23,10 +23,16 @@ def get_glove_weights(vocabulary: Vocab, dim=300):
     glove = vocab.GloVe(name='6B', dim=dim)
     vocab_size = vocabulary.get_vocab_size()
     weight = torch.randn(vocab_size, dim)
+    cnt = 0
+    all = 0
     for i, word in enumerate(vocabulary.index2word):
+        all += 1
         glove_index = glove.stoi.get(word)
+        if glove_index is not None:
+            cnt += 1
         glove_rep = glove.get_vecs_by_tokens(word)
         weight[i, :] = glove_rep
+    print("Hit ratio: {:.3f}".format(cnt/all))
     return weight
 
 

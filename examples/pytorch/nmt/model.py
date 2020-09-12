@@ -19,22 +19,24 @@ class Graph2seq(nn.Module):
                            'seq_info_encode_strategy': "bilstm"}
         self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                vocab=vocab.in_word_vocab,
+
                                                                hidden_size=hidden_size, dropout=0.2, device=device,
                                                                fix_word_emb=False)
         # self.gnn_encoder = GAT(3, hidden_size, hidden_size, hidden_size, [2, 2, 1], direction_option=direction_option,
         #                        feat_drop=0.2, attn_drop=0.2, activation=F.relu, residual=True)
         # self.gnn_encoder = GGNN(3, hidden_size, hidden_size, direction_option=direction_option, dropout=0.2)
-        self.gnn_encoder = GraphSAGE(3, hidden_size, hidden_size, hidden_size, aggregator_type="lstm",
+        self.gnn_encoder = GraphSAGE(2, hidden_size, hidden_size, hidden_size, aggregator_type="lstm",
                                      direction_option=direction_option, feat_drop=0.4)
 
-        self.word_emb = nn.Embedding(len(self.vocab.out_word_vocab), hidden_size)
+        self.word_emb = nn.Embedding(len(self.vocab.out_word_vocab), 300).from_pretrained(
+            torch.from_numpy(self.vocab.out_word_vocab.embeddings).float(), freeze=False)
 
         self.seq_decoder = StdRNNDecoder(max_decoder_step=200,
                                          decoder_input_size=2*hidden_size if direction_option == 'bi_sep' else hidden_size,
                                          decoder_hidden_size=hidden_size, graph_pooling_strategy=None,
                                          word_emb=self.word_emb, vocab=self.vocab.out_word_vocab,
                                          attention_type="sep_diff_encoder_type", fuse_strategy="concatenate",
-                                         rnn_emb_input_size=hidden_size, use_coverage=True,
+                                         rnn_emb_input_size=hidden_size, use_coverage=False,
                                          tgt_emb_as_output_layer=False, device=self.graph_topology.device,
                                          dropout=0.3)
         self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
@@ -52,7 +54,7 @@ class Graph2seq(nn.Module):
         if require_loss:
 
             loss = self.loss_calc(prob, tgt)
-            cover_loss = self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
-            return prob, loss + cover_loss
+            # cover_loss = self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
+            return prob, loss
         else:
             return prob
