@@ -88,7 +88,7 @@ class Jobs:
                                           collate_fn=dataset.collate_fn)
 
         self.vocab = dataset.vocab_model
-        # from examples.pytorch.semantic_parsing.jobs.utils import get_glove_weights
+        # from examples.pytorch.semantic_parsing.graph2seq.utils import get_glove_weights
         # pretrained_weight = get_glove_weights(self.vocab.in_word_vocab)
         # self.vocab.in_word_vocab.embeddings = pretrained_weight.numpy()
 

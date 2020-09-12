@@ -558,7 +558,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-use_copy',type=bool, default=False, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str, 
-            default='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs', help='data path')
+            default='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/graph2seq', help='data path')
     main_arg_parser.add_argument('-checkpoint_dir',type=str, 
             default= '/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs', help='output directory where checkpoints get written')
     

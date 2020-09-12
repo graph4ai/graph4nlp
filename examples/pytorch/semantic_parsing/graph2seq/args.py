@@ -18,10 +18,10 @@ def get_yaml_config(config_path="config.yml"):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_yaml", type=str,
-                        default="examples/pytorch/semantic_parsing/jobs/config/dependency.yaml", help="")
+                        default="examples/pytorch/semantic_parsing/graph2seq/config/dependency.yaml", help="")
     parser.add_argument('--word-emb-size', type=int, default=300, help='')
-    parser.add_argument("--log-file", type=str, default="examples/pytorch/semantic_parsing/jobs/log/ggnn.txt")
-    parser.add_argument("--checkpoint-save-path", type=str, default="examples/pytorch/semantic_parsing/jobs/save")
+    parser.add_argument("--log-file", type=str, default="examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt")
+    parser.add_argument("--checkpoint-save-path", type=str, default="examples/pytorch/semantic_parsing/graph2seq/save")
     parser.add_argument('--hidden-size', type=int, default=300, help='')
     # dropout
     parser.add_argument('--emb-dropout', type=float, default=0.2, help='')
