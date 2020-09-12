@@ -14,11 +14,19 @@ from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel, Vocab
 
 
 class EuroparlNMTDataset(Text2TextDataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir=None, graph_type='static',
-                 edge_strategy=None, merge_strategy='tailhead', share_vocab=False, pretrained_word_emb_file=None):
-        super(EuroparlNMTDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder, share_vocab=share_vocab,
-                                          topology_subdir=topology_subdir, graph_type=graph_type,
-                                          edge_strategy=edge_strategy, merge_strategy=merge_strategy)
+    def __init__(self, root_dir, topology_builder, topology_subdir, graph_type='static',
+                 edge_strategy=None, merge_strategy='tailhead', share_vocab=False, word_emb_size=300,
+                 dynamic_graph_type=None,
+                 dynamic_init_topology_builder=None,
+                 dynamic_init_topology_aux_args=None
+                 ):
+        super(EuroparlNMTDataset, self).__init__(root_dir=root_dir,
+                                                 topology_builder=topology_builder, topology_subdir=topology_subdir, graph_type=graph_type,
+                                                 edge_strategy=edge_strategy, merge_strategy=merge_strategy,
+                                                 share_vocab=share_vocab, word_emb_size=word_emb_size,
+                                                 dynamic_graph_type=dynamic_graph_type,
+                                                 dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                                 dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
     @property
     def raw_file_names(self):

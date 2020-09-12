@@ -4,7 +4,6 @@ import torch, logging
 
 
 def get_glove_weights(glove, vocabulary: Vocab, dim=300):
-    print(vocabulary.index2word)
 
 
     vocab_size = vocabulary.get_vocab_size()

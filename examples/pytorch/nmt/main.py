@@ -49,15 +49,16 @@ class NMT:
 
     def _build_dataloader(self):
 
-        dataset = EuroparlNMTDataset(root_dir="/home/shiina/shiina/lib/dataset/news-commentary-v11/de-en",
+        dataset = EuroparlNMTDataset(root_dir=self.opt.root_dir,
                                      topology_builder=DependencyBasedGraphConstruction,
-                                     topology_subdir='DependencyGraph', share_vocab=False)
+                                     topology_subdir=self.opt.topology_subdir, share_vocab=False,
+                                     word_emb_size=self.opt.word_emb_size)
 
-        self.train_dataloader = DataLoader(dataset.train, batch_size=30, shuffle=True, num_workers=10,
+        self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt.batch_size, shuffle=True, num_workers=10,
                                            collate_fn=dataset.collate_fn)
-        self.val_dataloader = DataLoader(dataset.val, batch_size=30, shuffle=False, num_workers=10,
+        self.val_dataloader = DataLoader(dataset.val, batch_size=self.opt.batch_size, shuffle=False, num_workers=10,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=30, shuffle=False, num_workers=10,
+        self.test_dataloader = DataLoader(dataset.test, batch_size=self.opt.batch_size, shuffle=False, num_workers=10,
                                           collate_fn=dataset.collate_fn)
         self.vocab: VocabModel = dataset.vocab_model
         import torchtext.vocab as vocab
@@ -79,7 +80,10 @@ class NMT:
 
 
     def _build_model(self):
-        self.model = Graph2seq(self.vocab, device=self.device).to(self.device)
+        self.model = Graph2seq(self.vocab, gnn=self.opt.gnn, device=self.device,
+                               rnn_dropout=self.opt.rnn_dropout, word_dropout=self.opt.word_dropout,
+                               hidden_size=self.opt.hidden_size,
+                               word_emb_size=self.opt.word_emb_size).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]

@@ -11,24 +11,32 @@ from .loss import Graph2seqLoss
 
 
 class Graph2seq(nn.Module):
-    def __init__(self, vocab, device, hidden_size=300, direction_option='undirected'):
+    def __init__(self, vocab, gnn, device, word_emb_size=300, rnn_dropout=0.2, word_dropout=0.2, hidden_size=300,
+                 direction_option='undirected'):
         super(Graph2seq, self).__init__()
 
         self.vocab = vocab
-        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
-                           'seq_info_encode_strategy': "bilstm"}
+        embedding_style = {'single_token_item': True,
+                           'emb_strategy': "w2v_bilstm",
+                           'num_rnn_layers': 1}
         self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                vocab=vocab.in_word_vocab,
-
-                                                               hidden_size=hidden_size, dropout=0.2, device=device,
+                                                               hidden_size=hidden_size,
+                                                               rnn_dropout=rnn_dropout, word_dropout=word_dropout,
+                                                               device=device,
                                                                fix_word_emb=False)
-        # self.gnn_encoder = GAT(3, hidden_size, hidden_size, hidden_size, [2, 2, 1], direction_option=direction_option,
-        #                        feat_drop=0.2, attn_drop=0.2, activation=F.relu, residual=True)
-        # self.gnn_encoder = GGNN(3, hidden_size, hidden_size, direction_option=direction_option, dropout=0.2)
-        self.gnn_encoder = GraphSAGE(2, hidden_size, hidden_size, hidden_size, aggregator_type="lstm",
-                                     direction_option=direction_option, feat_drop=0.4)
+        if gnn == "GAT":
+            self.gnn_encoder = GAT(3, hidden_size, hidden_size, hidden_size, [2, 2, 1], direction_option=direction_option,
+                                   feat_drop=0.2, attn_drop=0.2, activation=F.relu, residual=True)
+        elif gnn == "GGNN":
+            self.gnn_encoder = GGNN(3, hidden_size, hidden_size, direction_option=direction_option, dropout=0.2)
+        elif gnn == "Graphsage":
+            self.gnn_encoder = GraphSAGE(2, hidden_size, hidden_size, hidden_size, aggregator_type="lstm",
+                                         direction_option=direction_option, feat_drop=0.4)
+        else:
+            raise NotImplementedError("Please define your graph embedding method: {}".format(gnn))
 
-        self.word_emb = nn.Embedding(len(self.vocab.out_word_vocab), 300).from_pretrained(
+        self.word_emb = nn.Embedding(len(self.vocab.out_word_vocab), word_emb_size).from_pretrained(
             torch.from_numpy(self.vocab.out_word_vocab.embeddings).float(), freeze=False)
 
         self.seq_decoder = StdRNNDecoder(max_decoder_step=200,
