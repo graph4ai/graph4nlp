@@ -23,6 +23,7 @@ from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
 
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
@@ -66,35 +67,87 @@ class Graph2Tree(nn.Module):
         self.tgt_vocab = tgt_vocab
         self.device = device
         self.use_copy = use_copy
+        self.use_edge_weight = False
 
-        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
-                           'seq_info_encode_strategy': "bilstm"}
+        # embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
+        #                    'seq_info_encode_strategy': "bilstm"}
+
+        embedding_style = {'single_token_item': True,
+                           'emb_strategy': "w2v_bilstm",
+                           'num_rnn_layers': 1
+                           }
+
         if graph_construction_type == "DependencyGraph":
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                 vocab=self.src_vocab,
-                                                                hidden_size=enc_hidden_size, dropout=dropout_for_word_embedding, device=device,
+                                                                hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=0.3, device=device,
                                                                 fix_word_emb=False)
         elif graph_construction_type == "ConstituencyGraph":
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                 vocab=self.src_vocab,
-                                                                hidden_size=enc_hidden_size, dropout=dropout_for_word_embedding, device=device,
+                                                                hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=0.3, device=device,
                                                                 fix_word_emb=False)
-        elif graph_construction_type == "DynamicGraph":
-            self.graph_topology = NodeEmbeddingBasedGraphConstruction(word_vocab=self.src_vocab, 
-                                                                embedding_styles=embedding_style, 
-                                                                input_size=enc_hidden_size, 
-                                                                hidden_size=enc_hidden_size,
-                                                                top_k_neigh=200,
-                                                                device=device)
+        elif graph_construction_type == "DynamicGraph_node_emb":
+            self.graph_topology = NodeEmbeddingBasedGraphConstruction(
+                self.src_vocab,
+                embedding_style,
+                sim_metric_type='weighted_cosine',
+                num_heads=1,
+                top_k_neigh=None,
+                epsilon_neigh=0.5,
+                smoothness_ratio=0.1,
+                connectivity_ratio=0.05,
+                sparsity_ratio=0.1,
+                input_size=enc_hidden_size,
+                hidden_size=enc_hidden_size,
+                fix_word_emb=False,
+                word_dropout=dropout_for_word_embedding,
+                rnn_dropout=0.3,
+                device=device)
+            self.use_edge_weight = True
+        elif graph_construction_type == "DynamicGraph_node_emb_refined":
+            self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
+                self.src_vocab,
+                embedding_style,
+                0.2,
+                sim_metric_type="weighted_cosine",
+                num_heads=1,
+                top_k_neigh=None,
+                epsilon_neigh=0.5,
+                smoothness_ratio=0.1,
+                connectivity_ratio=0.05,
+                sparsity_ratio=0.1,
+                input_size=enc_hidden_size,
+                hidden_size=enc_hidden_size,
+                fix_word_emb=False,
+                word_dropout=dropout_for_word_embedding,
+                rnn_dropout=0.3,
+                device=device)
+            self.use_edge_weight = True
+        else:
+            raise NotImplementedError()
+            # self.graph_topology = NodeEmbeddingBasedGraphConstruction(word_vocab=self.src_vocab, 
+            #                                                     embedding_styles=embedding_style, 
+            #                                                     input_size=enc_hidden_size, 
+            #                                                     hidden_size=enc_hidden_size,
+            #                                                     top_k_neigh=200,
+            #                                                     device=device)
 
-        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
+        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
 
         if gnn_type == "GAT":
-            self.encoder = GAT(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, [1], direction_option=direction_option, feat_drop=enc_dropout_for_feature, attn_drop=enc_dropout_for_attn, activation=F.relu, residual=True)
+            self.encoder = GAT(1, enc_hidden_size, enc_hidden_size, enc_hidden_size, [1],
+                                direction_option=direction_option, feat_drop=enc_dropout_for_feature, 
+                                attn_drop=enc_dropout_for_attn, activation=F.relu, residual=True)
         elif gnn_type == "GGNN":
-            self.encoder = GGNN(2, enc_hidden_size, enc_hidden_size, dropout=enc_dropout_for_feature, direction_option=direction_option)
+            self.encoder = GGNN(1, enc_hidden_size, enc_hidden_size,
+                                dropout=enc_dropout_for_feature, use_edge_weight=self.use_edge_weight, 
+                                direction_option=direction_option)
         elif gnn_type == "SAGE":
-            self.encoder = GraphSAGE(1, enc_hidden_size, enc_hidden_size, enc_hidden_size, 'lstm', direction_option=direction_option, feat_drop=enc_dropout_for_feature, activation=F.relu) # aggregate type: 'mean','gcn','pool','lstm'
+            # aggregate type: 'mean','gcn','pool','lstm'
+            self.encoder = GraphSAGE(1, enc_hidden_size, enc_hidden_size, enc_hidden_size,
+                                    'lstm', direction_option=direction_option, feat_drop=enc_dropout_for_feature,
+                                    activation=F.relu, bias=True, use_edge_weight=self.use_edge_weight)
         else:
             print("Wrong gnn type, please use GAT GGNN or SAGE")
             raise NotImplementedError()
@@ -208,15 +261,39 @@ class Jobs:
         if self.opt.graph_construction_type == "DependencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=DependencyBasedGraphConstruction,
-                                topology_subdir='DependencyGraph', edge_strategy='as_node', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+                                topology_subdir='DependencyGraph', edge_strategy='as_node',
+                                share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size,
+                                dec_emb_size=self.opt.tgt_emb_size)
         elif self.opt.graph_construction_type == "ConstituencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=ConstituencyBasedGraphConstruction,
-                                topology_subdir='ConstituencyGraph', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
-        elif self.opt.graph_construction_type == "DynamicGraph":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
+                                topology_subdir='ConstituencyGraph', share_vocab=use_copy,
+                                enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+        elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
+            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
                                 topology_builder=NodeEmbeddingBasedGraphConstruction,
-                                topology_subdir='DynamicGraph', graph_type='dynamic', dynamic_graph_type='node_emb', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)  
+                                topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
+                                dynamic_graph_type='node_emb', share_vocab=use_copy,
+                                enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+        elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
+            if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
+                dynamic_init_topology_builder = None
+            elif self.opt.dynamic_init_graph_type == 'dependency':
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif self.opt.dynamic_init_graph_type == 'constituency':
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            else:
+                # dynamic_init_topology_builder
+                raise RuntimeError('Define your own dynamic_init_topology_builder')
+            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
+                                topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
+                                topology_subdir='DynamicGraph_node_emb_refined', graph_type='dynamic',
+                                dynamic_graph_type='node_emb_refined', share_vocab=use_copy,
+                                enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
+                                dynamic_init_topology_builder=dynamic_init_topology_builder)
+        else:
+            raise NotImplementedError
+
 
         self.train_data_loader = DataLoaderForGraphEncoder(
             use_copy=use_copy, data=dataset.train, dataset=dataset, mode="train", batch_size=20, device=self.device)
@@ -682,6 +759,8 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
     main_arg_parser.add_argument('-graph_construction_type', type=str, default="ConstituencyGraph")
+
+    main_arg_parser.add_argument('-dynamic_init_graph_type', type=str, default="constituency") # "None, line, dependency, constituency"
 
     main_arg_parser.add_argument('-batch_size', type=int, default=20)
 
