@@ -264,17 +264,20 @@ class Jobs:
                                 topology_subdir='DependencyGraph', edge_strategy='as_node',
                                 share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size,
                                 dec_emb_size=self.opt.tgt_emb_size)
+
         elif self.opt.graph_construction_type == "ConstituencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=ConstituencyBasedGraphConstruction,
                                 topology_subdir='ConstituencyGraph', share_vocab=use_copy,
                                 enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
             dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
                                 topology_builder=NodeEmbeddingBasedGraphConstruction,
                                 topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
                                 dynamic_graph_type='node_emb', share_vocab=use_copy,
                                 enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
             if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
                 dynamic_init_topology_builder = None
@@ -758,7 +761,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
     main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
-    main_arg_parser.add_argument('-graph_construction_type', type=str, default="ConstituencyGraph")
+    main_arg_parser.add_argument('-graph_construction_type', type=str, default="ConstituencyGraph") # DynamicGraph_node_emb_refined, DynamicGraph_node_emb
 
     main_arg_parser.add_argument('-dynamic_init_graph_type', type=str, default="constituency") # "None, line, dependency, constituency"
 
