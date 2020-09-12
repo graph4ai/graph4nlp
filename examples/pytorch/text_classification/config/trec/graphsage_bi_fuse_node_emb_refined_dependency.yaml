@@ -12,6 +12,7 @@ graph_type: # 'node_emb' # graph construction type ('dependency', 'constituency'
 # Dynamic graph construction
 init_graph_type: # 'dependency' # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
       - 'dependency'
+      # - 'udf'
 gl_metric_type: 'weighted_cosine' # similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', 'rbf_kernel', 'cosine')
 gl_epsilon: # null # epsilon for graph sparsification
       - 0.8

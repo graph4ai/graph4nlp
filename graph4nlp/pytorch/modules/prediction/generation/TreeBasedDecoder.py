@@ -156,12 +156,13 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             graph_cell_state, graph_hidden_state = graph_level_embedding
 
         rnn_node_embedding = torch.zeros_like(graph_node_embedding, requires_grad=False)
+        rnn_node_embedding = to_cuda(rnn_node_embedding, self.device)
 
         cur_index = 1
         loss = 0
 
         dec_batch, queue_tree, max_index = get_dec_batch(
-            tgt_tree_batch, tgt_batch_size, False, self.tgt_vocab)
+            tgt_tree_batch, tgt_batch_size, self.device, self.tgt_vocab)
 
 
         dec_state = {}
@@ -174,11 +175,11 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             for j in range(1, 3):
                 dec_state[cur_index][0][j] = torch.zeros(
                     (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False, device=self.device)
-                to_cuda(dec_state[cur_index][0][j], self.device)
+                dec_state[cur_index][0][j] = to_cuda(dec_state[cur_index][0][j], self.device)
 
             sibling_state = torch.zeros(
                 (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False)
-            to_cuda(sibling_state, self.device)
+            sibling_state = to_cuda(sibling_state, self.device)
             
             # with torch.no_grad():
             if cur_index == 1:
@@ -738,7 +739,7 @@ def get_dec_batch(dec_tree_batch, batch_size, device, form_manager):
                         '(')
                 dec_batch[cur_index][i][len(w_list) + 1] = 2
 
-        to_cuda(dec_batch[cur_index], device)
+        dec_batch[cur_index] = to_cuda(dec_batch[cur_index], device)
         cur_index += 1
 
     return dec_batch, queue_tree, max_index
