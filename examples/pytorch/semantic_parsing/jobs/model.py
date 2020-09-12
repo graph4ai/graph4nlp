@@ -21,19 +21,24 @@ class Graph2seq(nn.Module):
         self.vocab = vocab
         self.graph_type = graph_type
         use_edge_weight = False
-        embedding_style = {'word_emb_type': 'w2v',
-                           'node_edge_emb_strategy': "mean",
-                           'seq_info_encode_strategy': "bilstm"
+
+        embedding_style = {'single_token_item': True,
+                           'emb_strategy': "w2v_bilstm",
+                           'num_rnn_layers': 1
                            }
         if self.graph_type == "dependency":
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=vocab.in_word_vocab,
-                                                                   hidden_size=hidden_size, dropout=emb_dropout, device=device,
+                                                                   hidden_size=hidden_size,
+                                                                   word_dropout=emb_dropout,
+                                                                   rnn_dropout=rnn_dropout, device=device,
                                                                    fix_word_emb=False)
         elif self.graph_type == "constituency":
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                      vocab=vocab.in_word_vocab,
-                                                                     hidden_size=hidden_size, dropout=emb_dropout, device=device,
+                                                                     hidden_size=hidden_size, device=device,
+                                                                     word_dropout=emb_dropout,
+                                                                     rnn_dropout=rnn_dropout,
                                                                      fix_word_emb=False)
         elif self.graph_type == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
@@ -50,7 +55,7 @@ class Graph2seq(nn.Module):
                 hidden_size=hidden_size,
                 fix_word_emb=False,
                 word_dropout=emb_dropout,
-                dropout=rnn_dropout,
+                rnn_dropout=rnn_dropout,
                 device=device)
             use_edge_weight = True
         elif self.graph_type == "node_emb_refined":
@@ -69,12 +74,12 @@ class Graph2seq(nn.Module):
                 hidden_size=hidden_size,
                 fix_word_emb=False,
                 word_dropout=emb_dropout,
-                dropout=rnn_dropout,
+                rnn_dropout=rnn_dropout,
                 device=device)
             use_edge_weight = True
         else:
             raise NotImplementedError()
-        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
+        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
 
         if gnn == "GAT":
             self.gnn_encoder = GAT(3, hidden_size, hidden_size, hidden_size, [2, 2, 1],
@@ -102,7 +107,7 @@ class Graph2seq(nn.Module):
 
     @classmethod
     def from_args(cls, vocab, args, device):
-        return cls(vocab=vocab, hidden_size=args.hidden_size, graph_type=args.topology_type,
+        return cls(vocab=vocab, hidden_size=args.hidden_size, graph_type=args.graph_type,
                    direction_option=args.gnn_direction, gnn=args.gnn, device=device,
                    emb_dropout=args.emb_dropout, feats_dropout=args.feats_dropout, rnn_dropout=args.feats_dropout)
 

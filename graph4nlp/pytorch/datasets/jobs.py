@@ -29,9 +29,17 @@ class JobsDataset(Text2TextDataset):
         #     'This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
         return
 
-    def __init__(self, root_dir, topology_builder, topology_subdir, graph_type='static',
-                 edge_strategy=None, merge_strategy='tailhead', share_vocab=False, dynamic_graph_type=None,
-                 init_graph_type=None):
+    def __init__(self, root_dir,
+                 topology_builder, topology_subdir,
+                 pretrained_word_emb_file=None,
+                 val_split_ratio=None,
+                 graph_type='static',
+                 merge_strategy="tailhead", edge_strategy=None,
+                 seed=None,
+                 word_emb_size=300, share_vocab=True,
+                 dynamic_graph_type=None,
+                 dynamic_init_topology_builder=None,
+                 dynamic_init_topology_aux_args=None):
         """
 
         Parameters
@@ -62,15 +70,42 @@ class JobsDataset(Text2TextDataset):
         super(JobsDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy,
-                                          share_vocab=share_vocab, dynamic_graph_type=dynamic_graph_type,
-                                          init_graph_type=init_graph_type)
+                                          share_vocab=share_vocab, pretrained_word_emb_file=pretrained_word_emb_file,
+                                          val_split_ratio=val_split_ratio, seed=seed, word_emb_size=word_emb_size,
+
+                                          dynamic_graph_type=dynamic_graph_type,
+                                          dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                          dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
     @classmethod
-    def from_args(cls, args, topology_builder):
-        return cls(root_dir=args.root_dir, topology_builder=topology_builder, topology_subdir=args.topology_subdir,
-                   graph_type=args.graph_type, edge_strategy=args.edge_strategy, merge_strategy=args.merge_strategy,
-                   share_vocab=args.share_vocab, dynamic_graph_type=args.dynamic_graph_type,
-                   init_graph_type=args.init_graph_type)
+    def from_args(cls, args, graph_type, topology_builder, dynamic_graph_type=None, dynamic_init_topology_builder=None, dynamic_init_topology_aux_args=None):
+        '''
+
+        dataset = TrecDataset(root_dir='examples/pytorch/text_classification/data/trec',
+                              pretrained_word_emb_file=self.config['pre_word_emb_file'],
+                              val_split_ratio=self.config['val_split_ratio'],
+                              merge_strategy=merge_strategy,
+                              seed=self.config['seed'],
+                              word_emb_size=300,
+                              graph_type=graph_type,
+                              topology_builder=topology_builder,
+                              topology_subdir=topology_subdir,
+                              dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
+                              dynamic_init_topology_builder=dynamic_init_topology_builder,
+                              dynamic_init_topology_aux_args={'dummy_param': 0})
+
+        '''
+        return cls(root_dir=args.root_dir,
+                   pretrained_word_emb_file=args.pretrained_word_emb_file,
+                   val_split_ratio=args.val_split_ratio,
+                   merge_strategy=args.merge_strategy, edge_strategy=args.edge_strategy,
+                   seed=args.seed,
+                   word_emb_size=300, share_vocab=args.share_vocab,
+                   graph_type=graph_type,
+                   topology_builder=topology_builder, topology_subdir=args.topology_subdir,
+                   dynamic_graph_type= dynamic_graph_type,
+                   dynamic_init_topology_builder=dynamic_init_topology_builder,
+                   dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
 
 class JobsDatasetForTree(TextToTreeDataset):

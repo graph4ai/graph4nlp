@@ -50,27 +50,47 @@ class Jobs:
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
-        if self.opt.topology_type == "dependency":
+        if self.opt.graph_type == "dependency":
             topology_builder = DependencyBasedGraphConstruction
-        elif self.opt.topology_type == "constituency":
+            graph_type = 'static'
+            dynamic_init_topology_builder = None
+        elif self.opt.graph_type == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction
-        elif self.opt.topology_type == "node_emb":
+            graph_type = 'static'
+            dynamic_init_topology_builder = None
+        elif self.opt.graph_type == "node_emb":
             topology_builder = NodeEmbeddingBasedGraphConstruction
-        elif self.opt.topology_type == "node_emb_refined":
+            graph_type = 'dynamic'
+            dynamic_init_topology_builder = None
+        elif self.opt.graph_type == "node_emb_refined":
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            graph_type = 'dynamic'
+            if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
+                dynamic_init_topology_builder = None
+            elif self.opt.dynamic_init_graph_type == 'dependency':
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif self.opt.dynamic_init_graph_type == 'constituency':
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            else:
+                # dynamic_init_topology_builder
+                raise RuntimeError('Define your own dynamic_init_topology_builder')
         else:
-            raise NotImplementedError()
-        dataset = JobsDataset.from_args(args=self.opt, topology_builder=topology_builder)
+            raise NotImplementedError("Define your topology builder.")
+
+        dataset = JobsDataset.from_args(args=self.opt, topology_builder=topology_builder,
+                                        graph_type=graph_type,
+                                        dynamic_graph_type=graph_type if graph_type in ('node_emb', 'node_emb_refined') else None,
+                                        dynamic_init_topology_builder=dynamic_init_topology_builder)
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=24, shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=24, shuffle=True, num_workers=1,
+        self.test_dataloader = DataLoader(dataset.test, batch_size=24, shuffle=False, num_workers=1,
                                           collate_fn=dataset.collate_fn)
 
         self.vocab = dataset.vocab_model
-        from examples.pytorch.semantic_parsing.jobs.utils import get_glove_weights
-        pretrained_weight = get_glove_weights(self.vocab.in_word_vocab)
-        self.vocab.in_word_vocab.embeddings = pretrained_weight.numpy()
+        # from examples.pytorch.semantic_parsing.jobs.utils import get_glove_weights
+        # pretrained_weight = get_glove_weights(self.vocab.in_word_vocab)
+        # self.vocab.in_word_vocab.embeddings = pretrained_weight.numpy()
 
     def _build_model(self):
         self.model = Graph2seq.from_args(vocab=self.vocab, args=self.opt, device=self.device).to(self.device)
