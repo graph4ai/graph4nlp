@@ -1,17 +1,20 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
-from .config import get_args
+from .args import get_args
 from .evaluation import ExpressionAccuracy
 from .utils import get_log, wordid2str
 from .model import Graph2seq
@@ -47,23 +50,50 @@ class Jobs:
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
+        if self.opt.graph_type == "dependency":
+            topology_builder = DependencyBasedGraphConstruction
+            graph_type = 'static'
+            dynamic_init_topology_builder = None
+        elif self.opt.graph_type == "constituency":
+            topology_builder = ConstituencyBasedGraphConstruction
+            graph_type = 'static'
+            dynamic_init_topology_builder = None
+        elif self.opt.graph_type == "node_emb":
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+            graph_type = 'dynamic'
+            dynamic_init_topology_builder = None
+        elif self.opt.graph_type == "node_emb_refined":
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            graph_type = 'dynamic'
+            if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
+                dynamic_init_topology_builder = None
+            elif self.opt.dynamic_init_graph_type == 'dependency':
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif self.opt.dynamic_init_graph_type == 'constituency':
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            else:
+                # dynamic_init_topology_builder
+                raise RuntimeError('Define your own dynamic_init_topology_builder')
+        else:
+            raise NotImplementedError("Define your topology builder.")
 
-        dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
-                              topology_builder=DependencyBasedGraphConstruction,
-                              topology_subdir='DependencyGraph', share_vocab=True)
+        dataset = JobsDataset.from_args(args=self.opt, topology_builder=topology_builder,
+                                        graph_type=graph_type,
+                                        dynamic_graph_type=graph_type if graph_type in ('node_emb', 'node_emb_refined') else None,
+                                        dynamic_init_topology_builder=dynamic_init_topology_builder)
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=24, shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=24, shuffle=True, num_workers=1,
+        self.test_dataloader = DataLoader(dataset.test, batch_size=24, shuffle=False, num_workers=1,
                                           collate_fn=dataset.collate_fn)
 
         self.vocab = dataset.vocab_model
-        from examples.pytorch.semantic_parsing.jobs.utils import get_glove_weights
-        pretrained_weight = get_glove_weights(self.vocab.in_word_vocab)
-        self.vocab.in_word_vocab.embeddings = pretrained_weight.numpy()
+        # from examples.pytorch.semantic_parsing.graph2seq.utils import get_glove_weights
+        # pretrained_weight = get_glove_weights(self.vocab.in_word_vocab)
+        # self.vocab.in_word_vocab.embeddings = pretrained_weight.numpy()
 
     def _build_model(self):
-        self.model = Graph2seq(self.vocab).to(self.device)
+        self.model = Graph2seq.from_args(vocab=self.vocab, args=self.opt, device=self.device).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -158,5 +188,5 @@ if __name__ == "__main__":
     runner = Jobs(opt)
     max_score = runner.train()
     print("Train finish, best val score: {:.3f}".format(max_score))
-    runner.load_checkpoint("best_all.pth")
+    runner.load_checkpoint("best.pth")
     runner.evaluate(split="test")
