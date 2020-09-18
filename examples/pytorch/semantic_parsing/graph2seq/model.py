@@ -7,6 +7,7 @@ from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_g
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from .loss import *
 import torch.nn.functional as F
@@ -92,6 +93,9 @@ class Graph2seq(nn.Module):
             self.gnn_encoder = GraphSAGE(3, hidden_size, hidden_size, hidden_size, aggregator_type="lstm",
                                          direction_option=direction_option, feat_drop=feats_dropout,
                                          activation=nn.ReLU(), bias=True, use_edge_weight=use_edge_weight)
+        elif gnn == "GCN":
+            self.gnn_encoder = GCN(3, hidden_size, hidden_size, hidden_size,direction_option=direction_option,
+                                allow_zero_in_degree=True, activation=F.relu)
         else:
             raise NotImplementedError()
 
