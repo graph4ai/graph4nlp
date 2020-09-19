@@ -11,7 +11,7 @@ import scipy.sparse
 import torch
 
 from .utils import SizeMismatchException, EdgeNotFoundException
-from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list, reverse_index
+from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list
 from .views import NodeView, NodeFeatView, EdgeView
 
 """
@@ -730,35 +730,6 @@ def to_batch(graphs: list = None) -> GraphData:
         batch.union(graphs[i])
         batch.batch += [i] * graphs[i].get_node_num()
     return batch
-
-
-def __legacy_from_batch(batch: GraphData) -> list:
-    graphs = []
-    batch_size = max(batch.batch) + 1
-    # 1. calculate the number of nodes in the batch and get a list indicating #nodes of each graph.
-    num_nodes = []
-    node_indices = []
-    for i in range(batch_size):
-        try:
-            end_node_index = reverse_index(batch.batch, i)
-        except ValueError:
-            raise ValueError(
-                "Graph #{} has no nodes. All graphs in a batch should contain at least one node.".format(i))
-        node_indices.append(end_node_index)
-        if i == 0:  # the first graph
-            num_nodes.append(end_node_index + 1)
-        else:
-            num_nodes.append(end_node_index + 1 - num_nodes[-1])
-
-    # 2. iterate each sub-graph to extract them
-    for i in range(batch_size):
-        #   a. calculate the starting and ending node index in the batch
-        node_st_idx = 0 if i == 0 else node_indices[i - 1] + 1
-        node_ed_idx = node_indices[i]
-        graphs.append(batch.split(node_st_idx=node_st_idx, node_ed_idx=node_ed_idx))
-
-    assert len(graphs) == batch_size
-    return graphs
 
 
 def from_batch(batch: GraphData) -> list:
