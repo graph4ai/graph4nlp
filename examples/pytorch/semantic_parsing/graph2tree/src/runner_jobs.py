@@ -157,7 +157,7 @@ class Graph2Tree(nn.Module):
                                 direction_option=direction_option,
                                 norm="both",
                                 activation=F.relu,
-                                use_edge_weight=use_edge_weight)
+                                use_edge_weight=self.use_edge_weight)
         else:
             print("Wrong gnn type, please use GAT GGNN or SAGE")
             raise NotImplementedError()
