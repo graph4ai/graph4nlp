@@ -13,3 +13,7 @@
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |  
 | GraphSage | 75.6 | 76.0 | 74.0 | 
+
+
+## dynamic 
+

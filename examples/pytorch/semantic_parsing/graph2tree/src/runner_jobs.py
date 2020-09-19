@@ -28,6 +28,7 @@ from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_g
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
 
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import \
     StdTreeDecoder
@@ -80,12 +81,12 @@ class Graph2Tree(nn.Module):
         if graph_construction_type == "DependencyGraph":
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                 vocab=self.src_vocab,
-                                                                hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=0.3, device=device,
+                                                                hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=0.1, device=device,
                                                                 fix_word_emb=False)
         elif graph_construction_type == "ConstituencyGraph":
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                 vocab=self.src_vocab,
-                                                                hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=0.3, device=device,
+                                                                hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=0.1, device=device,
                                                                 fix_word_emb=False)
         elif graph_construction_type == "DynamicGraph_node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
@@ -102,7 +103,7 @@ class Graph2Tree(nn.Module):
                 hidden_size=enc_hidden_size,
                 fix_word_emb=False,
                 word_dropout=dropout_for_word_embedding,
-                rnn_dropout=0.3,
+                rnn_dropout=0.1,
                 device=device)
             self.use_edge_weight = True
         elif graph_construction_type == "DynamicGraph_node_emb_refined":
@@ -121,7 +122,7 @@ class Graph2Tree(nn.Module):
                 hidden_size=enc_hidden_size,
                 fix_word_emb=False,
                 word_dropout=dropout_for_word_embedding,
-                rnn_dropout=0.3,
+                rnn_dropout=0.1,
                 device=device)
             self.use_edge_weight = True
         else:
@@ -148,6 +149,15 @@ class Graph2Tree(nn.Module):
             self.encoder = GraphSAGE(1, enc_hidden_size, enc_hidden_size, enc_hidden_size,
                                     'lstm', direction_option=direction_option, feat_drop=enc_dropout_for_feature,
                                     activation=F.relu, bias=True, use_edge_weight=self.use_edge_weight)
+        elif gnn_type == "GCN":
+            self.encoder = GCN(1,
+                                enc_hidden_size,
+                                enc_hidden_size,
+                                enc_hidden_size,
+                                direction_option=direction_option,
+                                norm="both",
+                                activation=F.relu,
+                                use_edge_weight=use_edge_weight)
         else:
             print("Wrong gnn type, please use GAT GGNN or SAGE")
             raise NotImplementedError()
@@ -456,7 +466,7 @@ class BeamSearchNode(object):
         reward = 0
         return self.logp / float(self.leng - 1 + 1e-6) + alpha * reward
 
-def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, enc_w_list, word_manager, form_manager, device, max_dec_seq_length, max_dec_tree_depth, use_beam_search=True):
+def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, enc_w_list, word_manager, form_manager, device, max_dec_seq_length, max_dec_tree_depth, use_beam_search=False):
     # initialize the rnn state to all zeros
     prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
     prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
@@ -555,7 +565,7 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
                     t.add_child(int(prev_word[0]))
                 i_child = i_child + 1
         else:
-            beam_width = 2
+            beam_width = 10
             topk = 1
             decoded_results = []
         
@@ -743,7 +753,7 @@ def compute_accuracy(candidate_list, reference_list, form_manager):
     len_min = min(len(candidate_list), len(reference_list))
     c = 0
     for i in range(len_min):
-        if is_all_same(candidate_list[i], reference_list[i]):
+        if is_all_same(candidate_list[i], reference_list[i], form_manager):
             c = c+1
         else:
             pass
