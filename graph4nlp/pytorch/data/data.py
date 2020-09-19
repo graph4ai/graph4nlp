@@ -165,7 +165,7 @@ class GraphData(object):
 
     def set_node_features(self, nodes: int or slice, new_data: dict) -> None:
         """
-        Set the features of the `nodes` with the given `new_data`.
+        Set the features of the `nodes` with the given `new_data``.
 
         Parameters
         ----------
@@ -775,6 +775,7 @@ def from_batch(batch: GraphData) -> list:
     list
         A list containing all the GraphData instances contained in the source batch.
     """
+
     num_nodes = batch._batch_num_nodes
     num_edges = batch._batch_num_edges
     all_edges = batch.get_all_edges()
