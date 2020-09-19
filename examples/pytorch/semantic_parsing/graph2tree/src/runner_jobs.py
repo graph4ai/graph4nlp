@@ -176,7 +176,7 @@ class Graph2Tree(nn.Module):
                                           device=device,
                                           criterion=self.criterion,
                                           teacher_force_ratio=teacher_force_ratio,
-                                          use_sibling=True,
+                                          use_sibling=False,
                                           use_attention=True,
                                           use_copy=self.use_copy,
                                           use_coverage=True,

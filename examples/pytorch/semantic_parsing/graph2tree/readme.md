@@ -6,6 +6,8 @@
 | GAT | 89.3 | 92.1 | 90.7 |  
 | GGNN | 91.4 | 91.4 | 90.0 |
 | GraphSage | 90.7 | 90.7 | 90.0 |
+| GCN | 90.0 | - | - |
+
 
 ## Dependency Graph
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
