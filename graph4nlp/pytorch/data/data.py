@@ -14,15 +14,15 @@ from .utils import SizeMismatchException, EdgeNotFoundException
 from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list
 from .views import NodeView, NodeFeatView, EdgeView
 
-"""
-An edge in the endpoint node indices form is represented as `EdgeIndex`. 
-It is a tuple consisting of 2 elements, namely `src` and `tgt`.
-"""
+# DGL version check: requires dgl >= 0.3.x
+_dgl_version = float(dgl.__version__[:3])
+if _dgl_version < 0.3:
+    raise AssertionError(
+        'Graph4NLP requires dgl version greater than 0.3.x. Your current dgl version is {}. '
+        'Please upgrade your dgl.'.format(dgl.__version__))
+
 EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
 
-"""
-
-"""
 node_feat_factory = dict
 node_attr_factory = dict
 single_node_attr_factory = dict
@@ -45,7 +45,7 @@ class GraphData(object):
     Represent a single graph with additional attributes.
     """
 
-    def __init__(self, src=None):
+    def __init__(self, src=None, device=None):
 
         # Initialize internal data storages.
         self._node_attributes = node_attr_factory()
@@ -56,6 +56,12 @@ class GraphData(object):
         self._edge_features = edge_feature_factory(res_init_edge_features)
         self._edge_attributes = edge_attribute_factory()
         self.graph_attributes = graph_data_factory()
+
+        # Context info: device (cpu/gpu)
+        if device is None:
+            self.device = 'cpu'
+        else:
+            self.device = device
 
         # Batch information. If this instance is not a batch, then the following attributes are all `None`.
         self.batch = None
@@ -460,7 +466,7 @@ class GraphData(object):
         g: dgl.DGLGraph
             The converted dgl.DGLGraph
         """
-        dgl_g = dgl.DGLGraph()
+        dgl_g = dgl.DGLGraph().to(self.device)
         # Add nodes and their features
         dgl_g.add_nodes(num=self.get_node_num())
         for key, value in self._node_features.items():
