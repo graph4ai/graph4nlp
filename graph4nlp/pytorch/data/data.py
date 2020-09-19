@@ -69,11 +69,21 @@ class GraphData(object):
         self._batch_num_nodes = None
         self._batch_num_edges = None
 
+        # Construct from other sources
         if src is not None:
             if isinstance(src, GraphData):
                 self.from_graphdata(src)
+            elif isinstance(src, scipy.sparse.coo_matrix):
+                self.from_scipy_sparse_matrix(src)
+            elif isinstance(src, torch.Tensor):
+                self.from_dense_adj(src)
+            elif isinstance(src, dgl.DGLGraph):
+                self.from_dgl(src)
             else:
                 raise NotImplementedError
+
+    def to(self, device):
+        self.device = device
 
     # Node operations
     @property
