@@ -553,7 +553,7 @@ class DecoderRNNWithCopy(nn.Module):
             # add pointer probabilities to output
             ptr_output = enc_attn
             output.scatter_add_(1, encoder_word_idx.to(self.device), prob_ptr * ptr_output)
-            if log_prob: output = torch.log(output + VERY_SMALL_NUMBER)
+            if log_prob: output = torch.log(output + 1e-31)
         else:
             if log_prob: output = F.log_softmax(logits, dim=1)
             else: output = F.softmax(logits, dim=1)
