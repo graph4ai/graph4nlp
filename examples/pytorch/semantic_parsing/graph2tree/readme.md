@@ -6,7 +6,7 @@
 | GAT | 89.3 | 92.1 | 90.7 |  
 | GGNN | 91.4 | 91.4 | 90.0 |
 | GraphSage | 90.7 | 90.7 | 90.0 |
-| GCN | 90.0 | - | - |
+| GCN | 89.3 | 91.4 | 90.7 |
 
 
 ## Dependency Graph
@@ -15,6 +15,7 @@
 | GAT | 90.7 | 91.4 | 90.0 |  
 | GGNN | 89.3 | 90.0 | 90.7 |  
 | GraphSage | 90.0 | 90.7 | 89.3 |  
+| GCN | 90.0 | 90.0 | 91.4 |
 
 ## Dynamic Graph
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
@@ -22,6 +23,8 @@
 | GAT | 90.0 | 90.7 | 91.4 |  
 | GGNN | 89.3 | 87.9 | 87.9 |  
 | GraphSage | 87.9 | 90.0 | 91.4 |  
+| GCN | - | - | 89.3 |
+
 
 ## Ablation study for tree decoder
 
