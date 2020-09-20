@@ -570,7 +570,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-use_copy', type=bool, default=False, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str,
-                                 default='examples/pytorch/semantic_parsing/graph2tree/data/graph2seq',
+                                 default='examples/pytorch/semantic_parsing/graph2tree/data/jobs',
                                  help='data path')
     main_arg_parser.add_argument('-checkpoint_dir', type=str,
                                  default='examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs',
