@@ -10,8 +10,15 @@ from graph4nlp.pytorch.data.data import *
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from .base import StaticGraphConstructionBase
 
-
-class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
+def get_new_sent(dep_info):
+    new_sent=[]
+    idx=0
+    for line in dep_info.strip().split('\n'):
+           new_sent.append(line.split('\t')[1])
+           idx+=1      
+    return new_sent
+ 
+class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstructionBase):
     """
         Line based graph construction class
     Parameters
@@ -22,16 +29,17 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, dropout=None, use_cuda=True):
-        super(DependencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
+    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, fix_bert_emb=True, dropout=None, device=None):
+        super(DependencyBasedGraphConstruction_without_tokenizer, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
-                                                               dropout=dropout, use_cuda=use_cuda)
+                                                               fix_bert_emb=fix_bert_emb,
+                                                               device=device)
         self.vocab = vocab
         self.verbase = 1
         self.device = self.embedding_layer.device
-        self.dep_parser = CoreNLPDependencyParser(url='http://localhost:9000')
+        #self.dep_parser = CoreNLPDependencyParser(url='http://localhost:9000')
 
     def add_vocab(self, g):
         """
@@ -83,7 +91,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         sent=raw_text_data#[sent_id]
         assert len(sent) >= 2
         parsed_sent['node_num']=len(sent)
-        #generate node content in a text                
+        #generate node content in a text   
+        dep_parser = CoreNLPDependencyParser(url='http://localhost:9000')             
         for token_id in range(len(sent)):
                     node={}
                     node['token']=sent[token_id]
@@ -92,24 +101,25 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                     node['position_id']=token_id
                     parsed_sent['node_content'].append(node)
         #generate graph content in a text        
-        (parse_sent, ),(null, )=self.dep_parser.parse_sents([sent,sent])
-        dep_info = parse_sent.to_conll(4)
-        idx=0
-        for line in dep_info.split('\n'):
-                    g={}
-                    g['edge_type']=line.split('\t')[3]
-                    g['src']=int(line.split('\t')[2])
-                    g['tgt']=idx
-                    parsed_sent['graph_content'].append(g)
-                    idx+=1                    
+        (parse_sent, ),(null, )=dep_parser.parse_sents([sent,sent])
+        dep_info = parse_sent.to_conll(10)
+        new_sent=get_new_sent(dep_info)
+        for line in dep_info.strip().split('\n'):
+                    g={}                                        
+                    if line.split('\t')[1] in sent:
+                      g['src']=sent.index(line.split('\t')[1])
+                      if int(line.split('\t')[6])>0:
+                          if new_sent[int(line.split('\t')[6])-1] in sent:
+                              token=new_sent[int(line.split('\t')[6])-1]
+                              g['tgt']=sent.index(token)
+                              g['edge_type']=line.split('\t')[-3]
+                              parsed_sent['graph_content'].append(g)                  
         parsed_results.append(parsed_sent)
         
         return parsed_results
         
-        
     @classmethod
-    def topology(cls, raw_text_data, nlp_processor, merge_strategy, edge_strategy, split_hyphenated=False,
-                 normalize=False, sequential_link=True, verbase=0):
+    def topology(cls, raw_text_data, auxiliary_args):
         """
             Graph building method.
         Parameters
@@ -153,6 +163,12 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         joint_graph: GraphData
             The merged graph data-structure.
         """
+        merge_strategy=auxiliary_args['merge_strategy']
+        edge_strategy=auxiliary_args['edge_strategy']
+        split_hyphenated=False,
+        normalize=False,
+        sequential_link=True, 
+        verbase=0
         cls.verbase = verbase
 
         parsed_results = cls.parsing(cls,raw_text_data=raw_text_data)
@@ -374,16 +390,21 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def forward(self, batch_graphdata: list):
         node_size = []
         num_nodes = []
+        num_word_nodes = [] # number of nodes that are extracted from the raw text in each graph
 
         for g in batch_graphdata:
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
             num_nodes.append(g.get_node_num())
+            num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))
             node_size.extend([1 for i in range(num_nodes[-1])])
 
         batch_gd = to_batch(batch_graphdata)
+        b_node = batch_gd.get_node_num()
+        assert b_node == sum(num_nodes), print(b_node, sum(num_nodes))
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
+        num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
+        node_emb = self.embedding_layer(batch_gd, node_size, num_nodes, num_word_items=num_word_nodes)
         batch_gd.node_features["node_feat"] = node_emb
 
         return batch_gd
