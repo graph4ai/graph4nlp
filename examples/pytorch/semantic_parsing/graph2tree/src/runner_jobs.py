@@ -1,4 +1,4 @@
-import random
+import argparse
 import argparse
 import random
 import time
@@ -16,24 +16,16 @@ from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import \
     ConstituencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
-
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import \
+    NodeEmbeddingBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import \
+    NodeEmbeddingBasedRefinedGraphConstruction
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
+from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
-from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-
-from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import \
-    StdTreeDecoder
-
-from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
-
-from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask, dropout
-from graph4nlp.pytorch.modules.utils.tree_utils import DataLoaderForGraphEncoder, Tree, Vocab, to_cuda
-
-import warnings
+from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask
+from graph4nlp.pytorch.modules.utils.tree_utils import DataLoaderForGraphEncoder, Tree, to_cuda
 
 warnings.filterwarnings('ignore')
 
@@ -76,14 +68,18 @@ class Graph2Tree(nn.Module):
 
         if graph_construction_type == "DependencyGraph":
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
-                                                                vocab=self.src_vocab,
-                                                                hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=0.1, device=device,
-                                                                fix_word_emb=False)
+                                                                   vocab=self.src_vocab,
+                                                                   hidden_size=enc_hidden_size,
+                                                                   word_dropout=dropout_for_word_embedding,
+                                                                   rnn_dropout=0.1, device=device,
+                                                                   fix_word_emb=False)
         elif graph_construction_type == "ConstituencyGraph":
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
-                                                                vocab=self.src_vocab,
-                                                                hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=0.1, device=device,
-                                                                fix_word_emb=False)
+                                                                     vocab=self.src_vocab,
+                                                                     hidden_size=enc_hidden_size,
+                                                                     word_dropout=dropout_for_word_embedding,
+                                                                     rnn_dropout=0.1, device=device,
+                                                                     fix_word_emb=False)
         elif graph_construction_type == "DynamicGraph_node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
                 self.src_vocab,
@@ -143,17 +139,17 @@ class Graph2Tree(nn.Module):
         elif gnn_type == "SAGE":
             # aggregate type: 'mean','gcn','pool','lstm'
             self.encoder = GraphSAGE(1, enc_hidden_size, enc_hidden_size, enc_hidden_size,
-                                    'lstm', direction_option=direction_option, feat_drop=enc_dropout_for_feature,
-                                    activation=F.relu, bias=True, use_edge_weight=self.use_edge_weight)
+                                     'lstm', direction_option=direction_option, feat_drop=enc_dropout_for_feature,
+                                     activation=F.relu, bias=True, use_edge_weight=self.use_edge_weight)
         elif gnn_type == "GCN":
             self.encoder = GCN(1,
-                                enc_hidden_size,
-                                enc_hidden_size,
-                                enc_hidden_size,
-                                direction_option=direction_option,
-                                norm="both",
-                                activation=F.relu,
-                                use_edge_weight=self.use_edge_weight)
+                               enc_hidden_size,
+                               enc_hidden_size,
+                               enc_hidden_size,
+                               direction_option=direction_option,
+                               norm="both",
+                               activation=F.relu,
+                               use_edge_weight=self.use_edge_weight)
         else:
             print("Wrong gnn type, please use GAT GGNN or SAGE")
             raise NotImplementedError()
@@ -268,23 +264,24 @@ class Jobs:
 
         if self.opt.graph_construction_type == "DependencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
-                                topology_builder=DependencyBasedGraphConstruction,
-                                topology_subdir='DependencyGraph', edge_strategy='as_node',
-                                share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size,
-                                dec_emb_size=self.opt.tgt_emb_size)
+                                         topology_builder=DependencyBasedGraphConstruction,
+                                         topology_subdir='DependencyGraph', edge_strategy='as_node',
+                                         share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size,
+                                         dec_emb_size=self.opt.tgt_emb_size)
 
         elif self.opt.graph_construction_type == "ConstituencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
-                                topology_builder=ConstituencyBasedGraphConstruction,
-                                topology_subdir='ConstituencyGraph', share_vocab=use_copy,
-                                enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+                                         topology_builder=ConstituencyBasedGraphConstruction,
+                                         topology_subdir='ConstituencyGraph', share_vocab=use_copy,
+                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
-                                topology_builder=NodeEmbeddingBasedGraphConstruction,
-                                topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
-                                dynamic_graph_type='node_emb', share_vocab=use_copy,
-                                enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed,
+                                         word_emb_size=self.opt.enc_emb_size,
+                                         topology_builder=NodeEmbeddingBasedGraphConstruction,
+                                         topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
+                                         dynamic_graph_type='node_emb', share_vocab=use_copy,
+                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
             if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
@@ -296,15 +293,15 @@ class Jobs:
             else:
                 # dynamic_init_topology_builder
                 raise RuntimeError('Define your own dynamic_init_topology_builder')
-            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
-                                topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
-                                topology_subdir='DynamicGraph_node_emb_refined', graph_type='dynamic',
-                                dynamic_graph_type='node_emb_refined', share_vocab=use_copy,
-                                enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                dynamic_init_topology_builder=dynamic_init_topology_builder)
+            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed,
+                                         word_emb_size=self.opt.enc_emb_size,
+                                         topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
+                                         topology_subdir='DynamicGraph_node_emb_refined', graph_type='dynamic',
+                                         dynamic_graph_type='node_emb_refined', share_vocab=use_copy,
+                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
+                                         dynamic_init_topology_builder=dynamic_init_topology_builder)
         else:
             raise NotImplementedError
-
 
         self.train_data_loader = DataLoaderForGraphEncoder(
             use_copy=use_copy, data=dataset.train, dataset=dataset, mode="train", batch_size=20, device=self.device)
@@ -452,8 +449,11 @@ def convert_to_string(idx_list, form_manager):
         w_list.append(form_manager.get_idx_symbol(int(idx_list[i])))
     return " ".join(w_list)
 
+
 import operator
 from queue import PriorityQueue
+
+
 class BeamSearchNode(object):
     def __init__(self, hiddenstate, previousNode, wordId, logProb, length):
         self.h = hiddenstate
@@ -466,7 +466,9 @@ class BeamSearchNode(object):
         reward = 0
         return self.logp / float(self.leng - 1 + 1e-6) + alpha * reward
 
-def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, enc_w_list, word_manager, form_manager, device, max_dec_seq_length, max_dec_tree_depth, use_beam_search=False):
+
+def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, enc_w_list, word_manager,
+                form_manager, device, max_dec_seq_length, max_dec_tree_depth, use_beam_search=False):
     # initialize the rnn state to all zeros
     prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
     prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
@@ -538,16 +540,18 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
                 else:
                     # print(form_manager.idx2symbol[np.array(prev_word)[0]])
                     decoder_embedded = model.decoder.embeddings(prev_word)
-                    pred, decoder_state, _, _, enc_context = model.decoder.rnn(parent_h, sibling_state, decoder_embedded,
-                                                                              decoder_state,
-                                                                              enc_outputs.transpose(
-                                                                                  0, 1),
-                                                                              None, None, input_mask=input_mask,
-                                                                              encoder_word_idx=enc_w_list,
-                                                                              ext_vocab_size=model.decoder.embeddings.num_embeddings,
-                                                                              log_prob=False,
-                                                                              prev_enc_context=enc_context,
-                                                                              encoder_outputs2=rnn_node_embedding.transpose(0, 1))
+                    pred, decoder_state, _, _, enc_context = model.decoder.rnn(parent_h, sibling_state,
+                                                                               decoder_embedded,
+                                                                               decoder_state,
+                                                                               enc_outputs.transpose(
+                                                                                   0, 1),
+                                                                               None, None, input_mask=input_mask,
+                                                                               encoder_word_idx=enc_w_list,
+                                                                               ext_vocab_size=model.decoder.embeddings.num_embeddings,
+                                                                               log_prob=False,
+                                                                               prev_enc_context=enc_context,
+                                                                               encoder_outputs2=rnn_node_embedding.transpose(
+                                                                                   0, 1))
 
                     dec_next_state_1 = decoder_state[0].squeeze(0)
                     dec_next_state_2 = decoder_state[1].squeeze(0)
@@ -555,14 +559,17 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
                     pred = torch.log(pred + 1e-31)
                     prev_word = pred.argmax(1)
 
-                if int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.end_token) or t.num_children >= max_dec_seq_length:
+                if int(prev_word[0]) == form_manager.get_symbol_idx(
+                        form_manager.end_token) or t.num_children >= max_dec_seq_length:
                     break
                 elif int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
-                    #print("we predicted N");exit()
+                    # print("we predicted N");exit()
                     if use_copy:
-                        queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                        queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone()), "parent": head,
+                                             "child_index": i_child, "t": Tree()})
                     else:
-                        queue_decode.append({"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                        queue_decode.append(
+                            {"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
                     t.add_child(int(prev_word[0]))
                 else:
                     t.add_child(int(prev_word[0]))
@@ -573,7 +580,7 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
             decoded_results = []
 
             # decoding goes sentence by sentence
-            assert(graph_node_embedding.size(0) == 1)
+            assert (graph_node_embedding.size(0) == 1)
             for idx in range(graph_node_embedding.size(0)):
                 decoder_hidden = (s[0], s[1])
                 decoder_input = prev_word
@@ -608,7 +615,8 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
                             continue
 
                     # decode for one step using decoder
-                    curr_c, curr_h = model.decoder.rnn(decoder_input, decoder_hidden[0], decoder_hidden[1], parent_h, sibling_state)
+                    curr_c, curr_h = model.decoder.rnn(decoder_input, decoder_hidden[0], decoder_hidden[1], parent_h,
+                                                       sibling_state)
                     prediction = model.decoder.attention(enc_outputs, curr_h, torch.tensor(0))
                     decoder_hidden = (curr_c, curr_h)
 
@@ -650,12 +658,14 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
                     utterances.append(utterance)
 
                 decoded_results.append(utterances)
-            assert(len(decoded_results) == 1 and len(utterances) == topk)
+            assert (len(decoded_results) == 1 and len(utterances) == topk)
             generated_sentence = decoded_results[0][0]
 
             for node_i in generated_sentence:
                 if int(node_i.wordid.item()) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
-                    queue_decode.append({"s": (node_i.h[0].clone(), node_i.h[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                    queue_decode.append(
+                        {"s": (node_i.h[0].clone(), node_i.h[1].clone()), "parent": head, "child_index": i_child,
+                         "t": Tree()})
                     t.add_child(int(node_i.wordid.item()))
                     i_child = i_child + 1
                 elif int(node_i.wordid.item()) != form_manager.get_symbol_idx(form_manager.end_token) and \
@@ -663,7 +673,6 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
                         int(node_i.wordid.item()) != form_manager.get_symbol_idx('('):
                     t.add_child(int(node_i.wordid.item()))
                     i_child = i_child + 1
-
 
         head = head + 1
     # refine the root tree (TODO, what is this doing?)
@@ -715,6 +724,7 @@ class AttnUnit(nn.Module):
 
         return pred
 
+
 def get_split_comma(input_str):
     input_str = input_str.replace(",", " , ")
     input_list = [item.strip() for item in input_str.split()]
@@ -722,7 +732,7 @@ def get_split_comma(input_str):
     for index in range(len(input_list)):
         if input_list[index] == ',':
             if input_list[:index].count('(') == input_list[:index].count(')'):
-                if input_list[index+1:].count('(') == input_list[index+1:].count(')'):
+                if input_list[index + 1:].count('(') == input_list[index + 1:].count(')'):
                     if input_list[index] == ref_char:
                         raise RuntimeError
                     else:
@@ -732,6 +742,7 @@ def get_split_comma(input_str):
     for str_ in new_str:
         result_set.add(str_.strip())
     return result_set
+
 
 def is_all_same(c1, c2, form_manager):
     if len(c1) == len(c2):
@@ -758,7 +769,7 @@ def compute_accuracy(candidate_list, reference_list, form_manager):
     c = 0
     for i in range(len_min):
         if is_all_same(candidate_list[i], reference_list[i], form_manager):
-            c = c+1
+            c = c + 1
         else:
             pass
 
@@ -798,18 +809,20 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
     main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
-    main_arg_parser.add_argument('-graph_construction_type', type=str, default="ConstituencyGraph") # DynamicGraph_node_emb_refined, DynamicGraph_node_emb
+    main_arg_parser.add_argument('-graph_construction_type', type=str,
+                                 default="ConstituencyGraph")  # DynamicGraph_node_emb_refined, DynamicGraph_node_emb
 
-    main_arg_parser.add_argument('-dynamic_init_graph_type', type=str, default="constituency") # "None, line, dependency, constituency"
+    main_arg_parser.add_argument('-dynamic_init_graph_type', type=str,
+                                 default="constituency")  # "None, line, dependency, constituency"
 
     main_arg_parser.add_argument('-batch_size', type=int, default=20)
 
     main_arg_parser.add_argument('-dropout_for_word_embedding', type=float, default=0.1)
 
-    main_arg_parser.add_argument('-enc_dropout_for_feature',type=float, default=0)
-    main_arg_parser.add_argument('-enc_dropout_for_attn',type=float, default=0.1)
-    
-    main_arg_parser.add_argument('-direction_option',type=str, default="undirected")
+    main_arg_parser.add_argument('-enc_dropout_for_feature', type=float, default=0)
+    main_arg_parser.add_argument('-enc_dropout_for_attn', type=float, default=0.1)
+
+    main_arg_parser.add_argument('-direction_option', type=str, default="undirected")
 
     main_arg_parser.add_argument('-dec_dropout_input', type=float, default=0.1)
     main_arg_parser.add_argument('-dec_dropout_output', type=float, default=0.3)
@@ -834,4 +847,4 @@ if __name__ == "__main__":
     max_score = runner.train()
 
     end = time.time()
-    print("total time: {} minutes\n".format((end - start)/60))
+    print("total time: {} minutes\n".format((end - start) / 60))
