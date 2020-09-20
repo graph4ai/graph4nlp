@@ -3,13 +3,12 @@ import torch.nn as nn
 
 
 class Attention(nn.Module):
-    def __init__(self, query_size, memory_size, hidden_size, has_bias=False, dropout=0.2, attention_funtion="mlp"):
+    def __init__(self, query_size, memory_size, hidden_size, has_bias=False, attention_funtion="mlp"):
         super(Attention, self).__init__()
         self.query_size = query_size
         self.memory_size = memory_size
         self.hidden_size = hidden_size
         self.attn_type = attention_funtion
-        self.dropout = nn.Dropout(dropout)
         assert self.attn_type in ["mlp", "general", "dot"]
         if self.attn_type == "mlp":
             self.query_in = nn.Linear(self.query_size, self.hidden_size, bias=True if has_bias else False)
@@ -40,13 +39,16 @@ class Attention(nn.Module):
         assert len(query.shape) == 2
         assert len(memory.shape) == 3
         assert query.shape[0] == memory.shape[0]
+        if coverage is not None:
+            assert len(coverage.shape) == 3
+            assert coverage.shape[-1] == self.hidden_size
+            assert coverage.shape == memory.shape
 
         aligns = self._calculate_aligns(query, memory, coverage=coverage)
 
         if memory_mask is not None:
             aligns = aligns.masked_fill(memory_mask == 0, -self.inf)
         scores = torch.softmax(aligns, dim=-1)
-        scores = self.dropout(scores)
         ret = torch.bmm(scores.unsqueeze(1), memory)
         return ret.squeeze(1), scores
 
@@ -67,8 +69,6 @@ class Attention(nn.Module):
             tgt = self.memory_in(tgt)
             aligns = src.unsqueeze(1) + tgt
             if coverage is not None:
-                assert len(coverage.shape) == 3
-                assert coverage.shape[-1] == self.hidden_size
                 aligns += coverage
             aligns = torch.tanh(aligns)
             aligns = self.out(aligns)

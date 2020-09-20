@@ -55,7 +55,12 @@ class FeedForwardNN(GraphClassifierBase):
             The output graph data containing logits tensor for graph classification.
         """
         graph_emb = self.graph_pool(graph, 'node_emb')
+        # graph_emb = self.graph_pool(graph, graph.ndata['node_emb'])
+        # graph_emb = self.graph_pool(graph, graph.node_features['node_emb'])
+
         logits = self.classifier(graph_emb)
+
+        graph.graph_attributes = {}
         graph.graph_attributes['logits'] = logits
 
         return graph

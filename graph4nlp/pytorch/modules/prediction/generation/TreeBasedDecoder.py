@@ -72,7 +72,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         The vocabulary manager class object.
     """
     def __init__(self, attn, attn_type, embeddings, enc_hidden_size, dec_emb_size, dec_hidden_size, output_size, device, criterion, teacher_force_ratio, use_sibling = True, use_attention=True, use_copy=False, use_coverage=False,
-                 fuse_strategy="average", num_layers=1, dropout_input=0.1, dropout_output=0.3, rnn_type="lstm", max_dec_seq_length=512, max_dec_tree_depth=256, tgt_vocab=None, graph_pooling_strategy="max"):
+                 fuse_strategy="average", num_layers=1, dropout_input=0.1, dropout_output=0.3, rnn_type="lstm", max_dec_seq_length=512, max_dec_tree_depth=256, tgt_vocab=None):
         super(StdTreeDecoder, self).__init__(use_attention=True, use_copy=use_copy, use_coverage=False, attention_type="uniform",
                                              fuse_strategy="average")
         self.num_layers = num_layers
@@ -90,7 +90,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         self.dropout_input = dropout_input
         self.dropout_output = dropout_output
         self.embeddings = embeddings
-        self.graph_pooling_strategy = graph_pooling_strategy
                 
         self.attn_state = {}
         self.use_coverage = use_coverage
@@ -133,29 +132,12 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             graph edge type embedding
         """
 
-        # print(enc_batch.size())
-        # print(graph_node_embedding.size())
-
         tgt_batch_size = len(tgt_tree_batch)
 
-        enc_outputs = graph_node_embedding
-        
-        if graph_level_embedding == None:
-            if self.graph_pooling_strategy == "max":
-                graph_level_embedding = torch.max(graph_node_embedding, 1)[0]
-            elif self.graph_pooling_strategy == "min":
-                graph_level_embedding = torch.min(graph_node_embedding, 1)[0]
-            elif self.graph_level_embedding == "mean":
-                graph_level_embedding = torch.mean(graph_node_embedding, 1)
-            else:
-                raise NotImplementedError()
-
-            graph_cell_state = graph_level_embedding
-            graph_hidden_state = graph_level_embedding
-        else:
-            graph_cell_state, graph_hidden_state = graph_level_embedding
-
-        rnn_node_embedding = torch.zeros_like(graph_node_embedding, requires_grad=False)
+        enc_outputs = rnn_node_embedding
+        graph_hidden_state, graph_cell_state = graph_level_embedding
+        # graph_cell_state = graph_level_embedding
+        # graph_hidden_state = graph_level_embedding
 
         cur_index = 1
         loss = 0
@@ -267,78 +249,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                              in_drop=self.dropout_input, rnn_drop=self.dropout_output,
                              out_drop=0, enc_hidden_size=None, device=device, use_sibling=use_sibling)
         return rnn
-
-
-    def forward(self, g, tgt_tree_batch=None, enc_batch=None):
-        params = self._extract_params(g)
-        params['tgt_tree_batch'] = tgt_tree_batch
-        params['enc_batch'] = enc_batch
-        return self._run_forward_pass(**params)
-
-    def _extract_params(self, graph_list):
-        """
-
-        Parameters
-        ----------
-        g: GraphData
-
-        Returns
-        -------
-        params: dict
-        """
-        graph_node_emb = [s_g.node_features["node_emb"] for s_g in graph_list]
-        rnn_node_emb = [s_g.node_features["rnn_emb"] for s_g in graph_list]
-
-        graph_edge_emb = None
-
-        def pad_tensor(x, dim, pad_size):
-            if len(x.shape) == 2:
-                assert (0 <= dim <= 1)
-                assert pad_size >= 0
-                dim1, dim2 = x.shape
-                pad = torch.zeros(pad_size, dim2) if dim == 0 else torch.zeros(dim1, pad_size)
-                pad = pad.to(self.device)
-                return torch.cat((x, pad), dim=dim)
-
-        batch_size = len(graph_list)
-        max_node_num = max([emb.shape[0] for emb in graph_node_emb])
-
-        graph_node_emb_ret = []
-        for emb in graph_node_emb:
-            if emb.shape[0] < max_node_num:
-                emb = pad_tensor(emb, 0, max_node_num-emb.shape[0])
-            graph_node_emb_ret.append(emb.unsqueeze(0))
-        graph_node_emb_ret = torch.cat(graph_node_emb_ret, dim=0)
-
-        graph_node_mask = torch.zeros(batch_size, max_node_num).fill_(-1)
-
-        for i, s_g in enumerate(graph_list):
-            node_num = s_g.get_node_num()
-            for j in range(node_num):
-                node_type = s_g.node_attributes[j].get('type')
-                if node_type is not None:
-                    graph_node_mask[i][j] = node_type
-        graph_node_mask_ret = graph_node_mask.to(self.device)
-
-        rnn_node_emb_ret = None
-        if self.attention_type == "sep_diff_encoder_type":
-            max_rnn_num = max([rnn_emb.shape[0] for rnn_emb in rnn_node_emb])
-            rnn_node_emb_ret = []
-            assert max_rnn_num == max_node_num
-            for rnn_emb in rnn_node_emb:
-                if rnn_emb.shape[0] < max_rnn_num:
-                    rnn_emb = pad_tensor(rnn_emb, 0, max_rnn_num - rnn_emb.shape[0])
-                rnn_node_emb_ret.append(rnn_emb.unsqueeze(0))
-            rnn_node_emb_ret = torch.cat(rnn_node_emb_ret, dim=0)
-
-        return {
-             "graph_node_embedding": graph_node_emb_ret,
-             "graph_node_mask": graph_node_mask_ret,
-             "rnn_node_embedding": rnn_node_emb_ret,
-             "graph_level_embedding": None,
-             "graph_edge_embedding": None,
-             "graph_edge_mask": None
-        }
 
 
 class DecoderRNNWithCopy(nn.Module):

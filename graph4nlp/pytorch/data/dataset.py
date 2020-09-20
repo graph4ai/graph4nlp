@@ -1,15 +1,27 @@
-
 import abc
-import copy
 import os
 
 import numpy as np
+import random
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
+from sklearn import preprocessing
+
+from collections import Counter
+import pickle
 
 from ..data.data import GraphData
 from ..modules.utils.vocab_utils import VocabModel, Vocab
+
+from ..modules.utils.tree_utils import Vocab as VocabForTree
+from ..modules.utils.tree_utils import Tree
+
+import json
+from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from ..modules.graph_construction.dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 
 
 class DataItem(object):
@@ -220,24 +232,135 @@ class Dataset(torch.utils.data.Dataset):
                 self.val = old_train_set[new_train_length:]
                 self.train = old_train_set[:new_train_length]
 
-    def build_topology(self,data_items):
+    def build_topology(self, data_items):
         """
         Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
         DataItem.
         """
         if self.graph_type == 'static':
             print('Connecting to stanfordcorenlp server...')
-            processor = None #stanfordcorenlp.StanfordCoreNLP('F:/xiaojie/stanford-corenlp-4.1.0/',  timeout=1000)
+            processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+
+            if self.topology_builder == IEBasedGraphConstruction:
+                props_coref = {
+                    'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
+                    "tokenize.options":
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
+                props_openie = {
+                    'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
+                    "tokenize.options":
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json',
+                    "openie.triple.strict": "true"
+                }
+                processor_args = [props_coref, props_openie]
+            elif self.topology_builder == DependencyBasedGraphConstruction:
+                processor_args = {
+                    'annotators': 'ssplit,tokenize,depparse',
+                    "tokenize.options":
+                        "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
+            elif self.topology_builder == ConstituencyBasedGraphConstruction:
+                processor_args = {
+                    'annotators': "tokenize,ssplit,pos,parse",
+                    "tokenize.options":
+                    "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
+            else:
+                raise NotImplementedError
             print('CoreNLP server connected.')
             for item in data_items:
-                graph = self.topology_builder.topology(raw_text_data=item.input_text, nlp_processor=processor,
+                graph = self.topology_builder.topology(raw_text_data=item.input_text,
+                                                       nlp_processor=processor,
+                                                       processor_args=processor_args,
                                                        merge_strategy=self.merge_strategy,
                                                        edge_strategy=self.edge_strategy,
                                                        verbase=False)
                 item.graph = graph
         elif self.graph_type == 'dynamic':
-            # TODO: Implement this
-            pass
+            if self.dynamic_graph_type == 'node_emb':
+                for item in data_items:
+                    graph = self.topology_builder.init_topology(item.input_text,
+                                                                lower_case=self.lower_case,
+                                                                tokenizer=self.tokenizer)
+                    item.graph = graph
+            elif self.dynamic_graph_type == 'node_emb_refined':
+                if self.dynamic_init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
+                    print('Connecting to stanfordcorenlp server...')
+                    processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+
+                    if self.dynamic_init_topology_builder == IEBasedGraphConstruction:
+                        props_coref = {
+                            'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
+                            "tokenize.options":
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
+                        props_openie = {
+                            'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
+                            "tokenize.options":
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json',
+                            "openie.triple.strict": "true"
+                        }
+                        processor_args = [props_coref, props_openie]
+                    elif self.dynamic_init_topology_builder == DependencyBasedGraphConstruction:
+                        processor_args = {
+                            'annotators': 'ssplit,tokenize,depparse',
+                            "tokenize.options":
+                                "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
+                    elif self.dynamic_init_topology_builder == ConstituencyBasedGraphConstruction:
+                        processor_args = {
+                            'annotators': "tokenize,ssplit,pos,parse",
+                            "tokenize.options":
+                            "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
+                    else:
+                        raise NotImplementedError
+                    print('CoreNLP server connected.')
+                else:
+                    processor = None
+                    processor_args = None
+
+                for item in data_items:
+                    graph = self.topology_builder.init_topology(item.input_text,
+                                                                dynamic_init_topology_builder=self.dynamic_init_topology_builder,
+                                                                lower_case=self.lower_case,
+                                                                tokenizer=self.tokenizer,
+                                                                nlp_processor=processor,
+                                                                processor_args=processor_args,
+                                                                merge_strategy=self.merge_strategy,
+                                                                edge_strategy=self.edge_strategy,
+                                                                verbase=False,
+                                                                dynamic_init_topology_aux_args=self.dynamic_init_topology_aux_args)
+
+                    item.graph = graph
+            else:
+                raise RuntimeError('Unknown dynamic_graph_type: {}'.format(self.dynamic_graph_type))
+
         else:
             raise NotImplementedError('Currently only static and dynamic are supported!')
 

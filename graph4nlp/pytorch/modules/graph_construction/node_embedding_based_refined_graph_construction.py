@@ -1,7 +1,12 @@
+from nltk.tokenize import word_tokenize
 import torch
 from torch import nn
 
+from ...data.data import GraphData
 from .base import DynamicGraphConstructionBase
+from .dependency_graph_construction import DependencyBasedGraphConstruction
+from .constituency_graph_construction import ConstituencyBasedGraphConstruction
+from .ie_graph_construction import IEBasedGraphConstruction
 from ..utils.generic_utils import normalize_adj, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
@@ -10,7 +15,6 @@ from ...data.data import to_batch
 
 class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
     """Class for node embedding based refined dynamic graph construction.
-
     Parameters
     ----------
     word_vocab : Vocab
@@ -25,40 +29,12 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             "lstm", "gru", "bilstm" and "bigru".
     alpha_fusion : float
         Specify the fusion value for combining initial and learned adjacency matrices.
-    sim_metric_type : str, optional
-        Specify similarity metric function type including "attention",
-        "weighted_cosine", "gat_attention", "rbf_kernel", and "cosine".
-        Default: ``"weighted_cosine"``.
-    num_heads : int, optional
-        Specify the number of heads for multi-head similarity metric
-        function, default: ``1``.
-    top_k_neigh : int, optional
-        Specify the top k value for knn neighborhood graph sparsificaiton,
-        default: ``None``.
-    epsilon_neigh : float, optional
-        Specify the epsilon value (i.e., between ``0`` and ``1``) for
-        epsilon neighborhood graph sparsificaiton, default: ``None``.
-    smoothness_ratio : float, optional
-        Specify the smoothness ratio (i.e., between ``0`` and ``1``)
-        for graph regularization on smoothness, default: ``None``.
-    connectivity_ratio : float, optional
-        Specify the connectivity ratio (i.e., between ``0`` and ``1``)
-        for graph regularization on connectivity, default: ``None``.
-    sparsity_ratio : float, optional
-        Specify the sparsity ratio (i.e., between ``0`` and ``1``)
-        for graph regularization on sparsity, default: ``None``.
-    input_size : int, optional
-        The dimension of input embeddings, default: ``None``.
-    hidden_size : int, optional
-        The dimension of hidden layers, default: ``None``.
-    fix_word_emb : boolean, optional
-        Specify whether to fix pretrained word embeddings, default: ``False``.
-    dropout : float, optional
-        Dropout ratio, default: ``None``.
-    device : torch.device, optional
-        Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
-    def __init__(self, word_vocab, embedding_styles, alpha_fusion, **kwargs):
+    def __init__(self,
+                word_vocab,
+                embedding_styles,
+                alpha_fusion,
+                **kwargs):
         super(NodeEmbeddingBasedRefinedGraphConstruction, self).__init__(
                                                             word_vocab,
                                                             embedding_styles,
@@ -68,7 +44,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
 
     def forward(self, batch_graphdata: list):
         """Compute graph topology and initial node embeddings.
-
         Parameters
         ----------
         batch_graphdata : list of GraphData
@@ -89,8 +64,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         node_size = to_cuda(torch.Tensor(node_size), self.device).int()
         num_nodes = to_cuda(torch.Tensor(num_nodes), self.device).int()
         batch_gd = to_batch(batch_graphdata)
-
-        node_emb = self.embedding(batch_gd.node_features['token_id'].long(), node_size, num_nodes)
+        node_emb = self.embedding(batch_gd, node_size, num_nodes)
 
         init_norm_adj = self._get_normalized_init_adj(batch_gd)
         node_mask = self._get_node_mask_for_batch_graph(num_nodes)
@@ -102,7 +76,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
 
     def topology(self, node_emb, init_norm_adj, node_mask=None):
         """Compute graph topology.
-
         Parameters
         ----------
         node_emb : torch.Tensor
@@ -111,39 +84,38 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             The initial init_norm_adj adjacency matrix.
         node_mask : torch.Tensor, optional
             The node mask matrix, default: ``None``.
-
         Returns
         -------
         GraphData
             The constructed graph.
         """
-        adj = self.compute_similarity_metric(node_emb, node_mask)
-        adj = self.sparsify_graph(adj)
-        graph_reg = self.compute_graph_regularization(adj, node_emb)
+        raw_adj = self.compute_similarity_metric(node_emb, node_mask)
+        raw_adj = self.sparsify_graph(raw_adj)
+        graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
 
         if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
-            try:
-                assert adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
-            except:
-                import pdb;pdb.set_trace()
-            adj = adj / torch.clamp(torch.sum(adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
+            assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
+            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
+            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=0, keepdim=True), min=VERY_SMALL_NUMBER)
         elif self.sim_metric_type == 'cosine':
-            adj = (adj > 0).float()
-            adj = normalize_adj(adj)
+            raw_adj = (raw_adj > 0).float()
+            adj = normalize_adj(raw_adj)
+            reverse_adj = adj
         else:
-            adj = torch.softmax(adj, dim=-1)
+            adj = torch.softmax(raw_adj, dim=-1)
+            reverse_adj = torch.softmax(raw_adj, dim=0)
 
         if self.alpha_fusion is not None:
             adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * adj, self.alpha_fusion * init_norm_adj)
+            reverse_adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * reverse_adj, self.alpha_fusion * init_norm_adj)
 
-        graph_data = convert_adj_to_graph(adj, 0)
+        graph_data = convert_adj_to_graph(adj, reverse_adj, 0)
         graph_data.graph_attributes['graph_reg'] = graph_reg
 
         return graph_data
 
     def embedding(self, node_word_idx, node_size, num_nodes):
         """Compute initial node embeddings.
-
         Parameters
         ----------
         node_word_idx : torch.LongTensor
@@ -152,10 +124,75 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             Indicate the length of word sequences for nodes.
         num_nodes : torch.LongTensor
             Indicate the number of nodes.
-
         Returns
         -------
         torch.Tensor
             The initial node embeddings.
         """
         return self.embedding_layer(node_word_idx, node_size, num_nodes)
+
+
+    @classmethod
+    def init_topology(cls,
+                    raw_text_data,
+                    lower_case=True,
+                    tokenizer=word_tokenize,
+                    nlp_processor=None,
+                    processor_args=None,
+                    merge_strategy=None,
+                    edge_strategy=None,
+                    verbase=False,
+                    dynamic_init_topology_builder=None,
+                    dynamic_init_topology_aux_args=None):
+        """Convert raw text data to the initial graph.
+        Parameters
+        ----------
+        raw_text_data : str or list/tuple of str
+            The raw text data. When a list/tuple of tokens is provided, no
+            tokenization will be conducted and each token is a node
+            (used for line graph builder); otherwise, tokenization will
+            be conducted on the input string to get a list of tokens.
+        lower_case : boolean
+            Specify whether to lower case the input text, default: ``True``.
+        tokenizer : callable, optional
+            The tokenization function.
+        dynamic_init_topology_builder : class, optional
+            The initial graph topology builder, default: ``None``.
+        dynamic_init_topology_aux_args : dict, optional
+            The auxiliary args for dynamic_init_topology_builder.topology, default: ``None``.
+        Returns
+        -------
+        GraphData
+            The constructed graph.
+        """
+        if dynamic_init_topology_builder is None: # line graph
+            if isinstance(raw_text_data, str):
+                token_list = tokenizer(raw_text_data.strip())
+            elif isinstance(raw_text_data, (list, tuple)):
+                token_list = raw_text_data
+            else:
+                raise RuntimeError('raw_text_data must be str or list/tuple of str')
+
+            graph = GraphData()
+            graph.add_nodes(len(token_list))
+
+            for idx in range(len(token_list) - 1):
+                graph.add_edge(idx, idx + 1)
+                graph.add_edge(idx + 1, idx)
+                graph.node_attributes[idx]['token'] = token_list[idx].lower() if lower_case else token_list[idx]
+
+            graph.node_attributes[idx + 1]['token'] = token_list[-1].lower() if lower_case else token_list[-1]
+        elif dynamic_init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
+            graph = dynamic_init_topology_builder.topology(
+                                raw_text_data=raw_text_data,
+                                nlp_processor=nlp_processor,
+                                processor_args=processor_args,
+                                merge_strategy=merge_strategy,
+                                edge_strategy=edge_strategy,
+                                verbase=verbase)
+        else:
+            graph = dynamic_init_topology_builder.topology(
+                                raw_text_data,
+                                dynamic_init_topology_aux_args)
+
+        return graph

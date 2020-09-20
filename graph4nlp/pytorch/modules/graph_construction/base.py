@@ -1,4 +1,3 @@
-from nltk.tokenize import word_tokenize
 import numpy as np
 from scipy import sparse
 import torch
@@ -6,7 +5,6 @@ from torch import nn
 import torch.nn.functional as F
 
 from .embedding_construction import EmbeddingConstruction
-from ...data.data import GraphData
 from ..utils.constants import INF
 from ..utils.generic_utils import normalize_sparse_adj, sparse_mx_to_torch_sparse_tensor, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
@@ -14,53 +12,64 @@ from ..utils.constants import VERY_SMALL_NUMBER
 
 class GraphConstructionBase(nn.Module):
     """Base class for graph construction.
-
     Parameters
     ----------
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``word_emb_type`` : Specify pretrained word embedding types
-            including "w2v" and/or "bert".
-        - ``node_edge_emb_strategy`` : Specify node/edge embedding
-            strategies including "mean", "lstm", "gru", "bilstm" and "bigru".
-        - ``seq_info_encode_strategy`` : Specify strategies of encoding
-            sequential information in raw text data including "none",
-            "lstm", "gru", "bilstm" and "bigru".
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``emb_strategy`` : specify the embedding construction strategy.
+        - ``num_rnn_layers``: specify the number of RNN layers.
+        - ``bert_model_name``: specify the BERT model name.
+        - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
     hidden_size : int, optional
         The hidden size of RNN layer, default: ``None``.
     fix_word_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``True``.
+    fix_bert_emb : boolean, optional
+        Specify whether to fix pretrained BERT embeddings, default: ``True``.
+    bert_model_name : str, optional
+        Specify the BERT model name, default: ``'bert-base-uncased'``.
+    bert_lower_case : bool, optional
+        Specify whether to lower case the input text for BERT embeddings, default: ``True``.
     word_dropout : float, optional
         Dropout ratio for word embedding, default: ``None``.
-    dropout : float, optional
+    rnn_dropout : float, optional
         Dropout ratio for RNN embedding, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
-    def __init__(self, word_vocab, embedding_styles, hidden_size=None,
-                        fix_word_emb=True, word_dropout=None, dropout=None, device=None):
+    def __init__(self,
+                word_vocab,
+                embedding_styles,
+                hidden_size=None,
+                fix_word_emb=True,
+                fix_bert_emb=True,
+                word_dropout=None,
+                rnn_dropout=None,
+                device=None):
         super(GraphConstructionBase, self).__init__()
         self.embedding_layer = EmbeddingConstruction(word_vocab,
-                                        embedding_styles['word_emb_type'],
-                                        embedding_styles['node_edge_emb_strategy'],
-                                        embedding_styles['seq_info_encode_strategy'],
+                                        embedding_styles['single_token_item'],
+                                        emb_strategy=embedding_styles['emb_strategy'],
                                         hidden_size=hidden_size,
+                                        num_rnn_layers=embedding_styles.get('num_rnn_layers', 1),
                                         fix_word_emb=fix_word_emb,
+                                        fix_bert_emb=fix_bert_emb,
+                                        bert_model_name=embedding_styles.get('bert_model_name', 'bert-base-uncased'),
+                                        bert_lower_case=embedding_styles.get('bert_lower_case', True),
                                         word_dropout=word_dropout,
-                                        dropout=dropout,
+                                        rnn_dropout=rnn_dropout,
                                         device=device)
 
     def forward(self, raw_text_data, **kwargs):
         """Compute graph topology and initial node/edge embeddings.
-
         Parameters
         ----------
         raw_text_data :
             The raw text data.
         **kwargs
             Extra parameters.
-
         Raises
         ------
         NotImplementedError
@@ -70,12 +79,10 @@ class GraphConstructionBase(nn.Module):
 
     def topology(self, **kwargs):
         """Compute graph topology.
-
         Parameters
         ----------
         **kwargs
             Extra parameters.
-
         Raises
         ------
         NotImplementedError
@@ -85,12 +92,10 @@ class GraphConstructionBase(nn.Module):
 
     def embedding(self, **kwargs):
         """Compute initial node/edge embeddings.
-
         Parameters
         ----------
         **kwargs
             Extra parameters.
-
         Raises
         ------
         NotImplementedError
@@ -101,37 +106,32 @@ class GraphConstructionBase(nn.Module):
 class StaticGraphConstructionBase(GraphConstructionBase):
     """
     Base class for static graph construction.
-
     ...
-
     Attributes
     ----------
     embedding_styles : dict
         Specify embedding styles including ``word_emb_type``, ``node_edge_emb_strategy`` and ``seq_info_encode_strategy``.
-
     Methods
     -------
     add_vocab()
         Add new parsed words or syntactic components into vocab.
-
     topology()
         Generate graph topology.
-
     embedding(raw_data, structure)
         Generate graph embeddings.
-
     forward(raw_data)
         Generate static graph embeddings and topology.
     """
 
     def __init__(self, word_vocab, embedding_styles, hidden_size,
-                 fix_word_emb=True, word_dropout=None, dropout=None, device=None):
+                 fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
         super(StaticGraphConstructionBase, self).__init__(word_vocab,
                                                            embedding_styles,
                                                            hidden_size,
                                                            fix_word_emb=fix_word_emb,
+                                                           fix_bert_emb=fix_bert_emb,
                                                            word_dropout=word_dropout,
-                                                           dropout=dropout,
+                                                           rnn_dropout=rnn_dropout,
                                                            device=device)
 
     def add_vocab(self, **kwargs):
@@ -161,19 +161,16 @@ class StaticGraphConstructionBase(GraphConstructionBase):
 
 class DynamicGraphConstructionBase(GraphConstructionBase):
     """Base class for dynamic graph construction.
-
     Parameters
     ----------
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``word_emb_type`` : Specify pretrained word embedding types
-            including "w2v" and/or "bert".
-        - ``node_edge_emb_strategy`` : Specify node/edge embedding
-            strategies including "mean", "lstm", "gru", "bilstm" and "bigru".
-        - ``seq_info_encode_strategy`` : Specify strategies of encoding
-            sequential information in raw text data including "none",
-            "lstm", "gru", "bilstm" and "bigru".
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``emb_strategy`` : specify the embedding construction strategy.
+        - ``num_rnn_layers``: specify the number of RNN layers.
+        - ``bert_model_name``: specify the BERT model name.
+        - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
     sim_metric_type : str, optional
         Specify similarity metric function type including "attention",
         "weighted_cosine", "gat_attention", "rbf_kernel", and "cosine".
@@ -202,9 +199,15 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         The dimension of hidden layers, default: ``None``.
     fix_word_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``False``.
+    fix_bert_emb : boolean, optional
+        Specify whether to fix pretrained BERT embeddings, default: ``True``.
+    bert_model_name : str, optional
+        Specify the BERT model name, default: ``'bert-base-uncased'``.
+    bert_lower_case : bool, optional
+        Specify whether to lower case the input text for BERT embeddings, default: ``True``.
     word_dropout : float, optional
         Dropout ratio for word embedding, default: ``None``.
-    dropout : float, optional
+    rnn_dropout : float, optional
         Dropout ratio for RNN embedding, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
@@ -222,16 +225,18 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                 input_size=None,
                 hidden_size=None,
                 fix_word_emb=False,
+                fix_bert_emb=False,
                 word_dropout=None,
-                dropout=None,
+                rnn_dropout=None,
                 device=None):
         super(DynamicGraphConstructionBase, self).__init__(
                                                     word_vocab,
                                                     embedding_styles,
                                                     hidden_size=hidden_size,
                                                     fix_word_emb=fix_word_emb,
+                                                    fix_bert_emb=fix_bert_emb,
                                                     word_dropout=word_dropout,
-                                                    dropout=dropout,
+                                                    rnn_dropout=rnn_dropout,
                                                     device=device)
         assert top_k_neigh is None or epsilon_neigh is None, \
             'top_k_neigh and epsilon_neigh cannot be activated at the same time!'
@@ -271,14 +276,12 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def forward(self, raw_text_data, **kwargs):
         """Compute graph topology and initial node/edge embeddings.
-
         Parameters
         ----------
         raw_text_data : list of sequences.
             The raw text data.
         **kwargs
             Extra parameters.
-
         Raises
         ------
         NotImplementedError
@@ -289,7 +292,6 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
     def topology(self, node_emb, edge_emb=None,
                     init_adj=None, node_mask=None, **kwargs):
         """Compute graph topology.
-
         Parameters
         ----------
         node_emb : torch.Tensor
@@ -302,7 +304,6 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             The node mask matrix, default: ``None``.
         **kwargs
             Extra parameters.
-
         Raises
         ------
         NotImplementedError
@@ -312,12 +313,10 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def embedding(self, feat, **kwargs):
         """Compute initial node/edge embeddings.
-
         Parameters
         ----------
         **kwargs
             Extra parameters.
-
         Raises
         ------
         NotImplementedError
@@ -325,47 +324,14 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         """
         raise NotImplementedError()
 
-    @classmethod
-    def raw_text_to_init_graph(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize):
-        """Convert raw text data to initial static graph.
-
-        Parameters
-        ----------
-        raw_text_data : str
-            The raw text data.
-        lower_case : boolean
-            Specify whether to lower case the input text, default: ``True``.
-
-        Returns
-        -------
-        GraphData
-            The constructed graph.
-        """
-        if lower_case:
-            raw_text_data = raw_text_data.lower()
-
-        token_list = tokenizer(raw_text_data.strip())
-        ret_graph = GraphData()
-        ret_graph.add_nodes(len(token_list))
-
-        for idx in range(len(token_list) - 1):
-            ret_graph.add_edge(idx, idx + 1)
-            ret_graph.node_attributes[idx]['token'] = token_list[idx]
-
-        ret_graph.node_attributes[idx + 1]['token'] = token_list[-1]
-
-        return ret_graph
-
     def compute_similarity_metric(self, node_emb, node_mask=None):
         """Compute similarity metric.
-
         Parameters
         ----------
         node_emb : torch.Tensor
             The input node embedding matrix.
         node_mask : torch.Tensor, optional
             The node mask matrix, default: ``None``.
-
         Returns
         -------
         torch.Tensor
@@ -403,7 +369,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             attention = torch.mm(node_vec_norm, node_vec_norm.transpose(-1, -2)).detach()
 
         if node_mask is not None:
-            attention = attention.masked_fill_(1 - node_mask.byte(), self.mask_off_val)
+            attention = attention.masked_fill_(~node_mask.bool(), self.mask_off_val)
 
         return attention
 
@@ -418,14 +384,12 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def compute_graph_regularization(self, adj, node_feat):
         """Graph graph regularization loss.
-
         Parameters
         ----------
         adj : torch.Tensor
             The adjacency matrix.
         node_feat : torch.Tensor
             The node feature matrix.
-
         Returns
         -------
         torch.float32
@@ -450,14 +414,12 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def _build_knn_neighbourhood(self, attention, top_k_neigh):
         """Build kNN neighborhood graph.
-
         Parameters
         ----------
         attention : torch.Tensor
             The attention matrix.
         top_k_neigh : int
             The top k value for kNN neighborhood graph.
-
         Returns
         -------
         torch.Tensor
@@ -471,14 +433,12 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def _build_epsilon_neighbourhood(self, attention, epsilon_neigh):
         """Build epsilon neighbourhood graph.
-
         Parameters
         ----------
         attention : torch.Tensor
             The attention matrix.
         epsilon_neigh : float
             The threshold value for epsilon neighbourhood graph.
-
         Returns
         -------
         torch.Tensor

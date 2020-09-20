@@ -11,22 +11,23 @@ from ...data.data import GraphData, to_batch
 class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     """
         Dependency-parsing-tree based graph construction class
-
     Parameters
     ----------
     embedding_style: dict
-        Specify embedding styles including ``word_emb_type``, ``node_edge_level_emb_type`` and ``graph_level_emb_type``.
+        Specify embedding styles including ``single_token_item``, ``emb_strategy``, ``num_rnn_layers``, ``bert_model_name`` and ``bert_lower_case``.
     vocab: VocabModel
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, word_dropout=None, dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
         super(DependencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
+                                                               fix_bert_emb=fix_bert_emb,
                                                                word_dropout=word_dropout,
-                                                               dropout=dropout, device=device)
+                                                               rnn_dropout=rnn_dropout,
+                                                               device=device)
         self.vocab = vocab
         self.verbase = 1
         self.device = self.embedding_layer.device
@@ -34,12 +35,10 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def add_vocab(self, g):
         """
             Add node tokens appeared in graph g to vocabulary.
-
         Parameters
         ----------
         g: GraphData
             Graph data-structure.
-
         """
         for i in range(g.get_node_num()):
             attr = g.get_node_attrs(i)[i]
@@ -48,13 +47,11 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     @classmethod
     def parsing(cls, raw_text_data, nlp_processor, processor_args):
         '''
-
         Parameters
         ----------
         raw_text_data: str
         nlp_processor: StanfordCoreNLP
         processor_args: dict
-
         Returns
         -------
         parsed_results: list[dict]
@@ -135,7 +132,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def topology(cls, raw_text_data, nlp_processor, processor_args, merge_strategy, edge_strategy, sequential_link=True, verbase=0):
         """
             Graph building method.
-
         Parameters
         ----------
         raw_text_data: str or list[list]
@@ -163,7 +159,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
-
         sequential_link: bool, default=True
             Whether to link node tokens sequentially (note that it is bidirectional)
         verbase: int, default=0
@@ -190,7 +185,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def _construct_static_graph(cls, parsed_object, edge_strategy=None, sequential_link=True):
         """
             Build dependency-parsing-tree based graph for single sentence.
-
         Parameters
         ----------
         parsed_object: dict
@@ -208,7 +202,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
                          It is not implemented yet.
-
         Returns
         -------
         graph: GraphData
@@ -273,7 +266,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def _graph_connect(cls, nx_graph_list, merge_strategy=None):
         """
             This method will merge the sub-graphs into one graph.
-
         Parameters
         ----------
         nx_graph_list: list[GraphData]
@@ -284,7 +276,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
             ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
-
         Returns
         -------
         joint_graph: GraphData
@@ -387,10 +378,12 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def forward(self, batch_graphdata: list):
         node_size = []
         num_nodes = []
+        num_word_nodes = [] # number of nodes that are extracted from the raw text in each graph
 
         for g in batch_graphdata:
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
             num_nodes.append(g.get_node_num())
+            num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))
             node_size.extend([1 for i in range(num_nodes[-1])])
 
         batch_gd = to_batch(batch_graphdata)
@@ -398,7 +391,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         assert b_node == sum(num_nodes), print(b_node, sum(num_nodes))
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
+        num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
+        node_emb = self.embedding_layer(batch_gd, node_size, num_nodes, num_word_items=num_word_nodes)
         batch_gd.node_features["node_feat"] = node_emb
 
         return batch_gd

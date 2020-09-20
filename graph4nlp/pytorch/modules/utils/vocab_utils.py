@@ -313,21 +313,7 @@ class Vocab(object):
     def get_vocab_size(self):
         return len(self.index2word)
 
-    def getIndex(self, word, use_ie=False):
-        # For IE Graph
-        # word can be a phrase
-        if use_ie:
-            if self.lower_case:
-                word = word.lower()
-
-            ret = []
-            for x in word.replace('_',' ').split(' '):
-                if x == '':
-                    continue
-                ret.append(self.word2index.get(x, self.UNK))
-
-            return ret
-
+    def getIndex(self, word):
         if self.lower_case:
             word = word.lower()
 

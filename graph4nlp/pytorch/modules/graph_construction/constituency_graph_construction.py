@@ -26,70 +26,35 @@ from .base import StaticGraphConstructionBase
 class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     """
     Class for constituency graph construction.
-
     ...
-
     Attributes
     ----------
     embedding_styles : (dict)
         Specify embedding styles including ``word_emb_type``, ``node_edge_level_emb_type`` and ``graph_level_emb_type``.
-
     vocab: (set, optional)
         Vocabulary including all words appeared in graphs.
-
     Methods
     -------
-
     topology(raw_text_data, nlp_processor, merge_strategy=None, edge_strategy=None)
         Generate graph structure with nlp parser like ``CoreNLP`` etc.
-
     _construct_static_graph(parsed_object, sub_sentence_id, edge_strategy=None)
         Construct a single static graph from a single sentence, to be called by ``topology`` function.
-
     _graph_connect(nx_graph_list, merge_strategy=None)
         Construct a merged graph from a list of graphs, to be called by ``topology`` function.
-
     embedding(node_attributes, edge_attributes)
         Generate node/edge embeddings from node/edge attributes through an embedding layer.
-
     forward(raw_text_data, nlp_parser)
         Generate graph topology and embeddings.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, word_dropout=None, dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, dropout=None, use_cuda=True):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
-                                                               word_dropout=word_dropout,
-                                                               dropout=dropout, device=device)
+                                                               dropout=dropout, use_cuda=use_cuda)
         self.vocab = vocab
-        assert(self.embedding_layer.device == device)
         self.device = self.embedding_layer.device
-
-    @classmethod
-    def parsing(cls, raw_text_data, nlp_processor, split_hyphenated=True, normalize=True):
-        '''
-        Parameters
-        ----------
-        raw_text_data: str
-        nlp_processor: StanfordCoreNLP
-        split_hyphenated: bool
-        normalize: bool
-        '''
-        output = nlp_processor.annotate(
-            raw_text_data.strip(),
-            properties={
-                'annotators': "tokenize,ssplit,pos,parse",
-                "tokenize.options":
-                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
-                "tokenize.whitespace": False,
-                'ssplit.isOneSentence': False,
-                'outputFormat': 'json'
-            })
-        parsed_output = json.loads(output)['sentences']
-        return parsed_output
-
 
     @classmethod
     def topology(cls,
@@ -99,15 +64,12 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                  edge_strategy=None,
                  verbase=True):
         """topology This function generate a graph strcuture from a raw text data.
-
         Parameters
         ----------
         raw_text_data : string
             A string to be used to construct a static graph, can be composed of multiple strings
-
         nlp_processor : object
             A parser used to parse sentence string to parsing trees like dependency parsing tree or constituency parsing tree
-
         merge_strategy : None or str, option=[None, "tailhead", "sequential", "user_define"]
             Strategy to merge sub-graphs into one graph
             ``None``: It will be the default option. We will do as ``"tailhead"``.
@@ -117,7 +79,6 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                               ``an, b1``, ``b1, b2``, ..., ``bm-1, bm``.
             ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
-
         edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
             Strategy to process edge.
             ``None``: It will be the default option. We will do as ``"homogeneous"``.
@@ -131,14 +92,23 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
                          It is not implemented yet.
-
         Returns
         -------
         GraphData
             A customized graph data structure
         """
         output_graph_list = []
-        parsed_output = cls.parsing(raw_text_data, nlp_processor)
+        output = nlp_processor.annotate(
+            raw_text_data.strip(),
+            properties={
+                'annotators': "tokenize,ssplit,pos,parse",
+                "tokenize.options":
+                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                "tokenize.whitespace": False,
+                'ssplit.isOneSentence': False,
+                'outputFormat': 'json'
+            })
+        parsed_output = json.loads(output)['sentences']
         for index in range(len(parsed_output)):
             output_graph_list.append(
                 cls._construct_static_graph(parsed_output[index], index))
@@ -235,7 +205,6 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         ----------
         graph_list : list
             A graph list to be merged
-
         Returns
         -------
         GraphData
