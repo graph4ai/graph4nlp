@@ -40,7 +40,7 @@ class Text2TextDataItem(DataItem):
         self.output_text = output_text
         self.share_vocab = share_vocab
 
-    def extract(self):
+    def extract(self, lower_case=True):
         """
         Returns
         -------
@@ -50,12 +50,17 @@ class Text2TextDataItem(DataItem):
 
         input_tokens = []
         for i in range(g.get_node_num()):
+            if lower_case:
+                g.node_attributes[i]['token'] = g.node_attributes[i]['token'].lower()
             if self.tokenizer is None:
                 tokenized_token = g.node_attributes[i]['token'].strip().split(' ')
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
 
             input_tokens.extend(tokenized_token)
+
+        if lower_case:
+            self.output_text = self.output_text.lower()
 
         if self.tokenizer is None:
             output_tokens = self.output_text.strip().split(' ')

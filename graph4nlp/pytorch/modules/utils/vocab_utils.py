@@ -168,7 +168,7 @@ class VocabModel(object):
             all_words = [Counter(), Counter()]
 
         for instance in all_instances:
-            extracted_tokens = instance.extract()
+            extracted_tokens = instance.extract(lower_case)
             if share_vocab:
                 all_words.update(extracted_tokens)
             else:
