@@ -1,0 +1,6 @@
+graph_type: 'node_emb_refined'
+root_dir: "graph4nlp/pytorch/test/dataset/jobs"
+topology_subdir: 'NodeEmbGraphRefine'
+merge_strategy: 'tailhead'
+dynamic_graph_type: 'node_emb_refined'
+dynamic_init_graph_type: 'dependency'

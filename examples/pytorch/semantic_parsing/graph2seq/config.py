@@ -5,8 +5,8 @@ import argparse
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--word-emb-size', type=int, default=300, help='')
-    parser.add_argument("--log-file", type=str, default="examples/pytorch/semantic_parsing/jobs/log/tuning.txt")
-    parser.add_argument("--checkpoint-save-path", type=str, default="examples/pytorch/semantic_parsing/jobs/save")
+    parser.add_argument("--log-file", type=str, default="examples/pytorch/semantic_parsing/graph2seq/log/tuning.txt")
+    parser.add_argument("--checkpoint-save-path", type=str, default="examples/pytorch/semantic_parsing/graph2seq/save")
     parser.add_argument('--hidden-size', type=int, default=300, help='')
     parser.add_argument('--dropout', type=float, default=0.2, help='')
     parser.add_argument('--learning-rate', type=float, default=1e-3, help='')

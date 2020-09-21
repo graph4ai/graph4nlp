@@ -38,4 +38,11 @@
 | GraphSage | only connection | 90.0 | 90.7 | 89.3 |  
 | GraphSage | as node | 90.0 | 90.0 | 89.3 |  
 
+## For beam search: constituency graph
+
+| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- |
+| GraphSage-greedy | 90.0 | 90.7 | 89.3 |  
+| GraphSage-beam | 90.7 | 90.7 | 90.0 |  
+
 <!-- SAGE + undirected + constituency   -->
