@@ -14,15 +14,8 @@ from .utils import SizeMismatchException, EdgeNotFoundException
 from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list, reverse_index
 from .views import NodeView, NodeFeatView, EdgeView
 
-"""
-An edge in the endpoint node indices form is represented as `EdgeIndex`. 
-It is a tuple consisting of 2 elements, namely `src` and `tgt`.
-"""
 EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
 
-"""
-
-"""
 node_feat_factory = dict
 node_attr_factory = dict
 single_node_attr_factory = dict
@@ -46,6 +39,7 @@ class GraphData(object):
     """
 
     def __init__(self, src=None):
+
         # Initialize internal data storages.
         self._node_attributes = node_attr_factory()
         self._node_features = node_feat_factory(res_init_node_features)
@@ -55,7 +49,13 @@ class GraphData(object):
         self._edge_features = edge_feature_factory(res_init_edge_features)
         self._edge_attributes = edge_attribute_factory()
         self.graph_attributes = graph_data_factory()
+
+        # Batch information. If this instance is not a batch, then the following attributes are all `None`.
         self.batch = None
+        self.batch_size = None
+        self._batch_num_nodes = None
+        self._batch_num_edges = None
+
         if src is not None:
             if isinstance(src, GraphData):
                 self.from_graphdata(src)
@@ -124,7 +124,6 @@ class GraphData(object):
         >>> g.node_features['x'][0]
         torch.Tensor([0.1036, 0.6757, 0.4702, 0.8938, 0.6337, 0.3290, 0.6739, 0.1091, 0.7996, 0.0586])
 
-
         Returns
         -------
         NodeFeatView
@@ -159,7 +158,7 @@ class GraphData(object):
 
     def set_node_features(self, nodes: int or slice, new_data: dict) -> None:
         """
-        Set the features of the `nodes` with the given `new_data`.
+        Set the features of the `nodes` with the given `new_data``.
 
         Parameters
         ----------
@@ -276,7 +275,7 @@ class GraphData(object):
             If one of the endpoints of the edge doesn't exist in the graph.
         """
         # Consistency check
-        if (src not in range(self.get_node_num())) or (tgt not in range(self.get_node_num())):
+        if (src < 0 or src >= self.get_node_num()) and (tgt < 0 and tgt >= self.get_node_num()):
             raise ValueError('Endpoint not in the graph.')
 
         # Duplicate edge check. If the edge to be added already exists in the graph, then skip it.
@@ -508,7 +507,7 @@ class GraphData(object):
         self.edge_features['edge_weight'] = edge_weight
 
     def from_scipy_sparse_matrix(self, adj: scipy.sparse.coo_matrix):
-        assert adj.shape[0] == adj.shape[1], 'Adjancecy is not a square.'
+        assert adj.shape[0] == adj.shape[1], 'Got an adjancecy matrix which is not a square.'
 
         num_nodes = adj.shape[0]
         self.add_nodes(num_nodes)
@@ -567,15 +566,11 @@ class GraphData(object):
         for feat_name in graph.node_features.keys():
             assert feat_name in self._node_features.keys(), "Node feature '{}' does not exist in current graph.".format(
                 feat_name)
-            # assert self._node_features[feat_name] is not None, "Node feature '{}' of current graph is None.".format(
-            #     feat_name)
 
         # 2. check if edge feature names are consistent
         for feat_name in graph.edge_features.keys():
             assert feat_name in self._edge_features.keys(), "Edge feature '{}' does not exist in current graph.".format(
                 feat_name)
-            # assert self._edge_features[feat_name] is not None, "Edge feature '{}' of current graph is None.".format(
-            #     feat_name)
 
         # Save original information
         old_node_num = self.get_node_num()
@@ -685,6 +680,12 @@ class GraphData(object):
                 subgraph.edge_attributes[i - subgraph_edge_st_idx] = self._edge_attributes[i]
         return subgraph
 
+    def copy_batch_info(self, batch):
+        self.batch = batch.batch
+        self.batch_size = batch.batch_size
+        self._batch_num_edges = batch._batch_num_edges
+        self._batch_num_nodes = batch._batch_num_nodes
+
 
 def from_dgl(g: dgl.DGLGraph) -> GraphData:
     """
@@ -720,7 +721,10 @@ def to_batch(graphs: list = None) -> GraphData:
         The large graph containing all the graphs in the batch.
     """
     batch = GraphData(graphs[0])
+    batch.batch_size = len(graphs)
     batch.batch = [0] * graphs[0].get_node_num()
+    batch._batch_num_nodes = [g.get_node_num() for g in graphs]
+    batch._batch_num_edges = [g.get_edge_num() for g in graphs]
     for i in range(1, len(graphs)):
         batch.union(graphs[i])
         batch.batch += [i] * graphs[i].get_node_num()
@@ -728,32 +732,66 @@ def to_batch(graphs: list = None) -> GraphData:
 
 
 def from_batch(batch: GraphData) -> list:
-    graphs = []
-    batch_size = max(batch.batch) + 1
-    # 1. calculate the number of nodes in the batch and get a list indicating #nodes of each graph.
-    num_nodes = []
-    node_indices = []
-    for i in range(batch_size):
-        try:
-            end_node_index = reverse_index(batch.batch, i)
-        except ValueError:
-            raise ValueError(
-                "Graph #{} has no nodes. All graphs in a batch should contain at least one node.".format(i))
-        node_indices.append(end_node_index)
-        if i == 0:  # the first graph
-            num_nodes.append(end_node_index + 1)
-        else:
-            num_nodes.append(end_node_index + 1 - num_nodes[-1])
+    """
+    Convert a batch consisting of several GraphData instances to a list of GraphData instances.
 
-    # 2. iterate each sub-graph to extract them
-    for i in range(batch_size):
-        #   a. calculate the starting and ending node index in the batch
-        node_st_idx = 0 if i == 0 else node_indices[i - 1] + 1
-        node_ed_idx = node_indices[i]
-        graphs.append(batch.split(node_st_idx=node_st_idx, node_ed_idx=node_ed_idx))
+    Parameters
+    ----------
+    batch: GraphData
+        The source batch to be split.
 
-    assert len(graphs) == batch_size
-    return graphs
+    Returns
+    -------
+    list
+        A list containing all the GraphData instances contained in the source batch.
+    """
+
+    num_nodes = batch._batch_num_nodes
+    num_edges = batch._batch_num_edges
+    all_edges = batch.get_all_edges()
+    batch_size = batch.batch_size
+    ret = []
+    cum_n_nodes = 0
+    cum_n_edges = 0
+
+    # Construct graph respectively
+    for i in range(batch_size):
+        g = GraphData()
+        g.add_nodes(num_nodes[i])
+        edges = all_edges[cum_n_edges:cum_n_edges + num_edges[i]]
+        src, tgt = [e[0] - cum_n_nodes for e in edges], [e[1] - cum_n_nodes for e in edges]
+        g.add_edges(src, tgt)
+        cum_n_edges += num_edges[i]
+        cum_n_nodes += num_nodes[i]
+        ret.append(g)
+
+    # Add node and edge features
+    for k, v in batch._node_features.items():
+        if v is not None:
+            cum_n_nodes = 0  # Cumulative node numbers
+            for i in range(batch_size):
+                ret[i].node_features[k] = v[cum_n_nodes:cum_n_nodes + num_nodes[i]]
+                cum_n_nodes += num_nodes[i]
+
+    for k, v in batch._edge_features.items():
+        if v is not None:
+            cum_n_edges = 0  # Cumulative edge numbers
+            for i in range(batch_size):
+                ret[i].edge_features[k] = v[cum_n_edges:cum_n_edges + num_edges[i]]
+                cum_n_edges += num_edges[i]
+
+    # Add node and edge attributes
+    for graph_cnt in range(batch_size):
+        cum_n_nodes = 0
+        cum_n_edges = 0
+        for num_graph_nodes in range(num_nodes[graph_cnt]):
+            ret[graph_cnt].node_attributes[num_graph_nodes] = batch.node_attributes[cum_n_nodes + num_graph_nodes]
+        for num_graph_edges in range(num_edges[graph_cnt]):
+            ret[graph_cnt].edge_attributes[num_graph_edges] = batch.edge_attributes[cum_n_edges + num_graph_edges]
+        cum_n_edges += num_edges[graph_cnt]
+        cum_n_nodes += num_nodes[graph_cnt]
+
+    return ret
 
 
 # Testing code
