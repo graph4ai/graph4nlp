@@ -226,6 +226,7 @@ class Dataset(torch.utils.data.Dataset):
                  pretrained_word_emb_file=None,
                  use_val_for_vocab=False,
                  seed=1234,
+                 device='cpu',
                  **kwargs):
         super(Dataset, self).__init__()
 
@@ -239,6 +240,7 @@ class Dataset(torch.utils.data.Dataset):
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         self.use_val_for_vocab = use_val_for_vocab
+        self.device = device
         for k, v in kwargs.items():
             setattr(self, k, v)
         self.__indices__ = None
@@ -370,14 +372,14 @@ class Dataset(torch.utils.data.Dataset):
                                                        merge_strategy=self.merge_strategy,
                                                        edge_strategy=self.edge_strategy,
                                                        verbase=False)
-                item.graph = graph
+                item.graph = graph.to(self.device)
         elif self.graph_type == 'dynamic':
             if self.dynamic_graph_type == 'node_emb':
                 for item in data_items:
                     graph = self.topology_builder.init_topology(item.input_text,
                                                                 lower_case=self.lower_case,
                                                                 tokenizer=self.tokenizer)
-                    item.graph = graph
+                    item.graph = graph.to(self.device)
             elif self.dynamic_graph_type == 'node_emb_refined':
                 if self.dynamic_init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
                     print('Connecting to stanfordcorenlp server...')
@@ -439,7 +441,7 @@ class Dataset(torch.utils.data.Dataset):
                                                                 verbase=False,
                                                                 dynamic_init_topology_aux_args=self.dynamic_init_topology_aux_args)
 
-                    item.graph = graph
+                    item.graph = graph.to(self.device)
             else:
                 raise RuntimeError('Unknown dynamic_graph_type: {}'.format(self.dynamic_graph_type))
 

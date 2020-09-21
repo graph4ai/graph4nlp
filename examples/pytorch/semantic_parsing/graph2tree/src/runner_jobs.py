@@ -261,19 +261,21 @@ class Jobs:
 
     def _build_dataloader(self):
         use_copy = self.use_copy
+        device = 'cuda:{}'.format(self.opt.gpuid) if torch.cuda.is_available() else 'cpu'
 
         if self.opt.graph_construction_type == "DependencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                          topology_builder=DependencyBasedGraphConstruction,
                                          topology_subdir='DependencyGraph', edge_strategy='as_node',
                                          share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size,
-                                         dec_emb_size=self.opt.tgt_emb_size)
+                                         dec_emb_size=self.opt.tgt_emb_size, device=device)
 
         elif self.opt.graph_construction_type == "ConstituencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                          topology_builder=ConstituencyBasedGraphConstruction,
                                          topology_subdir='ConstituencyGraph', share_vocab=use_copy,
-                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
+                                         device=device)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
             dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed,
@@ -281,7 +283,8 @@ class Jobs:
                                          topology_builder=NodeEmbeddingBasedGraphConstruction,
                                          topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
                                          dynamic_graph_type='node_emb', share_vocab=use_copy,
-                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
+                                         device=device)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
             if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
@@ -299,7 +302,7 @@ class Jobs:
                                          topology_subdir='DynamicGraph_node_emb_refined', graph_type='dynamic',
                                          dynamic_graph_type='node_emb_refined', share_vocab=use_copy,
                                          enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         dynamic_init_topology_builder=dynamic_init_topology_builder)
+                                         dynamic_init_topology_builder=dynamic_init_topology_builder, device=device)
         else:
             raise NotImplementedError
 
