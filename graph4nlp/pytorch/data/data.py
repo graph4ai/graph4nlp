@@ -458,7 +458,7 @@ class GraphData(object):
         g: dgl.DGLGraph
             The converted dgl.DGLGraph
         """
-        dgl_g = dgl.DGLGraph().to(self.device)
+        dgl_g = dgl.DGLGraph()
         # Add nodes and their features
         dgl_g.add_nodes(num=self.get_node_num())
         for key, value in self._node_features.items():
@@ -687,6 +687,7 @@ class GraphData(object):
 
     def copy_batch_info(self, batch):
         self.batch = batch.batch
+        self.device = batch.device
         self.batch_size = batch.batch_size
         self._batch_num_edges = batch._batch_num_edges
         self._batch_num_nodes = batch._batch_num_nodes
@@ -725,7 +726,7 @@ def to_batch(graphs: list = None) -> GraphData:
     GraphData
         The large graph containing all the graphs in the batch.
     """
-    batch = GraphData(graphs[0])
+    batch = GraphData(graphs[0], graphs[0].device)
     batch.batch_size = len(graphs)
     batch.batch = [0] * graphs[0].get_node_num()
     batch._batch_num_nodes = [g.get_node_num() for g in graphs]
@@ -761,7 +762,7 @@ def from_batch(batch: GraphData) -> list:
 
     # Construct graph respectively
     for i in range(batch_size):
-        g = GraphData()
+        g = GraphData(device=batch.device)
         g.add_nodes(num_nodes[i])
         edges = all_edges[cum_n_edges:cum_n_edges + num_edges[i]]
         src, tgt = [e[0] - cum_n_nodes for e in edges], [e[1] - cum_n_nodes for e in edges]
