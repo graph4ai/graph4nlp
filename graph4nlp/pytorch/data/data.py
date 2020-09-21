@@ -38,7 +38,7 @@ class GraphData(object):
     Represent a single graph with additional attributes.
     """
 
-    def __init__(self, src=None):
+    def __init__(self, src=None, device=None):
 
         # Initialize internal data storages.
         self._node_attributes = node_attr_factory()
@@ -49,6 +49,7 @@ class GraphData(object):
         self._edge_features = edge_feature_factory(res_init_edge_features)
         self._edge_attributes = edge_attribute_factory()
         self.graph_attributes = graph_data_factory()
+        self.device = device
 
         # Batch information. If this instance is not a batch, then the following attributes are all `None`.
         self.batch = None
@@ -61,6 +62,10 @@ class GraphData(object):
                 self.from_graphdata(src)
             else:
                 raise NotImplementedError
+
+    def to(self, device):
+        self.device = device
+        return self
 
     # Node operations
     @property
@@ -453,7 +458,7 @@ class GraphData(object):
         g: dgl.DGLGraph
             The converted dgl.DGLGraph
         """
-        dgl_g = dgl.DGLGraph()
+        dgl_g = dgl.DGLGraph().to(self.device)
         # Add nodes and their features
         dgl_g.add_nodes(num=self.get_node_num())
         for key, value in self._node_features.items():
