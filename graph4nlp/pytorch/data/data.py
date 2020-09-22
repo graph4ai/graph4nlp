@@ -458,7 +458,7 @@ class GraphData(object):
         g: dgl.DGLGraph
             The converted dgl.DGLGraph
         """
-        dgl_g = dgl.DGLGraph()
+        dgl_g = dgl.DGLGraph().to(self.device)
         # Add nodes and their features
         dgl_g.add_nodes(num=self.get_node_num())
         for key, value in self._node_features.items():
