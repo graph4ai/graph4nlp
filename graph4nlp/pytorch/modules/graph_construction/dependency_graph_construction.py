@@ -131,7 +131,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 "node_content": node_item,
                 "node_num": node_id
             })
-            return parsed_results
+        return parsed_results
 
     @classmethod
     def topology(cls, raw_text_data, nlp_processor, processor_args, merge_strategy, edge_strategy, sequential_link=True, verbase=0):
