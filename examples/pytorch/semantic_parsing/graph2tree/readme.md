@@ -1,5 +1,10 @@
 # Results On Jobs640
 
+## Results for toBatch fix  
+| Encoder\fuse_strategy | DependencyGraph | ConstituencyGraph | DynamicGraph_node_emb | DynamicGraph_node_emb_refined |  
+| ---- | ---- | ---- | ---- | ---- |  
+| GCN+bi_fuse | 90.0 | 91.4 | 89.3 | 89.3 |
+
 ## Constituency Graph
 | Encoder\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |
