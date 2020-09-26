@@ -9,6 +9,7 @@ from nltk.parse.corenlp import CoreNLPDependencyParser
 from graph4nlp.pytorch.data.data import *
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from .base import StaticGraphConstructionBase
+import stanfordcorenlp
 
 def get_new_sent(dep_info):
     new_sent=[]
@@ -92,7 +93,8 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         assert len(sent) >= 2
         parsed_sent['node_num']=len(sent)
         #generate node content in a text   
-        dep_parser = CoreNLPDependencyParser(url='http://localhost:9000')             
+        #dep_parser = CoreNLPDependencyParser(url='http://localhost:9020')             
+        #processor = stanfordcorenlp.StanfordCoreNLP('F:/xiaojie/stanford-corenlp-4.1.0', port=9080, timeout=1000)
         for token_id in range(len(sent)):
                     node={}
                     node['token']=sent[token_id]
@@ -101,25 +103,45 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
                     node['position_id']=token_id
                     parsed_sent['node_content'].append(node)
         #generate graph content in a text        
-        (parse_sent, ),(null, )=dep_parser.parse_sents([sent,sent])
-        dep_info = parse_sent.to_conll(10)
-        new_sent=get_new_sent(dep_info)
-        for line in dep_info.strip().split('\n'):
-                    g={}                                        
-                    if line.split('\t')[1] in sent:
-                      g['src']=sent.index(line.split('\t')[1])
-                      if int(line.split('\t')[6])>0:
-                          if new_sent[int(line.split('\t')[6])-1] in sent:
-                              token=new_sent[int(line.split('\t')[6])-1]
-                              g['tgt']=sent.index(token)
-                              g['edge_type']=line.split('\t')[-3]
-                              parsed_sent['graph_content'].append(g)                  
+        raw_sent=' '.join(sent)
+        if len(sent)<20:
+            dep_json = cls.processor.annotate(raw_sent)       
+            dep_dict = json.loads(dep_json)
+            tokens=dep_dict["sentences"][0]['tokens']
+            for dep in dep_dict["sentences"][0]["basicDependencies"]:
+                    if cls.verbase > 0:
+                        print(dep)
+                    if dep['governorGloss'] == "ROOT":
+                        continue
+                    if dep['dependentGloss'] == "ROOT":
+                        continue  
+                    g={}
+                    if tokens[dep['governor']] in sent and tokens[dep['dependent']] in sent:
+                        g['src']=dep['governor']
+                        g['tgt']=dep['dependent']
+                        g['edge_type']=dep['dep']
+                        parsed_sent['graph_content'].append(g)   
+           
+#        (parse_sent, ),(null, )=dep_parser.parse_sents([sent,sent])
+#        dep_info = parse_sent.to_conll(10)
+#        new_sent=get_new_sent(dep_info)
+#        for line in dep_info.strip().split('\n'):
+#                    g={}                                        
+#                    if line.split('\t')[1] in sent:
+#                      g['src']=sent.index(line.split('\t')[1])
+#                      if int(line.split('\t')[6])>0:
+#                          if new_sent[int(line.split('\t')[6])-1] in sent:
+#                              token=new_sent[int(line.split('\t')[6])-1]
+#                              g['tgt']=sent.index(token)
+#                              g['edge_type']=line.split('\t')[-3]
+#                              parsed_sent['graph_content'].append(g)                  
         parsed_results.append(parsed_sent)
         
         return parsed_results
         
     @classmethod
-    def topology(cls, raw_text_data, auxiliary_args):
+    def topology(cls, raw_text_data, nlp_processor, processor_args, merge_strategy, edge_strategy, split_hyphenated=False,
+                 normalize=False, sequential_link=True, verbase=0,auxiliary_args=None):
         """
             Graph building method.
         Parameters
@@ -163,8 +185,7 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         joint_graph: GraphData
             The merged graph data-structure.
         """
-        merge_strategy=auxiliary_args['merge_strategy']
-        edge_strategy=auxiliary_args['edge_strategy']
+        cls.processor=nlp_processor
         split_hyphenated=False,
         normalize=False,
         sequential_link=True, 
