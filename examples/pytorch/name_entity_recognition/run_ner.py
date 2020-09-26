@@ -16,10 +16,10 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_sequence
 from efficiency.log import show_time, show_var, fwrite
 from graph4nlp.pytorch.data.data import *
-from graph4nlp.pytorch.datasets.conll import ConllDataset
+from conll import ConllDataset
 from graph4nlp.pytorch.modules.graph_construction import *
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
-from graph4nlp.pytorch.modules.graph_construction.line_graph_construction import LineBasedGraphConstruction
+from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
+from line_graph_construction import LineBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import *
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import *
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
