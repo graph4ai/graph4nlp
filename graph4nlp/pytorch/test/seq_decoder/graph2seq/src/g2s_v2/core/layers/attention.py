@@ -31,7 +31,7 @@ class Context2AnswerAttention(nn.Module):
         # shape: (batch_size, L, N)
         attention = torch.matmul(context_fc, questions_fc.transpose(-1, -2))
         if ans_mask is not None:
-            attention = attention.masked_fill_(1 - ans_mask.byte().unsqueeze(1), -INF)
+            attention = attention.masked_fill_((1 - ans_mask).bool().unsqueeze(1), -INF)
         prob = torch.softmax(attention, dim=-1)
         # shape: (batch_size, L, dim)
         ques_emb = torch.matmul(prob, out_answers)
@@ -49,7 +49,7 @@ class SelfAttention(nn.Module):
         attention = torch.mm(torch.tanh(torch.mm(x.view(-1, x.size(-1)), self.W1)), self.W2).view(x.size(0), -1)
         if attention_mask is not None:
             # Exclude masked elements from the softmax
-            attention = attention.masked_fill_(1 - attention_mask.byte(), -INF)
+            attention = attention.masked_fill_((1 - attention_mask).bool(), -INF)
 
         probs = torch.softmax(attention, dim=-1).unsqueeze(1)
         weighted_x = torch.bmm(probs, x).squeeze(1)

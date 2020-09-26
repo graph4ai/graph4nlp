@@ -1,6 +1,6 @@
 import os
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 
 from graph4nlp.pytorch.data.data import GraphData
@@ -8,6 +8,7 @@ from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT, GATLayer
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGELayer
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN, GGNNLayer
+from graph4nlp.pytorch.modules.graph_embedding.gcn import GCNLayer
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 from graph4nlp.pytorch.modules.prediction.classification.kg_completion.DistMult import DistMult
 
@@ -161,45 +162,51 @@ class RankingAndHits(EvaluationMetricBase):
 # TODO: 2. learn graph.node_features['edge_emb'] from GNN (edge2node)
 
 class Graph2DistMult(nn.Module):
-    def __init__(self, vocab, num_entities, hidden_size=300, num_relations=None, direction_option='uni', loss_name='BCELoss'):
+    def __init__(self, args, vocab, device, num_entities, hidden_size=300, num_relations=None, direction_option='uni', loss_name='BCELoss'):
         super(Graph2DistMult, self).__init__()
-        self.device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        self.args = args
+        self.device = device
         self.vocab = vocab
         self.num_entities = num_entities
 
         self.node_emb = nn.Embedding(num_entities, hidden_size)
 
-        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
-                           'seq_info_encode_strategy': "none"}
+        embedding_style = {'single_token_item': False,
+                           'emb_strategy': 'w2v_bilstm',
+                           'num_rnn_layers': 1}
 
         self.embedding_layer = EmbeddingConstruction(self.vocab.in_word_vocab,
-                                                     embedding_style['word_emb_type'],
-                                                     embedding_style['node_edge_emb_strategy'],
-                                                     embedding_style['seq_info_encode_strategy'],
+                                                     embedding_style['single_token_item'],
+                                                     embedding_style['emb_strategy'],
                                                      hidden_size=hidden_size,
                                                      fix_word_emb=False,
-                                                     dropout=0.2,
+                                                     fix_bert_emb=False,
                                                      device=self.device)
-
-        # self.gnn_encoder = GAT(2, hidden_size, hidden_size, hidden_size, [2, 1], direction_option=direction_option)
-        self.num_layers = 2 # ggnn
-        # self.num_layers = 1 # gat uni/bi_fuse/bi_sep
-        # self.num_layers = 2 # graphsage
         self.direction_option = direction_option
         self.hidden_size = hidden_size
-        # self.gnn_encoder = GGNN(1, hidden_size, hidden_size, direction_option=direction_option)
-        # self.gnn_encoder = GGNNLayer(hidden_size, hidden_size, direction_option, n_steps=1, n_etypes=1, bias=True)
 
-        self.gnn_encoder = nn.ModuleList(
-            [GGNNLayer(hidden_size, hidden_size, direction_option, n_steps=1, n_etypes=1, bias=True)
-             for i in range(self.num_layers)])
-        # self.gnn_encoder = nn.ModuleList(
-        #     [GATLayer(hidden_size, hidden_size, num_heads=1, direction_option=direction_option)
-        #      for i in range(self.num_layers)])
-        # self.gnn_encoder = nn.ModuleList(
-        #     [GraphSAGELayer(hidden_size, hidden_size, aggregator_type='mean',
-        #                     direction_option=direction_option)
-        #      for i in range(self.num_layers)])
+        if args.gnn == 'ggnn':
+            self.num_layers = 2  # ggnn
+            self.gnn_encoder = nn.ModuleList(
+                [GGNNLayer(hidden_size, hidden_size, direction_option, n_steps=1, n_etypes=1, bias=True)
+                 for i in range(self.num_layers)])
+        elif args.gnn == 'gat':
+            self.num_layers = 1 # gat uni/bi_fuse/bi_sep
+            self.gnn_encoder = nn.ModuleList(
+                [GATLayer(hidden_size, hidden_size, num_heads=1, direction_option=direction_option)
+                 for i in range(self.num_layers)])
+        elif args.gnn == 'graphsage':
+            self.num_layers = 2 # graphsage
+            self.gnn_encoder = nn.ModuleList(
+                [GraphSAGELayer(hidden_size, hidden_size, aggregator_type='mean',
+                                direction_option=direction_option)
+                 for i in range(self.num_layers)])
+        elif args.gnn == 'gcn':
+            self.num_layers = 1  # gcn
+            self.gnn_encoder = nn.ModuleList(
+                [GCNLayer(hidden_size, hidden_size, direction_option=direction_option)
+                 for i in range(self.num_layers)])
+
         self.bn_list = nn.ModuleList([torch.nn.BatchNorm1d(hidden_size)
                                       for i in range(self.num_layers)])  # necessary for this task
 
@@ -239,19 +246,15 @@ class Graph2DistMult(nn.Module):
         graph_nodes_idx = torch.tensor(graph_nodes_idx, dtype=torch.long).to(self.device)
         node_len_tensor = torch.tensor(node_len_list, dtype=torch.long).to(self.device)
         num_nodes = torch.tensor([len(node_len_list)], dtype=torch.long).to(self.device)
-        node_feat = self.embedding_layer(graph_nodes_idx, node_len_tensor, num_nodes)
+        kg_graph.node_features['token_id'] = graph_nodes_idx
+        node_feat = self.embedding_layer(kg_graph, node_len_tensor, num_nodes)
         return node_feat
 
     def reset_parameters(self):
         nn.init.xavier_normal_(self.node_emb.weight.data)
-        # xavier_normal_(self.emb_rel.weight.data)
 
     def forward(self, kg_graph, e1, rel, e2_multi=None, require_loss=True):
-        # kg_graph.node_features['node_feat'] = self.node_emb.weight
         kg_graph.node_features['node_feat'] = self.embedding(kg_graph)
-
-        # kg_graph.node_features['node_emb'] = self.node_emb.weight
-
         list_e_r_pair_idx = list(zip(e1.squeeze().tolist(), rel.squeeze().tolist()))
 
         # run GNN
@@ -262,12 +265,11 @@ class Graph2DistMult(nn.Module):
         if self.direction_option == 'undirected':
             node_embs = kg_graph.node_features['node_feat']
             for i in range(self.num_layers):
-                # node_embs = self.gnn_encoder[i](dgl_graph, node_embs).squeeze() # GAT
-                # node_embs = self.gnn_encoder[i](dgl_graph, node_embs) # GraphSage
-                # node_embs = torch.dropout(torch.tanh(self.bn_list[i](node_embs)), 0.25, train=require_loss)  # GraphSage
-                node_embs = self.gnn_encoder[i](dgl_graph, node_embs) # GGNN
-                node_embs = torch.dropout(torch.tanh(self.bn_list[i](node_embs)), 0.25, train=require_loss)  # GGNN
-                # node_embs = torch.dropout(torch.tanh(self.bn_list[i](node_embs)), 0.25, train=require_loss)
+                if self.args.gnn == 'ggnn' or self.args.gnn == 'gcn' or self.args.gnn == 'graphsage':
+                    node_embs = self.gnn_encoder[i](dgl_graph, node_embs)  # GGNN
+                elif self.args.gnn == 'gat':
+                    node_embs = self.gnn_encoder[i](dgl_graph, node_embs).squeeze() # GAT
+                node_embs = torch.dropout(torch.tanh(self.bn_list[i](node_embs)), 0.25, train=require_loss)
         else:
             assert node_feats.shape[1] == self.hidden_size
 
@@ -280,33 +282,30 @@ class Graph2DistMult(nn.Module):
             if self.direction_option == 'bi_sep':
                 for i in range(self.num_layers):
                     h = self.gnn_encoder[i](dgl_graph, (feat_in,feat_out))
-                    # feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0].squeeze())), 0.25, train=require_loss)  # GAT
-                    # feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1].squeeze())), 0.25, train=require_loss)  # GAT
-                    # feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0])), 0.25, train=require_loss)  # GraphSage
-                    # feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1])), 0.25, train=require_loss)  # GraphSage
-                    feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0])), 0.25, train=require_loss)  # GGNN
-                    feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1])), 0.25, train=require_loss)  # GGNN
+                    if self.args.gnn == 'ggnn' or self.args.gnn == 'graphsage' or self.args.gnn == 'gcn':
+                        feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0])), 0.25, train=require_loss)
+                        feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1])), 0.25, train=require_loss)
+                    elif self.args.gnn == 'gat':
+                        feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0].squeeze())), 0.25, train=require_loss)  # GAT
+                        feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1].squeeze())), 0.25, train=require_loss)  # GAT
                 node_embs = (feat_in + feat_out) / 2
-                pass
             elif self.direction_option == 'bi_fuse':
                 for i in range(self.num_layers):
-                    # h = self.gnn_encoder[i](dgl_graph, feat_in).squeeze() # GAT
-                    # feat_in = torch.dropout(torch.tanh(self.bn_list[i](h)), 0.25, train=require_loss)  # GAT
-                    # h = self.gnn_encoder[i](dgl_graph, feat_in)  # GraphSage
-                    # feat_in = torch.dropout(torch.tanh(self.bn_list[i](h)), 0.25, train=require_loss)  # GraphSage
-                    h = self.gnn_encoder[i](dgl_graph, (feat_in, feat_out))  # GGNN
-                    feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0])), 0.25, train=require_loss)  # GGNN
-                    feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1])), 0.25, train=require_loss)  # GGNN
+                    if self.args.gnn == 'ggnn':
+                        h = self.gnn_encoder[i](dgl_graph, (feat_in, feat_in))  # GGNN
+                        feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0])), 0.25, train=require_loss)  # GGNN
+                    elif self.args.gnn == 'gat':
+                        h = self.gnn_encoder[i](dgl_graph, feat_in).squeeze() # GAT
+                        feat_in = torch.dropout(torch.tanh(self.bn_list[i](h)), 0.25, train=require_loss)  # GAT
+                    elif self.args.gnn == 'graphsage' or self.args.gnn == 'gcn':
+                        h = self.gnn_encoder[i](dgl_graph, feat_in)  # GraphSage
+                        feat_in = torch.dropout(torch.tanh(self.bn_list[i](h)), 0.25, train=require_loss)  # GraphSage
                 node_embs = feat_in
             else:
                 raise RuntimeError('Unknown `bidirection` value: {}'.format(self.direction_option))
 
         kg_graph.node_features['node_emb'] = node_embs
         # ================================================================================
-
-        # kg_graph = self.gnn_encoder(kg_graph)
-        # kg_graph.node_features['node_emb'] = self.bn(kg_graph.node_features['node_emb'])
-        # kg_graph.node_features['node_emb'] = self.bn_list[0](kg_graph.node_features['node_emb'])
 
         kg_graph.graph_attributes['list_e_r_pair_idx'] = list_e_r_pair_idx
         kg_graph.graph_attributes['multi_binary_label'] = e2_multi
@@ -325,16 +324,16 @@ class Graph2DistMult(nn.Module):
 
 
 class Kinship:
-    def __init__(self):
+    def __init__(self, device, args):
         super(Kinship, self).__init__()
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = device
         self._build_dataloader()
-        self._build_model()
+        self._build_model(args)
         self._build_optimizer()
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = KinshipDataset(root_dir='/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship',
+        dataset = KinshipDataset(root_dir='/raid/ghn/graph4nlp/examples/pytorch/kg_completion/kinship',
                                  topology_builder=None,
                                  topology_subdir='e1rel_to_e2')
 
@@ -356,12 +355,14 @@ class Kinship:
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
 
-    def _build_model(self):# BCELoss SigmoidLoss
-        self.model = Graph2DistMult(self.vocab,
+    def _build_model(self, args):# BCELoss SigmoidLoss
+        self.model = Graph2DistMult(args,
+                                    self.vocab,
+                                    self.device,
                                     num_entities=self.num_entities,
                                     num_relations=self.num_relations,
-                                    loss_name='BCELoss',
-                                    direction_option='bi_fuse').to(self.device)
+                                    loss_name=args.loss,
+                                    direction_option=args.direction_option).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -371,7 +372,7 @@ class Kinship:
         self.metrics = [RankingAndHits( model_path='best_graph2distmult_'+self.model.direction_option+'_'+self.model.loss_name)]
 
     def train(self):
-        for epoch in range(50):
+        for epoch in range(30):
             self.model.train()
             loss_list = []
 
@@ -443,7 +444,21 @@ class Kinship:
 
 
 if __name__ == "__main__":
-    runner = Kinship()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gnn', type=str, default='gcn')
+    parser.add_argument('--direction_option', type=str, default='undirected')
+    parser.add_argument('--loss', type=str, default='SigmoidLoss')
+    args = parser.parse_args()
+
+    if torch.cuda.is_available():
+        print('using cuda...')
+        device = torch.device('cuda:0')
+    else:
+        device = torch.device('cpu')
+
+    runner = Kinship(device, args)
     max_score = runner.train()
     max_score = runner.test()
     print("Train finish, best MRR: {:.3f}".format(max_score))

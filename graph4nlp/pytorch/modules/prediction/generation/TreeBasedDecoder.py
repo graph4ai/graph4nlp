@@ -134,16 +134,31 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
         tgt_batch_size = len(tgt_tree_batch)
 
-        enc_outputs = rnn_node_embedding
-        graph_hidden_state, graph_cell_state = graph_level_embedding
-        # graph_cell_state = graph_level_embedding
-        # graph_hidden_state = graph_level_embedding
+        enc_outputs = graph_node_embedding
+        
+        if graph_level_embedding == None:
+            if self.graph_pooling_strategy == "max":
+                graph_level_embedding = torch.max(graph_node_embedding, 1)[0]
+            elif self.graph_pooling_strategy == "min":
+                graph_level_embedding = torch.min(graph_node_embedding, 1)[0]
+            elif self.graph_level_embedding == "mean":
+                graph_level_embedding = torch.mean(graph_node_embedding, 1)
+            else:
+                raise NotImplementedError()
+
+            graph_cell_state = graph_level_embedding
+            graph_hidden_state = graph_level_embedding
+        else:
+            graph_cell_state, graph_hidden_state = graph_level_embedding
+
+        rnn_node_embedding = torch.zeros_like(graph_node_embedding, requires_grad=False)
+        rnn_node_embedding = to_cuda(rnn_node_embedding, self.device)
 
         cur_index = 1
         loss = 0
 
         dec_batch, queue_tree, max_index = get_dec_batch(
-            tgt_tree_batch, tgt_batch_size, False, self.tgt_vocab)
+            tgt_tree_batch, tgt_batch_size, self.device, self.tgt_vocab)
 
 
         dec_state = {}
@@ -156,11 +171,11 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             for j in range(1, 3):
                 dec_state[cur_index][0][j] = torch.zeros(
                     (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False, device=self.device)
-                to_cuda(dec_state[cur_index][0][j], self.device)
+                dec_state[cur_index][0][j] = to_cuda(dec_state[cur_index][0][j], self.device)
 
             sibling_state = torch.zeros(
                 (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False)
-            to_cuda(sibling_state, self.device)
+            sibling_state = to_cuda(sibling_state, self.device)
             
             # with torch.no_grad():
             if cur_index == 1:
@@ -462,7 +477,7 @@ class DecoderRNNWithCopy(nn.Module):
             # add pointer probabilities to output
             ptr_output = enc_attn
             output.scatter_add_(1, encoder_word_idx.to(self.device), prob_ptr * ptr_output)
-            if log_prob: output = torch.log(output + VERY_SMALL_NUMBER)
+            if log_prob: output = torch.log(output + 1e-31)
         else:
             if log_prob: output = F.log_softmax(logits, dim=1)
             else: output = F.softmax(logits, dim=1)
@@ -648,7 +663,7 @@ def get_dec_batch(dec_tree_batch, batch_size, device, form_manager):
                         '(')
                 dec_batch[cur_index][i][len(w_list) + 1] = 2
 
-        to_cuda(dec_batch[cur_index], device)
+        dec_batch[cur_index] = to_cuda(dec_batch[cur_index], device)
         cur_index += 1
 
     return dec_batch, queue_tree, max_index

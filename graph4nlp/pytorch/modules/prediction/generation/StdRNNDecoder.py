@@ -20,8 +20,6 @@ class StdRNNDecoder(RNNDecoderBase):
                 The dimension for standard rnn decoder's input.
             decoder_hidden_size: int
                 The dimension for standard rnn decoder's hidden representation during calculation.
-            device: torch.device
-                The device configure for pytorch.
             word_emb: torch.nn.Embedding
                 The target's embedding matrix.
             vocab: Any
@@ -59,7 +57,7 @@ class StdRNNDecoder(RNNDecoderBase):
             dropout: float, default=0.3
             """
 
-    def __init__(self, max_decoder_step, decoder_input_size, decoder_hidden_size, device,  # decoder config
+    def __init__(self, max_decoder_step, decoder_input_size, decoder_hidden_size,  # decoder config
                  word_emb, vocab,  # word embedding & vocabulary TODO: add our vocabulary when building pipeline
                  rnn_type="LSTM",  # RNN config
                  use_attention=True, attention_type="uniform", rnn_emb_input_size=None,  # attention config
@@ -72,7 +70,7 @@ class StdRNNDecoder(RNNDecoderBase):
         self.max_decoder_step = max_decoder_step
         self.word_emb_size = word_emb.embedding_dim
         self.decoder_input_size = decoder_input_size
-        self.device = device
+        self.graph_pooling_strategy = graph_pooling_strategy
         self.dropout = nn.Dropout(p=dropout)
         self.tgt_emb = word_emb
         self.rnn = self._build_rnn(rnn_type=rnn_type, input_size=self.word_emb_size, hidden_size=decoder_hidden_size)
@@ -256,8 +254,8 @@ class StdRNNDecoder(RNNDecoderBase):
             target_len = min(tgt_seq.shape[1], target_len)
 
         batch_size = graph_node_embedding.shape[0]
-        decoder_input = torch.tensor([self.vocab.SOS] * batch_size).to(self.device)
-        decoder_state = self._get_decoder_init_state(rnn_type=self.rnn_type, batch_size=batch_size)
+        decoder_input = torch.tensor([self.vocab.SOS] * batch_size).to(graph_node_embedding.device)
+        decoder_state = self._get_decoder_init_state(rnn_type=self.rnn_type, batch_size=batch_size, content=graph_level_embedding)
 
         outputs = []
         enc_attn_weights_average = []
@@ -411,7 +409,7 @@ class StdRNNDecoder(RNNDecoderBase):
         return ret
 
     def extract_mask(self, mask, token):
-        mask_ret = torch.zeros(*(mask.shape)).to(self.device)
+        mask_ret = torch.zeros(*(mask.shape)).to(mask.device)
         mask_ret.fill_(0)
         mask_ret[mask == token] = 1
         return mask_ret
@@ -450,7 +448,7 @@ class StdRNNDecoder(RNNDecoderBase):
                 assert pad_size >= 0
                 dim1, dim2 = x.shape
                 pad = torch.zeros(pad_size, dim2) if dim == 0 else torch.zeros(dim1, pad_size)
-                pad = pad.to(self.device)
+                pad = pad.to(x.device)
                 return torch.cat((x, pad), dim=dim)
 
         batch_size = len(graph_list)
@@ -471,7 +469,7 @@ class StdRNNDecoder(RNNDecoderBase):
                 node_type = s_g.node_attributes[j].get('type')
                 if node_type is not None:
                     graph_node_mask[i][j] = node_type
-        graph_node_mask_ret = graph_node_mask.to(self.device)
+        graph_node_mask_ret = graph_node_mask.to(graph_node_emb_ret.device)
 
         rnn_node_emb_ret = None
         if self.attention_type == "sep_diff_encoder_type":

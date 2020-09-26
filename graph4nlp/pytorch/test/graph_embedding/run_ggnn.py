@@ -186,6 +186,23 @@ def main(args, seed):
     g = GraphData()
     g.from_dgl(dgl_graph)
 
+    edge_types = []
+    directed_edges = []
+    for edge in g.edges():
+        if edge not in directed_edges and \
+                (edge[1], edge[0]) not in directed_edges:
+            directed_edges.append(edge)
+            edge_types.append(0)
+        else:
+            edge_types.append(1)
+
+    if args.num_etypes == 2:
+        g.edge_features['etype'] = torch.tensor(edge_types, dtype=torch.long).to(device)
+    # else:
+    #     g.edge_features['etype'] = torch.LongTensor([0] * g.get_edge_num()).to(device)
+    g.edge_features['edge_weight'] = torch.tensor([1] * g.get_edge_num(), dtype=torch.float32).view(-1, 1).to(device)
+    g.edge_features['reverse_edge_weight'] = torch.tensor([1] * g.get_edge_num(), dtype=torch.float32).view(-1, 1).to(device)
+
     # create model
     model = GNNClassifier(args.num_layers,
                           num_feats,
@@ -271,7 +288,9 @@ if __name__ == '__main__':
                         help="number of output attention heads")
     parser.add_argument("--num-layers", type=int, default=2,
                         help="number of hidden layers")
-    parser.add_argument("--num-hidden", type=int, default=1433,
+    parser.add_argument("--num-etypes", type=int, default=2,
+                        help="number of edge types")
+    parser.add_argument("--num-hidden", type=int, default=1435,
                         help="number of hidden units")
     parser.add_argument("--residual", action="store_true", default=False,
                         help="use residual connection")

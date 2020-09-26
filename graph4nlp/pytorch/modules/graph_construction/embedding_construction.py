@@ -79,6 +79,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         Dropout ratio for RNN embedding, default: ``None``.
     device : torch.device, optional
         Specify computation device (e.g., CPU), default: ``None`` for using CPU.
+
     Note
     ----------
         word_emb_type : str or list of str
@@ -90,6 +91,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             data including "none", "bilstm" and "bigru". You might
             want to do this in some situations, e.g., when all the nodes are single
             tokens extracted from the raw text.
+
+
         1) single-token node (i.e., single_token_item=`True`):
             a) 'w2v', 'bert', 'w2v_bert'
             b) node_edge_emb_strategy: 'mean'
@@ -97,6 +100,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             emb_strategy: 'w2v', 'w2v_bilstm', 'w2v_bigru',
             'bert', 'bert_bilstm', 'bert_bigru',
             'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru'
+
+
         2) multi-token node (i.e., single_token_item=`False`):
             a) 'w2v', 'bert', 'w2v_bert'
             b) node_edge_emb_strategy: 'mean', 'bilstm', 'bigru'
@@ -150,6 +155,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
             if 'bert' in emb_strategy:
                 word_emb_type.add('node_edge_bert')
+
 
             if 'bilstm' in emb_strategy:
                 node_edge_emb_strategy = 'bilstm'
@@ -218,6 +224,10 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             self.seq_info_encode_layer = None
 
 
+
+    def forward(self, batch_gd, item_size, num_items, num_word_items=None):
+        """Compute initial node/edge embeddings.
+
     def forward(self, batch_gd, item_size, num_items, num_word_items=None):
         """Compute initial node/edge embeddings.
         Parameters
@@ -235,6 +245,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             of graphs in the batched graph. We assume that the word items are
             not reordered and interpolated, and always appear before the non-word
             items in the graph. Default: ``None``.
+
+
         Returns
         -------
         torch.Tensor
@@ -283,6 +295,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             if len(new_feat) > 0:
                 new_feat = torch.stack(new_feat, 0)
 
+
             if 'seq_bert' in self.word_emb_layers:
                 bert_feat = self.word_emb_layers['seq_bert'](raw_text_data)
                 if len(new_feat) > 0:
@@ -290,6 +303,22 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 else:
                     new_feat = bert_feat
 
+
+            if 'seq_bert' in self.word_emb_layers:
+                bert_feat = self.word_emb_layers['seq_bert'](raw_text_data)
+                if len(new_feat) > 0:
+                    new_feat = torch.cat([new_feat, bert_feat], -1)
+                else:
+                    new_feat = bert_feat
+
+
+            if self.seq_info_encode_layer is None:
+                return new_feat
+
+            len_ = num_word_items if num_word_items is not None else num_items
+            rnn_state = self.seq_info_encode_layer(new_feat, len_)
+            if isinstance(rnn_state, (tuple, list)):
+                rnn_state = rnn_state[0]
 
             if self.seq_info_encode_layer is None:
                 return new_feat
@@ -362,6 +391,7 @@ class WordEmbedding(nn.Module):
 
 class BertEmbedding(nn.Module):
     """Bert embedding class.
+
     Parameters
     ----------
     name : str, optional
@@ -374,6 +404,7 @@ class BertEmbedding(nn.Module):
         Specify whether to fix pretrained BERT embeddings, default: ``True``.
     lower_case : boolean, optional
         Specify whether to use lower case, default: ``True``.
+
     """
     def __init__(self,
                 name='bert-base-uncased',
@@ -406,10 +437,12 @@ class BertEmbedding(nn.Module):
 
     def forward(self, raw_text_data):
         """Compute BERT embeddings for each word in text.
+
         Parameters
         ----------
         raw_text_data : list
             The raw text input data. Example: [['what', 'is', 'bert'], ['how', 'to', 'use', 'bert']].
+
         Returns
         -------
         torch.Tensor

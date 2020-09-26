@@ -369,7 +369,12 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             attention = torch.mm(node_vec_norm, node_vec_norm.transpose(-1, -2)).detach()
 
         if node_mask is not None:
-            attention = attention.masked_fill_(~node_mask.bool(), self.mask_off_val)
+
+            if torch.__version__ < '1.3.0':
+                attention = attention.masked_fill_(~(node_mask == 1.), self.mask_off_val)
+            else:
+                attention = attention.masked_fill_(~node_mask.bool(), self.mask_off_val)
+
 
         return attention
 

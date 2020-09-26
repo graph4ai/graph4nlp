@@ -302,6 +302,104 @@ class DataLoader():
         return r
 
 
+class DataLoaderForGraphEncoder():
+    def __init__(self, use_copy, data, dataset, mode, batch_size, device):
+        self.mode = mode
+        self.device = device
+        self.use_copy = use_copy
+        self.batch_size = batch_size
+        self.src_vocab = dataset.src_vocab_model
+        self.tgt_vocab = dataset.tgt_vocab_model
+
+        if self.use_copy:
+            self.share_vocab = self.tgt_vocab
+        
+        self.data = [(item.graph, item.output_text, item.output_tree) for item in data]
+
+        if self.mode == "test":
+            assert(batch_size == 1)
+
+        if self.mode == "train" and len(self.data) % batch_size != 0:
+            n = len(self.data)
+            for i in range(batch_size - len(self.data) % batch_size):
+                self.data.insert(n-i-1, copy.deepcopy(self.data[n-i-1]))
+
+        self.enc_batch_list = []
+        self.enc_len_batch_list = []
+        self.dec_batch_list = []
+
+        p = 0
+        while p + batch_size <= len(self.data):
+            vectorized_batch_graph = []
+            tree_batch = []
+            enc_len_batch = 0
+
+            for i in range(batch_size):
+                graph_item = self.data[p + i][0]
+                vectorized_batch_graph.append(graph_item)
+                enc_len_batch += graph_item.get_node_num()
+                tree_batch.append(self.data[p+i][2])
+            
+            self.enc_batch_list.append(vectorized_batch_graph)
+            self.enc_len_batch_list.append(enc_len_batch)
+            self.dec_batch_list.append(tree_batch)
+            p += batch_size
+
+        self.num_batch = len(self.enc_batch_list)
+        assert(len(self.enc_batch_list) == len(self.dec_batch_list))
+
+
+    def random_batch(self):
+        p = randint(0, self.num_batch-1)
+        return self.enc_batch_list[p], self.enc_len_batch_list[p], self.dec_batch_list[p]
+    
+    @staticmethod
+    def get_input_text_batch(batch_graph_list, use_copy, vocab):
+        if use_copy == False:
+            return None
+        batch_intput_text_list = []
+        max_batch_len = 0
+        for graph_i in batch_graph_list:
+            node_list = graph_i.node_attributes
+            node_list_tmp_1 = []
+            for i_ in node_list.values():
+                if i_['type'] == 0:
+                    node_list_tmp_1.append(i_)
+            max_sentence_id = np.max([item['sentence_id'] for item in node_list_tmp_1]) + 1
+
+            str_i = []
+            if vocab.get_symbol_idx(".") == vocab.get_symbol_idx(vocab.unk_token):
+                delimiter = []
+            else:
+                delimiter = [vocab.get_symbol_idx(".") ]
+
+            for sentence_id in range(max_sentence_id):
+                sentence_str = [item['token_id'] for item in node_list_tmp_1 if item['sentence_id']==sentence_id]
+                if sentence_id == max_sentence_id-1:
+                    str_i = str_i + sentence_str
+                else:
+                    str_i = str_i + sentence_str + delimiter
+            batch_intput_text_list.append(str_i)
+            if graph_i.get_node_num() > max_batch_len:
+                max_batch_len = graph_i.get_node_num()
+
+        ret_tensor = torch.zeros((len(batch_graph_list), max_batch_len), dtype=torch.long)
+        for index_1 in range(ret_tensor.size(0)):
+            for index_2 in range(ret_tensor.size(1)):
+                if index_2 < len(batch_intput_text_list[index_1]):
+                    ret_tensor[index_1][index_2] = batch_intput_text_list[index_1][index_2]
+                else:
+                    ret_tensor[index_1][index_2] = vocab.get_symbol_idx(vocab.pad_token)
+        return ret_tensor
+
+    def all_batch(self):
+        r = []
+        for p in range(self.num_batch):
+            r.append([self.enc_batch_list[p],
+                      self.enc_len_batch_list[p], self.dec_batch_list[p]])
+        return r
+
+
 def to_cuda(x, device=None):
     if device:
         x = x.to(device)

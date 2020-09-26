@@ -53,7 +53,7 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
         self._n_steps = n_steps
         self._n_etypes = n_etypes
         self.linears = nn.ModuleList(
-            [nn.Linear(input_size, output_size) for _ in range(n_etypes)]
+            [nn.Linear(output_size, output_size) for _ in range(n_etypes)]
         )
         self.gru = nn.GRUCell(output_size, output_size, bias=bias)
         self.reset_parameters()
@@ -105,7 +105,7 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
                         )
                     else:
                         graph.apply_edges(
-                            lambda edges: {'W_e*h': self.linears[i](edges.src['h']) * edge_weight},
+                            lambda edges: {'W_e*h': self.linears[i](edges.src['h']) * edge_weight.view(-1).unsqueeze(1)},
                             eids
                         )
             graph.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
@@ -214,8 +214,9 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
                         eids
                     )
                 else:
+                    assert isinstance(edge_weight, tuple)
                     graph_in.apply_edges(
-                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight},
+                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight[0].view(-1).unsqueeze(1)},
                         eids
                     )
         graph_in.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
@@ -234,8 +235,9 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
                         eids
                     )
                 else:
+                    assert isinstance(edge_weight, tuple)
                     graph_out.apply_edges(
-                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight},
+                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight[1].view(-1).unsqueeze(1)},
                         eids
                     )
         graph_out.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
@@ -345,8 +347,9 @@ class BiSepGGNNLayerConv(GNNLayerBase):
                         eids
                     )
                 else:
+                    assert isinstance(edge_weight, tuple)
                     graph_in.apply_edges(
-                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight},
+                        lambda edges: {'W_e*h': self.linears_in[i](edges.src['h']) * edge_weight[0].view(-1).unsqueeze(1)},
                         eids
                     )
         graph_in.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
@@ -365,8 +368,9 @@ class BiSepGGNNLayerConv(GNNLayerBase):
                         eids
                     )
                 else:
+                    assert isinstance(edge_weight, tuple)
                     graph_out.apply_edges(
-                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight},
+                        lambda edges: {'W_e*h': self.linears_out[i](edges.src['h']) * edge_weight[1].view(-1).unsqueeze(1)},
                         eids
                     )
         graph_out.update_all(fn.copy_e('W_e*h', 'm'), fn.sum('m', 'a'))
@@ -490,6 +494,9 @@ class GGNN(GNNBase):
         etypes = graph.edge_features['etype']
         if self.use_edge_weight:
             edge_weight = graph.edge_features['edge_weight']
+            if self.direction_option == 'bi_fuse' or self.direction_option == 'bi_sep':
+                reverse_edge_weight = graph.edge_features['reverse_edge_weight']
+                edge_weight = (edge_weight, reverse_edge_weight)
         else:
             edge_weight = None
 

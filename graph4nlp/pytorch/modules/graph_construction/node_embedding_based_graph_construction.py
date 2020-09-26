@@ -59,7 +59,8 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         node_mask = self._get_node_mask_for_batch_graph(num_nodes)
         new_batch_gd = self.topology(node_emb, node_mask=node_mask)
         new_batch_gd.node_features['node_feat'] = node_emb
-        new_batch_gd.batch = batch_gd.batch
+        # new_batch_gd.batch = batch_gd.batch
+        new_batch_gd.copy_batch_info(batch_gd)
 
         return new_batch_gd
 
@@ -120,6 +121,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
     @classmethod
     def init_topology(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize):
         """Convert raw text data to the initial node set graph (i.e., no edge information).
+
         Parameters
         ----------
         raw_text_data : str or list/tuple of str
@@ -131,6 +133,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             Specify whether to lower case the input text, default: ``True``.
         tokenizer : callable, optional
             The tokenization function.
+
         Returns
         -------
         GraphData

@@ -1,3 +1,6 @@
+
+from dgl.nn.pytorch import GraphConv
+
 import torch
 import torch.nn as nn
 import dgl.function as fn
@@ -11,33 +14,44 @@ class GCN(GNNBase):
     Support both `unidirectional GCN
     <https://arxiv.org/pdf/1609.02907>`__ and bidirectional versions
     including `GCN-BiSep` and `GCN-BiFuse`.
+
     Parameters
     ----------
     num_layers: int
         Number of GCN layers.
+
     in_feats: int
         Input feature size of the first GCN layer.
+
     hidden_size: int
         Hidden size per GCN layer.
+
     out_feats: int
         Output feature size of the final GCN layer.
+
     direction_option: str
         Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
         Default : ``'bi_sep'``.
+
     norm: str, optional
         How to apply the normalizer. If is `'right'`, divide the aggregated messages
         by each node's in-degrees, which is equivalent to averaging the received messages.
         If is `'none'`, no normalization is applied. Default is `'both'`,
         where the :math:`c_{ij}` in the paper is applied.
+
     weight: bool, optional
         If True, apply a linear layer. Otherwise, aggregating the messages
         without a weight matrix.
+
     bias: bool, optional
         If True, adds a learnable bias to the output. Default: ``True``.
+
     activation: callable activation function/layer or None, optional
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
+
     allow_zero_in_degree: bool, optional
+
     use_edge_weight: bool, optional
     """
     def __init__(self,
@@ -96,10 +110,12 @@ class GCN(GNNBase):
 
     def forward(self, graph):
         r"""Compute multi-layer graph convolutional networks.
+
         Parameters
         ----------
         graph : GraphData
             The graph data containing topology and features.
+
         Returns
         -------
         GraphData
@@ -145,38 +161,48 @@ class GCN(GNNBase):
 
 class GCNLayer(GNNLayerBase):
     r"""Single-layer GCN.
+
     Parameters
     ----------
     num_layers: int
-        Number of GCN layers.
+
     in_feats: int
         Input feature size of the first GCN layer.
+
     hidden_size: int
         Hidden size per GCN layer.
+
     out_feats: int
         Output feature size of the final GCN layer.
+
     direction_option: str
         Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
         Default : ``'bi_sep'``.
+
     norm: str, optional
         How to apply the normalizer. If is `'right'`, divide the aggregated messages
         by each node's in-degrees, which is equivalent to averaging the received messages.
         If is `'none'`, no normalization is applied. Default is `'both'`,
         where the :math:`c_{ij}` in the paper is applied.
+
     weight: bool, optional
         If True, apply a linear layer. Otherwise, aggregating the messages
         without a weight matrix.
+
     bias: bool, optional
         If True, adds a learnable bias to the output. Default: ``True``.
+
     activation: callable activation function/layer or None, optional
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
+
     allow_zero_in_degree : bool, optional
         If there are 0-in-degree nodes in the graph, output for those nodes will be invalid
         since no message will be passed to those nodes. This is harmful for some applications
         causing silent performance regression. This module will raise a DGLError if it detects
         0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
         and let the users handle it by themselves. Default: ``False``.
+
     """
     def __init__(self,
                  in_feats,
@@ -217,17 +243,22 @@ class GCNLayer(GNNLayerBase):
 
     def forward(self, graph, feat, weight=None, edge_weight=None, reverse_edge_weight=None):
         r"""Compute graph convolutional network layer.
+
         Parameters
         ----------
         graph : DGLGraph
             The graph.
+
         feat : torch.Tensor
             If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
+
         weight: torch.Tensor, optional
             Optional external weight tensor.
+
         edge_weight: torch.Tensor
             Optional edge weight. edge_weight shape: "math:`(\text{num_edge}, 1)`.
+
         reverse_edge_weight: torch.Tensor
             Optional reverse edge weight. reverse_edge_weight shape: "math:`(\text{num_edge}, 1)`.
         """
@@ -236,16 +267,20 @@ class GCNLayer(GNNLayerBase):
 
 class UndirectedGCNLayerConv(GNNLayerBase):
     r"""
+
     Description
     -----------
     Graph convolution was introduced in `GCN <https://arxiv.org/abs/1609.02907>`__
     and mathematically is defined as follows:
+
     .. math::
       h_i^{(l+1)} = \sigma(b^{(l)} + \sum_{j\in\mathcal{N}(i)}\frac{1}{c_{ij}}h_j^{(l)}W^{(l)})
+
     where :math:`\mathcal{N}(i)` is the set of neighbors of node :math:`i`,
     :math:`c_{ij}` is the product of the square root of node degrees
     (i.e.,  :math:`c_{ij} = \sqrt{|\mathcal{N}(i)|}\sqrt{|\mathcal{N}(j)|}`),
     and :math:`\sigma` is an activation function.
+
     Parameters
     ----------
     in_feats : int
@@ -271,6 +306,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         causing silent performance regression. This module will raise a DGLError if it detects
         0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
         and let the users handle it by themselves. Default: ``False``.
+
     Attributes
     ----------
     weight : torch.Tensor
@@ -346,20 +382,26 @@ class UndirectedGCNLayerConv(GNNLayerBase):
 
     def forward(self, graph, feat, weight=None, edge_weight=None, reverse_edge_weight=None):
         r"""Compute graph convolution.
+
         Parameters
         ----------
         graph: DGLGraph
             The graph.
+
         feat: torch.Tensor
             If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
+
         weight: torch.Tensor, optional
             Optional external weight tensor.
+
         edge_weight: torch.Tensor
             Optional edge weight. edge_weight shape: "math:`(\text{num_edge}, 1)`.
+
         reverse_edge_weight: torch.Tensor
             Optional reverse edge weight. reverse_edge_weight shape: "math:`(\text{num_edge}, 1)`.
             For undirected GCN layer, reverse_edge_weight must be `None`.
+
         Returns
         -------
         torch.Tensor
@@ -442,12 +484,16 @@ class UndirectedGCNLayerConv(GNNLayerBase):
 
 class BiFuseGCNLayerConv(GNNLayerBase):
     r"""Bidirection version GCN layer from paper `GCN <https://arxiv.org/abs/1609.02907>`__.
+
     .. math::
         h_{i, \vdash}^{(l+1)} = \sigma(b^{(l)}_{\vdash} + \sum_{j\in\mathcal{N}_{\vdash}(i)}\frac{1}{c_{ij}}h_{j}^{(l)}W^{(l)}_{\vdash})
+
         h_{i, \dashv}^{(l+1)} = \sigma(b^{(l)}_{\dashv} + \sum_{j\in\mathcal{N}_{\dashv}(i)}\frac{1}{c_{ij}}h_{j}^{(l)}W^{(l)}_{\dashv})
+
         r_{i}^{l} &= \sigma (W_{f}[h_{i, \vdash}^{l};h_{i, \dashv}^{l};
                 h_{i, \vdash}^{l}*h_{i, \dashv}^{l};
                 h_{i, \vdash}^{l}-h_{i, \dashv}^{l}])
+
     Parameters
     ----------
     in_feats : int
@@ -525,9 +571,11 @@ class BiFuseGCNLayerConv(GNNLayerBase):
 
     def set_allow_zero_in_degree(self, set_value):
         r"""
+
         Description
         -----------
         Set allow_zero_in_degree flag.
+
         Parameters
         ----------
         set_value : bool
@@ -537,22 +585,29 @@ class BiFuseGCNLayerConv(GNNLayerBase):
 
     def forward(self, graph, feat, weight=None, edge_weight=None, reverse_edge_weight=None):
         r"""
+
         Description
         -----------
         Compute graph convolution.
+
         Parameters
         ----------
         graph: DGLGraph
             The graph.
+
         feat: torch.Tensor
             If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
+
         weight: torch.Tensor, optional
             Optional external weight tensor.
+
         edge_weight: torch.Tensor
             Optional edge weight. edge_weight shape: "math:`(\text{num_edge}, 1)`.
+
         reverse_edge_weight: torch.Tensor
             Optional reverse edge weight. reverse_edge_weight shape: "math:`(\text{num_edge}, 1)`.
+
         Returns
         -------
         torch.Tensor
@@ -702,8 +757,10 @@ class BiFuseGCNLayerConv(GNNLayerBase):
 
 class BiSepGCNLayerConv(GNNLayerBase):
     r"""Bidirection version GCN layer from paper `GCN <https://arxiv.org/abs/1609.02907>`__.
+
     .. math::
         h_{i, \vdash}^{(l+1)} = \sigma(b^{(l)}_{\vdash} + \sum_{j\in\mathcal{N}_{\vdash}(i)}\frac{1}{c_{ij}}h_{j, \vdash}^{(l)}W^{(l)}_{\vdash})
+
         h_{i, \dashv}^{(l+1)} = \sigma(b^{(l)}_{\dashv} + \sum_{j\in\mathcal{N}_{\dashv}(i)}\frac{1}{c_{ij}}h_{j, \dashv}^{(l)}W^{(l)}_{\dashv})
     """
     def __init__(self,
@@ -754,9 +811,11 @@ class BiSepGCNLayerConv(GNNLayerBase):
 
     def set_allow_zero_in_degree(self, set_value):
         r"""
+
         Description
         -----------
         Set allow_zero_in_degree flag.
+
         Parameters
         ----------
         set_value : bool
@@ -766,22 +825,29 @@ class BiSepGCNLayerConv(GNNLayerBase):
 
     def forward(self, graph, feat, weight=None, edge_weight=None, reverse_edge_weight=None):
         r"""
+
         Description
         -----------
         Compute graph convolution.
+
         Parameters
         ----------
         graph: DGLGraph
             The graph.
+
         feat: torch.Tensor
             If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
+
         weight: torch.Tensor, optional
             Optional external weight tensor.
+
         edge_weight: torch.Tensor
             Optional edge weight. edge_weight shape: "math:`(\text{num_edge}, 1)`.
+
         reverse_edge_weight: torch.Tensor
             Optional reverse edge weight. reverse_edge_weight shape: "math:`(\text{num_edge}, 1)`.
+
         Returns
         -------
         torch.Tensor
