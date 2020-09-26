@@ -132,14 +132,14 @@ class SentenceBiLSTMCRF(nn.Module):
         super(SentenceBiLSTMCRF, self).__init__()
         self.use_rnn=use_rnn
         #if self.use_rnn is True:
-        self.prediction=BiLSTMFeedForwardNN(args.init_hidden_size*1,args.init_hidden_size*1,args.init_hidden_size*1).to(device)
+        self.prediction=BiLSTMFeedForwardNN(args.init_hidden_size*1,args.init_hidden_size*1).to(device)
         
         self.crf=CRFLayer(8).to(device)
         self.use_crf=use_crf        
-        self.linear1=nn.Linear(int(args.init_hidden_size*1), args.num_class)
-
-        self.dropout_rnn_out = nn.Dropout(p=0.33)
-        self.dropout_tag = nn.Dropout(0.5)
+        self.linear1=nn.Linear(int(args.init_hidden_size*1), args.hidden_size)
+        self.linear1_=nn.Linear(int(args.hidden_size*1), args.num_class)
+        self.dropout_tag = nn.Dropout(args.tag_dropout)
+        self.dropout_rnn_out = nn.Dropout(p=args.rnn_dropout)
         self.logsoftmax = nn.LogSoftmax(dim=1)
         self.nll_loss = nn.NLLLoss()
     def forward(self,batch_graph,tgt_tags):
@@ -172,7 +172,7 @@ class SentenceBiLSTMCRF(nn.Module):
         batch_graph= self.prediction(batch_graph)  
         batch_emb=batch_graph.node_features['logits']
             
-        batch_graph.node_features['logits']=self.linear1(F.elu(batch_emb))             
+        batch_graph.node_features['logits']=self.linear1_(self.dropout_tag(F.elu(self.linear1(self.dropout_rnn_out(batch_emb)))))           
             
         if self.use_crf is False:
             tgt=torch.cat(tgt_tags)
@@ -206,8 +206,8 @@ class Word2tag(nn.Module):
               self.graph_topology = LineBasedGraphConstruction(embedding_style=embedding_style,
                                                                vocab=vocab.in_word_vocab,
                                                                hidden_size=int(args.init_hidden_size/2), 
-                                                               rnn_dropout=args.rnn_dropout,
-                                                               word_dropout=args.dropout,
+                                                               rnn_dropout=None,
+                                                               word_dropout=args.word_dropout,
                                                                device=self.device,
                                                                fix_word_emb=not args.no_fix_word_emb,
                                                                fix_bert_emb=not args.no_fix_bert_emb)
@@ -215,8 +215,8 @@ class Word2tag(nn.Module):
               self.graph_topology = LineBasedGraphConstruction(embedding_style=embedding_style,
                                                                vocab=vocab.in_word_vocab,
                                                                hidden_size=args.init_hidden_size, 
-                                                               rnn_dropout=args.rnn_dropout,
-                                                               word_dropout=args.dropout, 
+                                                               rnn_dropout=None,
+                                                               word_dropout=args.word_dropout, 
                                                                device=self.device,
                                                                fix_word_emb=not args.no_fix_word_emb,
                                                                fix_bert_emb=not args.no_fix_bert_emb)              
@@ -225,8 +225,8 @@ class Word2tag(nn.Module):
               self.graph_topology = DependencyBasedGraphConstruction_without_tokenizer(embedding_style=embedding_style,
                                                                vocab=vocab.in_word_vocab,
                                                                hidden_size=int(args.init_hidden_size/2), 
-                                                               rnn_dropout=args.rnn_dropout,
-                                                               word_dropout=args.dropout, 
+                                                               rnn_dropout=None,
+                                                               word_dropout=args.word_dropout, 
                                                                device=self.device,
                                                                fix_word_emb=not args.no_fix_word_emb,
                                                                fix_bert_emb=not args.no_fix_bert_emb)
@@ -234,8 +234,8 @@ class Word2tag(nn.Module):
               self.graph_topology = DependencyBasedGraphConstruction_without_tokenizer(embedding_style=embedding_style,
                                                    vocab=vocab.in_word_vocab,
                                                    hidden_size=args.init_hidden_size, 
-                                                   rnn_dropout=args.rnn_dropout,
-                                                   word_dropout=args.dropout, 
+                                                   rnn_dropout=None,
+                                                   word_dropout=args.word_dropout, 
                                                    device=self.device,
                                                    fix_word_emb=not args.no_fix_word_emb,
                                                    fix_bert_emb=not args.no_fix_bert_emb) 
@@ -254,8 +254,8 @@ class Word2tag(nn.Module):
                                     hidden_size=args.init_hidden_size,
                                     fix_word_emb=not args.no_fix_word_emb,
                                     fix_bert_emb=not args.no_fix_bert_emb,
-                                    word_dropout=args.dropout,
-                                    rnn_dropout=args.rnn_dropout,
+                                    word_dropout=args.word_dropout,
+                                    rnn_dropout=None,
                                     device=self.device)
             use_edge_weight = True  
             
@@ -274,8 +274,8 @@ class Word2tag(nn.Module):
                                     input_size=args.init_hidden_size,
                                     hidden_size=args.init_hidden_size,
                                     fix_word_emb=not args.no_fix_word_emb,
-                                    word_dropout=args.dropout,
-                                    rnn_dropout=args.rnn_dropout,
+                                    word_dropout=args.word_dropout,
+                                    rnn_dropout=None,
                                     device=self.device)
             use_edge_weight = True        
         
@@ -294,8 +294,8 @@ class Word2tag(nn.Module):
         use_crf=args.use_crf
         self.linear0=nn.Linear(int(args.init_hidden_size*1), args.hidden_size).to(self.device)
         self.linear0_=nn.Linear(int(args.init_hidden_size*1), args.init_hidden_size).to(self.device)        
-        self.dropout_rnn_out = nn.Dropout(p=0.33)
-        self.dropout_tag = nn.Dropout(0.5)
+        self.dropout_tag = nn.Dropout(args.tag_dropout)
+        self.dropout_rnn_out = nn.Dropout(p=args.rnn_dropout)
         if self.use_gnn is False:
               self.bilstmcrf=SentenceBiLSTMCRF(device=self.device, use_crf=use_crf,use_rnn=False).to(self.device) 
         else:   
@@ -332,14 +332,14 @@ class Word2tag(nn.Module):
 
         if self.use_gnn is False:
             batch_graph.node_features['node_emb']=batch_graph.node_features['node_feat']
-            batch_graph.node_features['node_emb']=self.dropout_tag(F.elu(self.linear0_(self.dropout_rnn_out(batch_graph.node_features['node_emb']))))            
+            batch_graph.node_features['node_emb']=self.dropout_tag(F.elu(self.linear0_(self.dropout_rnn_out(batch_graph.node_features['node_emb']))))             
             
         else:
            # run GNN
            if self.gnn_type=="ggnn":
-               batch_graph.node_features['node_feat']=self.dropout_rnn_out(batch_graph.node_features['node_feat'])                                     
+               batch_graph.node_features['node_feat']=batch_graph.node_features['node_feat']                                   
            else:    
-               batch_graph.node_features['node_feat']=self.dropout_tag(F.elu(self.linear0(self.dropout_rnn_out(batch_graph.node_features['node_feat']))))                      
+               batch_graph.node_features['node_feat']=self.dropout_tag(F.elu(self.linear0(self.dropout_rnn_out(batch_graph.node_features['node_feat']))))                          
                
            batch_graph = self.gnn(batch_graph)
                
@@ -465,7 +465,9 @@ class Conll:
                 print("Epoch: {}".format(epoch)+" loss:"+str(loss.cpu().item()))
                 self.optimizer.zero_grad()
                 loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1)
                 self.optimizer.step() 
+                
             #pred_tensor=torch.cat(pred_collect).reshape(-1).cpu()
             #gt_tensor=torch.cat(gt_collect).view(-1).cpu()               
             #train_score = self.metrics.calculate_scores(ground_truth=gt_tensor, predict=pred_tensor,average='macro')[2]              
@@ -528,7 +530,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NER')
     parser.add_argument("--gpu", type=int, default=0,
                         help="which GPU to use.")
-    parser.add_argument("--epochs", type=int, default=400,
+    parser.add_argument("--epochs", type=int, default=100,
                         help="number of training epochs")
     parser.add_argument("--direction_option", type=str, default='bi_fuse',
                         help="direction type (`undirected`, `bi_fuse`, `bi_sep`)")
@@ -538,17 +540,21 @@ if __name__ == "__main__":
                         help="number of hidden layers in gnn")    
     parser.add_argument("--init_hidden_size", type=int, default=400,
                         help="initial_emb_hidden_size")
-    parser.add_argument("--hidden_size", type=int, default=256,
+    parser.add_argument("--hidden_size", type=int, default=128,
                         help="initial_emb_hidden_size")    
     parser.add_argument("--lstm_hidden_size", type=int, default=80,
                         help="initial_emb_hidden_size")    
     parser.add_argument("--num_class", type=int, default=8,
-                        help="hiddensize")
+                        help="num_class")
     parser.add_argument("--residual", action="store_true", default=False,
                         help="use residual connection")
-    parser.add_argument("--dropout", type=float, default=0.2,
+    parser.add_argument("--word_dropout", type=float, default=0.5,
                         help="input feature dropout")
-    parser.add_argument("--lr", type=float, default=0.002,
+    parser.add_argument("--tag_dropout", type=float, default=0.5,
+                        help="input feature dropout")    
+    parser.add_argument("--rnn_dropout", type=list, default=0.33,
+                        help="dropout for rnn in word_emb")      
+    parser.add_argument("--lr", type=float, default=0.001,
                         help="learning rate")
     parser.add_argument('--weight-decay', type=float, default=5e-5,
                         help="weight decay")
@@ -566,9 +572,7 @@ if __name__ == "__main__":
                         help="graph_type:line_graph, dependency_graph, dynamic_graph")    
     parser.add_argument("--init_graph_type", type=str, default="dependency",
                         help="initial graph construction type ('line', 'dependency', 'constituency', 'ie')")      
-    parser.add_argument("--rnn_dropout", type=list, default=0.1,
-                        help="dropout foro rnn in word_emb")  
-    parser.add_argument("--pre_word_emb_file", type=str, default="F:/xiaojie/G2GIE/embeddings/glove.840B.300d.txt",
+    parser.add_argument("--pre_word_emb_file", type=str, default= "F:/xiaojie/G2GIE/embeddings/glove.840B.300d.txt",
                         help="path of pretrained_word_emb_file")     
     parser.add_argument("--gl_num_heads", type=int, default=1,
                         help="num of heads for dynamic graph construction")  
@@ -586,59 +590,18 @@ if __name__ == "__main__":
                         help="alpha ratio for combining initial graph adjacency matrix") 
     parser.add_argument("--gl_metric_type", type=str, default='weighted_cosine',
                         help="similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', 'rbf_kernel', 'cosine')" )   
-    parser.add_argument("--no_fix_word_emb", type=bool, default=False,
+    parser.add_argument("--no_fix_word_emb", type=bool, default=True,
                         help="Not fix pretrained word embeddings (default: false)" )   
     parser.add_argument("--no_fix_bert_emb", type=bool, default=False,
                         help="Not fix pretrained word embeddings (default: false)" )   
   
 
     args = parser.parse_args() 
-    # preprocess()
-    #runner = Conll()
-    #max_score,max_idx=runner.train()
-    #print("Train finish, best score: {:.3f}".format(max_score))
-    #print(max_idx)
-    #score=runner.test()    
+    preprocess()
+    runner = Conll()
+    max_score,max_idx=runner.train()
+    print("Train finish, best score: {:.3f}".format(max_score))
+    print(max_idx)
+    score=runner.test()    
     
-#    best_score=-1
-#    param_grid={
-#        'lr':[0.001],
-#          'batch_size':[100],
-#          'weight_decay':[5e-4],
-#           'hidden_size':[400]}
-#    ax_evals=50
-#    hist_param=[]
-#    hist_score=[]
-#    for i in range(ax_evals):
-#        random.seed(i)    
-#        random_params={k:random.sample(v,1)[0] for k,v in param_grid.items()}
-#        args.lr=random_params['lr']
-#        args.dropout=random_params['dropout']
-#        args.batch_size=random_params['batch_size']
-#        args.weight_decay=random_params['weight_decay']
-#        args.init_hidden_size=random_params['hidden_size']
-#        # preprocess()
-#        runner = Conll()
-#        max_score,max_idx=runner.train()
-#        print("Train finish, best score: {:.3f}".format(max_score))
-#        print(max_idx)
-#        score=runner.test()
-#        hist_score.append(score)
-#        hist_param.append(random_params)
-    gnn_type=['gcn']#,
-    graph_type=['line_graph'] #node_emb
-    direction=['undirected','bi_sep','bi_fuse']#
-    score_l=[]
-    for graph in graph_type:
-      for gnn in gnn_type:        
-            for direct in direction:
-                args.gnn_type=gnn
-                args.graph_type=graph
-                args.direction_option=direct
-                runner = Conll()
-                max_score,max_idx=runner.train()
-                print("Train finish, best score: {:.3f}".format(max_score))
-                print(max_idx)
-                score=runner.test()
-                score_l.append(score)
 
