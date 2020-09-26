@@ -9,20 +9,20 @@ from sklearn import preprocessing
 from collections import Counter
 import pickle
 
-from ..data.data import GraphData
-from ..modules.utils.vocab_utils import VocabModel, Vocab
+from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel, Vocab
 
-from ..modules.utils.tree_utils import Vocab as VocabForTree
-from ..modules.utils.tree_utils import Tree
+from graph4nlp.pytorch.modules.utils.tree_utils import Vocab as VocabForTree
+from graph4nlp.pytorch.modules.utils.tree_utils import Tree
 
 import json
 from graph4nlp.pytorch.data.dataset import SequenceLabelingDataset
-from ..modules.graph_construction.dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
 dataset_root = '../test/dataset/conll/'
-from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
-from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
-from ..modules.graph_construction.dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
-from ..modules.graph_construction.line_graph_construction import LineBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
+from line_graph_construction import LineBasedGraphConstruction
 
 
 class ConllDataset(SequenceLabelingDataset):
@@ -59,8 +59,8 @@ class ConllDataset(SequenceLabelingDataset):
         """
         if self.graph_type == 'static':
             print('Connecting to stanfordcorenlp server...')
-            processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
-
+            processor = stanfordcorenlp.StanfordCoreNLP('F:/xiaojie/stanford-corenlp-4.1.0', port=9019, timeout=1000)
+            
             if self.topology_builder == IEBasedGraphConstruction:
                 props_coref = {
                     'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
@@ -116,7 +116,7 @@ class ConllDataset(SequenceLabelingDataset):
                                                        processor_args=processor_args,
                                                        merge_strategy=self.merge_strategy,
                                                        edge_strategy=self.edge_strategy,
-                                                       verbase=False)
+                                                       verbase=False,auxiliary_args=None)
                 item.graph = graph
         elif self.graph_type == 'dynamic':
             if self.dynamic_graph_type == 'node_emb':
@@ -189,4 +189,3 @@ class ConllDataset(SequenceLabelingDataset):
 if __name__ == '__main__':
     ConllDataset(root_dir='../test/dataset/conll/', topology_builder=DependencyBasedGraphConstruction,
                 topology_subdir='DependencyGraph',tag_types=['I-MISC', 'O', 'B-MISC', 'I-LOC', 'I-PER', 'I-ORG'])
-
