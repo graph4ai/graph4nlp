@@ -21,7 +21,7 @@ class Accuracy(EvaluationMetricBase):
 
     def __init__(self, metrics):
         super().__init__()
-        if isinstance(metrics, list):
+        if not isinstance(metrics, list):
             for metric in metrics:
                 if metric not in ["precision", "recall", "F1", "accuracy"]:
                     raise TypeError(

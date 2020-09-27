@@ -24,7 +24,7 @@ Run with following:
 #### Cora
 
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=cora --gpu=0 --direction-option undirected
+python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=cora --gpu=0 --direction-option uni
 ```
 ```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=cora --gpu=0 --direction-option bi_sep

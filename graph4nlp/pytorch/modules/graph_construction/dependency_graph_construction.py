@@ -11,7 +11,6 @@ from ...data.data import GraphData, to_batch
 class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     """
         Dependency-parsing-tree based graph construction class
-
     Parameters
     ----------
     embedding_style: dict
@@ -36,12 +35,10 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def add_vocab(self, g):
         """
             Add node tokens appeared in graph g to vocabulary.
-
         Parameters
         ----------
         g: GraphData
             Graph data-structure.
-
         """
         for i in range(g.get_node_num()):
             attr = g.get_node_attrs(i)[i]
@@ -50,13 +47,11 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     @classmethod
     def parsing(cls, raw_text_data, nlp_processor, processor_args):
         '''
-
         Parameters
         ----------
         raw_text_data: str
         nlp_processor: StanfordCoreNLP
         processor_args: dict
-
         Returns
         -------
         parsed_results: list[dict]
@@ -137,7 +132,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def topology(cls, raw_text_data, nlp_processor, processor_args, merge_strategy, edge_strategy, sequential_link=True, verbase=0):
         """
             Graph building method.
-
         Parameters
         ----------
         raw_text_data: str or list[list]
@@ -165,7 +159,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
-
         sequential_link: bool, default=True
             Whether to link node tokens sequentially (note that it is bidirectional)
         verbase: int, default=0
@@ -192,7 +185,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def _construct_static_graph(cls, parsed_object, edge_strategy=None, sequential_link=True):
         """
             Build dependency-parsing-tree based graph for single sentence.
-
         Parameters
         ----------
         parsed_object: dict
@@ -210,7 +202,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
                          It is not implemented yet.
-
         Returns
         -------
         graph: GraphData
@@ -275,7 +266,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def _graph_connect(cls, nx_graph_list, merge_strategy=None):
         """
             This method will merge the sub-graphs into one graph.
-
         Parameters
         ----------
         nx_graph_list: list[GraphData]
@@ -286,7 +276,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
             ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
-
         Returns
         -------
         joint_graph: GraphData

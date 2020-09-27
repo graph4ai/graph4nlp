@@ -1,3 +1,4 @@
+
 import os
 
 import torch
@@ -29,3 +30,4 @@ class GeoDatasetForTree(TextToTreeDataset):
         super(GeoDatasetForTree, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy, **kwargs)
+

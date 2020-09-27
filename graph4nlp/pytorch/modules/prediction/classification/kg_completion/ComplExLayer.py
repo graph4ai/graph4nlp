@@ -42,8 +42,8 @@ class ComplExLayer(KGCompletionLayerBase):
         if self.rel_emb_from_gnn == False:
             assert num_relations != None
             assert embedding_dim != None
-            self.emb_rel_real = torch.nn.Embedding(num_relations, embedding_dim)
-            self.emb_rel_img = torch.nn.Embedding(num_relations, embedding_dim)
+            self.emb_rel_real = torch.nn.Embedding(num_relations, Config.embedding_dim)
+            self.emb_rel_img = torch.nn.Embedding(num_relations, Config.embedding_dim)
             self.reset_parameters()
         self.loss_name = loss_name
         self.reset_parameters()
@@ -113,18 +113,18 @@ class ComplExLayer(KGCompletionLayerBase):
 
         """
         if self.rel_emb_from_gnn == False:
-            assert rel_emb_real is None
-            assert rel_emb_img is None
+            assert rel_emb_real == None
+            assert rel_emb_img == None
             rel_emb_real = self.emb_rel_real.weight
             rel_emb_img = self.emb_rel_img.weight
 
-        if list_e_r_pair_idx is None and list_e_e_pair_idx is None:
+        if list_e_r_pair_idx == None and list_e_e_pair_idx == None:
             raise RuntimeError("Only one of `list_e_r_pair_idx` and `list_e_e_pair_idx` can be `None`.")
 
         assert node_emb_real.size()[1]==rel_emb_real.size()[1]
         assert rel_emb_img.size()[1]==rel_emb_img.size()[1]
 
-        if list_e_r_pair_idx is not None:
+        if list_e_r_pair_idx != None:
             ent_idxs = torch.LongTensor([x[0] for x in list_e_r_pair_idx])
             rel_idxs = torch.LongTensor([x[1] for x in list_e_r_pair_idx])
 
@@ -149,7 +149,19 @@ class ComplExLayer(KGCompletionLayerBase):
             imgimgreal = torch.mm(selected_ent_embs_img * selected_rel_embs_img,
                                   node_emb_real.transpose(1, 0))
             pred = realrealreal + realimgimg + imgrealimg - imgimgreal
-        elif list_e_e_pair_idx is not None:
+        elif list_e_e_pair_idx != None:
+            # ent_head_idxs = torch.LongTensor([x[0] for x in list_e_e_pair_idx])
+            # ent_tail_idxs = torch.LongTensor([x[1] for x in list_e_e_pair_idx])
+            #
+            # selected_ent_head_embs = node_emb[ent_head_idxs].squeeze()  # [L, H]. L is the length of list_e_e_pair_idx
+            # selected_ent_tail_embs = rel_emb[ent_tail_idxs].squeeze()  # [L, H]. L is the length of list_e_e_pair_idx
+            #
+            # # dropout
+            # selected_ent_head_embs = self.inp_drop(selected_ent_head_embs)
+            # selected_ent_tail_embs = self.inp_drop(selected_ent_tail_embs)
+            #
+            # logits = torch.mm(selected_ent_head_embs*selected_ent_tail_embs,
+            #                   rel_emb.transpose(1, 0))
             raise NotImplementedError()
 
         if self.loss_name in ["SoftMarginLoss"]:
@@ -157,7 +169,7 @@ class ComplExLayer(KGCompletionLayerBase):
         else:
             pred = torch.sigmoid(pred)
 
-        if multi_label is not None:
+        if type(multi_label) != type(None):
             idxs_pos = torch.nonzero(multi_label == 1.)
             pred_pos = pred[idxs_pos[:, 0], idxs_pos[:, 1]]
 

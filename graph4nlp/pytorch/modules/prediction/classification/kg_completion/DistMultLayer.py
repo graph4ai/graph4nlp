@@ -47,7 +47,7 @@ class DistMultLayer(KGCompletionLayerBase):
             assert num_relations != None
             assert embedding_dim != None
             self.rel_emb = nn.Embedding(num_relations, embedding_dim)
-            # self.reset_parameters()
+            self.reset_parameters()
         self.loss_name = loss_name
         self.reset_parameters()
 
@@ -105,15 +105,15 @@ class DistMultLayer(KGCompletionLayerBase):
 
         """
         if self.rel_emb_from_gnn == False:
-            assert rel_emb is None
+            assert rel_emb == None
             rel_emb = self.rel_emb.weight
 
-        if list_e_r_pair_idx is None and list_e_e_pair_idx is None:
+        if list_e_r_pair_idx == None and list_e_e_pair_idx == None:
             raise RuntimeError("Only one of `list_e_r_pair_idx` and `list_e_e_pair_idx` can be `None`.")
 
         assert node_emb.size()[1]==rel_emb.size()[1]
 
-        if list_e_r_pair_idx is not None:
+        if list_e_r_pair_idx != None:
             ent_idxs = torch.LongTensor([x[0] for x in list_e_r_pair_idx])
             rel_idxs = torch.LongTensor([x[1] for x in list_e_r_pair_idx])
 
@@ -126,7 +126,7 @@ class DistMultLayer(KGCompletionLayerBase):
 
             logits = torch.mm(selected_ent_embs * selected_rel_embs,
                               node_emb.transpose(1, 0))
-        elif list_e_e_pair_idx is not None:
+        elif list_e_e_pair_idx != None:
             ent_head_idxs = torch.LongTensor([x[0] for x in list_e_e_pair_idx])
             ent_tail_idxs = torch.LongTensor([x[1] for x in list_e_e_pair_idx])
 
@@ -147,7 +147,7 @@ class DistMultLayer(KGCompletionLayerBase):
             # target labels are numbers selecting from 0 and 1.
             pred = torch.sigmoid(logits)
 
-        if multi_label is not None:
+        if type(multi_label) != type(None):
             idxs_pos = torch.nonzero(multi_label == 1.)
             pred_pos = pred[idxs_pos[:, 0], idxs_pos[:, 1]]
 

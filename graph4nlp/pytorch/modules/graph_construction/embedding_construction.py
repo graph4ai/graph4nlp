@@ -10,14 +10,11 @@ from ..utils.bert_utils import *
 class EmbeddingConstructionBase(nn.Module):
     """
     Base class for (initial) graph embedding construction.
-
     ...
-
     Attributes
     ----------
     feat : dict
         Raw features of graph nodes and/or edges.
-
     Methods
     -------
     forward(raw_text_data)
@@ -38,7 +35,6 @@ class EmbeddingConstructionBase(nn.Module):
 
     def forward(self):
         """Compute initial node/edge embeddings.
-
         Raises
         ------
         NotImplementedError
@@ -48,7 +44,6 @@ class EmbeddingConstructionBase(nn.Module):
 
 class EmbeddingConstruction(EmbeddingConstructionBase):
     """Initial graph embedding construction class.
-
     Parameters
     ----------
     word_vocab : Vocab
@@ -97,6 +92,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             want to do this in some situations, e.g., when all the nodes are single
             tokens extracted from the raw text.
 
+
         1) single-token node (i.e., single_token_item=`True`):
             a) 'w2v', 'bert', 'w2v_bert'
             b) node_edge_emb_strategy: 'mean'
@@ -104,6 +100,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             emb_strategy: 'w2v', 'w2v_bilstm', 'w2v_bigru',
             'bert', 'bert_bilstm', 'bert_bigru',
             'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru'
+
 
         2) multi-token node (i.e., single_token_item=`False`):
             a) 'w2v', 'bert', 'w2v_bert'
@@ -158,6 +155,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
             if 'bert' in emb_strategy:
                 word_emb_type.add('node_edge_bert')
+
 
             if 'bilstm' in emb_strategy:
                 node_edge_emb_strategy = 'bilstm'
@@ -226,9 +224,12 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             self.seq_info_encode_layer = None
 
 
+
     def forward(self, batch_gd, item_size, num_items, num_word_items=None):
         """Compute initial node/edge embeddings.
 
+    def forward(self, batch_gd, item_size, num_items, num_word_items=None):
+        """Compute initial node/edge embeddings.
         Parameters
         ----------
         batch_gd : GraphData
@@ -244,6 +245,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             of graphs in the batched graph. We assume that the word items are
             not reordered and interpolated, and always appear before the non-word
             items in the graph. Default: ``None``.
+
 
         Returns
         -------
@@ -293,6 +295,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             if len(new_feat) > 0:
                 new_feat = torch.stack(new_feat, 0)
 
+
             if 'seq_bert' in self.word_emb_layers:
                 bert_feat = self.word_emb_layers['seq_bert'](raw_text_data)
                 if len(new_feat) > 0:
@@ -300,6 +303,22 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 else:
                     new_feat = bert_feat
 
+
+            if 'seq_bert' in self.word_emb_layers:
+                bert_feat = self.word_emb_layers['seq_bert'](raw_text_data)
+                if len(new_feat) > 0:
+                    new_feat = torch.cat([new_feat, bert_feat], -1)
+                else:
+                    new_feat = bert_feat
+
+
+            if self.seq_info_encode_layer is None:
+                return new_feat
+
+            len_ = num_word_items if num_word_items is not None else num_items
+            rnn_state = self.seq_info_encode_layer(new_feat, len_)
+            if isinstance(rnn_state, (tuple, list)):
+                rnn_state = rnn_state[0]
 
             if self.seq_info_encode_layer is None:
                 return new_feat
@@ -328,7 +347,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
 class WordEmbedding(nn.Module):
     """Word embedding class.
-
     Parameters
     ----------
     vocab_size : int
@@ -341,7 +359,6 @@ class WordEmbedding(nn.Module):
         The pretrained word embeddings, default: ``None``.
     fix_emb : boolean, optional
         Specify whether to fix pretrained word embeddings, default: ``True``.
-
     Examples
     ----------
     >>> word_emb_layer = WordEmbedding(1000, 300, padding_idx=0, pretrained_word_emb=None, fix_emb=True)
@@ -361,12 +378,10 @@ class WordEmbedding(nn.Module):
 
     def forward(self, input_tensor):
         """Compute word embeddings.
-
         Parameters
         ----------
         input_tensor : torch.LongTensor
             The input word index sequence, shape: [num_items, max_size].
-
         Returns
         -------
         torch.Tensor
@@ -475,14 +490,12 @@ class MeanEmbedding(nn.Module):
 
     def forward(self, emb, len_):
         """Compute average embeddings.
-
         Parameters
         ----------
         emb : torch.Tensor
             The input embedding tensor.
         len_ : torch.Tensor
             The sequence length tensor.
-
         Returns
         -------
         torch.Tensor
@@ -495,7 +508,6 @@ class MeanEmbedding(nn.Module):
 
 class RNNEmbedding(nn.Module):
     """RNN embedding class: apply the RNN network to a sequence of word embeddings.
-
     Parameters
     ----------
     input_size : int
@@ -542,14 +554,12 @@ class RNNEmbedding(nn.Module):
 
     def forward(self, x, x_len):
         """Apply the RNN network to a sequence of word embeddings.
-
         Parameters
         ----------
         x : torch.Tensor
             The word embedding sequence.
         x_len : torch.LongTensor
             The input sequence length.
-
         Returns
         -------
         torch.Tensor

@@ -59,7 +59,7 @@ class StdRNNDecoder(RNNDecoderBase):
 
     def __init__(self, max_decoder_step, decoder_input_size, decoder_hidden_size,  # decoder config
                  word_emb, vocab,  # word embedding & vocabulary TODO: add our vocabulary when building pipeline
-                 rnn_type="LSTM", graph_pooling_strategy=None, # RNN config
+                 rnn_type="LSTM",  # RNN config
                  use_attention=True, attention_type="uniform", rnn_emb_input_size=None,  # attention config
                  attention_function="mlp", node_type_num=None, fuse_strategy="average",
                  use_copy=False, use_coverage=False, coverage_strategy="sum",
@@ -402,13 +402,8 @@ class StdRNNDecoder(RNNDecoderBase):
                 ret = (weight.new(self.num_layers, batch_size, self.decoder_hidden_size).zero_(),
                        weight.new(self.num_layers, batch_size, self.decoder_hidden_size).zero_())
         elif rnn_type == "GRU":
-            if content is not None:
-                ret = self.encoder_decoder_adapter(content).view(1, batch_size,
-                                                                           self.decoder_hidden_size).expand(
-                    self.num_layers, -1, -1)
-            else:
-                weight = next(self.parameters()).data
-                ret = weight.new(self.num_layers, batch_size, self.decoder_hidden_size).zero_()
+            weight = next(self.parameters()).data
+            ret = weight.new(self.num_layers, batch_size, self.decoder_hidden_size).zero_()
         else:
             raise NotImplementedError()
         return ret
@@ -466,8 +461,6 @@ class StdRNNDecoder(RNNDecoderBase):
             graph_node_emb_ret.append(emb.unsqueeze(0))
         graph_node_emb_ret = torch.cat(graph_node_emb_ret, dim=0)
 
-        graph_level_emb = self.graph_pooling(graph_node_emb_ret)
-
         graph_node_mask = torch.zeros(batch_size, max_node_num).fill_(-1)
 
         for i, s_g in enumerate(graph_list):
@@ -493,20 +486,72 @@ class StdRNNDecoder(RNNDecoderBase):
              "graph_node_embedding": graph_node_emb_ret,
              "graph_node_mask": graph_node_mask_ret,
              "rnn_node_embedding": rnn_node_emb_ret,
-             "graph_level_embedding": graph_level_emb,
+             "graph_level_embedding": None,
              "graph_edge_embedding": None,
              "graph_edge_mask": None
         }
 
-    def graph_pooling(self, graph_node):
-        if self.graph_pooling_strategy is None:
-            pooled_vec = None
-        elif self.graph_pooling_strategy == "mean":
-            pooled_vec = torch.mean(graph_node, dim=1)
-        elif self.graph_pooling_strategy == "max":
-            pooled_vec, _ = torch.max(graph_node, dim=1)
-        elif self.graph_pooling_strategy == "min":
-            pooled_vec, _ = torch.mean(graph_node, dim=1)
-        else:
-            raise NotImplementedError()
-        return pooled_vec
+    # def _extract_params(self, g):
+    #     """
+    #
+    #     Parameters
+    #     ----------
+    #     g: GraphData
+    #
+    #     Returns
+    #     -------
+    #     params: dict
+    #     """
+    #     graph_list = from_batch(g)
+    #     graph_node_emb = [s_g.node_features["node_emb"] for s_g in graph_list]
+    #     rnn_node_emb = [s_g.node_features.get("rnn_emb") for s_g in graph_list]
+    #     graph_edge_emb = [s_g.node_features["edge_emb"] for s_g in graph_list]
+    #
+    #     def pad_tensor(x, dim, pad_size):
+    #         if len(x.shape) == 2:
+    #             assert (0 <= dim <= 1)
+    #             assert pad_size >= 0
+    #             dim1, dim2 = x.shape
+    #             pad = torch.zeros(pad_size, dim2) if dim == 0 else torch.zeros(dim1, pad_size)
+    #             pad = pad.to(self.device)
+    #             return torch.cat((x, pad), dim=dim)
+    #
+    #     batch_size = len(graph_list)
+    #     max_node_num = max([emb.shape[0] for emb in graph_node_emb])
+    #
+    #     graph_node_emb_ret = []
+    #     for emb in graph_node_emb:
+    #         if emb.shape[0] < max_node_num:
+    #             emb = pad_tensor(emb, 0, max_node_num-emb.shape[0])
+    #         graph_node_emb_ret.append(emb.unsqueeze(0))
+    #     graph_node_emb_ret = torch.cat(graph_node_emb_ret, dim=0)
+    #
+    #     graph_node_mask = torch.zeros(batch_size, max_node_num).fill(-1)
+    #
+    #     for i, s_g in enumerate(graph_list):
+    #         node_num = s_g.get_node_num()
+    #         for j in range(node_num):
+    #             node_type = s_g.node_attributes[j].get('type')
+    #             if node_type is not None:
+    #                 graph_node_mask[i][j] = node_type
+    #     graph_node_mask_ret = graph_node_mask.to(self.device)
+    #
+    #     rnn_node_emb_ret = None
+    #     if self.attention_type == "sep_diff_encoder_type":
+    #         max_rnn_num = max([rnn_emb.shape[0] for rnn_emb in rnn_node_emb])
+    #         rnn_node_emb_ret = []
+    #         assert max_rnn_num == max_node_num
+    #         for rnn_emb in rnn_node_emb:
+    #             if rnn_emb.shape[0] < max_rnn_num:
+    #                 rnn_emb = pad_tensor(rnn_emb, 0, max_rnn_num - rnn_emb.shape[0])
+    #             rnn_node_emb_ret.append(rnn_emb.unsqueeze(0))
+    #         rnn_node_emb_ret = torch.cat(rnn_node_emb_ret, dim=0)
+    #
+    #     return {
+    #          "graph_node_embedding": graph_node_emb_ret,
+    #          "graph_node_mask": graph_node_mask_ret,
+    #          "rnn_node_embedding": rnn_node_emb_ret,
+    #          "graph_level_embedding": None,
+    #          "graph_edge_embedding": None,
+    #          "graph_edge_mask": None
+    #     }
