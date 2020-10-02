@@ -22,14 +22,22 @@
 | GraphSage | 90.0 | 90.7 | 89.3 |  
 | GCN | 90.0 | 90.0 | 91.4 |
 
-## Dynamic Graph
+## Dynamic Graph node emb
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |  
 | GAT | 90.0 | 90.7 | 91.4 |  
 | GGNN | 89.3 | 87.9 | 87.9 |  
 | GraphSage | 87.9 | 90.0 | 91.4 |  
-| GCN | - | - | 89.3 |
+| GCN | 89.3 | 90.0 | 89.3 |
 
+
+## Dynamic Graph node emb refined (constituency tree as initial graph)
+| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- |  
+| GAT | 90.0 | 90.7 | 91.4 |  
+| GGNN | 89.3 | 87.9 | 87.9 |  
+| GraphSage | 91.4 | 90.0 | 91.4 |  
+| GCN | 90.7 | 90.0 | 89.3 |
 
 ## Ablation study for tree decoder
 
