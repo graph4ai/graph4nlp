@@ -69,32 +69,6 @@ class Text2TextDataItem(DataItem):
             return input_tokens, output_tokens
 
 
-class SequenceLabelingDataItem(DataItem):
-    def __init__(self, input_text, output_tags, tokenizer):
-        super(SequenceLabelingDataItem, self).__init__(input_text, tokenizer)
-        self.output_tag = output_tags
-
-    def extract(self):
-        """
-        Returns
-        -------
-        Input tokens and output tags
-        """
-        g: GraphData = self.graph
-
-        input_tokens = []
-        for i in range(g.get_node_num()):
-            if self.tokenizer is None:
-                tokenized_token = self.output_text.strip().split(' ')
-            else:
-                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
-
-            input_tokens.extend(tokenized_token)
-
-
-        return input_tokens
-
-
 class Text2TreeDataItem(DataItem):
     def __init__(self, input_text, output_text, output_tree, tokenizer, share_vocab=True):
         super(Text2TreeDataItem, self).__init__(input_text, tokenizer)
@@ -129,6 +103,31 @@ class Text2TreeDataItem(DataItem):
         else:
             return input_tokens, output_tokens
 
+
+class SequenceLabelingDataItem(DataItem):
+    def __init__(self, input_text, output_tags, tokenizer):
+        super(SequenceLabelingDataItem, self).__init__(input_text, tokenizer)
+        self.output_tag = output_tags
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens and output tags
+        """
+        g: GraphData = self.graph
+
+        input_tokens = []
+        for i in range(g.get_node_num()):
+            if self.tokenizer is None:
+                tokenized_token = self.output_text.strip().split(' ')
+            else:
+                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
+
+            input_tokens.extend(tokenized_token)
+
+
+        return input_tokens
 
 class Text2LabelDataItem(DataItem):
     def __init__(self, input_text, output_label, tokenizer):
