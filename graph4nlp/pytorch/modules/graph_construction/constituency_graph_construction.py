@@ -26,35 +26,29 @@ from .base import StaticGraphConstructionBase
 class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     """
     Class for constituency graph construction.
-
     ...
-
     Attributes
     ----------
     embedding_styles : (dict)
+
         Specify embedding styles including ``single_token_item``, ``emb_strategy``, ``num_rnn_layers``, ``bert_model_name`` and ``bert_lower_case``.
 
     vocab: (set, optional)
         Vocabulary including all words appeared in graphs.
-
     Methods
     -------
-
     topology(raw_text_data, nlp_processor, merge_strategy=None, edge_strategy=None)
         Generate graph structure with nlp parser like ``CoreNLP`` etc.
-
     _construct_static_graph(parsed_object, sub_sentence_id, edge_strategy=None)
         Construct a single static graph from a single sentence, to be called by ``topology`` function.
-
     _graph_connect(nx_graph_list, merge_strategy=None)
         Construct a merged graph from a list of graphs, to be called by ``topology`` function.
-
     embedding(node_attributes, edge_attributes)
         Generate node/edge embeddings from node/edge attributes through an embedding layer.
-
     forward(raw_text_data, nlp_parser)
         Generate graph topology and embeddings.
     """
+
 
     def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
@@ -66,10 +60,10 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                                                                rnn_dropout=rnn_dropout,
                                                                device=device)
         self.vocab = vocab
-        assert(self.embedding_layer.device == device)
         self.device = self.embedding_layer.device
 
     @classmethod
+
     def parsing(cls, raw_text_data, nlp_processor, processor_args):
         '''
         Parameters
@@ -93,22 +87,21 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                  edge_strategy=None,
                  verbase=True):
         """topology This function generate a graph strcuture from a raw text data.
-
         Parameters
         ----------
         raw_text_data : string
             A string to be used to construct a static graph, can be composed of multiple strings
-
         nlp_processor : object
             A parser used to parse sentence string to parsing trees like dependency parsing tree or constituency parsing tree
 
+
         merge_strategy : None or str, option=[None, "tailhead", "user_define"]
+
             Strategy to merge sub-graphs into one graph
             ``None``: It will be the default option. We will do as ``"tailhead"``.
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
             ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
-
         edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
             Strategy to process edge.
             ``None``: It will be the default option. We will do as ``"homogeneous"``.
@@ -122,14 +115,15 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
                          It is not implemented yet.
-
         Returns
         -------
         GraphData
             A customized graph data structure
         """
         output_graph_list = []
+
         parsed_output = cls.parsing(raw_text_data, nlp_processor, processor_args)
+
         for index in range(len(parsed_output)):
             output_graph_list.append(
                 cls._construct_static_graph(parsed_output[index], index))
@@ -258,17 +252,19 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         graph_list : list
             A graph list to be merged
 
-        bisequential_link : bool
-            whether add bi-direnctional links between word nodes
-
-        reformalize : bool
-            If true, separate word nodes and non-terminal nodes in ``graph.node_attributes`` and put word nodes in the front position
 
         bisequential_link : bool
             whether add bi-direnctional links between word nodes
 
         reformalize : bool
             If true, separate word nodes and non-terminal nodes in ``graph.node_attributes`` and put word nodes in the front position
+
+        bisequential_link : bool
+            whether add bi-direnctional links between word nodes
+
+        reformalize : bool
+            If true, separate word nodes and non-terminal nodes in ``graph.node_attributes`` and put word nodes in the front position
+
 
         Returns
         -------

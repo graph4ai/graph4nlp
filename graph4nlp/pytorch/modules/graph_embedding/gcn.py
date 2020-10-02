@@ -1,3 +1,4 @@
+
 from dgl.nn.pytorch import GraphConv
 
 import torch
@@ -164,7 +165,6 @@ class GCNLayer(GNNLayerBase):
     Parameters
     ----------
     num_layers: int
-        Number of GCN layers.
 
     in_feats: int
         Input feature size of the first GCN layer.

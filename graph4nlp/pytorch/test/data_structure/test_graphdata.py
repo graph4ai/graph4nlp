@@ -1,8 +1,10 @@
-from ...data.data import GraphData, from_batch, to_batch, from_dgl
-from ...data.utils import EdgeNotFoundException
+import pytest
 import torch
 import torch.nn as nn
-import pytest
+import matplotlib.pyplot as plt
+
+from ...data.data import GraphData, from_batch, to_batch, from_dgl, __legacy_from_batch
+from ...data.utils import EdgeNotFoundException
 
 
 def fail_here():
@@ -240,3 +242,23 @@ def test_batch():
     gll = from_batch(b)
     for i in range(5):
         print(gll[i].get_edge_num())
+
+
+def test_pressure_batch():
+    g = GraphData()
+    N = 100
+    B = 500
+    g.add_nodes(N)
+    for j in range(N):
+        g.add_edge(src=j, tgt=(j + 1) % N)
+    g.node_features['idx'] = torch.ones(N)
+    g.edge_features['idx'] = torch.ones(N)
+    g_list = [g] * B
+    from datetime import datetime
+    batch = to_batch(g_list)
+    st = datetime.now()
+    __legacy_from_batch(batch)
+    print("Old from_batch time = {}".format(datetime.now() - st))
+    st = datetime.now()
+    from_batch(batch)
+    print("New from_batch time = {}".format(datetime.now() - st))

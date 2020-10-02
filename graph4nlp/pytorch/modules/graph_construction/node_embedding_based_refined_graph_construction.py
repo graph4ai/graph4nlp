@@ -15,7 +15,6 @@ from ...data.data import to_batch
 
 class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
     """Class for node embedding based refined dynamic graph construction.
-
     Parameters
     ----------
     word_vocab : Vocab
@@ -45,7 +44,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
 
     def forward(self, batch_graphdata: list):
         """Compute graph topology and initial node embeddings.
-
         Parameters
         ----------
         batch_graphdata : list of GraphData
@@ -72,13 +70,13 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         node_mask = self._get_node_mask_for_batch_graph(num_nodes)
         new_batch_gd = self.topology(node_emb, init_norm_adj, node_mask)
         new_batch_gd.node_features['node_feat'] = node_emb
-        new_batch_gd.batch = batch_gd.batch
+        # new_batch_gd.batch = batch_gd.batch
+        new_batch_gd.copy_batch_info(batch_gd)
 
         return new_batch_gd
 
     def topology(self, node_emb, init_norm_adj, node_mask=None):
         """Compute graph topology.
-
         Parameters
         ----------
         node_emb : torch.Tensor
@@ -87,7 +85,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             The initial init_norm_adj adjacency matrix.
         node_mask : torch.Tensor, optional
             The node mask matrix, default: ``None``.
-
         Returns
         -------
         GraphData
@@ -120,7 +117,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
 
     def embedding(self, node_word_idx, node_size, num_nodes):
         """Compute initial node embeddings.
-
         Parameters
         ----------
         node_word_idx : torch.LongTensor
@@ -129,7 +125,6 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             Indicate the length of word sequences for nodes.
         num_nodes : torch.LongTensor
             Indicate the number of nodes.
-
         Returns
         -------
         torch.Tensor

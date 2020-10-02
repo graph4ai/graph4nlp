@@ -24,41 +24,41 @@ Run with following:
 #### Cora
 
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option undirected --early-stop --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option uni --early-stop
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option bi_sep --early-stop --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option bi_sep --early-stop
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option bi_fuse --early-stop --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option bi_fuse --early-stop
 ```
 
 #### Citeseer
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=citeseer --gpu=0 --direction-option undirected --early-stop --num-hidden 3703 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=citeseer --gpu=0 --direction-option uni --early-stop --num-hidden 3703
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=citeseer --gpu=0 --direction-option bi_sep --early-stop --num-hidden 3703 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=citeseer --gpu=0 --direction-option bi_sep --early-stop --num-hidden 3703
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=citeseer --gpu=0 --direction-option bi_fuse --early-stop --num-hidden 3703 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=citeseer --gpu=0 --direction-option bi_fuse --early-stop --num-hidden 3703
 ```
 
 #### Pubmed
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=pubmed --gpu=0 --direction-option undirected --weight-decay=0.001 --early-stop --num-hidden 500 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=pubmed --gpu=0 --direction-option uni --weight-decay=0.001 --early-stop --num-hidden 500
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=pubmed --gpu=0 --direction-option bi_sep --weight-decay=0.001 --early-stop --num-hidden 500 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=pubmed --gpu=0 --direction-option bi_sep --weight-decay=0.001 --early-stop --num-hidden 500
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=pubmed --gpu=0 --direction-option bi_fuse --weight-decay=0.001 --early-stop --num-hidden 500 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=pubmed --gpu=0 --direction-option bi_fuse --weight-decay=0.001 --early-stop --num-hidden 500
 ```
 
 #### ogbn-arxiv
 
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=ogbn-arxiv --gpu=0 --direction-option undirected --early-stop --num-hidden 128
+python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=ogbn-arxiv --gpu=0 --direction-option uni --early-stop --num-hidden 128
 ```
 ```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=ogbn-arxiv --gpu=0 --direction-option bi_sep --early-stop --num-hidden 128
@@ -69,10 +69,10 @@ python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=ogbn-arxiv -
 Results
 -------
 
-| Dataset  |    GGNN-undirected    |   GGNN-BiSep   |   GGNN-BiFuse  |
+| Dataset  |    GGNN-Uni    |   GGNN-BiSep   |   GGNN-BiFuse  |
 | -------- | -------------- | -------------- | -------------- |
-| Cora     | 0.7916 (0.01)  | 0.7902 (0.007)  | 0.7936 (0.01)  |
-| Citeseer | 0.6296 (0.02)  | 0.6024 (0.01)  | 0.6024 (0.03)  |
+| Cora     | 0.7740 (0.01)  | 0.7882 (0.01)  | 0.7530 (0.01)  |
+| Citeseer | 0.6094 (0.02)  | 0.6122 (0.03)  | 0.6230 (0.02)  |
 | Pubmed   | 0.7684 (0.01)  | 0.7736 (0.01)  | 0.7676 (0.01)  |
 
 
