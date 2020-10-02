@@ -14,7 +14,6 @@ word_detector = re.compile('\w')
 
 class VocabModel(object):
     """Vocab model builder.
-
     Parameters
     ----------
     data_set: iterable
@@ -29,7 +28,6 @@ class VocabModel(object):
         Path to the pretrained word embedding file, default: ``None``.
     word_emb_size: int, optional
         Word embedding size, default: ``None``.
-
     Examples
     -------
     # Build a vocab model from scratch
@@ -39,7 +37,6 @@ class VocabModel(object):
                         min_word_vocab_freq=1,
                         word_emb_size=300)
     >>> print(vocab_model.word_vocab.get_vocab_size())
-
     # Restore a vocab model from disk if exists or build one from scratch.
     >>> vocab_model = VocabModel.build('vocab_model.pkl', [['I like nlp.', 'Same here!'],
                             ['I like graph.', 'Same here!']],
@@ -120,7 +117,6 @@ class VocabModel(object):
               word_emb_size=None,
               share_vocab=True):
         """Static method for loading a VocabModel from disk.
-
         Parameters:
         -------
         saved_vocab_file : str
@@ -137,7 +133,6 @@ class VocabModel(object):
             Path to the pretrained word embedding file, default: ``None``.
         word_emb_size: int, optional
             Word embedding size, default: ``None``.
-
         Returns:
         -------
         VocabModel
@@ -168,7 +163,7 @@ class VocabModel(object):
             all_words = [Counter(), Counter()]
 
         for instance in all_instances:
-            extracted_tokens = instance.extract(lower_case)
+            extracted_tokens = instance.extract()
             if share_vocab:
                 all_words.update(extracted_tokens)
             else:
@@ -180,12 +175,10 @@ class VocabModel(object):
 
 class Vocab(object):
     """Vocab class.
-
     Parameters
     ----------
     tokenizer: function, optional
         Word tokenization function, default: nltk.tokenize.word_tokenize.
-
     Examples
     -------
     >>> word_vocab = Vocab()
@@ -212,7 +205,6 @@ class Vocab(object):
 
     def build_vocab(self, vocab_counter, max_vocab_size=None, min_vocab_freq=1):
         """Build vocab from ``vocab_counter`` which is a vocab count dict.
-
         Parameters
         ----------
         vocab_counter : dict
@@ -349,9 +341,14 @@ class Vocab(object):
             sentence = sentence.lower()
 
         seq = []
-        for word in self.tokenizer(sentence):
-            idx = self.getIndex(word)
-            seq.append(idx)
+        if self.tokenizer is None:
+            for word in sentence.strip().split(' '):
+                idx = self.getIndex(word)
+                seq.append(idx)
+        else:
+            for word in self.tokenizer(sentence):
+                idx = self.getIndex(word)
+                seq.append(idx)
         return seq
 
     def to_index_sequence_for_list(self, words):

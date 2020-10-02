@@ -41,7 +41,7 @@ class Text2TextDataItem(DataItem):
         self.output_text = output_text
         self.share_vocab = share_vocab
 
-    def extract(self, lower_case=True):
+    def extract(self):
         """
         Returns
         -------
@@ -51,17 +51,12 @@ class Text2TextDataItem(DataItem):
 
         input_tokens = []
         for i in range(g.get_node_num()):
-            if lower_case:
-                g.node_attributes[i]['token'] = g.node_attributes[i]['token'].lower()
             if self.tokenizer is None:
                 tokenized_token = g.node_attributes[i]['token'].strip().split(' ')
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
 
             input_tokens.extend(tokenized_token)
-
-        if lower_case:
-            self.output_text = self.output_text.lower()
 
         if self.tokenizer is None:
             output_tokens = self.output_text.strip().split(' ')
@@ -72,6 +67,32 @@ class Text2TextDataItem(DataItem):
             return input_tokens + output_tokens
         else:
             return input_tokens, output_tokens
+
+
+class SequenceLabelingDataItem(DataItem):
+    def __init__(self, input_text, output_tags, tokenizer):
+        super(SequenceLabelingDataItem, self).__init__(input_text, tokenizer)
+        self.output_tag = output_tags
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens and output tags
+        """
+        g: GraphData = self.graph
+
+        input_tokens = []
+        for i in range(g.get_node_num()):
+            if self.tokenizer is None:
+                tokenized_token = self.output_text.strip().split(' ')
+            else:
+                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
+
+            input_tokens.extend(tokenized_token)
+
+
+        return input_tokens
 
 
 class Text2TreeDataItem(DataItem):
@@ -174,11 +195,9 @@ class DoubleText2TextDataItem(DataItem):
 class Dataset(torch.utils.data.Dataset):
     """
     Base class for datasets.
-
     The dataset is organized in a two-layer index style. Direct access to the dataset object, e.g. Dataset[1], will first
     be converted to the access to the internal index list, which is then passed to access the actual data. This design
     is for the ease of sampling.
-
     Examples
     --------
     Suppose we have a Dataset containing 5 data items ['a', 'b', 'c', 'd', 'e']. The indices of the 5 elements in the
@@ -186,7 +205,6 @@ class Dataset(torch.utils.data.Dataset):
     consequent indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset `Dataset[2]` will first access the indices[2]
     which is 1, and then use the received index to access the actual dataset, which will return the actual data item 'b'.
     Now to the user the 3rd ([2]) element in the dataset got shuffled and is not 'c'.
-
     Parameters
     ----------
     root: str
@@ -295,15 +313,11 @@ class Dataset(torch.utils.data.Dataset):
         """
         Read raw data from the disk and put them in a dictionary (`self.data`).
         The raw data file should be organized as the format defined in `self.parse_file()` method.
-
         This function calls `self.parse_file()` repeatedly and pass the file paths in `self.raw_file_names` once at a time.
-
         This function builds `self.data` which is a dict of {int (index): DataItem}, where the id represents the
         index of the DataItem w.r.t. the whole dataset.
-
         This function also builds the `self.split_ids` dictionary whose keys correspond to those of self.raw_file_names
         defined by the user, indicating the indices of each subset (e.g. train, val and test).
-
         """
         self.train = self.parse_file(self.raw_file_paths['train'])
         self.test = self.parse_file(self.raw_file_paths['test'])
@@ -455,7 +469,6 @@ class Dataset(torch.utils.data.Dataset):
         """
         Build the vocabulary. If `self.use_val_for_vocab` is `True`, use both training set and validation set for building
         the vocabulary. Otherwise only the training set is used.
-
         """
         data_for_vocab = self.train
         if self.use_val_for_vocab:
@@ -513,21 +526,16 @@ class Text2TextDataset(Dataset):
         """
         Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
         base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
-
         For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
         record of data. The input and output is separated by a tab(\t).
-
         Examples
         --------
         input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
-
         DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
-
         Parameters
         ----------
         file_path: str
             The path of the input file.
-
         Returns
         -------
         list
@@ -600,8 +608,8 @@ class Text2TextDataset(Dataset):
                     graph.edge_features['token_id'] = edge_token_matrix
 
             tgt = item.output_text
-            tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
-            tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
+            tgt_token_id = self.vocab_model.out_word_vocab.to_index_sequence(tgt)
+            tgt_token_id.append(self.vocab_model.out_word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
             item.output_np = tgt_token_id
 
@@ -626,21 +634,16 @@ class TextToTreeDataset(Dataset):
         """
         Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
         base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
-
         For Text2TreeDataset, the format of the input file should contain lines of input, each line representing one
         record of data. The input and output is separated by a tab(\t).
-
         Examples
         --------
         input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
-
         DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
-
         Parameters
         ----------
         file_path: str
             The path of the input file.
-
         Returns
         -------
         list
@@ -780,28 +783,22 @@ class KGCompletionDataset(Dataset):
         """
         Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
         base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
-
         For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
         record of data. The input and output is separated by a tab(\t).
-
         Examples
         --------
         {"e1": "person84", "e2": "person85", "rel": "term21", "rel_eval": "term21_reverse",
         "e2_multi1": "person85",
         "e2_multi2": "person74 person84 person55 person96 person66 person57"}
-
         {"e1": "person20", "e2": "person90", "rel": "term11", "rel_eval": "term11_reverse",
         "e2_multi1": "person29 person82 person85 person77 person73 person63 person34 person86 person4
         person83 person46 person16 person48 person17 person59 person80 person50 person90",
         "e2_multi2": "person29 person82 person2 person20 person83 person46 person80"}
-
         DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
-
         Parameters
         ----------
         file_path: str
             The path of the input file.
-
         Returns
         -------
         list
@@ -941,10 +938,8 @@ class KGCompletionDataset(Dataset):
         """
         `self.parsed_results` is an intermediate dict that contains all the information of the KG graph.
         `self.parsed_results['graph_content']` is a list of dict.
-
         Each dict in `self.parsed_results['graph_content']` contains information about a triple
         (src_ent, rel, tgt_ent).
-
         `self.parsed_results['graph_nodes']` contains all nodes in the KG graph.
         `self.parsed_results['node_num']` is the number of nodes in the KG graph.
         """
@@ -1015,62 +1010,6 @@ class KGCompletionDataset(Dataset):
             item.e1_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()],
                                                             dtype=torch.long)
 
-
-
-    # @staticmethod
-    # def collate_fn(data_list: [KGDataItem]):
-    #     # graph_data = [item.graph for item in data_list]
-    #     e1 = torch.tensor([item.e1_tensor for item in data_list])
-    #     rel = torch.tensor([item.rel_tensor for item in data_list])
-    #     # e2_multi_tensor_idx = torch.tensor([item.e2_multi_tensor_idx for item in data_list])
-    #
-    #     e2_multi_tensor_idx_len = [item.e2_multi_tensor_idx.shape[0] for item in data_list]
-    #     max_e2_multi_tensor_idx_len = max(e2_multi_tensor_idx_len)
-    #     e2_multi_tensor_idx_pad = []
-    #     for item in data_list:
-    #         if item.e2_multi_tensor_idx.shape[0] < max_e2_multi_tensor_idx_len:
-    #             need_pad_length = max_e2_multi_tensor_idx_len - item.e2_multi_tensor_idx.shape[0]
-    #             pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-    #             e2_multi_tensor_idx_pad.append(torch.cat((item.e2_multi_tensor_idx, pad.long()), dim=0).unsqueeze(0))
-    #         elif item.e2_multi_tensor_idx.shape[0] == max_e2_multi_tensor_idx_len:
-    #             e2_multi_tensor_idx_pad.append(item.e2_multi_tensor_idx.unsqueeze(0))
-    #         else:
-    #             raise RuntimeError("Size mismatch error")
-    #
-    #     e2_multi_tensor_idx = torch.cat(e2_multi_tensor_idx_pad, dim=0)
-    #
-    #     # do padding here
-    #     e2_multi_len = [item.e2_multi_tensor.shape[0] for item in data_list]
-    #     max_e2_multi_len = max(e2_multi_len)
-    #     e2_multi_pad = []
-    #     for item in data_list:
-    #         if item.e2_multi_tensor.shape[0] < max_e2_multi_len:
-    #             need_pad_length = max_e2_multi_len - item.e2_multi_tensor.shape[0]
-    #             pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-    #             e2_multi_pad.append(torch.cat((item.e2_multi_tensor, pad.long()), dim=0).unsqueeze(0))
-    #         elif item.e2_multi_tensor.shape[0] == max_e2_multi_len:
-    #             e2_multi_pad.append(item.e2_multi_tensor.unsqueeze(0))
-    #         else:
-    #             raise RuntimeError("Size mismatch error")
-    #
-    #     e2_multi = torch.cat(e2_multi_pad, dim=0)
-    #
-    #     # # do padding here
-    #     # seq_len = [item.output_tensor.shape[0] for item in data_list]
-    #     # max_seq_len = max(seq_len)
-    #     # tgt_seq_pad = []
-    #     # for item in data_list:
-    #     #     if item.output_tensor.shape[0] < max_seq_len:
-    #     #         need_pad_length = max_seq_len - item.output_tensor.shape[0]
-    #     #         pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-    #     #         tgt_seq_pad.append(torch.cat((item.output_tensor, pad.long()), dim=0).unsqueeze(0))
-    #     #     elif item.output_tensor.shape[0] == max_seq_len:
-    #     #         tgt_seq_pad.append(item.output_tensor.unsqueeze(0))
-    #     #     else:
-    #     #         raise RuntimeError("Size mismatch error")
-    #     #
-    #     # tgt_seq = torch.cat(tgt_seq_pad, dim=0)
-    #     return [e1, rel, e2_multi, e2_multi_tensor_idx]
 
     @staticmethod
     def collate_fn(data_list: [KGDataItem]):
@@ -1154,21 +1093,16 @@ class Text2LabelDataset(Dataset):
         """
         Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
         base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
-
         For Text2LabelDataset, the format of the input file should contain lines of input, each line representing one
         record of data. The input and output is separated by a tab(\t).
-
         Examples
         --------
         input: How far is it from Denver to Aspen ?    NUM
-
         DataItem: input_text="How far is it from Denver to Aspen ?", output_label="NUM"
-
         Parameters
         ----------
         file_path: str
             The path of the input file.
-
         Returns
         -------
         list
@@ -1232,6 +1166,97 @@ class Text2LabelDataset(Dataset):
         return [graph_data, tgt_tensor]
 
 
+class SequenceLabelingDataset(Dataset):
+    def __init__(self, root_dir, topology_builder, topology_subdir,tag_types, **kwargs):
+        self.data_item_type = SequenceLabelingDataItem
+        self.tag_types=tag_types
+        super(SequenceLabelingDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+        For SequenceLabelingDataset, the format of the input file should contain lines of tokens, each line representing one
+        record of token at first column and its tag at the last column.
+        Examples
+        --------
+        "EU       I-ORG "
+         rejects  O
+         German   I-MISC
+
+        Parameters
+        ----------
+        """
+        data = []
+        input = []
+        output = []
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                if len(line) > 1 and line[0] != '-':
+                    if line[0] != '.':
+                        input.append(line.strip().split(' ')[0])
+                        output.append(line.strip().split(' ')[-1])
+                    if line[0] == '.':
+                        input.append(line.strip().split(' ')[0])
+                        output.append(line.strip().split(' ')[-1])
+                        if len(input) >= 2:
+                            data_item = SequenceLabelingDataItem(input_text=input, output_tags=output,
+                                                                 tokenizer=self.tokenizer)
+                            data.append(data_item)
+                            input = []
+                            output = []
+
+        return data
+
+    def build_vocab(self):
+        data_for_vocab = self.train
+        if self.use_val_for_vocab:
+            data_for_vocab = data_for_vocab + self.val
+
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=None,
+                                       min_word_vocab_freq=1,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       word_emb_size=300,
+                                       share_vocab=True)
+        self.vocab_model = vocab_model
+
+        return self.vocab_model
+
+    def vectorization(self, data_items):
+        for item in data_items:
+            graph: GraphData = item.graph
+            token_matrix = []
+            for node_idx in range(graph.get_node_num()):
+                node_token = graph.node_attributes[node_idx]['token']
+                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
+                graph.node_attributes[node_idx]['token_id'] = node_token_id
+                token_matrix.append([node_token_id])
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features['token_id'] = token_matrix
+
+            tgt = item.output_tag
+            tgt_tag_id = [self.tag_types.index(tgt_.strip()) for tgt_ in tgt]
+
+            tgt_tag_id = torch.tensor(tgt_tag_id)
+            item.output_id = tgt_tag_id
+
+    @staticmethod
+    def collate_fn(data_list: [SequenceLabelingDataItem]):
+        tgt_tag = []
+        graph_data = []
+        for item in data_list:
+            # if len(item.graph.node_attributes)== len(item.output_id):
+            graph_data.append(item.graph)
+            tgt_tag.append(item.output_id)
+
+        # tgt_tags = torch.cat(tgt_tag, dim=0)
+        return [graph_data, tgt_tag]
+
 
 class DoubleText2TextDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
@@ -1243,22 +1268,17 @@ class DoubleText2TextDataset(Dataset):
         """
         Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
         base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
-
         For DoubleText2TextDataset, the format of the input file should contain lines of input, each line representing one
         record of data. The input and output is separated by a tab(\t).
         # TODO: update example
-
         Examples
         --------
         input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
-
         DataItem: input_text="list job use languageid0", input_text2="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
-
         Parameters
         ----------
         file_path: str
             The path of the input file.
-
         Returns
         -------
         list
