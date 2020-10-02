@@ -93,7 +93,7 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
             The output feature of shape :math:`(N, D_{out})` where
             :math:`D_{out}` is size of output feature.
         """
-        assert graph.is_homograph(), \
+        assert graph.is_homogeneous, \
             "not a homograph; convert it with to_homo and pass in the edge type as argument"
         graph = graph.local_var()
         zero_pad = feat.new_zeros((feat.shape[0], self._out_feats - feat.shape[1]))
@@ -536,7 +536,7 @@ class GGNN(GNNBase):
 
         """
         if self.n_etypes==1:
-            graph.edge_features['etype'] = torch.tensor([0] * graph.get_edge_num(), dtype=torch.long)
+            graph.edge_features['etype'] = torch.tensor([0] * graph.get_edge_num(), dtype=torch.long, device=graph.device)
 
         node_feats = graph.node_features['node_feat']
         etypes = graph.edge_features['etype']
