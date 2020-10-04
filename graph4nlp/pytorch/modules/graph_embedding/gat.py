@@ -19,13 +19,16 @@ class GAT(GNNBase):
     <https://arxiv.org/abs/1710.10903>`__ and bidirectional versions
     including `GAT-BiSep <https://arxiv.org/abs/1808.07624>`__ and
     `GAT-BiFuse <https://arxiv.org/abs/1908.04942>`__.
+
     .. math::
         h_i^{(l+1)} = \sum_{j\in \mathcal{N}(i)} \alpha_{i,j} W^{(l)} h_j^{(l)}
     where :math:`\alpha_{ij}` is the attention score bewteen node :math:`i` and
     node :math:`j`:
+
     .. math::
         \alpha_{ij}^{l} & = \mathrm{softmax_i} (e_{ij}^{l})
         e_{ij}^{l} & = \mathrm{LeakyReLU}\left(\vec{a}^T [W h_{i} \| W h_{j}]\right)
+
     Parameters
     ----------
     num_layers: int
@@ -118,10 +121,12 @@ class GAT(GNNBase):
 
     def forward(self, graph):
         r"""Compute multi-layer graph attention network.
+
         Parameters
         ----------
         graph : GraphData
             The graph data containing topology and features.
+
         Returns
         -------
         GraphData
@@ -162,13 +167,16 @@ class GATLayer(GNNLayerBase):
     <https://arxiv.org/abs/1710.10903>`__ and bidirectional versions
     including `GAT-BiSep <https://arxiv.org/abs/1808.07624>`__ and
     `GAT-BiFuse <https://arxiv.org/abs/1908.04942>`__.
+
     .. math::
         h_i^{(l+1)} = \sum_{j\in \mathcal{N}(i)} \alpha_{i,j} W^{(l)} h_j^{(l)}
     where :math:`\alpha_{ij}` is the attention score bewteen node :math:`i` and
     node :math:`j`:
+
     .. math::
         \alpha_{ij}^{l} & = \mathrm{softmax_i} (e_{ij}^{l})
         e_{ij}^{l} & = \mathrm{LeakyReLU}\left(\vec{a}^T [W h_{i} \| W h_{j}]\right)
+
     Parameters
     ----------
     input_size : int, or pair of ints
@@ -240,6 +248,7 @@ class GATLayer(GNNLayerBase):
 
     def forward(self, graph, feat):
         r"""Compute graph attention network layer.
+
         Parameters
         ----------
         graph : DGLGraph
@@ -249,6 +258,7 @@ class GATLayer(GNNLayerBase):
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
             If a pair of torch.Tensor is given, the pair must contain two tensors of shape
             :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
+
         Returns
         -------
         torch.Tensor
@@ -260,13 +270,16 @@ class GATLayer(GNNLayerBase):
 class UndirectedGATLayerConv(GNNLayerBase):
     r"""Apply `Graph Attention Network <https://arxiv.org/abs/1710.10903>`__
     over an input signal.
+
     .. math::
         h_i^{(l+1)} = \sum_{j\in \mathcal{N}(i)} \alpha_{i,j} W^{(l)} h_j^{(l)}
     where :math:`\alpha_{ij}` is the attention score bewteen node :math:`i` and
     node :math:`j`:
+
     .. math::
         \alpha_{ij}^{l} & = \mathrm{softmax_i} (e_{ij}^{l})
         e_{ij}^{l} & = \mathrm{LeakyReLU}\left(\vec{a}^T [W h_{i} \| W h_{j}]\right)
+
     Parameters
     ----------
     input_size : int, or pair of ints
@@ -307,6 +320,7 @@ class UndirectedGATLayerConv(GNNLayerBase):
 
     def forward(self, graph, feat):
         r"""Compute graph attention network layer.
+
         Parameters
         ----------
         graph : DGLGraph
@@ -316,6 +330,7 @@ class UndirectedGATLayerConv(GNNLayerBase):
             :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
             If a pair of torch.Tensor is given, the pair must contain two tensors of shape
             :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
+
         Returns
         -------
         torch.Tensor
@@ -330,13 +345,16 @@ class BiFuseGATLayerConv(GNNLayerBase):
     to `Graph Attention Network <https://arxiv.org/abs/1710.10903>`__ over an
     input signal. Fuse aggregated embeddings from both incoming and outgoing
     directions before updating node embeddings.
+
     .. math::
         h_i^{(l+1)} = \sum_{j\in \mathcal{N}(i)} \alpha_{i,j} W^{(l)} h_j^{(l)}
     where :math:`\alpha_{ij}` is the attention score bewteen node :math:`i` and
     node :math:`j`:
+
     .. math::
         \alpha_{ij}^{l} & = \mathrm{softmax_i} (e_{ij}^{l})
         e_{ij}^{l} & = \mathrm{LeakyReLU}\left(\vec{a}^T [W h_{i} \| W h_{j}]\right)
+
     Parameters
     ----------
     input_size : int, or pair of ints
@@ -545,13 +563,16 @@ class BiSepGATLayerConv(GNNLayerBase):
     input signal. Compute node embeddings for incoming and outgoing directions
     separately, and then concatenate the two output node embeddings
     after the final layer.
+
     .. math::
         h_i^{(l+1)} = \sum_{j\in \mathcal{N}(i)} \alpha_{i,j} W^{(l)} h_j^{(l)}
     where :math:`\alpha_{ij}` is the attention score bewteen node :math:`i` and
     node :math:`j`:
+
     .. math::
         \alpha_{ij}^{l} & = \mathrm{softmax_i} (e_{ij}^{l})
         e_{ij}^{l} & = \mathrm{LeakyReLU}\left(\vec{a}^T [W h_{i} \| W h_{j}]\right)
+
     Parameters
     ----------
     input_size : int, or pair of ints
@@ -656,6 +677,7 @@ class BiSepGATLayerConv(GNNLayerBase):
 
     def forward(self, graph, feat):
         r"""Compute graph attention network layer.
+
         Parameters
         ----------
         graph : DGLGraph
@@ -677,6 +699,7 @@ class BiSepGATLayerConv(GNNLayerBase):
                     nodes. If a pair of torch.Tensor is given, the pair
                     must contain two tensors of shape :math:`(N_{in},
                     D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
+
         Returns
         -------
         Pair of torch.Tensor

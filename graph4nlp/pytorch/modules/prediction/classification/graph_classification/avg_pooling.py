@@ -31,19 +31,10 @@ class AvgPooling(PoolingBase):
         torch.Tensor
             The output feature.
         """
-        # return self.model(graph, feat)
-
-        # use DGLGraph
-        graph_list = dgl.unbatch(graph)
+        graph_list = from_batch(graph)
         output_feat = []
         for g in graph_list:
-            output_feat.append(g.ndata[feat].mean(dim=0))
-
-        # use GraphData
-        # graph_list = from_batch(graph)
-        # output_feat = []
-        # for g in graph_list:
-        #     output_feat.append(g.node_features[feat].mean(dim=0))
+            output_feat.append(g.node_features[feat].mean(dim=0))
 
         output_feat = torch.stack(output_feat, 0)
 

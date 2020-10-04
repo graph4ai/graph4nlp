@@ -1,4 +1,3 @@
-
 from .gat import GAT
 from .ggnn import GGNN
 from .graphsage import GraphSAGE

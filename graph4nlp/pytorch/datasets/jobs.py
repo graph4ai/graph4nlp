@@ -7,9 +7,11 @@ import pickle
 from graph4nlp.pytorch.data.dataset import Text2TextDataset, TextToTreeDataset
 from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+
+
 
 dataset_root = '../test/dataset/jobs'
-
 
 class JobsDataset(Text2TextDataset):
     @property
@@ -106,7 +108,6 @@ class JobsDataset(Text2TextDataset):
                    dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
 
-
 class JobsDatasetForTree(TextToTreeDataset):
     @property
     def raw_file_names(self):
@@ -173,7 +174,6 @@ class JobsDatasetForTree(TextToTreeDataset):
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
                                           enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size)
-
 
 
 if __name__ == '__main__':

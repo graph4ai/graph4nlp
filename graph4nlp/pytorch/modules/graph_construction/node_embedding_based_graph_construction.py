@@ -12,6 +12,7 @@ from ...data.data import to_batch
 
 class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
     """Class for node embedding based dynamic graph construction.
+
     Parameters
     ----------
     word_vocab : Vocab
@@ -33,6 +34,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
 
     def forward(self, batch_graphdata: list):
         """Compute graph topology and initial node embeddings.
+
         Parameters
         ----------
         batch_graphdata : list of GraphData
@@ -67,12 +69,14 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
 
     def topology(self, node_emb, node_mask=None):
         """Compute graph topology.
+
         Parameters
         ----------
         node_emb : torch.Tensor
             The node embeddings.
         node_mask : torch.Tensor, optional
             The node mask matrix, default: ``None``.
+
         Returns
         -------
         GraphData
@@ -102,6 +106,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
 
     def embedding(self, node_word_idx, node_size, num_nodes):
         """Compute initial node embeddings.
+
         Parameters
         ----------
         node_word_idx : torch.LongTensor
@@ -110,6 +115,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             Indicate the length of word sequences for nodes.
         num_nodes : torch.LongTensor
             Indicate the number of nodes.
+
         Returns
         -------
         torch.Tensor
