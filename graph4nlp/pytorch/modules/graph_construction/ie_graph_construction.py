@@ -2,12 +2,13 @@ import json
 
 from stanfordcorenlp import StanfordCoreNLP
 
-from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.data.data import GraphData, to_batch
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from .base import StaticGraphConstructionBase
-
+import dgl
 import networkx as nx
-
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
+import numpy as np
 import torch
 
 
@@ -34,6 +35,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                                                        device=device)
         self.vocab = vocab
         self.verbase = 1
+        self.device = self.embedding_layer.device
 
     def add_vocab(self, g):
         """
@@ -154,12 +156,13 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         nlp_processor: StanfordCoreNLP
             NLP parsing tools
 
-        merge_strategy: None or str, option=[None, "share_common_tokens", "user_define"]
+        merge_strategy: None or str, option=[None, "global", "user_define"]
             Strategy to merge sub-graphs into one graph
-            ``None``:   All subjects in extracted triples are connected by a "GLOBAL_NODE"
+            ``None``:  Do not add additional nodes and edges.
+
+            ``global``: All subjects in extracted triples are connected by a "GLOBAL_NODE"
                         using a "global" edge
-            ``"share_common_tokens"``:  The entity nodes share the same tokens are connected
-                                        using a "COM" edge
+
             ``"user_define"``: We will give this option to the user. User can override this method to define your merge
                                strategy.
 
@@ -178,7 +181,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         graph: GraphData
             The merged graph data-structure.
         """
-        cls.verbase = 1
+        cls.verbase = verbase
 
         if isinstance(processor_args, list):
             props_coref = processor_args[0]
@@ -247,11 +250,11 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
 
                 # If two triples have the same subject and relation,
                 # only preserve the one has longer object
-                if sbj+'_'+rel not in all_sent_triples.keys():
-                    all_sent_triples[sbj+'_'+rel] = [sbj, rel, obj]
+                if sbj+'<TSEP>'+rel not in all_sent_triples.keys():
+                    all_sent_triples[sbj+'<TSEP>'+rel] = [sbj, rel, obj]
                 else:
-                    if len(obj)>len(all_sent_triples[sbj+'_'+rel][2]):
-                        all_sent_triples[sbj + '_' + rel] = [sbj, rel, obj]
+                    if len(obj)>len(all_sent_triples[sbj+'<TSEP>'+rel][2]):
+                        all_sent_triples[sbj + '<TSEP>' + rel] = [sbj, rel, obj]
 
         all_sent_triples_list = list(all_sent_triples.values())  # triples extracted from all sentences
 
@@ -270,83 +273,23 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                         triples_rm_list.append(lst_i)
 
         for lst in triples_rm_list:
-            all_sent_triples_list.remove(lst)
+            if lst in all_sent_triples_list:
+                all_sent_triples_list.remove(lst)
 
         global_triples = cls._graph_connect(all_sent_triples_list, merge_strategy)
         all_sent_triples_list.extend(global_triples)
 
-        parsed_results = {}
-        parsed_results['graph_content'] = []
-        graph_nodes = []
-        for triple in all_sent_triples_list:
-            if edge_strategy is None:
-                if triple[0] not in graph_nodes:
-                    graph_nodes.append(triple[0])
-
-                if triple[2] not in graph_nodes:
-                    graph_nodes.append(triple[2])
-
-                triple_info = {'edge_tokens': triple[1].split(),
-                               'src': {
-                                   'tokens': triple[0].split(),
-                                   'id': graph_nodes.index(triple[0])
-                               },
-                               'tgt': {
-                                   'tokens': triple[2].split(),
-                                   'id': graph_nodes.index(triple[2])
-                               }}
-                if triple not in parsed_results['graph_content']:
-                    parsed_results['graph_content'].append(triple_info)
-            elif edge_strategy == "as_node":
-                if triple[0] not in graph_nodes:
-                    graph_nodes.append(triple[0])
-
-                if triple[1] not in graph_nodes:
-                    graph_nodes.append(triple[1])
-
-                if triple[2] not in graph_nodes:
-                    graph_nodes.append(triple[2])
-
-                triple_info_0_1 = {'edge_tokens': [],
-                               'src': {
-                                   'tokens': triple[0].split(),
-                                   'id': graph_nodes.index(triple[0]),
-                                   'type': 'ent_node'
-                               },
-                               'tgt': {
-                                   'tokens': triple[1].split(),
-                                   'id': graph_nodes.index(triple[1]),
-                                   'type': 'edge_node'
-                               }}
-
-                triple_info_1_2 = {'edge_tokens': [],
-                                   'src': {
-                                       'tokens': triple[1].split(),
-                                       'id': graph_nodes.index(triple[1]),
-                                       'type': 'edge_node'
-                                   },
-                                   'tgt': {
-                                       'tokens': triple[2].split(),
-                                       'id': graph_nodes.index(triple[2]),
-                                       'type': 'ent_node'
-                                   }}
-
-                if triple_info_0_1 not in parsed_results['graph_content']:
-                    parsed_results['graph_content'].append(triple_info_0_1)
-                if triple_info_1_2 not in parsed_results['graph_content']:
-                    parsed_results['graph_content'].append(triple_info_1_2)
-            else:
-                raise NotImplementedError()
-
-        parsed_results['node_num'] = len(graph_nodes)
-        parsed_results['graph_nodes'] = graph_nodes
+        parsed_results = cls.parsing(all_sent_triples_list, edge_strategy)
 
         graph = cls._construct_static_graph(parsed_results, edge_strategy=edge_strategy)
 
         if cls.verbase:
             for info in parsed_results['graph_content']:
                 print(info)
-            print("is_connected="+str(nx.is_connected(nx.Graph(graph.to_dgl().to_networkx()))))
+            try:
+                print("is_connected="+str(nx.is_connected(nx.Graph(graph.to_dgl().to_networkx()))))
+            except:
+                print("is_connected=False")
 
         return graph
 
@@ -361,17 +304,17 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         node_len_list = []
         for node_id, node_dict in node_attributes.items():
             node_word_idxs = []
-            for token in node_dict['token']:
+            for token in node_dict['token'].split():
                 node_word_idxs.append(self.vocab.getIndex(token))
             node_idxs_list.append(node_word_idxs)
             node_len_list.append(len(node_word_idxs))
         max_size = max(node_len_list)
         node_idxs_list = [x+[self.vocab.PAD]*(max_size-len(x)) for x in node_idxs_list]
         node_idxs_tensor = torch.LongTensor(node_idxs_list)
-        if self.embedding_layer.node_edge_emb_strategy == 'mean':
-            node_len_tensor = torch.LongTensor(node_len_list).view(-1, 1)
-        else:
-            node_len_tensor = torch.LongTensor(node_len_list)
+        # if self.embedding_layer.node_edge_emb_strategy == 'mean':
+        #     node_len_tensor = torch.LongTensor(node_len_list).view(-1, 1)
+        # else:
+        node_len_tensor = torch.LongTensor(node_len_list)
         num_nodes = torch.LongTensor([len(node_len_list)])
         node_feat = self.embedding_layer(node_idxs_tensor, node_len_tensor, num_nodes)
         graph.node_features['node_feat'] = node_feat
@@ -392,10 +335,10 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             max_size = max(edge_len_list)
             edge_idxs_list = [x + [self.vocab.PAD] * (max_size - len(x)) for x in edge_idxs_list]
             edge_idxs_tensor = torch.LongTensor(edge_idxs_list)
-            if self.embedding_layer.node_edge_emb_strategy == 'mean':
-                edge_len_tensor = torch.LongTensor(edge_len_list).view(-1, 1)
-            else:
-                edge_len_tensor = torch.LongTensor(edge_len_list)
+            # if self.embedding_layer.node_edge_emb_strategy == 'mean':
+            #     edge_len_tensor = torch.LongTensor(edge_len_list).view(-1, 1)
+            # else:
+            edge_len_tensor = torch.LongTensor(edge_len_list)
             num_edges = torch.LongTensor([len(edge_len_list)])
             edge_feat = self.embedding_layer(edge_idxs_tensor, edge_len_tensor, num_edges)
             graph.edge_features['edge_feat'] = edge_feat
@@ -406,7 +349,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
     @classmethod
     def _construct_static_graph(cls, parsed_object, edge_strategy=None):
         """
-            Build dependency-parsing-tree based graph for single sentence.
 
         Parameters
         ----------
@@ -462,7 +404,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         triple_list: list of [subject, relation, object]
             A list of all triples extracted from ``raw_text_data`` using coref and openie.
 
-        merge_strategy: None or str, option=[None, "tailhead", "sequential", "user_define"]
+        merge_strategy: None or str, option=[None, "global", "user_define"]
             Strategy to merge sub-graphs into one graph
             ``None``:  Do not add additional nodes and edges.
 

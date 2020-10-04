@@ -113,7 +113,7 @@ class Tree():
 
 
 class Vocab():
-    def __init__(self):
+    def __init__(self, lower_case=True, pretrained_embedding_fn=None, embedding_dims=300):
         self.symbol2idx = {}
         self.idx2symbol = {}
         self.vocab_size = 0
@@ -129,6 +129,12 @@ class Vocab():
         self.add_symbol(self.end_token)
         self.add_symbol(self.unk_token)
         self.add_symbol(self.non_terminal_token)
+
+        self.lower_case = lower_case
+        self.embedding_dims = embedding_dims
+        self.embeddings = None
+
+        self.pretrained_embedding_fn = pretrained_embedding_fn
 
     def add_symbol(self, s):
         if s not in self.symbol2idx:
@@ -158,6 +164,23 @@ class Vocab():
                     self.add_symbol(l_list[0])
                 if self.vocab_size > max_vocab_size:
                     break
+        if self.pretrained_embedding_fn is None:
+            self.randomize_embeddings(self.embedding_dims)
+        else:
+            print("loadding pretrained embedding file in {}".format(self.pretrained_embedding_fn))
+            self.load_embeddings(self.pretrained_embedding_fn)
+
+    def init_from_list(self, arr, min_freq=1, max_vocab_size=100000):
+        for word_, c_ in arr:
+            if c_ >= min_freq:
+                self.add_symbol(word_)
+            if self.vocab_size > max_vocab_size:
+                break
+        if self.pretrained_embedding_fn is None:
+            self.randomize_embeddings(self.embedding_dims)
+        else:
+            print("loadding pretrained embedding file in {}".format(self.pretrained_embedding_fn))
+            self.load_embeddings(self.pretrained_embedding_fn)
 
     def get_symbol_idx_for_list(self, l):
         r = []
@@ -172,8 +195,48 @@ class Vocab():
             r.append(self.get_idx_symbol(l[i]))
         return r
 
+    def load_embeddings(self, file_path, scale=0.08, dtype=np.float32):
+        """Load pretrained word embeddings for initialization"""
+        hit_words = set()
+        vocab_size = len(self)
+        with open(file_path, 'rb') as f:
+            for line in f:
+                line = line.split()
+                word = line[0].decode('utf-8')
+                if self.lower_case:
+                    word = word.lower()
 
-class DataLoader():
+                idx = self.get_symbol_idx(word)
+                if idx == self.get_symbol_idx(self.unk_token) or idx in hit_words:
+                    continue
+
+                vec = np.array(line[1:], dtype=dtype)
+                if self.embeddings is None:
+                    n_dims = len(vec)
+                    self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=(vocab_size, n_dims)),
+                                               dtype=dtype)
+                    self.embeddings[self.get_symbol_idx(self.pad_token)] = np.zeros(n_dims)
+                self.embeddings[idx] = vec
+                hit_words.add(idx)
+        print('Pretrained word embeddings hit ratio: {}'.format(len(hit_words) / len(self.index2word)))
+
+    def randomize_embeddings(self, n_dims, scale=0.08):
+        """Use random word embeddings for initialization."""
+        vocab_size = self.vocab_size
+        shape = (vocab_size, n_dims)
+        self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=shape), dtype=np.float32)
+        self.embeddings[self.get_symbol_idx(self.pad_token)] = np.zeros(n_dims)
+
+    def __getitem__(self, item):
+        if type(item) is int:
+            return self.get_idx_symbol(item)
+        return self.get_symbol_idx(item)
+
+    def __len__(self):
+        return self.vocab_size
+
+
+class DataLoaderForSeqEncoder():
     def __init__(self, data_dir, use_copy, src_vocab_file, tgt_vocab_file, data_file, mode, min_freq, max_vocab_size, batch_size, device):
         self.mode = mode
         self.device = device

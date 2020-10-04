@@ -159,7 +159,7 @@ class GNNLayer(nn.Module):
     def forward(self, dgl_graph, node_emb):
         with dgl_graph.local_scope():
             dgl_graph.srcdata.update({'ft': node_emb})
-            dgl_graph.update_all(fn.u_mul_e('ft', 'a', 'm'),
+            dgl_graph.update_all(fn.u_mul_e('ft', 'edge_weight', 'm'),
                                      fn.sum('m', 'ft'))
             agg_vec = dgl_graph.dstdata['ft']
             new_node_vec = self.linear_out(agg_vec)
@@ -275,7 +275,7 @@ class DynamicGNNClassifier(nn.Module):
         # convert GraphData to DGLGraph
         dgl_graph = new_graph.to_dgl()
         dgl_graph.ndata['node_feat'] = node_feat
-        dgl_graph.edata['a'] = new_graph.edge_features['a']
+        dgl_graph.edata['edge_weight'] = new_graph.edge_features['edge_weight']
         dgl_graph.graph_reg = new_graph.graph_attributes['graph_reg']
         logits = self.gnn_clf(dgl_graph)
 

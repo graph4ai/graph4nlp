@@ -12,6 +12,7 @@ from ..utils.constants import VERY_SMALL_NUMBER
 
 class GraphConstructionBase(nn.Module):
     """Base class for graph construction.
+
     Parameters
     ----------
     word_vocab : Vocab
@@ -64,12 +65,14 @@ class GraphConstructionBase(nn.Module):
 
     def forward(self, raw_text_data, **kwargs):
         """Compute graph topology and initial node/edge embeddings.
+
         Parameters
         ----------
         raw_text_data :
             The raw text data.
         **kwargs
             Extra parameters.
+
         Raises
         ------
         NotImplementedError
@@ -79,10 +82,12 @@ class GraphConstructionBase(nn.Module):
 
     def topology(self, **kwargs):
         """Compute graph topology.
+
         Parameters
         ----------
         **kwargs
             Extra parameters.
+
         Raises
         ------
         NotImplementedError
@@ -92,10 +97,12 @@ class GraphConstructionBase(nn.Module):
 
     def embedding(self, **kwargs):
         """Compute initial node/edge embeddings.
+
         Parameters
         ----------
         **kwargs
             Extra parameters.
+
         Raises
         ------
         NotImplementedError
@@ -106,19 +113,25 @@ class GraphConstructionBase(nn.Module):
 class StaticGraphConstructionBase(GraphConstructionBase):
     """
     Base class for static graph construction.
+
     ...
+
     Attributes
     ----------
     embedding_styles : dict
         Specify embedding styles including ``word_emb_type``, ``node_edge_emb_strategy`` and ``seq_info_encode_strategy``.
+
     Methods
     -------
     add_vocab()
         Add new parsed words or syntactic components into vocab.
+
     topology()
         Generate graph topology.
+
     embedding(raw_data, structure)
         Generate graph embeddings.
+
     forward(raw_data)
         Generate static graph embeddings and topology.
     """
@@ -161,6 +174,7 @@ class StaticGraphConstructionBase(GraphConstructionBase):
 
 class DynamicGraphConstructionBase(GraphConstructionBase):
     """Base class for dynamic graph construction.
+
     Parameters
     ----------
     word_vocab : Vocab
@@ -276,12 +290,14 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def forward(self, raw_text_data, **kwargs):
         """Compute graph topology and initial node/edge embeddings.
+
         Parameters
         ----------
         raw_text_data : list of sequences.
             The raw text data.
         **kwargs
             Extra parameters.
+
         Raises
         ------
         NotImplementedError
@@ -292,6 +308,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
     def topology(self, node_emb, edge_emb=None,
                     init_adj=None, node_mask=None, **kwargs):
         """Compute graph topology.
+
         Parameters
         ----------
         node_emb : torch.Tensor
@@ -304,6 +321,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             The node mask matrix, default: ``None``.
         **kwargs
             Extra parameters.
+
         Raises
         ------
         NotImplementedError
@@ -313,10 +331,12 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def embedding(self, feat, **kwargs):
         """Compute initial node/edge embeddings.
+
         Parameters
         ----------
         **kwargs
             Extra parameters.
+
         Raises
         ------
         NotImplementedError
@@ -326,12 +346,14 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def compute_similarity_metric(self, node_emb, node_mask=None):
         """Compute similarity metric.
+
         Parameters
         ----------
         node_emb : torch.Tensor
             The input node embedding matrix.
         node_mask : torch.Tensor, optional
             The node mask matrix, default: ``None``.
+
         Returns
         -------
         torch.Tensor
@@ -369,7 +391,6 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             attention = torch.mm(node_vec_norm, node_vec_norm.transpose(-1, -2)).detach()
 
         if node_mask is not None:
-
             if torch.__version__ < '1.3.0':
                 attention = attention.masked_fill_(~(node_mask == 1.), self.mask_off_val)
             else:
@@ -389,12 +410,14 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def compute_graph_regularization(self, adj, node_feat):
         """Graph graph regularization loss.
+
         Parameters
         ----------
         adj : torch.Tensor
             The adjacency matrix.
         node_feat : torch.Tensor
             The node feature matrix.
+
         Returns
         -------
         torch.float32
@@ -419,12 +442,14 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def _build_knn_neighbourhood(self, attention, top_k_neigh):
         """Build kNN neighborhood graph.
+
         Parameters
         ----------
         attention : torch.Tensor
             The attention matrix.
         top_k_neigh : int
             The top k value for kNN neighborhood graph.
+
         Returns
         -------
         torch.Tensor
@@ -438,12 +463,14 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def _build_epsilon_neighbourhood(self, attention, epsilon_neigh):
         """Build epsilon neighbourhood graph.
+
         Parameters
         ----------
         attention : torch.Tensor
             The attention matrix.
         epsilon_neigh : float
             The threshold value for epsilon neighbourhood graph.
+
         Returns
         -------
         torch.Tensor

@@ -1,5 +1,6 @@
 """
 The Graph4NLP library uses the class `GraphData` as the representation for structured data (graphs).
+
 """
 import warnings
 from collections import namedtuple
@@ -14,7 +15,6 @@ from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_
 from .views import NodeView, NodeFeatView, EdgeView
 
 EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
-
 
 node_feat_factory = dict
 node_attr_factory = dict
@@ -67,6 +67,7 @@ class GraphData(object):
     def nodes(self) -> NodeView:
         """
         Return a node view through which the user can access the features and attributes
+
         Returns
         -------
         node: NodeView
@@ -77,6 +78,7 @@ class GraphData(object):
     def get_node_num(self) -> int:
         """
         Get the number of nodes in the graph.
+
         Returns
         -------
         num_nodes: int
@@ -87,6 +89,7 @@ class GraphData(object):
     def add_nodes(self, node_num: int) -> None:
         """
         Add a number of nodes to the graph.
+
         Parameters
         ------
         node_num: int
@@ -111,6 +114,7 @@ class GraphData(object):
         This property can be accessed in a dict-of-dict fashion, with the order being [name][index].
         'name' indicates the name of the feature vector. 'index' selects the specific nodes to be accessed.
         When accessed independently, returns the feature dictionary with the format {name: tensor}
+
         Examples
         --------
         >>> g = GraphData()
@@ -130,10 +134,12 @@ class GraphData(object):
     def get_node_features(self, nodes: int or slice) -> torch.Tensor:
         """
         Get the node feature dictionary of the `nodes`
+
         Parameters
         ----------
         nodes: int or slice
             The nodes to be accessed
+
         Returns
         -------
         node_features: dict
@@ -152,9 +158,7 @@ class GraphData(object):
 
     def set_node_features(self, nodes: int or slice, new_data: dict) -> None:
         """
-
         Set the features of the `nodes` with the given `new_data``.
-
 
         Parameters
         ----------
@@ -162,6 +166,7 @@ class GraphData(object):
             The nodes involved
         new_data: dict
             The new data to write. Key indicates feature name and value indicates the actual value
+
         Raises
         ----------
         SizeMismatchException
@@ -197,6 +202,7 @@ class GraphData(object):
     def node_attributes(self) -> dict:
         """
         Access node attribute dictionary
+
         Returns
         -------
         node_attribute_dict: dict
@@ -207,11 +213,13 @@ class GraphData(object):
     def get_node_attrs(self, nodes: int or slice):
         """
         Get the attributes of the given `nodes`.
+
         Parameters
         ----------
         nodes: int
          or slice
             The given node index
+
         Returns
         -------
         dict
@@ -232,6 +240,7 @@ class GraphData(object):
     def edges(self):
         """
         Return an edge view of the edges and the corresponding data
+
         Returns
         -------
         edges: EdgeView
@@ -241,6 +250,7 @@ class GraphData(object):
     def get_edge_num(self) -> int:
         """
         Get the number of edges in the graph
+
         Returns
         -------
         num_edges: int
@@ -251,12 +261,14 @@ class GraphData(object):
     def add_edge(self, src: int, tgt: int):
         """
         Add one edge to the graph.
+
         Parameters
         ----------
         src: int
             Source node index
         tgt: int
             Target node index
+
         Raises
         ------
         ValueError
@@ -291,12 +303,14 @@ class GraphData(object):
     def add_edges(self, src: int or list, tgt: int or list):
         """
         Add a bunch of edges to the graph.
+
         Parameters
         ----------
         src: int or list
             Source node indices
         tgt: int or list
             Target node indices
+
         Raises
         ------
         ValueError
@@ -309,16 +323,19 @@ class GraphData(object):
     def edge_ids(self, src: int or list, tgt: int or list) -> list:
         """
         Convert the given endpoints to edge indices.
+
         Parameters
         ----------
         src: int or list
             The index of source node(s).
         tgt: int or list
             The index of target node(s).
+
         Returns
         -------
         list
             The index of corresponding edges.
+
         Raises
         ------
         EdgeNotFoundException
@@ -338,6 +355,7 @@ class GraphData(object):
     def get_all_edges(self) -> list:
         """
         Get all the edges in the graph
+
         Returns
         -------
         edges: list
@@ -356,10 +374,12 @@ class GraphData(object):
     def get_edge_feature(self, edges: list):
         """
         Get the feature of the given edges.
+
         Parameters
         ----------
         edges: list
             Edge indices
+
         Returns
         -------
         dict
@@ -380,12 +400,14 @@ class GraphData(object):
     def set_edge_feature(self, edges: int or slice or list, new_data: dict):
         """
         Set edge feature
+
         Parameters
         ----------
         edges: list
             Edge indices
         new_data: dict
             New data
+
         Raises
         ----------
         SizeMismatchException
@@ -425,6 +447,7 @@ class GraphData(object):
     def to_dgl(self) -> dgl.DGLGraph:
         """
         Convert to dgl.DGLGraph
+
         Returns
         -------
         g: dgl.DGLGraph
@@ -446,6 +469,7 @@ class GraphData(object):
     def from_dgl(self, dgl_g: dgl.DGLGraph):
         """
         Build the graph from dgl.DGLGraph
+
         Parameters
         ----------
         dgl_g: dgl.DGLGraph
@@ -526,6 +550,7 @@ class GraphData(object):
     def union(self, graph):
         """
         Merge a graph into current graph.
+
         Parameters
         ----------
         graph: GraphData
@@ -586,20 +611,25 @@ class GraphData(object):
     def split(self, node_st_idx: int, node_ed_idx: int):
         """
         Given the starting and ending indices of the nodes, split it out of the large graph.
+
         The corresponding subgraph indicated by the node indices should be a connected component of the large graph and
         should have no connection to other nodes in the graph. Otherwise it cannot be split from the large graph without
         information loss.
+
         The node indices indicate by `node_st_idx` and `node_ed_idx` is the closed set [`node_st_idx`, `node_ed_idx`].
+
         Parameters
         ----------
         node_st_idx: int
             The starting node index of the subgraph in the large graph.
         node_ed_idx: int
             The ending node index of the subgraph in the large graph.
+
         Returns
         -------
         GraphData
             The extracted subgraph.
+
         Raises
         ------
         ValueError
@@ -660,10 +690,12 @@ class GraphData(object):
 def from_dgl(g: dgl.DGLGraph) -> GraphData:
     """
     Convert a dgl.DGLGraph to a GraphData object.
+
     Parameters
     ----------
     g: dgl.DGLGraph
         The source graph in DGLGraph format.
+
     Returns
     -------
     GraphData
@@ -677,10 +709,12 @@ def from_dgl(g: dgl.DGLGraph) -> GraphData:
 def to_batch(graphs: list = None) -> GraphData:
     """
     Convert a list of GraphData to a large graph (a batch).
+
     Parameters
     ----------
     graphs: list of GraphData
         The list of GraphData to be batched
+
     Returns
     -------
     GraphData

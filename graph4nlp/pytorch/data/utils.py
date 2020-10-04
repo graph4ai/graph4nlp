@@ -37,12 +37,15 @@ def check_and_expand(x: list, y: list):
 def slice_to_list(sl, max_len):
     """
     Turn a slice object into a list
+
     Parameters
     ----------
     sl: slice
         The slice object
+
     max_len: int
         Max length of the iterable
+
     Returns
     -------
     list
@@ -79,23 +82,25 @@ def entail_zero_padding(old_tensor: torch.Tensor, num_rows: int):
         return torch.cat((old_tensor, torch.zeros(num_rows).to(dtype=old_tensor.dtype, device=old_tensor.device)))
     else:
         return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:])).to(dtype=old_tensor.dtype,
-                                                                                        device=old_tensor.device)),
-                         dim=0)
+                                                                                device=old_tensor.device)), dim=0)
 
 
 def reverse_index(l: list, v):
     """
     Find the index of the last occurrence of an element in a list.
+
     Parameters
     ----------
     l: list
         The container of all elements
     v: object
         The element to be found
+
     Returns
     -------
     int:
         The index of the last occurrence of `v` in `l`.
+
     Raises
     ------
     ValueError
