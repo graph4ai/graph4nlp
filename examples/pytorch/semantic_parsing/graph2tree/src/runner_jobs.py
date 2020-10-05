@@ -214,6 +214,7 @@ class Graph2Tree(nn.Module):
 
     def forward(self, graph_list, tgt_tree_batch):
         batch_graph = self.graph_topology(graph_list)
+        batch_graph.to(self.device)
         batch_graph = self.encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
@@ -474,6 +475,7 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
         enc_outputs = torch.zeros((1, enc_w_list.size(1), dec_hidden_size), requires_grad=False)
 
     batch_graph = model.graph_topology(input_graph_list)
+    batch_graph.to(device)
     batch_graph = model.encoder(batch_graph)
     batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
