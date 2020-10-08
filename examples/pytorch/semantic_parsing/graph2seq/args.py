@@ -59,7 +59,7 @@ def get_args():
                         default='/home/shiina/shiina/lib/graph4nlp/.vector_cache/glove.6B.300d.txt', help="")
 
     # gnn config
-    parser.add_argument("--gnn", type=str, default="GGNN", help="the gnn algorithm choice in ('GAT', 'GGNN', 'GraphSage')")
+    parser.add_argument("--gnn", type=str, default="GCN", help="the gnn algorithm choice in ('GAT', 'GGNN', 'GraphSage')")
     parser.add_argument("--gnn-direction", type=str, default="undirected", help="gnn direction, expected in "
                                                                                 "('undirected', 'bi_sep', 'bi_fuse')")
     cfg = parser.parse_args()

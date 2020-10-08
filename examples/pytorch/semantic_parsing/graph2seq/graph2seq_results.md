@@ -22,7 +22,7 @@ How to run
 Run with following:
 
 ```python
-python -m examples.pytorch.semantic_parsing.jobs.main
+python -m examples.pytorch.semantic_parsing.graph2seq.main
 ```
 
 Results
