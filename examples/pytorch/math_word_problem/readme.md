@@ -1,5 +1,6 @@
 ``python -m examples.pytorch.semantic_parsing.graph2tree.src.runner_mwp -gpuid=3``  
 
+> torch==1.5.1+cu101
 # Results on Mawps
 
 ## constituency
