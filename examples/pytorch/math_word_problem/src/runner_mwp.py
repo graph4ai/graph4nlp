@@ -278,7 +278,7 @@ class Mawps:
             dataset = MawpsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=DependencyBasedGraphConstruction,
                                 topology_subdir='DependencyGraph',
-                                edge_strategy='as_node',
+                                edge_strategy=None,
                                 share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size,
                                 dec_emb_size=self.opt.tgt_emb_size)
 
@@ -767,11 +767,13 @@ def is_solution_same(i1, i2, form_manager):
             if not res1 or not res2:
                 return False
             if res1[0] == res2[0]:
-                print("Excution_true: ", c1, '\t', c2)
+                # print("Excution_true: ", c1, '\t', c2)
+                pass
             return res1[0] == res2[0]
 
         except BaseException:
-            print("Excution_error: ", c1, '\t', c2)
+            # print("Excution_error: ", c1, '\t', c2)
+            pass
             return False
 
 
