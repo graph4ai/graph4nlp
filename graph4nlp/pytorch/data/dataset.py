@@ -165,6 +165,30 @@ class DoubleText2TextDataItem(DataItem):
         else:
             return input_tokens, output_tokens
 
+class SequenceLabelingDataItem(DataItem):
+    def __init__(self, input_text, output_tags, tokenizer):
+        super(SequenceLabelingDataItem, self).__init__(input_text, tokenizer)
+        self.output_tag = output_tags
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens and output tags
+        """
+        g: GraphData = self.graph
+
+        input_tokens = []
+        for i in range(g.get_node_num()):
+            if self.tokenizer is None:
+                tokenized_token = self.output_text.strip().split(' ')
+            else:
+                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
+
+            input_tokens.extend(tokenized_token)
+
+
+        return input_tokens 
 
 class Dataset(torch.utils.data.Dataset):
     """
@@ -597,8 +621,8 @@ class Text2TextDataset(Dataset):
                     graph.edge_features['token_id'] = edge_token_matrix
 
             tgt = item.output_text
-            tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
-            tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
+            tgt_token_id = self.vocab_model.out_word_vocab.to_index_sequence(tgt)
+            tgt_token_id.append(self.vocab_model.out_word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
             item.output_np = tgt_token_id
 
@@ -1367,3 +1391,96 @@ class DoubleText2TextDataset(Dataset):
                 'tgt_tensor': tgt_tensor,
                 'tgt_text': tgt_text,
                 'input_length2': input_length2}
+
+
+class SequenceLabelingDataset(Dataset):
+    def __init__(self, root_dir, topology_builder, topology_subdir,tag_types, **kwargs):
+        self.data_item_type = SequenceLabelingDataItem
+        self.tag_types=tag_types
+        super(SequenceLabelingDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+        For SequenceLabelingDataset, the format of the input file should contain lines of tokens, each line representing one
+        record of token at first column and its tag at the last column. 
+        Examples
+        --------
+        "EU       I-ORG "
+         rejects  O
+         German   I-MISC
+         
+        Parameters
+        ----------
+
+        """
+        data=[]
+        input=[]
+        output=[]
+        with open(file_path, 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    if len(line)>1 and line[0]!='-':
+                       if line[0]!='.': 
+                           input.append(line.strip().split(' ')[0])
+                           output.append(line.strip().split(' ')[-1])                        
+                       if line[0]=='.':
+                           input.append(line.strip().split(' ')[0])
+                           output.append(line.strip().split(' ')[-1])
+                           if len(input) >= 2:
+                               data_item=SequenceLabelingDataItem(input_text=input, output_tags=output, tokenizer=self.tokenizer)
+                               data.append(data_item)
+                               input=[]
+                               output=[]                                                
+
+        return data     
+
+
+    def build_vocab(self):
+        data_for_vocab = self.train
+        if self.use_val_for_vocab:
+            data_for_vocab = data_for_vocab + self.val
+            
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=None,
+                                       min_word_vocab_freq=1,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       word_emb_size=300,
+                                       share_vocab=True)
+        self.vocab_model = vocab_model
+
+        return self.vocab_model
+
+    def vectorization(self, data_items):
+        for item in data_items:
+            graph: GraphData = item.graph
+            token_matrix = []
+            for node_idx in range(graph.get_node_num()):
+                node_token = graph.node_attributes[node_idx]['token']
+                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
+                graph.node_attributes[node_idx]['token_id'] = node_token_id
+                token_matrix.append([node_token_id])
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features['token_id'] = token_matrix
+
+            tgt = item.output_tag
+            tgt_tag_id=[self.tag_types.index(tgt_.strip()) for tgt_ in tgt]
+            
+            tgt_tag_id = torch.tensor(tgt_tag_id)
+            item.output_id = tgt_tag_id
+
+    @staticmethod
+    def collate_fn(data_list: [SequenceLabelingDataItem]):
+        tgt_tag=[]
+        graph_data=[]
+        for item in data_list:
+           #if len(item.graph.node_attributes)== len(item.output_id):
+                   graph_data.append(item.graph)
+                   tgt_tag.append(item.output_id)
+
+        #tgt_tags = torch.cat(tgt_tag, dim=0)
+        return [graph_data, tgt_tag]
