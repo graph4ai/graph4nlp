@@ -490,8 +490,8 @@ class GraphData(object):
 
         # Add edges
         src_tensor, tgt_tensor = dgl_g.edges()
-        src_list = list(src_tensor.detach().numpy())
-        tgt_list = list(tgt_tensor.detach().numpy())
+        src_list = list(src_tensor.detach().cpu().numpy())
+        tgt_list = list(tgt_tensor.detach().cpu().numpy())
         self.add_edges(src_list, tgt_list)
         for k, v in dgl_g.edata.items():
             self.edge_features[k] = v
