@@ -1,5 +1,14 @@
 # Results On Jobs640
 
+## Test results for GGNN (dgl==0.5.2)
+
+| Graph Construction\fuse_strategy | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | 89.3 | 90.7 | 89.3 |  
+| Constituency | 90.0 | 90.7 | 89.3 |
+| Dynamic_node_emb | 90.0 | 90.7 | 91.4 |
+| Dynamic_node_emb_refined | 91.4 | 91.4 | 91.4 |
+
 ## Constituency Graph
 | Encoder\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |
