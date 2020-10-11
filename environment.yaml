@@ -69,5 +69,6 @@ dependencies:
     - pyyaml==5.3.1
     - torchtext==0.7.0
     - urllib3==1.25.10
+    - youtokentome==1.0.6
 prefix:
 
