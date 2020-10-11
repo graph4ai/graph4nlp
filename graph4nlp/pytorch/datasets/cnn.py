@@ -17,7 +17,7 @@ class CNNDataset(Text2TextDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        return {'train': 'test.json', 'test': 'test.json', 'val': 'val.json'}
+        return {'train': 'train.json', 'test': 'test.json', 'val': 'val.json'}
 
     @property
     def processed_file_names(self):
@@ -36,12 +36,12 @@ class CNNDataset(Text2TextDataset):
 
     def build_topology(self, data_items):
         """
-        Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
-        DataItem.
+        Add exception process for IE-based graph construction. When the input text is too long,
+        the processor may raise ``java.util.concurrent.TimeoutException``
         """
         if self.graph_type == 'static':
             print('Connecting to stanfordcorenlp server...')
-            processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+            processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9098, timeout=1000)
 
             if self.topology_builder == IEBasedGraphConstruction:
                 props_coref = {
@@ -72,10 +72,16 @@ class CNNDataset(Text2TextDataset):
                     'outputFormat': 'json'
                 }
             elif self.topology_builder == ConstituencyBasedGraphConstruction:
-                processor_args={}
+                processor_args = {
+                    'annotators': "tokenize,ssplit,pos,parse",
+                    "tokenize.options":
+                    "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
             else:
                 raise NotImplementedError
-
             print('CoreNLP server connected.')
             pop_idxs = []
             for idx, item in enumerate(data_items):
@@ -87,50 +93,86 @@ class CNNDataset(Text2TextDataset):
                                                            edge_strategy=self.edge_strategy,
                                                            verbase=False)
                     item.graph = graph
-                    if idx%100==1:
-                        print(idx)
-                        # torch.save(data_items, 'cnn_topo_tmp.pt')
                 except:
                     pop_idxs.append(idx)
                     item.graph = None
                     print('item does not have graph: '+str(idx))
 
             data_items = [x for idx, x in enumerate(data_items) if idx not in pop_idxs]
-            return data_items
         elif self.graph_type == 'dynamic':
-            # TODO: Implement this
-            pass
+            if self.dynamic_graph_type == 'node_emb':
+                for item in data_items:
+                    graph = self.topology_builder.init_topology(item.input_text,
+                                                                lower_case=self.lower_case,
+                                                                tokenizer=self.tokenizer)
+                    item.graph = graph
+            elif self.dynamic_graph_type == 'node_emb_refined':
+                if self.dynamic_init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
+                    print('Connecting to stanfordcorenlp server...')
+                    processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+
+                    if self.dynamic_init_topology_builder == IEBasedGraphConstruction:
+                        props_coref = {
+                            'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
+                            "tokenize.options":
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
+                        props_openie = {
+                            'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
+                            "tokenize.options":
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json',
+                            "openie.triple.strict": "true"
+                        }
+                        processor_args = [props_coref, props_openie]
+                    elif self.dynamic_init_topology_builder == DependencyBasedGraphConstruction:
+                        processor_args = {
+                            'annotators': 'ssplit,tokenize,depparse',
+                            "tokenize.options":
+                                "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
+                    elif self.dynamic_init_topology_builder == ConstituencyBasedGraphConstruction:
+                        processor_args = {
+                            'annotators': "tokenize,ssplit,pos,parse",
+                            "tokenize.options":
+                            "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
+                    else:
+                        raise NotImplementedError
+                    print('CoreNLP server connected.')
+                else:
+                    processor = None
+                    processor_args = None
+
+                for item in data_items:
+                    graph = self.topology_builder.init_topology(item.input_text,
+                                                                dynamic_init_topology_builder=self.dynamic_init_topology_builder,
+                                                                lower_case=self.lower_case,
+                                                                tokenizer=self.tokenizer,
+                                                                nlp_processor=processor,
+                                                                processor_args=processor_args,
+                                                                merge_strategy=self.merge_strategy,
+                                                                edge_strategy=self.edge_strategy,
+                                                                verbase=False,
+                                                                dynamic_init_topology_aux_args=self.dynamic_init_topology_aux_args)
+
+                    item.graph = graph
+            else:
+                raise RuntimeError('Unknown dynamic_graph_type: {}'.format(self.dynamic_graph_type))
+
         else:
             raise NotImplementedError('Currently only static and dynamic are supported!')
-
-    def _process(self):
-        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
-            if 'val_split_ratio' in self.__dict__:
-                UserWarning(
-                    "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
-                    "already been split.")
-            return
-
-        os.makedirs(self.processed_dir, exist_ok=True)
-
-        self.read_raw_data()
-
-        self.train = self.build_topology(self.train)
-        self.test = self.build_topology(self.test)
-        if 'val' in self.__dict__:
-            self.val = self.build_topology(self.val)
-
-        self.build_vocab()
-
-        self.vectorization(self.train)
-        self.vectorization(self.test)
-        if 'val' in self.__dict__:
-            self.vectorization(self.val)
-
-        data_to_save = {'train': self.train, 'test': self.test}
-        if 'val' in self.__dict__:
-            data_to_save['val'] = self.val
-        torch.save(data_to_save, self.processed_file_paths['data'])
 
     def parse_file(self, file_path) -> list:
         """
@@ -173,7 +215,7 @@ if __name__ == '__main__':
     if args.parser=='IE':
         start_time = time.time()
         cnn_ie = CNNDataset(root_dir=dataset_root, topology_builder=IEBasedGraphConstruction,
-                    topology_subdir='IEGraph_s')
+                    topology_subdir='IEGraph')
         end_time = time.time() # 333.8594479560852
         # 141.86208820343018 [:10]
     elif args.parser=='DEP':

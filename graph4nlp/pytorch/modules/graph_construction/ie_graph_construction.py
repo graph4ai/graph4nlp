@@ -486,7 +486,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         batch_gd = to_batch(batch_graphdata)
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(batch_gd.node_features["token_id"].long(), node_size, num_nodes)
+        node_emb = self.embedding_layer(batch_gd, node_size, num_nodes)
         batch_gd.node_features["node_feat"] = node_emb
         if edge_size != [] and num_edges != []:
             edge_size = torch.Tensor(edge_size).to(self.device).int()
