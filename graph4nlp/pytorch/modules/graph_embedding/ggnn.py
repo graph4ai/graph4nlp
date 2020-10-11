@@ -1,4 +1,5 @@
 import torch
+import dgl
 import torch.nn as nn
 from dgl.nn import GatedGraphConv
 import dgl.function as fn
@@ -93,8 +94,10 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
             The output feature of shape :math:`(N, D_{out})` where
             :math:`D_{out}` is size of output feature.
         """
-        assert graph.is_homogeneous, \
-            "not a homograph; convert it with to_homo and pass in the edge type as argument"
+        if dgl.__version__ < '0.5':
+            assert graph.is_homograph(), "not a homograph; convert it with to_homo and pass in the edge type as argument"
+        else:
+            assert graph.is_homogeneous, "not a homograph; convert it with to_homo and pass in the edge type as argument"
         graph = graph.local_var()
         zero_pad = feat.new_zeros((feat.shape[0], self._out_feats - feat.shape[1]))
         feat = torch.cat([feat, zero_pad], -1)
