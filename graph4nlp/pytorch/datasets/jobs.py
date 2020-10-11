@@ -1,14 +1,11 @@
-import os
-
 import torch
-import pickle
+import numpy as np
 
 
 from graph4nlp.pytorch.data.dataset import Text2TextDataset, TextToTreeDataset
 from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
-
+from ..data.data import GraphData
 
 
 dataset_root = '../test/dataset/jobs'
@@ -36,7 +33,7 @@ class JobsDataset(Text2TextDataset):
                  graph_type='static',
                  merge_strategy="tailhead", edge_strategy=None,
                  seed=None,
-                 word_emb_size=300, share_vocab=True,
+                 word_emb_size=300, share_vocab=True, use_copy=False,
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
                  dynamic_init_topology_aux_args=None):
@@ -78,23 +75,8 @@ class JobsDataset(Text2TextDataset):
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
     @classmethod
-    def from_args(cls, args, graph_type, topology_builder, dynamic_graph_type=None, dynamic_init_topology_builder=None, dynamic_init_topology_aux_args=None):
-        '''
-
-        dataset = TrecDataset(root_dir='examples/pytorch/text_classification/data/trec',
-                              pretrained_word_emb_file=self.config['pre_word_emb_file'],
-                              val_split_ratio=self.config['val_split_ratio'],
-                              merge_strategy=merge_strategy,
-                              seed=self.config['seed'],
-                              word_emb_size=300,
-                              graph_type=graph_type,
-                              topology_builder=topology_builder,
-                              topology_subdir=topology_subdir,
-                              dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
-                              dynamic_init_topology_builder=dynamic_init_topology_builder,
-                              dynamic_init_topology_aux_args={'dummy_param': 0})
-
-        '''
+    def from_args(cls, args, graph_type, topology_builder, dynamic_graph_type=None, dynamic_init_topology_builder=None,
+                  dynamic_init_topology_aux_args=None, use_copy=False):
         return cls(root_dir=args.root_dir,
                    pretrained_word_emb_file=args.pretrained_word_emb_file,
                    val_split_ratio=args.val_split_ratio,
@@ -106,6 +88,8 @@ class JobsDataset(Text2TextDataset):
                    dynamic_graph_type= dynamic_graph_type,
                    dynamic_init_topology_builder=dynamic_init_topology_builder,
                    dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+
+
 
 
 class JobsDatasetForTree(TextToTreeDataset):

@@ -104,7 +104,7 @@ class Graph2seq(nn.Module):
                                          decoder_hidden_size=hidden_size, graph_pooling_strategy=None,
                                          word_emb=self.word_emb, vocab=self.vocab.in_word_vocab,
                                          attention_type="sep_diff_encoder_type", fuse_strategy="concatenate",
-                                         rnn_emb_input_size=hidden_size, use_coverage=True,
+                                         rnn_emb_input_size=hidden_size, use_coverage=True, use_copy=True,
                                          tgt_emb_as_output_layer=True, dropout=rnn_dropout)
         self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
         self.loss_cover = CoverageLoss(0.3)
@@ -115,7 +115,7 @@ class Graph2seq(nn.Module):
                    direction_option=args.gnn_direction, gnn=args.gnn, device=device,
                    emb_dropout=args.emb_dropout, feats_dropout=args.feats_dropout, rnn_dropout=args.feats_dropout)
 
-    def forward(self, graph_list, tgt=None, require_loss=True):
+    def forward(self, graph_list, tgt=None, oov_dict=None, require_loss=True):
         batch_graph = self.graph_topology(graph_list)
 
         # run GNN
@@ -123,7 +123,7 @@ class Graph2seq(nn.Module):
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
         # down-task
-        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(from_batch(batch_graph), tgt_seq=tgt)
+        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(from_batch(batch_graph), tgt_seq=tgt, oov_dict=oov_dict)
         if require_loss:
             loss = self.loss_calc(prob, tgt)
             # cover_loss = self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)

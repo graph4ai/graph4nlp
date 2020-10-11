@@ -631,10 +631,11 @@ class Text2TextDataset(Dataset):
         graph_data = [item.graph for item in data_list]
 
         output_numpy = [item.output_np for item in data_list]
+        output_str = [item.output_text.lower().strip() for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
 
         tgt_seq = torch.from_numpy(output_pad).long()
-        return [graph_data, tgt_seq]
+        return [graph_data, tgt_seq, output_str]
 
 
 class TextToTreeDataset(Dataset):
