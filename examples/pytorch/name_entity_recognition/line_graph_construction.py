@@ -8,7 +8,7 @@ from collections import Counter
 
 from graph4nlp.pytorch.data.data import *
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
-from .base import StaticGraphConstructionBase
+from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
 
 
 class LineBasedGraphConstruction(StaticGraphConstructionBase):

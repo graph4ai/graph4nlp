@@ -8,7 +8,7 @@ from collections import Counter
 #from nltk.parse.corenlp import CoreNLPDependencyParser
 from graph4nlp.pytorch.data.data import *
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
-from .base import StaticGraphConstructionBase
+from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
 import stanfordcorenlp
 
 def get_new_sent(dep_info):
@@ -141,8 +141,8 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         return parsed_results
         
     @classmethod
-    def topology(cls, raw_text_data, nlp_processor, processor_args, merge_strategy, edge_strategy, split_hyphenated=False,
-                 normalize=False, sequential_link=True, verbase=0,auxiliary_args=None):
+    def topology(cls, raw_text_data, auxiliary_args, split_hyphenated=False,
+                 normalize=False, sequential_link=True):
         """
             Graph building method.
         Parameters
@@ -186,21 +186,21 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         joint_graph: GraphData
             The merged graph data-structure.
         """
-        cls.processor=nlp_processor
+        cls.processor=auxiliary_args['nlp_processor']
         split_hyphenated=False,
         normalize=False,
         sequential_link=True, 
         verbase=0
-        cls.verbase = verbase
+        cls.verbase = auxiliary_args['verbase']
 
         parsed_results = cls.parsing(cls,raw_text_data=raw_text_data)
 
         sub_graphs = []
         for sent_id, parsed_sent in enumerate(parsed_results):
-            graph = cls._construct_static_graph(parsed_sent, edge_strategy=edge_strategy,
+            graph = cls._construct_static_graph(parsed_sent, edge_strategy=auxiliary_args['edge_strategy'],
                                                 sequential_link=sequential_link)
             sub_graphs.append(graph)
-        joint_graph = cls._graph_connect(sub_graphs, merge_strategy)
+        joint_graph = cls._graph_connect(sub_graphs, auxiliary_args['merge_strategy'])
         return joint_graph
 
     @classmethod
