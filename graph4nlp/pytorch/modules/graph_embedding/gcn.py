@@ -59,6 +59,7 @@ class GCN(GNNBase):
                  hidden_size,
                  out_feats,
                  direction_option='bi_sep',
+                 feat_drop=0.,
                  norm='both',
                  weight=True,
                  bias=True,
@@ -80,6 +81,7 @@ class GCN(GNNBase):
             self.gcn_layers.append(GCNLayer(in_feats,
                                             hidden_size[0],
                                             direction_option=self.direction_option,
+                                            feat_drop=feat_drop,
                                             norm=norm,
                                             weight=weight,
                                             bias=bias,
@@ -92,6 +94,7 @@ class GCN(GNNBase):
             self.gcn_layers.append(GCNLayer(hidden_size[l - 1],
                                             hidden_size[l],
                                             direction_option=self.direction_option,
+                                            feat_drop=feat_drop,
                                             norm=norm,
                                             weight=weight,
                                             bias=bias,
@@ -101,6 +104,7 @@ class GCN(GNNBase):
         self.gcn_layers.append(GCNLayer(hidden_size[-1] if self.num_layers > 1 else in_feats,
                                         out_feats,
                                         direction_option=self.direction_option,
+                                        feat_drop=feat_drop,
                                         norm=norm,
                                         weight=weight,
                                         bias=bias,
@@ -208,6 +212,7 @@ class GCNLayer(GNNLayerBase):
                  in_feats,
                  out_feats,
                  direction_option='bi_sep',
+                 feat_drop=0.,
                  norm='both',
                  weight=True,
                  bias=True,
@@ -217,6 +222,7 @@ class GCNLayer(GNNLayerBase):
         if direction_option == 'undirected':
             self.model = UndirectedGCNLayerConv( in_feats,
                                                  out_feats,
+                                                 feat_drop=feat_drop,
                                                  norm=norm,
                                                  weight=weight,
                                                  bias=bias,
@@ -225,6 +231,7 @@ class GCNLayer(GNNLayerBase):
         elif direction_option == 'bi_sep':
             self.model = BiSepGCNLayerConv(  in_feats,
                                              out_feats,
+                                             feat_drop=feat_drop,
                                              norm=norm,
                                              weight=weight,
                                              bias=bias,
@@ -233,6 +240,7 @@ class GCNLayer(GNNLayerBase):
         elif direction_option == 'bi_fuse':
             self.model = BiFuseGCNLayerConv( in_feats,
                                              out_feats,
+                                             feat_drop=feat_drop,
                                              norm=norm,
                                              weight=weight,
                                              bias=bias,
@@ -318,6 +326,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
     def __init__(self,
                  in_feats,
                  out_feats,
+                 feat_drop=0.,
                  norm='both',
                  weight=True,
                  bias=True,
@@ -331,6 +340,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         self._out_feats = out_feats
         self._norm = norm
         self._allow_zero_in_degree = allow_zero_in_degree
+        self._feat_drop = nn.Dropout(feat_drop)
 
         if weight:
             self.weight = nn.Parameter(torch.Tensor(in_feats, out_feats))
@@ -409,6 +419,8 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         """
         assert reverse_edge_weight is None
         graph = graph.local_var()
+
+        feat = self._feat_drop(feat)
 
         if self._norm == 'both':
             degs = graph.out_degrees().to(feat.device).float().clamp(min=1)
@@ -524,6 +536,7 @@ class BiFuseGCNLayerConv(GNNLayerBase):
     def __init__(self,
                  in_feats,
                  out_feats,
+                 feat_drop=0.,
                  norm='both',
                  weight=True,
                  bias=True,
@@ -537,6 +550,7 @@ class BiFuseGCNLayerConv(GNNLayerBase):
         self._out_feats = out_feats
         self._norm = norm
         self._allow_zero_in_degree = allow_zero_in_degree
+        self._feat_drop=nn.Dropout(feat_drop)
 
         if weight:
             self.weight_fw = nn.Parameter(torch.Tensor(in_feats, out_feats))
@@ -613,7 +627,7 @@ class BiFuseGCNLayerConv(GNNLayerBase):
         torch.Tensor
             The output feature
         """
-        feat_fw = feat_bw = feat
+        feat_fw = feat_bw = self._feat_drop(feat)
         if isinstance(weight, tuple):
             weight_fw, weight_bw = weight
         else:
@@ -766,6 +780,7 @@ class BiSepGCNLayerConv(GNNLayerBase):
     def __init__(self,
                  in_feats,
                  out_feats,
+                 feat_drop=0.,
                  norm='both',
                  weight=True,
                  bias=True,
@@ -779,6 +794,7 @@ class BiSepGCNLayerConv(GNNLayerBase):
         self._out_feats = out_feats
         self._norm = norm
         self._allow_zero_in_degree = allow_zero_in_degree
+        self._feat_drop=nn.Dropout(feat_drop)
 
         if weight:
             self.weight_fw = nn.Parameter(torch.Tensor(in_feats, out_feats))
@@ -854,6 +870,8 @@ class BiSepGCNLayerConv(GNNLayerBase):
             The output feature
         """
         feat_fw, feat_bw = feat
+        feat_fw = self._feat_drop(feat_fw)
+        feat_bw = self._feat_drop(feat_bw)
         if isinstance(weight, tuple):
             weight_fw, weight_bw = weight
         else:
