@@ -256,9 +256,9 @@ class ModelHandler:
         if self.config['graph_type'] == 'node_emb_refined':
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
-        dataset = TrecDataset(root_dir='examples/pytorch/text_classification/data/trec',
+        dataset = TrecDataset(root_dir=self.config['root_dir'],
                               pretrained_word_emb_file=self.config['pre_word_emb_file'],
-                              val_split_ratio=self.config['val_split_ratio'],
+                              # val_split_ratio=self.config['val_split_ratio'],
                               merge_strategy=merge_strategy,
                               seed=self.config['seed'],
                               word_emb_size=300,
@@ -309,6 +309,7 @@ class ModelHandler:
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
                 graph_list, tgt = data
+                graph_list = [to_cuda(g, self.config['device']) for g in graph_list]
                 tgt = to_cuda(tgt, self.config['device'])
                 logits, loss = self.model(graph_list, tgt, require_loss=True)
                 self.optimizer.zero_grad()
@@ -339,6 +340,7 @@ class ModelHandler:
             gt_collect = []
             for i, data in enumerate(dataloader):
                 graph_list, tgt = data
+                graph_list = [to_cuda(g, self.config['device']) for g in graph_list]
                 logits = self.model(graph_list, require_loss=False)
                 pred_collect.append(logits)
                 gt_collect.append(tgt)
@@ -372,8 +374,10 @@ def main(config):
     if not config['no_cuda'] and torch.cuda.is_available():
         print('[ Using CUDA ]')
         config['device'] = torch.device('cuda' if config['gpu'] < 0 else 'cuda:%d' % config['gpu'])
-        cudnn.benchmark = True
         torch.cuda.manual_seed(config['seed'])
+        torch.cuda.manual_seed_all(config['seed'])
+        torch.backends.cudnn.deterministic = True
+        cudnn.benchmark = False
     else:
         config['device'] = torch.device('cpu')
 
@@ -468,3 +472,11 @@ if __name__ == '__main__':
         grid_search_main(config)
     else:
         main(config)
+
+# screen -S ghn_code3  python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_undirected_constituency.yaml
+# screen -S ghn_code1  python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/graphsage_undirected_node_emb.yaml
+# screen -S ghn_code1  python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_undirected_constituency.yaml
+# screen -S ghn_code3 python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_dependency.yaml
+# screen -S ghn_code1 python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_undirected_dependency.yaml --grid_search
+# screen -S ghn_code1 python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_bi_sep_dependency.yaml --grid_search
+# screen -S ghn_code1 python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CNSST/gat_bi_sep_dependency.yaml --grid_search
