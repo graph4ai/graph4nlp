@@ -19,10 +19,19 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_yaml", type=str,
                         default="examples/pytorch/semantic_parsing/graph2seq/config/dependency.yaml", help="")
+    parser.add_argument("--use_copy", type=bool, default=True, help="whether use copy mechanism")
+    parser.add_argument("--use_coverage", type=bool, default=True, help="whether use coverage mechanism")
+    parser.add_argument("--graph_pooling_strategy", type=str, default=None,
+                        help="The strategy of graph pooling for initial state of RNN, expected in (None, 'mean'"
+                             ",'max', 'min')")
+    parser.add_argument("--attention_type", type=str, default="sep_diff_encoder_type",
+                        help="attention strategy")
+    parser.add_argument("--fuse_strategy", type=str, default="concatenate", help="fuse strategy")
+    parser.add_argument("--decoder_length", type=int, default=50, help="the maximum length of output text")
     parser.add_argument('--word-emb-size', type=int, default=300, help='')
     parser.add_argument("--log-file", type=str, default="examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt")
     parser.add_argument("--checkpoint-save-path", type=str, default="examples/pytorch/semantic_parsing/graph2seq/save")
-    parser.add_argument('--hidden-size', type=int, default=300, help='')
+    parser.add_argument('--hidden-size', type=int, default=500, help='')
     # dropout
     parser.add_argument('--emb-dropout', type=float, default=0.2, help='')
     parser.add_argument('--feats-dropout', type=float, default=0.2, help='')
@@ -40,6 +49,7 @@ def get_args():
     parser.add_argument("--seed", type=int, default=1236, help="")
 
     # dataset config
+    parser.add_argument("--batch_size", type=int, default=24, help="the size of one mini-batch")
     parser.add_argument("--dynamic_graph_type", type=str, default="node_emb_refined",
                         help="graph type, expected in (None, 'node_emb', 'node_emb_refined')")
     parser.add_argument("--graph-type", type=str, default="dynamic",
@@ -59,9 +69,12 @@ def get_args():
                         default='/home/shiina/shiina/lib/graph4nlp/.vector_cache/glove.6B.300d.txt', help="")
 
     # gnn config
-    parser.add_argument("--gnn", type=str, default="GCN", help="the gnn algorithm choice in ('GAT', 'GGNN', 'GraphSage')")
+    parser.add_argument("--gnn", type=str, default="GAT", help="the gnn algorithm choice in ('GAT', 'GGNN', 'GraphSage')")
     parser.add_argument("--gnn-direction", type=str, default="undirected", help="gnn direction, expected in "
                                                                                 "('undirected', 'bi_sep', 'bi_fuse')")
+    #beam search
+    parser.add_argument("--beam-size", type=int, default=4, help="the beam size of beam search")
+
     cfg = parser.parse_args()
 
     dataset_args = get_yaml_config(cfg.dataset_yaml)

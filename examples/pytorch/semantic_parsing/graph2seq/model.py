@@ -15,11 +15,14 @@ import torch.nn.functional as F
 
 class Graph2seq(nn.Module):
     def __init__(self, vocab, hidden_size=300, graph_type="dependency", direction_option='undirected',
-                 gnn="GAT",
+                 gnn="GAT", decoder_length=50, use_copy=False, use_coverage=False, graph_pooling_strategy=None,
+                 attention_type="sep_diff_encoder_type", fuse_strategy="concatenate",
                  device=None, emb_dropout=0.2, feats_dropout=0.2, rnn_dropout=0.3):
         super(Graph2seq, self).__init__()
 
         self.vocab = vocab
+        self.use_copy = use_copy
+        self.use_coverage = use_coverage
         self.graph_type = graph_type
         use_edge_weight = False
 
@@ -99,12 +102,12 @@ class Graph2seq(nn.Module):
         else:
             raise NotImplementedError()
 
-        self.seq_decoder = StdRNNDecoder(max_decoder_step=50,
+        self.seq_decoder = StdRNNDecoder(max_decoder_step=decoder_length,
                                          decoder_input_size=2*hidden_size if direction_option == 'bi_sep' else hidden_size,
-                                         decoder_hidden_size=hidden_size, graph_pooling_strategy=None,
+                                         decoder_hidden_size=hidden_size, graph_pooling_strategy=graph_pooling_strategy,
                                          word_emb=self.word_emb, vocab=self.vocab.in_word_vocab,
-                                         attention_type="sep_diff_encoder_type", fuse_strategy="concatenate",
-                                         rnn_emb_input_size=hidden_size, use_coverage=True, use_copy=True,
+                                         attention_type=attention_type, fuse_strategy=fuse_strategy,
+                                         rnn_emb_input_size=hidden_size, use_coverage=use_coverage, use_copy=use_copy,
                                          tgt_emb_as_output_layer=True, dropout=rnn_dropout)
         self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
         self.loss_cover = CoverageLoss(0.3)
@@ -113,7 +116,10 @@ class Graph2seq(nn.Module):
     def from_args(cls, vocab, args, device):
         return cls(vocab=vocab, hidden_size=args.hidden_size, graph_type=args.graph_type,
                    direction_option=args.gnn_direction, gnn=args.gnn, device=device,
-                   emb_dropout=args.emb_dropout, feats_dropout=args.feats_dropout, rnn_dropout=args.feats_dropout)
+                   emb_dropout=args.emb_dropout, feats_dropout=args.feats_dropout, rnn_dropout=args.feats_dropout,
+                   use_copy=args.use_copy, use_coverage=args.use_coverage, decoder_length=args.decoder_length,
+                   graph_pooling_strategy=args.graph_pooling_strategy, attention_type=args.attention_type,
+                   fuse_strategy=args.fuse_strategy)
 
     def forward(self, graph_list, tgt=None, oov_dict=None, require_loss=True):
         batch_graph = self.graph_topology(graph_list)
@@ -126,7 +132,9 @@ class Graph2seq(nn.Module):
         prob, enc_attn_weights, coverage_vectors = self.seq_decoder(from_batch(batch_graph), tgt_seq=tgt, oov_dict=oov_dict)
         if require_loss:
             loss = self.loss_calc(prob, tgt)
-            # cover_loss = self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
+            if self.use_coverage:
+                cover_loss = self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
+                loss += cover_loss
             return prob, loss
         else:
             return prob

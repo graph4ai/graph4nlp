@@ -8,6 +8,7 @@ from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction 
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import BeamSearchStrategy
 
 import numpy as np
 import torch
@@ -21,6 +22,7 @@ from .model import Graph2seq
 from graph4nlp.pytorch.data.data import from_batch, GraphData
 import copy
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 
 
 class Jobs:
@@ -85,15 +87,11 @@ class Jobs:
                                         dynamic_graph_type=graph_type if graph_type in ('node_emb', 'node_emb_refined') else None,
                                         dynamic_init_topology_builder=dynamic_init_topology_builder)
 
-        self.train_dataloader = DataLoader(dataset.train, batch_size=24, shuffle=True, num_workers=1,
+        self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt.batch_size, shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=24, shuffle=False, num_workers=1,
+        self.test_dataloader = DataLoader(dataset.test, batch_size=self.opt.batch_size, shuffle=False, num_workers=1,
                                           collate_fn=dataset.collate_fn)
-
         self.vocab = dataset.vocab_model
-        # from examples.pytorch.semantic_parsing.graph2seq.utils import get_glove_weights
-        # pretrained_weight = get_glove_weights(self.vocab.in_word_vocab)
-        # self.vocab.in_word_vocab.embeddings = pretrained_weight.numpy()
 
     def _build_model(self):
         self.model = Graph2seq.from_args(vocab=self.vocab, args=self.opt, device=self.device).to(self.device)
@@ -123,7 +121,7 @@ class Jobs:
                 break
         return max_score
 
-    def _stop_condition(self, epoch, patience=2000):
+    def _stop_condition(self, epoch, patience=20):
         return epoch > patience + self._best_epoch
 
     def _adjust_lr(self, epoch):
@@ -174,9 +172,11 @@ class Jobs:
         for step, data in enumerate(dataloader):
             graph_list, tgt, gt_str = data
             tgt = tgt.to(self.device)
-            oov_dict, tgt_oov = self.prepare_ext_vocab(graph_list, self.vocab, gt_str=gt_str)
+            oov_dict = None
+            if self.opt.use_copy:
+                oov_dict, tgt = self.prepare_ext_vocab(graph_list, self.vocab, gt_str=gt_str)
 
-            _, loss = self.model(graph_list, tgt_oov, oov_dict=oov_dict, require_loss=True)
+            _, loss = self.model(graph_list, tgt, oov_dict=oov_dict, require_loss=True)
             loss_collect.append(loss.item())
             if step % self.opt.loss_display_step == 0 and step != 0:
                 self.logger.info("Epoch {}: [{} / {}] loss: {:.3f}".format(epoch, step, step_all_train,
@@ -194,11 +194,17 @@ class Jobs:
         dataloader = self.val_dataloader if split == "val" else self.test_dataloader
         for data in dataloader:
             graph_list, tgt, gt_str = data
-            oov_dict = self.prepare_ext_vocab(graph_list, self.vocab)
+            if self.opt.use_copy:
+                oov_dict = self.prepare_ext_vocab(graph_list, self.vocab)
+                ref_dict = oov_dict
+            else:
+                oov_dict = None
+                ref_dict = self.vocab.out_word_vocab
+
             prob = self.model(graph_list, oov_dict=oov_dict, require_loss=False)
             pred = prob.argmax(dim=-1)
 
-            pred_str = wordid2str(pred.detach().cpu(), oov_dict)
+            pred_str = wordid2str(pred.detach().cpu(), ref_dict)
             pred_collect.extend(pred_str)
             gt_collect.extend(gt_str)
 
@@ -208,11 +214,21 @@ class Jobs:
 
     def translate(self):
         self.model.eval()
+        generator = BeamSearchStrategy(beam_size=self.opt.beam_size, vocab=self.model.seq_decoder.vocab, rnn_type="LSTM",
+                                       decoder=self.model.seq_decoder, use_copy=self.opt.use_copy, use_coverage=self.opt.use_copy)
+
         pred_collect = []
         gt_collect = []
         dataloader = self.test_dataloader
         for data in dataloader:
-            graph_list, tgt = data
+            graph_list, tgt, gt_str = data
+            if self.opt.use_copy:
+                oov_dict = self.prepare_ext_vocab(graph_list, self.vocab)
+                ref_dict = oov_dict
+            else:
+                oov_dict = None
+                ref_dict = self.vocab.out_word_vocab
+
             batch_graph = self.model.graph_topology(graph_list)
 
             # run GNN
@@ -220,23 +236,16 @@ class Jobs:
             batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
             # down-task
-            params = self.model.seq_decoder._extract_params(from_batch(batch_graph))
-            params['tgt_seq'] = None
-            params['src_seq'] = None
-            params['beam_width'] = 5
-            params['topk'] = 1
-            params['teacher_forcing_rate'] = 0
+            prob = generator.generate(graphs=from_batch(batch_graph), oov_dict=oov_dict)
 
-            prob = self.model.seq_decoder.beam_search(**params)
-            pred_ids = torch.zeros(len(prob), 50).fill_(2).to(tgt.device).int()
-            seq_collect = []
+            pred_ids = torch.zeros(len(prob), self.opt.decoder_length).fill_(Vocab.EOS).to(tgt.device).int()
             for i, item in enumerate(prob):
                 item = item[0]
                 seq = [i.view(1, 1) for i in item]
                 seq = torch.cat(seq, dim=1)
                 pred_ids[i, :seq.shape[1]] = seq
 
-            pred_str = wordid2str(pred_ids.detach().cpu(), self.vocab.in_word_vocab)
+            pred_str = wordid2str(pred_ids.detach().cpu(), ref_dict)
             tgt_str = wordid2str(tgt, self.vocab.in_word_vocab)
             pred_collect.extend(pred_str)
             gt_collect.extend(tgt_str)
@@ -260,5 +269,5 @@ if __name__ == "__main__":
     max_score = runner.train()
     print("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint("best.pth")
-    runner.evaluate(split="test")
-    # runner.translate()
+    # runner.evaluate(split="test")
+    runner.translate()

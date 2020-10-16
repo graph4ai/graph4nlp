@@ -33,7 +33,7 @@ class JobsDataset(Text2TextDataset):
                  graph_type='static',
                  merge_strategy="tailhead", edge_strategy=None,
                  seed=None,
-                 word_emb_size=300, share_vocab=True, use_copy=False,
+                 word_emb_size=300, share_vocab=True,
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
                  dynamic_init_topology_aux_args=None):
@@ -76,13 +76,13 @@ class JobsDataset(Text2TextDataset):
 
     @classmethod
     def from_args(cls, args, graph_type, topology_builder, dynamic_graph_type=None, dynamic_init_topology_builder=None,
-                  dynamic_init_topology_aux_args=None, use_copy=False):
+                  dynamic_init_topology_aux_args=None):
         return cls(root_dir=args.root_dir,
                    pretrained_word_emb_file=args.pretrained_word_emb_file,
                    val_split_ratio=args.val_split_ratio,
                    merge_strategy=args.merge_strategy, edge_strategy=args.edge_strategy,
                    seed=args.seed,
-                   word_emb_size=300, share_vocab=args.share_vocab,
+                   word_emb_size=args.word_emb_size, share_vocab=args.share_vocab,
                    graph_type=graph_type,
                    topology_builder=topology_builder, topology_subdir=args.topology_subdir,
                    dynamic_graph_type= dynamic_graph_type,
