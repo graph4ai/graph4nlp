@@ -50,6 +50,10 @@ Dpendency_graph (ggnn):
 ```python
 python -m examples.pytorch.name_entity_recognition.run_ner   --graph_type dependency_graph --gpu 0 --init_hidden_size 400 --hidden_size 128  --lr 0.01 --batch_size 100 --gnn_type ggnn --direction_option undirected
 ```
+Dpendency_graph (gcn):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner   --graph_type dependency_graph --gpu 0 --init_hidden_size 400 --hidden_size 128  --lr 0.001 --batch_size 100 --gnn_type gcn --direction_option undirected
+```
 
 Dpendency_graph (gat):
 ```python
@@ -60,6 +64,11 @@ Line_graph (graphsage):
 ```python
 python -m examples.pytorch.name_entity_recognition.run_ner   --graph_type line_graph --gpu 0 --init_hidden_size 400 --hidden_size 128  --lr 0.01 --batch_size 100 --gnn_type graphsage --direction_option undirected
 ```
+Line_graph (gcn):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner   --graph_type line_graph --gpu 0 --init_hidden_size 400 --hidden_size 128  --lr 0.001 --batch_size 100 --gnn_type gcn --direction_option undirected
+```
+
 Line_graph (ggnn):
 ```python
 python -m examples.pytorch.name_entity_recognition.run_ner  --graph_type line_graph --gpu 0 --init_hidden_size 400 --hidden_size 128  --lr 0.01 --batch_size 100 --gnn_type ggnn --direction_option undirected
@@ -68,6 +77,26 @@ python -m examples.pytorch.name_entity_recognition.run_ner  --graph_type line_gr
 Line_graph (gat):
 ```python
 python -m examples.pytorch.name_entity_recognition.run_ner  --graph_type line_graph --gpu 0 --init_hidden_size 400 --hidden_size 128 --lr 0.001 --batch_size 100 --gnn_type gat --direction_option undirected 
+```
+
+Dynamic_graph (graphsage):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner   --graph_type node_emb --gpu 0 --init_hidden_size 400 --hidden_size 128  --lr 0.01 --batch_size 100 --gnn_type graphsage --direction_option undirected
+```
+
+Dynamic_graph (gcn):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner   --graph_type node_emb --gpu 0 --init_hidden_size 400 --hidden_size 128  --lr 0.001 --batch_size 100 --gnn_type gcn --direction_option undirected
+```
+
+Dynamic_graph (ggnn):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner   --graph_type node_emb --gpu 0 --init_hidden_size 400 --hidden_size 128  --lr 0.01 --batch_size 100 --gnn_type ggnn --direction_option undirected
+```
+
+Dynamic_graph (gat):
+```python
+python -m examples.pytorch.name_entity_recognition.run_ner   --graph_type node_emb --gpu 0 --init_hidden_size 400 --hidden_size 128 2 --lr 0.001 --batch_size 100 --gnn_type gat --direction_option undirected 
 ```
 
 bilstm
