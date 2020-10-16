@@ -123,13 +123,16 @@ class Graph2seq(nn.Module):
 
     def forward(self, graph_list, tgt=None, oov_dict=None, require_loss=True):
         batch_graph = self.graph_topology(graph_list)
-
         # run GNN
         batch_graph: GraphData = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
+        graph_list_decoder = from_batch(batch_graph)
+        if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
+            for g, g_ori in zip(graph_list_decoder, graph_list):
+                g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
 
         # down-task
-        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(from_batch(batch_graph), tgt_seq=tgt, oov_dict=oov_dict)
+        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(graph_list_decoder, tgt_seq=tgt, oov_dict=oov_dict)
         if require_loss:
             loss = self.loss_calc(prob, tgt)
             if self.use_coverage:

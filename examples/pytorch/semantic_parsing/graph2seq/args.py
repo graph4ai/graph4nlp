@@ -69,8 +69,8 @@ def get_args():
                         default='/home/shiina/shiina/lib/graph4nlp/.vector_cache/glove.6B.300d.txt', help="")
 
     # gnn config
-    parser.add_argument("--gnn", type=str, default="GAT", help="the gnn algorithm choice in ('GAT', 'GGNN', 'GraphSage')")
-    parser.add_argument("--gnn-direction", type=str, default="undirected", help="gnn direction, expected in "
+    parser.add_argument("--gnn", type=str, default="GraphSage", help="the gnn algorithm choice in ('GAT', 'GGNN', 'GraphSage', 'GCN')")
+    parser.add_argument("--gnn-direction", type=str, default="bi_sep", help="gnn direction, expected in "
                                                                                 "('undirected', 'bi_sep', 'bi_fuse')")
     #beam search
     parser.add_argument("--beam-size", type=int, default=4, help="the beam size of beam search")

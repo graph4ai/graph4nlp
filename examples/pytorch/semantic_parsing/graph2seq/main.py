@@ -24,7 +24,6 @@ import copy
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 
-
 class Jobs:
     def __init__(self, opt):
         super(Jobs, self).__init__()
@@ -84,7 +83,7 @@ class Jobs:
 
         dataset = JobsDataset.from_args(args=self.opt, topology_builder=topology_builder,
                                         graph_type=graph_type,
-                                        dynamic_graph_type=graph_type if graph_type in ('node_emb', 'node_emb_refined') else None,
+                                        dynamic_graph_type=self.opt.graph_type if self.opt.graph_type in ('node_emb', 'node_emb_refined') else None,
                                         dynamic_init_topology_builder=dynamic_init_topology_builder)
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt.batch_size, shuffle=True, num_workers=1,
