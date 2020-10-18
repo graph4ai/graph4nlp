@@ -1,11 +1,5 @@
 import torch
 import torch.nn as nn
-from graph4nlp.pytorch.data.data import GraphData
-
-
-import torch
-import torch.nn as nn
-from graph4nlp.pytorch.data.data import GraphData
 
 
 class DecoderBase(nn.Module):
@@ -49,11 +43,20 @@ class DecoderBase(nn.Module):
     def forward(self, **kwargs):
         r"""
             Forward calculation method
+        """
+        raise NotImplementedError()
 
-        Parameters
-        ----------
-        g: GraphData
-            The graph structure.
+    def decode_step(self, **kwargs):
+        r"""
+            One step for decoding
+        """
+        raise NotImplementedError()
+
+    def get_decoder_init_state(self, **kwargs):
+        r"""
+            The initial state for decoding.
+        -------
+
         """
         raise NotImplementedError()
 
@@ -71,7 +74,7 @@ class RNNDecoderBase(DecoderBase):
         """
         raise NotImplementedError()
 
-    def _extract_params(self, g):
+    def extract_params(self, g):
         raise NotImplementedError()
 
     def forward(self, g, tgt_seq=None, src_seq=None):
@@ -109,6 +112,50 @@ class RNNDecoderBase(DecoderBase):
         """
         raise NotImplementedError()
 
+    def decode_step(self, decoder_input, rnn_state, encoder_out, dec_input_mask, rnn_emb=None,
+                    enc_attn_weights_average=None,
+                    src_seq=None, oov_dict=None):
+        r"""
+            One step for decoding
+        Parameters
+        ----------
+        decoder_input: torch.Tensor
+            The input for current decoding step
+        rnn_state: torch.Tensor
+            Rnn_state
+        encoder_out: torch.Tensor
+            The graph node embedding for decoding
+        dec_input_mask: torch.Tensor
+            The mask of graph node.
+            Notes: ``-1`` is the dummy node, each int larger than -1 is one class for separate attention.
+        rnn_emb: torch.Tensor
+            The graph node embedding from RNN encoder.
+        enc_attn_weights_average: list
+            The list of encoder attention weights. It will be used for coverage.
+        src_seq: torch.Tensor
+            The source sequence. It will be used for copy.
+        oov_dict: Vocab
+            The vocabulary containing out-of-vocabulary words.
+        """
+        raise NotImplementedError()
+
+    def get_decoder_init_state(self, rnn_type, batch_size, content=None):
+        r"""
+            The initial state for RNN decoder.
+        Parameters
+        ----------
+        rnn_type: str, option=["LSTM", "GRU']
+            The rnn type.
+        batch_size: int
+            The batch size of the initial state.
+        content: torch.Tensor, default=None
+            The initialization of initial state.
+
+        Returns
+        -------
+            initial_state: Any
+        """
+        raise NotImplementedError()
 
 
 class RNNTreeDecoderBase(DecoderBase):
@@ -139,6 +186,7 @@ class RNNTreeDecoderBase(DecoderBase):
     teacher_forcing_ratio: float, default=1.
         The probability rate to use teacher forcing strategy.
     """
+
     def __init__(self, use_attention=True, use_copy=False, use_coverage=False, attention_type="uniform",
                  fuse_strategy="average"):
         super(RNNTreeDecoderBase, self).__init__(use_attention=use_attention)

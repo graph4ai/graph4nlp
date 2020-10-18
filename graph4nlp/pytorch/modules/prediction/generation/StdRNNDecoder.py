@@ -4,9 +4,40 @@ from functools import reduce
 import torch
 import torch.nn as nn
 
+from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.prediction.generation.attention import Attention
 from graph4nlp.pytorch.modules.prediction.generation.base import RNNDecoderBase
-from graph4nlp.pytorch.data.data import GraphData, from_batch
+from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
+
+
+class BeamSearchNode(object):
+    def __init__(self, hiddenstate, enc_attn_weights_average, previousNode, wordId, logProb, length):
+        '''
+        :param hiddenstate:
+        :param previousNode:
+        :param wordId:
+        :param logProb:
+        :param length:
+        '''
+        self.h = hiddenstate
+        self.enc_attn_weights_average = enc_attn_weights_average
+        self.prevNode = previousNode
+        self.wordid = wordId
+        self.logp = logProb
+        self.leng = length
+
+    def eval(self, alpha=1.0):
+        reward = 0
+        # Add here a function for shaping a reward
+
+        return self.logp / float(self.leng - 1 + 1e-6) + alpha * reward
+
+
+def extract_mask(mask, token):
+    mask_ret = torch.zeros(*(mask.shape)).to(mask.device)
+    mask_ret.fill_(0)
+    mask_ret[mask == token] = 1
+    return mask_ret
 
 
 class StdRNNDecoder(RNNDecoderBase):
@@ -58,8 +89,8 @@ class StdRNNDecoder(RNNDecoderBase):
             """
 
     def __init__(self, max_decoder_step, decoder_input_size, decoder_hidden_size,  # decoder config
-                 word_emb, vocab,  # word embedding & vocabulary TODO: add our vocabulary when building pipeline
-                 rnn_type="LSTM", graph_pooling_strategy=None, # RNN config
+                 word_emb, vocab: Vocab,  # word embedding & vocabulary TODO: add our vocabulary when building pipeline
+                 rnn_type="LSTM", graph_pooling_strategy=None,  # RNN config
                  use_attention=True, attention_type="uniform", rnn_emb_input_size=None,  # attention config
                  attention_function="mlp", node_type_num=None, fuse_strategy="average",
                  use_copy=False, use_coverage=False, coverage_strategy="sum",
@@ -139,7 +170,7 @@ class StdRNNDecoder(RNNDecoderBase):
         # project logits to labels
         self.tgt_emb_as_output_layer = tgt_emb_as_output_layer
         if self.tgt_emb_as_output_layer:  # use pre_out layer
-            self.out_embed_size = self.decoder_hidden_size
+            self.out_embed_size = self.word_emb_size
             self.pre_out = nn.Linear(self.out_logits_size, self.out_embed_size, bias=False)
             size_before_output = self.out_embed_size
         else:  # don't use pre_out layer
@@ -183,11 +214,11 @@ class StdRNNDecoder(RNNDecoderBase):
                 raise NotImplementedError()
             if self.use_attention:
                 if self.attention_type == "uniform":
-                    ptr_size += self.decoder_hidden_size
+                    ptr_size += decoder_input_size
                 elif self.attention_type == "sep_diff_encoder_type":
-                    ptr_size += self.decoder_hidden_size * 2
+                    ptr_size += decoder_input_size + rnn_emb_input_size
                 elif self.attention_type == "sep_diff_node_type":
-                    ptr_size += self.decoder_hidden_size * node_type_num
+                    ptr_size += decoder_input_size * node_type_num
             self.ptr = nn.Linear(ptr_size, 1)
 
     def _build_rnn(self, rnn_type, **kwargs):
@@ -206,7 +237,7 @@ class StdRNNDecoder(RNNDecoderBase):
 
     def _run_forward_pass(self, graph_node_embedding, graph_node_mask=None, rnn_node_embedding=None,
                           graph_level_embedding=None,
-                          graph_edge_embedding=None, graph_edge_mask=None, tgt_seq=None, src_seq=None,
+                          graph_edge_embedding=None, graph_edge_mask=None, tgt_seq=None, src_seq=None, oov_dict=None,
                           teacher_forcing_rate=1.0):
         """
             The forward function for RNN.
@@ -234,6 +265,7 @@ class StdRNNDecoder(RNNDecoderBase):
             shape=[B, S]
             The source sequence's index. It is used for ``use_copy``. Note that it can be encoded by target word
             embedding.
+        oov_dict: Vocab
         teacher_forcing_rate: float, default=1.0
             The teacher forcing rate.
 
@@ -255,84 +287,24 @@ class StdRNNDecoder(RNNDecoderBase):
 
         batch_size = graph_node_embedding.shape[0]
         decoder_input = torch.tensor([self.vocab.SOS] * batch_size).to(graph_node_embedding.device)
-        decoder_state = self._get_decoder_init_state(rnn_type=self.rnn_type, batch_size=batch_size, content=graph_level_embedding)
+        decoder_state = self.get_decoder_init_state(rnn_type=self.rnn_type, batch_size=batch_size,
+                                                    content=graph_level_embedding)
 
         outputs = []
         enc_attn_weights_average = []
         coverage_vectors = []
-        embed = []
-        dec_hidden = []
-        attn_results_all = []
 
         for i in range(target_len):
-            dec_emb = self.tgt_emb(decoder_input)
-            dec_emb = self.dropout(dec_emb)
-            embed.append(dec_emb.unsqueeze(1))
-            if self.use_coverage and enc_attn_weights_average:
-                coverage_vec = self.coverage_function(enc_attn_weights_average)
-            else:
-                coverage_vec = None
 
-            decoder_output, decoder_state, dec_attn_results, score_results = \
-                self._decode_step(dec_input_emb=dec_emb, rnn_state=decoder_state, dec_input_mask=graph_node_mask,
-                                  encoder_out=graph_node_embedding, rnn_emb=rnn_node_embedding,
-                                  coverage_vec=coverage_vec)
-            if self.rnn_type == "LSTM":
-                hidden = torch.cat(decoder_state, -1).squeeze(0)
-            elif self.rnn_type == "GRU":
-                hidden = decoder_state.squeeze(0)
-            else:
-                raise NotImplementedError()
-            if self.use_attention:
-                if self.attention_type == "uniform":
-                    assert len(dec_attn_results) == 1
-                    assert len(score_results) == 1
-                    attn_total = dec_attn_results[0]
-                elif self.attention_type == "sep_diff_encoder_type" or self.attention_type == "sep_diff_node_type":
-                    if self.fuse_strategy == "average":
-                        attn_total = reduce(lambda x, y: x + y, dec_attn_results) / len(dec_attn_results)
-                    elif self.fuse_strategy == "concatenate":
-                        attn_total = torch.cat(dec_attn_results, dim=-1)
-                    else:
-                        raise NotImplementedError()
-                else:
-                    raise NotImplementedError()
-
-                decoder_output = torch.cat((decoder_output, attn_total), dim=-1)
-                dec_attn_scores = reduce(lambda x, y: x + y, score_results) / len(score_results)
-
+            decoder_output, decoder_state, dec_attn_scores, coverage_vec = \
+                self.decode_step(decoder_input=decoder_input, rnn_state=decoder_state, dec_input_mask=graph_node_mask,
+                                 encoder_out=graph_node_embedding, rnn_emb=rnn_node_embedding,
+                                 enc_attn_weights_average=enc_attn_weights_average,
+                                 src_seq=src_seq, oov_dict=oov_dict)
+            if self.use_coverage:
                 enc_attn_weights_average.append(dec_attn_scores.unsqueeze(0))
                 coverage_vectors.append(coverage_vec)
-                attn_results_all.append(torch.cat(dec_attn_results, dim=-1).unsqueeze(1))
-            else:
-                decoder_output = decoder_output
 
-            dec_hidden.append(hidden.unsqueeze(1))
-
-            # project
-            if self.tgt_emb_as_output_layer:
-                out_embed = torch.tanh(self.pre_out(decoder_output))
-            else:
-                out_embed = decoder_output
-            out_embed = self.dropout(out_embed)
-            decoder_output = self.out_project(out_embed)
-
-            if self.use_copy:
-                assert src_seq is not None
-                attn_ptr = torch.cat(dec_attn_results, dim=-1)
-                pgen_collect = [dec_emb, hidden, attn_ptr]
-
-                prob_ptr = torch.sigmoid(self.ptr(torch.cat(pgen_collect, -1)))
-                prob_gen = 1 - prob_ptr
-                gen_output = torch.softmax(decoder_output, dim=-1)
-
-                ret = prob_gen * gen_output
-
-                ptr_output = dec_attn_scores
-                ret.scatter_add_(1, src_seq, prob_ptr * ptr_output)
-                decoder_output = ret
-            else:
-                decoder_output = torch.softmax(decoder_output, dim=-1)
             outputs.append(decoder_output.unsqueeze(1))
 
             # teacher_forcing
@@ -342,12 +314,22 @@ class StdRNNDecoder(RNNDecoderBase):
                 # sampling
                 # TODO: now argmax sampling
                 decoder_input = decoder_output.squeeze(1).argmax(dim=-1)
-            # decoder_input = self._filter_oov(decoder_input)
+            decoder_input = self._filter_oov(decoder_input)
         ret = torch.cat(outputs, dim=1)
         return ret, enc_attn_weights_average, coverage_vectors
 
-    def _decode_step(self, dec_input_emb, rnn_emb, dec_input_mask, rnn_state, encoder_out, coverage_vec=None):
-        dec_out, rnn_state = self.rnn(dec_input_emb.unsqueeze(0), rnn_state)
+    def decode_step(self, decoder_input, rnn_state, encoder_out, dec_input_mask, rnn_emb=None,
+                    enc_attn_weights_average=None,
+                    src_seq=None, oov_dict=None):
+        batch_size = decoder_input.shape[0]
+        dec_emb = self.tgt_emb(decoder_input)
+        dec_emb = self.dropout(dec_emb)
+        if self.use_coverage and enc_attn_weights_average:
+            coverage_vec = self.coverage_function(enc_attn_weights_average)
+        else:
+            coverage_vec = None
+
+        dec_out, rnn_state = self.rnn(dec_emb.unsqueeze(0), rnn_state)
         dec_out = dec_out.squeeze(0)
 
         if self.rnn_type == "LSTM":
@@ -381,15 +363,68 @@ class StdRNNDecoder(RNNDecoderBase):
                     attn_collect.append(rnn_attn_res)
             elif self.attention_type == "sep_diff_node_type":
                 for i in range(self.node_type_num):
-                    node_mask = self.extract_mask(dec_input_mask, token=i)
+                    node_mask = extract_mask(dec_input_mask, token=i)
                     attn, scores = self.attn_modules[i](query=hidden, memory=encoder_out, memory_mask=node_mask,
                                                         coverage=coverage_repr)
                     attn_collect.append(attn)
                     score_collect.append(scores)
 
-        return dec_out, rnn_state, attn_collect, score_collect
+        if self.use_attention:
+            if self.attention_type == "uniform":
+                assert len(attn_collect) == 1
+                assert len(score_collect) == 1
+                attn_total = attn_collect[0]
+            elif self.attention_type == "sep_diff_encoder_type" or self.attention_type == "sep_diff_node_type":
+                if self.fuse_strategy == "average":
+                    attn_total = reduce(lambda x, y: x + y, attn_collect) / len(attn_collect)
+                elif self.fuse_strategy == "concatenate":
+                    attn_total = torch.cat(attn_collect, dim=-1)
+                else:
+                    raise NotImplementedError()
+            else:
+                raise NotImplementedError()
 
-    def _get_decoder_init_state(self, rnn_type, batch_size, content=None):
+            decoder_output = torch.cat((dec_out, attn_total), dim=-1)
+            dec_attn_scores = reduce(lambda x, y: x + y, score_collect) / len(score_collect)
+
+            # enc_attn_weights_average.append(dec_attn_scores.unsqueeze(0))
+            # if self.use_coverage:
+            #     coverage_vectors.append(coverage_vec)
+        else:
+            decoder_output = dec_out
+
+        # project
+        if self.tgt_emb_as_output_layer:
+            out_embed = torch.tanh(self.pre_out(decoder_output))
+        else:
+            out_embed = decoder_output
+        out_embed = self.dropout(out_embed)
+        decoder_output = self.out_project(out_embed)  # [B, S, Vocab]
+
+        if self.use_copy:
+            assert src_seq is not None
+            assert oov_dict is not None
+            output = torch.zeros(batch_size, oov_dict.get_vocab_size()).to(rnn_emb.device)
+            attn_ptr = torch.cat(attn_collect, dim=-1)
+            pgen_collect = [dec_emb, hidden, attn_ptr]
+            prob_ptr = torch.sigmoid(self.ptr(torch.cat(pgen_collect, -1)))
+            prob_gen = 1 - prob_ptr
+            gen_output = torch.softmax(decoder_output, dim=-1)
+
+            ret = prob_gen * gen_output
+            output[:, :self.vocab.get_vocab_size()] = ret
+
+            ptr_output = dec_attn_scores
+            # print(output.shape, src_seq.shape, prob_ptr.shape, ptr_output.shape, "-----")
+
+            output.scatter_add_(1, src_seq, prob_ptr * ptr_output)
+            decoder_output = output
+        else:
+            decoder_output = torch.softmax(decoder_output, dim=-1)
+
+        return decoder_output, rnn_state, dec_attn_scores, coverage_vec
+
+    def get_decoder_init_state(self, rnn_type, batch_size, content=None):
         if rnn_type == "LSTM":
             if content is not None:
                 assert len(content.shape) == 2
@@ -404,7 +439,7 @@ class StdRNNDecoder(RNNDecoderBase):
         elif rnn_type == "GRU":
             if content is not None:
                 ret = self.encoder_decoder_adapter(content).view(1, batch_size,
-                                                                           self.decoder_hidden_size).expand(
+                                                                 self.decoder_hidden_size).expand(
                     self.num_layers, -1, -1)
             else:
                 weight = next(self.parameters()).data
@@ -413,25 +448,19 @@ class StdRNNDecoder(RNNDecoderBase):
             raise NotImplementedError()
         return ret
 
-    def extract_mask(self, mask, token):
-        mask_ret = torch.zeros(*(mask.shape)).to(mask.device)
-        mask_ret.fill_(0)
-        mask_ret[mask == token] = 1
-        return mask_ret
-
     def _filter_oov(self, tokens):
         ret = tokens.clone()
         ret[tokens >= self.vocab_size] = self.vocab.UNK
         return ret
 
-    def forward(self, g, tgt_seq=None, src_seq=None, teacher_forcing_rate=1.0):
-        params = self._extract_params(g)
+    def forward(self, g, tgt_seq=None, oov_dict=None, teacher_forcing_rate=1.0):
+        params = self.extract_params(g)
         params['tgt_seq'] = tgt_seq
-        params['src_seq'] = src_seq
         params['teacher_forcing_rate'] = teacher_forcing_rate
+        params["oov_dict"] = oov_dict
         return self._run_forward_pass(**params)
 
-    def _extract_params(self, graph_list):
+    def extract_params(self, graph_list):
         """
 
         Parameters
@@ -445,8 +474,6 @@ class StdRNNDecoder(RNNDecoderBase):
         graph_node_emb = [s_g.node_features["node_emb"] for s_g in graph_list]
         rnn_node_emb = [s_g.node_features["rnn_emb"] for s_g in graph_list]
 
-        graph_edge_emb = None
-
         def pad_tensor(x, dim, pad_size):
             if len(x.shape) == 2:
                 assert (0 <= dim <= 1)
@@ -456,13 +483,25 @@ class StdRNNDecoder(RNNDecoderBase):
                 pad = pad.to(x.device)
                 return torch.cat((x, pad), dim=dim)
 
+        if self.use_copy:
+            src_seq_list = [s_g.node_features["token_id_oov"].view(1, -1) for s_g in graph_list]
+            max_src_seq_len = max([seq.shape[1] for seq in src_seq_list])
+            src_seq_collect = []
+            for seq in src_seq_list:
+                if seq.shape[1] < max_src_seq_len:
+                    seq = pad_tensor(seq, 1, max_src_seq_len - seq.shape[1])
+                src_seq_collect.append(seq)
+            src_seq_ret = torch.cat(src_seq_collect, dim=0)
+        else:
+            src_seq_ret = None
+
         batch_size = len(graph_list)
         max_node_num = max([emb.shape[0] for emb in graph_node_emb])
 
         graph_node_emb_ret = []
         for emb in graph_node_emb:
             if emb.shape[0] < max_node_num:
-                emb = pad_tensor(emb, 0, max_node_num-emb.shape[0])
+                emb = pad_tensor(emb, 0, max_node_num - emb.shape[0])
             graph_node_emb_ret.append(emb.unsqueeze(0))
         graph_node_emb_ret = torch.cat(graph_node_emb_ret, dim=0)
 
@@ -490,12 +529,13 @@ class StdRNNDecoder(RNNDecoderBase):
             rnn_node_emb_ret = torch.cat(rnn_node_emb_ret, dim=0)
 
         return {
-             "graph_node_embedding": graph_node_emb_ret,
-             "graph_node_mask": graph_node_mask_ret,
-             "rnn_node_embedding": rnn_node_emb_ret,
-             "graph_level_embedding": graph_level_emb,
-             "graph_edge_embedding": None,
-             "graph_edge_mask": None
+            "graph_node_embedding": graph_node_emb_ret,
+            "graph_node_mask": graph_node_mask_ret,
+            "rnn_node_embedding": rnn_node_emb_ret,
+            "graph_level_embedding": graph_level_emb,
+            "graph_edge_embedding": None,
+            "graph_edge_mask": None,
+            "src_seq": src_seq_ret.long() if self.use_copy else None
         }
 
     def graph_pooling(self, graph_node):

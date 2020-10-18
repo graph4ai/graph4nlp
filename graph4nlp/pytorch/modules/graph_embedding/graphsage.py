@@ -585,7 +585,6 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
         # update node part:
         h_neigh_fw,h_self_fw = self.message_reduce(f_graph,'fw',feat_fw,edge_weight)
         h_neigh_bw,h_self_bw = self.message_reduce(b_graph,'bw',feat_bw,reverse_edge_weight)
-
         # GraphSAGE GCN does not require fc_self.
 
 
