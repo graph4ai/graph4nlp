@@ -531,14 +531,14 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
            if edge_weight is None:
                graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_fw)
            else:
-              warnings.warn(warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning)) 
+              warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning)
               graph.edata['edge_weight']=edge_weight
               graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_fw)
          elif direction=='bw':
            if edge_weight is None:
               graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_bw)
            else:
-              warnings.warn(warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning)) 
+              warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning)
               graph.edata['edge_weight']=edge_weight
               graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_bw)
 
@@ -799,14 +799,14 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
                if edge_weight is None:
                    graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_fw)
                else:
-                   warnings.warn(warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning))
+                   warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning)
                    graph.edata['edge_weight']=edge_weight
                    graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_fw)
              elif direction=='bw':
                if edge_weight is None:
                    graph.update_all(fn.copy_src('h', 'm'), self._lstm_reducer_bw)
                else:
-                   warnings.warn(warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning))                   
+                   warnings.warn('Operating lstm aggregation by using the edge weights in GNN', SyntaxWarning)                  
                    graph.edata['edge_weight']=edge_weight
                    graph.update_all(fn.u_mul_e('h', 'edge_weight','m'), self._lstm_reducer_bw)
 
