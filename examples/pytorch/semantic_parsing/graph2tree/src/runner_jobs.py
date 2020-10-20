@@ -61,7 +61,8 @@ class Graph2Tree(nn.Module):
                  max_dec_seq_length,
                  max_dec_tree_depth,
                  graph_construction_type,
-                 gnn_type):
+                 gnn_type,
+                 rnn_type):
         super(Graph2Tree, self).__init__()
 
         self.src_vocab = src_vocab
@@ -164,8 +165,8 @@ class Graph2Tree(nn.Module):
         self.criterion = nn.NLLLoss(size_average=False)
 
         if not use_copy:
-            attn_unit = AttnUnit(
-                dec_hidden_size, output_size, "uniform", 0.1)
+            # attn_unit = AttnUnit(
+            #     dec_hidden_size, output_size, "uniform", 0.1)
             self.decoder = StdTreeDecoder(attn=attn_unit,
                                           attn_type="uniform",
                                           embeddings=self.word_emb,
@@ -184,7 +185,7 @@ class Graph2Tree(nn.Module):
                                           num_layers=1,
                                           dropout_input=dec_dropout_input,
                                           dropout_output=dec_dropout_output,
-                                          rnn_type="lstm",
+                                          rnn_type=rnn_type,
                                           max_dec_seq_length=max_dec_seq_length,
                                           max_dec_tree_depth=max_dec_tree_depth,
                                           tgt_vocab=self.tgt_vocab)
@@ -207,7 +208,7 @@ class Graph2Tree(nn.Module):
                                           num_layers=1,
                                           dropout_input=dec_dropout_input,
                                           dropout_output=dec_dropout_output,
-                                          rnn_type="lstm",
+                                          rnn_type=rnn_type,
                                           max_dec_seq_length=max_dec_seq_length,
                                           max_dec_tree_depth=max_dec_tree_depth,
                                           tgt_vocab=self.tgt_vocab)
@@ -342,7 +343,8 @@ class Jobs:
                                 max_dec_seq_length=self.opt.max_dec_seq_length,
                                 max_dec_tree_depth=self.opt.max_dec_tree_depth_for_train,
                                 graph_construction_type=self.opt.graph_construction_type,
-                                gnn_type=self.opt.gnn_type)
+                                gnn_type=self.opt.gnn_type,
+                                rnn_type=self.opt.rnn_type)
         self.model.init(self.opt.init_weight)
         self.model = to_cuda(self.model, self.device)
         print(self.model)
@@ -672,47 +674,6 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
                      1]["t"].children[cur["child_index"]-1] = cur["t"]
     return queue_decode[0]["t"].to_list(form_manager)
 
-class AttnUnit(nn.Module):
-    def __init__(self, hidden_size, output_size, attention_type, dropout):
-        super(AttnUnit, self).__init__()
-        self.hidden_size = hidden_size
-        self.separate_attention = (attention_type != "uniform")
-
-        if self.separate_attention == "separate_different_encoder_type":
-            self.linear_att = nn.Linear(3*self.hidden_size, self.hidden_size)
-        else:
-            self.linear_att = nn.Linear(2*self.hidden_size, self.hidden_size)
-
-        self.linear_out = nn.Linear(self.hidden_size, output_size)
-        self.dropout = nn.Dropout(dropout)
-
-        self.softmax = nn.Softmax(dim=1)
-        self.logsoftmax = nn.LogSoftmax(dim=1)
-
-    def forward(self, enc_s_top, dec_s_top, enc_2):
-        dot = torch.bmm(enc_s_top, dec_s_top.unsqueeze(2))
-        attention = self.softmax(dot.squeeze(2)).unsqueeze(2)
-        enc_attention = torch.bmm(enc_s_top.permute(0, 2, 1), attention)
-
-        if self.separate_attention == "separate_different_encoder_type":
-            dot_2 = torch.bmm(enc_2, dec_s_top.unsqueeze(2))
-            attention_2 = self.softmax(dot_2.squeeze(2)).unsqueeze(2)
-            enc_attention_2 = torch.bmm(enc_2.permute(0, 2, 1), attention_2)
-
-        if self.separate_attention == "separate_different_encoder_type":
-            hid = F.tanh(self.linear_att(torch.cat(
-                (enc_attention.squeeze(2), enc_attention_2.squeeze(2), dec_s_top), 1)))
-        else:
-            hid = F.tanh(self.linear_att(
-                torch.cat((enc_attention.squeeze(2), dec_s_top), 1)))
-        h2y_in = hid
-
-        h2y_in = self.dropout(h2y_in)
-        h2y = self.linear_out(h2y_in)
-        pred = self.logsoftmax(h2y)
-
-        return pred
-
 def get_split_comma(input_str):
     input_str = input_str.replace(",", " , ")
     input_list = [item.strip() for item in input_str.split()]
@@ -782,11 +743,12 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-use_copy',type=bool, default=False, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str, 
-            default='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs', help='data path')
+            default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs', help='data path')
     main_arg_parser.add_argument('-checkpoint_dir',type=str, 
-            default= '/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs', help='output directory where checkpoints get written')
+            default= '/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs', help='output directory where checkpoints get written')
     
     main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")    
+    main_arg_parser.add_argument('-rnn_type', type=str, default="lstm")    
 
     main_arg_parser.add_argument('-enc_emb_size', type=int, default=300)
     main_arg_parser.add_argument('-tgt_emb_size', type=int, default=300)
@@ -820,7 +782,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-learning_rate',type=float, default=1e-3,help='learning rate')
     main_arg_parser.add_argument('-weight_decay',type=float, default=0)
 
-    main_arg_parser.add_argument('-max_epochs',type=int, default=600,help='number of full passes through the training data')
+    main_arg_parser.add_argument('-max_epochs',type=int, default=150,help='number of full passes through the training data')
     main_arg_parser.add_argument('-grad_clip',type=int, default=5,help='clip gradients at this value')
 
     args = main_arg_parser.parse_args()

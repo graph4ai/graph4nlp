@@ -86,3 +86,44 @@ class Attention(nn.Module):
         else:
             raise NotImplementedError()
         return aligns
+
+class AttnUnit(nn.Module):
+    def __init__(self, hidden_size, output_size, attention_type, dropout):
+        super(AttnUnit, self).__init__()
+        self.hidden_size = hidden_size
+        self.separate_attention = (attention_type != "uniform")
+
+        if self.separate_attention == "separate_different_encoder_type":
+            self.linear_att = nn.Linear(3*self.hidden_size, self.hidden_size)
+        else:
+            self.linear_att = nn.Linear(2*self.hidden_size, self.hidden_size)
+
+        self.linear_out = nn.Linear(self.hidden_size, output_size)
+        self.dropout = nn.Dropout(dropout)
+
+        self.softmax = nn.Softmax(dim=1)
+        self.logsoftmax = nn.LogSoftmax(dim=1)
+
+    def forward(self, enc_s_top, dec_s_top, enc_2):
+        dot = torch.bmm(enc_s_top, dec_s_top.unsqueeze(2))
+        attention = self.softmax(dot.squeeze(2)).unsqueeze(2)
+        enc_attention = torch.bmm(enc_s_top.permute(0, 2, 1), attention)
+
+        if self.separate_attention == "separate_different_encoder_type":
+            dot_2 = torch.bmm(enc_2, dec_s_top.unsqueeze(2))
+            attention_2 = self.softmax(dot_2.squeeze(2)).unsqueeze(2)
+            enc_attention_2 = torch.bmm(enc_2.permute(0, 2, 1), attention_2)
+
+        if self.separate_attention == "separate_different_encoder_type":
+            hid = F.tanh(self.linear_att(torch.cat(
+                (enc_attention.squeeze(2), enc_attention_2.squeeze(2), dec_s_top), 1)))
+        else:
+            hid = F.tanh(self.linear_att(
+                torch.cat((enc_attention.squeeze(2), dec_s_top), 1)))
+        h2y_in = hid
+
+        h2y_in = self.dropout(h2y_in)
+        h2y = self.linear_out(h2y_in)
+        pred = self.logsoftmax(h2y)
+
+        return pred
