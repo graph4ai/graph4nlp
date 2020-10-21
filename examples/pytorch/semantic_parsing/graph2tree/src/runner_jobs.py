@@ -35,7 +35,7 @@ from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import \
 
 from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
 
-from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask, dropout
+from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask
 from graph4nlp.pytorch.modules.utils.tree_utils import DataLoaderForGraphEncoder, Tree, Vocab, to_cuda
 
 import warnings
@@ -164,54 +164,27 @@ class Graph2Tree(nn.Module):
             raise NotImplementedError()
         self.criterion = nn.NLLLoss(size_average=False)
 
-        if not use_copy:
-            # attn_unit = AttnUnit(
-            #     dec_hidden_size, output_size, "uniform", 0.1)
-            self.decoder = StdTreeDecoder(attn=attn_unit,
-                                          attn_type="uniform",
-                                          embeddings=self.word_emb,
-                                          enc_hidden_size=enc_hidden_size,
-                                          dec_emb_size=self.tgt_vocab.embedding_dims,
-                                          dec_hidden_size=dec_hidden_size,
-                                          output_size=output_size,
-                                          device=device,
-                                          criterion=self.criterion,
-                                          teacher_force_ratio=teacher_force_ratio,
-                                          use_sibling=False,
-                                          use_attention=True,
-                                          use_copy=self.use_copy,
-                                          use_coverage=True,
-                                          fuse_strategy="average",
-                                          num_layers=1,
-                                          dropout_input=dec_dropout_input,
-                                          dropout_output=dec_dropout_output,
-                                          rnn_type=rnn_type,
-                                          max_dec_seq_length=max_dec_seq_length,
-                                          max_dec_tree_depth=max_dec_tree_depth,
-                                          tgt_vocab=self.tgt_vocab)
-        else:
-            self.decoder = StdTreeDecoder(attn=None,
-                                          attn_type="uniform",
-                                          embeddings=self.word_emb,
-                                          enc_hidden_size=enc_hidden_size,
-                                          dec_emb_size=self.tgt_vocab.embedding_dims,
-                                          dec_hidden_size=dec_hidden_size,
-                                          output_size=output_size,
-                                          device=device,
-                                          criterion=self.criterion,
-                                          teacher_force_ratio=teacher_force_ratio,
-                                          use_sibling=True,
-                                          use_attention=True,
-                                          use_copy=self.use_copy,
-                                          use_coverage=True,
-                                          fuse_strategy="average",
-                                          num_layers=1,
-                                          dropout_input=dec_dropout_input,
-                                          dropout_output=dec_dropout_output,
-                                          rnn_type=rnn_type,
-                                          max_dec_seq_length=max_dec_seq_length,
-                                          max_dec_tree_depth=max_dec_tree_depth,
-                                          tgt_vocab=self.tgt_vocab)
+        self.decoder = StdTreeDecoder(attn_type="uniform",
+                                      embeddings=self.word_emb,
+                                      enc_hidden_size=enc_hidden_size,
+                                      dec_emb_size=self.tgt_vocab.embedding_dims,
+                                      dec_hidden_size=dec_hidden_size,
+                                      output_size=output_size,
+                                      device=device,
+                                      criterion=self.criterion,
+                                      teacher_force_ratio=teacher_force_ratio,
+                                      use_sibling=False,
+                                      use_attention=True,
+                                      use_copy=self.use_copy,
+                                      use_coverage=True,
+                                      fuse_strategy="average",
+                                      num_layers=1,
+                                      dropout_input=dec_dropout_input,
+                                      dropout_output=dec_dropout_output,
+                                      rnn_type=rnn_type,
+                                      max_dec_seq_length=max_dec_seq_length,
+                                      max_dec_tree_depth=max_dec_tree_depth,
+                                      tgt_vocab=self.tgt_vocab)
 
     def forward(self, graph_list, tgt_tree_batch):
         batch_graph = self.graph_topology(graph_list)
@@ -531,9 +504,17 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
         if not use_beam_search:
             while True:
                 if not use_copy:
-                    curr_c, curr_h = model.decoder.rnn(prev_word, s[0], s[1], parent_h, sibling_state)
-                    prediction = model.decoder.attention(enc_outputs, curr_h, torch.tensor(0))
-                    s = (curr_c, curr_h)
+                    rnn_state_iter = s
+                    prediction, rnn_state_iter, _ = model.decoder.decode_step(dec_single_input=prev_word,
+                                                                            dec_single_state=rnn_state_iter,
+                                                                            memory=enc_outputs,
+                                                                            parent_state=parent_h)
+                    s = rnn_state_iter
+
+                    # curr_c, curr_h = model.decoder.rnn(prev_word, s[0], s[1], parent_h, sibling_state)
+                    # prediction = model.decoder.attention(enc_outputs, curr_h, torch.tensor(0))
+                    # s = (curr_c, curr_h)
+
                     _, _prev_word = prediction.max(1)
                     prev_word = _prev_word
                 else:

@@ -7,7 +7,7 @@ import numpy as np
 
 from .base import RNNTreeDecoderBase
 from ...utils.tree_utils import Tree, to_cuda
-
+from .attention import Attention
 
 class StdTreeDecoder(RNNTreeDecoderBase):
     r"""StdTreeDecoder: This is a tree decoder implementation, which is used for tree object decoding.
@@ -71,10 +71,19 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     tgt_vocab : 
         The vocabulary manager class object.
     """
-    def __init__(self, attn, attn_type, embeddings, enc_hidden_size, dec_emb_size, dec_hidden_size, output_size, device, criterion, teacher_force_ratio, use_sibling = True, use_attention=True, use_copy=False, use_coverage=False,
-                 fuse_strategy="average", num_layers=1, dropout_input=0.1, dropout_output=0.3, rnn_type="lstm", max_dec_seq_length=512, max_dec_tree_depth=256, tgt_vocab=None, graph_pooling_strategy="max"):
-        super(StdTreeDecoder, self).__init__(use_attention=True, use_copy=use_copy, use_coverage=False, attention_type="uniform",
-                                             fuse_strategy="average")
+    def __init__(self, attn_type, embeddings, enc_hidden_size, dec_emb_size, 
+                    dec_hidden_size, output_size, device, criterion, teacher_force_ratio, 
+                    use_sibling = True, use_attention=True, use_copy=False, 
+                    use_coverage=False, fuse_strategy="average", num_layers=1, 
+                    dropout_input=0.1, dropout_output=0.3, rnn_type="lstm", 
+                    max_dec_seq_length=512, max_dec_tree_depth=256, tgt_vocab=None, 
+                    graph_pooling_strategy="max", dropout_attn_out=0.1, dropout_attn_softmax=0.1):
+
+        super(StdTreeDecoder, self).__init__(use_attention=True, 
+                                                use_copy=use_copy, 
+                                                use_coverage=False, 
+                                                attention_type="uniform",
+                                                fuse_strategy="average")
         self.num_layers = num_layers
         self.device = device
         self.criterion = criterion
@@ -95,8 +104,21 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         self.attn_state = {}
         self.use_coverage = use_coverage
         self.use_copy = use_copy
-        self.attention = attn
+        self.attention = Attention(query_size=dec_hidden_size,
+                                    memory_size=enc_hidden_size, 
+                                    hidden_size=dec_hidden_size, 
+                                    has_bias=True, dropout=dropout_attn_softmax, 
+                                    attention_funtion="dot")
         self.separate_attn = (attn_type != "uniform")
+
+        if self.separate_attn:
+            self.linear_att = nn.Linear(3*dec_hidden_size, dec_hidden_size)
+        else:
+            self.linear_att = nn.Linear(2*dec_hidden_size, dec_hidden_size)
+
+        self.linear_out = nn.Linear(dec_hidden_size, output_size)
+        self.dropout_attn = nn.Dropout(dropout_attn_out)
+        self.logsoftmax = nn.LogSoftmax(dim=1)
 
         self.rnn = self._build_rnn(rnn_type=rnn_type, input_size=output_size, emb_size=dec_emb_size, hidden_size=dec_hidden_size, dropout_input=dropout_input, dropout_output=dropout_output, use_sibling = use_sibling, device=device)
 
@@ -242,18 +264,31 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                     else:
                         input_word = dec_batch[cur_index][:, i]
 
-                    dec_state[cur_index][i+1][1], dec_state[cur_index][i+1][2] = self.rnn(
-                        input_word, dec_state[cur_index][i][1], dec_state[cur_index][i][2], parent_h, sibling_state)
-                    # print(enc_outputs.is_leaf)
-                    pred = self.attention(
-                        enc_outputs, dec_state[cur_index][i+1][2], torch.tensor(0))
-                    # output_tree_batch
-                    # print(pred.is_leaf)
-                    # print(i)
+                    rnn_state_iter = (dec_state[cur_index][i][1], dec_state[cur_index][i][2])
+                    
+                    pred, rnn_state_iter, attn_scores = self.decode_step(dec_single_input=input_word,
+                                                                            dec_single_state=rnn_state_iter,
+                                                                            memory=enc_outputs,
+                                                                            parent_state=parent_h)
+
+                    dec_state[cur_index][i+1][1], dec_state[cur_index][i+1][2] = rnn_state_iter
+                    
+
                     loss += self.criterion(pred, dec_batch[cur_index][:, i+1])
             cur_index = cur_index + 1
         loss = loss / tgt_batch_size
         return loss
+
+    def decode_step(self, dec_single_input, dec_single_state, memory, parent_state, input_mask=None, memory_mask=None, memory_candidate=None, sibling_state=None):
+        rnn_state_next = self.rnn(dec_single_input, dec_single_state[0], dec_single_state[1], parent_state, sibling_state)
+        if self.separate_attn:
+            pass
+        else:
+            context_vector, attn_scores = self.attention(query=rnn_state_next[1], memory=memory)
+        
+        pred = F.tanh(self.linear_att(torch.cat((context_vector, rnn_state_next[1]), 1)))
+        pred = self.logsoftmax(self.linear_out(self.dropout_attn(pred)))
+        return pred, rnn_state_next, attn_scores
 
     def _build_rnn(self, rnn_type, input_size, emb_size, hidden_size, dropout_input, dropout_output, use_sibling, device):
         """_build_rnn : how the rnn unit should be build.
@@ -268,7 +303,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                              in_drop=self.dropout_input, rnn_drop=self.dropout_output,
                              out_drop=0, enc_hidden_size=None, device=device, use_sibling=use_sibling)
         return rnn
-
 
     def forward(self, g, tgt_tree_batch=None, enc_batch=None):
         params = self._extract_params(g)
@@ -340,7 +374,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
              "graph_edge_embedding": None,
              "graph_edge_mask": None
         }
-
 
 class DecoderRNNWithCopy(nn.Module):
     def __init__(self, vocab_size, embed_size, hidden_size, *, rnn_type='lstm', enc_attn=True, dec_attn=True,
@@ -515,7 +548,6 @@ class DecoderRNNWithCopy(nn.Module):
             else:
                 enc_attn = enc_attn.squeeze(2)
 
-
         if self.dec_attn:
             if decoder_hiddens is not None and len(decoder_hiddens) > 0:
                 dec_energy = self.dec_attn_fn(hidden, decoder_hiddens\
@@ -560,117 +592,12 @@ class DecoderRNNWithCopy(nn.Module):
 
         return output, rnn_state, enc_attn, prob_ptr, enc_context
 
-def dropout(x, drop_prob, shared_axes=[], training=False):
-    """
-    Apply dropout to input tensor.
-    Parameters
-    ----------
-    input_tensor: ``torch.FloatTensor``
-        A tensor of shape ``(batch_size, ..., num_timesteps, embedding_dim)``
-    Returns
-    -------
-    output: ``torch.FloatTensor``
-        A tensor of shape ``(batch_size, ..., num_timesteps, embedding_dim)`` with dropout applied.
-    """
-    if drop_prob == 0 or drop_prob == None or (not training):
-        return x
-
-    sz = list(x.size())
-    for i in shared_axes:
-        sz[i] = 1
-    mask = x.new(*sz).bernoulli_(1. - drop_prob).div_(1. - drop_prob)
-    mask = mask.expand_as(x)
-    return x * mask
-
-class Attention(nn.Module):
-    def __init__(self, hidden_size, h_state_embed_size=None, in_memory_embed_size=None, attn_type='simple'):
-        super(Attention, self).__init__()
-        self.attn_type = attn_type
-        if not h_state_embed_size:
-            h_state_embed_size = hidden_size
-        if not in_memory_embed_size:
-            in_memory_embed_size = hidden_size
-        if attn_type in ('mul', 'add'):
-            self.W = torch.Tensor(h_state_embed_size, hidden_size)
-            self.W = nn.Parameter(nn.init.xavier_uniform_(self.W))
-            if attn_type == 'add':
-                self.W2 = torch.Tensor(in_memory_embed_size, hidden_size)
-                self.W2 = nn.Parameter(nn.init.xavier_uniform_(self.W2))
-                self.W3 = torch.Tensor(hidden_size, 1)
-                self.W3 = nn.Parameter(nn.init.xavier_uniform_(self.W3))
-        elif attn_type == 'simple':
-            pass
-        else:
-            raise RuntimeError('Unknown attn_type: {}'.format(self.attn_type))
-
-    def forward(self, query_embed, in_memory_embed, attn_mask=None, addition_vec=None):
-        if self.attn_type == 'simple': # simple attention
-            attention = torch.bmm(in_memory_embed, query_embed.unsqueeze(2)).squeeze(2)
-            if addition_vec is not None:
-                attention = attention + addition_vec
-        elif self.attn_type == 'mul': # multiplicative attention
-            attention = torch.bmm(in_memory_embed, torch.mm(query_embed, self.W).unsqueeze(2)).squeeze(2)
-            if addition_vec is not None:
-                attention = attention + addition_vec
-        elif self.attn_type == 'add': # additive attention
-            attention = torch.mm(in_memory_embed.view(-1, in_memory_embed.size(-1)), self.W2)\
-                .view(in_memory_embed.size(0), -1, self.W2.size(-1)) + torch.mm(query_embed, self.W).unsqueeze(1)
-            if addition_vec is not None:
-                attention = attention + addition_vec
-            attention = torch.tanh(attention)
-            attention = torch.mm(attention.view(-1, attention.size(-1)), self.W3).view(attention.size(0), -1)
-        else:
-            raise RuntimeError('Unknown attn_type: {}'.format(self.attn_type))
-
-        if attn_mask is not None:
-            # Exclude masked elements from the softmax
-            attention = attn_mask * attention - (1 - attn_mask) * 1e20
-        return attention
-
 def create_mask(x, N, device=None):
     x = x.data
     mask = np.zeros((x.size(0), N))
     for i in range(x.size(0)):
         mask[i, :x[i]] = 1
     return torch.Tensor(mask).to(device)
-
-class Dec_LSTM(nn.Module):
-    '''
-    Decoder LSTM cell with parent hidden state
-    '''
-
-    def __init__(self, emb_size, hidden_size, dropout, use_sibling):
-        super(Dec_LSTM, self).__init__()
-        self.rnn_size = hidden_size
-        self.word_embedding_size = emb_size
-        self.use_sibling = use_sibling
-
-        if use_sibling:
-            self.i2h = nn.Linear(self.word_embedding_size + 2*
-                             self.rnn_size, 4*self.rnn_size)
-        else:
-            self.i2h = nn.Linear(self.word_embedding_size +
-                             self.rnn_size, 4*self.rnn_size)
-
-        self.h2h = nn.Linear(self.rnn_size, 4*self.rnn_size)
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, x, prev_c, prev_h, parent_h, sibling_state):
-        if self.use_sibling:
-            input_cat = torch.cat((x, parent_h, sibling_state), 1)
-        else:
-            input_cat = torch.cat((x, parent_h), 1)
-        gates = self.i2h(input_cat) + self.h2h(prev_h)
-        ingate, forgetgate, cellgate, outgate = gates.chunk(4, 1)
-        ingate = F.sigmoid(ingate)
-        forgetgate = F.sigmoid(forgetgate)
-        cellgate = F.tanh(cellgate)
-        outgate = F.sigmoid(outgate)
-        cellgate = self.dropout(cellgate)
-        cy = (forgetgate * prev_c) + (ingate * cellgate)
-        hy = outgate * F.tanh(cy)
-        return cy, hy
-
 
 class DecoderRNN(nn.Module):
     def __init__(self, input_size, emb_size, hidden_size, dropout_input, dropout_output, use_sibling):
@@ -680,19 +607,20 @@ class DecoderRNN(nn.Module):
         self.embedding = nn.Embedding(
             input_size, self.word_embedding_size, padding_idx=0)
 
-        self.lstm = Dec_LSTM(emb_size, hidden_size, dropout_output, use_sibling)
+        self.lstm = nn.LSTMCell(emb_size + hidden_size * (2 if use_sibling else 1), hidden_size)
         self.dropout = nn.Dropout(dropout_input)
+        self.use_sibling = use_sibling
 
     def forward(self, input_src, prev_c, prev_h, parent_h, sibling_state):
 
         src_emb = self.embedding(input_src)
         src_emb = self.dropout(src_emb)
-        prev_cy, prev_hy = self.lstm(
-            src_emb, prev_c, prev_h, parent_h, sibling_state)
+        if self.use_sibling:
+            input_single_step = torch.cat((src_emb, parent_h, sibling_state), 1)
+        else:
+            input_single_step = torch.cat((src_emb, parent_h), 1)
+        prev_cy, prev_hy = self.lstm(input_single_step, (prev_c, prev_h))
         return prev_cy, prev_hy
-
-
-
 
 def get_dec_batch(dec_tree_batch, batch_size, device, form_manager):
     queue_tree = {}
