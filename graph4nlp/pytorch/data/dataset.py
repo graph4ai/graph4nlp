@@ -35,6 +35,42 @@ class DataItem(object):
         raise NotImplementedError
 
 
+class Text2TextDataItem_seq2seq(DataItem):
+    def __init__(self, input_text, output_text, tokenizer, share_vocab=True):
+        super(Text2TextDataItem_seq2seq, self).__init__(input_text, tokenizer)
+        self.output_text = output_text
+        self.share_vocab = share_vocab
+
+    def extract(self, lower_case=True):
+        """
+        Returns
+        -------
+        Input tokens and output tokens
+        """
+
+        if lower_case:
+            self.input_text = self.input_text.lower()
+
+        if self.tokenizer is None:
+            input_tokens = self.input_text.strip().split(' ')
+        else:
+            input_tokens = self.tokenizer(self.input_text)
+
+
+        if lower_case:
+            self.output_text = self.output_text.lower()
+
+        if self.tokenizer is None:
+            output_tokens = self.output_text.strip().split(' ')
+        else:
+            output_tokens = self.tokenizer(self.output_text)
+
+        if self.share_vocab:
+            return input_tokens + output_tokens
+        else:
+            return input_tokens, output_tokens
+
+
 class Text2TextDataItem(DataItem):
     def __init__(self, input_text, output_text, tokenizer, share_vocab=True):
         super(Text2TextDataItem, self).__init__(input_text, tokenizer)
@@ -1485,3 +1521,145 @@ class SequenceLabelingDataset(Dataset):
 
         #tgt_tags = torch.cat(tgt_tag, dim=0)
         return [graph_data, tgt_tag]
+
+
+class CNNSeq2SeqDataset(Dataset):
+    def __init__(self, root_dir, topology_builder, topology_subdir,
+                 share_vocab=True, word_emb_size=300,
+                 dynamic_graph_type=None,
+                 dynamic_init_topology_builder=None,
+                 dynamic_init_topology_aux_args=None
+                 ):
+        self.data_item_type = Text2TextDataItem_seq2seq
+        self.share_vocab = share_vocab
+        super(CNNSeq2SeqDataset, self).__init__(root=root_dir,
+                                                topology_builder=topology_builder,
+                                                topology_subdir=topology_subdir,
+                                                 share_vocab=share_vocab, word_emb_size=word_emb_size,
+                                                 dynamic_graph_type=dynamic_graph_type,
+                                                 dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                                 dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+
+    @property
+    def raw_file_names(self):
+        """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
+        return {'train': 'train_3.json', 'val': "val_3.json", 'test': 'test_3.json'}
+
+    @property
+    def processed_file_names(self):
+        """At least 3 reserved keys should be fiiled: 'vocab', 'data' and 'split_ids'."""
+        return {'vocab': 'vocab.pt', 'data': 'data.pt'}
+
+    def download(self):
+        # raise NotImplementedError("It shouldn't be called now")
+        return
+
+    def build_vocab(self):
+        data_for_vocab = self.train
+        if self.use_val_for_vocab:
+            data_for_vocab = data_for_vocab + self.val
+
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=20000,
+                                       min_word_vocab_freq=8,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       word_emb_size=300,
+                                       share_vocab=self.share_vocab)
+        self.vocab_model = vocab_model
+
+        return self.vocab_model
+
+    def _process(self):
+        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
+            if 'val_split_ratio' in self.__dict__:
+                UserWarning(
+                    "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
+                    "already been split.")
+            return
+
+        os.makedirs(self.processed_dir, exist_ok=True)
+
+        self.read_raw_data()
+
+        self.build_vocab()
+
+        self.vectorization(self.train)
+        self.vectorization(self.test)
+        if 'val' in self.__dict__:
+            self.vectorization(self.val)
+
+        data_to_save = {'train': self.train, 'test': self.test}
+        if 'val' in self.__dict__:
+            data_to_save['val'] = self.val
+        torch.save(data_to_save, self.processed_file_paths['data'])
+
+    def parse_file(self, file_path):
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+        For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
+        Examples
+        --------
+        input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
+        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
+        Parameters
+        ----------
+        file_path: str
+            The path of the input file.
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
+        """
+        data = []
+        with open(file_path, 'r') as f:
+            examples = json.load(f)
+            for example_dict in examples:
+                input = ' '.join(example_dict['article'][:10])
+                output = ' '.join([sent[0]+' .' for sent in example_dict['highlight']])
+                if input=='' or output=='':
+                    continue
+                data_item = Text2TextDataItem_seq2seq(input_text=input,
+                                                      output_text=output,
+                                                      tokenizer=self.tokenizer,
+                                                      share_vocab=self.share_vocab)
+                data.append(data_item)
+        return data
+
+    def vectorization(self, data_items):
+        for item in data_items:
+            src = item.input_text
+            src_token_id = self.vocab_model.in_word_vocab.to_index_sequence(src)
+            src_token_id.append(self.vocab_model.in_word_vocab.EOS)
+            src_token_id = np.array(src_token_id)
+            item.input_np = src_token_id
+
+            tgt = item.output_text
+            tgt_token_id = self.vocab_model.out_word_vocab.to_index_sequence(tgt)
+            tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
+            tgt_token_id = np.array(tgt_token_id)
+            item.output_np = tgt_token_id
+
+    @staticmethod
+    def collate_fn(data_list: [Text2TextDataItem_seq2seq]):
+        input_numpy = [item.input_np for item in data_list]
+        src_len = [item.input_np.shape[0] for item in data_list]
+        input_pad = pad_2d_vals_no_size(input_numpy)
+
+        src_seq = torch.from_numpy(input_pad).long()
+        src_len = torch.LongTensor(src_len)
+
+        output_numpy = [item.output_np for item in data_list]
+        output_pad = pad_2d_vals_no_size(output_numpy)
+
+        tgt_seq = torch.from_numpy(output_pad).long()
+
+        sorted_x_len, indx = torch.sort(src_len, 0, descending=True)
+        src_seq = src_seq[indx]
+        tgt_seq = tgt_seq[indx]
+
+        return [src_seq, sorted_x_len, tgt_seq]
