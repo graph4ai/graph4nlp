@@ -1,6 +1,6 @@
 from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.linear_graph_construction import LinearGraphConstruction
+# from graph4nlp.pytorch.modules.graph_construction.linear_graph_construction import LinearGraphConstruction
 import torch
 import os
 import json
@@ -118,7 +118,7 @@ class CNNDataset(Text2TextDataset):
             'outputFormat': 'json'
         }
         print('Connecting to stanfordcorenlp server...')
-        processor = StanfordCoreNLP('http://localhost', port=int(port), timeout=1000)
+        processor = StanfordCoreNLP('http://localhost', port=int(port), timeout=9000)
         processor.switch_language("en")
         print('CoreNLP server connected.')
         pop_idxs = []

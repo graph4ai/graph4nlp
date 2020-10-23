@@ -10,6 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from .loss import Graph2seqLoss
 import onmt
+from .onmt_decoder import InputFeedRNNDecoder
 
 
 class Graph2seq(nn.Module):
@@ -26,8 +27,9 @@ class Graph2seq(nn.Module):
                                    rnn_type="LSTM", bidirectional=True,
                                    embeddings=self.embeddings)
 
-        self.seq_decoder = onmt.decoders.decoder.StdRNNDecoder(
-            hidden_size=hidden_size, num_layers=1, bidirectional_encoder=True,
+        self.seq_decoder = InputFeedRNNDecoder(
+            hidden_size=hidden_size, num_layers=1, bidirectional_encoder=True, context_gate="both",
+            dropout=0.3,
             rnn_type="LSTM", embeddings=self.embeddings)
 
         self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
@@ -36,16 +38,24 @@ class Graph2seq(nn.Module):
 
     def forward(self, src_seq, src_len, tgt_seq=None, require_loss=True):
         src_seq = src_seq.transpose(0, 1)
-        tgt_seq = tgt_seq.transpose(0, 1)
+        if tgt_seq is not None:
+            tgt_seq = tgt_seq.transpose(0, 1)
         enc_state, memory_bank, lengths = self.seq_encoder(src_seq.unsqueeze(-1), src_len)
 
         # onmt decoder
         self.seq_decoder.init_state(src_seq.unsqueeze(-1), memory_bank, enc_state)
-        dec_outs, attns = self.seq_decoder(tgt_seq.unsqueeze(-1), memory_bank, memory_lengths=lengths, with_align=False)
-        prob = torch.softmax(self.out_project(dec_outs), dim=-1)
-        loss = self.loss_calc(prob.transpose(0, 1), tgt_seq.transpose(0, 1))
-        prob = prob.transpose(0, 1)
+
+
+        if tgt_seq is not None:
+            dec_outs, attns = self.seq_decoder(tgt=tgt_seq.unsqueeze(-1), memory_bank=memory_bank, memory_lengths=lengths, with_align=False)
+        else:
+            dec_outs, attns = self.seq_decoder(memory_bank=memory_bank,
+                                               memory_lengths=lengths, with_align=False)
+        prob = torch.softmax(dec_outs, dim=-1)
+
+
         if require_loss:
+            loss = self.loss_calc(prob, tgt_seq.transpose(0, 1))
             return prob, loss
         else:
             return prob

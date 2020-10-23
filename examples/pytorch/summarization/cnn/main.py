@@ -1,14 +1,14 @@
 import os
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-os.environ['CUDA_LAUNCH_BLOCKING'] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+# os.environ['CUDA_LAUNCH_BLOCKING'] = "3"
 
 from .dataset import CNNDataset
-# from .model_onmt import Graph2seq
-from .model import Graph2seq
+from .model_onmt import Graph2seq
+# from .model import Graph2seq
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.linear_graph_construction import LinearGraphConstruction
+# from graph4nlp.pytorch.modules.graph_construction.linear_graph_construction import LinearGraphConstruction
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from graph4nlp.pytorch.data.dataset import CNNSeq2SeqDataset
 
@@ -52,33 +52,33 @@ class CNN:
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
-        if self.opt.topology_subdir == 'ie':
-            graph_type = 'static'
-            topology_builder = IEBasedGraphConstruction
-            topology_subdir = 'IEGraph'
-            dynamic_graph_type = None
-            dynamic_init_topology_builder = None
-        # elif self.opt.topology_subdir == 'DependencyGraph3':
-        elif 'DependencyGraph' in self.opt.topology_subdir:
-            graph_type = 'static'
-            topology_builder = DependencyBasedGraphConstruction
-            topology_subdir = self.opt.topology_subdir
-            dynamic_graph_type = None
-            dynamic_init_topology_builder = None
-        elif self.opt.topology_subdir == 'node_emb':
-            graph_type = 'dynamic'
-            topology_builder = NodeEmbeddingBasedGraphConstruction
-            topology_subdir = 'NodeEmb'
-            dynamic_graph_type = 'node_emb'
-            dynamic_init_topology_builder = DependencyBasedGraphConstruction
-        elif self.opt.topology_subdir == 'LinearGraph':
-            graph_type = 'static'
-            topology_builder = LinearGraphConstruction
-            topology_subdir = self.opt.topology_subdir
-            dynamic_graph_type = None
-            dynamic_init_topology_builder = None
-        else:
-            raise NotImplementedError()
+        # if self.opt.topology_subdir == 'ie':
+        #     graph_type = 'static'
+        #     topology_builder = IEBasedGraphConstruction
+        #     topology_subdir = 'IEGraph'
+        #     dynamic_graph_type = None
+        #     dynamic_init_topology_builder = None
+        # # elif self.opt.topology_subdir == 'DependencyGraph3':
+        # elif 'DependencyGraph' in self.opt.topology_subdir:
+        #     graph_type = 'static'
+        #     topology_builder = DependencyBasedGraphConstruction
+        #     topology_subdir = self.opt.topology_subdir
+        #     dynamic_graph_type = None
+        #     dynamic_init_topology_builder = None
+        # elif self.opt.topology_subdir == 'node_emb':
+        #     graph_type = 'dynamic'
+        #     topology_builder = NodeEmbeddingBasedGraphConstruction
+        #     topology_subdir = 'NodeEmb'
+        #     dynamic_graph_type = 'node_emb'
+        #     dynamic_init_topology_builder = DependencyBasedGraphConstruction
+        # elif self.opt.topology_subdir == 'LinearGraph':
+        #     graph_type = 'static'
+        #     topology_builder = LinearGraphConstruction
+        #     topology_subdir = self.opt.topology_subdir
+        #     dynamic_graph_type = None
+        #     dynamic_init_topology_builder = None
+        # else:
+        #     raise NotImplementedError()
 
         # dataset = CNNDataset(root_dir=self.opt.root_dir,
         #                      graph_type=graph_type,
@@ -88,7 +88,7 @@ class CNN:
         #                      dynamic_init_topology_builder=dynamic_init_topology_builder,
         #                      dynamic_init_topology_aux_args={'dummy_param': 0})
 
-        dataset = CNNSeq2SeqDataset(root_dir="/raid/ghn/graph4nlp/examples/pytorch/summarization/cnn",
+        dataset = CNNSeq2SeqDataset(root_dir="examples/pytorch/summarization/cnn",
                                 topology_builder=DependencyBasedGraphConstruction,
                                 topology_subdir='DependencyGraph_seq2seq', share_vocab=True)
 

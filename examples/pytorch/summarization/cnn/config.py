@@ -2,14 +2,14 @@ import argparse
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root_dir", type=str, default="/raid/ghn/graph4nlp/examples/pytorch/summarization/cnn",
+    parser.add_argument("--root_dir", type=str, default="examples/pytorch/summarization/cnn",
                         help="")
-    parser.add_argument("--topology_subdir", type=str, default='DependencyGraph4', help="")
+    parser.add_argument("--topology_subdir", type=str, default='seq2seq', help="")
     parser.add_argument('--word-emb-size', type=int, default=300, help='')
-    parser.add_argument("--log-file", type=str, default="/raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/log/log4.txt")
-    parser.add_argument("--checkpoint-save-path", type=str, default="/raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_dep4")
+    parser.add_argument("--log-file", type=str, default="examples/pytorch/summarization/cnn/log/log4.txt")
+    parser.add_argument("--checkpoint-save-path", type=str, default="examples/pytorch/summarization/cnn/save_dep5")
     # parser.add_argument("--checkpoint-save-path", type=str, default="/raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save")
-    parser.add_argument('--hidden-size', type=int, default=300, help='')
+    parser.add_argument('--hidden-size', type=int, default=256, help='')
     parser.add_argument('--dropout', type=float, default=0.2, help='')
     parser.add_argument('--learning-rate', type=float, default=0.001, help='')
     parser.add_argument("--loss-display-step", type=int, default=100, help=' ')
@@ -19,10 +19,10 @@ def get_args():
     parser.add_argument("--lr-decay-per-epoch", type=int, default=5, help="")
     parser.add_argument("--min-lr", type=float, default=1e-5, help="")
     parser.add_argument("--use_gpu", type=float, default=1, help="0 for don't use cuda, 1 for using cuda")
-    parser.add_argument("--gpu", type=int, default=1, help="gpu id")
+    parser.add_argument("--gpu", type=int, default=0, help="gpu id")
     parser.add_argument("--seed", type=int, default=1236, help="")
 
-    parser.add_argument("--batch_size", type=int, default=10, help="batch size")
+    parser.add_argument("--batch_size", type=int, default=30, help="batch size")
     parser.add_argument("--gnn", type=str, default="Graphsage", help="")
     parser.add_argument("--direction_option", type=str, default="undirected", help="")
     parser.add_argument("--rnn_dropout", type=float, default=0.2, help="rnn dropout")
