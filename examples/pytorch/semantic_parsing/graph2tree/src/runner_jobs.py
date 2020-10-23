@@ -32,6 +32,7 @@ from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
 
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import \
     StdTreeDecoder
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import BeamSearchStrategy
 
 from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
 
@@ -428,21 +429,7 @@ def convert_to_string(idx_list, form_manager):
         w_list.append(form_manager.get_idx_symbol(int(idx_list[i])))
     return " ".join(w_list)
 
-import operator
-from queue import PriorityQueue
-class BeamSearchNode(object):
-    def __init__(self, hiddenstate, previousNode, wordId, logProb, length):
-        self.h = hiddenstate
-        self.prevNode = previousNode
-        self.wordid = wordId
-        self.logp = logProb
-        self.leng = length
-
-    def eval(self, alpha=1.0):
-        reward = 0
-        return self.logp / float(self.leng - 1 + 1e-6) + alpha * reward
-
-def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, enc_w_list, word_manager, form_manager, device, max_dec_seq_length, max_dec_tree_depth, use_beam_search=False):
+def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, enc_w_list, word_manager, form_manager, device, max_dec_seq_length, max_dec_tree_depth, use_beam_search=True):
     # initialize the rnn state to all zeros
     prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
     prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
@@ -504,16 +491,10 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
         if not use_beam_search:
             while True:
                 if not use_copy:
-                    rnn_state_iter = s
-                    prediction, rnn_state_iter, _ = model.decoder.decode_step(dec_single_input=prev_word,
-                                                                            dec_single_state=rnn_state_iter,
+                    prediction, s, _ = model.decoder.decode_step(dec_single_input=prev_word,
+                                                                            dec_single_state=s,
                                                                             memory=enc_outputs,
                                                                             parent_state=parent_h)
-                    s = rnn_state_iter
-
-                    # curr_c, curr_h = model.decoder.rnn(prev_word, s[0], s[1], parent_h, sibling_state)
-                    # prediction = model.decoder.attention(enc_outputs, curr_h, torch.tensor(0))
-                    # s = (curr_c, curr_h)
 
                     _, _prev_word = prediction.max(1)
                     prev_word = _prev_word
@@ -550,91 +531,21 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
                     t.add_child(int(prev_word[0]))
                 i_child = i_child + 1
         else:
-            beam_width = 10
-            topk = 1
-            decoded_results = []
-        
+            beam_width = 4
+            topk = 1        
             # decoding goes sentence by sentence
             assert(graph_node_embedding.size(0) == 1)
+            beam_search_generator = BeamSearchStrategy(beam_size=beam_width, vocab=form_manager, decoder=model.decoder, rnn_type=None)
             for idx in range(graph_node_embedding.size(0)):
-                decoder_hidden = (s[0], s[1])
-                decoder_input = prev_word
-        
-                # Number of sentence to generate
-                endnodes = []
-                number_required = min((topk + 1), topk - len(endnodes))
-        
-                # starting node -  hidden vector, previous node, word id, logp, length
-                node = BeamSearchNode(decoder_hidden, None, decoder_input, 0, 1)
-                nodes = PriorityQueue()
-        
-                # start the queue
-                nodes.put((-node.eval(), node))
-                qsize = 1
-        
-                # start beam search
-                while True:
-                    if qsize > max_dec_seq_length: break
-        
-                    # fetch the best node
-                    score, n = nodes.get()
-                    decoder_input = n.wordid
-                    decoder_hidden = n.h
-        
-                    if n.wordid.item() == form_manager.get_symbol_idx(form_manager.end_token) and n.prevNode != None:
-                        endnodes.append((score, n))
-                        # if we reached maximum # of sentences required
-                        if len(endnodes) >= number_required:
-                            break
-                        else:
-                            continue
-                        
-                    # decode for one step using decoder
-                    curr_c, curr_h = model.decoder.rnn(decoder_input, decoder_hidden[0], decoder_hidden[1], parent_h, sibling_state)
-                    prediction = model.decoder.attention(enc_outputs, curr_h, torch.tensor(0))
-                    decoder_hidden = (curr_c, curr_h)
-        
-                    # PUT HERE REAL BEAM SEARCH OF TOP
-                    log_prob, indexes = torch.topk(prediction, beam_width)
-                    nextnodes = []
-        
-                    for new_k in range(beam_width):
-                        decoded_t = torch.tensor([indexes[0][new_k]], dtype=torch.long)
-                        decoded_t = to_cuda(decoded_t, device)
-
-                        log_p = log_prob[0][new_k].item()
-        
-                        node = BeamSearchNode(decoder_hidden, n, decoded_t, n.logp + log_p, n.leng + 1)
-                        score = -node.eval()
-                        nextnodes.append((score, node))
-        
-                    # put them into queue
-                    for i in range(len(nextnodes)):
-                        score, nn = nextnodes[i]
-                        nodes.put((score, nn))
-                        # increase qsize
-                    qsize += len(nextnodes) - 1
-        
-                # choose nbest paths, back trace them
-                if len(endnodes) == 0:
-                    endnodes = [nodes.get() for _ in range(topk)]
-        
-                utterances = []
-                for score, n in sorted(endnodes, key=operator.itemgetter(0)):
-                    utterance = []
-                    utterance.append(n)
-                    # back trace
-                    while n.prevNode != None:
-                        n = n.prevNode
-                        utterance.append(n)
-        
-                    utterance = utterance[::-1]
-                    utterances.append(utterance)
-        
-                decoded_results.append(utterances)
-            assert(len(decoded_results) == 1 and len(utterances) == topk)
+                decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]), 
+                                                                                        decoder_initial_input=prev_word,
+                                                                                        parent_state=parent_h,
+                                                                                        graph_node_embedding=enc_outputs,
+                                                                                        rnn_node_embedding=rnn_node_embedding,
+                                                                                        device=device,
+                                                                                        topk=topk)
             generated_sentence = decoded_results[0][0]
-
+            # print(" ".join(form_manager.get_idx_symbol_for_list([int(node_i.wordid.item()) for node_i in generated_sentence])))
             for node_i in generated_sentence:
                 if int(node_i.wordid.item()) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
                     queue_decode.append({"s": (node_i.h[0].clone(), node_i.h[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})

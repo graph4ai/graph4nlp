@@ -263,11 +263,9 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                         input_word = pred.argmax(1)
                     else:
                         input_word = dec_batch[cur_index][:, i]
-
-                    rnn_state_iter = (dec_state[cur_index][i][1], dec_state[cur_index][i][2])
                     
                     pred, rnn_state_iter, attn_scores = self.decode_step(dec_single_input=input_word,
-                                                                            dec_single_state=rnn_state_iter,
+                                                                            dec_single_state=(dec_state[cur_index][i][1], dec_state[cur_index][i][2]),
                                                                             memory=enc_outputs,
                                                                             parent_state=parent_h)
 
