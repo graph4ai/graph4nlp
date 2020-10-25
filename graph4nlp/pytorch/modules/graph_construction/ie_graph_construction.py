@@ -191,6 +191,11 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
 
         # Do coreference resolution on the whole 'raw_text_data'
         coref_json = nlp_processor.annotate(raw_text_data.strip(), properties=props_coref)
+        from .utils import CORENLP_TIMEOUT_SIGNATURE
+        if CORENLP_TIMEOUT_SIGNATURE in coref_json:
+            raise TimeoutError('CoreNLP timed out at input: \n{}\n This item will be skipped. '
+                               'Please check the input or change the timeout threshold.'.format(raw_text_data))
+
         coref_dict = json.loads(coref_json)
 
         # Extract and preserve necessary parsing results from coref_dict['sentences']
