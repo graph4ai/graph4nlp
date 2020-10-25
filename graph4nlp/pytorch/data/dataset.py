@@ -7,6 +7,7 @@ import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 from sklearn import preprocessing
+import warnings
 
 from collections import Counter
 import pickle
@@ -188,7 +189,7 @@ class SequenceLabelingDataItem(DataItem):
             input_tokens.extend(tokenized_token)
 
 
-        return input_tokens 
+        return input_tokens
 
 class Dataset(torch.utils.data.Dataset):
     """
@@ -390,13 +391,18 @@ class Dataset(torch.utils.data.Dataset):
                 raise NotImplementedError
             print('CoreNLP server connected.')
             for item in data_items:
-                graph = self.topology_builder.topology(raw_text_data=item.input_text,
-                                                       nlp_processor=processor,
-                                                       processor_args=processor_args,
-                                                       merge_strategy=self.merge_strategy,
-                                                       edge_strategy=self.edge_strategy,
-                                                       verbase=False)
-                item.graph = graph.to(self.device)
+                try:
+                    graph = self.topology_builder.topology(raw_text_data=item.input_text,
+                                                           nlp_processor=processor,
+                                                           processor_args=processor_args,
+                                                           merge_strategy=self.merge_strategy,
+                                                           edge_strategy=self.edge_strategy,
+                                                           verbase=False)
+                    item.graph = graph.to(self.device)
+                except TimeoutError as msg:
+                    warnings.warn(RuntimeWarning(msg))
+                    data_items.pop(data_items.index(item))
+
         elif self.graph_type == 'dynamic':
             if self.dynamic_graph_type == 'node_emb':
                 for item in data_items:
@@ -454,18 +460,22 @@ class Dataset(torch.utils.data.Dataset):
                     processor_args = None
 
                 for item in data_items:
-                    graph = self.topology_builder.init_topology(item.input_text,
-                                                                dynamic_init_topology_builder=self.dynamic_init_topology_builder,
-                                                                lower_case=self.lower_case,
-                                                                tokenizer=self.tokenizer,
-                                                                nlp_processor=processor,
-                                                                processor_args=processor_args,
-                                                                merge_strategy=self.merge_strategy,
-                                                                edge_strategy=self.edge_strategy,
-                                                                verbase=False,
-                                                                dynamic_init_topology_aux_args=self.dynamic_init_topology_aux_args)
+                    try:
+                        graph = self.topology_builder.init_topology(item.input_text,
+                                                                    dynamic_init_topology_builder=self.dynamic_init_topology_builder,
+                                                                    lower_case=self.lower_case,
+                                                                    tokenizer=self.tokenizer,
+                                                                    nlp_processor=processor,
+                                                                    processor_args=processor_args,
+                                                                    merge_strategy=self.merge_strategy,
+                                                                    edge_strategy=self.edge_strategy,
+                                                                    verbase=False,
+                                                                    dynamic_init_topology_aux_args=self.dynamic_init_topology_aux_args)
 
-                    item.graph = graph.to(self.device)
+                        item.graph = graph.to(self.device)
+                    except TimeoutError as msg:
+                        warnings.warn(RuntimeWarning(msg))
+                        data_items.pop(data_items.index(item))
             else:
                 raise RuntimeError('Unknown dynamic_graph_type: {}'.format(self.dynamic_graph_type))
 
@@ -1423,9 +1433,9 @@ class SequenceLabelingDataset(Dataset):
                 lines = f.readlines()
                 for line in lines:
                     if len(line)>1 and line[0]!='-':
-                       if line[0]!='.': 
+                       if line[0]!='.':
                            input.append(line.strip().split(' ')[0])
-                           output.append(line.strip().split(' ')[-1])                        
+                           output.append(line.strip().split(' ')[-1])
                        if line[0]=='.':
                            input.append(line.strip().split(' ')[0])
                            output.append(line.strip().split(' ')[-1])
@@ -1433,16 +1443,16 @@ class SequenceLabelingDataset(Dataset):
                                data_item=SequenceLabelingDataItem(input_text=input, output_tags=output, tokenizer=self.tokenizer)
                                data.append(data_item)
                                input=[]
-                               output=[]                                                
+                               output=[]
 
-        return data     
+        return data
 
 
     def build_vocab(self):
         data_for_vocab = self.train
         if self.use_val_for_vocab:
             data_for_vocab = data_for_vocab + self.val
-            
+
         vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
                                        data_set=data_for_vocab,
                                        tokenizer=self.tokenizer,
@@ -1470,7 +1480,7 @@ class SequenceLabelingDataset(Dataset):
 
             tgt = item.output_tag
             tgt_tag_id=[self.tag_types.index(tgt_.strip()) for tgt_ in tgt]
-            
+
             tgt_tag_id = torch.tensor(tgt_tag_id)
             item.output_id = tgt_tag_id
 
