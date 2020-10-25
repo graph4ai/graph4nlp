@@ -1,9 +1,9 @@
 # Data
 dataset: 'CNSST'
-root_dir: '/raid/ghn/graph4nlp/examples/pytorch/text_classification/data/CNSST'
+root_dir: 'examples/pytorch/text_classification/data/CNSST'
 #val_split_ratio: 0.2 # validation set split ratio (default: 0.2)
 pre_word_emb_file: '/raid/ghn/glove/glove.6B.300d.txt' # path to the pretrained word embedding file
-out_dir: '/raid/ghn/graph4nlp/examples/pytorch/text_classification/out/CNSST/graphsage_bi_sep_node_emb_ckpt'
+out_dir: 'examples/pytorch/text_classification/out/CNSST/graphsage_bi_sep_node_emb_ckpt'
 
 
 # Graph construction

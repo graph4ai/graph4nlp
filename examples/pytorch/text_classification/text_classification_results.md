@@ -1,40 +1,14 @@
 Text classification results
 ============
 
-- GAT paper link: [https://arxiv.org/abs/1710.10903](https://arxiv.org/abs/1710.10903)
-- GAT-BiSep paper link: [https://arxiv.org/abs/1808.07624](https://arxiv.org/abs/1808.07624)
-- GAT-BiFuse paper link: [https://arxiv.org/abs/1908.04942](https://arxiv.org/abs/1908.04942)
-
-- Convolutional Neural Networks for Sentence Classification: [https://arxiv.org/abs/1408.5882](https://arxiv.org/abs/1408.5882)
-
-- TREC: [https://cogcomp.seas.upenn.edu/Data/QA/QC/](https://cogcomp.seas.upenn.edu/Data/QA/QC/)
-
-
-
-Dependencies
-------------
-
-```bash
-pip install -r examples/pytorch/text_classification/requirements.txt
-```
-
-
 How to run
 ----------
 
-<!-- Run with following:
-
-```java
-java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
-```
-
-Run the model:
-
 ```python
-python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec/XYZ.yaml
+python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CNSST/graphsage_bi_sep_node_emb.yaml
+python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_bi_sep_dependency.yaml
 ```
 
- -->
 Run the model with grid search:
 
 ```python
@@ -54,6 +28,47 @@ TREC Results
 <!-- | NodeEmbRefined (constituency) | N/A  | N/A | N/A |  | |   |  |  |  | -->
 <!-- | Constituency | 0.922  | 0.942 | 0.948 | 0.942 |0.944 | 0.946  | 0.934 | 0.924 |  0.934 | -->
 <!-- | NodeEmbRefined (line) | N/A  | N/A | N/A | 0.936 |- |   -|  | - | -  | -->
+
+
+CAirline Results
+-------
+
+| GraphType\GNN  |  GAT-BiSep   |  GGNN-BiSep   |GraphSage-BiSep| 
+| -------------- | ------------ | ------------- |---------------|
+| Dependency     | 0.8016       | 0.7685        | 0.7622        |
+| Constituency   | 0.7669       | 0.7732        | 0.7638        |
+| NodeEmb        | N/A          | 0.7748        | 0.7591        |
+| NodeEmbRefined | N/A          | 0.7654        | 0.7780        |
+
+
+Runtime (train one epoch/test all)
+| GraphType\GNN  |   GAT-BiSep  |  GGNN-BiSep   |GraphSage-BiSep|
+| -------------- | -------------| ------------- |---------------|
+| Dependency     |  9.59s/1.89s |  9.48s/1.92s  |  9.43s/2.03s  |
+| Constituency   | 13.45s/2.57s | 13.20s/2.64s  | 12.70s/2.72s  |
+| NodeEmb        | N/A          | 15.00s/2.98s  | 16.64s/3.46s  |
+| NodeEmbRefined | N/A          | 16.76s/3.50s  | 16.04s/3.49s  |
+
+
+CNSST Results
+-------
+
+| GraphType\GNN  |  GAT-BiSep   |  GGNN-BiSep   |GraphSage-BiSep| 
+| -------------- | ------------ | ------------- |---------------|
+| Dependency     | 0.5381       | 0.5112        | 0.5031        |
+| Constituency   | 0.5399       | 0.5085        | 0.5345        |
+| NodeEmb        | N/A          | 0.5085        | 0.4987        |
+| NodeEmbRefined | N/A          | 0.5157        | 0.5265        |
+
+
+Runtime (train one epoch/test all)
+| GraphType\GNN  |   GAT-BiSep  |  GGNN-BiSep   |GraphSage-BiSep|
+| -------------- | -------------| ------------- |---------------|
+| Dependency     | 15.93s/6.12s |   8.43s/2.88s |   8.23s/2.93s |
+| Constituency   | 17.42s/7.58s |  10.40s/3.99s |  10.99s/4.10s |
+| NodeEmb        | N/A          |  13.73s/5.06s |  15.98s/4.67s |
+| NodeEmbRefined | N/A          |  15.40s/5.81s |  12.65s/5.26s |
+
 
 Note: 
 -------
