@@ -157,17 +157,18 @@ class CNNDataset(Text2TextDataset):
         # print(id(data_items[0]), data_items[0].input_text)
 
         total = len(data_items)
-        pool = Pool(10)
+        n_pool = 30
+        pool = Pool(n_pool)
         res_l = []
-        for i in range(10):
-            start_index = total * i // 10
-            end_index = total * (i + 1) // 10
-            res_l.append(pool.apply_async(self.process, args=(self.topology_builder, data_items[start_index:end_index], 9008)))
+        for i in range(n_pool):
+            start_index = total * i // n_pool
+            end_index = total * (i + 1) // n_pool
+            res_l.append(pool.apply_async(self.process, args=(self.topology_builder, data_items[start_index:end_index], 9000)))
         pool.close()
         pool.join()
 
         new_data_items = []
-        for i in range(10):
+        for i in range(n_pool):
             # start_index = total * i // 10
             # end_index = total * (i + 1) // 10
 
@@ -229,8 +230,8 @@ class CNNDataset(Text2TextDataset):
         with open(file_path, 'r') as f:
             examples = json.load(f)
             for example_dict in examples:
-                input = ' '.join(example_dict['article'][:10])
-                output = ' '.join([sent[0]+' .' for sent in example_dict['highlight']])
+                input = ' '.join(example_dict['article'][:10]).lower()
+                output = ' '.join([sent[0]+' .' for sent in example_dict['highlight']]).lower()
                 if input=='' or output=='':
                     continue
                 # output = ' '.join(["%s %s %s" % (constants._SOS_TOKEN, sent[0], constants._EOS_TOKEN) for sent in example_dict['highlight']])

@@ -8,17 +8,21 @@ from graph4nlp.pytorch.modules.graph_construction.embedding_construction import 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .loss import Graph2seqLoss
+from .loss import Graph2seqLoss, CoverageLoss
 import onmt
 from .onmt_decoder import InputFeedRNNDecoder
 
 
 class Graph2seq(nn.Module):
-    def __init__(self, vocab, gnn, device, word_emb_size=300, rnn_dropout=0.2, word_dropout=0.2, hidden_size=300,
-                 direction_option='undirected'):
+    def __init__(self, vocab, gnn, device, word_emb_size=300,
+                 use_copy=False, use_coverage=False,
+                 rnn_dropout=0.2, word_dropout=0.2,
+                 hidden_size=300, direction_option='undirected'):
         super(Graph2seq, self).__init__()
 
         self.vocab = vocab
+        self.use_copy = use_copy
+        self.use_coverage = use_coverage
 
         self.embeddings = onmt.modules.Embeddings(word_emb_size, self.vocab.in_word_vocab.embeddings.shape[0],
                                              word_padding_idx=vocab.in_word_vocab.PAD)
@@ -28,11 +32,17 @@ class Graph2seq(nn.Module):
                                    embeddings=self.embeddings)
 
         self.seq_decoder = InputFeedRNNDecoder(
-            hidden_size=hidden_size, num_layers=1, bidirectional_encoder=True, context_gate="both",
+            hidden_size=hidden_size,
+            num_layers=1,
+            bidirectional_encoder=True,
+            context_gate="both",
+            copy_attn=self.use_copy,
+            coverage_attn=self.use_coverage,
             dropout=0.3,
             rnn_type="LSTM", embeddings=self.embeddings)
 
         self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
+        self.loss_cover = CoverageLoss(0.3)
         self.out_project = nn.Linear(hidden_size, self.vocab.in_word_vocab.embeddings.shape[0], bias=False)
         self.device = device
 
@@ -56,6 +66,9 @@ class Graph2seq(nn.Module):
 
         if require_loss:
             loss = self.loss_calc(prob, tgt_seq.transpose(0, 1))
+            if self.use_coverage:
+                cover_loss = self.loss_cover(prob.shape[0], attns, coverage_vectors)
+                loss += cover_loss
             return prob, loss
         else:
             return prob

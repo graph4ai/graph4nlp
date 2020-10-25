@@ -1544,6 +1544,8 @@ class CNNSeq2SeqDataset(Dataset):
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
         return {'train': 'train_3.json', 'val': "val_3.json", 'test': 'test_3.json'}
+        # return {'train': 'train-0.json', 'val': "val-0.json", 'test': 'test-0.json'}
+        # return {'train': 'train.json', 'val': "val.json", 'test': 'test.json'}
 
     @property
     def processed_file_names(self):
@@ -1563,10 +1565,10 @@ class CNNSeq2SeqDataset(Dataset):
                                        data_set=data_for_vocab,
                                        tokenizer=self.tokenizer,
                                        lower_case=self.lower_case,
-                                       max_word_vocab_size=20000,
+                                       max_word_vocab_size=50000,
                                        min_word_vocab_freq=8,
                                        pretrained_word_emb_file=self.pretrained_word_emb_file,
-                                       word_emb_size=300,
+                                       word_emb_size=self.word_emb_size,
                                        share_vocab=self.share_vocab)
         self.vocab_model = vocab_model
 
@@ -1619,7 +1621,7 @@ class CNNSeq2SeqDataset(Dataset):
         with open(file_path, 'r') as f:
             examples = json.load(f)
             for example_dict in examples:
-                input = ' '.join(example_dict['article'][:10])
+                input = ' '.join(' '.join(example_dict['article']).split()[:500])
                 output = ' '.join([sent[0]+' .' for sent in example_dict['highlight']])
                 if input=='' or output=='':
                     continue
