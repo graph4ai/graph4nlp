@@ -11,7 +11,6 @@ from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 from graph4nlp.pytorch.test.example.syntax_nmt.dataset import EuroparlNMTDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 
-
 class Graph2seq(nn.Module):
     def __init__(self, vocab, hidden_size=300, direction_option='bi_sep'):
         super(Graph2seq, self).__init__()

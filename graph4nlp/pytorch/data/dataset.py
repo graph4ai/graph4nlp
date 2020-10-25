@@ -10,6 +10,7 @@ from sklearn import preprocessing
 
 from collections import Counter
 import pickle
+from multiprocessing import Pool
 
 from ..data.data import GraphData
 from ..modules.utils.vocab_utils import VocabModel, Vocab
@@ -17,6 +18,7 @@ from ..modules.utils.tree_utils import Vocab as VocabForTree
 from ..modules.utils.tree_utils import Tree
 
 import json
+from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -251,11 +253,49 @@ class Dataset(torch.utils.data.Dataset):
                  use_val_for_vocab=False,
                  seed=1234,
                  device='cpu',
+                 thread_number=4,
+                 port=9000,
+                 timeout=15000,
                  **kwargs):
+        """
+
+        Parameters
+        ----------
+        root: str
+            The path of the data root.
+        topology_builder: GraphConstructionBase
+            The initial graph topology builder.
+        topology_subdir: str
+            The name of the data folder.
+        tokenizer: function, default=nltk.word_tokenize
+            The word tokenizer.
+        lower_case: bool, default=True
+            Whether to use lower-case option.
+        pretrained_word_emb_file: str, default=None
+            The path of the pre-trained word embedding file.
+        use_val_for_vocab: bool, default=False
+            Whether to add val split in the final split.
+        seed: int, default=1234
+            The seed for random function.
+        device: str, default='cpu'
+            The device of the current environment.
+        thread_number: int, default=4
+            The thread number for building initial graph. For most case, it may be the number of your CPU cores.
+        port: int, default=9000
+            The port for stanfordcorenlp.
+        timeout: int, default=15000
+            The timeout for stanfordcorenlp.
+        kwargs
+        """
         super(Dataset, self).__init__()
 
         self.root = root  # The root directory where the dataset is located.
         self.seed = seed
+
+        # stanfordcorenlp hyper-parameter
+        self.thread_number = thread_number
+        self.port = port
+        self.timeout = timeout
 
         # Processing-specific attributes
         self.tokenizer = tokenizer
@@ -340,16 +380,18 @@ class Dataset(torch.utils.data.Dataset):
                 self.val = old_train_set[new_train_length:]
                 self.train = old_train_set[:new_train_length]
 
-    def build_topology(self, data_items):
-        """
-        Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
-        DataItem.
-        """
-        if self.graph_type == 'static':
-            print('Connecting to stanfordcorenlp server...')
-            processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+    @staticmethod
+    def _build_topology_process(data_items, topology_builder,
+                                graph_type, dynamic_graph_type, dynamic_init_topology_builder,
+                                merge_strategy, edge_strategy, dynamic_init_topology_aux_args,
+                                lower_case, tokenizer, port, timeout):
 
-            if self.topology_builder == IEBasedGraphConstruction:
+        ret = []
+        if graph_type == 'static':
+            print('Connecting to stanfordcorenlp server...')
+            processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=port, timeout=timeout)
+
+            if topology_builder == IEBasedGraphConstruction:
                 props_coref = {
                     'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
                     "tokenize.options":
@@ -368,7 +410,7 @@ class Dataset(torch.utils.data.Dataset):
                     "openie.triple.strict": "true"
                 }
                 processor_args = [props_coref, props_openie]
-            elif self.topology_builder == DependencyBasedGraphConstruction:
+            elif topology_builder == DependencyBasedGraphConstruction:
                 processor_args = {
                     'annotators': 'ssplit,tokenize,depparse',
                     "tokenize.options":
@@ -377,7 +419,7 @@ class Dataset(torch.utils.data.Dataset):
                     'ssplit.isOneSentence': False,
                     'outputFormat': 'json'
                 }
-            elif self.topology_builder == ConstituencyBasedGraphConstruction:
+            elif topology_builder == ConstituencyBasedGraphConstruction:
                 processor_args = {
                     'annotators': "tokenize,ssplit,pos,parse",
                     "tokenize.options":
@@ -389,27 +431,29 @@ class Dataset(torch.utils.data.Dataset):
             else:
                 raise NotImplementedError
             print('CoreNLP server connected.')
-            for item in data_items:
-                graph = self.topology_builder.topology(raw_text_data=item.input_text,
-                                                       nlp_processor=processor,
-                                                       processor_args=processor_args,
-                                                       merge_strategy=self.merge_strategy,
-                                                       edge_strategy=self.edge_strategy,
-                                                       verbase=False)
-                item.graph = graph.to(self.device)
-        elif self.graph_type == 'dynamic':
-            if self.dynamic_graph_type == 'node_emb':
+            for cnt, item in enumerate(data_items):
+                if cnt % 1000 == 0:
+                    print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
+                graph = topology_builder.topology(raw_text_data=item.input_text,
+                                                  nlp_processor=processor,
+                                                  processor_args=processor_args,
+                                                  merge_strategy=merge_strategy,
+                                                  edge_strategy=edge_strategy,
+                                                  verbase=False)
+                ret.append(graph)
+        elif graph_type == 'dynamic':
+            if dynamic_graph_type == 'node_emb':
                 for item in data_items:
-                    graph = self.topology_builder.init_topology(item.input_text,
-                                                                lower_case=self.lower_case,
-                                                                tokenizer=self.tokenizer)
-                    item.graph = graph.to(self.device)
-            elif self.dynamic_graph_type == 'node_emb_refined':
-                if self.dynamic_init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
+                    graph = topology_builder.init_topology(item.input_text,
+                                                           lower_case=lower_case,
+                                                           tokenizer=tokenizer)
+                    ret.append(graph)
+            elif dynamic_graph_type == 'node_emb_refined':
+                if dynamic_init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
                     print('Connecting to stanfordcorenlp server...')
-                    processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+                    processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=port, timeout=timeout)
 
-                    if self.dynamic_init_topology_builder == IEBasedGraphConstruction:
+                    if dynamic_init_topology_builder == IEBasedGraphConstruction:
                         props_coref = {
                             'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
                             "tokenize.options":
@@ -428,7 +472,7 @@ class Dataset(torch.utils.data.Dataset):
                             "openie.triple.strict": "true"
                         }
                         processor_args = [props_coref, props_openie]
-                    elif self.dynamic_init_topology_builder == DependencyBasedGraphConstruction:
+                    elif dynamic_init_topology_builder == DependencyBasedGraphConstruction:
                         processor_args = {
                             'annotators': 'ssplit,tokenize,depparse',
                             "tokenize.options":
@@ -437,7 +481,7 @@ class Dataset(torch.utils.data.Dataset):
                             'ssplit.isOneSentence': False,
                             'outputFormat': 'json'
                         }
-                    elif self.dynamic_init_topology_builder == ConstituencyBasedGraphConstruction:
+                    elif dynamic_init_topology_builder == ConstituencyBasedGraphConstruction:
                         processor_args = {
                             'annotators': "tokenize,ssplit,pos,parse",
                             "tokenize.options":
@@ -454,23 +498,65 @@ class Dataset(torch.utils.data.Dataset):
                     processor_args = None
 
                 for item in data_items:
-                    graph = self.topology_builder.init_topology(item.input_text,
-                                                                dynamic_init_topology_builder=self.dynamic_init_topology_builder,
-                                                                lower_case=self.lower_case,
-                                                                tokenizer=self.tokenizer,
-                                                                nlp_processor=processor,
-                                                                processor_args=processor_args,
-                                                                merge_strategy=self.merge_strategy,
-                                                                edge_strategy=self.edge_strategy,
-                                                                verbase=False,
-                                                                dynamic_init_topology_aux_args=self.dynamic_init_topology_aux_args)
+                    graph = topology_builder.init_topology(item.input_text,
+                                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                                           lower_case=lower_case,
+                                                           tokenizer=tokenizer,
+                                                           nlp_processor=processor,
+                                                           processor_args=processor_args,
+                                                           merge_strategy=merge_strategy,
+                                                           edge_strategy=edge_strategy,
+                                                           verbase=False,
+                                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
-                    item.graph = graph.to(self.device)
+                    ret.append(graph)
             else:
-                raise RuntimeError('Unknown dynamic_graph_type: {}'.format(self.dynamic_graph_type))
+                raise RuntimeError('Unknown dynamic_graph_type: {}'.format(dynamic_graph_type))
 
         else:
             raise NotImplementedError('Currently only static and dynamic are supported!')
+        return ret
+
+    def build_topology(self, data_items):
+        """
+        Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
+        DataItem.
+        """
+        total = len(data_items)
+        thread_number = min(total, self.thread_number)
+        pool = Pool(thread_number)
+        res_l = []
+        for i in range(thread_number):
+            start_index = total * i // thread_number
+            end_index = total * (i + 1) // thread_number
+
+
+            """
+            data_items, topology_builder,
+                                graph_type, dynamic_graph_type, dynamic_init_topology_builder,
+                                merge_strategy, edge_strategy, dynamic_init_topology_aux_args,
+                                lower_case, tokenizer, port, timeout
+            """
+            r = pool.apply_async(self._build_topology_process,
+                                 args=(data_items[start_index:end_index], self.topology_builder, self.graph_type,
+                                       self.dynamic_graph_type, self.dynamic_init_topology_builder,
+                                       self.merge_strategy, self.edge_strategy, self.dynamic_init_topology_aux_args,
+                                       self.lower_case, self.tokenizer, self.port, self.timeout))
+            res_l.append(r)
+        pool.close()
+        pool.join()
+
+        for i in range(thread_number):
+            start_index = total * i // thread_number
+            end_index = total * (i + 1) // thread_number
+
+            res = res_l[i].get()
+            datas = data_items[start_index:end_index]
+            for data, graph in zip(datas, res):
+                data.graph = graph.to(self.device)
+
+
+
 
     def build_vocab(self):
         """
