@@ -179,3 +179,95 @@ class BeamSearchStrategy(StrategyBase):
 
             decoded_results.append(utterances)
         return decoded_results
+
+    def beam_search_for_tree_decoding(self, decoder_initial_state,
+                                        decoder_initial_input,
+                                        parent_state,
+                                        graph_node_embedding,
+                                        rnn_node_embedding=None,
+                                        src_seq=None,
+                                        oov_dict=None,
+                                        sibling_state=None,
+                                        device=None,
+                                        topk=1):
+
+        decoded_results = []
+
+        decoder_hidden = decoder_initial_state
+        decoder_input = decoder_initial_input
+        form_manager = self.vocab
+
+        # Number of sentence to generate
+        endnodes = []
+        number_required = min((topk + 1), topk - len(endnodes))
+
+        # starting node -  hidden vector, previous node, word id, logp, length
+        node = BeamSearchNode(decoder_hidden, [], None, decoder_input, 0, 1)
+        nodes = PriorityQueue()
+
+        # start the queue
+        nodes.put((-node.eval(), node))
+        qsize = 1
+
+        # start beam search
+        while True:
+            if qsize > self.max_decoder_step: break
+
+            # fetch the best node
+            score, n = nodes.get()
+            decoder_input = n.wordid
+            decoder_hidden = n.h
+
+            if n.wordid.item() == form_manager.get_symbol_idx(form_manager.end_token) and n.prevNode != None:
+                endnodes.append((score, n))
+                # if we reached maximum # of sentences required
+                if len(endnodes) >= number_required:
+                    break
+                else:
+                    continue
+                
+            # decode for one step using decoder
+            prediction, decoder_hidden, _ = self.decoder.decode_step(dec_single_input=decoder_input,
+                                                        dec_single_state=decoder_hidden,
+                                                        memory=graph_node_embedding,
+                                                        parent_state=parent_state)
+
+            # PUT HERE REAL BEAM SEARCH OF TOP
+            log_prob, indexes = torch.topk(prediction, self.beam_size)
+            nextnodes = []
+
+            for new_k in range(self.beam_size):
+                decoded_t = torch.tensor([indexes[0][new_k]], dtype=torch.long, device=device)
+
+                log_p = log_prob[0][new_k].item()
+
+                node = BeamSearchNode(decoder_hidden, [], n, decoded_t, n.logp + log_p, n.leng + 1)
+                score = -node.eval()
+                nextnodes.append((score, node))
+
+            # put them into queue
+            for i in range(len(nextnodes)):
+                score, nn = nextnodes[i]
+                nodes.put((score, nn))
+                # increase qsize
+            qsize += len(nextnodes) - 1
+
+        # choose nbest paths, back trace them
+        if len(endnodes) == 0:
+            endnodes = [nodes.get() for _ in range(topk)]
+
+        utterances = []
+        for score, n in sorted(endnodes, key=operator.itemgetter(0)):
+            utterance = []
+            utterance.append(n)
+            # back trace
+            while n.prevNode != None:
+                n = n.prevNode
+                utterance.append(n)
+
+            utterance = utterance[::-1]
+            utterances.append(utterance)
+
+        decoded_results.append(utterances)
+        assert(len(decoded_results) == 1 and len(utterances) == topk)
+        return decoded_results
