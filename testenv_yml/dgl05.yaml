@@ -1,4 +1,4 @@
-name: graph4nlp
+name: graph4nlp_dgl05
 channels:
   - pytorch
   - dglteam
@@ -11,7 +11,7 @@ dependencies:
   - click=7.1.2=py_0
   - cudatoolkit=10.1.243=h6bb024c_0
   - decorator=4.4.2=py_0
-  - dgl-cuda10.1
+  - dgl-cuda10.1=0.5
   - freetype=2.10.2=h5ab3b9f_0
   - intel-openmp=2020.2=254
   - joblib=0.16.0=py_0
@@ -70,4 +70,5 @@ dependencies:
     - torchtext==0.7.0
     - youtokentome==1.0.6
     - urllib3==1.25.10
+    - youtokentome==1.0.6
 prefix:
