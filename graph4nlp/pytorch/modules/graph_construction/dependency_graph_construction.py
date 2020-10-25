@@ -392,6 +392,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         num_word_nodes = [] # number of nodes that are extracted from the raw text in each graph
 
         for g in batch_graphdata:
+            g.to(self.device)
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
             num_nodes.append(g.get_node_num())
             num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))

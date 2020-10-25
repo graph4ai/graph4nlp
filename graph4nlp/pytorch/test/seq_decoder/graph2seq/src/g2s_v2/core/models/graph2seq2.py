@@ -100,9 +100,9 @@ class Graph2Seq(nn.Module):
 
         self.graph4nlp_decoder = StdRNNDecoder(word_emb=self.word_embed, max_decoder_step=self.max_dec_steps,
                                                decoder_hidden_size=dec_hidden_size,
-                                               device=self.device, vocab=self.word_vocab, decoder_input_size=enc_hidden_size,
+                                               vocab=self.word_vocab, decoder_input_size=enc_hidden_size,
                                                use_attention=True, attention_function="mlp", rnn_type="GRU",
-                                               attention_type="sep_diff_encoder_type", use_coverage=False, node_type_num=None,
+                                               attention_type="uniform", use_coverage=False, node_type_num=None,
                                                fuse_strategy="average", tgt_emb_as_output_layer=True,
                                                use_copy=True) #sep_diff_encoder_type
 

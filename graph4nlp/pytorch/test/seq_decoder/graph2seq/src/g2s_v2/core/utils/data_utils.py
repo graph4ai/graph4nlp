@@ -219,6 +219,7 @@ class InstanceBatch(object):
 
         # Build graph
         batch_graphs = [each[0].graph for each in instances]
+        print("ooooooo")
         self.sent1_graph = vectorize_batch_graph(batch_graphs, word_vocab, self.oov_dict, ext_vocab=ext_vocab, copy_node=config.get('copy_node', False))
 
 

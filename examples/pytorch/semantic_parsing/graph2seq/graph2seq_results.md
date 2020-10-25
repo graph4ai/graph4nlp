@@ -22,7 +22,7 @@ How to run
 Run with following:
 
 ```python
-python -m examples.pytorch.semantic_parsing.jobs.main
+python -m examples.pytorch.semantic_parsing.graph2seq.main
 ```
 
 Results
@@ -45,6 +45,10 @@ Dependency
 | -------- | ---------------- | ------------- | ------------- |
 | Jobs     |       92.1       |       92.1    |      90.7     |
 
+| Dataset  |      GCN-Uni     |   GCN-BiSep   |  GCN-BiFuse   |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       91.4       |       91.4    |      92.1     |
+
 
 Cos
 
@@ -59,6 +63,10 @@ Cos
 | Dataset  |  Graphsage-Uni   | Graphsage-BiSep   |  Graphsage-BiFuse   |
 | -------- | ---------------- | ------------- | ------------- |
 | Jobs     |       90.7       |     90.7      |      90.7     |
+
+| Dataset  |      GCN-Uni     |   GCN-BiSep   |  GCN-BiFuse   |
+| -------- | ---------------- | ------------- | ------------- |
+| Jobs     |       90.7       |      91.4    |      90.0     |
 
 
 Dynamic: node_emb
