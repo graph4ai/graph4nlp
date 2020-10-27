@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "3"
 
 from .dataset import CNNDataset
@@ -158,17 +158,12 @@ class CNN:
                 self.opt.learning_rate = self.opt.learning_rate * self.opt.lr_decay_rate
                 self.logger.info("Learning rate adjusted: {:.5f}".format(self.opt.learning_rate))
 
-    def prepare_ext_vocab_seq2seq(self, batch, vocab, gt_str=None):
+    def prepare_ext_vocab_seq2seq(self, gt_src, vocab, gt_str=None):
         oov_dict = copy.deepcopy(vocab.in_word_vocab)
-        for g in batch:
-            token_matrix = []
-            for node_idx in range(g.get_node_num()):
-                node_token = g.node_attributes[node_idx]['token']
-                if oov_dict.getIndex(node_token) == oov_dict.UNK:
-                    oov_dict._add_words(node_token)
-                token_matrix.append([oov_dict.getIndex(node_token)])
-            token_matrix = torch.tensor(token_matrix, dtype=torch.long).to(self.device)
-            g.node_features['token_id_oov'] = token_matrix
+        for g in gt_src:
+            for token in g.split(' '):
+                if oov_dict.getIndex(token) == oov_dict.UNK:
+                    oov_dict._add_words([token])
 
         if gt_str is not None:
             oov_tgt_collect = []
@@ -194,14 +189,14 @@ class CNN:
         start = time.time()
         for step, data in enumerate(dataloader):
             # graph_list, tgt = data
-            src_seq, src_len, tgt = data
+            src_seq, src_len, gt_src, tgt, gt_tgt = data
             src_seq = src_seq.to(self.device)
             src_len = src_len.to(self.device)
             tgt = tgt.to(self.device)
             oov_dict = None
             if self.opt.use_copy:
-                oov_dict = copy.deepcopy(self.vocab.in_word_vocab)
-                # oov_dict, tgt = self.prepare_ext_vocab_seq2seq(src_seq, self.vocab, gt_str=None)
+                # oov_dict = copy.deepcopy(self.vocab.in_word_vocab)
+                oov_dict, tgt = self.prepare_ext_vocab_seq2seq(gt_src, self.vocab, gt_tgt)
             _, loss = self.model(src_seq, src_len, tgt, require_loss=True, oov_dict=oov_dict)
             # _, loss = self.model(graph_list, tgt, require_loss=True)
             loss_collect.append(loss.item())
@@ -225,13 +220,13 @@ class CNN:
         dataloader = self.val_dataloader if split == "val" else self.test_dataloader
         for data in dataloader:
             # graph_list, tgt = data
-            src_seq, src_len, tgt = data
+            src_seq, src_len, gt_src, tgt, gt_tgt = data
             src_seq = src_seq.to(self.device)
             src_len = src_len.to(self.device)
             tgt = tgt.to(self.device)
             oov_dict = None
             if self.opt.use_copy:
-                oov_dict = copy.deepcopy(self.vocab.in_word_vocab)
+                oov_dict, tgt = self.prepare_ext_vocab_seq2seq(gt_src, self.vocab, gt_tgt)
             # prob = self.model(src_seq, src_len, tgt, require_loss=True)
             prob = self.model(src_seq, src_len, require_loss=False, oov_dict=oov_dict)
             # prob = self.model(graph_list, require_loss=False)
@@ -272,7 +267,7 @@ class CNN:
             tgt = tgt.to(self.device)
             oov_dict = None
             if self.opt.use_copy:
-                oov_dict = copy.deepcopy(self.vocab.in_word_vocab)
+                oov_dict = self.prepare_ext_vocab_seq2seq(src_seq, self.vocab, )
                 ref_dict = oov_dict
             else:
                 oov_dict = None
@@ -321,8 +316,8 @@ class CNN:
 if __name__ == "__main__":
     opt = get_args()
     runner = CNN(opt)
-    # max_score = runner.train()
-    # print("Train finish, best val score: {:.3f}".format(max_score))
+    max_score = runner.train()
+    print("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint('best.pth')
     runner.evaluate(split='test', test_mode=True)
     runner.translate()
