@@ -24,6 +24,7 @@ class Graph2seq(nn.Module):
         self.use_copy = use_copy
         self.use_coverage = use_coverage
         use_edge_weight = False
+        self.vocab_size = self.vocab.in_word_vocab.embeddings.shape[0]
 
         self.embeddings = onmt.modules.Embeddings(word_emb_size, self.vocab.in_word_vocab.embeddings.shape[0],
                                              word_padding_idx=vocab.in_word_vocab.PAD)
@@ -47,6 +48,12 @@ class Graph2seq(nn.Module):
         self.device = device
 
     # def forward(self, graph_list, tgt=None, require_loss=True):
+
+    def fliter_oov(self, seq):
+        seq = seq.clone()
+        seq[seq >= self.vocab_size] = self.vocab.in_word_vocab.UNK
+        return seq
+
     def forward(self, src_seq, src_len, tgt_seq=None, require_loss=True, oov_dict=None):
         # batch_graph = self.graph_topology(graph_list)
 
@@ -57,7 +64,8 @@ class Graph2seq(nn.Module):
 
         src_seq = src_seq.transpose(0, 1)
         # tgt_seq = tgt_seq.transpose(0, 1)
-        enc_state, memory_bank, lengths = self.seq_encoder(src_seq.unsqueeze(-1), src_len)
+        src_seq_in = self.fliter_oov(src_seq)
+        enc_state, memory_bank, lengths = self.seq_encoder(src_seq_in.unsqueeze(-1), src_len)
 
         # down-task
         max_len = max(src_len)

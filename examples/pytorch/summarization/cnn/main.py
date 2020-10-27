@@ -94,8 +94,8 @@ class CNN:
 
         dataset = CNNSeq2SeqDataset(root_dir=self.opt.root_dir,
                                     word_emb_size=self.opt.word_emb_size,
-                                topology_builder=DependencyBasedGraphConstruction,
-                                topology_subdir=self.opt.topology_subdir, share_vocab=True)
+                                    topology_builder=DependencyBasedGraphConstruction,
+                                    topology_subdir=self.opt.topology_subdir, share_vocab=True)
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt.batch_size, shuffle=True, num_workers=0,
                                            collate_fn=dataset.collate_fn)
@@ -158,12 +158,18 @@ class CNN:
                 self.opt.learning_rate = self.opt.learning_rate * self.opt.lr_decay_rate
                 self.logger.info("Learning rate adjusted: {:.5f}".format(self.opt.learning_rate))
 
-    def prepare_ext_vocab_seq2seq(self, gt_src, vocab, gt_str=None):
+    def prepare_ext_vocab_seq2seq(self, src_seq, gt_src, vocab, gt_str=None):
         oov_dict = copy.deepcopy(vocab.in_word_vocab)
-        for g in gt_src:
-            for token in g.split(' '):
-                if oov_dict.getIndex(token) == oov_dict.UNK:
-                    oov_dict._add_words([token])
+        for i in range(src_seq.shape[0]):
+
+            seq = src_seq[i]
+            src_str = gt_src[i]
+            tokenizerd = oov_dict.tokenizer(src_str)
+            for j in range(len(tokenizerd)):
+                if oov_dict.getIndex(tokenizerd[j]) == oov_dict.UNK:
+                    oov_dict._add_words([tokenizerd[j]])
+                if seq[j].item() == oov_dict.UNK:
+                    seq[j] = oov_dict.getIndex(tokenizerd[j])
 
         if gt_str is not None:
             oov_tgt_collect = []
@@ -189,14 +195,15 @@ class CNN:
         start = time.time()
         for step, data in enumerate(dataloader):
             # graph_list, tgt = data
-            src_seq, src_len, gt_src, tgt, gt_tgt = data
+            src_seq, src_len, tgt_seq, src_str, tgt_str = data
             src_seq = src_seq.to(self.device)
             src_len = src_len.to(self.device)
-            tgt = tgt.to(self.device)
+            tgt = tgt_seq.to(self.device)
             oov_dict = None
             if self.opt.use_copy:
                 # oov_dict = copy.deepcopy(self.vocab.in_word_vocab)
-                oov_dict, tgt = self.prepare_ext_vocab_seq2seq(gt_src, self.vocab, gt_tgt)
+                oov_dict, tgt = self.prepare_ext_vocab_seq2seq(src_seq, src_str, self.vocab, tgt_str)
+
             _, loss = self.model(src_seq, src_len, tgt, require_loss=True, oov_dict=oov_dict)
             # _, loss = self.model(graph_list, tgt, require_loss=True)
             loss_collect.append(loss.item())
@@ -220,13 +227,14 @@ class CNN:
         dataloader = self.val_dataloader if split == "val" else self.test_dataloader
         for data in dataloader:
             # graph_list, tgt = data
-            src_seq, src_len, gt_src, tgt, gt_tgt = data
+            src_seq, src_len, tgt_seq, src_str, tgt_str = data
             src_seq = src_seq.to(self.device)
             src_len = src_len.to(self.device)
-            tgt = tgt.to(self.device)
+            tgt = tgt_seq.to(self.device)
             oov_dict = None
             if self.opt.use_copy:
-                oov_dict, tgt = self.prepare_ext_vocab_seq2seq(gt_src, self.vocab, gt_tgt)
+                # oov_dict = copy.deepcopy(self.vocab.in_word_vocab)
+                oov_dict, tgt = self.prepare_ext_vocab_seq2seq(src_seq, src_str, self.vocab, tgt_str)
             # prob = self.model(src_seq, src_len, tgt, require_loss=True)
             prob = self.model(src_seq, src_len, require_loss=False, oov_dict=oov_dict)
             # prob = self.model(graph_list, require_loss=False)
@@ -320,4 +328,4 @@ if __name__ == "__main__":
     print("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint('best.pth')
     runner.evaluate(split='test', test_mode=True)
-    runner.translate()
+    # runner.translate()

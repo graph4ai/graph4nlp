@@ -1660,8 +1660,13 @@ class CNNSeq2SeqDataset(Dataset):
 
         tgt_seq = torch.from_numpy(output_pad).long()
 
+        src_str = [item.input_text for item in data_list]
+        tgt_str = [item.output_text for item in data_list]
+
         sorted_x_len, indx = torch.sort(src_len, 0, descending=True)
         src_seq = src_seq[indx]
         tgt_seq = tgt_seq[indx]
+        src_str = np.array(src_str)[indx]
+        tgt_str = np.array(tgt_str)[indx]
 
-        return [src_seq, sorted_x_len, tgt_seq]
+        return [src_seq, sorted_x_len, tgt_seq, src_str, tgt_str]

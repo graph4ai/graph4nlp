@@ -21,7 +21,7 @@ def get_args():
     parser.add_argument("--gpu", type=int, default=0, help="gpu id")
     parser.add_argument("--seed", type=int, default=1236, help="")
 
-    parser.add_argument("--use_copy", type=bool, default=False, help="")
+    parser.add_argument("--use_copy", type=bool, default=True, help="")
     parser.add_argument("--use_coverage", type=bool, default=False, help="")
 
     parser.add_argument("--beam_size", type=int, default=5, help="beam_size")
