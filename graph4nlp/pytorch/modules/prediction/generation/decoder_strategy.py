@@ -125,6 +125,7 @@ class BeamSearchStrategy(StrategyBase):
                     else:
                         continue
                 # decoder_output, decoder_state, dec_attn_scores, coverage_vec
+                decoder_input_n = self.decoder._filter_oov(decoder_input_n)
                 decoder_output, decoder_hidden_n_out, dec_attn_scores, coverage_vec = \
                     self.decoder.decode_step(decoder_input=decoder_input_n, rnn_state=decoder_hidden_n,
                                              dec_input_mask=graph_node_mask_one,

@@ -1,6 +1,7 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "3"
 
 from .dataset import CNNDataset
@@ -164,7 +165,10 @@ class CNN:
 
             seq = src_seq[i]
             src_str = gt_src[i]
-            tokenizerd = oov_dict.tokenizer(src_str)
+            if oov_dict.tokenizer is None:
+                tokenizerd = src_str.split()
+            else:
+                tokenizerd = oov_dict.tokenizer(src_str)
             for j in range(len(tokenizerd)):
                 if oov_dict.getIndex(tokenizerd[j]) == oov_dict.UNK:
                     oov_dict._add_words([tokenizerd[j]])
@@ -269,13 +273,13 @@ class CNN:
         gt_collect = []
         dataloader = self.test_dataloader
         for data in dataloader:
-            src_seq, src_len, tgt = data
+            src_seq, src_len, tgt_seq, src_str, tgt_str = data
             src_seq = src_seq.to(self.device)
             src_len = src_len.to(self.device)
-            tgt = tgt.to(self.device)
+            tgt = tgt_seq.to(self.device)
             oov_dict = None
             if self.opt.use_copy:
-                oov_dict = self.prepare_ext_vocab_seq2seq(src_seq, self.vocab, )
+                oov_dict = self.prepare_ext_vocab_seq2seq(src_seq, src_str, self.vocab, tgt_str)
                 ref_dict = oov_dict
             else:
                 oov_dict = None
@@ -324,8 +328,8 @@ class CNN:
 if __name__ == "__main__":
     opt = get_args()
     runner = CNN(opt)
-    max_score = runner.train()
-    print("Train finish, best val score: {:.3f}".format(max_score))
+    # max_score = runner.train()
+    # print("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint('best.pth')
     runner.evaluate(split='test', test_mode=True)
     # runner.translate()

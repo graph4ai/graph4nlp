@@ -63,7 +63,10 @@ class Text2TextDataItem_seq2seq(DataItem):
         if self.tokenizer is None:
             output_tokens = self.output_text.strip().split(' ')
         else:
-            output_tokens = self.tokenizer(self.output_text)
+            if '<t>' in self.output_text:
+                output_text = self.output_text.replace('<t>','').replace('</t>','')
+            output_tokens = self.tokenizer(output_text)
+            output_tokens = output_tokens + ['<t>','</t>']
 
         if self.share_vocab:
             return input_tokens + output_tokens
@@ -1532,13 +1535,16 @@ class CNNSeq2SeqDataset(Dataset):
                  ):
         self.data_item_type = Text2TextDataItem_seq2seq
         self.share_vocab = share_vocab
+        self.tokenizer = None
         super(CNNSeq2SeqDataset, self).__init__(root=root_dir,
+                                                tokenizer=self.tokenizer,
                                                 topology_builder=topology_builder,
                                                 topology_subdir=topology_subdir,
                                                  share_vocab=share_vocab, word_emb_size=word_emb_size,
                                                  dynamic_graph_type=dynamic_graph_type,
                                                  dynamic_init_topology_builder=dynamic_init_topology_builder,
                                                  dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+
 
     @property
     def raw_file_names(self):
@@ -1622,7 +1628,7 @@ class CNNSeq2SeqDataset(Dataset):
             examples = json.load(f)
             for example_dict in examples:
                 input = ' '.join(' '.join(example_dict['article']).split()[:500])
-                output = ' '.join([sent[0]+' .' for sent in example_dict['highlight']])
+                output = ' '.join(' '.join(['<t> '+sent[0]+' . </t>' for sent in example_dict['highlight']]).split()[:99])
                 if input=='' or output=='':
                     continue
                 data_item = Text2TextDataItem_seq2seq(input_text=input,
