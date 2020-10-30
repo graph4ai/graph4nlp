@@ -1,29 +1,25 @@
 import abc
+import json
 import os
+import warnings
+from collections import Counter
+from multiprocessing import Pool
 
 import numpy as np
-import random
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 from sklearn import preprocessing
 
-from collections import Counter
-import pickle
-from multiprocessing import Pool
-
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from ..data.data import GraphData
-from ..modules.utils.vocab_utils import VocabModel, Vocab
-from ..modules.utils.tree_utils import Vocab as VocabForTree
-from ..modules.utils.tree_utils import Tree
-
-import json
 from ..modules.graph_construction.base import GraphConstructionBase
-from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from ..modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from ..modules.utils.tree_utils import Tree
+from ..modules.utils.tree_utils import Vocab as VocabForTree
+from ..modules.utils.vocab_utils import VocabModel, Vocab
 
 
 class DataItem(object):
@@ -167,6 +163,7 @@ class DoubleText2TextDataItem(DataItem):
         else:
             return input_tokens, output_tokens
 
+
 class SequenceLabelingDataItem(DataItem):
     def __init__(self, input_text, output_tags, tokenizer):
         super(SequenceLabelingDataItem, self).__init__(input_text, tokenizer)
@@ -189,8 +186,8 @@ class SequenceLabelingDataItem(DataItem):
 
             input_tokens.extend(tokenized_token)
 
+        return input_tokens
 
-        return input_tokens 
 
 class Dataset(torch.utils.data.Dataset):
     """
@@ -423,7 +420,7 @@ class Dataset(torch.utils.data.Dataset):
                 processor_args = {
                     'annotators': "tokenize,ssplit,pos,parse",
                     "tokenize.options":
-                    "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
                     "tokenize.whitespace": False,
                     'ssplit.isOneSentence': False,
                     'outputFormat': 'json'
@@ -434,13 +431,18 @@ class Dataset(torch.utils.data.Dataset):
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
                     print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
-                graph = topology_builder.topology(raw_text_data=item.input_text,
-                                                  nlp_processor=processor,
-                                                  processor_args=processor_args,
-                                                  merge_strategy=merge_strategy,
-                                                  edge_strategy=edge_strategy,
-                                                  verbase=False)
-                ret.append(graph)
+                try:
+                    graph = topology_builder.topology(raw_text_data=item.input_text,
+                                                      nlp_processor=processor,
+                                                      processor_args=processor_args,
+                                                      merge_strategy=merge_strategy,
+                                                      edge_strategy=edge_strategy,
+                                                      verbase=False)
+                    ret.append(graph)
+                except TimeoutError as msg:
+                    warnings.warn(RuntimeWarning(msg))
+                    data_items.pop(data_items.index(item))
+
         elif graph_type == 'dynamic':
             if dynamic_graph_type == 'node_emb':
                 for item in data_items:
@@ -449,7 +451,8 @@ class Dataset(torch.utils.data.Dataset):
                                                            tokenizer=tokenizer)
                     ret.append(graph)
             elif dynamic_graph_type == 'node_emb_refined':
-                if dynamic_init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
+                if dynamic_init_topology_builder in (
+                IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
                     print('Connecting to stanfordcorenlp server...')
                     processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=port, timeout=timeout)
 
@@ -485,7 +488,7 @@ class Dataset(torch.utils.data.Dataset):
                         processor_args = {
                             'annotators': "tokenize,ssplit,pos,parse",
                             "tokenize.options":
-                            "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
                             "tokenize.whitespace": False,
                             'ssplit.isOneSentence': False,
                             'outputFormat': 'json'
@@ -498,18 +501,22 @@ class Dataset(torch.utils.data.Dataset):
                     processor_args = None
 
                 for item in data_items:
-                    graph = topology_builder.init_topology(item.input_text,
-                                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                                           lower_case=lower_case,
-                                                           tokenizer=tokenizer,
-                                                           nlp_processor=processor,
-                                                           processor_args=processor_args,
-                                                           merge_strategy=merge_strategy,
-                                                           edge_strategy=edge_strategy,
-                                                           verbase=False,
-                                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+                    try:
+                        graph = topology_builder.init_topology(item.input_text,
+                                                               dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                                               lower_case=lower_case,
+                                                               tokenizer=tokenizer,
+                                                               nlp_processor=processor,
+                                                               processor_args=processor_args,
+                                                               merge_strategy=merge_strategy,
+                                                               edge_strategy=edge_strategy,
+                                                               verbase=False,
+                                                               dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
-                    ret.append(graph)
+                        ret.append(graph)
+                    except TimeoutError as msg:
+                        warnings.warn(RuntimeWarning(msg))
+                        data_items.pop(data_items.index(item))
             else:
                 raise RuntimeError('Unknown dynamic_graph_type: {}'.format(dynamic_graph_type))
 
@@ -529,7 +536,6 @@ class Dataset(torch.utils.data.Dataset):
         for i in range(thread_number):
             start_index = total * i // thread_number
             end_index = total * (i + 1) // thread_number
-
 
             """
             data_items, topology_builder,
@@ -554,9 +560,6 @@ class Dataset(torch.utils.data.Dataset):
             datas = data_items[start_index:end_index]
             for data, graph in zip(datas, res):
                 data.graph = graph.to(self.device)
-
-
-
 
     def build_vocab(self):
         """
@@ -759,7 +762,8 @@ class TextToTreeDataset(Dataset):
             lines = f.readlines()
             for line in lines:
                 input, output = line.split('\t')
-                data_item = Text2TreeDataItem(input_text=input, output_text=output, output_tree=None, tokenizer=self.tokenizer,
+                data_item = Text2TreeDataItem(input_text=input, output_text=output, output_tree=None,
+                                              tokenizer=self.tokenizer,
                                               share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
@@ -769,8 +773,12 @@ class TextToTreeDataset(Dataset):
         if self.use_val_for_vocab:
             data_for_vocab = data_for_vocab + self.val
 
-        src_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.enc_emb_size)
-        tgt_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.dec_emb_size)
+        src_vocab_model = VocabForTree(lower_case=self.lower_case,
+                                       pretrained_embedding_fn=self.pretrained_word_emb_file,
+                                       embedding_dims=self.enc_emb_size)
+        tgt_vocab_model = VocabForTree(lower_case=self.lower_case,
+                                       pretrained_embedding_fn=self.pretrained_word_emb_file,
+                                       embedding_dims=self.dec_emb_size)
 
         if self.share_vocab:
             all_words = Counter()
@@ -818,6 +826,7 @@ class TextToTreeDataset(Dataset):
         graph_data = [item.graph for item in data_list]
         output_tree_list = [item.output_tree for item in data_list]
         return [graph_data, output_tree_list]
+
 
 class KGDataItem(DataItem):
     def __init__(self, e1, rel, e2, rel_eval, e2_multi, e1_multi, share_vocab=True, split_token=' '):
@@ -921,13 +930,13 @@ class KGCompletionDataset(Dataset):
             for line in lines:
                 line_dict = json.loads(line)
                 data_item = KGDataItem(e1=line_dict['e1'],
-                                                      e2=line_dict['e2'],
-                                                      rel=line_dict['rel'],
-                                                      rel_eval=line_dict['rel_eval'],
-                                                      e2_multi=line_dict['e2_multi1'],
-                                                      e1_multi=line_dict['e2_multi2'],
-                                                      share_vocab=self.share_vocab,
-                                                      split_token=self.split_token)
+                                       e2=line_dict['e2'],
+                                       rel=line_dict['rel'],
+                                       rel_eval=line_dict['rel_eval'],
+                                       e2_multi=line_dict['e2_multi1'],
+                                       e1_multi=line_dict['e2_multi2'],
+                                       share_vocab=self.share_vocab,
+                                       split_token=self.split_token)
                 data.append(data_item)
 
                 if 'train' in file_path:
@@ -1075,7 +1084,7 @@ class KGCompletionDataset(Dataset):
         torch.save(data_to_save, self.processed_file_paths['data'])
 
     def vectorization(self, data_items):
-        if self.vec_graph==False:
+        if self.vec_graph == False:
             graph: GraphData = self.KG_graph
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
@@ -1104,15 +1113,15 @@ class KGCompletionDataset(Dataset):
             rel_eval = item.rel_eval
             item.rel_eval_tensor = torch.tensor(self.graph_edges.index(rel_eval), dtype=torch.long)
 
-
             e2_multi = item.e2_multi
-            item.e2_multi_tensor = torch.zeros(1, len(self.graph_nodes)).\
+            item.e2_multi_tensor = torch.zeros(1, len(self.graph_nodes)). \
                 scatter_(1,
                          torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long).view(1,
                                                                                                                     -1),
                          torch.ones(1, len(e2_multi.split()))).squeeze()
 
-            item.e2_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long)
+            item.e2_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()],
+                                                    dtype=torch.long)
 
             e1_multi = item.e1_multi
             item.e1_multi_tensor = torch.zeros(1, len(self.graph_nodes)). \
@@ -1121,9 +1130,7 @@ class KGCompletionDataset(Dataset):
                                                                                                                     -1),
                          torch.ones(1, len(e1_multi.split()))).squeeze()
             item.e1_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()],
-                                                            dtype=torch.long)
-
-
+                                                    dtype=torch.long)
 
     # @staticmethod
     # def collate_fn(data_list: [KGDataItem]):
@@ -1286,7 +1293,8 @@ class Text2LabelDataset(Dataset):
         with open(file_path, 'r') as f:
             for line in f:
                 input, output = line.split('\t')
-                data_item = Text2LabelDataItem(input_text=input.strip(), output_label=output.strip(), tokenizer=self.tokenizer)
+                data_item = Text2LabelDataItem(input_text=input.strip(), output_label=output.strip(),
+                                               tokenizer=self.tokenizer)
                 data.append(data_item)
 
         return data
@@ -1340,7 +1348,6 @@ class Text2LabelDataset(Dataset):
         return [graph_data, tgt_tensor]
 
 
-
 class DoubleText2TextDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
         self.data_item_type = DoubleText2TextDataItem
@@ -1376,8 +1383,9 @@ class DoubleText2TextDataset(Dataset):
         with open(file_path, 'r') as f:
             for line in f:
                 input, input2, output = line.split('\t')
-                data_item = DoubleText2TextDataItem(input_text=input.strip(), input_text2=input2.strip(), output_text=output.strip(), tokenizer=self.tokenizer,
-                                              share_vocab=self.share_vocab)
+                data_item = DoubleText2TextDataItem(input_text=input.strip(), input_text2=input2.strip(),
+                                                    output_text=output.strip(), tokenizer=self.tokenizer,
+                                                    share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
 
@@ -1437,12 +1445,10 @@ class DoubleText2TextDataset(Dataset):
                     edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
                     graph.edge_features['token_id'] = edge_token_matrix
 
-
             item.input_text2 = self.tokenizer(item.input_text2)
             input_token_id2 = self.vocab_model.in_word_vocab.to_index_sequence_for_list(item.input_text2)
             input_token_id2 = np.array(input_token_id2)
             item.input_np2 = input_token_id2
-
 
             if self.lower_case:
                 item.output_text = item.output_text.lower()
@@ -1481,9 +1487,9 @@ class DoubleText2TextDataset(Dataset):
 
 
 class SequenceLabelingDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir,tag_types, **kwargs):
+    def __init__(self, root_dir, topology_builder, topology_subdir, tag_types, **kwargs):
         self.data_item_type = SequenceLabelingDataItem
-        self.tag_types=tag_types
+        self.tag_types = tag_types
         super(SequenceLabelingDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
     def parse_file(self, file_path) -> list:
@@ -1502,33 +1508,33 @@ class SequenceLabelingDataset(Dataset):
         ----------
 
         """
-        data=[]
-        input=[]
-        output=[]
+        data = []
+        input = []
+        output = []
         with open(file_path, 'r') as f:
-                lines = f.readlines()
-                for line in lines:
-                    if len(line)>1 and line[0]!='-':
-                       if line[0]!='.': 
-                           input.append(line.strip().split(' ')[0])
-                           output.append(line.strip().split(' ')[-1])                        
-                       if line[0]=='.':
-                           input.append(line.strip().split(' ')[0])
-                           output.append(line.strip().split(' ')[-1])
-                           if len(input) >= 2:
-                               data_item=SequenceLabelingDataItem(input_text=input, output_tags=output, tokenizer=self.tokenizer)
-                               data.append(data_item)
-                               input=[]
-                               output=[]                                                
+            lines = f.readlines()
+            for line in lines:
+                if len(line) > 1 and line[0] != '-':
+                    if line[0] != '.':
+                        input.append(line.strip().split(' ')[0])
+                        output.append(line.strip().split(' ')[-1])
+                    if line[0] == '.':
+                        input.append(line.strip().split(' ')[0])
+                        output.append(line.strip().split(' ')[-1])
+                        if len(input) >= 2:
+                            data_item = SequenceLabelingDataItem(input_text=input, output_tags=output,
+                                                                 tokenizer=self.tokenizer)
+                            data.append(data_item)
+                            input = []
+                            output = []
 
-        return data     
-
+        return data
 
     def build_vocab(self):
         data_for_vocab = self.train
         if self.use_val_for_vocab:
             data_for_vocab = data_for_vocab + self.val
-            
+
         vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
                                        data_set=data_for_vocab,
                                        tokenizer=self.tokenizer,
@@ -1555,19 +1561,19 @@ class SequenceLabelingDataset(Dataset):
             graph.node_features['token_id'] = token_matrix
 
             tgt = item.output_tag
-            tgt_tag_id=[self.tag_types.index(tgt_.strip()) for tgt_ in tgt]
-            
+            tgt_tag_id = [self.tag_types.index(tgt_.strip()) for tgt_ in tgt]
+
             tgt_tag_id = torch.tensor(tgt_tag_id)
             item.output_id = tgt_tag_id
 
     @staticmethod
     def collate_fn(data_list: [SequenceLabelingDataItem]):
-        tgt_tag=[]
-        graph_data=[]
+        tgt_tag = []
+        graph_data = []
         for item in data_list:
-           #if len(item.graph.node_attributes)== len(item.output_id):
-                   graph_data.append(item.graph)
-                   tgt_tag.append(item.output_id)
+            # if len(item.graph.node_attributes)== len(item.output_id):
+            graph_data.append(item.graph)
+            tgt_tag.append(item.output_id)
 
-        #tgt_tags = torch.cat(tgt_tag, dim=0)
+        # tgt_tags = torch.cat(tgt_tag, dim=0)
         return [graph_data, tgt_tag]
