@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 from .dataset import CNNDataset
 from .model_g2s import Graph2seq
@@ -144,7 +144,7 @@ class CNN:
             for node_idx in range(g.get_node_num()):
                 node_token = g.node_attributes[node_idx]['token']
                 if oov_dict.getIndex(node_token) == oov_dict.UNK:
-                    oov_dict._add_words(node_token)
+                    oov_dict._add_words([node_token])
                 token_matrix.append([oov_dict.getIndex(node_token)])
             token_matrix = torch.tensor(token_matrix, dtype=torch.long).to(self.device)
             g.node_features['token_id_oov'] = token_matrix
@@ -211,6 +211,15 @@ class CNN:
             pred_collect.extend(pred_str)
             gt_collect.extend(gt_str)
 
+        if test_mode==True:
+            with open('cnn_pred_output.txt','w+') as f:
+                for line in pred_collect:
+                    f.write(line+'\n')
+
+            with open('cnn_tgt_output.txt','w+') as f:
+                for line in gt_collect:
+                    f.write(line+'\n')
+
         score, _ = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
         self.logger.info("Evaluation ROUGE in `{}` split: {:.3f}".format(split, score))
         return score
@@ -269,7 +278,7 @@ class CNN:
 if __name__ == "__main__":
     opt = get_args()
     runner = CNN(opt)
-    max_score = runner.train()
-    print("Train finish, best val score: {:.3f}".format(max_score))
+    # max_score = runner.train()
+    # print("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint('best.pth')
     runner.evaluate(split="test", test_mode=True)

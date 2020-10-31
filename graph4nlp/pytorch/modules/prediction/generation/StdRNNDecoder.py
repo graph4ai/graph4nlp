@@ -479,7 +479,7 @@ class StdRNNDecoder(RNNDecoderBase):
                 assert (0 <= dim <= 1)
                 assert pad_size >= 0
                 dim1, dim2 = x.shape
-                pad = torch.zeros(pad_size, dim2) if dim == 0 else torch.zeros(dim1, pad_size)
+                pad = torch.zeros(pad_size, dim2, dtype=x.dtype) if dim == 0 else torch.zeros(dim1, pad_size, dtype=x.dtype)
                 pad = pad.to(x.device)
                 return torch.cat((x, pad), dim=dim)
 

@@ -61,7 +61,7 @@ class CNNDataset(Text2TextDataset):
         super(CNNDataset, self).__init__(root_dir=root_dir,
                                          topology_builder=topology_builder,
                                          topology_subdir=topology_subdir,
-                                         # tokenizer=None,
+                                         tokenizer=None,
                                          graph_type=graph_type,
                                          edge_strategy=edge_strategy,
                                          merge_strategy=merge_strategy,
@@ -132,10 +132,11 @@ class CNNDataset(Text2TextDataset):
             cnt += 1
             try:
                 graph = topology_builder.topology(raw_text_data=item.input_text,
-                                                                   nlp_processor=processor, processor_args=processor_args,
-                                                                   merge_strategy="tailhead",
-                                                                   edge_strategy=None,
-                                                                   verbase=False)
+                                                  nlp_processor=processor,
+                                                  processor_args=processor_args,
+                                                  merge_strategy="tailhead",
+                                                  edge_strategy=None,
+                                                  verbase=False)
                 item.graph = graph
             except:
                 pop_idxs.append(idx)
@@ -167,11 +168,11 @@ class CNNDataset(Text2TextDataset):
         pool.close()
         pool.join()
 
+        # res_l.append(self.process(self.topology_builder, data_items, 9000))
+
         new_data_items = []
         for i in range(n_pool):
-            # start_index = total * i // 10
-            # end_index = total * (i + 1) // 10
-
+            # res = res_l[i]
             res = res_l[i].get()
             for data, graph in res:
                 new_data_items.append(data)
@@ -230,8 +231,10 @@ class CNNDataset(Text2TextDataset):
         with open(file_path, 'r') as f:
             examples = json.load(f)
             for example_dict in examples:
-                input = ' '.join(example_dict['article'][:10]).lower()
-                output = ' '.join([sent[0]+' .' for sent in example_dict['highlight']]).lower()
+                # input = ' '.join(example_dict['article'][:10]).lower()
+                # output = ' '.join([sent[0]+' .' for sent in example_dict['highlight']]).lower()
+                input = ' '.join(' '.join(example_dict['article']).split()[:500]).lower()
+                output = ' '.join(' '.join(['<t> ' + sent[0] + ' . </t>' for sent in example_dict['highlight']]).split()[:99]).lower()
                 if input=='' or output=='':
                     continue
                 # output = ' '.join(["%s %s %s" % (constants._SOS_TOKEN, sent[0], constants._EOS_TOKEN) for sent in example_dict['highlight']])
