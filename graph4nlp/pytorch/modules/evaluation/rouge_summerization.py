@@ -11,6 +11,20 @@ class SummarizationRouge(EvaluationMetricBase):
         self.rouge = pyrouge.Rouge155()
 
     def calculate_scores(self, ground_truth, predict):
+        """
+            The standard rouge calculation function for summerization. It will compute the rouge scores using pyrouge tools.
+            Note that each instance in ``ground_truth`` or ``predict`` is a list of sentences.
+        Parameters
+        ----------
+        ground_truth: list[list[string]]
+            The ground truth (correct) target values. It is a list of lists.
+        predict: list[list[string]]
+            The predicted target values. It is a list of lists.
+        Returns
+        -------
+        score: float
+            The final bleu score
+        """
         if os.path.exists("pred"):
             shutil.rmtree("pred")
         if os.path.exists("gt"):
