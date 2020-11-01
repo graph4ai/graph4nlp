@@ -9125,3 +9125,8 @@
 2020-11-01 19:54:04,629 - examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt - INFO - Epoch 31: [6 / 21] loss: 0.312
 2020-11-01 19:54:05,572 - examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt - INFO - Epoch 31: [9 / 21] loss: 0.336
 2020-11-01 19:54:47,164 - examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-01 20:04:40,266 - examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-01 20:10:06,794 - examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-01 20:11:24,783 - examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-01 20:12:46,051 - examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-01 20:13:25,676 - examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt - INFO - Evaluation accuracy in `test` split: 0.871

@@ -8,7 +8,7 @@ from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction 
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
-from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import BeamSearchStrategy
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 
 import numpy as np
 import torch
@@ -214,8 +214,8 @@ class Jobs:
     def translate(self):
         self.model.eval()
         # self.opt.beam_size
-        generator = BeamSearchStrategy(beam_size=5, vocab=self.model.seq_decoder.vocab, rnn_type="LSTM",
-                                       decoder=self.model.seq_decoder, use_copy=self.opt.use_copy, use_coverage=self.opt.use_copy)
+        generator = DecoderStrategy(beam_size=10, vocab=self.model.seq_decoder.vocab, rnn_type="LSTM",
+                                    decoder=self.model.seq_decoder, use_copy=self.opt.use_copy, use_coverage=self.opt.use_copy)
 
         pred_collect = []
         gt_collect = []
@@ -236,7 +236,7 @@ class Jobs:
             batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
             # down-task
-            prob = generator.generate(graphs=from_batch(batch_graph), oov_dict=oov_dict, topk=3)
+            prob = generator.generate(graphs=from_batch(batch_graph), oov_dict=oov_dict, topk=1)
 
             pred_ids = torch.zeros(len(prob), self.opt.decoder_length).fill_(Vocab.EOS).to(tgt.device).int()
             for i, item in enumerate(prob):
@@ -246,6 +246,7 @@ class Jobs:
                 pred_ids[i, :seq.shape[1]] = seq
 
             pred_str = wordid2str(pred_ids.detach().cpu(), ref_dict)
+
 
             pred_collect.extend(pred_str)
             gt_collect.extend(gt_str)
