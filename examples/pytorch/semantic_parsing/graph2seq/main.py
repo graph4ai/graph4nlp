@@ -213,7 +213,8 @@ class Jobs:
 
     def translate(self):
         self.model.eval()
-        generator = BeamSearchStrategy(beam_size=self.opt.beam_size, vocab=self.model.seq_decoder.vocab, rnn_type="LSTM",
+        # self.opt.beam_size
+        generator = BeamSearchStrategy(beam_size=5, vocab=self.model.seq_decoder.vocab, rnn_type="LSTM",
                                        decoder=self.model.seq_decoder, use_copy=self.opt.use_copy, use_coverage=self.opt.use_copy)
 
         pred_collect = []
@@ -235,19 +236,19 @@ class Jobs:
             batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
             # down-task
-            prob = generator.generate(graphs=from_batch(batch_graph), oov_dict=oov_dict)
+            prob = generator.generate(graphs=from_batch(batch_graph), oov_dict=oov_dict, topk=3)
 
             pred_ids = torch.zeros(len(prob), self.opt.decoder_length).fill_(Vocab.EOS).to(tgt.device).int()
             for i, item in enumerate(prob):
                 item = item[0]
-                seq = [i.view(1, 1) for i in item]
+                seq = [j.view(1, 1) for j in item]
                 seq = torch.cat(seq, dim=1)
                 pred_ids[i, :seq.shape[1]] = seq
 
             pred_str = wordid2str(pred_ids.detach().cpu(), ref_dict)
-            tgt_str = wordid2str(tgt, self.vocab.in_word_vocab)
+
             pred_collect.extend(pred_str)
-            gt_collect.extend(tgt_str)
+            gt_collect.extend(gt_str)
 
         score = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
         self.logger.info("Evaluation accuracy in `{}` split: {:.3f}".format("test", score))
