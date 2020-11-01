@@ -14,6 +14,10 @@ this library will boost research in relevant fields. This library has the follow
 
 - To be added here.
 
+Sphinx reference: `reStructuredText Primer <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
+
+Sphinx themes: `Link <https://sphinx-themes.org/>`_
+
 .. toctree::
    :maxdepth: 2
    :caption: Get Started
@@ -25,6 +29,12 @@ this library will boost research in relevant fields. This library has the follow
    :maxdepth: 2
    :caption: User Guide
 
+   guide/graphdata
+   guide/dataset
+   guide/construction
+   guide/gnn
+   guide/decoding
+   guide/evaluation
 
 
 .. toctree::
