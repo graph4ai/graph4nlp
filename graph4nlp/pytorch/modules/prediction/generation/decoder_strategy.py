@@ -33,10 +33,10 @@ class BeamSearchNode(object):
         return self.logp / float(self.leng - 1 + 1e-6) + alpha * reward
 
 
-class BeamSearchStrategy(StrategyBase):
+class DecoderStrategy(StrategyBase):
     def __init__(self, beam_size, vocab, decoder: DecoderBase, rnn_type, use_copy=False, use_coverage=False,
                  max_decoder_step=50):
-        super(BeamSearchStrategy, self).__init__()
+        super(DecoderStrategy, self).__init__()
         self.rnn_type = rnn_type
         self.beam_size = beam_size
         self.decoder = decoder
@@ -131,7 +131,7 @@ class BeamSearchStrategy(StrategyBase):
                                              dec_input_mask=graph_node_mask_one,
                                              encoder_out=graph_node_embedding_one, rnn_emb=rnn_node_embedding_one,
                                              enc_attn_weights_average=enc_attn_weights_average,
-                                             src_seq=src_seq[idx, :].unsqueeze(0) if src_seq else None,
+                                             src_seq=src_seq[idx, :].unsqueeze(0) if src_seq is not None else None,
                                              oov_dict=oov_dict)
 
                 if self.use_coverage:
