@@ -22,11 +22,11 @@ class FeedForwardNN(NodeClassifierBase):
                 Example: nn.ReLU(),nn.Sigmoid().        
 
     """     
-    def __init__(self, input_size, num_class, hidden_size,activation=nn.ReLU()):        
+    def __init__(self, input_size, num_class, hidden_size, activation=nn.ReLU()):        
         super(FeedForwardNN, self).__init__()
         
         
-        self.classifier=FeedForwardNNLayer(input_size, num_class, hidden_size,activation)
+        self.classifier=FeedForwardNNLayer(input_size, num_class, hidden_size, activation)
 
     def forward(self, input_graph):
         r"""
