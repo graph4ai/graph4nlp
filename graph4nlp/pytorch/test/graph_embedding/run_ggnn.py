@@ -15,8 +15,8 @@ from .utils import EarlyStopping
 # from utils import EarlyStopping
 from ...modules.graph_embedding.ggnn import GGNN
 from ...data.data import GraphData
-# from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
-# from graph4nlp.pytorch.test.graph_embedding.utils import EarlyStopping
+# from graph4nlp.pytorch.modules.graph_construction.ggnn import GGNN
+# from graph4nlp.pytorch.test.graph_construction.utils import EarlyStopping
 
 
 def accuracy(logits, labels):

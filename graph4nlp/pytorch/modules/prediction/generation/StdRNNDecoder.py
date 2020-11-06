@@ -47,15 +47,15 @@ class StdRNNDecoder(RNNDecoderBase):
             ----------
             max_decoder_step: int
                 The maximal decoding step.
-            decoder_input_size: int
+            input_size: int
                 The dimension for standard rnn decoder's input.
-            decoder_hidden_size: int
+            hidden_size: int
                 The dimension for standard rnn decoder's hidden representation during calculation.
             word_emb: torch.nn.Embedding
                 The target's embedding matrix.
             vocab: Any
                 The target's vocabulary
-            rnn_type: str, option=["LSTM", "GRU"], default="LSTM"
+            rnn_type: str, option=["lstm", "gru"], default="lstm"
                 The rnn's type. We support ``LSTM`` and ``GRU`` here.
             use_attention: bool, default=True
                 Whether use attention during decoding.
@@ -88,9 +88,9 @@ class StdRNNDecoder(RNNDecoderBase):
             dropout: float, default=0.3
             """
 
-    def __init__(self, max_decoder_step, decoder_input_size, decoder_hidden_size,  # decoder config
+    def __init__(self, max_decoder_step, input_size, hidden_size,  # decoder config
                  word_emb, vocab: Vocab,  # word embedding & vocabulary TODO: add our vocabulary when building pipeline
-                 rnn_type="LSTM", graph_pooling_strategy=None,  # RNN config
+                 rnn_type="lstm", graph_pooling_strategy=None,  # RNN config
                  use_attention=True, attention_type="uniform", rnn_emb_input_size=None,  # attention config
                  attention_function="mlp", node_type_num=None, fuse_strategy="average",
                  use_copy=False, use_coverage=False, coverage_strategy="sum",
@@ -100,12 +100,12 @@ class StdRNNDecoder(RNNDecoderBase):
                                             attention_type=attention_type, fuse_strategy=fuse_strategy)
         self.max_decoder_step = max_decoder_step
         self.word_emb_size = word_emb.embedding_dim
-        self.decoder_input_size = decoder_input_size
+        self.decoder_input_size = input_size
         self.graph_pooling_strategy = graph_pooling_strategy
         self.dropout = nn.Dropout(p=dropout)
         self.tgt_emb = word_emb
-        self.rnn = self._build_rnn(rnn_type=rnn_type, input_size=self.word_emb_size, hidden_size=decoder_hidden_size)
-        self.decoder_hidden_size = decoder_hidden_size
+        self.rnn = self._build_rnn(rnn_type=rnn_type, input_size=self.word_emb_size, hidden_size=hidden_size)
+        self.decoder_hidden_size = hidden_size
         self.rnn_type = rnn_type
         self.num_layers = 1
         self.out_logits_size = self.decoder_hidden_size
@@ -121,7 +121,7 @@ class StdRNNDecoder(RNNDecoderBase):
             if attention_type == "uniform":
                 self.enc_attention = Attention(hidden_size=self.decoder_hidden_size,
                                                query_size=query_size,
-                                               memory_size=decoder_input_size, has_bias=True,
+                                               memory_size=input_size, has_bias=True,
                                                attention_funtion=attention_function)
                 self.out_logits_size += self.decoder_input_size
             elif attention_type == "sep_diff_encoder_type":
@@ -129,7 +129,7 @@ class StdRNNDecoder(RNNDecoderBase):
                 self.rnn_emb_input_size = rnn_emb_input_size
                 self.enc_attention = Attention(hidden_size=self.decoder_hidden_size,
                                                query_size=query_size,
-                                               memory_size=decoder_input_size, has_bias=True,
+                                               memory_size=input_size, has_bias=True,
                                                attention_funtion=attention_function)
                 self.out_logits_size += self.decoder_input_size
                 self.rnn_attention = Attention(hidden_size=self.decoder_hidden_size, query_size=query_size,
@@ -138,12 +138,12 @@ class StdRNNDecoder(RNNDecoderBase):
                 if self.fuse_strategy == "concatenate":
                     self.out_logits_size += self.rnn_emb_input_size
                 else:
-                    if rnn_emb_input_size != decoder_input_size:
+                    if rnn_emb_input_size != input_size:
                         raise ValueError("input RNN embedding size is not equal to graph embedding size")
             elif attention_type == "sep_diff_node_type":
                 assert node_type_num >= 1
                 attn_modules = [Attention(hidden_size=self.decoder_hidden_size, query_size=query_size,
-                                          memory_size=decoder_input_size, has_bias=True,
+                                          memory_size=input_size, has_bias=True,
                                           attention_funtion=attention_function)
                                 for _ in range(node_type_num)]
                 self.node_type_num = node_type_num
@@ -214,11 +214,11 @@ class StdRNNDecoder(RNNDecoderBase):
                 raise NotImplementedError()
             if self.use_attention:
                 if self.attention_type == "uniform":
-                    ptr_size += decoder_input_size
+                    ptr_size += input_size
                 elif self.attention_type == "sep_diff_encoder_type":
-                    ptr_size += decoder_input_size + rnn_emb_input_size
+                    ptr_size += input_size + rnn_emb_input_size
                 elif self.attention_type == "sep_diff_node_type":
-                    ptr_size += decoder_input_size * node_type_num
+                    ptr_size += input_size * node_type_num
             self.ptr = nn.Linear(ptr_size, 1)
 
     def _build_rnn(self, rnn_type, **kwargs):
@@ -226,14 +226,15 @@ class StdRNNDecoder(RNNDecoderBase):
             The rnn factory.
         Parameters
         ----------
-        rnn_type: str, option=["LSTM", "GRU"], default="LSTM"
+        rnn_type: str, option=["lstm", "gru"], default="lstm"
             The rnn type.
         """
-        if rnn_type == "LSTM" or rnn_type == "GRU":
-            return getattr(nn, rnn_type)(**kwargs)
+        if rnn_type == 'lstm':
+            return nn.LSTM(**kwargs)
+        elif rnn_type == "gru":
+            return nn.GRU(**kwargs)
         else:
-            # TODO: add more rnn
-            raise NotImplementedError()
+            raise NotImplementedError("RNN type: {} is not supported.".format(rnn_type))
 
     def _run_forward_pass(self, graph_node_embedding, graph_node_mask=None, rnn_node_embedding=None,
                           graph_level_embedding=None,
