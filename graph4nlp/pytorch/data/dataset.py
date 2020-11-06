@@ -1,27 +1,25 @@
 import abc
+import json
 import os
+import warnings
+from collections import Counter
+from multiprocessing import Pool
 
 import numpy as np
-import random
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 from sklearn import preprocessing
 
-from collections import Counter
-import pickle
-
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from ..data.data import GraphData
-from ..modules.utils.vocab_utils import VocabModel, Vocab
-from ..modules.utils.tree_utils import Vocab as VocabForTree
-from ..modules.utils.tree_utils import Tree
-
-import json
-from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from ..modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from ..modules.utils.tree_utils import Tree
+from ..modules.utils.tree_utils import Vocab as VocabForTree
+from ..modules.utils.vocab_utils import VocabModel, Vocab
 
 
 class DataItem(object):
@@ -33,6 +31,45 @@ class DataItem(object):
     @abc.abstractmethod
     def extract(self):
         raise NotImplementedError
+
+
+class Text2TextDataItem_seq2seq(DataItem):
+    def __init__(self, input_text, output_text, tokenizer, share_vocab=True):
+        super(Text2TextDataItem_seq2seq, self).__init__(input_text, tokenizer)
+        self.output_text = output_text
+        self.share_vocab = share_vocab
+
+    def extract(self, lower_case=True):
+        """
+        Returns
+        -------
+        Input tokens and output tokens
+        """
+
+        if lower_case:
+            self.input_text = self.input_text.lower()
+
+        if self.tokenizer is None:
+            input_tokens = self.input_text.strip().split(' ')
+        else:
+            input_tokens = self.tokenizer(self.input_text)
+
+
+        if lower_case:
+            self.output_text = self.output_text.lower()
+
+        if self.tokenizer is None:
+            output_tokens = self.output_text.strip().split(' ')
+        else:
+            if '<t>' in self.output_text:
+                output_text = self.output_text.replace('<t>','').replace('</t>','')
+            output_tokens = self.tokenizer(output_text)
+            output_tokens = output_tokens + ['<t>','</t>']
+
+        if self.share_vocab:
+            return input_tokens + output_tokens
+        else:
+            return input_tokens, output_tokens
 
 
 class Text2TextDataItem(DataItem):
@@ -166,6 +203,31 @@ class DoubleText2TextDataItem(DataItem):
             return input_tokens, output_tokens
 
 
+class SequenceLabelingDataItem(DataItem):
+    def __init__(self, input_text, output_tags, tokenizer):
+        super(SequenceLabelingDataItem, self).__init__(input_text, tokenizer)
+        self.output_tag = output_tags
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens and output tags
+        """
+        g: GraphData = self.graph
+
+        input_tokens = []
+        for i in range(g.get_node_num()):
+            if self.tokenizer is None:
+                tokenized_token = self.output_text.strip().split(' ')
+            else:
+                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
+
+            input_tokens.extend(tokenized_token)
+
+        return input_tokens
+
+
 class Dataset(torch.utils.data.Dataset):
     """
     Base class for datasets.
@@ -226,11 +288,50 @@ class Dataset(torch.utils.data.Dataset):
                  pretrained_word_emb_file=None,
                  use_val_for_vocab=False,
                  seed=1234,
+                 device='cpu',
+                 thread_number=4,
+                 port=9000,
+                 timeout=15000,
                  **kwargs):
+        """
+
+        Parameters
+        ----------
+        root: str
+            The path of the data root.
+        topology_builder: GraphConstructionBase
+            The initial graph topology builder.
+        topology_subdir: str
+            The name of the data folder.
+        tokenizer: function, default=nltk.word_tokenize
+            The word tokenizer.
+        lower_case: bool, default=True
+            Whether to use lower-case option.
+        pretrained_word_emb_file: str, default=None
+            The path of the pre-trained word embedding file.
+        use_val_for_vocab: bool, default=False
+            Whether to add val split in the final split.
+        seed: int, default=1234
+            The seed for random function.
+        device: str, default='cpu'
+            The device of the current environment.
+        thread_number: int, default=4
+            The thread number for building initial graph. For most case, it may be the number of your CPU cores.
+        port: int, default=9000
+            The port for stanfordcorenlp.
+        timeout: int, default=15000
+            The timeout for stanfordcorenlp.
+        kwargs
+        """
         super(Dataset, self).__init__()
 
         self.root = root  # The root directory where the dataset is located.
         self.seed = seed
+
+        # stanfordcorenlp hyper-parameter
+        self.thread_number = thread_number
+        self.port = port
+        self.timeout = timeout
 
         # Processing-specific attributes
         self.tokenizer = tokenizer
@@ -239,6 +340,7 @@ class Dataset(torch.utils.data.Dataset):
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         self.use_val_for_vocab = use_val_for_vocab
+        self.device = device
         for k, v in kwargs.items():
             setattr(self, k, v)
         self.__indices__ = None
@@ -314,16 +416,18 @@ class Dataset(torch.utils.data.Dataset):
                 self.val = old_train_set[new_train_length:]
                 self.train = old_train_set[:new_train_length]
 
-    def build_topology(self, data_items):
-        """
-        Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
-        DataItem.
-        """
-        if self.graph_type == 'static':
-            print('Connecting to stanfordcorenlp server...')
-            processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+    @staticmethod
+    def _build_topology_process(data_items, topology_builder,
+                                graph_type, dynamic_graph_type, dynamic_init_topology_builder,
+                                merge_strategy, edge_strategy, dynamic_init_topology_aux_args,
+                                lower_case, tokenizer, port, timeout):
 
-            if self.topology_builder == IEBasedGraphConstruction:
+        ret = []
+        if graph_type == 'static':
+            print('Connecting to stanfordcorenlp server...')
+            processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=port, timeout=timeout)
+
+            if topology_builder == IEBasedGraphConstruction:
                 props_coref = {
                     'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
                     "tokenize.options":
@@ -342,7 +446,7 @@ class Dataset(torch.utils.data.Dataset):
                     "openie.triple.strict": "true"
                 }
                 processor_args = [props_coref, props_openie]
-            elif self.topology_builder == DependencyBasedGraphConstruction:
+            elif topology_builder == DependencyBasedGraphConstruction:
                 processor_args = {
                     'annotators': 'ssplit,tokenize,depparse',
                     "tokenize.options":
@@ -351,11 +455,11 @@ class Dataset(torch.utils.data.Dataset):
                     'ssplit.isOneSentence': False,
                     'outputFormat': 'json'
                 }
-            elif self.topology_builder == ConstituencyBasedGraphConstruction:
+            elif topology_builder == ConstituencyBasedGraphConstruction:
                 processor_args = {
                     'annotators': "tokenize,ssplit,pos,parse",
                     "tokenize.options":
-                    "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
                     "tokenize.whitespace": False,
                     'ssplit.isOneSentence': False,
                     'outputFormat': 'json'
@@ -363,27 +467,35 @@ class Dataset(torch.utils.data.Dataset):
             else:
                 raise NotImplementedError
             print('CoreNLP server connected.')
-            for item in data_items:
-                graph = self.topology_builder.topology(raw_text_data=item.input_text,
-                                                       nlp_processor=processor,
-                                                       processor_args=processor_args,
-                                                       merge_strategy=self.merge_strategy,
-                                                       edge_strategy=self.edge_strategy,
-                                                       verbase=False)
-                item.graph = graph
-        elif self.graph_type == 'dynamic':
-            if self.dynamic_graph_type == 'node_emb':
-                for item in data_items:
-                    graph = self.topology_builder.init_topology(item.input_text,
-                                                                lower_case=self.lower_case,
-                                                                tokenizer=self.tokenizer)
-                    item.graph = graph
-            elif self.dynamic_graph_type == 'node_emb_refined':
-                if self.dynamic_init_topology_builder in (IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
-                    print('Connecting to stanfordcorenlp server...')
-                    processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=9000, timeout=1000)
+            for cnt, item in enumerate(data_items):
+                if cnt % 1000 == 0:
+                    print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
+                try:
+                    graph = topology_builder.topology(raw_text_data=item.input_text,
+                                                      nlp_processor=processor,
+                                                      processor_args=processor_args,
+                                                      merge_strategy=merge_strategy,
+                                                      edge_strategy=edge_strategy,
+                                                      verbase=False)
+                    ret.append(graph)
+                except TimeoutError as msg:
+                    warnings.warn(RuntimeWarning(msg))
+                    data_items.pop(data_items.index(item))
 
-                    if self.dynamic_init_topology_builder == IEBasedGraphConstruction:
+        elif graph_type == 'dynamic':
+            if dynamic_graph_type == 'node_emb':
+                for item in data_items:
+                    graph = topology_builder.init_topology(item.input_text,
+                                                           lower_case=lower_case,
+                                                           tokenizer=tokenizer)
+                    ret.append(graph)
+            elif dynamic_graph_type == 'node_emb_refined':
+                if dynamic_init_topology_builder in (
+                IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
+                    print('Connecting to stanfordcorenlp server...')
+                    processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=port, timeout=timeout)
+
+                    if dynamic_init_topology_builder == IEBasedGraphConstruction:
                         props_coref = {
                             'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
                             "tokenize.options":
@@ -402,7 +514,7 @@ class Dataset(torch.utils.data.Dataset):
                             "openie.triple.strict": "true"
                         }
                         processor_args = [props_coref, props_openie]
-                    elif self.dynamic_init_topology_builder == DependencyBasedGraphConstruction:
+                    elif dynamic_init_topology_builder == DependencyBasedGraphConstruction:
                         processor_args = {
                             'annotators': 'ssplit,tokenize,depparse',
                             "tokenize.options":
@@ -411,11 +523,11 @@ class Dataset(torch.utils.data.Dataset):
                             'ssplit.isOneSentence': False,
                             'outputFormat': 'json'
                         }
-                    elif self.dynamic_init_topology_builder == ConstituencyBasedGraphConstruction:
+                    elif dynamic_init_topology_builder == ConstituencyBasedGraphConstruction:
                         processor_args = {
                             'annotators': "tokenize,ssplit,pos,parse",
                             "tokenize.options":
-                            "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
                             "tokenize.whitespace": False,
                             'ssplit.isOneSentence': False,
                             'outputFormat': 'json'
@@ -428,23 +540,65 @@ class Dataset(torch.utils.data.Dataset):
                     processor_args = None
 
                 for item in data_items:
-                    graph = self.topology_builder.init_topology(item.input_text,
-                                                                dynamic_init_topology_builder=self.dynamic_init_topology_builder,
-                                                                lower_case=self.lower_case,
-                                                                tokenizer=self.tokenizer,
-                                                                nlp_processor=processor,
-                                                                processor_args=processor_args,
-                                                                merge_strategy=self.merge_strategy,
-                                                                edge_strategy=self.edge_strategy,
-                                                                verbase=False,
-                                                                dynamic_init_topology_aux_args=self.dynamic_init_topology_aux_args)
+                    try:
+                        graph = topology_builder.init_topology(item.input_text,
+                                                               dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                                               lower_case=lower_case,
+                                                               tokenizer=tokenizer,
+                                                               nlp_processor=processor,
+                                                               processor_args=processor_args,
+                                                               merge_strategy=merge_strategy,
+                                                               edge_strategy=edge_strategy,
+                                                               verbase=False,
+                                                               dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
-                    item.graph = graph
+                        ret.append(graph)
+                    except TimeoutError as msg:
+                        warnings.warn(RuntimeWarning(msg))
+                        data_items.pop(data_items.index(item))
             else:
-                raise RuntimeError('Unknown dynamic_graph_type: {}'.format(self.dynamic_graph_type))
+                raise RuntimeError('Unknown dynamic_graph_type: {}'.format(dynamic_graph_type))
 
         else:
             raise NotImplementedError('Currently only static and dynamic are supported!')
+        return ret
+
+    def build_topology(self, data_items):
+        """
+        Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
+        DataItem.
+        """
+        total = len(data_items)
+        thread_number = min(total, self.thread_number)
+        pool = Pool(thread_number)
+        res_l = []
+        for i in range(thread_number):
+            start_index = total * i // thread_number
+            end_index = total * (i + 1) // thread_number
+
+            """
+            data_items, topology_builder,
+                                graph_type, dynamic_graph_type, dynamic_init_topology_builder,
+                                merge_strategy, edge_strategy, dynamic_init_topology_aux_args,
+                                lower_case, tokenizer, port, timeout
+            """
+            r = pool.apply_async(self._build_topology_process,
+                                 args=(data_items[start_index:end_index], self.topology_builder, self.graph_type,
+                                       self.dynamic_graph_type, self.dynamic_init_topology_builder,
+                                       self.merge_strategy, self.edge_strategy, self.dynamic_init_topology_aux_args,
+                                       self.lower_case, self.tokenizer, self.port, self.timeout))
+            res_l.append(r)
+        pool.close()
+        pool.join()
+
+        for i in range(thread_number):
+            start_index = total * i // thread_number
+            end_index = total * (i + 1) // thread_number
+
+            res = res_l[i].get()
+            datas = data_items[start_index:end_index]
+            for data, graph in zip(datas, res):
+                data.graph = graph.to(self.device)
 
     def build_vocab(self):
         """
@@ -595,8 +749,8 @@ class Text2TextDataset(Dataset):
                     graph.edge_features['token_id'] = edge_token_matrix
 
             tgt = item.output_text
-            tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence(tgt)
-            tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
+            tgt_token_id = self.vocab_model.out_word_vocab.to_index_sequence(tgt)
+            tgt_token_id.append(self.vocab_model.out_word_vocab.EOS)
             tgt_token_id = np.array(tgt_token_id)
             item.output_np = tgt_token_id
 
@@ -605,10 +759,11 @@ class Text2TextDataset(Dataset):
         graph_data = [item.graph for item in data_list]
 
         output_numpy = [item.output_np for item in data_list]
+        output_str = [item.output_text.lower().strip() for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
 
         tgt_seq = torch.from_numpy(output_pad).long()
-        return [graph_data, tgt_seq]
+        return [graph_data, tgt_seq, output_str]
 
 
 class TextToTreeDataset(Dataset):
@@ -646,7 +801,8 @@ class TextToTreeDataset(Dataset):
             lines = f.readlines()
             for line in lines:
                 input, output = line.split('\t')
-                data_item = Text2TreeDataItem(input_text=input, output_text=output, output_tree=None, tokenizer=self.tokenizer,
+                data_item = Text2TreeDataItem(input_text=input, output_text=output, output_tree=None,
+                                              tokenizer=self.tokenizer,
                                               share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
@@ -656,8 +812,12 @@ class TextToTreeDataset(Dataset):
         if self.use_val_for_vocab:
             data_for_vocab = data_for_vocab + self.val
 
-        src_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.enc_emb_size)
-        tgt_vocab_model = VocabForTree(lower_case=self.lower_case, pretrained_embedding_fn=self.pretrained_word_emb_file, embedding_dims=self.dec_emb_size)
+        src_vocab_model = VocabForTree(lower_case=self.lower_case,
+                                       pretrained_embedding_fn=self.pretrained_word_emb_file,
+                                       embedding_dims=self.enc_emb_size)
+        tgt_vocab_model = VocabForTree(lower_case=self.lower_case,
+                                       pretrained_embedding_fn=self.pretrained_word_emb_file,
+                                       embedding_dims=self.dec_emb_size)
 
         if self.share_vocab:
             all_words = Counter()
@@ -705,6 +865,7 @@ class TextToTreeDataset(Dataset):
         graph_data = [item.graph for item in data_list]
         output_tree_list = [item.output_tree for item in data_list]
         return [graph_data, output_tree_list]
+
 
 class KGDataItem(DataItem):
     def __init__(self, e1, rel, e2, rel_eval, e2_multi, e1_multi, share_vocab=True, split_token=' '):
@@ -808,13 +969,13 @@ class KGCompletionDataset(Dataset):
             for line in lines:
                 line_dict = json.loads(line)
                 data_item = KGDataItem(e1=line_dict['e1'],
-                                                      e2=line_dict['e2'],
-                                                      rel=line_dict['rel'],
-                                                      rel_eval=line_dict['rel_eval'],
-                                                      e2_multi=line_dict['e2_multi1'],
-                                                      e1_multi=line_dict['e2_multi2'],
-                                                      share_vocab=self.share_vocab,
-                                                      split_token=self.split_token)
+                                       e2=line_dict['e2'],
+                                       rel=line_dict['rel'],
+                                       rel_eval=line_dict['rel_eval'],
+                                       e2_multi=line_dict['e2_multi1'],
+                                       e1_multi=line_dict['e2_multi2'],
+                                       share_vocab=self.share_vocab,
+                                       split_token=self.split_token)
                 data.append(data_item)
 
                 if 'train' in file_path:
@@ -962,7 +1123,7 @@ class KGCompletionDataset(Dataset):
         torch.save(data_to_save, self.processed_file_paths['data'])
 
     def vectorization(self, data_items):
-        if self.vec_graph==False:
+        if self.vec_graph == False:
             graph: GraphData = self.KG_graph
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
@@ -991,15 +1152,15 @@ class KGCompletionDataset(Dataset):
             rel_eval = item.rel_eval
             item.rel_eval_tensor = torch.tensor(self.graph_edges.index(rel_eval), dtype=torch.long)
 
-
             e2_multi = item.e2_multi
-            item.e2_multi_tensor = torch.zeros(1, len(self.graph_nodes)).\
+            item.e2_multi_tensor = torch.zeros(1, len(self.graph_nodes)). \
                 scatter_(1,
                          torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long).view(1,
                                                                                                                     -1),
                          torch.ones(1, len(e2_multi.split()))).squeeze()
 
-            item.e2_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()], dtype=torch.long)
+            item.e2_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e2_multi.split()],
+                                                    dtype=torch.long)
 
             e1_multi = item.e1_multi
             item.e1_multi_tensor = torch.zeros(1, len(self.graph_nodes)). \
@@ -1008,9 +1169,7 @@ class KGCompletionDataset(Dataset):
                                                                                                                     -1),
                          torch.ones(1, len(e1_multi.split()))).squeeze()
             item.e1_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()],
-                                                            dtype=torch.long)
-
-
+                                                    dtype=torch.long)
 
     # @staticmethod
     # def collate_fn(data_list: [KGDataItem]):
@@ -1173,7 +1332,8 @@ class Text2LabelDataset(Dataset):
         with open(file_path, 'r') as f:
             for line in f:
                 input, output = line.split('\t')
-                data_item = Text2LabelDataItem(input_text=input.strip(), output_label=output.strip(), tokenizer=self.tokenizer)
+                data_item = Text2LabelDataItem(input_text=input.strip(), output_label=output.strip(),
+                                               tokenizer=self.tokenizer)
                 data.append(data_item)
 
         return data
@@ -1227,7 +1387,6 @@ class Text2LabelDataset(Dataset):
         return [graph_data, tgt_tensor]
 
 
-
 class DoubleText2TextDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
         self.data_item_type = DoubleText2TextDataItem
@@ -1263,8 +1422,9 @@ class DoubleText2TextDataset(Dataset):
         with open(file_path, 'r') as f:
             for line in f:
                 input, input2, output = line.split('\t')
-                data_item = DoubleText2TextDataItem(input_text=input.strip(), input_text2=input2.strip(), output_text=output.strip(), tokenizer=self.tokenizer,
-                                              share_vocab=self.share_vocab)
+                data_item = DoubleText2TextDataItem(input_text=input.strip(), input_text2=input2.strip(),
+                                                    output_text=output.strip(), tokenizer=self.tokenizer,
+                                                    share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
 
@@ -1324,12 +1484,10 @@ class DoubleText2TextDataset(Dataset):
                     edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
                     graph.edge_features['token_id'] = edge_token_matrix
 
-
             item.input_text2 = self.tokenizer(item.input_text2)
             input_token_id2 = self.vocab_model.in_word_vocab.to_index_sequence_for_list(item.input_text2)
             input_token_id2 = np.array(input_token_id2)
             item.input_np2 = input_token_id2
-
 
             if self.lower_case:
                 item.output_text = item.output_text.lower()
@@ -1365,3 +1523,248 @@ class DoubleText2TextDataset(Dataset):
                 'tgt_tensor': tgt_tensor,
                 'tgt_text': tgt_text,
                 'input_length2': input_length2}
+
+
+class SequenceLabelingDataset(Dataset):
+    def __init__(self, root_dir, topology_builder, topology_subdir, tag_types, **kwargs):
+        self.data_item_type = SequenceLabelingDataItem
+        self.tag_types = tag_types
+        super(SequenceLabelingDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+        For SequenceLabelingDataset, the format of the input file should contain lines of tokens, each line representing one
+        record of token at first column and its tag at the last column. 
+        Examples
+        --------
+        "EU       I-ORG "
+         rejects  O
+         German   I-MISC
+         
+        Parameters
+        ----------
+
+        """
+        data = []
+        input = []
+        output = []
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                if len(line) > 1 and line[0] != '-':
+                    if line[0] != '.':
+                        input.append(line.strip().split(' ')[0])
+                        output.append(line.strip().split(' ')[-1])
+                    if line[0] == '.':
+                        input.append(line.strip().split(' ')[0])
+                        output.append(line.strip().split(' ')[-1])
+                        if len(input) >= 2:
+                            data_item = SequenceLabelingDataItem(input_text=input, output_tags=output,
+                                                                 tokenizer=self.tokenizer)
+                            data.append(data_item)
+                            input = []
+                            output = []
+
+        return data
+
+    def build_vocab(self):
+        data_for_vocab = self.train
+        if self.use_val_for_vocab:
+            data_for_vocab = data_for_vocab + self.val
+
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=None,
+                                       min_word_vocab_freq=1,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       word_emb_size=300,
+                                       share_vocab=True)
+        self.vocab_model = vocab_model
+
+        return self.vocab_model
+
+    def vectorization(self, data_items):
+        for item in data_items:
+            graph: GraphData = item.graph
+            token_matrix = []
+            for node_idx in range(graph.get_node_num()):
+                node_token = graph.node_attributes[node_idx]['token']
+                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
+                graph.node_attributes[node_idx]['token_id'] = node_token_id
+                token_matrix.append([node_token_id])
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features['token_id'] = token_matrix
+
+            tgt = item.output_tag
+            tgt_tag_id = [self.tag_types.index(tgt_.strip()) for tgt_ in tgt]
+
+            tgt_tag_id = torch.tensor(tgt_tag_id)
+            item.output_id = tgt_tag_id
+
+    @staticmethod
+    def collate_fn(data_list: [SequenceLabelingDataItem]):
+        tgt_tag = []
+        graph_data = []
+        for item in data_list:
+            # if len(item.graph.node_attributes)== len(item.output_id):
+            graph_data.append(item.graph)
+            tgt_tag.append(item.output_id)
+
+        # tgt_tags = torch.cat(tgt_tag, dim=0)
+        return [graph_data, tgt_tag]
+
+
+class CNNSeq2SeqDataset(Dataset):
+    def __init__(self, root_dir, topology_builder, topology_subdir,
+                 share_vocab=True, word_emb_size=300,
+                 dynamic_graph_type=None,
+                 dynamic_init_topology_builder=None,
+                 dynamic_init_topology_aux_args=None
+                 ):
+        self.data_item_type = Text2TextDataItem_seq2seq
+        self.share_vocab = share_vocab
+        self.tokenizer = None
+        super(CNNSeq2SeqDataset, self).__init__(root=root_dir,
+                                                tokenizer=self.tokenizer,
+                                                topology_builder=topology_builder,
+                                                topology_subdir=topology_subdir,
+                                                 share_vocab=share_vocab, word_emb_size=word_emb_size,
+                                                 dynamic_graph_type=dynamic_graph_type,
+                                                 dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                                 dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+
+
+    @property
+    def raw_file_names(self):
+        """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
+        return {'train': 'train_3.json', 'val': "val_3.json", 'test': 'test_3.json'}
+        # return {'train': 'train-0.json', 'val': "val-0.json", 'test': 'test-0.json'}
+        # return {'train': 'train.json', 'val': "val.json", 'test': 'test.json'}
+
+    @property
+    def processed_file_names(self):
+        """At least 3 reserved keys should be fiiled: 'vocab', 'data' and 'split_ids'."""
+        return {'vocab': 'vocab.pt', 'data': 'data.pt'}
+
+    def download(self):
+        # raise NotImplementedError("It shouldn't be called now")
+        return
+
+    def build_vocab(self):
+        data_for_vocab = self.train
+        if self.use_val_for_vocab:
+            data_for_vocab = data_for_vocab + self.val
+
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=50000,
+                                       min_word_vocab_freq=8,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       word_emb_size=self.word_emb_size,
+                                       share_vocab=self.share_vocab)
+        self.vocab_model = vocab_model
+
+        return self.vocab_model
+
+    def _process(self):
+        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
+            if 'val_split_ratio' in self.__dict__:
+                UserWarning(
+                    "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
+                    "already been split.")
+            return
+
+        os.makedirs(self.processed_dir, exist_ok=True)
+
+        self.read_raw_data()
+
+        self.build_vocab()
+
+        self.vectorization(self.train)
+        self.vectorization(self.test)
+        if 'val' in self.__dict__:
+            self.vectorization(self.val)
+
+        data_to_save = {'train': self.train, 'test': self.test}
+        if 'val' in self.__dict__:
+            data_to_save['val'] = self.val
+        torch.save(data_to_save, self.processed_file_paths['data'])
+
+    def parse_file(self, file_path):
+        """
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
+        For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
+        Examples
+        --------
+        input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
+        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
+        Parameters
+        ----------
+        file_path: str
+            The path of the input file.
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
+        """
+        data = []
+        with open(file_path, 'r') as f:
+            examples = json.load(f)
+            for example_dict in examples:
+                input = ' '.join(' '.join(example_dict['article']).split()[:500])
+                output = ' '.join(' '.join(['<t> '+sent[0]+' . </t>' for sent in example_dict['highlight']]).split()[:99])
+                if input=='' or output=='':
+                    continue
+                data_item = Text2TextDataItem_seq2seq(input_text=input,
+                                                      output_text=output,
+                                                      tokenizer=self.tokenizer,
+                                                      share_vocab=self.share_vocab)
+                data.append(data_item)
+        return data
+
+    def vectorization(self, data_items):
+        for item in data_items:
+            src = item.input_text
+            src_token_id = self.vocab_model.in_word_vocab.to_index_sequence(src)
+            src_token_id.append(self.vocab_model.in_word_vocab.EOS)
+            src_token_id = np.array(src_token_id)
+            item.input_np = src_token_id
+
+            tgt = item.output_text
+            tgt_token_id = self.vocab_model.out_word_vocab.to_index_sequence(tgt)
+            tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
+            tgt_token_id = np.array(tgt_token_id)
+            item.output_np = tgt_token_id
+
+    @staticmethod
+    def collate_fn(data_list: [Text2TextDataItem_seq2seq]):
+        input_numpy = [item.input_np for item in data_list]
+        src_len = [item.input_np.shape[0] for item in data_list]
+        input_pad = pad_2d_vals_no_size(input_numpy)
+
+        src_seq = torch.from_numpy(input_pad).long()
+        src_len = torch.LongTensor(src_len)
+
+        output_numpy = [item.output_np for item in data_list]
+        output_pad = pad_2d_vals_no_size(output_numpy)
+
+        tgt_seq = torch.from_numpy(output_pad).long()
+
+        src_str = [item.input_text for item in data_list]
+        tgt_str = [item.output_text for item in data_list]
+
+        sorted_x_len, indx = torch.sort(src_len, 0, descending=True)
+        src_seq = src_seq[indx]
+        tgt_seq = tgt_seq[indx]
+        src_str = np.array(src_str)[indx]
+        tgt_str = np.array(tgt_str)[indx]
+
+        return [src_seq, sorted_x_len, tgt_seq, src_str, tgt_str]

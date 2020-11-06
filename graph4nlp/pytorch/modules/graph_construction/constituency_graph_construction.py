@@ -1,21 +1,13 @@
 import copy
 import json
-import random
-import dgl
 
-import networkx as nx
-import networkx.algorithms as nxalg
-import numpy as np
 import torch
-import tqdm
 from pythonds.basic.stack import Stack
 from stanfordcorenlp import StanfordCoreNLP
 
+from graph4nlp.pytorch.data.data import GraphData, to_batch
 from .base import StaticGraphConstructionBase
-from .embedding_construction import EmbeddingConstruction
-from graph4nlp.pytorch.data.data import GraphData, to_batch, from_batch
-from .base import StaticGraphConstructionBase
-
+from .utils import CORENLP_TIMEOUT_SIGNATURE
 
 """TODO: some design choice:
             - replace constituent tag "." with "const_period"
@@ -56,17 +48,18 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         Generate graph topology and embeddings.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, fix_bert_emb=True, word_dropout=None,
+                 rnn_dropout=None, device=None):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
-                                                               embedding_styles=embedding_style,
-                                                               hidden_size=hidden_size,
-                                                               fix_word_emb=fix_word_emb,
-                                                               fix_bert_emb=fix_bert_emb,
-                                                               word_dropout=word_dropout,
-                                                               rnn_dropout=rnn_dropout,
-                                                               device=device)
+                                                                 embedding_styles=embedding_style,
+                                                                 hidden_size=hidden_size,
+                                                                 fix_word_emb=fix_word_emb,
+                                                                 fix_bert_emb=fix_bert_emb,
+                                                                 word_dropout=word_dropout,
+                                                                 rnn_dropout=rnn_dropout,
+                                                                 device=device)
         self.vocab = vocab
-        assert(self.embedding_layer.device == device)
+        assert (self.embedding_layer.device == device)
         self.device = self.embedding_layer.device
 
     @classmethod
@@ -80,9 +73,11 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         normalize: bool
         '''
         output = nlp_processor.annotate(raw_text_data.strip(), properties=processor_args)
+        if CORENLP_TIMEOUT_SIGNATURE in output:
+            raise TimeoutError('CoreNLP timed out at input: \n{}\n This item will be skipped. '
+                               'Please check the input or change the timeout threshold.'.format(raw_text_data))
         parsed_output = json.loads(output)['sentences']
         return parsed_output
-
 
     @classmethod
     def topology(cls,
@@ -185,7 +180,8 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             if parse_list[idx] == '(':
                 res_graph.add_nodes(1)
                 res_graph.node_attributes[res_graph.get_node_num(
-                ) - 1] = {'token': parse_list[idx + 1], 'type': 1, 'position_id': None, 'sentence_id': sub_sentence_id, 'tail': False, 'head': False}
+                ) - 1] = {'token': parse_list[idx + 1], 'type': 1, 'position_id': None, 'sentence_id': sub_sentence_id,
+                          'tail': False, 'head': False}
                 pstack.push(res_graph.get_node_num() - 1)
                 if pstack.size() > 1:
                     node_2 = pstack.pop()
@@ -203,7 +199,8 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                 if add_pos_node:
                     res_graph.add_nodes(1)
                 res_graph.node_attributes[res_graph.get_node_num(
-                ) - 1] = {'token': parse_list[idx], 'type': 0, 'position_id': cnt_word_node, 'sentence_id': sub_sentence_id, 'tail': False, 'head': False}
+                ) - 1] = {'token': parse_list[idx], 'type': 0, 'position_id': cnt_word_node,
+                          'sentence_id': sub_sentence_id, 'tail': False, 'head': False}
                 node_1 = pstack.pop()
                 if node_1 != res_graph.get_node_num() - 1:
                     if top_down:
@@ -216,7 +213,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         if sequential_link:
             _len_single_graph = res_graph.get_node_num()
             _cnt_node = 0
-            while(True):
+            while (True):
                 node_1_idx = -1
                 node_2_idx = -1
                 for idx, node_attr in res_graph.node_attributes.items():
@@ -292,19 +289,21 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             current_node_num = graph_list[g_idx].get_node_num()
             for _edge in tmp_edges:
                 merged_graph.add_edge(
-                    _edge[0]+_cnt_edge_num, _edge[1]+_cnt_edge_num)
+                    _edge[0] + _cnt_edge_num, _edge[1] + _cnt_edge_num)
             _cnt_edge_num += current_node_num
 
         for index in range(_len_graph_ - 1):
             # get head node
             head_node = -1
             for node_attr_item in merged_graph.node_attributes.items():
-                if node_attr_item[1]['sentence_id'] == index + 1 and node_attr_item[1]['type'] == 0 and node_attr_item[1]['head'] == True:
+                if node_attr_item[1]['sentence_id'] == index + 1 and node_attr_item[1]['type'] == 0 and \
+                        node_attr_item[1]['head'] == True:
                     head_node = node_attr_item[0]
             # get tail node
             tail_node = -1
             for node_attr_item in merged_graph.node_attributes.items():
-                if node_attr_item[1]['sentence_id'] == index and node_attr_item[1]['type'] == 0 and node_attr_item[1]['tail'] == True:
+                if node_attr_item[1]['sentence_id'] == index and node_attr_item[1]['type'] == 0 and node_attr_item[1][
+                    'tail'] == True:
                     tail_node = node_attr_item[0]
             merged_graph.add_edge(tail_node, head_node)
             if bisequential_link:
@@ -342,7 +341,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     def forward(self, batch_graphdata: list):
         node_size = []
         num_nodes = []
-        num_word_nodes = [] # number of nodes that are extracted from the raw text in each graph
+        num_word_nodes = []  # number of nodes that are extracted from the raw text in each graph
 
         for g in batch_graphdata:
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)

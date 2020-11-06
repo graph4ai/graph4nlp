@@ -23,17 +23,20 @@ from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
 
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
 
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import \
     StdTreeDecoder
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import BeamSearchStrategy
 
 from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
 
-from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask, dropout
+from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask
 from graph4nlp.pytorch.modules.utils.tree_utils import DataLoaderForGraphEncoder, Tree, Vocab, to_cuda
 
 import warnings
@@ -59,98 +62,134 @@ class Graph2Tree(nn.Module):
                  max_dec_seq_length,
                  max_dec_tree_depth,
                  graph_construction_type,
-                 gnn_type):
+                 gnn_type,
+                 rnn_type):
         super(Graph2Tree, self).__init__()
 
         self.src_vocab = src_vocab
         self.tgt_vocab = tgt_vocab
         self.device = device
         self.use_copy = use_copy
+        self.use_edge_weight = False
 
-        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
-                           'seq_info_encode_strategy': "bilstm"}
+        # embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
+        #                    'seq_info_encode_strategy': "bilstm"}
+
+        embedding_style = {'single_token_item': True,
+                           'emb_strategy': "w2v_bilstm",
+                           'num_rnn_layers': 1
+                           }
+
         if graph_construction_type == "DependencyGraph":
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                 vocab=self.src_vocab,
-                                                                hidden_size=enc_hidden_size, dropout=dropout_for_word_embedding, device=device,
+                                                                hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=0.1, device=device,
                                                                 fix_word_emb=False)
         elif graph_construction_type == "ConstituencyGraph":
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                 vocab=self.src_vocab,
-                                                                hidden_size=enc_hidden_size, dropout=dropout_for_word_embedding, device=device,
+                                                                hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=0.1, device=device,
                                                                 fix_word_emb=False)
-        elif graph_construction_type == "DynamicGraph":
-            self.graph_topology = NodeEmbeddingBasedGraphConstruction(word_vocab=self.src_vocab, 
-                                                                embedding_styles=embedding_style, 
-                                                                input_size=enc_hidden_size, 
-                                                                hidden_size=enc_hidden_size,
-                                                                top_k_neigh=200,
-                                                                device=device)
+        elif graph_construction_type == "DynamicGraph_node_emb":
+            self.graph_topology = NodeEmbeddingBasedGraphConstruction(
+                self.src_vocab,
+                embedding_style,
+                sim_metric_type='weighted_cosine',
+                num_heads=1,
+                top_k_neigh=None,
+                epsilon_neigh=0.5,
+                smoothness_ratio=0.1,
+                connectivity_ratio=0.05,
+                sparsity_ratio=0.1,
+                input_size=enc_hidden_size,
+                hidden_size=enc_hidden_size,
+                fix_word_emb=False,
+                word_dropout=dropout_for_word_embedding,
+                rnn_dropout=0.1,
+                device=device)
+            self.use_edge_weight = True
+        elif graph_construction_type == "DynamicGraph_node_emb_refined":
+            self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
+                self.src_vocab,
+                embedding_style,
+                0.2,
+                sim_metric_type="weighted_cosine",
+                num_heads=1,
+                top_k_neigh=None,
+                epsilon_neigh=0.5,
+                smoothness_ratio=0.1,
+                connectivity_ratio=0.05,
+                sparsity_ratio=0.1,
+                input_size=enc_hidden_size,
+                hidden_size=enc_hidden_size,
+                fix_word_emb=False,
+                word_dropout=dropout_for_word_embedding,
+                rnn_dropout=0.1,
+                device=device)
+            self.use_edge_weight = True
+        else:
+            raise NotImplementedError()
+            # self.graph_topology = NodeEmbeddingBasedGraphConstruction(word_vocab=self.src_vocab, 
+            #                                                     embedding_styles=embedding_style, 
+            #                                                     input_size=enc_hidden_size, 
+            #                                                     hidden_size=enc_hidden_size,
+            #                                                     top_k_neigh=200,
+            #                                                     device=device)
 
-        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
+        self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
 
         if gnn_type == "GAT":
-            self.encoder = GAT(2, enc_hidden_size, enc_hidden_size, enc_hidden_size, [1], direction_option=direction_option, feat_drop=enc_dropout_for_feature, attn_drop=enc_dropout_for_attn, activation=F.relu, residual=True)
+            self.encoder = GAT(1, enc_hidden_size, enc_hidden_size, enc_hidden_size, [1],
+                                direction_option=direction_option, feat_drop=enc_dropout_for_feature, 
+                                attn_drop=enc_dropout_for_attn, activation=F.relu, residual=True)
         elif gnn_type == "GGNN":
-            self.encoder = GGNN(2, enc_hidden_size, enc_hidden_size, dropout=enc_dropout_for_feature, direction_option=direction_option)
+            self.encoder = GGNN(1, enc_hidden_size, enc_hidden_size,
+                                dropout=enc_dropout_for_feature, use_edge_weight=self.use_edge_weight, 
+                                direction_option=direction_option)
         elif gnn_type == "SAGE":
-            self.encoder = GraphSAGE(1, enc_hidden_size, enc_hidden_size, enc_hidden_size, 'lstm', direction_option=direction_option, feat_drop=enc_dropout_for_feature, activation=F.relu) # aggregate type: 'mean','gcn','pool','lstm'
+            # aggregate type: 'mean','gcn','pool','lstm'
+            self.encoder = GraphSAGE(1, enc_hidden_size, enc_hidden_size, enc_hidden_size,
+                                    'lstm', direction_option=direction_option, feat_drop=enc_dropout_for_feature,
+                                    activation=F.relu, bias=True, use_edge_weight=self.use_edge_weight)
+        elif gnn_type == "GCN":
+            self.encoder = GCN(1,
+                                enc_hidden_size,
+                                enc_hidden_size,
+                                enc_hidden_size,
+                                direction_option=direction_option,
+                                norm="both",
+                                activation=F.relu,
+                                use_edge_weight=self.use_edge_weight)
         else:
             print("Wrong gnn type, please use GAT GGNN or SAGE")
             raise NotImplementedError()
         self.criterion = nn.NLLLoss(size_average=False)
 
-        if not use_copy:
-            attn_unit = AttnUnit(
-                dec_hidden_size, output_size, "uniform", 0.1)
-            self.decoder = StdTreeDecoder(attn=attn_unit,
-                                          attn_type="uniform",
-                                          embeddings=self.word_emb,
-                                          enc_hidden_size=enc_hidden_size,
-                                          dec_emb_size=self.tgt_vocab.embedding_dims,
-                                          dec_hidden_size=dec_hidden_size,
-                                          output_size=output_size,
-                                          device=device,
-                                          criterion=self.criterion,
-                                          teacher_force_ratio=teacher_force_ratio,
-                                          use_sibling=True,
-                                          use_attention=True,
-                                          use_copy=self.use_copy,
-                                          use_coverage=True,
-                                          fuse_strategy="average",
-                                          num_layers=1,
-                                          dropout_input=dec_dropout_input,
-                                          dropout_output=dec_dropout_output,
-                                          rnn_type="lstm",
-                                          max_dec_seq_length=max_dec_seq_length,
-                                          max_dec_tree_depth=max_dec_tree_depth,
-                                          tgt_vocab=self.tgt_vocab)
-        else:
-            self.decoder = StdTreeDecoder(attn=None,
-                                          attn_type="uniform",
-                                          embeddings=self.word_emb,
-                                          enc_hidden_size=enc_hidden_size,
-                                          dec_emb_size=self.tgt_vocab.embedding_dims,
-                                          dec_hidden_size=dec_hidden_size,
-                                          output_size=output_size,
-                                          device=device,
-                                          criterion=self.criterion,
-                                          teacher_force_ratio=teacher_force_ratio,
-                                          use_sibling=True,
-                                          use_attention=True,
-                                          use_copy=self.use_copy,
-                                          use_coverage=True,
-                                          fuse_strategy="average",
-                                          num_layers=1,
-                                          dropout_input=dec_dropout_input,
-                                          dropout_output=dec_dropout_output,
-                                          rnn_type="lstm",
-                                          max_dec_seq_length=max_dec_seq_length,
-                                          max_dec_tree_depth=max_dec_tree_depth,
-                                          tgt_vocab=self.tgt_vocab)
+        self.decoder = StdTreeDecoder(attn_type="uniform",
+                                      embeddings=self.word_emb,
+                                      enc_hidden_size=enc_hidden_size,
+                                      dec_emb_size=self.tgt_vocab.embedding_dims,
+                                      dec_hidden_size=dec_hidden_size,
+                                      output_size=output_size,
+                                      device=device,
+                                      criterion=self.criterion,
+                                      teacher_force_ratio=teacher_force_ratio,
+                                      use_sibling=False,
+                                      use_attention=True,
+                                      use_copy=self.use_copy,
+                                      use_coverage=True,
+                                      fuse_strategy="average",
+                                      num_layers=1,
+                                      dropout_input=dec_dropout_input,
+                                      dropout_output=dec_dropout_output,
+                                      rnn_type=rnn_type,
+                                      max_dec_seq_length=max_dec_seq_length,
+                                      max_dec_tree_depth=max_dec_tree_depth,
+                                      tgt_vocab=self.tgt_vocab)
 
     def forward(self, graph_list, tgt_tree_batch):
         batch_graph = self.graph_topology(graph_list)
+        batch_graph.to(self.device)
         batch_graph = self.encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
@@ -208,15 +247,42 @@ class Jobs:
         if self.opt.graph_construction_type == "DependencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=DependencyBasedGraphConstruction,
-                                topology_subdir='DependencyGraph', edge_strategy='as_node', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+                                topology_subdir='DependencyGraph', edge_strategy='as_node',
+                                share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size,
+                                dec_emb_size=self.opt.tgt_emb_size)
+
         elif self.opt.graph_construction_type == "ConstituencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                 topology_builder=ConstituencyBasedGraphConstruction,
-                                topology_subdir='ConstituencyGraph', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
-        elif self.opt.graph_construction_type == "DynamicGraph":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
+                                topology_subdir='ConstituencyGraph', share_vocab=use_copy,
+                                enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+
+        elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
+            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
                                 topology_builder=NodeEmbeddingBasedGraphConstruction,
-                                topology_subdir='DynamicGraph', graph_type='dynamic', dynamic_graph_type='node_emb', share_vocab=use_copy, enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)  
+                                topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
+                                dynamic_graph_type='node_emb', share_vocab=use_copy,
+                                enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size)
+
+        elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
+            if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
+                dynamic_init_topology_builder = None
+            elif self.opt.dynamic_init_graph_type == 'dependency':
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif self.opt.dynamic_init_graph_type == 'constituency':
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            else:
+                # dynamic_init_topology_builder
+                raise RuntimeError('Define your own dynamic_init_topology_builder')
+            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
+                                topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
+                                topology_subdir='DynamicGraph_node_emb_refined', graph_type='dynamic',
+                                dynamic_graph_type='node_emb_refined', share_vocab=use_copy,
+                                enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
+                                dynamic_init_topology_builder=dynamic_init_topology_builder)
+        else:
+            raise NotImplementedError
+
 
         self.train_data_loader = DataLoaderForGraphEncoder(
             use_copy=use_copy, data=dataset.train, dataset=dataset, mode="train", batch_size=20, device=self.device)
@@ -251,7 +317,8 @@ class Jobs:
                                 max_dec_seq_length=self.opt.max_dec_seq_length,
                                 max_dec_tree_depth=self.opt.max_dec_tree_depth_for_train,
                                 graph_construction_type=self.opt.graph_construction_type,
-                                gnn_type=self.opt.gnn_type)
+                                gnn_type=self.opt.gnn_type,
+                                rnn_type=self.opt.rnn_type)
         self.model.init(self.opt.init_weight)
         self.model = to_cuda(self.model, self.device)
         print(self.model)
@@ -362,8 +429,7 @@ def convert_to_string(idx_list, form_manager):
         w_list.append(form_manager.get_idx_symbol(int(idx_list[i])))
     return " ".join(w_list)
 
-
-def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, enc_w_list, word_manager, form_manager, device, max_dec_seq_length, max_dec_tree_depth):
+def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_list, enc_w_list, word_manager, form_manager, device, max_dec_seq_length, max_dec_tree_depth, use_beam_search=True):
     # initialize the rnn state to all zeros
     prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
     prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
@@ -371,6 +437,7 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
         enc_outputs = torch.zeros((1, enc_w_list.size(1), dec_hidden_size), requires_grad=False)
 
     batch_graph = model.graph_topology(input_graph_list)
+    batch_graph.to(device)
     batch_graph = model.encoder(batch_graph)
     batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
@@ -421,46 +488,76 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
             enc_context = None
             input_mask = create_mask(torch.LongTensor([enc_outputs.size(1)]*enc_outputs.size(0)), enc_outputs.size(1), device)
             decoder_state = (s[0].unsqueeze(0), s[1].unsqueeze(0))
+        if not use_beam_search:
+            while True:
+                if not use_copy:
+                    prediction, s, _ = model.decoder.decode_step(dec_single_input=prev_word,
+                                                                            dec_single_state=s,
+                                                                            memory=enc_outputs,
+                                                                            parent_state=parent_h)
 
-        while True:
-            if not use_copy:
-                curr_c, curr_h = model.decoder.rnn(prev_word, s[0], s[1], parent_h, sibling_state)
-                prediction = model.decoder.attention(enc_outputs, curr_h, torch.tensor(0))
-                s = (curr_c, curr_h)
-                _, _prev_word = prediction.max(1)
-                prev_word = _prev_word
-            else:
-                # print(form_manager.idx2symbol[np.array(prev_word)[0]])
-                decoder_embedded = model.decoder.embeddings(prev_word)
-                pred, decoder_state, _, _, enc_context = model.decoder.rnn(parent_h, sibling_state, decoder_embedded,
-                                                                          decoder_state,
-                                                                          enc_outputs.transpose(
-                                                                              0, 1),
-                                                                          None, None, input_mask=input_mask,
-                                                                          encoder_word_idx=enc_w_list,
-                                                                          ext_vocab_size=model.decoder.embeddings.num_embeddings,
-                                                                          log_prob=False,
-                                                                          prev_enc_context=enc_context,
-                                                                          encoder_outputs2=rnn_node_embedding.transpose(0, 1))
-
-                dec_next_state_1 = decoder_state[0].squeeze(0)
-                dec_next_state_2 = decoder_state[1].squeeze(0)
-
-                pred = torch.log(pred + 1e-31)
-                prev_word = pred.argmax(1)
-
-            if int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.end_token) or t.num_children >= max_dec_seq_length:
-                break
-            elif int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
-                #print("we predicted N");exit()
-                if use_copy:
-                    queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                    _, _prev_word = prediction.max(1)
+                    prev_word = _prev_word
                 else:
-                    queue_decode.append({"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
-                t.add_child(int(prev_word[0]))
-            else:
-                t.add_child(int(prev_word[0]))
-            i_child = i_child + 1
+                    # print(form_manager.idx2symbol[np.array(prev_word)[0]])
+                    decoder_embedded = model.decoder.embeddings(prev_word)
+                    pred, decoder_state, _, _, enc_context = model.decoder.rnn(parent_h, sibling_state, decoder_embedded,
+                                                                              decoder_state,
+                                                                              enc_outputs.transpose(
+                                                                                  0, 1),
+                                                                              None, None, input_mask=input_mask,
+                                                                              encoder_word_idx=enc_w_list,
+                                                                              ext_vocab_size=model.decoder.embeddings.num_embeddings,
+                                                                              log_prob=False,
+                                                                              prev_enc_context=enc_context,
+                                                                              encoder_outputs2=rnn_node_embedding.transpose(0, 1))
+
+                    dec_next_state_1 = decoder_state[0].squeeze(0)
+                    dec_next_state_2 = decoder_state[1].squeeze(0)
+
+                    pred = torch.log(pred + 1e-31)
+                    prev_word = pred.argmax(1)
+
+                if int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.end_token) or t.num_children >= max_dec_seq_length:
+                    break
+                elif int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
+                    #print("we predicted N");exit()
+                    if use_copy:
+                        queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                    else:
+                        queue_decode.append({"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                    t.add_child(int(prev_word[0]))
+                else:
+                    t.add_child(int(prev_word[0]))
+                i_child = i_child + 1
+        else:
+            beam_width = 4
+            topk = 1        
+            # decoding goes sentence by sentence
+            assert(graph_node_embedding.size(0) == 1)
+            beam_search_generator = BeamSearchStrategy(beam_size=beam_width, vocab=form_manager, decoder=model.decoder, rnn_type=None)
+            for idx in range(graph_node_embedding.size(0)):
+                decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]), 
+                                                                                        decoder_initial_input=prev_word,
+                                                                                        parent_state=parent_h,
+                                                                                        graph_node_embedding=enc_outputs,
+                                                                                        rnn_node_embedding=rnn_node_embedding,
+                                                                                        device=device,
+                                                                                        topk=topk)
+            generated_sentence = decoded_results[0][0]
+            # print(" ".join(form_manager.get_idx_symbol_for_list([int(node_i.wordid.item()) for node_i in generated_sentence])))
+            for node_i in generated_sentence:
+                if int(node_i.wordid.item()) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
+                    queue_decode.append({"s": (node_i.h[0].clone(), node_i.h[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                    t.add_child(int(node_i.wordid.item()))
+                    i_child = i_child + 1
+                elif int(node_i.wordid.item()) != form_manager.get_symbol_idx(form_manager.end_token) and \
+                        int(node_i.wordid.item()) != form_manager.get_symbol_idx(form_manager.start_token) and \
+                        int(node_i.wordid.item()) != form_manager.get_symbol_idx('('):
+                    t.add_child(int(node_i.wordid.item()))
+                    i_child = i_child + 1
+
+        
         head = head + 1
     # refine the root tree (TODO, what is this doing?)
     for i in range(len(queue_decode)-1, 0, -1):
@@ -469,49 +566,25 @@ def do_generate(use_copy, enc_hidden_size, dec_hidden_size, model, input_graph_l
                      1]["t"].children[cur["child_index"]-1] = cur["t"]
     return queue_decode[0]["t"].to_list(form_manager)
 
-class AttnUnit(nn.Module):
-    def __init__(self, hidden_size, output_size, attention_type, dropout):
-        super(AttnUnit, self).__init__()
-        self.hidden_size = hidden_size
-        self.separate_attention = (attention_type != "uniform")
+def get_split_comma(input_str):
+    input_str = input_str.replace(",", " , ")
+    input_list = [item.strip() for item in input_str.split()]
+    ref_char = "$"
+    for index in range(len(input_list)):
+        if input_list[index] == ',':
+            if input_list[:index].count('(') == input_list[:index].count(')'):
+                if input_list[index+1:].count('(') == input_list[index+1:].count(')'):
+                    if input_list[index] == ref_char:
+                        raise RuntimeError
+                    else:
+                        input_list[index] = ref_char
+    new_str = " ".join(input_list).split('$')
+    result_set = set()
+    for str_ in new_str:
+        result_set.add(str_.strip())
+    return result_set
 
-        if self.separate_attention == "separate_different_encoder_type":
-            self.linear_att = nn.Linear(3*self.hidden_size, self.hidden_size)
-        else:
-            self.linear_att = nn.Linear(2*self.hidden_size, self.hidden_size)
-
-        self.linear_out = nn.Linear(self.hidden_size, output_size)
-        self.dropout = nn.Dropout(dropout)
-
-        self.softmax = nn.Softmax(dim=1)
-        self.logsoftmax = nn.LogSoftmax(dim=1)
-
-    def forward(self, enc_s_top, dec_s_top, enc_2):
-        dot = torch.bmm(enc_s_top, dec_s_top.unsqueeze(2))
-        attention = self.softmax(dot.squeeze(2)).unsqueeze(2)
-        enc_attention = torch.bmm(enc_s_top.permute(0, 2, 1), attention)
-
-        if self.separate_attention == "separate_different_encoder_type":
-            dot_2 = torch.bmm(enc_2, dec_s_top.unsqueeze(2))
-            attention_2 = self.softmax(dot_2.squeeze(2)).unsqueeze(2)
-            enc_attention_2 = torch.bmm(enc_2.permute(0, 2, 1), attention_2)
-
-        if self.separate_attention == "separate_different_encoder_type":
-            hid = F.tanh(self.linear_att(torch.cat(
-                (enc_attention.squeeze(2), enc_attention_2.squeeze(2), dec_s_top), 1)))
-        else:
-            hid = F.tanh(self.linear_att(
-                torch.cat((enc_attention.squeeze(2), dec_s_top), 1)))
-        h2y_in = hid
-
-        h2y_in = self.dropout(h2y_in)
-        h2y = self.linear_out(h2y_in)
-        pred = self.logsoftmax(h2y)
-
-        return pred
-
-
-def is_all_same(c1, c2):
+def is_all_same(c1, c2, form_manager):
     if len(c1) == len(c2):
         all_same = True
         for j in range(len(c1)):
@@ -520,6 +593,10 @@ def is_all_same(c1, c2):
                 break
         return all_same
     else:
+        d1 = " ".join([form_manager.get_idx_symbol(x) for x in c1])
+        d2 = " ".join([form_manager.get_idx_symbol(x) for x in c2])
+        if get_split_comma(d1) == get_split_comma(d2):
+            return True
         return False
 
 
@@ -531,7 +608,7 @@ def compute_accuracy(candidate_list, reference_list, form_manager):
     len_min = min(len(candidate_list), len(reference_list))
     c = 0
     for i in range(len_min):
-        if is_all_same(candidate_list[i], reference_list[i]):
+        if is_all_same(candidate_list[i], reference_list[i], form_manager):
             c = c+1
         else:
             pass
@@ -558,19 +635,22 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-use_copy',type=bool, default=False, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str, 
-            default='/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/graph2seq', help='data path')
+            default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs', help='data path')
     main_arg_parser.add_argument('-checkpoint_dir',type=str, 
-            default= '/home/lishucheng/Graph4AI/graph4ai/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs', help='output directory where checkpoints get written')
+            default= '/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs', help='output directory where checkpoints get written')
     
-    main_arg_parser.add_argument('-gnn_type', type=str, default="GAT")    
+    main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")    
+    main_arg_parser.add_argument('-rnn_type', type=str, default="lstm")    
 
     main_arg_parser.add_argument('-enc_emb_size', type=int, default=300)
     main_arg_parser.add_argument('-tgt_emb_size', type=int, default=300)
 
     main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
-    main_arg_parser.add_argument('-dec_hidden_size', type=int, default=600)
+    main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
-    main_arg_parser.add_argument('-graph_construction_type', type=str, default="DependencyGraph")
+    main_arg_parser.add_argument('-graph_construction_type', type=str, default="ConstituencyGraph") # DynamicGraph_node_emb_refined, DynamicGraph_node_emb
+
+    main_arg_parser.add_argument('-dynamic_init_graph_type', type=str, default="constituency") # "None, line, dependency, constituency"
 
     main_arg_parser.add_argument('-batch_size', type=int, default=20)
 
@@ -579,7 +659,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-enc_dropout_for_feature',type=float, default=0)
     main_arg_parser.add_argument('-enc_dropout_for_attn',type=float, default=0.1)
     
-    main_arg_parser.add_argument('-direction_option',type=str, default="bi_sep")
+    main_arg_parser.add_argument('-direction_option',type=str, default="undirected")
 
     main_arg_parser.add_argument('-dec_dropout_input',type=float, default=0.1)
     main_arg_parser.add_argument('-dec_dropout_output',type=float, default=0.3)
@@ -594,7 +674,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-learning_rate',type=float, default=1e-3,help='learning rate')
     main_arg_parser.add_argument('-weight_decay',type=float, default=0)
 
-    main_arg_parser.add_argument('-max_epochs',type=int, default=600,help='number of full passes through the training data')
+    main_arg_parser.add_argument('-max_epochs',type=int, default=150,help='number of full passes through the training data')
     main_arg_parser.add_argument('-grad_clip',type=int, default=5,help='clip gradients at this value')
 
     args = main_arg_parser.parse_args()

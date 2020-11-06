@@ -20,7 +20,8 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, fix_bert_emb=True, word_dropout=None,
+                 rnn_dropout=None, device=None):
         super(DependencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
@@ -84,6 +85,11 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                     The target node ``id``
         '''
         dep_json = nlp_processor.annotate(raw_text_data.strip(), properties=processor_args)
+        from .utils import CORENLP_TIMEOUT_SIGNATURE
+        if CORENLP_TIMEOUT_SIGNATURE in dep_json:
+            raise TimeoutError('CoreNLP timed out at input: \n{}\n This item will be skipped. '
+                               'Please check the input or change the timeout threshold.'.format(raw_text_data))
+
         dep_dict = json.loads(dep_json)
 
         parsed_results = []
@@ -131,10 +137,11 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 "node_content": node_item,
                 "node_num": node_id
             })
-            return parsed_results
+        return parsed_results
 
     @classmethod
-    def topology(cls, raw_text_data, nlp_processor, processor_args, merge_strategy, edge_strategy, sequential_link=True, verbase=0):
+    def topology(cls, raw_text_data, nlp_processor, processor_args, merge_strategy, edge_strategy, sequential_link=True,
+                 verbase=0):
         """
             Graph building method.
 
@@ -389,9 +396,10 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     def forward(self, batch_graphdata: list):
         node_size = []
         num_nodes = []
-        num_word_nodes = [] # number of nodes that are extracted from the raw text in each graph
+        num_word_nodes = []  # number of nodes that are extracted from the raw text in each graph
 
         for g in batch_graphdata:
+            g.to(self.device)
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
             num_nodes.append(g.get_node_num())
             num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))

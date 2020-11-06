@@ -11,15 +11,8 @@ import scipy.sparse
 import torch
 
 from .utils import SizeMismatchException, EdgeNotFoundException
-from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list
+from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list, reverse_index
 from .views import NodeView, NodeFeatView, EdgeView
-
-# DGL version check: requires dgl >= 0.3.x
-_dgl_version = float(dgl.__version__[:3])
-if _dgl_version < 0.3:
-    raise AssertionError(
-        'Graph4NLP requires dgl version greater than 0.3.x. Your current dgl version is {}. '
-        'Please upgrade your dgl.'.format(dgl.__version__))
 
 EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
 
@@ -56,12 +49,7 @@ class GraphData(object):
         self._edge_features = edge_feature_factory(res_init_edge_features)
         self._edge_attributes = edge_attribute_factory()
         self.graph_attributes = graph_data_factory()
-
-        # Context info: device (cpu/gpu)
-        if device is None:
-            self.device = 'cpu'
-        else:
-            self.device = device
+        self.device = device
 
         # Batch information. If this instance is not a batch, then the following attributes are all `None`.
         self.batch = None
@@ -69,21 +57,15 @@ class GraphData(object):
         self._batch_num_nodes = None
         self._batch_num_edges = None
 
-        # Construct from other sources
         if src is not None:
             if isinstance(src, GraphData):
                 self.from_graphdata(src)
-            elif isinstance(src, scipy.sparse.coo_matrix):
-                self.from_scipy_sparse_matrix(src)
-            elif isinstance(src, torch.Tensor):
-                self.from_dense_adj(src)
-            elif isinstance(src, dgl.DGLGraph):
-                self.from_dgl(src)
             else:
                 raise NotImplementedError
 
     def to(self, device):
         self.device = device
+        return self
 
     # Node operations
     @property
@@ -508,8 +490,8 @@ class GraphData(object):
 
         # Add edges
         src_tensor, tgt_tensor = dgl_g.edges()
-        src_list = list(src_tensor.detach().numpy())
-        tgt_list = list(tgt_tensor.detach().numpy())
+        src_list = list(src_tensor.detach().cpu().numpy())
+        tgt_list = list(tgt_tensor.detach().cpu().numpy())
         self.add_edges(src_list, tgt_list)
         for k, v in dgl_g.edata.items():
             self.edge_features[k] = v
@@ -703,6 +685,13 @@ class GraphData(object):
                 subgraph.edge_attributes[i - subgraph_edge_st_idx] = self._edge_attributes[i]
         return subgraph
 
+    def copy_batch_info(self, batch):
+        self.batch = batch.batch
+        self.device = batch.device
+        self.batch_size = batch.batch_size
+        self._batch_num_edges = batch._batch_num_edges
+        self._batch_num_nodes = batch._batch_num_nodes
+
 
 def from_dgl(g: dgl.DGLGraph) -> GraphData:
     """
@@ -737,7 +726,7 @@ def to_batch(graphs: list = None) -> GraphData:
     GraphData
         The large graph containing all the graphs in the batch.
     """
-    batch = GraphData(graphs[0])
+    batch = GraphData(graphs[0], graphs[0].device)
     batch.batch_size = len(graphs)
     batch.batch = [0] * graphs[0].get_node_num()
     batch._batch_num_nodes = [g.get_node_num() for g in graphs]
@@ -773,7 +762,7 @@ def from_batch(batch: GraphData) -> list:
 
     # Construct graph respectively
     for i in range(batch_size):
-        g = GraphData()
+        g = GraphData(device=batch.device)
         g.add_nodes(num_nodes[i])
         edges = all_edges[cum_n_edges:cum_n_edges + num_edges[i]]
         src, tgt = [e[0] - cum_n_nodes for e in edges], [e[1] - cum_n_nodes for e in edges]

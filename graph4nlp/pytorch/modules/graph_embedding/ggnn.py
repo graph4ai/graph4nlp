@@ -1,4 +1,5 @@
 import torch
+import dgl
 import torch.nn as nn
 from dgl.nn import GatedGraphConv
 import dgl.function as fn
@@ -11,14 +12,10 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
     r"""
     Gated Graph Convolution layer from paper `Gated Graph Sequence
     Neural Networks <https://arxiv.org/pdf/1511.05493.pdf>`__.
-
     .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
-
        a_{i}^{t} & = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
-
        h_{i}^{t+1} & = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
-
     Attributes
     ----------
     input_size: int
@@ -31,7 +28,6 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
         Number of edge types. Default: 1.
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
-
     Attributes
     ----------
     input_size: int
@@ -73,7 +69,6 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
 
     def forward(self, graph, feat, etypes=None, edge_weight=None):
         """Compute Gated Graph Convolution layer.
-
         Parameters
         ----------
         graph : DGLGraph
@@ -93,8 +88,10 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
             The output feature of shape :math:`(N, D_{out})` where
             :math:`D_{out}` is size of output feature.
         """
-        assert graph.is_homograph(), \
-            "not a homograph; convert it with to_homo and pass in the edge type as argument"
+        if dgl.__version__ < '0.5':
+            assert graph.is_homograph(), "not a homograph; convert it with to_homo and pass in the edge type as argument"
+        else:
+            assert graph.is_homogeneous, "not a homograph; convert it with to_homo and pass in the edge type as argument"
         graph = graph.local_var()
         zero_pad = feat.new_zeros((feat.shape[0], self._out_feats - feat.shape[1]))
         feat = torch.cat([feat, zero_pad], -1)
@@ -124,47 +121,34 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
     r"""
     Fuse aggregated embeddings from both incoming and outgoing
     directions before updating node embeddings.
-
     .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
-
        a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)}
        W_{\vdash} h_{j}^{t}
-
        a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)}
        W_{\dashv} h_{j}^{t}
-
        e_{i}^{t} &= \sigma (W_{f}[a_{i, \vdash}^{t};a_{i, \dashv}^{t};
        a_{i, \vdash}^{t}*a_{i, \dashv}^{t};
        a_{i, \vdash}^{t}-a_{i, \dashv}^{t}])
-
        h_{i}^{t+1} & = \mathrm{GRU}(e_{i}^{t}, h_{i}^{t})
-
     Attributes
     ----------
     input_size: int
         Input feature size.
-
     output_size: int
         Output feature size.
-
     n_etypes: int
         Number of edge types. Default: 1.
-
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
-
     Attributes
     ----------
     input_size: int
         Input feature size.
-
     output_size: int
         Output feature size.
-
     n_etypes: int
         Number of edge types. Default: 1.
-
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
     """
@@ -279,47 +263,34 @@ class BiSepGGNNLayerConv(GNNLayerBase):
     Compute node embeddings for incoming and outgoing directions
     separately, and then concatenate the two output node embeddings
     after the final layer.
-
     .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
-
        a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)}
        W_{\vdash} h_{j, \vdash}^{t}
-
        a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)}
        W_{\dashv} h_{j, \dashv}^{t}
-
        h_{i, \vdash}^{t+1} & = \mathrm{GRU}_{\vdash}(a_{i, \vdash}^{t},
        h_{i, \vdash}^{t})
-
        h_{i, \dashv}^{t+1} & = \mathrm{GRU}_{\dashv}(a_{i, \dashv}^{t},
        h_{i, \dashv}^{t})
-
     Attributes
     ----------
     input_size: int
         Input feature size.
-
     output_size: int
         Output feature size.
-
     n_etypes: int
         Number of edge types. Default: 1.
-
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
-
     Attributes
     ----------
     input_size: int
         Input feature size.
-
     output_size: int
         Output feature size.
-
     n_etypes: int
         Number of edge types. Default: 1.
-
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
     """
@@ -418,26 +389,20 @@ class GGNNLayer(GNNLayerBase):
     <https://arxiv.org/pdf/1511.05493.pdf>`__.
     Support both undirected (i.e., regular) and bidirectional
     (i.e., `bi_sep` and `bi_fuse`) versions.
-
     Attributes
     ----------
     input_size: int
         Input feature size.
-
     output_size: int
         Output feature size.
-
     direction_option: str
         The direction option of GGNN ('undirected', 'bi_sep' or 'bi_fuse'). (Default: 'bi_fuse')
-
     n_steps: int
         Number of GGNN layers. `n_steps` is set to any integer if the direction_option is 'undirected'.
         If the direction_option is 'bi_sep' or 'bi_fuse', `n_steps` will be set to 1.
-
     n_etypes: int
         Number of edge types. `n_etypes` can be set to any integer if the direction_option is 'undirected'.
         If the direction_option is 'bi_sep' or 'bi_fuse', `n_etypes` will be set to 1.
-
     bias: bool
         If True, adds a learnable bias to the output. (Default: True)
     """
@@ -455,19 +420,17 @@ class GGNNLayer(GNNLayerBase):
 
     def forward(self, graph, node_feats, etypes=None, edge_weight=None):
         """
-
         Parameters
         ----------
         graph: dgl.DGLGraph
         node_feats: torch.Tensor
             The shape of node_feats is :math:`(N, D_{in})`.
-
         Returns
         -------
         torch.Tensor
         """
         if etypes is None:
-            etypes = torch.tensor([0] * graph.number_of_edges(), dtype=torch.long)
+            etypes = torch.tensor([0] * graph.number_of_edges(), dtype=torch.long).to(node_feats.device)
         return self.model(graph, node_feats, etypes, edge_weight)
 
 
@@ -477,25 +440,19 @@ class GGNN(GNNBase):
     <https://arxiv.org/pdf/1511.05493.pdf>`__.
     Support both undirected (i.e., regular) and bidirectional
     (i.e., `bi_sep` and `bi_fuse`) versions.
-
     Attributes
     ----------
     num_layers: int
         Number of GGNN layers.
-
     input_size: int
         Input feature size.
-
     output_size: int
         Output feature size.
-
     direction_option: str
         The direction option of GGNN ('undirected', 'bi_sep' or 'bi_fuse'). (Default: 'bi_fuse')
-
     n_etypes: int
         Number of edge types. n_etypes can be set to any integer if the direction_option is 'undirected'.
         If the direction_option is 'bi_sep' or 'bi_fuse', n_etypes will be set to 1.
-
     bias: bool
         If True, adds a learnable bias to the output. (Default: True)
     """
@@ -527,16 +484,14 @@ class GGNN(GNNBase):
         graph: GraphData.
             The initial node features are stored in the node feature field
             named `node_feat`.
-
         Returns
         -------
         input_graph: GraphData.
             The computed node embedding tensors are stored in the node feature field
             named `node_emb`.
-
         """
         if self.n_etypes==1:
-            graph.edge_features['etype'] = torch.tensor([0] * graph.get_edge_num(), dtype=torch.long)
+            graph.edge_features['etype'] = torch.tensor([0] * graph.get_edge_num(), dtype=torch.long, device=graph.device)
 
         node_feats = graph.node_features['node_feat']
         etypes = graph.edge_features['etype']
