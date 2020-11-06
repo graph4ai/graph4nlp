@@ -18,7 +18,7 @@ graph_constrcution_args:
     as_node: false
 
   node_embedding:
-    embedding_hidden_size: 300
+    hidden_size: 300
     word_dropout: 0.2
     rnn_dropout: 0.3
     fix_bert_emb: false

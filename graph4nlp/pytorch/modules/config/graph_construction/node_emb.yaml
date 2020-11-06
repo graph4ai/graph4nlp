@@ -7,7 +7,7 @@ graph_construction_private:
   lower_case: false
 
 node_embedding:
-  embedding_hidden_size: 300
+  hidden_size: 300
   word_dropout: 0.0
   rnn_dropout: 0.0
   fix_bert_emb: false
