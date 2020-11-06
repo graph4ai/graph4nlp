@@ -785,6 +785,8 @@ def from_batch(batch: GraphData) -> list:
             for i in range(batch_size):
                 ret[i].edge_features[k] = v[cum_n_edges:cum_n_edges + num_edges[i]]
                 cum_n_edges += num_edges[i]
+    cum_n_nodes = 0
+    cum_n_edges = 0
 
     # Add node and edge attributes
     for graph_cnt in range(batch_size):
