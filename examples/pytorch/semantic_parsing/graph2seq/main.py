@@ -30,6 +30,8 @@ class Jobs:
     def __init__(self, opt):
         super(Jobs, self).__init__()
         self.opt = opt
+        self.use_copy = self.opt.decoder_args["rnn_decoder_share"]["use_copy"]
+        self.use_coverage = self.opt.decoder_args["rnn_decoder_share"]["use_coverage"]
         self._build_device(self.opt)
         self._build_logger(self.opt.log_file)
         self._build_dataloader()
@@ -120,7 +122,8 @@ class Jobs:
         self.metrics = [ExpressionAccuracy()]
 
     def _build_loss_function(self):
-        self.loss = Graph2SeqLoss(vocab=self.vocab.in_word_vocab, use_coverage=self.opt.use_coverage, coverage_weight=0.3)
+        self.loss = Graph2SeqLoss(vocab=self.vocab.in_word_vocab,
+                                  use_coverage=self.use_coverage, coverage_weight=0.3)
 
     def train(self):
         max_score = -1
@@ -192,7 +195,7 @@ class Jobs:
             graph_list, tgt, gt_str = data
             tgt = tgt.to(self.device)
             oov_dict = None
-            if self.opt.use_copy:
+            if self.use_copy:
                 oov_dict, tgt = self.prepare_ext_vocab(graph_list, self.vocab, gt_str=gt_str)
 
             prob, enc_attn_weights, coverage_vectors = self.model(graph_list, tgt, oov_dict=oov_dict)
@@ -214,7 +217,7 @@ class Jobs:
         dataloader = self.val_dataloader if split == "val" else self.test_dataloader
         for data in dataloader:
             graph_list, tgt, gt_str = data
-            if self.opt.use_copy:
+            if self.use_copy:
                 oov_dict = self.prepare_ext_vocab(graph_list, self.vocab)
                 ref_dict = oov_dict
             else:
@@ -236,14 +239,14 @@ class Jobs:
         self.model.eval()
         # self.opt.beam_size
         generator = DecoderStrategy(beam_size=10, vocab=self.model.seq_decoder.vocab, rnn_type="LSTM",
-                                    decoder=self.model.seq_decoder, use_copy=self.opt.use_copy, use_coverage=self.opt.use_copy)
+                                    decoder=self.model.seq_decoder, use_copy=self.use_copy, use_coverage=self.use_coverage)
 
         pred_collect = []
         gt_collect = []
         dataloader = self.test_dataloader
         for data in dataloader:
             graph_list, tgt, gt_str = data
-            if self.opt.use_copy:
+            if self.use_copy:
                 oov_dict = self.prepare_ext_vocab(graph_list, self.vocab)
                 ref_dict = oov_dict
             else:
