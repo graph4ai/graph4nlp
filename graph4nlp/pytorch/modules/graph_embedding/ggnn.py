@@ -22,19 +22,20 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
         Input feature size.
     output_size: int
         Output feature size.
-    n_steps: int
+    num_layers: int
         Number of GGNN layers. Default: 1.
     n_etypes: int
         Number of edge types. Default: 1.
     bias: bool
         If True, adds a learnable bias to the output. Default: True.
+
     Attributes
     ----------
     input_size: int
         Input feature size.
     output_size: int
         Output feature size.
-    n_steps: int
+    num_layers: int
         Number of GGNN layers. Default: 1.
     n_etypes: int
         Number of edge types. Default: 1.
@@ -45,13 +46,13 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
     def __init__(self,
                  input_size,
                  output_size,
-                 n_steps,
+                 num_layers,
                  n_etypes,
                  bias=True):
         super(UndirectedGGNNLayerConv, self).__init__()
-        self._in_feats = input_size
-        self._out_feats = output_size
-        self._n_steps = n_steps
+        self._input_size = input_size
+        self._output_size = output_size
+        self._num_layers = num_layers
         self._n_etypes = n_etypes
         self.linears = nn.ModuleList(
             [nn.Linear(output_size, output_size) for _ in range(n_etypes)]
@@ -96,7 +97,7 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
         zero_pad = feat.new_zeros((feat.shape[0], self._out_feats - feat.shape[1]))
         feat = torch.cat([feat, zero_pad], -1)
 
-        for _ in range(self._n_steps):
+        for _ in range(self._num_layers):
             graph.ndata['h'] = feat
             for i in range(self._n_etypes):
                 eids = (etypes == i).nonzero().view(-1)
@@ -157,7 +158,7 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
         super(BiFuseGGNNLayerConv, self).__init__()
         self._input_size = input_size
         self._output_size = output_size
-        # self._n_steps = n_steps
+        # self._num_layers = num_layers
         self._n_etypes = n_etypes
 
         self.linears_in = nn.ModuleList(
@@ -299,7 +300,7 @@ class BiSepGGNNLayerConv(GNNLayerBase):
         super(BiSepGGNNLayerConv, self).__init__()
         self._input_size = input_size
         self._output_size = output_size
-        # self._n_steps = n_steps
+        # self._num_layers = num_layers
         self._n_etypes = n_etypes
 
         self.linears_in = nn.ModuleList(
@@ -397,9 +398,9 @@ class GGNNLayer(GNNLayerBase):
         Output feature size.
     direction_option: str
         The direction option of GGNN ('undirected', 'bi_sep' or 'bi_fuse'). (Default: 'bi_fuse')
-    n_steps: int
-        Number of GGNN layers. `n_steps` is set to any integer if the direction_option is 'undirected'.
-        If the direction_option is 'bi_sep' or 'bi_fuse', `n_steps` will be set to 1.
+    num_layers: int
+        Number of GGNN layers. `num_layers` is set to any integer if the direction_option is 'undirected'.
+        If the direction_option is 'bi_sep' or 'bi_fuse', `num_layers` will be set to 1.
     n_etypes: int
         Number of edge types. `n_etypes` can be set to any integer if the direction_option is 'undirected'.
         If the direction_option is 'bi_sep' or 'bi_fuse', `n_etypes` will be set to 1.
@@ -407,10 +408,10 @@ class GGNNLayer(GNNLayerBase):
         If True, adds a learnable bias to the output. (Default: True)
     """
 
-    def __init__(self, input_size, output_size, direction_option='bi_fuse', n_steps=1, n_etypes=1, bias=True):
+    def __init__(self, input_size, output_size, direction_option='bi_fuse', num_layers=1, n_etypes=1, bias=True):
         super(GGNNLayer, self).__init__()
         if direction_option == 'undirected':
-            self.model = UndirectedGGNNLayerConv(input_size, output_size, n_steps=n_steps, n_etypes=n_etypes, bias=bias)
+            self.model = UndirectedGGNNLayerConv(input_size, output_size, num_layers=num_layers, n_etypes=n_etypes, bias=bias)
         elif direction_option == 'bi_sep':
             self.model = BiSepGGNNLayerConv(input_size, output_size, n_etypes, bias=bias)
         elif direction_option == 'bi_fuse':
@@ -457,21 +458,21 @@ class GGNN(GNNBase):
         If True, adds a learnable bias to the output. (Default: True)
     """
 
-    def __init__(self, num_layers, input_size, output_size, dropout=0.,
+    def __init__(self, num_layers, input_size, output_size, feat_drop=0.,
                  direction_option='bi_fuse', n_etypes=1, bias=True, use_edge_weight=False):
         super(GGNN, self).__init__()
         self.num_layers = num_layers
         self.direction_option = direction_option
         self.input_size = input_size
         self.output_size = output_size
-        self.dropout = nn.Dropout(dropout)
+        self.feat_drop = nn.Dropout(feat_drop)
         self.use_edge_weight = use_edge_weight
         self.n_etypes = n_etypes
 
         assert self.output_size >= self.input_size
 
         if self.direction_option == 'undirected':
-            self.models = GGNNLayer(input_size, output_size, direction_option, n_steps=num_layers, n_etypes=n_etypes,
+            self.models = GGNNLayer(input_size, output_size, direction_option, num_layers=num_layers, n_etypes=n_etypes,
                                     bias=bias)
         else:
             self.models = GGNNLayer(output_size, output_size, direction_option, n_etypes=n_etypes, bias=bias)
@@ -517,8 +518,8 @@ class GGNN(GNNBase):
             feat_out = node_feats
 
             for i in range(self.num_layers):
-                feat_in = self.dropout(feat_in)
-                feat_out = self.dropout(feat_out)
+                feat_in = self.feat_drop(feat_in)
+                feat_out = self.feat_drop(feat_out)
                 h = self.models(dgl_graph, (feat_in, feat_out), etypes, edge_weight)
                 feat_in = h[0]
                 feat_out = h[1]

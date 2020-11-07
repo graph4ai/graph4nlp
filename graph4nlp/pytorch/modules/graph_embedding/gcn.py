@@ -19,13 +19,13 @@ class GCN(GNNBase):
     num_layers: int
         Number of GCN layers.
 
-    in_feats: int
+    input_size: int
         Input feature size of the first GCN layer.
 
     hidden_size: int
         Hidden size per GCN layer.
 
-    out_feats: int
+    output_size: int
         Output feature size of the final GCN layer.
 
     direction_option: str
@@ -55,9 +55,9 @@ class GCN(GNNBase):
     """
     def __init__(self,
                  num_layers,
-                 in_feats,
+                 input_size,
                  hidden_size,
-                 out_feats,
+                 output_size,
                  direction_option='bi_sep',
                  feat_drop=0.,
                  norm='both',
@@ -78,7 +78,7 @@ class GCN(GNNBase):
 
         if self.num_layers > 1:
             # input projection
-            self.gcn_layers.append(GCNLayer(in_feats,
+            self.gcn_layers.append(GCNLayer(input_size,
                                             hidden_size[0],
                                             direction_option=self.direction_option,
                                             feat_drop=feat_drop,
@@ -101,8 +101,8 @@ class GCN(GNNBase):
                                             activation=activation,
                                             allow_zero_in_degree=allow_zero_in_degree))
         # output projection
-        self.gcn_layers.append(GCNLayer(hidden_size[-1] if self.num_layers > 1 else in_feats,
-                                        out_feats,
+        self.gcn_layers.append(GCNLayer(hidden_size[-1] if self.num_layers > 1 else input_size,
+                                        output_size,
                                         direction_option=self.direction_option,
                                         feat_drop=feat_drop,
                                         norm=norm,
@@ -170,13 +170,13 @@ class GCNLayer(GNNLayerBase):
     num_layers: int
         Number of GCN layers.
 
-    in_feats: int
+    input_size: int
         Input feature size of the first GCN layer.
 
     hidden_size: int
         Hidden size per GCN layer.
 
-    out_feats: int
+    output_size: int
         Output feature size of the final GCN layer.
 
     direction_option: str
@@ -209,8 +209,8 @@ class GCNLayer(GNNLayerBase):
 
     """
     def __init__(self,
-                 in_feats,
-                 out_feats,
+                 input_size,
+                 output_size,
                  direction_option='bi_sep',
                  feat_drop=0.,
                  norm='both',
@@ -220,8 +220,8 @@ class GCNLayer(GNNLayerBase):
                  allow_zero_in_degree=False):
         super(GCNLayer, self).__init__()
         if direction_option == 'undirected':
-            self.model = UndirectedGCNLayerConv( in_feats,
-                                                 out_feats,
+            self.model = UndirectedGCNLayerConv( input_size,
+                                                 output_size,
                                                  feat_drop=feat_drop,
                                                  norm=norm,
                                                  weight=weight,
@@ -229,8 +229,8 @@ class GCNLayer(GNNLayerBase):
                                                  activation=activation,
                                                  allow_zero_in_degree=allow_zero_in_degree)
         elif direction_option == 'bi_sep':
-            self.model = BiSepGCNLayerConv(  in_feats,
-                                             out_feats,
+            self.model = BiSepGCNLayerConv(  input_size,
+                                             output_size,
                                              feat_drop=feat_drop,
                                              norm=norm,
                                              weight=weight,
@@ -238,8 +238,8 @@ class GCNLayer(GNNLayerBase):
                                              activation=activation,
                                              allow_zero_in_degree=allow_zero_in_degree)
         elif direction_option == 'bi_fuse':
-            self.model = BiFuseGCNLayerConv( in_feats,
-                                             out_feats,
+            self.model = BiFuseGCNLayerConv( input_size,
+                                             output_size,
                                              feat_drop=feat_drop,
                                              norm=norm,
                                              weight=weight,
@@ -291,9 +291,9 @@ class UndirectedGCNLayerConv(GNNLayerBase):
 
     Parameters
     ----------
-    in_feats : int
+    input_size : int
         Input feature size; i.e, the number of dimensions of :math:`h_j^{(l)}`.
-    out_feats : int
+    output_size : int
         Output feature size; i.e., the number of dimensions of :math:`h_i^{(l+1)}`.
     norm : str, optional
         How to apply the normalizer. If is `'right'`, divide the aggregated messages
@@ -324,8 +324,8 @@ class UndirectedGCNLayerConv(GNNLayerBase):
     """
 
     def __init__(self,
-                 in_feats,
-                 out_feats,
+                 input_size,
+                 output_size,
                  feat_drop=0.,
                  norm='both',
                  weight=True,
@@ -336,19 +336,19 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         if norm not in ('none', 'both', 'right'):
             raise RuntimeError('Invalid norm value. Must be either "none", "both" or "right".'
                                ' But got "{}".'.format(norm))
-        self._in_feats = in_feats
-        self._out_feats = out_feats
+        self._input_size = input_size
+        self._output_size = output_size
         self._norm = norm
         self._allow_zero_in_degree = allow_zero_in_degree
         self._feat_drop = nn.Dropout(feat_drop)
 
         if weight:
-            self.weight = nn.Parameter(torch.Tensor(in_feats, out_feats))
+            self.weight = nn.Parameter(torch.Tensor(input_size, output_size))
         else:
             self.register_parameter('weight', None)
 
         if bias:
-            self.bias = nn.Parameter(torch.Tensor(out_feats))
+            self.bias = nn.Parameter(torch.Tensor(output_size))
         else:
             self.register_parameter('bias', None)
 
@@ -437,7 +437,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         else:
             weight = self.weight
 
-        if self._in_feats > self._out_feats:
+        if self._input_size > self._output_size:
             # mult W first to reduce the feature size for aggregation.
             if weight is not None:
                 feat = torch.matmul(feat, weight)
@@ -487,7 +487,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         """Set the extra representation of the module,
         which will come into effect when printing the model.
         """
-        summary = 'in={_in_feats}, out={_out_feats}'
+        summary = 'in={_input_size}, out={_output_size}'
         summary += ', normalization={_norm}'
         if '_activation' in self.__dict__:
             summary += ', activation={_activation}'
@@ -508,9 +508,9 @@ class BiFuseGCNLayerConv(GNNLayerBase):
 
     Parameters
     ----------
-    in_feats : int
+    input_size : int
         Input feature size; i.e, the number of dimensions of :math:`h_j^{(l)}`.
-    out_feats : int
+    output_size : int
         Output feature size; i.e., the number of dimensions of :math:`h_i^{(l+1)}`.
     norm : str, optional
         How to apply the normalizer. If is `'right'`, divide the aggregated messages
@@ -534,8 +534,8 @@ class BiFuseGCNLayerConv(GNNLayerBase):
     """
 
     def __init__(self,
-                 in_feats,
-                 out_feats,
+                 input_size,
+                 output_size,
                  feat_drop=0.,
                  norm='both',
                  weight=True,
@@ -546,22 +546,22 @@ class BiFuseGCNLayerConv(GNNLayerBase):
         if norm not in ('none', 'both', 'right'):
             raise RuntimeError('Invalid norm value. Must be either "none", "both" or "right".'
                                ' But got "{}".'.format(norm))
-        self._in_feats = in_feats
-        self._out_feats = out_feats
+        self._input_size = input_size
+        self._output_size = output_size
         self._norm = norm
         self._allow_zero_in_degree = allow_zero_in_degree
         self._feat_drop=nn.Dropout(feat_drop)
 
         if weight:
-            self.weight_fw = nn.Parameter(torch.Tensor(in_feats, out_feats))
-            self.weight_bw = nn.Parameter(torch.Tensor(in_feats, out_feats))
+            self.weight_fw = nn.Parameter(torch.Tensor(input_size, output_size))
+            self.weight_bw = nn.Parameter(torch.Tensor(input_size, output_size))
         else:
             self.register_parameter('weight_fw', None)
             self.register_parameter('weight_bw', None)
 
         if bias:
-            self.bias_fw = nn.Parameter(torch.Tensor(out_feats))
-            self.bias_bw = nn.Parameter(torch.Tensor(out_feats))
+            self.bias_fw = nn.Parameter(torch.Tensor(output_size))
+            self.bias_bw = nn.Parameter(torch.Tensor(output_size))
         else:
             self.register_parameter('bias_fw', None)
             self.register_parameter('bias_bw', None)
@@ -570,7 +570,7 @@ class BiFuseGCNLayerConv(GNNLayerBase):
 
         self._activation = activation
 
-        self.fuse_linear = nn.Linear(4 * out_feats, out_feats, bias=True)
+        self.fuse_linear = nn.Linear(4 * output_size, output_size, bias=True)
 
     def reset_parameters(self):
         r"""
@@ -652,7 +652,7 @@ class BiFuseGCNLayerConv(GNNLayerBase):
             else:
                 weight_fw = self.weight_fw
 
-            if self._in_feats > self._out_feats:
+            if self._input_size > self._output_size:
                 # mult W first to reduce the feature size for aggregation.
                 if weight_fw is not None:
                     feat_fw = torch.matmul(feat_fw, weight_fw)
@@ -715,7 +715,7 @@ class BiFuseGCNLayerConv(GNNLayerBase):
             else:
                 weight_bw = self.weight_bw
 
-            if self._in_feats > self._out_feats:
+            if self._input_size > self._output_size:
                 # mult W first to reduce the feature size for aggregation.
                 if weight_bw is not None:
                     feat_bw = torch.matmul(feat_bw, weight_bw)
@@ -778,8 +778,8 @@ class BiSepGCNLayerConv(GNNLayerBase):
         h_{i, \dashv}^{(l+1)} = \sigma(b^{(l)}_{\dashv} + \sum_{j\in\mathcal{N}_{\dashv}(i)}\frac{1}{c_{ij}}h_{j, \dashv}^{(l)}W^{(l)}_{\dashv})
     """
     def __init__(self,
-                 in_feats,
-                 out_feats,
+                 input_size,
+                 output_size,
                  feat_drop=0.,
                  norm='both',
                  weight=True,
@@ -790,22 +790,22 @@ class BiSepGCNLayerConv(GNNLayerBase):
         if norm not in ('none', 'both', 'right'):
             raise RuntimeError('Invalid norm value. Must be either "none", "both" or "right".'
                                ' But got "{}".'.format(norm))
-        self._in_feats = in_feats
-        self._out_feats = out_feats
+        self._input_size = input_size
+        self._output_size = output_size
         self._norm = norm
         self._allow_zero_in_degree = allow_zero_in_degree
         self._feat_drop=nn.Dropout(feat_drop)
 
         if weight:
-            self.weight_fw = nn.Parameter(torch.Tensor(in_feats, out_feats))
-            self.weight_bw = nn.Parameter(torch.Tensor(in_feats, out_feats))
+            self.weight_fw = nn.Parameter(torch.Tensor(input_size, output_size))
+            self.weight_bw = nn.Parameter(torch.Tensor(input_size, output_size))
         else:
             self.register_parameter('weight_fw', None)
             self.register_parameter('weight_bw', None)
 
         if bias:
-            self.bias_fw = nn.Parameter(torch.Tensor(out_feats))
-            self.bias_bw = nn.Parameter(torch.Tensor(out_feats))
+            self.bias_fw = nn.Parameter(torch.Tensor(output_size))
+            self.bias_bw = nn.Parameter(torch.Tensor(output_size))
         else:
             self.register_parameter('bias_fw', None)
             self.register_parameter('bias_bw', None)
@@ -896,7 +896,7 @@ class BiSepGCNLayerConv(GNNLayerBase):
             else:
                 weight_fw = self.weight_fw
 
-            if self._in_feats > self._out_feats:
+            if self._input_size > self._output_size:
                 # mult W first to reduce the feature size for aggregation.
                 if weight_fw is not None:
                     feat_fw = torch.matmul(feat_fw, weight_fw)
@@ -959,7 +959,7 @@ class BiSepGCNLayerConv(GNNLayerBase):
             else:
                 weight_bw = self.weight_bw
 
-            if self._in_feats > self._out_feats:
+            if self._input_size > self._output_size:
                 # mult W first to reduce the feature size for aggregation.
                 if weight_bw is not None:
                     feat_bw = torch.matmul(feat_bw, weight_bw)

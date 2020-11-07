@@ -24,7 +24,8 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
+    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, fix_bert_emb=True, word_dropout=None,
+                 rnn_dropout=None, device=None):
         super(IEBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                        embedding_styles=embedding_style,
                                                        hidden_size=hidden_size,
@@ -441,16 +442,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             return []
         else:
             raise NotImplementedError()
-
-
-    # def forward(self, batch_graphdata: list):
-    #     for g in batch_graphdata:
-    #         if g.get_node_num()==0:
-    #             continue
-    #         self.embedding(g)
-    #     graph_list = [g.to_dgl() for g in batch_graphdata]
-    #     bg = dgl.batch(graph_list, edge_attrs=None)
-    #     return bg
 
     def forward(self, batch_graphdata: list):
         node_size = []
