@@ -56,7 +56,7 @@ class StdRNNDecoder(RNNDecoderBase):
             vocab: Any
                 The target's vocabulary
             rnn_type: str, option=["lstm", "gru"], default="lstm"
-                The rnn's type. We support ``LSTM`` and ``GRU`` here.
+                The rnn's type. We support ``lstm`` and ``gru`` here.
             use_attention: bool, default=True
                 Whether use attention during decoding.
             attention_type: str, option=["uniform", "sep_diff_encoder_type", sep_diff_node_type], default="uniform"
@@ -112,9 +112,9 @@ class StdRNNDecoder(RNNDecoderBase):
 
         # attention builder
         if self.use_attention:
-            if self.rnn_type == "LSTM":
+            if self.rnn_type == "lstm":
                 query_size = 2 * self.decoder_hidden_size
-            elif self.rnn_type == "GRU":
+            elif self.rnn_type == "gru":
                 query_size = self.decoder_hidden_size
             else:
                 raise NotImplementedError()
@@ -159,10 +159,10 @@ class StdRNNDecoder(RNNDecoderBase):
 
         self.attention_type = attention_type
 
-        if self.rnn_type == "LSTM":
+        if self.rnn_type == "lstm":
             self.encoder_decoder_adapter = nn.ModuleList(
                 [nn.Linear(self.decoder_input_size, self.decoder_hidden_size) for _ in range(2)])
-        elif self.rnn_type == "GRU":
+        elif self.rnn_type == "gru":
             self.encoder_decoder_adapter = nn.Linear(self.decoder_input_size, self.decoder_hidden_size)
         else:
             raise NotImplementedError()
@@ -206,9 +206,9 @@ class StdRNNDecoder(RNNDecoderBase):
         # copy: pointer network
         if self.use_copy:
             ptr_size = self.word_emb_size
-            if self.rnn_type == "LSTM":
+            if self.rnn_type == "lstm":
                 ptr_size += self.decoder_hidden_size * 2
-            elif self.rnn_type == "GRU":
+            elif self.rnn_type == "gru":
                 ptr_size += self.decoder_hidden_size
             else:
                 raise NotImplementedError()
@@ -333,10 +333,10 @@ class StdRNNDecoder(RNNDecoderBase):
         dec_out, rnn_state = self.rnn(dec_emb.unsqueeze(0), rnn_state)
         dec_out = dec_out.squeeze(0)
 
-        if self.rnn_type == "LSTM":
+        if self.rnn_type == "lstm":
             rnn_state = tuple([self.dropout(x) for x in rnn_state])
             hidden = torch.cat(rnn_state, -1).squeeze(0)
-        elif self.rnn_type == "GRU":
+        elif self.rnn_type == "gru":
             rnn_state = self.dropout(rnn_state)
             hidden = rnn_state.squeeze(0)
         else:
@@ -426,7 +426,7 @@ class StdRNNDecoder(RNNDecoderBase):
         return decoder_output, rnn_state, dec_attn_scores, coverage_vec
 
     def get_decoder_init_state(self, rnn_type, batch_size, content=None):
-        if rnn_type == "LSTM":
+        if rnn_type == "lstm":
             if content is not None:
                 assert len(content.shape) == 2
                 assert content.shape[0] == batch_size
@@ -437,7 +437,7 @@ class StdRNNDecoder(RNNDecoderBase):
                 weight = next(self.parameters()).data
                 ret = (weight.new(self.num_layers, batch_size, self.decoder_hidden_size).zero_(),
                        weight.new(self.num_layers, batch_size, self.decoder_hidden_size).zero_())
-        elif rnn_type == "GRU":
+        elif rnn_type == "gru":
             if content is not None:
                 ret = self.encoder_decoder_adapter(content).view(1, batch_size,
                                                                  self.decoder_hidden_size).expand(

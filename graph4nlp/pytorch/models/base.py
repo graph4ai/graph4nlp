@@ -18,27 +18,33 @@ from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
 
 
 class Graph2XBase(nn.Module):
-    def __init__(self, vocab_model, encoder_hidden_size,
-                 graph_type, direction_option,
-                 gnn, gnn_layer_number, embedding_style,
-                 device, feats_dropout=0.2, attn_dropout=0.2, rnn_dropout=0.2, fix_word_emb=False,
+    def __init__(self, vocab_model, emb_hidden_size, embedding_style,
+                 graph_type, gnn_direction_option, gnn_hidden_size,
+                 gnn, gnn_layer_number,
+                 # dropout
+                 emb_word_dropout=0.0, emb_rnn_dropout=0.0,
+
+                 gnn_feats_dropout=0.0, gnn_attn_dropout=0.0,
+                 device=None, emb_fix_word_emb=False,
+                 emb_fix_bert_emb=False,
                  **kwargs):
         super(Graph2XBase, self).__init__()
 
         self._build_embedding_encoder(graph_type=graph_type, embedding_style=embedding_style, vocab_model=vocab_model,
-                                      hidden_size=encoder_hidden_size, word_dropout=feats_dropout,
-                                      rnn_dropout=rnn_dropout, device=device, fix_word_emb=fix_word_emb, **kwargs)
+                                      emb_hidden_size=emb_hidden_size, emb_word_dropout=emb_word_dropout,
+                                      emb_rnn_dropout=emb_rnn_dropout, device=device, emb_fix_word_emb=emb_fix_word_emb,
+                                      emb_fix_bert_emb=emb_fix_bert_emb, **kwargs)
 
-        self._build_gnn_encoder(gnn=gnn, layer_number=gnn_layer_number, hidden_size=encoder_hidden_size,
-                                direction_option=direction_option, feats_dropout=feats_dropout,
-                                attn_dropout=attn_dropout, **kwargs)
+        self._build_gnn_encoder(gnn=gnn, layer_number=gnn_layer_number, hidden_size=gnn_hidden_size,
+                                direction_option=gnn_direction_option, feats_dropout=gnn_feats_dropout,
+                                attn_dropout=gnn_attn_dropout, **kwargs)
 
-    def _build_embedding_encoder(self, graph_type, embedding_style, vocab_model, hidden_size, rnn_dropout, word_dropout,
+    def _build_embedding_encoder(self, graph_type, embedding_style, vocab_model, emb_hidden_size, emb_rnn_dropout, emb_word_dropout,
                                  device,
                                  # dynamic parameters
-                                 sim_metric_type=None, num_heads=None, top_k_neigh=None, epsilon_neigh=None,
-                                 smoothness_ratio=None, connectivity_ratio=None, sparsity_ratio=None, alpha_fusion=None,
-                                 fix_word_emb=False, **kwargs):
+                                 emb_sim_metric_type=None, emb_num_heads=None, emb_top_k_neigh=None, emb_epsilon_neigh=None,
+                                 emb_smoothness_ratio=None, emb_connectivity_ratio=None, emb_sparsity_ratio=None, emb_alpha_fusion=None,
+                                 emb_fix_word_emb=False, emb_fix_bert_emb=False, **kwargs):
 
         self.use_edge_weight = False
 
@@ -48,52 +54,53 @@ class Graph2XBase(nn.Module):
         if graph_type == "dependency":
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=vocab_model.in_word_vocab,
-                                                                   hidden_size=hidden_size,
-                                                                   word_dropout=word_dropout,
-                                                                   rnn_dropout=rnn_dropout, device=device,
-                                                                   fix_word_emb=fix_word_emb)
+                                                                   hidden_size=emb_hidden_size,
+                                                                   word_dropout=emb_word_dropout,
+                                                                   rnn_dropout=emb_rnn_dropout, device=device,
+                                                                   fix_word_emb=emb_fix_word_emb,
+                                                                   fix_bert_emb=emb_fix_bert_emb)
         elif graph_type == "constituency":
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                      vocab=vocab_model.in_word_vocab,
-                                                                     hidden_size=hidden_size, device=device,
-                                                                     word_dropout=word_dropout,
-                                                                     rnn_dropout=rnn_dropout,
-                                                                     fix_word_emb=fix_word_emb)
+                                                                     hidden_size=emb_hidden_size, device=device,
+                                                                     word_dropout=emb_word_dropout,
+                                                                     rnn_dropout=emb_rnn_dropout,
+                                                                     fix_word_emb=emb_fix_word_emb)
         elif graph_type == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
                 vocab_model.in_word_vocab,
                 embedding_style,
-                sim_metric_type=sim_metric_type,
-                num_heads=num_heads,
-                top_k_neigh=top_k_neigh,
-                epsilon_neigh=epsilon_neigh,
-                smoothness_ratio=smoothness_ratio,
-                connectivity_ratio=connectivity_ratio,
-                sparsity_ratio=sparsity_ratio,
-                input_size=hidden_size,
-                hidden_size=hidden_size,
-                fix_word_emb=fix_word_emb,
-                word_dropout=word_dropout,
-                rnn_dropout=rnn_dropout,
+                sim_metric_type=emb_sim_metric_type,
+                num_heads=emb_num_heads,
+                top_k_neigh=emb_top_k_neigh,
+                epsilon_neigh=emb_epsilon_neigh,
+                smoothness_ratio=emb_smoothness_ratio,
+                connectivity_ratio=emb_connectivity_ratio,
+                sparsity_ratio=emb_sparsity_ratio,
+                input_size=emb_hidden_size,
+                hidden_size=emb_hidden_size,
+                fix_word_emb=emb_fix_word_emb,
+                word_dropout=emb_word_dropout,
+                rnn_dropout=emb_rnn_dropout,
                 device=device)
             self.use_edge_weight = True
         elif graph_type == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
                 vocab_model.in_word_vocab,
                 embedding_style,
-                alpha_fusion,
-                sim_metric_type=sim_metric_type,
-                num_heads=num_heads,
-                top_k_neigh=top_k_neigh,
-                epsilon_neigh=epsilon_neigh,
-                smoothness_ratio=smoothness_ratio,
-                connectivity_ratio=connectivity_ratio,
-                sparsity_ratio=sparsity_ratio,
-                input_size=hidden_size,
-                hidden_size=hidden_size,
-                fix_word_emb=fix_word_emb,
-                word_dropout=word_dropout,
-                rnn_dropout=rnn_dropout,
+                emb_alpha_fusion,
+                sim_metric_type=emb_sim_metric_type,
+                num_heads=emb_num_heads,
+                top_k_neigh=emb_top_k_neigh,
+                epsilon_neigh=emb_epsilon_neigh,
+                smoothness_ratio=emb_smoothness_ratio,
+                connectivity_ratio=emb_connectivity_ratio,
+                sparsity_ratio=emb_sparsity_ratio,
+                input_size=emb_hidden_size,
+                hidden_size=emb_hidden_size,
+                fix_word_emb=emb_fix_word_emb,
+                word_dropout=emb_word_dropout,
+                rnn_dropout=emb_rnn_dropout,
                 device=device)
             self.use_edge_weight = True
         else:
@@ -102,23 +109,23 @@ class Graph2XBase(nn.Module):
 
     def _build_gnn_encoder(self, gnn, layer_number, hidden_size, direction_option, feats_dropout, attn_dropout,
                            activation=F.relu,
-                           gat_heads=None, gat_use_residual=True,
-                           graphsage_aggregator_type="lstm", **kwargs):
+                           gnn_heads=None, gnn_use_residual=True,
+                           gnn_aggregator_type="lstm", **kwargs):
 
-        if gnn == "GAT":
-            self.gnn_encoder = GAT(layer_number, hidden_size, hidden_size, hidden_size, gat_heads,
+        if gnn == "gat":
+            self.gnn_encoder = GAT(layer_number, hidden_size, hidden_size, hidden_size, gnn_heads,
                                    direction_option=direction_option,
                                    feat_drop=feats_dropout, attn_drop=attn_dropout, activation=activation,
-                                   residual=gat_use_residual)
-        elif gnn == "GGNN":
+                                   residual=gnn_use_residual)
+        elif gnn == "ggnn":
             self.gnn_encoder = GGNN(layer_number, hidden_size, hidden_size, direction_option=direction_option,
                                     use_edge_weight=self.use_edge_weight, dropout=feats_dropout)
-        elif gnn == "GraphSage":
+        elif gnn == "graphsage":
             self.gnn_encoder = GraphSAGE(layer_number, hidden_size, hidden_size, hidden_size,
-                                         aggregator_type=graphsage_aggregator_type,
+                                         aggregator_type=gnn_aggregator_type,
                                          direction_option=direction_option, feat_drop=feats_dropout,
                                          activation=activation, bias=True, use_edge_weight=self.use_edge_weight)
-        elif gnn == "GCN":
+        elif gnn == "gcn":
             self.gnn_encoder = GCN(layer_number, hidden_size, hidden_size, hidden_size,
                                    direction_option=direction_option,
                                    allow_zero_in_degree=True, activation=activation)
