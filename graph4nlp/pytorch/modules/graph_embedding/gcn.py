@@ -32,7 +32,7 @@ class GCN(GNNBase):
         Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
         Default : ``'bi_sep'``.
 
-    norm: str, optional
+    gcn_norm: str, optional
         How to apply the normalizer. If is `'right'`, divide the aggregated messages
         by each node's in-degrees, which is equivalent to averaging the received messages.
         If is `'none'`, no normalization is applied. Default is `'both'`,
@@ -60,7 +60,7 @@ class GCN(GNNBase):
                  output_size,
                  direction_option='bi_sep',
                  feat_drop=0.,
-                 norm='both',
+                 gcn_norm='both',
                  weight=True,
                  bias=True,
                  activation=None,
@@ -82,7 +82,7 @@ class GCN(GNNBase):
                                             hidden_size[0],
                                             direction_option=self.direction_option,
                                             feat_drop=feat_drop,
-                                            norm=norm,
+                                            gcn_norm=gcn_norm,
                                             weight=weight,
                                             bias=bias,
                                             activation=activation,
@@ -95,7 +95,7 @@ class GCN(GNNBase):
                                             hidden_size[l],
                                             direction_option=self.direction_option,
                                             feat_drop=feat_drop,
-                                            norm=norm,
+                                            gcn_norm=gcn_norm,
                                             weight=weight,
                                             bias=bias,
                                             activation=activation,
@@ -105,7 +105,7 @@ class GCN(GNNBase):
                                         output_size,
                                         direction_option=self.direction_option,
                                         feat_drop=feat_drop,
-                                        norm=norm,
+                                        gcn_norm=gcn_norm,
                                         weight=weight,
                                         bias=bias,
                                         activation=activation,
@@ -183,7 +183,7 @@ class GCNLayer(GNNLayerBase):
         Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
         Default : ``'bi_sep'``.
 
-    norm: str, optional
+    gcn_norm: str, optional
         How to apply the normalizer. If is `'right'`, divide the aggregated messages
         by each node's in-degrees, which is equivalent to averaging the received messages.
         If is `'none'`, no normalization is applied. Default is `'both'`,
@@ -213,7 +213,7 @@ class GCNLayer(GNNLayerBase):
                  output_size,
                  direction_option='bi_sep',
                  feat_drop=0.,
-                 norm='both',
+                 gcn_norm='both',
                  weight=True,
                  bias=True,
                  activation=None,
@@ -223,7 +223,7 @@ class GCNLayer(GNNLayerBase):
             self.model = UndirectedGCNLayerConv( input_size,
                                                  output_size,
                                                  feat_drop=feat_drop,
-                                                 norm=norm,
+                                                 gcn_norm=gcn_norm,
                                                  weight=weight,
                                                  bias=bias,
                                                  activation=activation,
@@ -232,7 +232,7 @@ class GCNLayer(GNNLayerBase):
             self.model = BiSepGCNLayerConv(  input_size,
                                              output_size,
                                              feat_drop=feat_drop,
-                                             norm=norm,
+                                             gcn_norm=gcn_norm,
                                              weight=weight,
                                              bias=bias,
                                              activation=activation,
@@ -241,7 +241,7 @@ class GCNLayer(GNNLayerBase):
             self.model = BiFuseGCNLayerConv( input_size,
                                              output_size,
                                              feat_drop=feat_drop,
-                                             norm=norm,
+                                             gcn_norm=gcn_norm,
                                              weight=weight,
                                              bias=bias,
                                              activation=activation,
@@ -295,7 +295,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         Input feature size; i.e, the number of dimensions of :math:`h_j^{(l)}`.
     output_size : int
         Output feature size; i.e., the number of dimensions of :math:`h_i^{(l+1)}`.
-    norm : str, optional
+    gcn_norm : str, optional
         How to apply the normalizer. If is `'right'`, divide the aggregated messages
         by each node's in-degrees, which is equivalent to averaging the received messages.
         If is `'none'`, no normalization is applied. Default is `'both'`,
@@ -327,18 +327,18 @@ class UndirectedGCNLayerConv(GNNLayerBase):
                  input_size,
                  output_size,
                  feat_drop=0.,
-                 norm='both',
+                 gcn_norm='both',
                  weight=True,
                  bias=True,
                  activation=None,
                  allow_zero_in_degree=False):
         super(UndirectedGCNLayerConv, self).__init__()
-        if norm not in ('none', 'both', 'right'):
-            raise RuntimeError('Invalid norm value. Must be either "none", "both" or "right".'
-                               ' But got "{}".'.format(norm))
+        if gcn_norm not in ('none', 'both', 'right'):
+            raise RuntimeError('Invalid gcn_norm value. Must be either "none", "both" or "right".'
+                               ' But got "{}".'.format(gcn_norm))
         self._input_size = input_size
         self._output_size = output_size
-        self._norm = norm
+        self._gcn_norm = gcn_norm
         self._allow_zero_in_degree = allow_zero_in_degree
         self._feat_drop = nn.Dropout(feat_drop)
 
@@ -422,12 +422,12 @@ class UndirectedGCNLayerConv(GNNLayerBase):
 
         feat = self._feat_drop(feat)
 
-        if self._norm == 'both':
+        if self._gcn_norm == 'both':
             degs = graph.out_degrees().to(feat.device).float().clamp(min=1)
-            norm = torch.pow(degs, -0.5)
-            shp = norm.shape + (1,) * (feat.dim() - 1)
-            norm = torch.reshape(norm, shp)
-            feat = feat * norm
+            gcn_norm = torch.pow(degs, -0.5)
+            shp = gcn_norm.shape + (1,) * (feat.dim() - 1)
+            gcn_norm = torch.reshape(gcn_norm, shp)
+            feat = feat * gcn_norm
 
         if weight is not None:
             if self.weight is not None:
@@ -464,15 +464,15 @@ class UndirectedGCNLayerConv(GNNLayerBase):
             if weight is not None:
                 rst = torch.matmul(rst, weight)
 
-        if self._norm != 'none':
+        if self._gcn_norm != 'none':
             degs = graph.in_degrees().to(feat.device).float().clamp(min=1)
-            if self._norm == 'both':
-                norm = torch.pow(degs, -0.5)
+            if self._gcn_norm == 'both':
+                gcn_norm = torch.pow(degs, -0.5)
             else:
-                norm = 1.0 / degs
-            shp = norm.shape + (1,) * (feat.dim() - 1)
-            norm = torch.reshape(norm, shp)
-            rst = rst * norm
+                gcn_norm = 1.0 / degs
+            shp = gcn_norm.shape + (1,) * (feat.dim() - 1)
+            gcn_norm = torch.reshape(gcn_norm, shp)
+            rst = rst * gcn_norm
 
         if self.bias is not None:
             rst = rst + self.bias
@@ -488,7 +488,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         which will come into effect when printing the model.
         """
         summary = 'in={_input_size}, out={_output_size}'
-        summary += ', normalization={_norm}'
+        summary += ', gcn_normalization={_gcn_norm}'
         if '_activation' in self.__dict__:
             summary += ', activation={_activation}'
         return summary.format(**self.__dict__)
@@ -512,7 +512,7 @@ class BiFuseGCNLayerConv(GNNLayerBase):
         Input feature size; i.e, the number of dimensions of :math:`h_j^{(l)}`.
     output_size : int
         Output feature size; i.e., the number of dimensions of :math:`h_i^{(l+1)}`.
-    norm : str, optional
+    gcn_norm : str, optional
         How to apply the normalizer. If is `'right'`, divide the aggregated messages
         by each node's in-degrees, which is equivalent to averaging the received messages.
         If is `'none'`, no normalization is applied. Default is `'both'`,
@@ -537,18 +537,18 @@ class BiFuseGCNLayerConv(GNNLayerBase):
                  input_size,
                  output_size,
                  feat_drop=0.,
-                 norm='both',
+                 gcn_norm='both',
                  weight=True,
                  bias=True,
                  activation=None,
                  allow_zero_in_degree=False):
         super(BiFuseGCNLayerConv, self).__init__()
-        if norm not in ('none', 'both', 'right'):
-            raise RuntimeError('Invalid norm value. Must be either "none", "both" or "right".'
-                               ' But got "{}".'.format(norm))
+        if gcn_norm not in ('none', 'both', 'right'):
+            raise RuntimeError('Invalid gcn_norm value. Must be either "none", "both" or "right".'
+                               ' But got "{}".'.format(gcn_norm))
         self._input_size = input_size
         self._output_size = output_size
-        self._norm = norm
+        self._gcn_norm = gcn_norm
         self._allow_zero_in_degree = allow_zero_in_degree
         self._feat_drop=nn.Dropout(feat_drop)
 
@@ -637,12 +637,12 @@ class BiFuseGCNLayerConv(GNNLayerBase):
         with graph.local_scope():
             graph = graph.local_var()
 
-            if self._norm == 'both':
+            if self._gcn_norm == 'both':
                 degs = graph.out_degrees().to(feat_fw.device).float().clamp(min=1)
-                norm = torch.pow(degs, -0.5)
-                shp = norm.shape + (1,) * (feat_fw.dim() - 1)
-                norm = torch.reshape(norm, shp)
-                feat_fw = feat_fw * norm
+                gcn_norm = torch.pow(degs, -0.5)
+                shp = gcn_norm.shape + (1,) * (feat_fw.dim() - 1)
+                gcn_norm = torch.reshape(gcn_norm, shp)
+                feat_fw = feat_fw * gcn_norm
 
             if weight_fw is not None:
                 if self.weight_fw is not None:
@@ -679,15 +679,15 @@ class BiFuseGCNLayerConv(GNNLayerBase):
                 if weight_fw is not None:
                     rst_fw = torch.matmul(rst_fw, weight_fw)
 
-            if self._norm != 'none':
+            if self._gcn_norm != 'none':
                 degs = graph.in_degrees().to(feat_fw.device).float().clamp(min=1)
-                if self._norm == 'both':
-                    norm = torch.pow(degs, -0.5)
+                if self._gcn_norm == 'both':
+                    gcn_norm = torch.pow(degs, -0.5)
                 else:
-                    norm = 1.0 / degs
-                shp = norm.shape + (1,) * (feat_fw.dim() - 1)
-                norm = torch.reshape(norm, shp)
-                rst_fw = rst_fw * norm
+                    gcn_norm = 1.0 / degs
+                shp = gcn_norm.shape + (1,) * (feat_fw.dim() - 1)
+                gcn_norm = torch.reshape(gcn_norm, shp)
+                rst_fw = rst_fw * gcn_norm
 
             if self.bias_fw is not None:
                 rst_fw = rst_fw + self.bias_fw
@@ -700,12 +700,12 @@ class BiFuseGCNLayerConv(GNNLayerBase):
         with graph.local_scope():
             graph = graph.local_var()
 
-            if self._norm == 'both':
+            if self._gcn_norm == 'both':
                 degs = graph.out_degrees().to(feat_bw.device).float().clamp(min=1)
-                norm = torch.pow(degs, -0.5)
-                shp = norm.shape + (1,) * (feat_bw.dim() - 1)
-                norm = torch.reshape(norm, shp)
-                feat_bw = feat_bw * norm
+                gcn_norm = torch.pow(degs, -0.5)
+                shp = gcn_norm.shape + (1,) * (feat_bw.dim() - 1)
+                gcn_norm = torch.reshape(gcn_norm, shp)
+                feat_bw = feat_bw * gcn_norm
 
             if weight_bw is not None:
                 if self.weight_bw is not None:
@@ -742,15 +742,15 @@ class BiFuseGCNLayerConv(GNNLayerBase):
                 if weight_bw is not None:
                     rst_bw = torch.matmul(rst_bw, weight_bw)
 
-            if self._norm != 'none':
+            if self._gcn_norm != 'none':
                 degs = graph.in_degrees().to(feat_bw.device).float().clamp(min=1)
-                if self._norm == 'both':
-                    norm = torch.pow(degs, -0.5)
+                if self._gcn_norm == 'both':
+                    gcn_norm = torch.pow(degs, -0.5)
                 else:
-                    norm = 1.0 / degs
-                shp = norm.shape + (1,) * (feat_bw.dim() - 1)
-                norm = torch.reshape(norm, shp)
-                rst_bw = rst_bw * norm
+                    gcn_norm = 1.0 / degs
+                shp = gcn_norm.shape + (1,) * (feat_bw.dim() - 1)
+                gcn_norm = torch.reshape(gcn_norm, shp)
+                rst_bw = rst_bw * gcn_norm
 
             if self.bias_bw is not None:
                 rst_bw = rst_bw + self.bias_bw
@@ -781,18 +781,18 @@ class BiSepGCNLayerConv(GNNLayerBase):
                  input_size,
                  output_size,
                  feat_drop=0.,
-                 norm='both',
+                 gcn_norm='both',
                  weight=True,
                  bias=True,
                  activation=None,
                  allow_zero_in_degree=False):
         super(BiSepGCNLayerConv, self).__init__()
-        if norm not in ('none', 'both', 'right'):
-            raise RuntimeError('Invalid norm value. Must be either "none", "both" or "right".'
-                               ' But got "{}".'.format(norm))
+        if gcn_norm not in ('none', 'both', 'right'):
+            raise RuntimeError('Invalid gcn_norm value. Must be either "none", "both" or "right".'
+                               ' But got "{}".'.format(gcn_norm))
         self._input_size = input_size
         self._output_size = output_size
-        self._norm = norm
+        self._gcn_norm = gcn_norm
         self._allow_zero_in_degree = allow_zero_in_degree
         self._feat_drop=nn.Dropout(feat_drop)
 
@@ -881,12 +881,12 @@ class BiSepGCNLayerConv(GNNLayerBase):
         with graph.local_scope():
             graph = graph.local_var()
 
-            if self._norm == 'both':
+            if self._gcn_norm == 'both':
                 degs = graph.out_degrees().to(feat_fw.device).float().clamp(min=1)
-                norm = torch.pow(degs, -0.5)
-                shp = norm.shape + (1,) * (feat_fw.dim() - 1)
-                norm = torch.reshape(norm, shp)
-                feat_fw = feat_fw * norm
+                gcn_norm = torch.pow(degs, -0.5)
+                shp = gcn_norm.shape + (1,) * (feat_fw.dim() - 1)
+                gcn_norm = torch.reshape(gcn_norm, shp)
+                feat_fw = feat_fw * gcn_norm
 
             if weight_fw is not None:
                 if self.weight_fw is not None:
@@ -923,15 +923,15 @@ class BiSepGCNLayerConv(GNNLayerBase):
                 if weight_fw is not None:
                     rst_fw = torch.matmul(rst_fw, weight_fw)
 
-            if self._norm != 'none':
+            if self._gcn_norm != 'none':
                 degs = graph.in_degrees().to(feat_fw.device).float().clamp(min=1)
-                if self._norm == 'both':
-                    norm = torch.pow(degs, -0.5)
+                if self._gcn_norm == 'both':
+                    gcn_norm = torch.pow(degs, -0.5)
                 else:
-                    norm = 1.0 / degs
-                shp = norm.shape + (1,) * (feat_fw.dim() - 1)
-                norm = torch.reshape(norm, shp)
-                rst_fw = rst_fw * norm
+                    gcn_norm = 1.0 / degs
+                shp = gcn_norm.shape + (1,) * (feat_fw.dim() - 1)
+                gcn_norm = torch.reshape(gcn_norm, shp)
+                rst_fw = rst_fw * gcn_norm
 
             if self.bias_fw is not None:
                 rst_fw = rst_fw + self.bias_fw
@@ -944,12 +944,12 @@ class BiSepGCNLayerConv(GNNLayerBase):
         with graph.local_scope():
             graph = graph.local_var()
 
-            if self._norm == 'both':
+            if self._gcn_norm == 'both':
                 degs = graph.out_degrees().to(feat_bw.device).float().clamp(min=1)
-                norm = torch.pow(degs, -0.5)
-                shp = norm.shape + (1,) * (feat_bw.dim() - 1)
-                norm = torch.reshape(norm, shp)
-                feat_bw = feat_bw * norm
+                gcn_norm = torch.pow(degs, -0.5)
+                shp = gcn_norm.shape + (1,) * (feat_bw.dim() - 1)
+                gcn_norm = torch.reshape(gcn_norm, shp)
+                feat_bw = feat_bw * gcn_norm
 
             if weight_bw is not None:
                 if self.weight_bw is not None:
@@ -986,15 +986,15 @@ class BiSepGCNLayerConv(GNNLayerBase):
                 if weight_bw is not None:
                     rst_bw = torch.matmul(rst_bw, weight_bw)
 
-            if self._norm != 'none':
+            if self._gcn_norm != 'none':
                 degs = graph.in_degrees().to(feat_bw.device).float().clamp(min=1)
-                if self._norm == 'both':
-                    norm = torch.pow(degs, -0.5)
+                if self._gcn_norm == 'both':
+                    gcn_norm = torch.pow(degs, -0.5)
                 else:
-                    norm = 1.0 / degs
-                shp = norm.shape + (1,) * (feat_bw.dim() - 1)
-                norm = torch.reshape(norm, shp)
-                rst_bw = rst_bw * norm
+                    gcn_norm = 1.0 / degs
+                shp = gcn_norm.shape + (1,) * (feat_bw.dim() - 1)
+                gcn_norm = torch.reshape(gcn_norm, shp)
+                rst_bw = rst_bw * gcn_norm
 
             if self.bias_bw is not None:
                 rst_bw = rst_bw + self.bias_bw

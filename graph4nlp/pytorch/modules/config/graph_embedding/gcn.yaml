@@ -7,7 +7,7 @@ graph_embedding_share:
   feat_drop: 0.0
 
 graph_embedding_private:
-  norm: 'both'
+  gcn_norm: 'both'
   weight: true
   bias: true
   activation: null

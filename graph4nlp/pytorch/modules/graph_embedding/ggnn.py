@@ -447,6 +447,8 @@ class GGNN(GNNBase):
         Number of GGNN layers.
     input_size: int
         Input feature size.
+    hidden_size: int
+        Should be equal to output_size.
     output_size: int
         Output feature size.
     direction_option: str
@@ -458,7 +460,7 @@ class GGNN(GNNBase):
         If True, adds a learnable bias to the output. (Default: True)
     """
 
-    def __init__(self, num_layers, input_size, output_size, feat_drop=0.,
+    def __init__(self, num_layers, input_size, hidden_size, output_size, feat_drop=0.,
                  direction_option='bi_fuse', n_etypes=1, bias=True, use_edge_weight=False):
         super(GGNN, self).__init__()
         self.num_layers = num_layers
@@ -470,12 +472,13 @@ class GGNN(GNNBase):
         self.n_etypes = n_etypes
 
         assert self.output_size >= self.input_size
+        assert self.output_size == hidden_size
 
         if self.direction_option == 'undirected':
             self.models = GGNNLayer(input_size, output_size, direction_option, num_layers=num_layers, n_etypes=n_etypes,
                                     bias=bias)
         else:
-            self.models = GGNNLayer(output_size, output_size, direction_option, n_etypes=n_etypes, bias=bias)
+            self.models = GGNNLayer(input_size, output_size, direction_option, n_etypes=n_etypes, bias=bias)
 
     def forward(self, graph: GraphData):
         r"""
