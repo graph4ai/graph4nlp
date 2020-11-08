@@ -349,9 +349,14 @@ class Vocab(object):
             sentence = sentence.lower()
 
         seq = []
-        for word in self.tokenizer(sentence):
-            idx = self.getIndex(word)
-            seq.append(idx)
+        if self.tokenizer is None:
+            for word in sentence.split():
+                idx = self.getIndex(word)
+                seq.append(idx)
+        else:
+            for word in self.tokenizer(sentence):
+                idx = self.getIndex(word)
+                seq.append(idx)
         return seq
 
     def to_index_sequence_for_list(self, words):

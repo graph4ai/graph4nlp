@@ -1,32 +1,31 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
-# os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
-from graph4nlp.pytorch.datasets.jobs import JobsDataset
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from .dataset import CNNDataset
+from .model_g2s import Graph2seq
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
-from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import BeamSearchStrategy
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 import torch.optim as optim
-
-from .args import get_args
-from .evaluation import ExpressionAccuracy
+from .config_g2s import get_args
 from .utils import get_log, wordid2str
-from .model import Graph2seq
+from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
+import time
 from graph4nlp.pytorch.data.data import from_batch, GraphData
 import copy
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 
-class Jobs:
+class CNN:
     def __init__(self, opt):
-        super(Jobs, self).__init__()
+        super(CNN, self).__init__()
         self.opt = opt
         self._build_device(self.opt)
         self._build_logger(self.opt.log_file)
@@ -54,63 +53,66 @@ class Jobs:
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
-        if self.opt.graph_type == "dependency":
+        if 'DependencyGraph' in self.opt.topology_subdir:
+            graph_type = 'static'
             topology_builder = DependencyBasedGraphConstruction
-            graph_type = 'static'
+            topology_subdir = self.opt.topology_subdir
+            dynamic_graph_type = None
             dynamic_init_topology_builder = None
-        elif self.opt.graph_type == "constituency":
-            topology_builder = ConstituencyBasedGraphConstruction
-            graph_type = 'static'
-            dynamic_init_topology_builder = None
-        elif self.opt.graph_type == "node_emb":
+        elif self.opt.topology_subdir == 'node_emb':
+            graph_type = 'dynamic'
             topology_builder = NodeEmbeddingBasedGraphConstruction
-            graph_type = 'dynamic'
-            dynamic_init_topology_builder = None
-        elif self.opt.graph_type == "node_emb_refined":
-            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-            graph_type = 'dynamic'
-            if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
-                dynamic_init_topology_builder = None
-            elif self.opt.dynamic_init_graph_type == 'dependency':
-                dynamic_init_topology_builder = DependencyBasedGraphConstruction
-            elif self.opt.dynamic_init_graph_type == 'constituency':
-                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-            else:
-                # dynamic_init_topology_builder
-                raise RuntimeError('Define your own dynamic_init_topology_builder')
+            topology_subdir = 'NodeEmb'
+            dynamic_graph_type = 'node_emb'
+            dynamic_init_topology_builder = DependencyBasedGraphConstruction
         else:
-            raise NotImplementedError("Define your topology builder.")
+            raise NotImplementedError()
 
-        dataset = JobsDataset.from_args(args=self.opt, topology_builder=topology_builder,
-                                        graph_type=graph_type,
-                                        dynamic_graph_type=self.opt.graph_type if self.opt.graph_type in ('node_emb', 'node_emb_refined') else None,
-                                        dynamic_init_topology_builder=dynamic_init_topology_builder)
+        dataset = CNNDataset(root_dir=self.opt.root_dir,
+                             word_emb_size=self.opt.word_emb_size,
+                             share_vocab=True,
+                             graph_type=graph_type,
+                             topology_builder=topology_builder,
+                             topology_subdir=topology_subdir,
+                             dynamic_graph_type=dynamic_graph_type,
+                             dynamic_init_topology_builder=dynamic_init_topology_builder,
+                             dynamic_init_topology_aux_args={'dummy_param': 0})
 
-        self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt.batch_size, shuffle=True, num_workers=1,
+        self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt.batch_size, shuffle=True, num_workers=0,
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=self.opt.batch_size, shuffle=False, num_workers=1,
+        self.val_dataloader = DataLoader(dataset.val, batch_size=self.opt.batch_size, shuffle=False, num_workers=0,
+                                         collate_fn=dataset.collate_fn)
+        self.test_dataloader = DataLoader(dataset.test, batch_size=self.opt.batch_size, shuffle=False, num_workers=0,
                                           collate_fn=dataset.collate_fn)
-        self.vocab = dataset.vocab_model
+        self.vocab: VocabModel = dataset.vocab_model
 
     def _build_model(self):
-        self.model = Graph2seq.from_args(vocab=self.vocab, args=self.opt, device=self.device).to(self.device)
+        self.model = Graph2seq(self.vocab,
+                               use_copy=self.opt.use_copy,
+                               use_coverage=self.opt.use_coverage,
+                               gnn=self.opt.gnn,
+                               device=self.device,
+                               rnn_dropout=self.opt.rnn_dropout,
+                               emb_dropout=self.opt.word_dropout,
+                               hidden_size=self.opt.hidden_size).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
         self.optimizer = optim.Adam(parameters, lr=self.opt.learning_rate)
 
     def _build_evaluation(self):
-        self.metrics = [ExpressionAccuracy()]
+        self.metrics = [ROUGE()]
 
     def train(self):
         max_score = -1
         self._best_epoch = -1
         for epoch in range(200):
+            # score = self.evaluate(split="val")
             self.model.train()
             self.train_epoch(epoch, split="train")
             self._adjust_lr(epoch)
             if epoch >= 0:
-                score = self.evaluate(split="test")
+                score = self.evaluate(split="val")
                 if score >= max_score:
                     self.logger.info("Best model saved, epoch {}".format(epoch))
                     self.save_checkpoint("best.pth")
@@ -120,7 +122,7 @@ class Jobs:
                 break
         return max_score
 
-    def _stop_condition(self, epoch, patience=20):
+    def _stop_condition(self, epoch, patience=2000):
         return epoch > patience + self._best_epoch
 
     def _adjust_lr(self, epoch):
@@ -142,7 +144,7 @@ class Jobs:
             for node_idx in range(g.get_node_num()):
                 node_token = g.node_attributes[node_idx]['token']
                 if oov_dict.getIndex(node_token) == oov_dict.UNK:
-                    oov_dict._add_words(node_token)
+                    oov_dict._add_words([node_token])
                 token_matrix.append([oov_dict.getIndex(node_token)])
             token_matrix = torch.tensor(token_matrix, dtype=torch.long).to(self.device)
             g.node_features['token_id_oov'] = token_matrix
@@ -168,6 +170,7 @@ class Jobs:
         loss_collect = []
         dataloader = self.train_dataloader
         step_all_train = len(dataloader)
+        start = time.time()
         for step, data in enumerate(dataloader):
             graph_list, tgt, gt_str = data
             tgt = tgt.to(self.device)
@@ -185,7 +188,8 @@ class Jobs:
             loss.backward()
             self.optimizer.step()
 
-    def evaluate(self, split="val"):
+    @torch.no_grad()
+    def evaluate(self, split="val", test_mode=False):
         self.model.eval()
         pred_collect = []
         gt_collect = []
@@ -207,15 +211,23 @@ class Jobs:
             pred_collect.extend(pred_str)
             gt_collect.extend(gt_str)
 
-        score = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
-        self.logger.info("Evaluation accuracy in `{}` split: {:.3f}".format(split, score))
+        if test_mode==True:
+            with open('cnn_pred_output.txt','w+') as f:
+                for line in pred_collect:
+                    f.write(line+'\n')
+
+            with open('cnn_tgt_output.txt','w+') as f:
+                for line in gt_collect:
+                    f.write(line+'\n')
+
+        score, _ = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
+        self.logger.info("Evaluation ROUGE in `{}` split: {:.3f}".format(split, score))
         return score
 
     def translate(self):
         self.model.eval()
-        # self.opt.beam_size
-        generator = DecoderStrategy(beam_size=10, vocab=self.model.seq_decoder.vocab, rnn_type="LSTM",
-                                    decoder=self.model.seq_decoder, use_copy=self.opt.use_copy, use_coverage=self.opt.use_copy)
+        generator = BeamSearchStrategy(beam_size=self.opt.beam_size, vocab=self.model.seq_decoder.vocab, rnn_type="LSTM",
+                                       decoder=self.model.seq_decoder, use_copy=self.opt.use_copy, use_coverage=self.opt.use_copy)
 
         pred_collect = []
         gt_collect = []
@@ -236,23 +248,22 @@ class Jobs:
             batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
             # down-task
-            prob = generator.generate(graphs=from_batch(batch_graph), oov_dict=oov_dict, topk=1)
+            prob = generator.generate(graphs=from_batch(batch_graph), oov_dict=oov_dict)
 
             pred_ids = torch.zeros(len(prob), self.opt.decoder_length).fill_(Vocab.EOS).to(tgt.device).int()
             for i, item in enumerate(prob):
                 item = item[0]
-                seq = [j.view(1, 1) for j in item]
+                seq = [i.view(1, 1) for i in item]
                 seq = torch.cat(seq, dim=1)
                 pred_ids[i, :seq.shape[1]] = seq
 
             pred_str = wordid2str(pred_ids.detach().cpu(), ref_dict)
-
-
+            tgt_str = wordid2str(tgt, self.vocab.in_word_vocab)
             pred_collect.extend(pred_str)
-            gt_collect.extend(gt_str)
+            gt_collect.extend(tgt_str)
 
-        score = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
-        self.logger.info("Evaluation accuracy in `{}` split: {:.3f}".format("test", score))
+        score, _ = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
+        self.logger.info("Evaluation ROUGE in `{}` split: {:.3f}".format("test", score))
         return score
 
     def load_checkpoint(self, checkpoint_name):
@@ -266,9 +277,8 @@ class Jobs:
 
 if __name__ == "__main__":
     opt = get_args()
-    runner = Jobs(opt)
-    max_score = runner.train()
-    print("Train finish, best val score: {:.3f}".format(max_score))
-    runner.load_checkpoint("best.pth")
-    # runner.evaluate(split="test")
-    runner.translate()
+    runner = CNN(opt)
+    # max_score = runner.train()
+    # print("Train finish, best val score: {:.3f}".format(max_score))
+    runner.load_checkpoint('best.pth')
+    runner.evaluate(split="test", test_mode=True)

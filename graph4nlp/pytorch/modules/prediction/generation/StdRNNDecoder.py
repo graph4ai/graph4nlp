@@ -404,7 +404,7 @@ class StdRNNDecoder(RNNDecoderBase):
         if self.use_copy:
             assert src_seq is not None
             assert oov_dict is not None
-            output = torch.zeros(batch_size, oov_dict.get_vocab_size()).to(rnn_emb.device)
+            output = torch.zeros(batch_size, oov_dict.get_vocab_size()).to(decoder_input.device)
             attn_ptr = torch.cat(attn_collect, dim=-1)
             pgen_collect = [dec_emb, hidden, attn_ptr]
             prob_ptr = torch.sigmoid(self.ptr(torch.cat(pgen_collect, -1)))
@@ -479,7 +479,7 @@ class StdRNNDecoder(RNNDecoderBase):
                 assert (0 <= dim <= 1)
                 assert pad_size >= 0
                 dim1, dim2 = x.shape
-                pad = torch.zeros(pad_size, dim2) if dim == 0 else torch.zeros(dim1, pad_size)
+                pad = torch.zeros(pad_size, dim2, dtype=x.dtype) if dim == 0 else torch.zeros(dim1, pad_size, dtype=x.dtype)
                 pad = pad.to(x.device)
                 return torch.cat((x, pad), dim=dim)
 
