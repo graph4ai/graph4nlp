@@ -1,0 +1,7 @@
+FeedForwardNN_share:
+  input_size: 300
+  num_class: 300
+  hidden_size: null
+  
+FeedForwardNN_private:  
+  activation: nn.ReLU()
