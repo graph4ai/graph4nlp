@@ -1,4 +1,3 @@
-import torch.nn as nn
 import abc
 
 import torch.nn as nn
@@ -18,15 +17,15 @@ from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
 
 
 class Graph2XBase(nn.Module):
-    def __init__(self, vocab_model, emb_hidden_size, embedding_style,
-                 graph_type, gnn_direction_option, gnn_hidden_size,
-                 gnn, gnn_layer_number,
+    def __init__(self, vocab_model, embedding_style, graph_type, emb_hidden_size,
+
+                 gnn, gnn_num_layers, gnn_direction_option, gnn_input_size, gnn_hidden_size, gnn_output_size,
+
                  # dropout
-                 emb_word_dropout=0.0, emb_rnn_dropout=0.0,
+                 emb_word_dropout=0.0, emb_rnn_dropout=0.0, emb_fix_word_emb=False, emb_fix_bert_emb=False,
 
                  gnn_feats_dropout=0.0, gnn_attn_dropout=0.0,
-                 device=None, emb_fix_word_emb=False,
-                 emb_fix_bert_emb=False,
+                 device=None,
                  **kwargs):
         super(Graph2XBase, self).__init__()
 
@@ -35,18 +34,20 @@ class Graph2XBase(nn.Module):
                                       emb_rnn_dropout=emb_rnn_dropout, device=device, emb_fix_word_emb=emb_fix_word_emb,
                                       emb_fix_bert_emb=emb_fix_bert_emb, **kwargs)
 
-        self._build_gnn_encoder(gnn=gnn, layer_number=gnn_layer_number, hidden_size=gnn_hidden_size,
+        self._build_gnn_encoder(gnn=gnn, num_layers=gnn_num_layers,
+                                input_size=gnn_input_size, hidden_size=gnn_hidden_size, output_size=gnn_output_size,
                                 direction_option=gnn_direction_option, feats_dropout=gnn_feats_dropout,
                                 attn_dropout=gnn_attn_dropout, **kwargs)
 
-    def _build_embedding_encoder(self, graph_type, embedding_style, vocab_model, emb_hidden_size, emb_rnn_dropout, emb_word_dropout,
+    def _build_embedding_encoder(self, graph_type, embedding_style, vocab_model, emb_hidden_size, emb_rnn_dropout,
+                                 emb_word_dropout,
                                  device,
                                  # dynamic parameters
-                                 emb_sim_metric_type=None, emb_num_heads=None, emb_top_k_neigh=None, emb_epsilon_neigh=None,
-                                 emb_smoothness_ratio=None, emb_connectivity_ratio=None, emb_sparsity_ratio=None, emb_alpha_fusion=None,
+                                 emb_sim_metric_type=None, emb_num_heads=None, emb_top_k_neigh=None,
+                                 emb_epsilon_neigh=None,
+                                 emb_smoothness_ratio=None, emb_connectivity_ratio=None, emb_sparsity_ratio=None,
+                                 emb_alpha_fusion=None,
                                  emb_fix_word_emb=False, emb_fix_bert_emb=False, **kwargs):
-
-        self.use_edge_weight = False
 
         if not isinstance(graph_type, str):
             raise ValueError("graph_type parameter should be str")
@@ -83,7 +84,6 @@ class Graph2XBase(nn.Module):
                 word_dropout=emb_word_dropout,
                 rnn_dropout=emb_rnn_dropout,
                 device=device)
-            self.use_edge_weight = True
         elif graph_type == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
                 vocab_model.in_word_vocab,
@@ -102,33 +102,36 @@ class Graph2XBase(nn.Module):
                 word_dropout=emb_word_dropout,
                 rnn_dropout=emb_rnn_dropout,
                 device=device)
-            self.use_edge_weight = True
         else:
             raise NotImplementedError()
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
 
-    def _build_gnn_encoder(self, gnn, layer_number, hidden_size, direction_option, feats_dropout, attn_dropout,
-                           activation=F.relu,
-                           gnn_heads=None, gnn_use_residual=True,
-                           gnn_aggregator_type="lstm", **kwargs):
+    def _build_gnn_encoder(self, gnn, num_layers, input_size, hidden_size, output_size, direction_option, feats_dropout,
+                           gnn_heads=None, gnn_use_residual=True, gnn_attn_dropout=0.0, gnn_activation=F.relu,  # gat
+                           gnn_bias=True, gnn_allow_zero_in_degree=True, gnn_norm='both', gnn_weight=True,
+                           gnn_use_edge_weight=False,  # gcn
+                           gnn_n_etypes=1,  # ggnn
+                           gnn_aggregator_type="lstm",  # graphsage
+                           **kwargs):
 
         if gnn == "gat":
-            self.gnn_encoder = GAT(layer_number, hidden_size, hidden_size, hidden_size, gnn_heads,
+            self.gnn_encoder = GAT(num_layers, input_size, hidden_size, output_size, gnn_heads,
                                    direction_option=direction_option,
-                                   feat_drop=feats_dropout, attn_drop=attn_dropout, activation=activation,
+                                   feat_drop=feats_dropout, attn_drop=gnn_attn_dropout, activation=gnn_activation,
                                    residual=gnn_use_residual)
         elif gnn == "ggnn":
-            self.gnn_encoder = GGNN(layer_number, hidden_size, hidden_size, direction_option=direction_option,
-                                    use_edge_weight=self.use_edge_weight, dropout=feats_dropout)
+            self.gnn_encoder = GGNN(num_layers, input_size, output_size, direction_option=direction_option,
+                                    use_edge_weight=gnn_use_edge_weight, feat_drop=feats_dropout, n_etypes=gnn_n_etypes)
         elif gnn == "graphsage":
-            self.gnn_encoder = GraphSAGE(layer_number, hidden_size, hidden_size, hidden_size,
+            self.gnn_encoder = GraphSAGE(num_layers, input_size, hidden_size, output_size,
                                          aggregator_type=gnn_aggregator_type,
                                          direction_option=direction_option, feat_drop=feats_dropout,
-                                         activation=activation, bias=True, use_edge_weight=self.use_edge_weight)
+                                         activation=gnn_activation, bias=gnn_bias, use_edge_weight=gnn_use_edge_weight)
         elif gnn == "gcn":
-            self.gnn_encoder = GCN(layer_number, hidden_size, hidden_size, hidden_size,
-                                   direction_option=direction_option,
-                                   allow_zero_in_degree=True, activation=activation)
+            self.gnn_encoder = GCN(num_layers, input_size, hidden_size, output_size,
+                                   direction_option=direction_option, weight=gnn_weight, norm=gnn_norm,
+                                   allow_zero_in_degree=gnn_allow_zero_in_degree, activation=gnn_activation,
+                                   use_edge_weight=gnn_use_edge_weight)
         else:
             raise NotImplementedError()
 

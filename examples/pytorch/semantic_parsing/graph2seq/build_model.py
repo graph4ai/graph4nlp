@@ -1,7 +1,7 @@
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 
 
-def get_model(opt, vocab_model, embedding_style, device):
+def get_model(opt, vocab_model, device):
     # if opt.graph_type in ["node_emb", "node_emb_refined"]:
     #     extra_params = {
     #         "sim_metric_type": opt.sim_metric_type,

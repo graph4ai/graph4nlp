@@ -8,7 +8,7 @@ graph_construction_share:
 
 graph_construction_private:
   edge_strategy: 'as_node'
-  merge_strategy: None
+  merge_strategy: null
 
 node_embedding:
   hidden_size: 300

@@ -107,11 +107,7 @@ class Jobs:
 
     def _build_model(self):
 
-        embedding_style = {'single_token_item': True,
-                           'emb_strategy': "w2v_bilstm",
-                           'num_rnn_layers': 1
-                           }
-        self.model = get_model(self.opt, vocab_model=self.vocab, embedding_style=embedding_style, device=self.device).to(self.device)
+        self.model = get_model(self.opt, vocab_model=self.vocab, device=self.device).to(self.device)
         # self.model = Graph2seq.from_args(vocab=self.vocab, args=self.opt, device=self.device).to(self.device)
 
     def _build_optimizer(self):

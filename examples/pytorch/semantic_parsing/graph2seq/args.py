@@ -53,6 +53,6 @@ def get_args():
     update_values(our_args, template)
     update_values(template, vars(cfg))
 
-    dataset_args = get_yaml_config(cfg.dataset_yaml)
-    update_values(dataset_args, vars(cfg))
+    # dataset_args = get_yaml_config(cfg.dataset_yaml)
+    # update_values(dataset_args, vars(cfg))
     return cfg
