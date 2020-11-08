@@ -19,7 +19,12 @@ def get_yaml_config(config_path="config.yml"):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_yaml", type=str,
-                        default="examples/pytorch/semantic_parsing/graph2seq/config/new_dependency.yaml", help="")
+                        default="examples/pytorch/semantic_parsing/graph2seq/config/new_dependency_graphsage.yaml", help="")
+                        # default="examples/pytorch/semantic_parsing/graph2seq/config/new_dynamic_refine.yaml", help="")
+                        # default = "examples/pytorch/semantic_parsing/graph2seq/config/new_dynamic.yaml", help = "")
+
+                        # default="examples/pytorch/semantic_parsing/graph2seq/config/new_constituency.yaml", help="")
+
     parser.add_argument('--word-emb-size', type=int, default=300, help='')
     parser.add_argument("--log-file", type=str, default="examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt")
     parser.add_argument("--checkpoint-save-path", type=str, default="examples/pytorch/semantic_parsing/graph2seq/save")

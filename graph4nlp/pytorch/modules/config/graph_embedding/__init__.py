@@ -1,7 +1,7 @@
 from ....modules.utils.config_utils import get_yaml_config
 import os
 
-str2yaml = {"gat": "gat.yaml"}
+str2yaml = {"gat": "gat.yaml", "gcn": "gcn.yaml", "ggnn": "ggnn.yaml", "graphsage": "graphsage.yaml"}
 
 
 def get_graph_embedding_args(graph_embedding_name):

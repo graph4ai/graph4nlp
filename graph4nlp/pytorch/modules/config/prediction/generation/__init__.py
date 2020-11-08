@@ -1,7 +1,7 @@
 from ....utils.config_utils import get_yaml_config
 import os
 
-str2yaml = {"stdrnn": "stdrnndecoder.yaml"}
+str2yaml = {"stdrnn": "stdrnndecoder.yaml", "stdtree": "stdtreedecoder.yaml"}
 
 
 def get_decoder_args(deocder_name):

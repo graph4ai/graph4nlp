@@ -1,5 +1,5 @@
 graph_construction_name: "dependency"
-graph_embedding_name: "gat"
+graph_embedding_name: "graphsage"
 decoder_name: "stdrnn"
 
 graph_constrcution_args:
@@ -41,11 +41,11 @@ graph_embedding_args:
     feat_drop: 0.2
 
   graph_embedding_private:
-    heads: [2, 2, 1]
-    attn_drop: 0.2
-    negative_slope: 0.2
-    residual: true
+    aggregator_type: "lstm"
+    bias: true
+    norm: "batch_norm"
     activation: "relu"
+    use_edge_weight: false
 
 decoder_args:
   rnn_decoder_share:

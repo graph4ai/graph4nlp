@@ -1,12 +1,12 @@
-graph_construction_name: "dependency"
+graph_construction_name: "constituency"
 graph_embedding_name: "gat"
 decoder_name: "stdrnn"
 
 graph_constrcution_args:
   graph_construction_share:
-    graph_type: 'dependency'
+    graph_type: 'constituency'
     root_dir: "graph4nlp/pytorch/test/dataset/jobs"
-    topology_subdir: 'DependencyGraph'
+    topology_subdir: 'ConstituencyGraph'
     thread_number: 4
     port: 9000
     timeout: 15000
@@ -64,7 +64,3 @@ decoder_args:
     max_decoder_step: 50
     node_type_num: null
     tgt_emb_as_output_layer: true
-
-
-
-

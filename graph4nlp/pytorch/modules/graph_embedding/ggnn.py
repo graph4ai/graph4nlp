@@ -50,8 +50,8 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
                  n_etypes,
                  bias=True):
         super(UndirectedGGNNLayerConv, self).__init__()
-        self._input_size = input_size
-        self._output_size = output_size
+        self._in_feats = input_size
+        self._out_feats = output_size
         self._num_layers = num_layers
         self._n_etypes = n_etypes
         self.linears = nn.ModuleList(

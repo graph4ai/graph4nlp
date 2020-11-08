@@ -8,11 +8,11 @@ from .base import Graph2XBase
 
 
 class Graph2Seq(Graph2XBase):
-    def __init__(self, vocab_model, emb_hidden_size, embedding_style,
+    def __init__(self, vocab_model, emb_input_size, emb_hidden_size, embedding_style,
                  graph_type, gnn_direction_option, gnn_input_size, gnn_hidden_size, gnn_output_size,
                  gnn, gnn_num_layers, dec_hidden_size,
                  # dropout
-                 gnn_feats_dropout=0.0, gnn_attn_dropout=0.0,
+                 gnn_feat_drop=0.0, gnn_attn_drop=0.0,
                  emb_fix_word_emb=False, emb_fix_bert_emb=False, emb_word_dropout=0.0, emb_rnn_dropout=0.0,
                  dec_max_decoder_step=50,
                  dec_use_copy=False, dec_use_coverage=False,
@@ -20,11 +20,11 @@ class Graph2Seq(Graph2XBase):
                  dec_attention_type="uniform", dec_fuse_strategy="average", dec_node_type_num=None,
                  dec_dropout=0.0, device=None,
                  **kwargs):
-        super(Graph2Seq, self).__init__(vocab_model=vocab_model, emb_hidden_size=emb_hidden_size,
+        super(Graph2Seq, self).__init__(vocab_model=vocab_model, emb_input_size=emb_input_size, emb_hidden_size=emb_hidden_size,
                                         graph_type=graph_type, gnn_direction_option=gnn_direction_option,
                                         gnn=gnn, gnn_num_layers=gnn_num_layers, embedding_style=embedding_style,
-                                        device=device, gnn_feats_dropout=gnn_feats_dropout,
-                                        gnn_attn_dropout=gnn_attn_dropout,
+                                        device=device, gnn_feats_dropout=gnn_feat_drop,
+                                        gnn_attn_dropout=gnn_attn_drop,
                                         emb_rnn_dropout=emb_rnn_dropout, emb_fix_word_emb=emb_fix_word_emb,
                                         emb_fix_bert_emb=emb_fix_bert_emb,
                                         emb_word_dropout=emb_word_dropout,

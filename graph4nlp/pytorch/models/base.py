@@ -17,7 +17,7 @@ from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
 
 
 class Graph2XBase(nn.Module):
-    def __init__(self, vocab_model, embedding_style, graph_type, emb_hidden_size,
+    def __init__(self, vocab_model, embedding_style, graph_type, emb_input_size, emb_hidden_size,
 
                  gnn, gnn_num_layers, gnn_direction_option, gnn_input_size, gnn_hidden_size, gnn_output_size,
 
@@ -28,18 +28,18 @@ class Graph2XBase(nn.Module):
                  device=None,
                  **kwargs):
         super(Graph2XBase, self).__init__()
-
         self._build_embedding_encoder(graph_type=graph_type, embedding_style=embedding_style, vocab_model=vocab_model,
-                                      emb_hidden_size=emb_hidden_size, emb_word_dropout=emb_word_dropout,
+                                      emb_input_size=emb_input_size, emb_hidden_size=emb_hidden_size, emb_word_dropout=emb_word_dropout,
                                       emb_rnn_dropout=emb_rnn_dropout, device=device, emb_fix_word_emb=emb_fix_word_emb,
                                       emb_fix_bert_emb=emb_fix_bert_emb, **kwargs)
 
         self._build_gnn_encoder(gnn=gnn, num_layers=gnn_num_layers,
                                 input_size=gnn_input_size, hidden_size=gnn_hidden_size, output_size=gnn_output_size,
                                 direction_option=gnn_direction_option, feats_dropout=gnn_feats_dropout,
-                                attn_dropout=gnn_attn_dropout, **kwargs)
+                                gnn_attn_dropout=gnn_attn_dropout, **kwargs)
 
-    def _build_embedding_encoder(self, graph_type, embedding_style, vocab_model, emb_hidden_size, emb_rnn_dropout,
+    def _build_embedding_encoder(self, graph_type, embedding_style, vocab_model,
+                                 emb_input_size, emb_hidden_size, emb_rnn_dropout,
                                  emb_word_dropout,
                                  device,
                                  # dynamic parameters
@@ -78,9 +78,10 @@ class Graph2XBase(nn.Module):
                 smoothness_ratio=emb_smoothness_ratio,
                 connectivity_ratio=emb_connectivity_ratio,
                 sparsity_ratio=emb_sparsity_ratio,
-                input_size=emb_hidden_size,
+                input_size=emb_input_size,
                 hidden_size=emb_hidden_size,
                 fix_word_emb=emb_fix_word_emb,
+                fix_bert_emb=emb_fix_bert_emb,
                 word_dropout=emb_word_dropout,
                 rnn_dropout=emb_rnn_dropout,
                 device=device)
@@ -96,9 +97,10 @@ class Graph2XBase(nn.Module):
                 smoothness_ratio=emb_smoothness_ratio,
                 connectivity_ratio=emb_connectivity_ratio,
                 sparsity_ratio=emb_sparsity_ratio,
-                input_size=emb_hidden_size,
+                input_size=emb_input_size,
                 hidden_size=emb_hidden_size,
                 fix_word_emb=emb_fix_word_emb,
+                fix_bert_emb=emb_fix_bert_emb,
                 word_dropout=emb_word_dropout,
                 rnn_dropout=emb_rnn_dropout,
                 device=device)
@@ -109,18 +111,17 @@ class Graph2XBase(nn.Module):
     def _build_gnn_encoder(self, gnn, num_layers, input_size, hidden_size, output_size, direction_option, feats_dropout,
                            gnn_heads=None, gnn_use_residual=True, gnn_attn_dropout=0.0, gnn_activation=F.relu,  # gat
                            gnn_bias=True, gnn_allow_zero_in_degree=True, gnn_norm='both', gnn_weight=True,
-                           gnn_use_edge_weight=False,  # gcn
+                           gnn_use_edge_weight=False, gnn_gcn_norm='both',  # gcn
                            gnn_n_etypes=1,  # ggnn
                            gnn_aggregator_type="lstm",  # graphsage
                            **kwargs):
-
         if gnn == "gat":
             self.gnn_encoder = GAT(num_layers, input_size, hidden_size, output_size, gnn_heads,
                                    direction_option=direction_option,
                                    feat_drop=feats_dropout, attn_drop=gnn_attn_dropout, activation=gnn_activation,
                                    residual=gnn_use_residual)
         elif gnn == "ggnn":
-            self.gnn_encoder = GGNN(num_layers, input_size, output_size, direction_option=direction_option,
+            self.gnn_encoder = GGNN(num_layers, input_size, hidden_size, output_size, direction_option=direction_option,
                                     use_edge_weight=gnn_use_edge_weight, feat_drop=feats_dropout, n_etypes=gnn_n_etypes)
         elif gnn == "graphsage":
             self.gnn_encoder = GraphSAGE(num_layers, input_size, hidden_size, output_size,
@@ -129,7 +130,7 @@ class Graph2XBase(nn.Module):
                                          activation=gnn_activation, bias=gnn_bias, use_edge_weight=gnn_use_edge_weight)
         elif gnn == "gcn":
             self.gnn_encoder = GCN(num_layers, input_size, hidden_size, output_size,
-                                   direction_option=direction_option, weight=gnn_weight, norm=gnn_norm,
+                                   direction_option=direction_option, weight=gnn_weight, gcn_norm=gnn_gcn_norm,
                                    allow_zero_in_degree=gnn_allow_zero_in_degree, activation=gnn_activation,
                                    use_edge_weight=gnn_use_edge_weight)
         else:

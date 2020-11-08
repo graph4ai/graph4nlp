@@ -74,11 +74,12 @@ class Jobs:
         elif self.opt.graph_constrcution_args["graph_construction_share"]["graph_type"] == "node_emb_refined":
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             graph_type = 'dynamic'
-            if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
+            dynamic_init_graph_type = self.opt.graph_constrcution_args.graph_construction_private.dynamic_init_graph_type
+            if dynamic_init_graph_type is None or dynamic_init_graph_type == 'line':
                 dynamic_init_topology_builder = None
-            elif self.opt.dynamic_init_graph_type == 'dependency':
+            elif dynamic_init_graph_type == 'dependency':
                 dynamic_init_topology_builder = DependencyBasedGraphConstruction
-            elif self.opt.dynamic_init_graph_type == 'constituency':
+            elif dynamic_init_graph_type == 'constituency':
                 dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             else:
                 # dynamic_init_topology_builder

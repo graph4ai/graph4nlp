@@ -1,5 +1,0 @@
-graph_type: 'constituency'
-root_dir: "graph4nlp/pytorch/test/dataset/jobs"
-topology_subdir: 'ConstituencyGraph'
-edge_strategy: 'homogeneous'
-merge_strategy: 'tailhead'

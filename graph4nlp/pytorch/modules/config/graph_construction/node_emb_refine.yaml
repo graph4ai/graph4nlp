@@ -1,9 +1,10 @@
 graph_construction_share:
-  graph_type: 'node_emb'
+  graph_type: 'node_emb_refined'
   root_dir: null
-  topology_subdir: 'NodeEmbGraph'
+  topology_subdir: 'NodeEmbGraphRefined'
 
 graph_construction_private:
+  dynamic_init_graph_type: 'line'
   lower_case: false
 
 node_embedding:
@@ -20,6 +21,7 @@ node_embedding:
     bert_model_name: null
     bert_lower_case: null
 
+  alpha_fusion: 0.2
   sim_metric_type: 'weighted_cosine'
   num_heads: null
   top_k_neigh: null

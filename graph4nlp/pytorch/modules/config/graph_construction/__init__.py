@@ -1,7 +1,8 @@
 from ....modules.utils.config_utils import get_yaml_config
 import os
 
-str2yaml = {"dependency": "dependency.yaml"}
+str2yaml = {"dependency": "dependency.yaml", "constituency": "constituency.yaml", "ie": "ie_graph_construction.yaml",
+            "node_emb": "node_emb.yaml", "node_emb_refined": "node_emb_refine.yaml"}
 
 
 def get_graph_construction_args(graph_construction_name):
