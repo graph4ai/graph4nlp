@@ -37,8 +37,15 @@ example2 = process_stories('/raid/ghn/graph4nlp/examples/pytorch/summarization/c
 
 examples = example1 + example2
 random.shuffle(examples)
-with open('raw/train.json', 'w+') as f:
-    json.dump(examples[:-10000], f, indent=1)
+
+train_3w = examples[:30000]
+train_9w = examples[:90000]
+
+with open('raw/train_3w.json', 'w+') as f:
+    json.dump(train_3w, f, indent=1)
+
+with open('raw/train_9w.json', 'w+') as f:
+    json.dump(train_9w, f, indent=1)
 
 with open('raw/val.json', 'w+') as f:
     json.dump(examples[-10000:-5000], f, indent=1)
