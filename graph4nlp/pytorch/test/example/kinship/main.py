@@ -434,7 +434,7 @@ if __name__ == "__main__":
 # # from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 # # from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 # # from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
-# from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
+# from graph4nlp.pytorch.modules.graph_construction.gat import GAT
 # from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 # from graph4nlp.pytorch.modules.prediction.classification.kg_completion.DistMult import DistMult
 #

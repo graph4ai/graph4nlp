@@ -55,14 +55,14 @@ pass
 
 # # User Code Proposal 1
 # graph_data = graph4nlp.graph_construction.CTGraph(raw_data)
-# new_graph_data = graph4nlp.graph_embedding.GAT(graph_data)
+# new_graph_data = graph4nlp.graph_construction.GAT(graph_data)
 # result = graph4nlp.prediction.NodeClassfier(new_graph_data)
 #
 # # User Code Proposal 2
 # graph_data = graph4nlp.graph_construction.CTGraph(raw_data)
 # dgl_graphs = graph_data.to_dgl()
 # features = dgl_graphs.ndata['node_feat']  # The key here ('node_feat') can be anything
-# new_feats = graph4nlp.graph_embedding.GAT(dgl_graphs, features)
+# new_feats = graph4nlp.graph_construction.GAT(dgl_graphs, features)
 # graph_data.node_features['node_emb'] = new_feats
 #
 #

@@ -1,0 +1,10 @@
+GeneralLoss_share:
+  loss_type: "NLL"
+  size_average: null
+  reduce: null
+  reduction: "mean"
+  
+GeneralLoss_private: 
+  pos_weight: None   
+  weight: null 
+  ignore_index: -100

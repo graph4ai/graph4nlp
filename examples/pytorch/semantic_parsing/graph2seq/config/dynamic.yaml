@@ -1,5 +1,0 @@
-graph_type: 'node_emb'
-root_dir: "graph4nlp/pytorch/test/dataset/jobs"
-topology_subdir: 'NodeEmbGraph'
-merge_strategy: 'tailhead'
-dynamic_graph_type: 'node_emb'
