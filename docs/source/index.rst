@@ -19,14 +19,18 @@ Sphinx reference: `reStructuredText Primer <https://www.sphinx-doc.org/en/master
 Sphinx themes: `Link <https://sphinx-themes.org/>`_
 
 .. toctree::
+   :glob:
    :maxdepth: 2
    :caption: Get Started
+   :hidden:
 
    welcome/installation
 
 
 .. toctree::
+   :glob:
    :maxdepth: 2
+   :hidden:
    :caption: User Guide
 
    guide/graphdata
@@ -39,16 +43,23 @@ Sphinx themes: `Link <https://sphinx-themes.org/>`_
 
 .. toctree::
    :glob:
-   :maxdepth: 1
+   :maxdepth: 4
+   :hidden:
    :caption: Module API references
 
    modules/data
-   modules/dataset
+   modules/datasets
+   modules/graph_construction
+   modules/graph_embedding
+   modules/prediction
+   modules/loss
+   modules/evaluation
 
 .. toctree::
    :glob:
    :maxdepth: 1
    :caption: Model Examples
+   :hidden:
 
    tutorial/example1
    tutorial/example2
