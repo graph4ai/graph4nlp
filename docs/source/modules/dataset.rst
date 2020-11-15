@@ -1,4 +1,4 @@
-graph4nlp.dataset
+Example datasets
 ====================
 
 .. py:currentmodule:: graph4nlp.data.dataset
@@ -6,13 +6,14 @@ graph4nlp.dataset
     :members:
 
 Base Dataset Class
-=====================
+------------------
 
 .. autoclass:: Dataset
     :members:
 
 Task Level Dataset Base Class
-=====================
+-----------------------------
+
 .. autoclass:: Text2LabelDataset
     :members:
 

@@ -1,5 +1,8 @@
 """
-The Graph4NLP library uses the class `GraphData` as the representation for structured data (graphs).
+The Graph4NLP library uses the class :py:class:`GraphData` as the representation for structured data (graphs).
+:py:class:`GraphData` supports basic operations to the graph, including adding nodes and edges. :py:class:`GraphData` also
+supports adding features which are in tensor form, and attributes which are of arbitrary form to the corresponding
+nodes or edges. Batching operations is also supported by :py:class:`GraphData`.
 
 """
 import warnings
@@ -39,6 +42,14 @@ class GraphData(object):
     """
 
     def __init__(self, src=None, device=None):
+        """
+        Parameters
+        ----------
+        src: GraphData, default=None
+            The source graph. If not None, then the newly generated graph is a copy of :py:class:`src`.
+        device: str, default=None
+            The device descriptor for graph. By default it is None.
+        """
 
         # Initialize internal data storages.
         self._node_attributes = node_attr_factory()

@@ -1,7 +1,10 @@
 graph4nlp.data
 ====================
 
-.. automodule::graph4nlp.data.data
+.. py:currentmodule:: graph4nlp.data.data
+.. automodule:: graph4nlp.data.data
+
+.. _GraphData:
 
 .. autoclass:: graph4nlp.data.data.GraphData
     :members:

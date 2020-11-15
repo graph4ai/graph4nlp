@@ -20,8 +20,8 @@ import graph4nlp
 # -- Project information -----------------------------------------------------
 
 project = 'Graph4NLP'
-copyright = '2020, IBM Graph4AI Group'
-author = 'IBM Graph4AI Group'
+copyright = '2020, Graph4AI Group'
+author = 'Graph4AI Group'
 
 # The full version, including alpha/beta/rc tags
 release = 'v0.1.0'
