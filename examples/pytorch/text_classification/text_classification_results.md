@@ -41,6 +41,7 @@ CAirline Results
 | NodeEmbRefined | N/A          | 0.7654        | 0.7780        |
 
 
+
 Runtime (train one epoch/test all)
 | GraphType\GNN  |   GAT-BiSep  |  GGNN-BiSep   |GraphSage-BiSep|
 | -------------- | -------------| ------------- |---------------|
@@ -48,6 +49,14 @@ Runtime (train one epoch/test all)
 | Constituency   | 13.45s/2.57s | 13.20s/2.64s  | 12.70s/2.72s  |
 | NodeEmb        | N/A          | 15.00s/2.98s  | 16.64s/3.46s  |
 | NodeEmbRefined | N/A          | 16.76s/3.50s  | 16.04s/3.49s  |
+
+
+| GraphType\GNN  |  GAT-BiSep   |  GGNN-BiSep   |GraphSage-BiSep| 
+| -------------- | ------------ | ------------- |---------------|
+| Dependency     | 0.8031       | 0.8063        | 0.8126        |
+| Constituency   | 0.8126       | 0.8079        | 0.8173        |
+| NodeEmb        | N/A          | 0.8252        | 0.8157        |
+| NodeEmbRefined | N/A          | 0.8000        | 0.8126        |
 
 
 CNSST Results
@@ -69,6 +78,14 @@ Runtime (train one epoch/test all)
 | NodeEmb        | N/A          |  13.73s/5.06s |  15.98s/4.67s |
 | NodeEmbRefined | N/A          |  15.40s/5.81s |  12.65s/5.26s |
 
+
+bert_bilstm
+| GraphType\GNN  |  GAT-BiSep   |  GGNN-BiSep   |GraphSage-BiSep| 
+| -------------- | ------------ | ------------- |---------------|
+| Dependency     | 0.6323       |   0.6538      | 0.6430        |
+| Constituency   | 0.6197       |   0.6341      | 0.6466        |
+| NodeEmb        | N/A          |   0.6547      | 0.6717        |
+| NodeEmbRefined | N/A          |   0.6628      | 0.6475        |
 
 Note: 
 -------

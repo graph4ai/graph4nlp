@@ -168,7 +168,8 @@ class TextClassifier(nn.Module):
             self.gnn = GGNN(config['gnn_num_layers'],
                         config['num_hidden'],
                         config['num_hidden'],
-                        dropout=config['gnn_dropout'],
+                        config['num_hidden'],
+                        feat_drop=config['gnn_dropout'],
                         direction_option=config['gnn_direction_option'],
                         bias=True,
                         use_edge_weight=use_edge_weight)
@@ -258,9 +259,12 @@ class ModelHandler:
 
         dataset = TrecDataset(root_dir=self.config['root_dir'],
                               pretrained_word_emb_file=self.config['pre_word_emb_file'],
-                              # val_split_ratio=self.config['val_split_ratio'],
                               merge_strategy=merge_strategy,
                               seed=self.config['seed'],
+                              device=config['device'],
+                              thread_number=4,
+                              port=9000,
+                              timeout=15000,
                               word_emb_size=300,
                               graph_type=graph_type,
                               topology_builder=topology_builder,
@@ -271,6 +275,8 @@ class ModelHandler:
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config['batch_size'], shuffle=True,
                                            num_workers=self.config['num_workers'],
                                            collate_fn=dataset.collate_fn)
+        if hasattr(dataset, 'val')==False:
+            dataset.val = dataset.test
         self.val_dataloader = DataLoader(dataset.val, batch_size=self.config['batch_size'], shuffle=False,
                                           num_workers=self.config['num_workers'],
                                           collate_fn=dataset.collate_fn)
