@@ -28,21 +28,6 @@ import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 
-class WeightedGCNLayer(nn.Module):
-    def __init__(self, input_size, output_size):
-        super(WeightedGCNLayer, self).__init__()
-        self.linear_out = nn.Linear(input_size, output_size, bias=False)
-
-    def forward(self, dgl_graph, node_emb):
-        with dgl_graph.local_scope():
-            dgl_graph.srcdata.update({'ft': node_emb})
-            dgl_graph.update_all(fn.u_mul_e('ft', 'edge_weight', 'm'),
-                                     fn.sum('m', 'ft'))
-            agg_vec = dgl_graph.dstdata['ft']
-            new_node_vec = self.linear_out(agg_vec)
-
-            return new_node_vec
-
 
 class TextClassifier(nn.Module):
     def __init__(self, vocab, config):
