@@ -18,7 +18,9 @@ import torch.optim as optim
 from .args import get_args
 from .evaluation import ExpressionAccuracy
 from .utils import get_log, wordid2str
-from .model import Graph2seq
+# from .model import Graph2seq
+from .build_model import get_model
+from .loss import Graph2SeqLoss
 from graph4nlp.pytorch.data.data import from_batch, GraphData
 import copy
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
@@ -28,12 +30,15 @@ class Jobs:
     def __init__(self, opt):
         super(Jobs, self).__init__()
         self.opt = opt
+        self.use_copy = self.opt.decoder_args["rnn_decoder_share"]["use_copy"]
+        self.use_coverage = self.opt.decoder_args["rnn_decoder_share"]["use_coverage"]
         self._build_device(self.opt)
         self._build_logger(self.opt.log_file)
         self._build_dataloader()
         self._build_model()
         self._build_optimizer()
         self._build_evaluation()
+        self._build_loss_function()
 
     def _build_device(self, opt):
         seed = opt.seed
@@ -54,26 +59,27 @@ class Jobs:
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
-        if self.opt.graph_type == "dependency":
+        if self.opt.graph_constrcution_args["graph_construction_share"]["graph_type"] == "dependency":
             topology_builder = DependencyBasedGraphConstruction
             graph_type = 'static'
             dynamic_init_topology_builder = None
-        elif self.opt.graph_type == "constituency":
+        elif self.opt.graph_constrcution_args["graph_construction_share"]["graph_type"] == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction
             graph_type = 'static'
             dynamic_init_topology_builder = None
-        elif self.opt.graph_type == "node_emb":
+        elif self.opt.graph_constrcution_args["graph_construction_share"]["graph_type"] == "node_emb":
             topology_builder = NodeEmbeddingBasedGraphConstruction
             graph_type = 'dynamic'
             dynamic_init_topology_builder = None
-        elif self.opt.graph_type == "node_emb_refined":
+        elif self.opt.graph_constrcution_args["graph_construction_share"]["graph_type"] == "node_emb_refined":
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             graph_type = 'dynamic'
-            if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
+            dynamic_init_graph_type = self.opt.graph_constrcution_args.graph_construction_private.dynamic_init_graph_type
+            if dynamic_init_graph_type is None or dynamic_init_graph_type == 'line':
                 dynamic_init_topology_builder = None
-            elif self.opt.dynamic_init_graph_type == 'dependency':
+            elif dynamic_init_graph_type == 'dependency':
                 dynamic_init_topology_builder = DependencyBasedGraphConstruction
-            elif self.opt.dynamic_init_graph_type == 'constituency':
+            elif dynamic_init_graph_type == 'constituency':
                 dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             else:
                 # dynamic_init_topology_builder
@@ -81,10 +87,18 @@ class Jobs:
         else:
             raise NotImplementedError("Define your topology builder.")
 
-        dataset = JobsDataset.from_args(args=self.opt, topology_builder=topology_builder,
-                                        graph_type=graph_type,
-                                        dynamic_graph_type=self.opt.graph_type if self.opt.graph_type in ('node_emb', 'node_emb_refined') else None,
-                                        dynamic_init_topology_builder=dynamic_init_topology_builder)
+        dataset = JobsDataset(root_dir=self.opt.graph_constrcution_args["graph_construction_share"]["root_dir"],
+                   pretrained_word_emb_file=self.opt.pretrained_word_emb_file,
+                   val_split_ratio=self.opt.val_split_ratio,
+                   merge_strategy=self.opt.graph_constrcution_args["graph_construction_private"]["merge_strategy"],
+                   edge_strategy=self.opt.graph_constrcution_args["graph_construction_private"]["edge_strategy"],
+                   seed=self.opt.seed,
+                   word_emb_size=self.opt.word_emb_size, share_vocab=self.opt.share_vocab,
+                   graph_type=graph_type,
+                   topology_builder=topology_builder, topology_subdir=self.opt.graph_constrcution_args["graph_construction_share"]["topology_subdir"],
+                   dynamic_graph_type= self.opt.graph_constrcution_args["graph_construction_share"]["graph_type"],
+                   dynamic_init_topology_builder=dynamic_init_topology_builder,
+                   dynamic_init_topology_aux_args=None)
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt.batch_size, shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
@@ -93,7 +107,9 @@ class Jobs:
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-        self.model = Graph2seq.from_args(vocab=self.vocab, args=self.opt, device=self.device).to(self.device)
+
+        self.model = get_model(self.opt, vocab_model=self.vocab, device=self.device).to(self.device)
+        # self.model = Graph2seq.from_args(vocab=self.vocab, args=self.opt, device=self.device).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -101,6 +117,10 @@ class Jobs:
 
     def _build_evaluation(self):
         self.metrics = [ExpressionAccuracy()]
+
+    def _build_loss_function(self):
+        self.loss = Graph2SeqLoss(vocab=self.vocab.in_word_vocab,
+                                  use_coverage=self.use_coverage, coverage_weight=0.3)
 
     def train(self):
         max_score = -1
@@ -172,10 +192,11 @@ class Jobs:
             graph_list, tgt, gt_str = data
             tgt = tgt.to(self.device)
             oov_dict = None
-            if self.opt.use_copy:
+            if self.use_copy:
                 oov_dict, tgt = self.prepare_ext_vocab(graph_list, self.vocab, gt_str=gt_str)
 
-            _, loss = self.model(graph_list, tgt, oov_dict=oov_dict, require_loss=True)
+            prob, enc_attn_weights, coverage_vectors = self.model(graph_list, tgt, oov_dict=oov_dict)
+            loss = self.loss(prob, gt=tgt, enc_attn_weights=enc_attn_weights, coverage_vectors=coverage_vectors)
             loss_collect.append(loss.item())
             if step % self.opt.loss_display_step == 0 and step != 0:
                 self.logger.info("Epoch {}: [{} / {}] loss: {:.3f}".format(epoch, step, step_all_train,
@@ -193,14 +214,14 @@ class Jobs:
         dataloader = self.val_dataloader if split == "val" else self.test_dataloader
         for data in dataloader:
             graph_list, tgt, gt_str = data
-            if self.opt.use_copy:
+            if self.use_copy:
                 oov_dict = self.prepare_ext_vocab(graph_list, self.vocab)
                 ref_dict = oov_dict
             else:
                 oov_dict = None
                 ref_dict = self.vocab.out_word_vocab
 
-            prob = self.model(graph_list, oov_dict=oov_dict, require_loss=False)
+            prob, _, _ = self.model(graph_list, oov_dict=oov_dict)
             pred = prob.argmax(dim=-1)
 
             pred_str = wordid2str(pred.detach().cpu(), ref_dict)
@@ -215,14 +236,14 @@ class Jobs:
         self.model.eval()
         # self.opt.beam_size
         generator = DecoderStrategy(beam_size=10, vocab=self.model.seq_decoder.vocab, rnn_type="LSTM",
-                                    decoder=self.model.seq_decoder, use_copy=self.opt.use_copy, use_coverage=self.opt.use_copy)
+                                    decoder=self.model.seq_decoder, use_copy=self.use_copy, use_coverage=self.use_coverage)
 
         pred_collect = []
         gt_collect = []
         dataloader = self.test_dataloader
         for data in dataloader:
             graph_list, tgt, gt_str = data
-            if self.opt.use_copy:
+            if self.use_copy:
                 oov_dict = self.prepare_ext_vocab(graph_list, self.vocab)
                 ref_dict = oov_dict
             else:
@@ -265,6 +286,10 @@ class Jobs:
 
 
 if __name__ == "__main__":
+    # from graph4nlp.pytorch.modules.config import get_basic_args
+    # args = get_basic_args(graph_construction_name="dependency", graph_embedding_name="gat", decoder_name="stdrnn")
+    # print(args)
+    # exit(0)
     opt = get_args()
     runner = Jobs(opt)
     max_score = runner.train()

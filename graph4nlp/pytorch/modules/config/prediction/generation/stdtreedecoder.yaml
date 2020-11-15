@@ -1,0 +1,16 @@
+rnn_decoder_share:
+  rnn_type: "lstm"
+  input_size: 300
+  hidden_size: 300
+  rnn_emb_input_size: null
+  use_copy: false
+  use_coverage: false
+  graph_pooling_strategy: null
+  attention_type: "uniform"
+  fuse_strategy: "average"
+  dropout: 0.0
+
+rnn_decoder_private:
+  max_decoder_step: 50
+  max_tree_depth: 50
+  use_sibling: false

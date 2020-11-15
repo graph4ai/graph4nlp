@@ -1,0 +1,12 @@
+graph_embedding_share:
+  num_layers: 1
+  input_size: 300
+  hidden_size: 300
+  output_size: 300
+  direction_option: "undirected"
+  feat_drop: 0.0
+
+graph_embedding_private:
+  n_etypes: 1
+  bias: true
+  use_edge_weight: false

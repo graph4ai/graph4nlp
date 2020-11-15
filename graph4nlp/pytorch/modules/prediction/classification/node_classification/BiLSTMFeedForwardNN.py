@@ -30,7 +30,7 @@ class BiLSTMFeedForwardNN(NodeClassifierBase):
         Generate the node classification logits.         
 
     """     
-    def __init__(self, input_size, num_class, hidden_size=None,dropout=0):
+    def __init__(self, input_size, num_class, hidden_size=None, dropout=0):
         
         super(BiLSTMFeedForwardNN, self).__init__()
         

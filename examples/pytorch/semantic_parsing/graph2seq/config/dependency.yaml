@@ -1,5 +1,0 @@
-graph_type: 'dependency'
-root_dir: "graph4nlp/pytorch/test/dataset/jobs"
-topology_subdir: 'DependencyGraph'
-edge_strategy: 'homogeneous'
-merge_strategy: 'tailhead'

@@ -4,9 +4,28 @@ import torch.nn as nn
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 
 
-class Graph2seqLoss(nn.Module):
+class Graph2SeqLoss(nn.Module):
+    def __init__(self, vocab, use_coverage=False, coverage_weight=0.3):
+        super(Graph2SeqLoss, self).__init__()
+        self.use_coverage = use_coverage
+        self.loss_ce = CrossEntropyLoss(vocab)
+        self.loss_coverage = CoverageLoss(cover_loss=coverage_weight)
+
+    def forward(self, prob, gt, enc_attn_weights=None, coverage_vectors=None):
+        loss_ce = self.loss_ce(prob, gt)
+        if self.use_coverage:
+            loss_cover = self.loss_coverage(enc_attn_weights, coverage_vectors)
+            loss_ce += loss_cover
+        return loss_ce
+
+        pass
+
+
+
+
+class CrossEntropyLoss(nn.Module):
     def __init__(self, vocab: Vocab):
-        super(Graph2seqLoss, self).__init__()
+        super(CrossEntropyLoss, self).__init__()
         self.loss_func = nn.NLLLoss()
         self.VERY_SMALL_NUMBER = 1e-31
         self.vocab = vocab
@@ -32,12 +51,12 @@ class CoverageLoss(nn.Module):
         super(CoverageLoss, self).__init__()
         self.cover_loss = cover_loss
 
-    def forward(self, batch_size, enc_attn_weights, coverage_vectors):
+    def forward(self, enc_attn_weights, coverage_vectors):
         target_length = len(enc_attn_weights)
         loss = 0
         for i in range(target_length):
             if coverage_vectors[i] is not None:
                 coverage_loss = torch.sum(
-                    torch.min(coverage_vectors[i], enc_attn_weights[i])) / batch_size * self.cover_loss
+                    torch.min(coverage_vectors[i], enc_attn_weights[i])) / coverage_vectors[-1].shape[0] * self.cover_loss
                 loss += coverage_loss
         return loss / target_length

@@ -1,0 +1,9 @@
+KGLoss_share:
+  loss_type: "BCELoss"
+  size_average: null
+  reduce: null
+  reduction: "mean"
+
+KGLoss_private:
+  adv_temperature: None
+  weight: null

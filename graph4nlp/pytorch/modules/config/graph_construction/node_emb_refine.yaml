@@ -1,0 +1,31 @@
+graph_construction_share:
+  graph_type: 'node_emb_refined'
+  root_dir: null
+  topology_subdir: 'NodeEmbGraphRefined'
+
+graph_construction_private:
+  dynamic_init_graph_type: 'line'
+  lower_case: false
+
+node_embedding:
+  input_size: 300
+  hidden_size: 300
+  word_dropout: 0.0
+  rnn_dropout: 0.0
+  fix_bert_emb: false
+  fix_word_emb: false
+  embedding_style:
+    single_token_item: true
+    emb_strategy: "w2v_bilstm"
+    num_rnn_layers: 1
+    bert_model_name: null
+    bert_lower_case: null
+
+  alpha_fusion: 0.2
+  sim_metric_type: 'weighted_cosine'
+  num_heads: null
+  top_k_neigh: null
+  epsilon_neigh: 0.5
+  smoothness_ratio: 0.1
+  connectivity_ratio: 0.05
+  sparsity_ratio: 0.1
