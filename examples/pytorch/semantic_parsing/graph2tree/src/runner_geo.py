@@ -16,7 +16,6 @@ from stanfordcorenlp import StanfordCoreNLP
 
 from graph4nlp.pytorch.data.data import GraphData, from_batch
 
-from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
 from graph4nlp.pytorch.datasets.geo import GeoDatasetForTree
 
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
@@ -143,8 +142,8 @@ class Graph2Tree(nn.Module):
                                direction_option=direction_option, feat_drop=enc_dropout_for_feature,
                                attn_drop=enc_dropout_for_attn, activation=F.relu, residual=True)
         elif gnn_type == "GGNN":
-            self.encoder = GGNN(1, enc_hidden_size, enc_hidden_size, enc_hidden_size,
-                                feat_drop=enc_dropout_for_feature, use_edge_weight=self.use_edge_weight,
+            self.encoder = GGNN(1, enc_hidden_size, enc_hidden_size,
+                                dropout=enc_dropout_for_feature, use_edge_weight=self.use_edge_weight,
                                 direction_option=direction_option)
         elif gnn_type == "SAGE":
             # aggregate type: 'mean','gcn','pool','lstm'
@@ -157,7 +156,7 @@ class Graph2Tree(nn.Module):
                                enc_hidden_size,
                                enc_hidden_size,
                                direction_option=direction_option,
-                               gcn_norm="both",
+                               norm="both",
                                activation=F.relu,
                                use_edge_weight=self.use_edge_weight)
         else:
@@ -221,9 +220,9 @@ class Graph2Tree(nn.Module):
         # print('--------------------------------------------------------------')
 
 
-class Jobs:
+class Geo:
     def __init__(self, opt=None):
-        super(Jobs, self).__init__()
+        super(Geo, self).__init__()
         self.opt = opt
 
         seed = opt.seed
@@ -251,7 +250,7 @@ class Jobs:
         use_share_vocab = True
 
         if self.opt.graph_construction_type == "DependencyGraph":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
+            dataset = GeoDatasetForTree(root_dir=self.data_dir,
                                          topology_builder=DependencyBasedGraphConstruction,
                                          topology_subdir='DependencyGraph', edge_strategy='as_node',
                                          share_vocab=use_share_vocab, enc_emb_size=self.opt.enc_emb_size,
@@ -259,14 +258,14 @@ class Jobs:
                                          min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "ConstituencyGraph":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
+            dataset = GeoDatasetForTree(root_dir=self.data_dir,
                                          topology_builder=ConstituencyBasedGraphConstruction,
                                          topology_subdir='ConstituencyGraph', share_vocab=use_share_vocab,
                                          enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
                                          device=self.device, min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
+            dataset = GeoDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedGraphConstruction,
                                          topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
                                          dynamic_graph_type='node_emb', share_vocab=use_share_vocab,
@@ -284,7 +283,7 @@ class Jobs:
                 # dynamic_init_topology_builder
                 raise RuntimeError(
                     'Define your own dynamic_init_topology_builder')
-            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
+            dataset = GeoDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
                                          topology_subdir='DynamicGraph_node_emb_refined', graph_type='dynamic',
                                          dynamic_graph_type='node_emb_refined', share_vocab=use_share_vocab,
@@ -408,8 +407,10 @@ class Jobs:
     def eval(self, model):
         device = model.device
 
-        max_dec_seq_length = self.opt.max_dec_seq_length
-        max_dec_tree_depth = self.opt.max_dec_tree_depth_for_test
+        # max_dec_seq_length = self.opt.max_dec_seq_length
+        # max_dec_tree_depth = self.opt.max_dec_tree_depth_for_test
+        max_dec_seq_length = 50
+        max_dec_tree_depth = 20
         
         use_copy = self.test_data_loader.use_copy
         enc_emb_size = model.src_vocab.embedding_dims
@@ -480,8 +481,9 @@ class Jobs:
             #         print(cand_str)
             #         print(ref_str)
             #         print("====================")
-            # print(cand_str)
-            # print(ref_str)
+            # if cand_str.strip() != ref_str.strip():
+            #     print(cand_str)
+            #     print(ref_str)
 
             reference_list.append(reference)
             candidate_list.append(candidate)
@@ -499,26 +501,6 @@ def convert_to_string(idx_list, form_manager):
         w_list.append(form_manager.get_idx_symbol(int(idx_list[i])))
     return " ".join(w_list)
 
-
-def get_split_comma(input_str):
-    input_str = input_str.replace(",", " , ")
-    input_list = [item.strip() for item in input_str.split()]
-    ref_char = "$"
-    for index in range(len(input_list)):
-        if input_list[index] == ',':
-            if input_list[:index].count('(') == input_list[:index].count(')'):
-                if input_list[index+1:].count('(') == input_list[index+1:].count(')'):
-                    if input_list[index] == ref_char:
-                        raise RuntimeError
-                    else:
-                        input_list[index] = ref_char
-    new_str = " ".join(input_list).split('$')
-    result_set = set()
-    for str_ in new_str:
-        result_set.add(str_.strip())
-    return result_set
-
-
 def is_all_same(c1, c2, form_manager):
     all_same = True
     if len(c1) == len(c2):
@@ -530,14 +512,21 @@ def is_all_same(c1, c2, form_manager):
         if all_same:
             return True
     if len(c1) != len(c2) or all_same == False:
-        d1 = " ".join([form_manager.get_idx_symbol(x) for x in c1])
-        d2 = " ".join([form_manager.get_idx_symbol(x) for x in c2])
-        if get_split_comma(d1) == get_split_comma(d2):
-            # print(d1)
-            # print(d2)
-            # print("============")
-            return True
-        return False
+        n1 = Tree.deduplicate_tree(Tree.norm_tree(c1, form_manager), form_manager)
+        n2 = Tree.deduplicate_tree(Tree.norm_tree(c2, form_manager), form_manager)
+        # if np.array_equal(np.array(c1), np.array(n1)) == False:
+        #     print(form_manager.get_idx_symbol_for_list(c1))
+        #     print(form_manager.get_idx_symbol_for_list(n1))
+        #     print("=================")
+        if len(n1) == len(n2):
+            all_same = True
+            for j in range(len(n1)):
+                if n1[j] != n2[j]:
+                    all_same = False
+                    break
+        else:
+            return False
+        return all_same
     raise NotImplementedError("you should not arrive here!")
 
 def compute_accuracy(candidate_list, reference_list, form_manager):
@@ -578,9 +567,9 @@ if __name__ == "__main__":
         '-use_copy', type=int, default=0, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str,
-                                 default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs', help='data path')
+                                 default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/geo', help='data path')
     main_arg_parser.add_argument('-checkpoint_dir', type=str,
-                                 default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs', help='output directory where checkpoints get written')
+                                 default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_geo', help='output directory where checkpoints get written')
 
     main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")
     main_arg_parser.add_argument('-rnn_type', type=str, default="lstm")
@@ -613,11 +602,11 @@ if __name__ == "__main__":
     main_arg_parser.add_argument(
         '-direction_option', type=str, default="undirected")
 
-    main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=50)
+    main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=100)
     main_arg_parser.add_argument(
-        '-max_dec_tree_depth_for_train', type=int, default=50)
+        '-max_dec_tree_depth_for_train', type=int, default=25)
     main_arg_parser.add_argument(
-        '-max_dec_tree_depth_for_test', type=int, default=20)
+        '-max_dec_tree_depth_for_test', type=int, default=25)
 
     main_arg_parser.add_argument(
         '-teacher_force_ratio', type=float, default=1.0)
@@ -637,8 +626,8 @@ if __name__ == "__main__":
 
     args = main_arg_parser.parse_args()
 
-    runner = Jobs(opt=args)
-    runner.train()
+    runner = Geo(opt=args)
+    max_score = runner.train()
 
     end = time.time()
     print("total time: {} minutes\n".format((end - start)/60))

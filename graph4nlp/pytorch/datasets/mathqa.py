@@ -10,7 +10,7 @@ from ..modules.graph_construction.dependency_graph_construction import Dependenc
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 
 
-class MawpsDatasetForTree(TextToTreeDataset):
+class MathQADatasetForTree(TextToTreeDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
@@ -68,7 +68,7 @@ class MawpsDatasetForTree(TextToTreeDataset):
             Expected in (None, 'dependency', 'constituency')
         """
         # Initialize the dataset. If the preprocessed files are not found, then do the preprocessing and save them.
-        super(MawpsDatasetForTree, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
+        super(MathQADatasetForTree, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy,
                                           share_vocab=share_vocab, pretrained_word_emb_file=pretrained_word_emb_file,

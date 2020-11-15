@@ -190,7 +190,8 @@ class DecoderStrategy(StrategyBase):
                                         oov_dict=None,
                                         sibling_state=None,
                                         device=None,
-                                        topk=1):
+                                        topk=1,
+                                        enc_batch=None):
 
         decoded_results = []
 
@@ -207,7 +208,7 @@ class DecoderStrategy(StrategyBase):
         nodes = PriorityQueue()
 
         # start the queue
-        nodes.put((-node.eval(), node))
+        nodes.put((-node.eval(), torch.randn(1).item(), node))
         qsize = 1
 
         # start beam search
@@ -215,12 +216,12 @@ class DecoderStrategy(StrategyBase):
             if qsize > self.max_decoder_step: break
 
             # fetch the best node
-            score, n = nodes.get()
+            score, _nounce, n = nodes.get()
             decoder_input = n.wordid
             decoder_hidden = n.h
 
             if n.wordid.item() == form_manager.get_symbol_idx(form_manager.end_token) and n.prevNode != None:
-                endnodes.append((score, n))
+                endnodes.append((score, _nounce, n))
                 # if we reached maximum # of sentences required
                 if len(endnodes) >= number_required:
                     break
@@ -228,10 +229,13 @@ class DecoderStrategy(StrategyBase):
                     continue
                 
             # decode for one step using decoder
-            prediction, decoder_hidden, _ = self.decoder.decode_step(dec_single_input=decoder_input,
+            prediction, decoder_hidden, _ = self.decoder.decode_step(tgt_batch_size=1, 
+                                                        dec_single_input=decoder_input,
                                                         dec_single_state=decoder_hidden,
                                                         memory=graph_node_embedding,
-                                                        parent_state=parent_state)
+                                                        parent_state=parent_state,
+                                                        oov_dict=oov_dict,
+                                                        enc_batch=enc_batch)
 
             # PUT HERE REAL BEAM SEARCH OF TOP
             log_prob, indexes = torch.topk(prediction, self.beam_size)
@@ -244,12 +248,12 @@ class DecoderStrategy(StrategyBase):
 
                 node = BeamSearchNode(decoder_hidden, [], n, decoded_t, n.logp + log_p, n.leng + 1)
                 score = -node.eval()
-                nextnodes.append((score, node))
+                nextnodes.append((score, torch.randn(1).item(), node))
 
             # put them into queue
             for i in range(len(nextnodes)):
-                score, nn = nextnodes[i]
-                nodes.put((score, nn))
+                score, _nounce, nn = nextnodes[i]
+                nodes.put((score, _nounce, nn))
                 # increase qsize
             qsize += len(nextnodes) - 1
 
@@ -258,7 +262,7 @@ class DecoderStrategy(StrategyBase):
             endnodes = [nodes.get() for _ in range(topk)]
 
         utterances = []
-        for score, n in sorted(endnodes, key=operator.itemgetter(0)):
+        for score, _, n in sorted(endnodes, key=operator.itemgetter(0)):
             utterance = []
             utterance.append(n)
             # back trace
