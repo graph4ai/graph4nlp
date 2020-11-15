@@ -1,3 +1,10 @@
+# Results on MATHQA
+
+## dynamic on node emb
+| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- |  
+| GraphSage | 64.62 | 64.02 | 61.37 | 
+
 # Results on Mawps
 
 ## constituency
