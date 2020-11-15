@@ -192,7 +192,7 @@ class Graph2DistMult(nn.Module):
         if args.gnn == 'ggnn':
             self.num_layers = 2  # ggnn
             self.gnn_encoder = nn.ModuleList(
-                [GGNNLayer(hidden_size, hidden_size, direction_option, n_steps=1, n_etypes=1, bias=True)
+                [GGNNLayer(hidden_size, hidden_size, direction_option, num_layers=1, n_etypes=1, bias=True)
                  for i in range(self.num_layers)])
         elif args.gnn == 'gat':
             self.num_layers = 1  # gat uni/bi_fuse/bi_sep
