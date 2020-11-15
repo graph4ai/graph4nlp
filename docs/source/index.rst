@@ -43,6 +43,7 @@ Sphinx themes: `Link <https://sphinx-themes.org/>`_
    :caption: Module API references
 
    modules/data
+   modules/dataset
 
 .. toctree::
    :glob:

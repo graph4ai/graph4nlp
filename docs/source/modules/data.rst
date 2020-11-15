@@ -1,6 +1,9 @@
 graph4nlp.data
 ====================
 
-.. automodule:: graph4nlp.pytorch.data
+.. automodule::graph4nlp.data.data
+
+.. autoclass:: graph4nlp.data.data.GraphData
     :members:
-    :special-members:
+
+.. autofunction:: graph4nlp.data.data.to_batch
