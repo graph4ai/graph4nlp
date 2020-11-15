@@ -256,7 +256,7 @@ class ModelHandler:
         if self.config['graph_type'] == 'node_emb_refined':
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
-        dataset = TrecDataset(root_dir=self.config['root_dir'],
+        dataset = TrecDataset(root_dir=self.config.get('root_dir', 'examples/pytorch/text_classification/data/trec'),
                               pretrained_word_emb_file=self.config['pre_word_emb_file'],
                               # val_split_ratio=self.config['val_split_ratio'],
                               merge_strategy=merge_strategy,
@@ -267,7 +267,11 @@ class ModelHandler:
                               topology_subdir=topology_subdir,
                               dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
-                              dynamic_init_topology_aux_args={'dummy_param': 0})
+                              dynamic_init_topology_aux_args={'dummy_param': 0},
+                              thread_number=4,
+                              port=9000,
+                              timeout=15000)
+
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config['batch_size'], shuffle=True,
                                            num_workers=self.config['num_workers'],
                                            collate_fn=dataset.collate_fn)
