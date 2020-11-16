@@ -14,30 +14,52 @@ this library will boost research in relevant fields. This library has the follow
 
 - To be added here.
 
+Sphinx reference: `reStructuredText Primer <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
+
+Sphinx themes: `Link <https://sphinx-themes.org/>`_
+
 .. toctree::
+   :glob:
    :maxdepth: 2
    :caption: Get Started
+   :hidden:
 
    welcome/installation
 
 
 .. toctree::
+   :glob:
    :maxdepth: 2
+   :hidden:
    :caption: User Guide
 
+   guide/graphdata
+   guide/dataset
+   guide/construction
+   guide/gnn
+   guide/decoding
+   guide/evaluation
 
 
 .. toctree::
    :glob:
-   :maxdepth: 1
+   :maxdepth: 4
+   :hidden:
    :caption: Module API references
 
    modules/data
+   modules/datasets
+   modules/graph_construction
+   modules/graph_embedding
+   modules/prediction
+   modules/loss
+   modules/evaluation
 
 .. toctree::
    :glob:
    :maxdepth: 1
    :caption: Model Examples
+   :hidden:
 
    tutorial/example1
    tutorial/example2
