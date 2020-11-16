@@ -8,7 +8,7 @@ pre_word_emb_file: '/raid/ghn/glove/glove.6B.300d.txt' # path to the pretrained 
 out_dir: 'examples/pytorch/text_classification/out/CAirline/gat_bi_sep_dependency_ckpt'
 #out_dir: '/raid/ghn/graph4nlp/examples/pytorch/text_classification/out/CAirline/gat_bi_sep_dependency_ckpt'
 
-
+emb_strategy: 'bert_bilstm'
 # Graph construction
 graph_type: 'dependency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
 

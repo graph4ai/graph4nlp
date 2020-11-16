@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 from .dataset import CNNDataset
 from .model_g2s import Graph2seq
@@ -8,7 +8,6 @@ from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_con
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
-from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import BeamSearchStrategy
 
 import numpy as np
 import torch
@@ -69,7 +68,10 @@ class CNN:
             raise NotImplementedError()
 
         dataset = CNNDataset(root_dir=self.opt.root_dir,
+                             tokenizer=None,
+                             device=self.device,
                              word_emb_size=self.opt.word_emb_size,
+                             thread_number=35,
                              share_vocab=True,
                              graph_type=graph_type,
                              topology_builder=topology_builder,
@@ -212,11 +214,11 @@ class CNN:
             gt_collect.extend(gt_str)
 
         if test_mode==True:
-            with open('cnn_pred_output.txt','w+') as f:
+            with open(self.opt.checkpoint_save_path+'/cnn_pred_output.txt','w+') as f:
                 for line in pred_collect:
                     f.write(line+'\n')
 
-            with open('cnn_tgt_output.txt','w+') as f:
+            with open(self.opt.checkpoint_save_path+'/cnn_tgt_output.txt','w+') as f:
                 for line in gt_collect:
                     f.write(line+'\n')
 
@@ -278,7 +280,7 @@ class CNN:
 if __name__ == "__main__":
     opt = get_args()
     runner = CNN(opt)
-    # max_score = runner.train()
-    # print("Train finish, best val score: {:.3f}".format(max_score))
+    max_score = runner.train()
+    print("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint('best.pth')
     runner.evaluate(split="test", test_mode=True)
