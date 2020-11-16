@@ -1,4 +1,105 @@
+# Results On Geo880
+
+min_freq=6
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | 87.1 |
+
+min_freq=5
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | 87.5 |
+
+min_freq=4
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | 89.3 |
+
+min_freq=3
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | 90.0 |
+
+min_freq=2
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | 88.2 |
+
+min_freq=1
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | 90.7 | - | 88.2 |
+
 # Results On Jobs640
+
+## Results for copy  
+
+min_freq=6
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | - |
+
+min_freq=5
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | - |
+
+min_freq=4
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | - |
+
+min_freq=3
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | 92.9 |
+
+min_freq=2
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | 92.1 |
+
+min_freq=1
+
+| SAGE | bi_fuse | bi_sep | undirected |  
+| ---- | ---- | ---- | ---- |
+| Dependency | - | - | - |  
+| Constituency | - | - | - |
+| Dynamic_node_emb | - | - | 94.3 |
+
 
 ## Results for toBatch fix  
 | Encoder\fuse_strategy | DependencyGraph | ConstituencyGraph | DynamicGraph_node_emb | DynamicGraph_node_emb_refined |  

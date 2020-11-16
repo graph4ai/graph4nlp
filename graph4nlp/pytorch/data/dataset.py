@@ -112,8 +112,7 @@ class Text2TreeDataItem(DataItem):
         self.output_text = output_text
         self.share_vocab = share_vocab
         self.output_tree = output_tree
-
-    def extract(self):
+    def extract(self, use_tok=True):
         """
         Returns
         -------
@@ -123,22 +122,19 @@ class Text2TreeDataItem(DataItem):
 
         input_tokens = []
         for i in range(g.get_node_num()):
-            if self.tokenizer is None:
-                tokenized_token = self.output_text.strip().split(' ')
+            if self.tokenizer is None or use_tok == False:
+                tokenized_token = g.node_attributes[i]['token'].strip().split(' ')
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
 
             input_tokens.extend(tokenized_token)
 
-        if self.tokenizer is None:
+        if self.tokenizer is None or use_tok == False:
             output_tokens = self.output_text.strip().split(' ')
         else:
             output_tokens = self.tokenizer(self.output_text)
 
-        if self.share_vocab:
-            return input_tokens + output_tokens
-        else:
-            return input_tokens, output_tokens
+        return input_tokens, output_tokens
 
 
 class Text2LabelDataItem(DataItem):
@@ -767,9 +763,10 @@ class Text2TextDataset(Dataset):
 
 
 class TextToTreeDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
+    def __init__(self, root_dir, topology_builder, topology_subdir, min_freq, share_vocab=True, **kwargs):
         self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
+        self.min_freq = min_freq
         super(TextToTreeDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
     def parse_file(self, file_path) -> list:
@@ -825,18 +822,21 @@ class TextToTreeDataset(Dataset):
             all_words = [Counter(), Counter()]
 
         for instance in data_for_vocab:
-            extracted_tokens = instance.extract()
+            extracted_tokens = instance.extract(use_tok=False)
             if self.share_vocab:
-                all_words.update(extracted_tokens)
+                all_words.update(extracted_tokens[0])
+                for w_i in extracted_tokens[1]:
+                    all_words[w_i] = 100000
             else:
                 all_words[0].update(extracted_tokens[0])
                 all_words[1].update(extracted_tokens[1])
 
         if self.share_vocab:
-            src_vocab_model.init_from_list(list(all_words.items()), min_freq=1, max_vocab_size=100000)
+            print("min_freq_for_word", self.min_freq)
+            src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_freq, max_vocab_size=100000)
             tgt_vocab_model = src_vocab_model
         else:
-            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=2, max_vocab_size=100000)
+            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=3, max_vocab_size=100000)
             tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=1, max_vocab_size=100000)
 
         self.src_vocab_model = src_vocab_model
