@@ -33,18 +33,18 @@
 ## dynamic on node emb
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |  
-| GraphSage | 76.4 | 76.0 | 76.8 | 
-| GGNN | 74.8 | 77.2 | 75.6 |  
-| GAT | 77.6 | 74.4 | 73.6 |  
-| GCN | 72.4 | 73.2 | 72.0 |  
+| GraphSage | 78.4 | 78.0 | 77.2 | 
+| GGNN | 76.8 | 77.6 | 76.4 |  
+| GAT | 77.2 | 75.2 | 75.6 |  
+| GCN | 75.6 | 76.8 | 76.4 |  
 
 
 ## dynamic on node emb refined (constituency as initial graph)
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |  
-| GraphSage | 76.4 | 76.8 | 76.0 | 
-| GGNN | 76.8 | 76.0 | 76.0 |  
-| GAT | 75.6 | 76.0 | 75.2 |  
-| GCN | 73.6 | 74.0 | 74.4 |  
+| GraphSage | 76.8 | 77.6 | 77.2 | 
+| GGNN | 76.8 | 76.0 | 76.4 |  
+| GAT | 76.4 | 76.0 | 75.6 |  
+| GCN | 77.2 | 75.6 | 76.4 |  
 
 
