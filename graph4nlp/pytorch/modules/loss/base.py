@@ -5,7 +5,7 @@ class GeneralLossBase(nn.Module):
     def __init__(self):
         super(GeneralLossBase, self).__init__()
 
-    def forward(self, logits, label):
+    def forward(self, logits, label, **kwargs):
         raise NotImplementedError('GeneralLossBase: Not Implemented.')
 
 

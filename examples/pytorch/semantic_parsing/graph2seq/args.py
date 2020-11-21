@@ -1,19 +1,7 @@
-import argparse, yaml
+import argparse
 
 from graph4nlp.pytorch.modules.config import get_basic_args
-
-def update_values(dict_from, dict_to):
-    for key, value in dict_from.items():
-        if isinstance(value, dict) and key in dict_to.keys():
-            update_values(dict_from[key], dict_to[key])
-        elif value is not None:
-            dict_to[key] = dict_from[key]
-
-
-def get_yaml_config(config_path="config.yml"):
-    with open(config_path, "r") as setting:
-        config = yaml.load(setting)
-    return config
+from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
 
 
 def get_args():
@@ -55,9 +43,5 @@ def get_args():
     template = get_basic_args(graph_construction_name=our_args["graph_construction_name"],
                               graph_embedding_name=our_args["graph_embedding_name"],
                               decoder_name=our_args["decoder_name"])
-    update_values(our_args, template)
-    update_values(template, vars(cfg))
-
-    # dataset_args = get_yaml_config(cfg.dataset_yaml)
-    # update_values(dataset_args, vars(cfg))
-    return cfg
+    update_values(to_args=template, from_args_list=[our_args, vars(cfg)])
+    return template
