@@ -8,7 +8,7 @@
 ## dynamic on node emb
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |  
-| GraphSage | 64.62 | 64.02 | 61.37 | 
+| GraphSage | 61.07 | 60.23 | 61.37 | 
 
 # Results on Mawps
 
