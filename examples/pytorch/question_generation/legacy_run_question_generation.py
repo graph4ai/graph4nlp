@@ -21,7 +21,7 @@ from graph4nlp.pytorch.modules.graph_construction.embedding_construction import 
 from graph4nlp.pytorch.modules.graph_embedding import GAT, GraphSAGE, GGNN
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, dropout_fn, sparse_mx_to_torch_sparse_tensor, EarlyStopping
-from examples.pytorch.semantic_parsing.graph2seq.loss import Graph2SeqLoss, CoverageLoss
+from examples.pytorch.semantic_parsing.graph2seq.nouse_loss import Graph2SeqLoss, CoverageLoss
 from graph4nlp.pytorch.modules.evaluation import BLEU, METEOR, ROUGE
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils import constants as Constants

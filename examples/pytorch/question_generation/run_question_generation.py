@@ -23,7 +23,7 @@ from graph4nlp.pytorch.modules.graph_construction.embedding_construction import 
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, dropout_fn, sparse_mx_to_torch_sparse_tensor, EarlyStopping
 from graph4nlp.pytorch.modules.config import get_basic_args
-from examples.pytorch.semantic_parsing.graph2seq.loss import Graph2SeqLoss
+from examples.pytorch.semantic_parsing.graph2seq.nouse_loss import Graph2SeqLoss
 from examples.pytorch.semantic_parsing.graph2seq.args import update_values
 from graph4nlp.pytorch.modules.evaluation import BLEU, METEOR, ROUGE
 from graph4nlp.pytorch.modules.utils.logger import Logger
@@ -51,7 +51,7 @@ class QGModel(nn.Module):
                             self.vocab.in_word_vocab.embeddings.shape[0],
                             self.vocab.in_word_vocab.embeddings.shape[1],
                             pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
-                            fix_emb=config['graph_constrcution_args']['node_embedding']['fix_word_emb'],
+                            fix_emb=config['graph_construction_args']['node_embedding']['fix_word_emb'],
                             device=config['device']).word_emb_layer
 
         answer_feat_size = self.vocab.in_word_vocab.embeddings.shape[1]
@@ -187,22 +187,22 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        if self.config['graph_constrcution_args']["graph_construction_share"]["graph_type"] == "dependency":
+        if self.config['graph_construction_args']["graph_construction_share"]["graph_type"] == "dependency":
             topology_builder = DependencyBasedGraphConstruction
             graph_type = 'static'
             dynamic_init_topology_builder = None
-        elif self.config['graph_constrcution_args']["graph_construction_share"]["graph_type"] == "constituency":
+        elif self.config['graph_construction_args']["graph_construction_share"]["graph_type"] == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction
             graph_type = 'static'
             dynamic_init_topology_builder = None
-        elif self.config['graph_constrcution_args']["graph_construction_share"]["graph_type"] == "node_emb":
+        elif self.config['graph_construction_args']["graph_construction_share"]["graph_type"] == "node_emb":
             topology_builder = NodeEmbeddingBasedGraphConstruction
             graph_type = 'dynamic'
             dynamic_init_topology_builder = None
-        elif self.config['graph_constrcution_args']["graph_construction_share"]["graph_type"] == "node_emb_refined":
+        elif self.config['graph_construction_args']["graph_construction_share"]["graph_type"] == "node_emb_refined":
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             graph_type = 'dynamic'
-            dynamic_init_graph_type = self.config['graph_constrcution_args'].graph_construction_private.dynamic_init_graph_type
+            dynamic_init_graph_type = self.config['graph_construction_args'].graph_construction_private.dynamic_init_graph_type
             if dynamic_init_graph_type is None or dynamic_init_graph_type == 'line':
                 dynamic_init_topology_builder = None
             elif dynamic_init_graph_type == 'dependency':
@@ -215,10 +215,10 @@ class ModelHandler:
         else:
             raise NotImplementedError("Define your topology builder.")
 
-        dataset = SQuADDataset(root_dir=self.config['graph_constrcution_args']['graph_construction_share']['root_dir'],
+        dataset = SQuADDataset(root_dir=self.config['graph_construction_args']['graph_construction_share']['root_dir'],
                               pretrained_word_emb_file=self.config['pre_word_emb_file'],
-                              merge_strategy=self.config['graph_constrcution_args']['graph_construction_private']['merge_strategy'],
-                              edge_strategy=self.config['graph_constrcution_args']["graph_construction_private"]['edge_strategy'],
+                              merge_strategy=self.config['graph_construction_args']['graph_construction_private']['merge_strategy'],
+                              edge_strategy=self.config['graph_construction_args']["graph_construction_private"]['edge_strategy'],
                               max_word_vocab_size=self.config['top_word_vocab'],
                               min_word_vocab_freq=self.config['min_word_freq'],
                               word_emb_size=self.config['word_emb_size'],
@@ -226,8 +226,8 @@ class ModelHandler:
                               seed=self.config['seed'],
                               graph_type=graph_type,
                               topology_builder=topology_builder,
-                              topology_subdir=self.config['graph_constrcution_args']['graph_construction_share']['topology_subdir'],
-                              dynamic_graph_type=self.config['graph_constrcution_args']['graph_construction_share']['graph_type'],
+                              topology_subdir=self.config['graph_construction_args']['graph_construction_share']['topology_subdir'],
+                              dynamic_graph_type=self.config['graph_construction_args']['graph_construction_share']['graph_type'],
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
                               dynamic_init_topology_aux_args={'dummy_param': 0},
                               thread_number=4,
