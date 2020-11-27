@@ -114,7 +114,7 @@ class Graph2Tree(nn.Module):
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
                 self.src_vocab,
                 embedding_style,
-                0.2,
+                0.1,
                 sim_metric_type="weighted_cosine",
                 num_heads=1,
                 top_k_neigh=None,
