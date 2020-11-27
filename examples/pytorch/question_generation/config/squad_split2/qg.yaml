@@ -31,7 +31,7 @@ num_workers: 2 # number of data loader workers
 
 
 # Beam search
-beam_size: 2
+beam_size: 3
 
 gpu: -1
 no_cuda: false

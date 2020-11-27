@@ -30,8 +30,10 @@ from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
+import multiprocessing
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
+multiprocessing.set_start_method("spawn", force=True)
 
 
 class QGModel(nn.Module):
