@@ -9,7 +9,7 @@ share_vocab: True
 word_emb_size: 300
 min_word_freq: 1
 num_hidden: 300 # number of hidden units
-n_samples: null
+n_samples: 50
 
 
 word_dropout: 0.4 # word embedding dropout

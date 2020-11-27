@@ -23,13 +23,13 @@ from graph4nlp.pytorch.modules.graph_construction.embedding_construction import 
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, dropout_fn, sparse_mx_to_torch_sparse_tensor, EarlyStopping
 from graph4nlp.pytorch.modules.config import get_basic_args
-from examples.pytorch.semantic_parsing.graph2seq.nouse_loss import Graph2SeqLoss
-from examples.pytorch.semantic_parsing.graph2seq.args import update_values
+from graph4nlp.pytorch.modules.loss.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.evaluation import BLEU, METEOR, ROUGE
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
+from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -42,7 +42,7 @@ class QGModel(nn.Module):
         self.use_coverage = self.config['decoder_args']['rnn_decoder_share']['use_coverage']
 
         # build Graph2Seq model
-        self.g2s = Graph2Seq.from_args(Namespace(**config), self.vocab, config['device'])
+        self.g2s = Graph2Seq.from_args(config, self.vocab, config['device'])
 
         if 'w2v' in self.g2s.graph_topology.embedding_layer.word_emb_layers:
             self.word_emb = self.g2s.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
@@ -81,7 +81,7 @@ class QGModel(nn.Module):
         self.loss_calc = Graph2SeqLoss(vocab=self.vocab.in_word_vocab,
                                   use_coverage=self.use_coverage, coverage_weight=config['coverage_loss_ratio'])
 
-    def encoder(self, data):
+    def encode_init_node_feature(self, data):
         num_graph_nodes = []
         for g in data['graph_data']:
             num_graph_nodes.append(g.get_node_num())
@@ -101,25 +101,14 @@ class QGModel(nn.Module):
         new_node_feat = self.answer_alignment(batch_gd.node_features['node_feat'], answer_feat, answer_feat, num_graph_nodes, data['input_length2'])
         batch_gd.node_features['node_feat'] = new_node_feat
 
-        # run GNN
-        batch_gd = self.g2s.gnn_encoder(batch_gd)
-        batch_gd.node_features['rnn_emb'] = batch_gd.node_features['node_feat']
-
         return batch_gd
 
     def forward(self, data, oov_dict=None, require_loss=True):
-        batch_gd = self.encoder(data)
-        graph_list_decoder = from_batch(batch_gd)
-
-        if self.g2s.use_copy and 'token_id_oov' not in batch_gd.node_features.keys():
-            for g, g_ori in zip(graph_list_decoder, data['graph_data']):
-                g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
-
-        # seq decoder
-        prob, enc_attn_weights, coverage_vectors = self.g2s.seq_decoder(graph_list_decoder, tgt_seq=data['tgt_tensor'], oov_dict=oov_dict)
+        batch_gd = self.encode_init_node_feature(data)
+        prob, enc_attn_weights, coverage_vectors = self.g2s._encoder_decoder(batch_gd, data['graph_data'], oov_dict=oov_dict, tgt_seq=data['tgt_tensor'])
 
         if require_loss:
-            loss = self.loss_calc(prob, gt=data['tgt_tensor'], enc_attn_weights=enc_attn_weights, coverage_vectors=coverage_vectors)
+            loss = self.loss_calc(prob, label=data['tgt_tensor'], enc_attn_weights=enc_attn_weights, coverage_vectors=coverage_vectors)
             return prob, loss
         else:
             return prob
@@ -358,7 +347,10 @@ class ModelHandler:
                     oov_dict = None
                     ref_dict = self.vocab.out_word_vocab
 
-                batch_gd = self.model.encoder(data)
+                batch_gd = self.model.encode_init_node_feature(data)
+                batch_gd = self.model.g2s.gnn_encoder(batch_gd)
+                batch_gd.node_features['rnn_emb'] = batch_gd.node_features['node_feat']
+
                 graph_list_decoder = from_batch(batch_gd)
 
                 if self.model.g2s.use_copy and 'token_id_oov' not in batch_gd.node_features.keys():
@@ -366,7 +358,7 @@ class ModelHandler:
                         g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
 
                 # down-task
-                prob = generator.generate(graphs=graph_list_decoder, oov_dict=oov_dict, topk=1)
+                prob = generator.generate(graph_list=graph_list_decoder, oov_dict=oov_dict, topk=1)
 
                 pred_ids = torch.zeros(len(prob), self.config['decoder_args']['rnn_decoder_private']['max_decoder_step']).fill_(ref_dict.EOS).to(self.config['device']).int()
                 for i, item in enumerate(prob):
@@ -515,13 +507,6 @@ def get_args():
     return args
 
 
-def get_config(config_path='config.yml'):
-    with open(config_path, 'r') as setting:
-        config = yaml.load(setting)
-
-    return config
-
-
 def print_config(config):
     print('**************** MODEL CONFIGURATION ****************')
     for key in sorted(config.keys()):
@@ -570,17 +555,16 @@ def grid_search_main(config):
 
 if __name__ == '__main__':
     cfg = get_args()
-    task_args = get_config(cfg['task_config'])
-    g2s_args = get_config(cfg['g2s_config'])
+    task_args = get_yaml_config(cfg['task_config'])
+    g2s_args = get_yaml_config(cfg['g2s_config'])
     # load Graph2Seq template config
     g2s_template = get_basic_args(graph_construction_name=g2s_args['graph_construction_name'],
                               graph_embedding_name=g2s_args['graph_embedding_name'],
                               decoder_name=g2s_args['decoder_name'])
-    update_values(g2s_args, g2s_template)
-    update_values(g2s_template, task_args)
+    update_values(to_args=g2s_template, from_args_list=[g2s_args, task_args])
 
-    print_config(task_args)
+    print_config(g2s_template)
     if cfg['grid_search']:
-        grid_search_main(task_args)
+        grid_search_main(g2s_template)
     else:
-        main(task_args)
+        main(g2s_template)
