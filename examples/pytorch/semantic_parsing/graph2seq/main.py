@@ -21,7 +21,7 @@ from .args import get_args
 from .evaluation import ExpressionAccuracy
 from .utils import get_log, wordid2str
 from .build_model import get_model
-from graph4nlp.pytorch.modules.loss.seq_generation_loss import Graph2SeqLoss
+from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
 
@@ -124,7 +124,7 @@ class Jobs:
         self.metrics = [ExpressionAccuracy()]
 
     def _build_loss_function(self):
-        self.loss = Graph2SeqLoss(vocab=self.vocab.in_word_vocab,
+        self.loss = Graph2SeqLoss(ignore_index=self.vocab.in_word_vocab.PAD,
                                   use_coverage=self.use_coverage, coverage_weight=0.3)
 
     def train(self):
