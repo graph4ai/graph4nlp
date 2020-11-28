@@ -4,7 +4,7 @@ from .base import GeneralLossBase
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 
 
-class Graph2SeqLoss(GeneralLossBase):
+class SeqGenerationLoss(GeneralLossBase):
     """
         The general loss for ``Graph2Seq`` model.
     Parameters
@@ -17,7 +17,7 @@ class Graph2SeqLoss(GeneralLossBase):
         The weight of coverage loss.
     """
     def __init__(self, vocab, use_coverage=False, coverage_weight=0.3):
-        super(Graph2SeqLoss, self).__init__()
+        super(SeqGenerationLoss, self).__init__()
         self.use_coverage = use_coverage
         self.loss_ce = CrossEntropyLoss(vocab)
         self.loss_coverage = CoverageLoss(cover_loss=coverage_weight)

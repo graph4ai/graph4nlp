@@ -1,0 +1,951 @@
+2020-11-21 19:41:02,786 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 0
+2020-11-21 19:41:04,406 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 0: [3 / 21] loss: 4.484
+2020-11-21 19:41:05,468 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 0: [6 / 21] loss: 3.087
+2020-11-21 19:41:06,644 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 0: [9 / 21] loss: 2.642
+2020-11-21 19:41:07,778 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 0: [12 / 21] loss: 2.387
+2020-11-21 19:41:08,945 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 0: [15 / 21] loss: 2.208
+2020-11-21 19:41:10,048 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 0: [18 / 21] loss: 1.982
+2020-11-21 19:41:12,438 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.000
+2020-11-21 19:41:12,446 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 0
+2020-11-21 19:41:12,525 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 1
+2020-11-21 19:41:13,871 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 1: [3 / 21] loss: 1.707
+2020-11-21 19:41:14,933 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 1: [6 / 21] loss: 1.764
+2020-11-21 19:41:16,045 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 1: [9 / 21] loss: 1.515
+2020-11-21 19:41:17,106 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 1: [12 / 21] loss: 1.381
+2020-11-21 19:41:18,068 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 1: [15 / 21] loss: 1.252
+2020-11-21 19:41:19,129 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 1: [18 / 21] loss: 1.386
+2020-11-21 19:41:21,560 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.000
+2020-11-21 19:41:21,569 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 1
+2020-11-21 19:41:21,665 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 2
+2020-11-21 19:41:23,013 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 2: [3 / 21] loss: 1.201
+2020-11-21 19:41:23,870 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 2: [6 / 21] loss: 1.048
+2020-11-21 19:41:24,843 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 2: [9 / 21] loss: 1.038
+2020-11-21 19:41:25,800 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 2: [12 / 21] loss: 1.119
+2020-11-21 19:41:26,835 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 2: [15 / 21] loss: 1.034
+2020-11-21 19:41:27,933 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 2: [18 / 21] loss: 1.009
+2020-11-21 19:41:30,627 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.043
+2020-11-21 19:41:30,634 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 2
+2020-11-21 19:41:31,229 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 3
+2020-11-21 19:41:32,712 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 3: [3 / 21] loss: 1.100
+2020-11-21 19:41:33,773 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 3: [6 / 21] loss: 0.925
+2020-11-21 19:41:34,935 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 3: [9 / 21] loss: 0.933
+2020-11-21 19:41:36,020 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 3: [12 / 21] loss: 0.862
+2020-11-21 19:41:37,043 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 3: [15 / 21] loss: 0.867
+2020-11-21 19:41:38,079 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 3: [18 / 21] loss: 0.824
+2020-11-21 19:41:40,735 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.200
+2020-11-21 19:41:40,743 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 3
+2020-11-21 19:41:40,834 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 4
+2020-11-21 19:41:42,400 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 4: [3 / 21] loss: 0.877
+2020-11-21 19:41:43,525 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 4: [6 / 21] loss: 0.918
+2020-11-21 19:41:44,544 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 4: [9 / 21] loss: 0.852
+2020-11-21 19:41:45,757 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 4: [12 / 21] loss: 0.795
+2020-11-21 19:41:46,814 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 4: [15 / 21] loss: 0.883
+2020-11-21 19:41:47,922 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 4: [18 / 21] loss: 0.811
+2020-11-21 19:41:50,456 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.264
+2020-11-21 19:41:50,463 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 4
+2020-11-21 19:41:50,553 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 5
+2020-11-21 19:41:52,019 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 5: [3 / 21] loss: 0.743
+2020-11-21 19:41:53,125 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 5: [6 / 21] loss: 0.910
+2020-11-21 19:41:54,213 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 5: [9 / 21] loss: 0.753
+2020-11-21 19:41:55,157 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 5: [12 / 21] loss: 0.780
+2020-11-21 19:41:56,048 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 5: [15 / 21] loss: 0.787
+2020-11-21 19:41:57,011 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 5: [18 / 21] loss: 0.736
+2020-11-21 19:41:59,105 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.357
+2020-11-21 19:41:59,114 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 5
+2020-11-21 19:41:59,206 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 6
+2020-11-21 19:42:00,420 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 6: [3 / 21] loss: 0.820
+2020-11-21 19:42:01,355 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 6: [6 / 21] loss: 0.630
+2020-11-21 19:42:02,309 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 6: [9 / 21] loss: 0.734
+2020-11-21 19:42:03,302 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 6: [12 / 21] loss: 0.780
+2020-11-21 19:42:04,336 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 6: [15 / 21] loss: 0.679
+2020-11-21 19:42:05,376 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 6: [18 / 21] loss: 0.651
+2020-11-21 19:42:07,620 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.421
+2020-11-21 19:42:07,627 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 6
+2020-11-21 19:42:07,719 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 7
+2020-11-21 19:42:09,088 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 7: [3 / 21] loss: 0.609
+2020-11-21 19:42:10,101 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 7: [6 / 21] loss: 0.683
+2020-11-21 19:42:11,106 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 7: [9 / 21] loss: 0.640
+2020-11-21 19:42:12,087 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 7: [12 / 21] loss: 0.642
+2020-11-21 19:42:13,009 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 7: [15 / 21] loss: 0.603
+2020-11-21 19:42:14,051 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 7: [18 / 21] loss: 0.634
+2020-11-21 19:42:16,264 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.507
+2020-11-21 19:42:16,272 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 7
+2020-11-21 19:42:16,364 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 8
+2020-11-21 19:42:17,657 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 8: [3 / 21] loss: 0.601
+2020-11-21 19:42:18,679 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 8: [6 / 21] loss: 0.635
+2020-11-21 19:42:19,635 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 8: [9 / 21] loss: 0.645
+2020-11-21 19:42:20,645 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 8: [12 / 21] loss: 0.630
+2020-11-21 19:42:21,602 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 8: [15 / 21] loss: 0.580
+2020-11-21 19:42:22,679 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 8: [18 / 21] loss: 0.669
+2020-11-21 19:42:24,850 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.514
+2020-11-21 19:42:24,858 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 8
+2020-11-21 19:42:24,950 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 9
+2020-11-21 19:42:26,441 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 9: [3 / 21] loss: 0.636
+2020-11-21 19:42:27,438 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 9: [6 / 21] loss: 0.611
+2020-11-21 19:42:28,488 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 9: [9 / 21] loss: 0.567
+2020-11-21 19:42:29,510 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 9: [12 / 21] loss: 0.590
+2020-11-21 19:42:30,561 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 9: [15 / 21] loss: 0.537
+2020-11-21 19:42:31,550 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 9: [18 / 21] loss: 0.519
+2020-11-21 19:42:34,201 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.600
+2020-11-21 19:42:34,210 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 9
+2020-11-21 19:42:34,314 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 10
+2020-11-21 19:42:36,180 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 10: [3 / 21] loss: 0.568
+2020-11-21 19:42:37,252 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 10: [6 / 21] loss: 0.637
+2020-11-21 19:42:38,203 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 10: [9 / 21] loss: 0.574
+2020-11-21 19:42:39,183 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 10: [12 / 21] loss: 0.528
+2020-11-21 19:42:40,263 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 10: [15 / 21] loss: 0.587
+2020-11-21 19:42:41,239 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 10: [18 / 21] loss: 0.500
+2020-11-21 19:42:43,760 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.600
+2020-11-21 19:42:43,768 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 10
+2020-11-21 19:42:43,864 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 11
+2020-11-21 19:42:45,785 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 11: [3 / 21] loss: 0.560
+2020-11-21 19:42:46,762 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 11: [6 / 21] loss: 0.536
+2020-11-21 19:42:47,778 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 11: [9 / 21] loss: 0.561
+2020-11-21 19:42:48,751 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 11: [12 / 21] loss: 0.486
+2020-11-21 19:42:49,637 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 11: [15 / 21] loss: 0.497
+2020-11-21 19:42:50,786 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 11: [18 / 21] loss: 0.570
+2020-11-21 19:42:53,628 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.614
+2020-11-21 19:42:53,635 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 11
+2020-11-21 19:42:53,724 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 12
+2020-11-21 19:42:55,189 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 12: [3 / 21] loss: 0.527
+2020-11-21 19:42:56,276 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 12: [6 / 21] loss: 0.517
+2020-11-21 19:42:57,202 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 12: [9 / 21] loss: 0.511
+2020-11-21 19:42:58,244 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 12: [12 / 21] loss: 0.576
+2020-11-21 19:42:59,312 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 12: [15 / 21] loss: 0.532
+2020-11-21 19:43:00,363 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 12: [18 / 21] loss: 0.476
+2020-11-21 19:43:03,069 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.707
+2020-11-21 19:43:03,076 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 12
+2020-11-21 19:43:03,183 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 13
+2020-11-21 19:43:04,619 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 13: [3 / 21] loss: 0.463
+2020-11-21 19:43:05,615 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 13: [6 / 21] loss: 0.468
+2020-11-21 19:43:06,576 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 13: [9 / 21] loss: 0.444
+2020-11-21 19:43:07,508 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 13: [12 / 21] loss: 0.501
+2020-11-21 19:43:08,575 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 13: [15 / 21] loss: 0.543
+2020-11-21 19:43:09,624 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 13: [18 / 21] loss: 0.510
+2020-11-21 19:43:11,859 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.757
+2020-11-21 19:43:11,867 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 13
+2020-11-21 19:43:11,959 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 14
+2020-11-21 19:43:13,332 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 14: [3 / 21] loss: 0.511
+2020-11-21 19:43:14,299 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 14: [6 / 21] loss: 0.537
+2020-11-21 19:43:15,339 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 14: [9 / 21] loss: 0.517
+2020-11-21 19:43:16,292 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 14: [12 / 21] loss: 0.479
+2020-11-21 19:43:17,210 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 14: [15 / 21] loss: 0.472
+2020-11-21 19:43:18,260 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 14: [18 / 21] loss: 0.503
+2020-11-21 19:43:21,146 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.714
+2020-11-21 19:43:21,154 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 15
+2020-11-21 19:43:22,881 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 15: [3 / 21] loss: 0.490
+2020-11-21 19:43:24,004 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 15: [6 / 21] loss: 0.511
+2020-11-21 19:43:24,970 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 15: [9 / 21] loss: 0.477
+2020-11-21 19:43:25,911 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 15: [12 / 21] loss: 0.504
+2020-11-21 19:43:26,976 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 15: [15 / 21] loss: 0.474
+2020-11-21 19:43:27,966 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 15: [18 / 21] loss: 0.472
+2020-11-21 19:43:30,287 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.764
+2020-11-21 19:43:30,295 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 15
+2020-11-21 19:43:30,388 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 16
+2020-11-21 19:43:32,402 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 16: [3 / 21] loss: 0.501
+2020-11-21 19:43:33,393 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 16: [6 / 21] loss: 0.486
+2020-11-21 19:43:34,359 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 16: [9 / 21] loss: 0.473
+2020-11-21 19:43:35,438 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 16: [12 / 21] loss: 0.472
+2020-11-21 19:43:36,376 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 16: [15 / 21] loss: 0.449
+2020-11-21 19:43:37,270 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 16: [18 / 21] loss: 0.448
+2020-11-21 19:43:40,822 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.743
+2020-11-21 19:43:40,829 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 17
+2020-11-21 19:43:42,376 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 17: [3 / 21] loss: 0.434
+2020-11-21 19:43:43,384 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 17: [6 / 21] loss: 0.421
+2020-11-21 19:43:44,338 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 17: [9 / 21] loss: 0.454
+2020-11-21 19:43:45,411 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 17: [12 / 21] loss: 0.445
+2020-11-21 19:43:46,490 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 17: [15 / 21] loss: 0.435
+2020-11-21 19:43:47,543 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 17: [18 / 21] loss: 0.439
+2020-11-21 19:43:49,974 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.786
+2020-11-21 19:43:49,982 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 17
+2020-11-21 19:43:50,076 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 18
+2020-11-21 19:43:51,336 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 18: [3 / 21] loss: 0.432
+2020-11-21 19:43:52,293 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 18: [6 / 21] loss: 0.448
+2020-11-21 19:43:53,315 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 18: [9 / 21] loss: 0.452
+2020-11-21 19:43:54,324 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 18: [12 / 21] loss: 0.420
+2020-11-21 19:43:55,318 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 18: [15 / 21] loss: 0.492
+2020-11-21 19:43:56,332 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 18: [18 / 21] loss: 0.473
+2020-11-21 19:43:58,894 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.736
+2020-11-21 19:43:58,903 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 19
+2020-11-21 19:44:00,736 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 19: [3 / 21] loss: 0.448
+2020-11-21 19:44:01,719 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 19: [6 / 21] loss: 0.400
+2020-11-21 19:44:02,783 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 19: [9 / 21] loss: 0.413
+2020-11-21 19:44:03,748 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 19: [12 / 21] loss: 0.414
+2020-11-21 19:44:04,781 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 19: [15 / 21] loss: 0.449
+2020-11-21 19:44:05,751 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 19: [18 / 21] loss: 0.409
+2020-11-21 19:44:08,322 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.807
+2020-11-21 19:44:08,330 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 19
+2020-11-21 19:44:08,422 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 20
+2020-11-21 19:44:10,269 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 20: [3 / 21] loss: 0.395
+2020-11-21 19:44:11,287 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 20: [6 / 21] loss: 0.408
+2020-11-21 19:44:12,302 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 20: [9 / 21] loss: 0.421
+2020-11-21 19:44:13,197 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 20: [12 / 21] loss: 0.409
+2020-11-21 19:44:14,142 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 20: [15 / 21] loss: 0.411
+2020-11-21 19:44:15,131 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 20: [18 / 21] loss: 0.412
+2020-11-21 19:44:17,964 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.807
+2020-11-21 19:44:17,971 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 20
+2020-11-21 19:44:18,064 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 21
+2020-11-21 19:44:19,673 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 21: [3 / 21] loss: 0.388
+2020-11-21 19:44:20,753 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 21: [6 / 21] loss: 0.406
+2020-11-21 19:44:21,794 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 21: [9 / 21] loss: 0.390
+2020-11-21 19:44:22,831 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 21: [12 / 21] loss: 0.402
+2020-11-21 19:44:23,812 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 21: [15 / 21] loss: 0.388
+2020-11-21 19:44:24,697 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 21: [18 / 21] loss: 0.407
+2020-11-21 19:44:27,019 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 19:44:27,026 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 21
+2020-11-21 19:44:27,127 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 22
+2020-11-21 19:44:28,553 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 22: [3 / 21] loss: 0.409
+2020-11-21 19:44:29,674 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 22: [6 / 21] loss: 0.369
+2020-11-21 19:44:30,683 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 22: [9 / 21] loss: 0.376
+2020-11-21 19:44:31,699 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 22: [12 / 21] loss: 0.403
+2020-11-21 19:44:32,745 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 22: [15 / 21] loss: 0.394
+2020-11-21 19:44:33,693 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 22: [18 / 21] loss: 0.374
+2020-11-21 19:44:36,399 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-21 19:44:36,409 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 23
+2020-11-21 19:44:37,882 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 23: [3 / 21] loss: 0.372
+2020-11-21 19:44:39,092 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 23: [6 / 21] loss: 0.399
+2020-11-21 19:44:40,223 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 23: [9 / 21] loss: 0.417
+2020-11-21 19:44:41,325 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 23: [12 / 21] loss: 0.409
+2020-11-21 19:44:42,407 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 23: [15 / 21] loss: 0.380
+2020-11-21 19:44:43,583 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 23: [18 / 21] loss: 0.416
+2020-11-21 19:44:46,969 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-21 19:44:46,978 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 23
+2020-11-21 19:44:47,070 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 24
+2020-11-21 19:44:48,730 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 24: [3 / 21] loss: 0.392
+2020-11-21 19:44:49,855 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 24: [6 / 21] loss: 0.419
+2020-11-21 19:44:50,949 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 24: [9 / 21] loss: 0.376
+2020-11-21 19:44:52,123 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 24: [12 / 21] loss: 0.412
+2020-11-21 19:44:53,263 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 24: [15 / 21] loss: 0.401
+2020-11-21 19:44:54,481 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 24: [18 / 21] loss: 0.369
+2020-11-21 19:44:57,496 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 19:44:57,503 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 24
+2020-11-21 19:44:57,597 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 25
+2020-11-21 19:44:59,098 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 25: [3 / 21] loss: 0.393
+2020-11-21 19:45:00,205 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 25: [6 / 21] loss: 0.381
+2020-11-21 19:45:01,285 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 25: [9 / 21] loss: 0.365
+2020-11-21 19:45:02,494 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 25: [12 / 21] loss: 0.384
+2020-11-21 19:45:03,590 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 25: [15 / 21] loss: 0.373
+2020-11-21 19:45:04,579 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 25: [18 / 21] loss: 0.360
+2020-11-21 19:45:07,184 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 19:45:07,191 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 25
+2020-11-21 19:45:07,283 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 26
+2020-11-21 19:45:09,343 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 26: [3 / 21] loss: 0.351
+2020-11-21 19:45:10,351 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 26: [6 / 21] loss: 0.434
+2020-11-21 19:45:11,346 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 26: [9 / 21] loss: 0.365
+2020-11-21 19:45:12,361 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 26: [12 / 21] loss: 0.345
+2020-11-21 19:45:13,339 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 26: [15 / 21] loss: 0.374
+2020-11-21 19:45:14,508 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 26: [18 / 21] loss: 0.362
+2020-11-21 19:45:17,133 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:45:17,140 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 26
+2020-11-21 19:45:17,228 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 27
+2020-11-21 19:45:19,051 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 27: [3 / 21] loss: 0.375
+2020-11-21 19:45:20,049 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 27: [6 / 21] loss: 0.383
+2020-11-21 19:45:21,052 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 27: [9 / 21] loss: 0.383
+2020-11-21 19:45:21,950 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 27: [12 / 21] loss: 0.372
+2020-11-21 19:45:22,900 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 27: [15 / 21] loss: 0.362
+2020-11-21 19:45:23,839 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 27: [18 / 21] loss: 0.342
+2020-11-21 19:45:26,134 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 19:45:26,141 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 28
+2020-11-21 19:45:27,870 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 28: [3 / 21] loss: 0.380
+2020-11-21 19:45:28,896 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 28: [6 / 21] loss: 0.302
+2020-11-21 19:45:30,055 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 28: [9 / 21] loss: 0.383
+2020-11-21 19:45:31,112 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 28: [12 / 21] loss: 0.365
+2020-11-21 19:45:32,149 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 28: [15 / 21] loss: 0.340
+2020-11-21 19:45:33,234 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 28: [18 / 21] loss: 0.333
+2020-11-21 19:45:36,196 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 19:45:36,205 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 29
+2020-11-21 19:45:37,932 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 29: [3 / 21] loss: 0.364
+2020-11-21 19:45:39,087 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 29: [6 / 21] loss: 0.339
+2020-11-21 19:45:40,201 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 29: [9 / 21] loss: 0.338
+2020-11-21 19:45:41,328 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 29: [12 / 21] loss: 0.371
+2020-11-21 19:45:42,315 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 29: [15 / 21] loss: 0.374
+2020-11-21 19:45:43,343 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 29: [18 / 21] loss: 0.334
+2020-11-21 19:45:46,063 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-21 19:45:46,072 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 30
+2020-11-21 19:45:47,596 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 30: [3 / 21] loss: 0.352
+2020-11-21 19:45:48,618 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 30: [6 / 21] loss: 0.335
+2020-11-21 19:45:49,652 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 30: [9 / 21] loss: 0.345
+2020-11-21 19:45:50,835 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 30: [12 / 21] loss: 0.395
+2020-11-21 19:45:51,922 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 30: [15 / 21] loss: 0.321
+2020-11-21 19:45:53,074 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 30: [18 / 21] loss: 0.332
+2020-11-21 19:45:55,509 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 19:45:55,518 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 31
+2020-11-21 19:45:57,081 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 31: [3 / 21] loss: 0.331
+2020-11-21 19:45:58,232 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 31: [6 / 21] loss: 0.317
+2020-11-21 19:45:59,309 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 31: [9 / 21] loss: 0.349
+2020-11-21 19:46:00,446 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 31: [12 / 21] loss: 0.370
+2020-11-21 19:46:01,550 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 31: [15 / 21] loss: 0.371
+2020-11-21 19:46:02,661 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 31: [18 / 21] loss: 0.372
+2020-11-21 19:46:05,091 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 19:46:05,100 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 32
+2020-11-21 19:46:06,566 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 32: [3 / 21] loss: 0.347
+2020-11-21 19:46:07,709 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 32: [6 / 21] loss: 0.335
+2020-11-21 19:46:08,878 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 32: [9 / 21] loss: 0.327
+2020-11-21 19:46:10,083 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 32: [12 / 21] loss: 0.374
+2020-11-21 19:46:11,131 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 32: [15 / 21] loss: 0.329
+2020-11-21 19:46:12,178 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 32: [18 / 21] loss: 0.370
+2020-11-21 19:46:14,583 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 19:46:14,591 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 33
+2020-11-21 19:46:16,092 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 33: [3 / 21] loss: 0.326
+2020-11-21 19:46:17,187 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 33: [6 / 21] loss: 0.326
+2020-11-21 19:46:18,210 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 33: [9 / 21] loss: 0.317
+2020-11-21 19:46:19,352 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 33: [12 / 21] loss: 0.322
+2020-11-21 19:46:20,402 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 33: [15 / 21] loss: 0.357
+2020-11-21 19:46:21,571 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 33: [18 / 21] loss: 0.384
+2020-11-21 19:46:24,050 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 19:46:24,058 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 34
+2020-11-21 19:46:25,550 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 34: [3 / 21] loss: 0.374
+2020-11-21 19:46:26,660 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 34: [6 / 21] loss: 0.340
+2020-11-21 19:46:27,783 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 34: [9 / 21] loss: 0.370
+2020-11-21 19:46:28,951 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 34: [12 / 21] loss: 0.383
+2020-11-21 19:46:30,125 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 34: [15 / 21] loss: 0.369
+2020-11-21 19:46:31,213 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 34: [18 / 21] loss: 0.349
+2020-11-21 19:46:33,539 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 19:46:33,548 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 35
+2020-11-21 19:46:35,130 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 35: [3 / 21] loss: 0.362
+2020-11-21 19:46:36,287 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 35: [6 / 21] loss: 0.367
+2020-11-21 19:46:37,423 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 35: [9 / 21] loss: 0.338
+2020-11-21 19:46:38,414 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 35: [12 / 21] loss: 0.321
+2020-11-21 19:46:39,445 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 35: [15 / 21] loss: 0.337
+2020-11-21 19:46:40,607 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 35: [18 / 21] loss: 0.356
+2020-11-21 19:46:42,995 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:46:43,003 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 35
+2020-11-21 19:46:43,095 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 36
+2020-11-21 19:46:44,616 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 36: [3 / 21] loss: 0.357
+2020-11-21 19:46:45,647 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 36: [6 / 21] loss: 0.347
+2020-11-21 19:46:46,666 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 36: [9 / 21] loss: 0.328
+2020-11-21 19:46:47,786 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 36: [12 / 21] loss: 0.354
+2020-11-21 19:46:48,920 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 36: [15 / 21] loss: 0.340
+2020-11-21 19:46:50,084 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 36: [18 / 21] loss: 0.349
+2020-11-21 19:46:52,554 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 19:46:52,563 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 37
+2020-11-21 19:46:54,638 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 37: [3 / 21] loss: 0.348
+2020-11-21 19:46:55,733 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 37: [6 / 21] loss: 0.391
+2020-11-21 19:46:56,880 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 37: [9 / 21] loss: 0.321
+2020-11-21 19:46:57,941 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 37: [12 / 21] loss: 0.369
+2020-11-21 19:46:58,986 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 37: [15 / 21] loss: 0.347
+2020-11-21 19:47:00,002 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 37: [18 / 21] loss: 0.349
+2020-11-21 19:47:03,127 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 19:47:03,135 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 38
+2020-11-21 19:47:05,235 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 38: [3 / 21] loss: 0.347
+2020-11-21 19:47:06,248 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 38: [6 / 21] loss: 0.324
+2020-11-21 19:47:07,337 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 38: [9 / 21] loss: 0.340
+2020-11-21 19:47:08,348 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 38: [12 / 21] loss: 0.363
+2020-11-21 19:47:09,438 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 38: [15 / 21] loss: 0.347
+2020-11-21 19:47:10,511 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 38: [18 / 21] loss: 0.320
+2020-11-21 19:47:13,008 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:47:13,016 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 38
+2020-11-21 19:47:13,110 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 39
+2020-11-21 19:47:14,981 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 39: [3 / 21] loss: 0.323
+2020-11-21 19:47:15,983 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 39: [6 / 21] loss: 0.321
+2020-11-21 19:47:16,958 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 39: [9 / 21] loss: 0.313
+2020-11-21 19:47:17,993 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 39: [12 / 21] loss: 0.361
+2020-11-21 19:47:19,101 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 39: [15 / 21] loss: 0.361
+2020-11-21 19:47:20,116 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 39: [18 / 21] loss: 0.301
+2020-11-21 19:47:22,611 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 19:47:22,619 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 40
+2020-11-21 19:47:24,340 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 40: [3 / 21] loss: 0.316
+2020-11-21 19:47:25,371 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 40: [6 / 21] loss: 0.336
+2020-11-21 19:47:26,410 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 40: [9 / 21] loss: 0.322
+2020-11-21 19:47:27,392 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 40: [12 / 21] loss: 0.326
+2020-11-21 19:47:28,477 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 40: [15 / 21] loss: 0.298
+2020-11-21 19:47:29,549 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 40: [18 / 21] loss: 0.325
+2020-11-21 19:47:31,807 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:47:31,815 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 40
+2020-11-21 19:47:31,906 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 41
+2020-11-21 19:47:33,645 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 41: [3 / 21] loss: 0.307
+2020-11-21 19:47:34,653 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 41: [6 / 21] loss: 0.308
+2020-11-21 19:47:35,653 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 41: [9 / 21] loss: 0.332
+2020-11-21 19:47:36,647 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 41: [12 / 21] loss: 0.321
+2020-11-21 19:47:37,686 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 41: [15 / 21] loss: 0.304
+2020-11-21 19:47:38,624 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 41: [18 / 21] loss: 0.317
+2020-11-21 19:47:40,991 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:47:40,999 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 41
+2020-11-21 19:47:41,093 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 42
+2020-11-21 19:47:42,546 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 42: [3 / 21] loss: 0.335
+2020-11-21 19:47:43,626 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 42: [6 / 21] loss: 0.322
+2020-11-21 19:47:44,595 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 42: [9 / 21] loss: 0.324
+2020-11-21 19:47:45,637 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 42: [12 / 21] loss: 0.314
+2020-11-21 19:47:46,603 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 42: [15 / 21] loss: 0.368
+2020-11-21 19:47:47,606 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 42: [18 / 21] loss: 0.330
+2020-11-21 19:47:50,457 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 19:47:50,464 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 42
+2020-11-21 19:47:50,557 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 43
+2020-11-21 19:47:51,931 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 43: [3 / 21] loss: 0.338
+2020-11-21 19:47:52,975 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 43: [6 / 21] loss: 0.324
+2020-11-21 19:47:53,934 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 43: [9 / 21] loss: 0.344
+2020-11-21 19:47:54,957 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 43: [12 / 21] loss: 0.347
+2020-11-21 19:47:56,065 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 43: [15 / 21] loss: 0.361
+2020-11-21 19:47:57,112 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 43: [18 / 21] loss: 0.298
+2020-11-21 19:47:59,836 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 19:47:59,844 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 44
+2020-11-21 19:48:01,311 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 44: [3 / 21] loss: 0.331
+2020-11-21 19:48:02,380 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 44: [6 / 21] loss: 0.301
+2020-11-21 19:48:03,400 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 44: [9 / 21] loss: 0.314
+2020-11-21 19:48:04,351 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 44: [12 / 21] loss: 0.286
+2020-11-21 19:48:05,397 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 44: [15 / 21] loss: 0.353
+2020-11-21 19:48:06,329 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 44: [18 / 21] loss: 0.353
+2020-11-21 19:48:09,093 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 19:48:09,101 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 45
+2020-11-21 19:48:10,659 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 45: [3 / 21] loss: 0.345
+2020-11-21 19:48:11,738 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 45: [6 / 21] loss: 0.307
+2020-11-21 19:48:12,733 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 45: [9 / 21] loss: 0.332
+2020-11-21 19:48:13,689 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 45: [12 / 21] loss: 0.321
+2020-11-21 19:48:14,666 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 45: [15 / 21] loss: 0.280
+2020-11-21 19:48:15,578 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 45: [18 / 21] loss: 0.310
+2020-11-21 19:48:18,229 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 19:48:18,237 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 46
+2020-11-21 19:48:19,677 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 46: [3 / 21] loss: 0.336
+2020-11-21 19:48:20,714 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 46: [6 / 21] loss: 0.328
+2020-11-21 19:48:21,707 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 46: [9 / 21] loss: 0.305
+2020-11-21 19:48:22,768 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 46: [12 / 21] loss: 0.327
+2020-11-21 19:48:23,782 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 46: [15 / 21] loss: 0.309
+2020-11-21 19:48:24,775 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 46: [18 / 21] loss: 0.308
+2020-11-21 19:48:27,567 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 19:48:27,574 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 46
+2020-11-21 19:48:27,687 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 47
+2020-11-21 19:48:29,046 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 47: [3 / 21] loss: 0.312
+2020-11-21 19:48:30,033 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 47: [6 / 21] loss: 0.315
+2020-11-21 19:48:31,058 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 47: [9 / 21] loss: 0.358
+2020-11-21 19:48:32,050 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 47: [12 / 21] loss: 0.322
+2020-11-21 19:48:33,029 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 47: [15 / 21] loss: 0.328
+2020-11-21 19:48:33,948 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 47: [18 / 21] loss: 0.319
+2020-11-21 19:48:36,917 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 19:48:36,925 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 48
+2020-11-21 19:48:38,597 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 48: [3 / 21] loss: 0.306
+2020-11-21 19:48:39,663 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 48: [6 / 21] loss: 0.310
+2020-11-21 19:48:40,720 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 48: [9 / 21] loss: 0.306
+2020-11-21 19:48:41,720 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 48: [12 / 21] loss: 0.323
+2020-11-21 19:48:42,799 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 48: [15 / 21] loss: 0.345
+2020-11-21 19:48:43,747 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 48: [18 / 21] loss: 0.304
+2020-11-21 19:48:46,635 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 19:48:46,643 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 49
+2020-11-21 19:48:48,033 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 49: [3 / 21] loss: 0.326
+2020-11-21 19:48:49,121 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 49: [6 / 21] loss: 0.320
+2020-11-21 19:48:50,194 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 49: [9 / 21] loss: 0.319
+2020-11-21 19:48:51,200 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 49: [12 / 21] loss: 0.310
+2020-11-21 19:48:52,192 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 49: [15 / 21] loss: 0.323
+2020-11-21 19:48:53,220 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 49: [18 / 21] loss: 0.276
+2020-11-21 19:48:56,058 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:48:56,067 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 50
+2020-11-21 19:48:57,445 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 50: [3 / 21] loss: 0.293
+2020-11-21 19:48:58,469 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 50: [6 / 21] loss: 0.292
+2020-11-21 19:48:59,479 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 50: [9 / 21] loss: 0.282
+2020-11-21 19:49:00,518 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 50: [12 / 21] loss: 0.319
+2020-11-21 19:49:01,649 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 50: [15 / 21] loss: 0.292
+2020-11-21 19:49:02,772 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 50: [18 / 21] loss: 0.291
+2020-11-21 19:49:05,666 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:49:05,675 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 51
+2020-11-21 19:49:07,175 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 51: [3 / 21] loss: 0.274
+2020-11-21 19:49:08,326 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 51: [6 / 21] loss: 0.326
+2020-11-21 19:49:09,489 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 51: [9 / 21] loss: 0.323
+2020-11-21 19:49:10,565 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 51: [12 / 21] loss: 0.288
+2020-11-21 19:49:11,697 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 51: [15 / 21] loss: 0.318
+2020-11-21 19:49:12,823 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 51: [18 / 21] loss: 0.294
+2020-11-21 19:49:15,137 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 19:49:15,144 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 52
+2020-11-21 19:49:16,646 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 52: [3 / 21] loss: 0.289
+2020-11-21 19:49:17,706 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 52: [6 / 21] loss: 0.292
+2020-11-21 19:49:18,829 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 52: [9 / 21] loss: 0.293
+2020-11-21 19:49:19,970 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 52: [12 / 21] loss: 0.319
+2020-11-21 19:49:21,109 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 52: [15 / 21] loss: 0.282
+2020-11-21 19:49:22,206 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 52: [18 / 21] loss: 0.263
+2020-11-21 19:49:24,683 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:49:24,691 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 53
+2020-11-21 19:49:26,151 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 53: [3 / 21] loss: 0.277
+2020-11-21 19:49:27,299 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 53: [6 / 21] loss: 0.262
+2020-11-21 19:49:28,415 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 53: [9 / 21] loss: 0.297
+2020-11-21 19:49:29,562 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 53: [12 / 21] loss: 0.314
+2020-11-21 19:49:30,636 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 53: [15 / 21] loss: 0.300
+2020-11-21 19:49:31,718 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 53: [18 / 21] loss: 0.297
+2020-11-21 19:49:34,209 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:49:34,217 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 54
+2020-11-21 19:49:35,548 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 54: [3 / 21] loss: 0.277
+2020-11-21 19:49:36,699 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 54: [6 / 21] loss: 0.302
+2020-11-21 19:49:37,804 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 54: [9 / 21] loss: 0.297
+2020-11-21 19:49:38,910 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 54: [12 / 21] loss: 0.290
+2020-11-21 19:49:39,998 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 54: [15 / 21] loss: 0.280
+2020-11-21 19:49:41,187 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 54: [18 / 21] loss: 0.286
+2020-11-21 19:49:43,614 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 19:49:43,622 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 55
+2020-11-21 19:49:45,124 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 55: [3 / 21] loss: 0.273
+2020-11-21 19:49:46,252 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 55: [6 / 21] loss: 0.282
+2020-11-21 19:49:47,323 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 55: [9 / 21] loss: 0.264
+2020-11-21 19:49:48,342 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 55: [12 / 21] loss: 0.273
+2020-11-21 19:49:49,522 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 55: [15 / 21] loss: 0.310
+2020-11-21 19:49:50,606 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 55: [18 / 21] loss: 0.299
+2020-11-21 19:49:52,954 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:49:52,963 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 56
+2020-11-21 19:49:54,280 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 56: [3 / 21] loss: 0.280
+2020-11-21 19:49:55,357 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 56: [6 / 21] loss: 0.283
+2020-11-21 19:49:56,325 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 56: [9 / 21] loss: 0.294
+2020-11-21 19:49:57,299 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 56: [12 / 21] loss: 0.298
+2020-11-21 19:49:58,268 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 56: [15 / 21] loss: 0.279
+2020-11-21 19:49:59,311 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 56: [18 / 21] loss: 0.270
+2020-11-21 19:50:01,817 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:50:01,825 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 57
+2020-11-21 19:50:03,739 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 57: [3 / 21] loss: 0.286
+2020-11-21 19:50:04,844 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 57: [6 / 21] loss: 0.310
+2020-11-21 19:50:05,922 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 57: [9 / 21] loss: 0.293
+2020-11-21 19:50:06,957 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 57: [12 / 21] loss: 0.308
+2020-11-21 19:50:07,878 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 57: [15 / 21] loss: 0.282
+2020-11-21 19:50:08,845 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 57: [18 / 21] loss: 0.269
+2020-11-21 19:50:11,305 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 19:50:11,313 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 58
+2020-11-21 19:50:13,253 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 58: [3 / 21] loss: 0.282
+2020-11-21 19:50:14,261 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 58: [6 / 21] loss: 0.283
+2020-11-21 19:50:15,281 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 58: [9 / 21] loss: 0.327
+2020-11-21 19:50:16,251 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 58: [12 / 21] loss: 0.312
+2020-11-21 19:50:17,177 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 58: [15 / 21] loss: 0.311
+2020-11-21 19:50:18,127 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 58: [18 / 21] loss: 0.265
+2020-11-21 19:50:20,329 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 19:50:20,337 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 59
+2020-11-21 19:50:21,689 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 59: [3 / 21] loss: 0.309
+2020-11-21 19:50:22,837 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 59: [6 / 21] loss: 0.297
+2020-11-21 19:50:23,825 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 59: [9 / 21] loss: 0.279
+2020-11-21 19:50:24,813 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 59: [12 / 21] loss: 0.290
+2020-11-21 19:50:25,786 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 59: [15 / 21] loss: 0.275
+2020-11-21 19:50:26,736 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 59: [18 / 21] loss: 0.281
+2020-11-21 19:50:29,502 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:50:29,509 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 60
+2020-11-21 19:50:31,146 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 60: [3 / 21] loss: 0.264
+2020-11-21 19:50:32,210 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 60: [6 / 21] loss: 0.289
+2020-11-21 19:50:33,351 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 60: [9 / 21] loss: 0.285
+2020-11-21 19:50:34,410 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 60: [12 / 21] loss: 0.284
+2020-11-21 19:50:35,354 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 60: [15 / 21] loss: 0.250
+2020-11-21 19:50:36,392 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 60: [18 / 21] loss: 0.272
+2020-11-21 19:50:39,251 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:50:39,259 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 61
+2020-11-21 19:50:40,752 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 61: [3 / 21] loss: 0.269
+2020-11-21 19:50:41,783 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 61: [6 / 21] loss: 0.277
+2020-11-21 19:50:42,810 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 61: [9 / 21] loss: 0.289
+2020-11-21 19:50:43,754 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 61: [12 / 21] loss: 0.290
+2020-11-21 19:50:44,684 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 61: [15 / 21] loss: 0.291
+2020-11-21 19:50:45,826 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 61: [18 / 21] loss: 0.294
+2020-11-21 19:50:49,133 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:50:49,140 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 62
+2020-11-21 19:50:50,690 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 62: [3 / 21] loss: 0.280
+2020-11-21 19:50:51,995 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 62: [6 / 21] loss: 0.304
+2020-11-21 19:50:53,063 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 62: [9 / 21] loss: 0.272
+2020-11-21 19:50:54,025 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 62: [12 / 21] loss: 0.302
+2020-11-21 19:50:54,873 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 62: [15 / 21] loss: 0.259
+2020-11-21 19:50:55,890 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 62: [18 / 21] loss: 0.293
+2020-11-21 19:50:58,683 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:50:58,692 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 63
+2020-11-21 19:51:00,070 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 63: [3 / 21] loss: 0.268
+2020-11-21 19:51:01,035 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 63: [6 / 21] loss: 0.289
+2020-11-21 19:51:02,011 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 63: [9 / 21] loss: 0.294
+2020-11-21 19:51:02,966 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 63: [12 / 21] loss: 0.286
+2020-11-21 19:51:03,992 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 63: [15 / 21] loss: 0.322
+2020-11-21 19:51:05,152 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 63: [18 / 21] loss: 0.267
+2020-11-21 19:51:07,598 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 19:51:07,605 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 64
+2020-11-21 19:51:09,182 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 64: [3 / 21] loss: 0.285
+2020-11-21 19:51:10,188 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 64: [6 / 21] loss: 0.270
+2020-11-21 19:51:11,122 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 64: [9 / 21] loss: 0.285
+2020-11-21 19:51:12,144 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 64: [12 / 21] loss: 0.280
+2020-11-21 19:51:13,180 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 64: [15 / 21] loss: 0.290
+2020-11-21 19:51:14,233 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 64: [18 / 21] loss: 0.296
+2020-11-21 19:51:16,654 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:51:16,662 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 65
+2020-11-21 19:51:17,996 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 65: [3 / 21] loss: 0.283
+2020-11-21 19:51:19,030 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 65: [6 / 21] loss: 0.308
+2020-11-21 19:51:20,013 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 65: [9 / 21] loss: 0.331
+2020-11-21 19:51:20,917 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 65: [12 / 21] loss: 0.262
+2020-11-21 19:51:21,893 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 65: [15 / 21] loss: 0.261
+2020-11-21 19:51:23,048 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 65: [18 / 21] loss: 0.278
+2020-11-21 19:51:25,722 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 19:51:25,730 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 65
+2020-11-21 19:51:25,845 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 66
+2020-11-21 19:51:27,535 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 66: [3 / 21] loss: 0.270
+2020-11-21 19:51:28,504 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 66: [6 / 21] loss: 0.283
+2020-11-21 19:51:29,449 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 66: [9 / 21] loss: 0.267
+2020-11-21 19:51:30,396 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 66: [12 / 21] loss: 0.256
+2020-11-21 19:51:31,414 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 66: [15 / 21] loss: 0.296
+2020-11-21 19:51:32,405 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 66: [18 / 21] loss: 0.259
+2020-11-21 19:51:34,684 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:51:34,693 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 67
+2020-11-21 19:51:36,065 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 67: [3 / 21] loss: 0.258
+2020-11-21 19:51:37,097 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 67: [6 / 21] loss: 0.273
+2020-11-21 19:51:38,103 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 67: [9 / 21] loss: 0.274
+2020-11-21 19:51:39,186 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 67: [12 / 21] loss: 0.276
+2020-11-21 19:51:40,236 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 67: [15 / 21] loss: 0.269
+2020-11-21 19:51:41,337 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 67: [18 / 21] loss: 0.263
+2020-11-21 19:51:43,805 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 19:51:43,814 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 67
+2020-11-21 19:51:43,901 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 68
+2020-11-21 19:51:45,538 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 68: [3 / 21] loss: 0.249
+2020-11-21 19:51:46,622 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 68: [6 / 21] loss: 0.268
+2020-11-21 19:51:47,580 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 68: [9 / 21] loss: 0.264
+2020-11-21 19:51:48,550 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 68: [12 / 21] loss: 0.266
+2020-11-21 19:51:49,534 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 68: [15 / 21] loss: 0.283
+2020-11-21 19:51:50,507 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 68: [18 / 21] loss: 0.262
+2020-11-21 19:51:52,717 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:51:52,726 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 69
+2020-11-21 19:51:54,669 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 69: [3 / 21] loss: 0.272
+2020-11-21 19:51:55,718 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 69: [6 / 21] loss: 0.263
+2020-11-21 19:51:56,769 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 69: [9 / 21] loss: 0.247
+2020-11-21 19:51:57,710 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 69: [12 / 21] loss: 0.258
+2020-11-21 19:51:58,701 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 69: [15 / 21] loss: 0.295
+2020-11-21 19:51:59,664 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 69: [18 / 21] loss: 0.270
+2020-11-21 19:52:02,118 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 19:52:02,126 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 70
+2020-11-21 19:52:03,569 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 70: [3 / 21] loss: 0.248
+2020-11-21 19:52:04,700 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 70: [6 / 21] loss: 0.267
+2020-11-21 19:52:05,739 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 70: [9 / 21] loss: 0.279
+2020-11-21 19:52:06,744 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 70: [12 / 21] loss: 0.304
+2020-11-21 19:52:07,775 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 70: [15 / 21] loss: 0.291
+2020-11-21 19:52:08,719 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 70: [18 / 21] loss: 0.288
+2020-11-21 19:52:11,577 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 19:52:11,585 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 71
+2020-11-21 19:52:12,907 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 71: [3 / 21] loss: 0.292
+2020-11-21 19:52:13,973 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 71: [6 / 21] loss: 0.278
+2020-11-21 19:52:15,032 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 71: [9 / 21] loss: 0.278
+2020-11-21 19:52:16,189 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 71: [12 / 21] loss: 0.265
+2020-11-21 19:52:17,333 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 71: [15 / 21] loss: 0.281
+2020-11-21 19:52:18,453 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 71: [18 / 21] loss: 0.285
+2020-11-21 19:52:20,931 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:52:20,939 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 72
+2020-11-21 19:52:22,950 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 72: [3 / 21] loss: 0.263
+2020-11-21 19:52:24,074 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 72: [6 / 21] loss: 0.279
+2020-11-21 19:52:25,254 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 72: [9 / 21] loss: 0.305
+2020-11-21 19:52:26,297 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 72: [12 / 21] loss: 0.274
+2020-11-21 19:52:27,240 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 72: [15 / 21] loss: 0.267
+2020-11-21 19:52:28,365 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 72: [18 / 21] loss: 0.267
+2020-11-21 19:52:30,929 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:52:30,937 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 73
+2020-11-21 19:52:32,742 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 73: [3 / 21] loss: 0.272
+2020-11-21 19:52:33,721 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 73: [6 / 21] loss: 0.281
+2020-11-21 19:52:34,673 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 73: [9 / 21] loss: 0.286
+2020-11-21 19:52:35,660 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 73: [12 / 21] loss: 0.278
+2020-11-21 19:52:36,672 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 73: [15 / 21] loss: 0.273
+2020-11-21 19:52:37,662 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 73: [18 / 21] loss: 0.266
+2020-11-21 19:52:39,862 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 19:52:39,869 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 73
+2020-11-21 19:52:39,956 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 74
+2020-11-21 19:52:41,420 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 74: [3 / 21] loss: 0.292
+2020-11-21 19:52:42,347 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 74: [6 / 21] loss: 0.264
+2020-11-21 19:52:43,336 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 74: [9 / 21] loss: 0.260
+2020-11-21 19:52:44,295 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 74: [12 / 21] loss: 0.249
+2020-11-21 19:52:45,240 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 74: [15 / 21] loss: 0.255
+2020-11-21 19:52:46,272 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 74: [18 / 21] loss: 0.264
+2020-11-21 19:52:48,805 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 19:52:48,814 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 74
+2020-11-21 19:52:48,914 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 75
+2020-11-21 19:52:50,979 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 75: [3 / 21] loss: 0.304
+2020-11-21 19:52:52,089 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 75: [6 / 21] loss: 0.267
+2020-11-21 19:52:53,127 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 75: [9 / 21] loss: 0.273
+2020-11-21 19:52:54,289 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 75: [12 / 21] loss: 0.298
+2020-11-21 19:52:55,465 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 75: [15 / 21] loss: 0.270
+2020-11-21 19:52:56,481 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 75: [18 / 21] loss: 0.290
+2020-11-21 19:52:59,138 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:52:59,146 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 76
+2020-11-21 19:53:00,880 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 76: [3 / 21] loss: 0.276
+2020-11-21 19:53:01,913 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 76: [6 / 21] loss: 0.252
+2020-11-21 19:53:02,936 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 76: [9 / 21] loss: 0.288
+2020-11-21 19:53:03,952 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 76: [12 / 21] loss: 0.264
+2020-11-21 19:53:04,853 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 76: [15 / 21] loss: 0.257
+2020-11-21 19:53:05,796 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 76: [18 / 21] loss: 0.260
+2020-11-21 19:53:08,304 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:53:08,313 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 77
+2020-11-21 19:53:10,247 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 77: [3 / 21] loss: 0.273
+2020-11-21 19:53:11,200 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 77: [6 / 21] loss: 0.276
+2020-11-21 19:53:12,194 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 77: [9 / 21] loss: 0.272
+2020-11-21 19:53:13,220 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 77: [12 / 21] loss: 0.302
+2020-11-21 19:53:14,175 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 77: [15 / 21] loss: 0.278
+2020-11-21 19:53:15,280 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 77: [18 / 21] loss: 0.312
+2020-11-21 19:53:18,102 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:53:18,110 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 78
+2020-11-21 19:53:19,579 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 78: [3 / 21] loss: 0.292
+2020-11-21 19:53:20,592 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 78: [6 / 21] loss: 0.331
+2020-11-21 19:53:21,560 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 78: [9 / 21] loss: 0.282
+2020-11-21 19:53:22,527 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 78: [12 / 21] loss: 0.311
+2020-11-21 19:53:23,481 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 78: [15 / 21] loss: 0.267
+2020-11-21 19:53:24,398 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 78: [18 / 21] loss: 0.287
+2020-11-21 19:53:27,038 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 19:53:27,046 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 79
+2020-11-21 19:53:28,469 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 79: [3 / 21] loss: 0.259
+2020-11-21 19:53:29,612 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 79: [6 / 21] loss: 0.292
+2020-11-21 19:53:30,568 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 79: [9 / 21] loss: 0.289
+2020-11-21 19:53:31,581 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 79: [12 / 21] loss: 0.263
+2020-11-21 19:53:32,532 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 79: [15 / 21] loss: 0.287
+2020-11-21 19:53:33,400 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 79: [18 / 21] loss: 0.264
+2020-11-21 19:53:36,107 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 19:53:36,114 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 80
+2020-11-21 19:53:37,534 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 80: [3 / 21] loss: 0.261
+2020-11-21 19:53:38,570 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 80: [6 / 21] loss: 0.269
+2020-11-21 19:53:39,634 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 80: [9 / 21] loss: 0.281
+2020-11-21 19:53:40,573 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 80: [12 / 21] loss: 0.242
+2020-11-21 19:53:41,513 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 80: [15 / 21] loss: 0.263
+2020-11-21 19:53:42,552 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 80: [18 / 21] loss: 0.289
+2020-11-21 19:53:45,086 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 19:53:45,094 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 80
+2020-11-21 19:53:45,219 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 81
+2020-11-21 19:53:47,027 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 81: [3 / 21] loss: 0.272
+2020-11-21 19:53:47,922 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 81: [6 / 21] loss: 0.273
+2020-11-21 19:53:48,904 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 81: [9 / 21] loss: 0.278
+2020-11-21 19:53:49,872 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 81: [12 / 21] loss: 0.268
+2020-11-21 19:53:50,821 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 81: [15 / 21] loss: 0.277
+2020-11-21 19:53:51,724 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 81: [18 / 21] loss: 0.256
+2020-11-21 19:53:54,009 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 19:53:54,017 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 81
+2020-11-21 19:53:54,101 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 82
+2020-11-21 19:53:55,497 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 82: [3 / 21] loss: 0.301
+2020-11-21 19:53:56,529 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 82: [6 / 21] loss: 0.271
+2020-11-21 19:53:57,446 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 82: [9 / 21] loss: 0.260
+2020-11-21 19:53:58,376 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 82: [12 / 21] loss: 0.255
+2020-11-21 19:53:59,345 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 82: [15 / 21] loss: 0.269
+2020-11-21 19:54:00,370 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 82: [18 / 21] loss: 0.292
+2020-11-21 19:54:03,067 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:54:03,075 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 83
+2020-11-21 19:54:04,498 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 83: [3 / 21] loss: 0.249
+2020-11-21 19:54:05,611 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 83: [6 / 21] loss: 0.267
+2020-11-21 19:54:06,592 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 83: [9 / 21] loss: 0.254
+2020-11-21 19:54:07,634 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 83: [12 / 21] loss: 0.266
+2020-11-21 19:54:08,705 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 83: [15 / 21] loss: 0.270
+2020-11-21 19:54:09,780 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 83: [18 / 21] loss: 0.259
+2020-11-21 19:54:12,151 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 19:54:12,160 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 84
+2020-11-21 19:54:13,967 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 84: [3 / 21] loss: 0.258
+2020-11-21 19:54:15,007 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 84: [6 / 21] loss: 0.262
+2020-11-21 19:54:15,987 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 84: [9 / 21] loss: 0.256
+2020-11-21 19:54:16,885 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 84: [12 / 21] loss: 0.262
+2020-11-21 19:54:17,883 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 84: [15 / 21] loss: 0.246
+2020-11-21 19:54:18,837 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 84: [18 / 21] loss: 0.237
+2020-11-21 19:54:21,113 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 19:54:21,121 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 85
+2020-11-21 19:54:22,624 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 85: [3 / 21] loss: 0.265
+2020-11-21 19:54:23,673 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 85: [6 / 21] loss: 0.249
+2020-11-21 19:54:24,636 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 85: [9 / 21] loss: 0.274
+2020-11-21 19:54:25,669 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 85: [12 / 21] loss: 0.247
+2020-11-21 19:54:26,718 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 85: [15 / 21] loss: 0.278
+2020-11-21 19:54:27,732 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 85: [18 / 21] loss: 0.260
+2020-11-21 19:54:30,148 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:54:30,156 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 86
+2020-11-21 19:54:31,756 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 86: [3 / 21] loss: 0.266
+2020-11-21 19:54:32,719 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 86: [6 / 21] loss: 0.248
+2020-11-21 19:54:33,682 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 86: [9 / 21] loss: 0.243
+2020-11-21 19:54:34,718 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 86: [12 / 21] loss: 0.265
+2020-11-21 19:54:35,773 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 86: [15 / 21] loss: 0.243
+2020-11-21 19:54:36,806 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 86: [18 / 21] loss: 0.259
+2020-11-21 19:54:39,209 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 19:54:39,217 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 87
+2020-11-21 19:54:40,646 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 87: [3 / 21] loss: 0.253
+2020-11-21 19:54:41,686 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 87: [6 / 21] loss: 0.252
+2020-11-21 19:54:42,669 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 87: [9 / 21] loss: 0.267
+2020-11-21 19:54:43,601 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 87: [12 / 21] loss: 0.236
+2020-11-21 19:54:44,510 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 87: [15 / 21] loss: 0.260
+2020-11-21 19:54:45,602 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 87: [18 / 21] loss: 0.258
+2020-11-21 19:54:48,398 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:54:48,409 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 88
+2020-11-21 19:54:50,523 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 88: [3 / 21] loss: 0.253
+2020-11-21 19:54:51,678 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 88: [6 / 21] loss: 0.252
+2020-11-21 19:54:52,684 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 88: [9 / 21] loss: 0.250
+2020-11-21 19:54:53,765 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 88: [12 / 21] loss: 0.288
+2020-11-21 19:54:54,889 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 88: [15 / 21] loss: 0.253
+2020-11-21 19:54:56,061 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 88: [18 / 21] loss: 0.270
+2020-11-21 19:54:59,091 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 19:54:59,099 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 89
+2020-11-21 19:55:01,057 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 89: [3 / 21] loss: 0.284
+2020-11-21 19:55:02,133 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 89: [6 / 21] loss: 0.230
+2020-11-21 19:55:03,143 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 89: [9 / 21] loss: 0.268
+2020-11-21 19:55:04,001 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 89: [12 / 21] loss: 0.251
+2020-11-21 19:55:04,893 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 89: [15 / 21] loss: 0.271
+2020-11-21 19:55:05,819 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 89: [18 / 21] loss: 0.251
+2020-11-21 19:55:07,993 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 19:55:08,001 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 89
+2020-11-21 19:55:08,096 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 90
+2020-11-21 19:55:09,980 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 90: [3 / 21] loss: 0.251
+2020-11-21 19:55:10,959 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 90: [6 / 21] loss: 0.274
+2020-11-21 19:55:12,053 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 90: [9 / 21] loss: 0.255
+2020-11-21 19:55:13,095 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 90: [12 / 21] loss: 0.261
+2020-11-21 19:55:14,075 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 90: [15 / 21] loss: 0.256
+2020-11-21 19:55:15,270 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 90: [18 / 21] loss: 0.261
+2020-11-21 19:55:17,511 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 19:55:17,519 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 91
+2020-11-21 19:55:19,060 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 91: [3 / 21] loss: 0.258
+2020-11-21 19:55:20,044 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 91: [6 / 21] loss: 0.261
+2020-11-21 19:55:21,036 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 91: [9 / 21] loss: 0.264
+2020-11-21 19:55:21,946 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 91: [12 / 21] loss: 0.248
+2020-11-21 19:55:22,861 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 91: [15 / 21] loss: 0.268
+2020-11-21 19:55:23,812 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 91: [18 / 21] loss: 0.243
+2020-11-21 19:55:25,937 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.929
+2020-11-21 19:55:25,944 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 91
+2020-11-21 19:55:26,039 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 92
+2020-11-21 19:55:27,999 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 92: [3 / 21] loss: 0.258
+2020-11-21 19:55:29,008 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 92: [6 / 21] loss: 0.269
+2020-11-21 19:55:29,937 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 92: [9 / 21] loss: 0.271
+2020-11-21 19:55:30,859 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 92: [12 / 21] loss: 0.249
+2020-11-21 19:55:31,795 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 92: [15 / 21] loss: 0.257
+2020-11-21 19:55:32,838 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 92: [18 / 21] loss: 0.249
+2020-11-21 19:55:35,291 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.936
+2020-11-21 19:55:35,300 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Best model saved, epoch 92
+2020-11-21 19:55:35,386 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 93
+2020-11-21 19:55:37,242 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 93: [3 / 21] loss: 0.250
+2020-11-21 19:55:38,195 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 93: [6 / 21] loss: 0.256
+2020-11-21 19:55:39,065 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 93: [9 / 21] loss: 0.246
+2020-11-21 19:55:40,009 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 93: [12 / 21] loss: 0.266
+2020-11-21 19:55:41,027 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 93: [15 / 21] loss: 0.262
+2020-11-21 19:55:42,020 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 93: [18 / 21] loss: 0.252
+2020-11-21 19:55:44,337 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 19:55:44,344 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 94
+2020-11-21 19:55:45,686 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 94: [3 / 21] loss: 0.256
+2020-11-21 19:55:46,720 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 94: [6 / 21] loss: 0.244
+2020-11-21 19:55:47,668 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 94: [9 / 21] loss: 0.245
+2020-11-21 19:55:48,642 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 94: [12 / 21] loss: 0.241
+2020-11-21 19:55:49,605 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 94: [15 / 21] loss: 0.246
+2020-11-21 19:55:50,812 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 94: [18 / 21] loss: 0.250
+2020-11-21 19:55:53,431 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 19:55:53,441 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 95
+2020-11-21 19:55:55,228 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 95: [3 / 21] loss: 0.242
+2020-11-21 19:55:56,230 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 95: [6 / 21] loss: 0.240
+2020-11-21 19:55:57,273 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 95: [9 / 21] loss: 0.261
+2020-11-21 19:55:58,226 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 95: [12 / 21] loss: 0.261
+2020-11-21 19:55:59,266 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 95: [15 / 21] loss: 0.258
+2020-11-21 19:56:00,220 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 95: [18 / 21] loss: 0.245
+2020-11-21 19:56:02,693 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:56:02,702 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 96
+2020-11-21 19:56:03,992 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 96: [3 / 21] loss: 0.247
+2020-11-21 19:56:05,105 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 96: [6 / 21] loss: 0.261
+2020-11-21 19:56:06,159 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 96: [9 / 21] loss: 0.357
+2020-11-21 19:56:07,119 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 96: [12 / 21] loss: 0.270
+2020-11-21 19:56:08,031 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 96: [15 / 21] loss: 0.250
+2020-11-21 19:56:09,082 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 96: [18 / 21] loss: 0.265
+2020-11-21 19:56:11,718 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:56:11,726 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 97
+2020-11-21 19:56:13,230 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 97: [3 / 21] loss: 0.279
+2020-11-21 19:56:14,317 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 97: [6 / 21] loss: 0.276
+2020-11-21 19:56:15,292 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 97: [9 / 21] loss: 0.253
+2020-11-21 19:56:16,256 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 97: [12 / 21] loss: 0.256
+2020-11-21 19:56:17,314 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 97: [15 / 21] loss: 0.264
+2020-11-21 19:56:18,308 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 97: [18 / 21] loss: 0.249
+2020-11-21 19:56:20,771 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:56:20,780 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 98
+2020-11-21 19:56:22,339 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 98: [3 / 21] loss: 0.265
+2020-11-21 19:56:23,311 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 98: [6 / 21] loss: 0.261
+2020-11-21 19:56:24,320 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 98: [9 / 21] loss: 0.263
+2020-11-21 19:56:25,333 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 98: [12 / 21] loss: 0.264
+2020-11-21 19:56:26,327 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 98: [15 / 21] loss: 0.266
+2020-11-21 19:56:27,250 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 98: [18 / 21] loss: 0.266
+2020-11-21 19:56:29,751 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 19:56:29,760 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 99
+2020-11-21 19:56:31,157 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 99: [3 / 21] loss: 0.250
+2020-11-21 19:56:32,197 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 99: [6 / 21] loss: 0.279
+2020-11-21 19:56:33,298 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 99: [9 / 21] loss: 0.251
+2020-11-21 19:56:34,279 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 99: [12 / 21] loss: 0.261
+2020-11-21 19:56:35,329 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 99: [15 / 21] loss: 0.267
+2020-11-21 19:56:36,381 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 99: [18 / 21] loss: 0.264
+2020-11-21 19:56:38,758 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.929
+2020-11-21 19:56:38,767 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 100
+2020-11-21 19:56:40,240 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 100: [3 / 21] loss: 0.251
+2020-11-21 19:56:41,250 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 100: [6 / 21] loss: 0.244
+2020-11-21 19:56:42,231 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 100: [9 / 21] loss: 0.241
+2020-11-21 19:56:43,218 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 100: [12 / 21] loss: 0.265
+2020-11-21 19:56:44,111 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 100: [15 / 21] loss: 0.255
+2020-11-21 19:56:45,083 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 100: [18 / 21] loss: 0.242
+2020-11-21 19:56:47,732 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 19:56:47,740 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 101
+2020-11-21 19:56:49,186 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 101: [3 / 21] loss: 0.239
+2020-11-21 19:56:50,240 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 101: [6 / 21] loss: 0.248
+2020-11-21 19:56:51,145 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 101: [9 / 21] loss: 0.240
+2020-11-21 19:56:52,112 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 101: [12 / 21] loss: 0.250
+2020-11-21 19:56:53,022 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 101: [15 / 21] loss: 0.248
+2020-11-21 19:56:54,010 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 101: [18 / 21] loss: 0.253
+2020-11-21 19:56:56,703 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 19:56:56,711 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 102
+2020-11-21 19:56:58,262 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 102: [3 / 21] loss: 0.262
+2020-11-21 19:56:59,230 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 102: [6 / 21] loss: 0.250
+2020-11-21 19:57:00,195 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 102: [9 / 21] loss: 0.243
+2020-11-21 19:57:01,130 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 102: [12 / 21] loss: 0.246
+2020-11-21 19:57:02,057 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 102: [15 / 21] loss: 0.255
+2020-11-21 19:57:03,057 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 102: [18 / 21] loss: 0.234
+2020-11-21 19:57:05,758 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 19:57:05,766 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 103
+2020-11-21 19:57:07,256 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 103: [3 / 21] loss: 0.266
+2020-11-21 19:57:08,300 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 103: [6 / 21] loss: 0.240
+2020-11-21 19:57:09,387 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 103: [9 / 21] loss: 0.261
+2020-11-21 19:57:10,508 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 103: [12 / 21] loss: 0.257
+2020-11-21 19:57:11,505 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 103: [15 / 21] loss: 0.239
+2020-11-21 19:57:12,437 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 103: [18 / 21] loss: 0.243
+2020-11-21 19:57:14,899 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 19:57:14,908 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 104
+2020-11-21 19:57:16,475 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 104: [3 / 21] loss: 0.259
+2020-11-21 19:57:17,596 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 104: [6 / 21] loss: 0.249
+2020-11-21 19:57:18,775 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 104: [9 / 21] loss: 0.263
+2020-11-21 19:57:19,798 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 104: [12 / 21] loss: 0.244
+2020-11-21 19:57:20,896 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 104: [15 / 21] loss: 0.280
+2020-11-21 19:57:22,061 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 104: [18 / 21] loss: 0.247
+2020-11-21 19:57:25,165 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:57:25,174 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 105
+2020-11-21 19:57:26,823 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 105: [3 / 21] loss: 0.246
+2020-11-21 19:57:27,852 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 105: [6 / 21] loss: 0.253
+2020-11-21 19:57:28,816 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 105: [9 / 21] loss: 0.251
+2020-11-21 19:57:29,768 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 105: [12 / 21] loss: 0.237
+2020-11-21 19:57:30,863 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 105: [15 / 21] loss: 0.248
+2020-11-21 19:57:32,016 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 105: [18 / 21] loss: 0.258
+2020-11-21 19:57:34,866 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:57:34,874 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 106
+2020-11-21 19:57:36,403 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 106: [3 / 21] loss: 0.254
+2020-11-21 19:57:37,424 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 106: [6 / 21] loss: 0.249
+2020-11-21 19:57:38,403 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 106: [9 / 21] loss: 0.241
+2020-11-21 19:57:39,379 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 106: [12 / 21] loss: 0.232
+2020-11-21 19:57:40,260 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 106: [15 / 21] loss: 0.243
+2020-11-21 19:57:41,327 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 106: [18 / 21] loss: 0.256
+2020-11-21 19:57:43,564 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 19:57:43,572 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 107
+2020-11-21 19:57:44,917 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 107: [3 / 21] loss: 0.243
+2020-11-21 19:57:45,981 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 107: [6 / 21] loss: 0.244
+2020-11-21 19:57:46,999 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 107: [9 / 21] loss: 0.239
+2020-11-21 19:57:47,965 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 107: [12 / 21] loss: 0.247
+2020-11-21 19:57:48,975 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 107: [15 / 21] loss: 0.227
+2020-11-21 19:57:49,936 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 107: [18 / 21] loss: 0.237
+2020-11-21 19:57:52,647 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 19:57:52,654 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 108
+2020-11-21 19:57:54,070 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 108: [3 / 21] loss: 0.241
+2020-11-21 19:57:55,159 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 108: [6 / 21] loss: 0.247
+2020-11-21 19:57:56,311 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 108: [9 / 21] loss: 0.257
+2020-11-21 19:57:57,394 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 108: [12 / 21] loss: 0.268
+2020-11-21 19:57:58,525 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 108: [15 / 21] loss: 0.240
+2020-11-21 19:57:59,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 108: [18 / 21] loss: 0.239
+2020-11-21 19:58:01,843 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 19:58:01,857 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 109
+2020-11-21 19:58:03,277 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 109: [3 / 21] loss: 0.241
+2020-11-21 19:58:04,340 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 109: [6 / 21] loss: 0.272
+2020-11-21 19:58:05,430 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 109: [9 / 21] loss: 0.265
+2020-11-21 19:58:06,454 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 109: [12 / 21] loss: 0.269
+2020-11-21 19:58:07,436 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 109: [15 / 21] loss: 0.247
+2020-11-21 19:58:08,521 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 109: [18 / 21] loss: 0.282
+2020-11-21 19:58:10,833 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 19:58:10,843 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 110
+2020-11-21 19:58:12,370 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 110: [3 / 21] loss: 0.285
+2020-11-21 19:58:13,337 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 110: [6 / 21] loss: 0.251
+2020-11-21 19:58:14,347 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 110: [9 / 21] loss: 0.253
+2020-11-21 19:58:15,291 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 110: [12 / 21] loss: 0.233
+2020-11-21 19:58:16,188 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 110: [15 / 21] loss: 0.247
+2020-11-21 19:58:17,220 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 110: [18 / 21] loss: 0.261
+2020-11-21 19:58:19,784 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 19:58:19,792 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 111
+2020-11-21 19:58:21,355 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 111: [3 / 21] loss: 0.247
+2020-11-21 19:58:22,332 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 111: [6 / 21] loss: 0.278
+2020-11-21 19:58:23,295 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 111: [9 / 21] loss: 0.257
+2020-11-21 19:58:24,288 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 111: [12 / 21] loss: 0.251
+2020-11-21 19:58:25,262 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 111: [15 / 21] loss: 0.269
+2020-11-21 19:58:26,355 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 111: [18 / 21] loss: 0.263
+2020-11-21 19:58:28,771 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 19:58:28,778 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 112
+2020-11-21 19:58:30,282 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 112: [3 / 21] loss: 0.248
+2020-11-21 19:58:31,278 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 112: [6 / 21] loss: 0.233
+2020-11-21 19:58:32,284 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 112: [9 / 21] loss: 0.256
+2020-11-21 19:58:33,226 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 112: [12 / 21] loss: 0.245
+2020-11-21 19:58:34,117 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 112: [15 / 21] loss: 0.244
+2020-11-21 19:58:35,132 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 112: [18 / 21] loss: 0.268
+2020-11-21 19:58:37,824 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 19:58:37,833 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Start training in split train, Epoch: 113
+2020-11-21 19:58:39,400 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 113: [3 / 21] loss: 0.257
+2020-11-21 19:58:40,562 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 113: [6 / 21] loss: 0.252
+2020-11-21 19:58:41,670 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 113: [9 / 21] loss: 0.269
+2020-11-21 19:58:42,703 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 113: [12 / 21] loss: 0.240
+2020-11-21 19:58:43,754 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 113: [15 / 21] loss: 0.244
+2020-11-21 19:58:44,844 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Epoch 113: [18 / 21] loss: 0.265
+2020-11-21 19:58:47,113 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 19:59:07,997 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.936

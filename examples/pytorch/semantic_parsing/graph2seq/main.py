@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
@@ -21,7 +21,7 @@ from .args import get_args
 from .evaluation import ExpressionAccuracy
 from .utils import get_log, wordid2str
 from .build_model import get_model
-from graph4nlp.pytorch.modules.loss.graph2seq_loss import Graph2SeqLoss
+from graph4nlp.pytorch.modules.loss.seq_generation_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
 
@@ -245,6 +245,8 @@ class Jobs:
 
     def save_checkpoint(self, checkpoint_name):
         checkpoint_path = os.path.join(self.opt["checkpoint_save_path"], checkpoint_name)
+        if not os.path.exists(self.opt["checkpoint_save_path"]):
+            os.makedirs(self.opt["checkpoint_save_path"], exist_ok=True)
         torch.save(self.model.state_dict(), checkpoint_path)
 
 
@@ -252,6 +254,6 @@ if __name__ == "__main__":
     opt = get_args()
     runner = Jobs(opt)
     max_score = runner.train()
-    print("Train finish, best val score: {:.3f}".format(max_score))
+    runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint("best.pth")
     runner.translate()
