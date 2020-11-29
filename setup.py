@@ -20,7 +20,7 @@ if __name__ == '__main__':
                            'scikit-learn >= 0.23.2', 'networkx >= 2.5', 'dgl{} >= 0.4'.format(get_cuda_version())]
     setup(
         name='graph4nlp{}'.format(get_cuda_version()),
-        version='0.1a100002',
+        version='0.1a100006',
         description='GNN for NLP library',
         author='graph4nlp team',
         license='MIT',
