@@ -1,10 +1,12 @@
+import torch
+
 from .coverage_loss import CoverageLoss
-from .cross_entropy_loss import CrossEntropyLoss
+from .general_loss import GeneralLoss
 from .base import GeneralLossBase
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 
 
-class Graph2SeqLoss(GeneralLossBase):
+class SeqGenerationLoss(GeneralLossBase):
     """
         The general loss for ``Graph2Seq`` model.
     Parameters
@@ -16,10 +18,11 @@ class Graph2SeqLoss(GeneralLossBase):
     coverage_weight: float, default=0.3
         The weight of coverage loss.
     """
-    def __init__(self, vocab, use_coverage=False, coverage_weight=0.3):
-        super(Graph2SeqLoss, self).__init__()
+    def __init__(self, ignore_index, use_coverage=False, coverage_weight=0.3):
+        super(SeqGenerationLoss, self).__init__()
         self.use_coverage = use_coverage
-        self.loss_ce = CrossEntropyLoss(vocab)
+        self.loss_ce = GeneralLoss(loss_type="NLL", size_average=True, reduce=True,
+                                   ignore_index=ignore_index)
         self.loss_coverage = CoverageLoss(cover_loss=coverage_weight)
 
     def forward(self, logits, label, enc_attn_weights=None, coverage_vectors=None):
@@ -44,7 +47,7 @@ class Graph2SeqLoss(GeneralLossBase):
         -------
         graph2seq_loss: torch.Tensor
         """
-        loss_ce = self.loss_ce(logits, label)
+        loss_ce = self.loss_ce(torch.log(logits + 1e-31).transpose(1, 2), label)
         if self.use_coverage:
             loss_cover = self.loss_coverage(enc_attn_weights, coverage_vectors)
             loss_ce += loss_cover

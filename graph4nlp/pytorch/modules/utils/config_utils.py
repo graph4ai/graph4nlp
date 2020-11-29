@@ -2,6 +2,17 @@ import yaml
 
 
 def update_values(to_args: dict, from_args_list: [dict]):
+    """
+        update_values(template, [args1, args2])
+    Parameters
+    ----------
+    to_args
+    from_args_list
+
+    Returns
+    -------
+
+    """
     for from_args in from_args_list:
         if not isinstance(from_args, dict):
             raise TypeError("The element in ``from_args_list`` should be dict")

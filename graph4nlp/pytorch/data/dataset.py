@@ -759,7 +759,12 @@ class Text2TextDataset(Dataset):
         output_pad = pad_2d_vals_no_size(output_numpy)
 
         tgt_seq = torch.from_numpy(output_pad).long()
-        return [graph_data, tgt_seq, output_str]
+        # return [graph_data, tgt_seq, output_str]
+        return {
+            "graph_data": graph_data,
+            "tgt_seq": tgt_seq,
+            "output_str": output_str
+        }
 
 
 class TextToTreeDataset(Dataset):

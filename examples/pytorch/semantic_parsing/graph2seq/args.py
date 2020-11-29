@@ -7,7 +7,7 @@ from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_yaml", type=str,
-                        default="examples/pytorch/semantic_parsing/graph2seq/config/new_dependency_graphsage.yaml", help="")
+                        default="examples/pytorch/semantic_parsing/graph2seq/config/new_dependency_gat_bi_sep.yaml", help="")
                         # default="examples/pytorch/semantic_parsing/graph2seq/config/new_dynamic_refine.yaml", help="")
                         # default = "examples/pytorch/semantic_parsing/graph2seq/config/new_dynamic.yaml", help = "")
 
