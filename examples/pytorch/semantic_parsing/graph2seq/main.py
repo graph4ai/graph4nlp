@@ -167,7 +167,7 @@ class Jobs:
         dataloader = self.train_dataloader
         step_all_train = len(dataloader)
         for step, data in enumerate(dataloader):
-            graph_list, tgt, gt_str = data
+            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             tgt = tgt.to(self.device)
             oov_dict = None
             if self.use_copy:
@@ -192,7 +192,7 @@ class Jobs:
         assert split in ["val", "test"]
         dataloader = self.val_dataloader if split == "val" else self.test_dataloader
         for data in dataloader:
-            graph_list, tgt, gt_str = data
+            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             if self.use_copy:
                 oov_dict = prepare_ext_vocab(graph_list=graph_list, vocab=self.vocab, device=self.device)
                 ref_dict = oov_dict
@@ -218,7 +218,7 @@ class Jobs:
         gt_collect = []
         dataloader = self.test_dataloader
         for data in dataloader:
-            graph_list, tgt, gt_str = data
+            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             if self.use_copy:
                 oov_dict = prepare_ext_vocab(graph_list=graph_list, vocab=self.vocab, device=self.device)
                 ref_dict = oov_dict
