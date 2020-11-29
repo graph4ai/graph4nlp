@@ -64,8 +64,8 @@ class CNNDataset(Text2TextDataset):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
         # return {'train': 'train.json', 'val': "val.json", 'test': 'test.json'}
         # return {'train': 'train-0.json', 'val': "val-0.json", 'test': 'test-0.json'}
-        # return {'train': 'train_3w.json', 'val': "val.json", 'test': 'test.json'}
-        return {'train': 'train_9w.json', 'val': "val.json", 'test': 'test.json'}
+        return {'train': 'train_3w.json', 'val': "val.json", 'test': 'test.json'}
+        # return {'train': 'train_9w.json', 'val': "val.json", 'test': 'test.json'}
 
     @property
     def processed_file_names(self):
@@ -91,107 +91,6 @@ class CNNDataset(Text2TextDataset):
                                        share_vocab=self.share_vocab)
         self.vocab_model = vocab_model
         return self.vocab_model
-
-    # @staticmethod
-    # def process(topology_builder, data_item, port):
-    #     processor_args = {
-    #         'annotators': 'ssplit,tokenize,depparse',
-    #         "tokenize.options":
-    #             "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
-    #         "tokenize.whitespace": False,
-    #         'ssplit.isOneSentence': False,
-    #         'outputFormat': 'json'
-    #     }
-    #     print('Connecting to stanfordcorenlp server...')
-    #     processor = StanfordCoreNLP('http://localhost', port=int(port), timeout=9000)
-    #     processor.switch_language("en")
-    #     print('CoreNLP server connected.')
-    #     pop_idxs = []
-    #     cnt = 0
-    #     all = len(data_item)
-    #     ret = []
-    #     # print(id(data_item[0]), data_item[0].input_text)
-    #     for idx, item in enumerate(data_item):
-    #         if cnt % 1000 == 0:
-    #             print("Port {}, processing: {} / {}".format(port, cnt, all))
-    #         cnt += 1
-    #         try:
-    #             graph = topology_builder.topology(raw_text_data=item.input_text,
-    #                                               nlp_processor=processor,
-    #                                               processor_args=processor_args,
-    #                                               merge_strategy="tailhead",
-    #                                               edge_strategy=None,
-    #                                               verbase=False)
-    #             item.graph = graph
-    #         except:
-    #             pop_idxs.append(idx)
-    #             item.graph = None
-    #             print('item does not have graph: ' + str(idx))
-    #
-    #         # ret.append(graph)
-    #         ret.append((item, graph))
-    #
-    #     ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
-    #     print("Port {}, finish".format(port))
-    #     return ret
-    #
-    # def build_topology(self, data_items):
-    #     """
-    #     Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
-    #     DataItem.
-    #     """
-    #     # print(id(data_items[0]), data_items[0].input_text)
-    #
-    #     total = len(data_items)
-    #     n_pool = 30
-    #     pool = Pool(n_pool)
-    #     res_l = []
-    #     for i in range(n_pool):
-    #         start_index = total * i // n_pool
-    #         end_index = total * (i + 1) // n_pool
-    #         res_l.append(pool.apply_async(self.process, args=(self.topology_builder, data_items[start_index:end_index], 9000)))
-    #     pool.close()
-    #     pool.join()
-    #
-    #     # res_l.append(self.process(self.topology_builder, data_items, 9000))
-    #
-    #     new_data_items = []
-    #     for i in range(n_pool):
-    #         # res = res_l[i]
-    #         res = res_l[i].get()
-    #         for data, graph in res:
-    #             new_data_items.append(data)
-    #
-    #     return new_data_items
-
-    # def _process(self):
-    #     if any([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
-    #         if 'val_split_ratio' in self.__dict__:
-    #             UserWarning(
-    #                 "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
-    #                 "already been split.")
-    #         return
-    #
-    #     os.makedirs(self.processed_dir, exist_ok=True)
-    #
-    #     self.read_raw_data()
-    #
-    #     self.train = self.build_topology(self.train)
-    #     self.test = self.build_topology(self.test)
-    #     if 'val' in self.__dict__:
-    #         self.val = self.build_topology(self.val)
-    #
-    #     self.build_vocab()
-    #
-    #     self.vectorization(self.train)
-    #     self.vectorization(self.test)
-    #     if 'val' in self.__dict__:
-    #         self.vectorization(self.val)
-    #
-    #     data_to_save = {'train': self.train, 'test': self.test}
-    #     if 'val' in self.__dict__:
-    #         data_to_save['val'] = self.val
-    #     torch.save(data_to_save, self.processed_file_paths['data'])
 
     def parse_file(self, file_path):
         """

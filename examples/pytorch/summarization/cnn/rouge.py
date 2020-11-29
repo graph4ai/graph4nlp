@@ -60,8 +60,10 @@ def read_file(path):
 
 if __name__ == "__main__":
     path = 'save_g2s_3w_copy/'
-    gt_file = path+"cnn_tgt_output.txt"
-    pred_file = path+"cnn_pred_output.txt"
+    # gt_file = "save_g2s_3w_copy/cnn_tgt_output.txt"
+    # pred_file = "save_g2s_3w_copy/cnn_pred_output.txt"
+    gt_file = "save_g2s_3w_copy/cnn_tgt_output_bs.txt"
+    pred_file = "save_g2s_3w_copy/cnn_pred_output_bs.txt"
     gt_collect = read_file(gt_file)
     pred_collect = read_file(pred_file)
     assert len(gt_collect) == len(pred_collect)

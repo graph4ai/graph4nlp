@@ -91,7 +91,7 @@ class Graph2seq(nn.Module):
                                    feat_drop=feats_dropout, attn_drop=feats_dropout, activation=F.relu, residual=True)
         elif gnn == "GGNN":
             self.gnn_encoder = GGNN(3, hidden_size, hidden_size, direction_option=direction_option,
-                                    use_edge_weight=use_edge_weight, dropout=feats_dropout)
+                                    use_edge_weight=use_edge_weight, feat_drop=feats_dropout)
         elif gnn == "GraphSage":
             self.gnn_encoder = GraphSAGE(3, hidden_size, hidden_size, hidden_size, aggregator_type="lstm",
                                          direction_option=direction_option, feat_drop=feats_dropout,
@@ -103,8 +103,8 @@ class Graph2seq(nn.Module):
             raise NotImplementedError()
 
         self.seq_decoder = StdRNNDecoder(max_decoder_step=decoder_length,
-                                         decoder_input_size=2*hidden_size if direction_option == 'bi_sep' else hidden_size,
-                                         decoder_hidden_size=hidden_size, graph_pooling_strategy=graph_pooling_strategy,
+                                         input_size=2*hidden_size if direction_option == 'bi_sep' else hidden_size,
+                                         hidden_size=hidden_size, graph_pooling_strategy=graph_pooling_strategy,
                                          word_emb=self.word_emb, vocab=self.vocab.in_word_vocab,
                                          attention_type=attention_type, fuse_strategy=fuse_strategy,
                                          rnn_emb_input_size=hidden_size, use_coverage=use_coverage, use_copy=use_copy,
