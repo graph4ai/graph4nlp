@@ -1,7 +1,9 @@
-from torch import nn
 import torch
-from ..base import LinkPredictionBase
 from .StackedElementProdLayer import StackedElementProdLayer
+import torch
+
+from .StackedElementProdLayer import StackedElementProdLayer
+
 
 class StackedElementProd(StackedElementProdLayer):
     r"""Specific class for link prediction task.
@@ -18,11 +20,12 @@ class StackedElementProd(StackedElementProdLayer):
     hidden_size : list of int type values
                   Example for two layers's FeedforwardNN: [50, 20]        
 
-    """     
-    def __init__(self, input_size, hidden_size,num_class):        
+    """
+
+    def __init__(self, input_size, hidden_size, num_class):
         super(StackedElementProd, self).__init__()
         
-        self.num_channel=num_channel 
+        self.num_channel=num_class
         self.classifier=StackedElementProdLayer(input_size, num_class, self.num_channel, hidden_size)
 
     def forward(self, input_graph):
@@ -47,11 +50,11 @@ class StackedElementProd(StackedElementProdLayer):
                       The computed logit tensor for each pair of nodes in the graph are stored
                       in the node feature field named "edge_logits".
                       logit tensor shape is: [num_class] 
-        """ 
-        #get the nod embedding from the graph 
-        node_emb_list=[]
+        """
+        # get the nod embedding from the graph
+        node_emb_list = []
         for channel_idx in range(self.num_channel):
-           node_emb_list.append(input_graph.node_features['node_emb_'+str(channel_idx)]
+           node_emb_list.append(input_graph.node_features['node_emb_'+str(channel_idx)])
         
         #add the edges and edge prediction logits into the graph
         num_node=node_emb_list[0].shape[1]
@@ -62,9 +65,3 @@ class StackedElementProd(StackedElementProdLayer):
         input_graph.edge_features['logits']=self.classifier(node_emb_list)     
         
         return input_graph
-
-
-
-
-
-
