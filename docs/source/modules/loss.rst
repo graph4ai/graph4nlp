@@ -10,19 +10,10 @@ Losses
 .. autoclass:: CoverageLoss
     :members:
 
-.. autoclass:: CrossEntropyLoss
+.. autoclass:: SeqGenerationLoss
     :members:
 
 .. autoclass:: GeneralLoss
-    :members:
-
-.. autoclass:: Graph2SeqLoss
-    :members:
-
-.. autoclass:: SigmoidLoss
-    :members:
-
-.. autoclass:: SoftplusLoss
     :members:
 
 .. autoclass:: KGLoss
