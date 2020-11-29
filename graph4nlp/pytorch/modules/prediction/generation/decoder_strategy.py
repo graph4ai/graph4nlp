@@ -111,7 +111,7 @@ class DecoderStrategy(StrategyBase):
         len_in_words = False
 
         min_out_len = 1
-        max_out_len = self.max_decoder_step
+        max_out_len = self.max_decoder_step + 1
         batch_size = graph_node_embedding.shape[0]
 
         decoder_state = self.decoder.get_decoder_init_state(rnn_type=self.rnn_type, batch_size=batch_size,
@@ -162,14 +162,6 @@ class DecoderStrategy(StrategyBase):
                     for ii in range(step):
                         coverage_input.append(torch.cat([h.enc_attn_weights[ii] for h in hypos], dim=1))
 
-
-
-                # single_enc_attn_weights = torch.cat([h.enc_attn_weights for h in hypos])
-                # print(decoder_input.shape)
-                # print(single_decoder_state[0].shape, single_decoder_state[1].shape)
-                # print(single_graph_node_mask.shape)
-                # print(single_graph_node_embedding.shape, "1111")
-                # print(single_rnn_node_embedding.shape, "2222")
                 decoder_output, single_decoder_state, dec_attn_scores, _ = \
                     self.decoder.decode_step(decoder_input=decoder_input, rnn_state=single_decoder_state,
                                              dec_input_mask=single_graph_node_mask,

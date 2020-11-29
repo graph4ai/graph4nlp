@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
@@ -21,7 +21,7 @@ from .args import get_args
 from .evaluation import ExpressionAccuracy
 from .utils import get_log, wordid2str
 from .build_model import get_model
-from graph4nlp.pytorch.modules.loss.graph2seq_loss import Graph2SeqLoss
+from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
 
@@ -124,7 +124,7 @@ class Jobs:
         self.metrics = [ExpressionAccuracy()]
 
     def _build_loss_function(self):
-        self.loss = Graph2SeqLoss(vocab=self.vocab.in_word_vocab,
+        self.loss = Graph2SeqLoss(ignore_index=self.vocab.in_word_vocab.PAD,
                                   use_coverage=self.use_coverage, coverage_weight=0.3)
 
     def train(self):
@@ -167,7 +167,7 @@ class Jobs:
         dataloader = self.train_dataloader
         step_all_train = len(dataloader)
         for step, data in enumerate(dataloader):
-            graph_list, tgt, gt_str = data
+            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             tgt = tgt.to(self.device)
             oov_dict = None
             if self.use_copy:
@@ -192,7 +192,7 @@ class Jobs:
         assert split in ["val", "test"]
         dataloader = self.val_dataloader if split == "val" else self.test_dataloader
         for data in dataloader:
-            graph_list, tgt, gt_str = data
+            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             if self.use_copy:
                 oov_dict = prepare_ext_vocab(graph_list=graph_list, vocab=self.vocab, device=self.device)
                 ref_dict = oov_dict
@@ -218,7 +218,7 @@ class Jobs:
         gt_collect = []
         dataloader = self.test_dataloader
         for data in dataloader:
-            graph_list, tgt, gt_str = data
+            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             if self.use_copy:
                 oov_dict = prepare_ext_vocab(graph_list=graph_list, vocab=self.vocab, device=self.device)
                 ref_dict = oov_dict
@@ -245,6 +245,8 @@ class Jobs:
 
     def save_checkpoint(self, checkpoint_name):
         checkpoint_path = os.path.join(self.opt["checkpoint_save_path"], checkpoint_name)
+        if not os.path.exists(self.opt["checkpoint_save_path"]):
+            os.makedirs(self.opt["checkpoint_save_path"], exist_ok=True)
         torch.save(self.model.state_dict(), checkpoint_path)
 
 
@@ -252,6 +254,6 @@ if __name__ == "__main__":
     opt = get_args()
     runner = Jobs(opt)
     max_score = runner.train()
-    print("Train finish, best val score: {:.3f}".format(max_score))
+    runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint("best.pth")
     runner.translate()
