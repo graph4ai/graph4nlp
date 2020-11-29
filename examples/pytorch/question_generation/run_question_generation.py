@@ -23,7 +23,8 @@ from graph4nlp.pytorch.modules.graph_construction.embedding_construction import 
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, dropout_fn, sparse_mx_to_torch_sparse_tensor, EarlyStopping
 from graph4nlp.pytorch.modules.config import get_basic_args
-from graph4nlp.pytorch.modules.loss.graph2seq_loss import Graph2SeqLoss
+from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
+from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.evaluation import BLEU, METEOR, ROUGE
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils import constants as Constants
@@ -80,7 +81,7 @@ class QGModel(nn.Module):
         self.ctx2ans_attn = Context2AnswerAttention(config['num_hidden'], config['num_hidden'])
         self.fuse_ctx_ans = nn.Linear(2 * config['num_hidden'], config['num_hidden'], bias=False)
 
-        self.loss_calc = Graph2SeqLoss(vocab=self.vocab.in_word_vocab,
+        self.loss_calc = Graph2SeqLoss(ignore_index=self.vocab.out_word_vocab.PAD,
                                   use_coverage=self.use_coverage, coverage_weight=config['coverage_loss_ratio'])
 
     def encode_init_node_feature(self, data):
@@ -107,7 +108,7 @@ class QGModel(nn.Module):
 
     def forward(self, data, oov_dict=None, require_loss=True):
         batch_gd = self.encode_init_node_feature(data)
-        prob, enc_attn_weights, coverage_vectors = self.g2s._encoder_decoder(batch_gd, data['graph_data'], oov_dict=oov_dict, tgt_seq=data['tgt_tensor'])
+        prob, enc_attn_weights, coverage_vectors = self.g2s.encoder_decoder(batch_gd, data['graph_data'], oov_dict=oov_dict, tgt_seq=data['tgt_tensor'])
 
         if require_loss:
             loss = self.loss_calc(prob, label=data['tgt_tensor'], enc_attn_weights=enc_attn_weights, coverage_vectors=coverage_vectors)
@@ -274,7 +275,7 @@ class ModelHandler:
 
                 oov_dict = None
                 if self.use_copy:
-                    oov_dict, tgt = self.prepare_ext_vocab(data['graph_data'], self.vocab, gt_str=data['tgt_text'])
+                    oov_dict, tgt = prepare_ext_vocab(data['graph_data'], self.vocab, gt_str=data['tgt_text'])
                     data['tgt_tensor'] = tgt
 
                 logits, loss = self.model(data, oov_dict=oov_dict, require_loss=True)
@@ -315,7 +316,7 @@ class ModelHandler:
                 data = all_to_cuda(data, self.config['device'])
 
                 if self.use_copy:
-                    oov_dict = self.prepare_ext_vocab(data['graph_data'], self.vocab)
+                    oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab)
                     ref_dict = oov_dict
                 else:
                     oov_dict = None
@@ -334,33 +335,20 @@ class ModelHandler:
 
     def translate(self, dataloader):
         self.model.eval()
-        generator = DecoderStrategy(beam_size=self.config['beam_size'], vocab=self.model.g2s.seq_decoder.vocab, rnn_type=self.model.g2s.seq_decoder.rnn_type,
-                            decoder=self.model.g2s.seq_decoder, use_copy=self.use_copy, use_coverage=self.use_coverage)
-
         with torch.no_grad():
             pred_collect = []
             gt_collect = []
             for i, data in enumerate(dataloader):
                 data = all_to_cuda(data, self.config['device'])
                 if self.use_copy:
-                    oov_dict = self.prepare_ext_vocab(data['graph_data'], self.vocab)
+                    oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab)
                     ref_dict = oov_dict
                 else:
                     oov_dict = None
                     ref_dict = self.vocab.out_word_vocab
 
                 batch_gd = self.model.encode_init_node_feature(data)
-                batch_gd = self.model.g2s.gnn_encoder(batch_gd)
-                batch_gd.node_features['rnn_emb'] = batch_gd.node_features['node_feat']
-
-                graph_list_decoder = from_batch(batch_gd)
-
-                if self.model.g2s.use_copy and 'token_id_oov' not in batch_gd.node_features.keys():
-                    for g, g_ori in zip(graph_list_decoder, data['graph_data']):
-                        g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
-
-                # down-task
-                prob = generator.generate(graph_list=graph_list_decoder, oov_dict=oov_dict, topk=1)
+                prob = self.model.g2s.encoder_decoder_beam_search(batch_gd, data['graph_data'], self.config['beam_size'], topk=1, oov_dict=oov_dict)
 
                 pred_ids = torch.zeros(len(prob), self.config['decoder_args']['rnn_decoder_private']['max_decoder_step']).fill_(ref_dict.EOS).to(self.config['device']).int()
                 for i, item in enumerate(prob):
@@ -391,33 +379,6 @@ class ModelHandler:
         self.logger.write(format_str)
 
         return scores
-
-    def prepare_ext_vocab(self, batch, vocab, gt_str=None):
-        oov_dict = copy.deepcopy(vocab.in_word_vocab)
-        for g in batch:
-            token_matrix = []
-            for node_idx in range(g.get_node_num()):
-                node_token = g.node_attributes[node_idx]['token']
-                if oov_dict.getIndex(node_token) == oov_dict.UNK:
-                    oov_dict._add_words(node_token)
-                token_matrix.append([oov_dict.getIndex(node_token)])
-            token_matrix = torch.tensor(token_matrix, dtype=torch.long).to(self.config['device'])
-            g.node_features['token_id_oov'] = token_matrix
-
-        if gt_str is not None:
-            oov_tgt_collect = []
-            for s in gt_str:
-                oov_tgt = oov_dict.to_index_sequence(s)
-                oov_tgt.append(oov_dict.EOS)
-                oov_tgt = np.array(oov_tgt)
-                oov_tgt_collect.append(oov_tgt)
-
-            output_pad = pad_2d_vals_no_size(oov_tgt_collect)
-
-            tgt_seq = torch.from_numpy(output_pad).long().to(self.config['device'])
-            return oov_dict, tgt_seq
-        else:
-            return oov_dict
 
     def evaluate_predictions(self, ground_truth, predict):
         output = {}
