@@ -1,0 +1,73 @@
+graph_construction_name: "node_emb"
+graph_embedding_name: "graphsage"
+decoder_name: "stdtree"
+
+graph_construction_args:
+  graph_construction_share:
+    graph_type: 'node_emb'
+    root_dir: "graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs"
+    topology_subdir: 'DynamicGraph_node_emb'
+    thread_number: 4
+    port: 9000
+    timeout: 15000
+
+  graph_construction_private:
+    edge_strategy: 'homogeneous'
+    merge_strategy: 'tailhead'
+    sequential_link: true
+    as_node: false
+
+  node_embedding:
+    input_size: 300
+    hidden_size: 300
+    word_dropout: 0.1
+    rnn_dropout: 0.1
+    fix_bert_emb: false
+    fix_word_emb: false
+    embedding_style:
+      single_token_item: true
+      emb_strategy: "w2v_bilstm"
+      num_rnn_layers: 1
+      bert_model_name: null
+      bert_lower_case: null
+
+    sim_metric_type: 'weighted_cosine'
+    num_heads: 1
+    top_k_neigh: null
+    epsilon_neigh: 0.5
+    smoothness_ratio: 0.1
+    connectivity_ratio: 0.05
+    sparsity_ratio: 0.1
+
+graph_embedding_args:
+  graph_embedding_share:
+    num_layers: 1
+    input_size: 300
+    hidden_size: 300
+    output_size: 300
+    direction_option: "bi_fuse"
+    feat_drop: 0
+
+  graph_embedding_private:
+    heads: [1]
+    attn_drop: 0
+    negative_slope: 0.2
+    residual: true
+    activation: "relu"
+
+decoder_args:
+  rnn_decoder_share:
+    rnn_type: "lstm"
+    input_size: 300
+    hidden_size: 300
+    rnn_emb_input_size: 300
+    use_copy: true
+    dropout: 0.1
+    graph_pooling_strategy: "max"
+
+  rnn_decoder_private:
+    max_dec_seq_length: 50
+    max_dec_tree_depth_for_train: 50
+    max_dec_tree_depth_for_test: 20
+    use_sibling: false
+    teacher_force_ratio: 1.0

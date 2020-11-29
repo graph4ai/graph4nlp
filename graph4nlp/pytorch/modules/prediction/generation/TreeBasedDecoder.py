@@ -181,7 +181,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                 graph_level_embedding = torch.max(graph_node_embedding, 1)[0]
             elif self.graph_pooling_strategy == "min":
                 graph_level_embedding = torch.min(graph_node_embedding, 1)[0]
-            elif self.graph_level_embedding == "mean":
+            elif self.graph_pooling_strategy == "mean":
                 graph_level_embedding = torch.mean(graph_node_embedding, 1)
             else:
                 raise NotImplementedError()

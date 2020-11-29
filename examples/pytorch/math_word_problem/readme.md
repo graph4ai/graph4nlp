@@ -8,7 +8,15 @@
 ## dynamic on node emb
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |  
-| GraphSage | 64.62 | 64.02 | 61.37 | 
+| GraphSage | 64.08 | 60.23 | 61.37 | 
+
+## dynamic on node emb(1/5 of training data)
+| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- |  
+| GraphSage | 58.95 | 59.10 | 61.00 | 
+| GCN | 60.62 | 59.48 | 60.31 | 
+| GGNN | - | - | - | 
+| GAT | - | - | - | 
 
 # Results on Mawps
 
