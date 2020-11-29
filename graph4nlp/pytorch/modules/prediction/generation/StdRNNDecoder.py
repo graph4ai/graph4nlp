@@ -273,11 +273,6 @@ class StdRNNDecoder(RNNDecoderBase):
         coverage_vectors = []
 
         for i in range(target_len):
-            # if i == 4:
-            #     print(len(enc_attn_weights_average))
-            #     print(enc_attn_weights_average[0].shape)
-            #     exit(0)
-
             decoder_output, decoder_state, dec_attn_scores, coverage_vec = \
                 self.decode_step(decoder_input=decoder_input, rnn_state=decoder_state, dec_input_mask=graph_node_mask,
                                  encoder_out=graph_node_embedding, rnn_emb=rnn_node_embedding,
