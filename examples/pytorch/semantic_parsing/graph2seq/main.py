@@ -124,7 +124,7 @@ class Jobs:
         self.metrics = [ExpressionAccuracy()]
 
     def _build_loss_function(self):
-        self.loss = Graph2SeqLoss(ignore_index=self.vocab.in_word_vocab.PAD,
+        self.loss = Graph2SeqLoss(ignore_index=self.vocab.out_word_vocab.PAD,
                                   use_coverage=self.use_coverage, coverage_weight=0.3)
 
     def train(self):
