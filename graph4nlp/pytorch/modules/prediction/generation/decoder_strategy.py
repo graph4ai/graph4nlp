@@ -180,7 +180,6 @@ class DecoderStrategy(StrategyBase):
                         new_prob = top_v[in_idx][out_idx].item()
                         new_enc_attn_weights = dec_attn_scores[in_idx, :].unsqueeze(0).unsqueeze(0)
 
-
                         non_word = new_tok == self.vocab.EOS  # only SOS & EOS don't count
 
                         if self.rnn_type == "lstm":

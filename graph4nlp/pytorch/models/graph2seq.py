@@ -68,6 +68,7 @@ class Graph2Seq(Graph2XBase):
 
         self.use_copy = dec_use_copy
         self.use_coverage = dec_use_coverage
+        self.dec_rnn_type = dec_rnn_type
 
         self._build_decoder(rnn_type=dec_rnn_type, decoder_length=dec_max_decoder_step, vocab_model=vocab_model,
                             word_emb=self.word_emb, rnn_input_size=emb_hidden_size,
@@ -110,7 +111,7 @@ class Graph2Seq(Graph2XBase):
         return prob, enc_attn_weights, coverage_vectors
 
     def encoder_decoder_beam_search(self, batch_graph, old_graph_list, beam_size, topk=1, oov_dict=None):
-        generator = DecoderStrategy(beam_size=beam_size, vocab=self.seq_decoder.vocab, rnn_type="lstm",
+        generator = DecoderStrategy(beam_size=beam_size, vocab=self.seq_decoder.vocab, rnn_type=self.dec_rnn_type,
                                     decoder=self.seq_decoder, use_copy=self.use_copy,
                                     use_coverage=self.use_coverage)
         batch_graph = self.gnn_encoder(batch_graph)
