@@ -7,12 +7,13 @@ from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml
 def get_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--dataset_yaml", type=str,
+    parser.add_argument("-dataset_yaml", type=str,
                         default="examples/pytorch/semantic_parsing/graph2tree/config/new_dynamic_graphsage.yaml", 
                         help="which graph construction method and gnn type you want to use.")
 
-    parser.add_argument('--gpuid', type=int, default=0, help='which gpu to use. -1 = use CPU')
-    parser.add_argument('--seed', type=int, default=123, help='torch manual random number generator seed')
+    parser.add_argument('-gpuid', type=int, default=0, help='which gpu to use. -1 = use CPU')
+    parser.add_argument('-seed', type=int, default=123, help='torch manual random number generator seed')
+
     parser.add_argument('-data_dir', type=str,
                         default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs', help='data path')
 

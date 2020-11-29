@@ -5,8 +5,8 @@ decoder_name: "stdtree"
 graph_construction_args:
   graph_construction_share:
     graph_type: 'node_emb'
-    root_dir: "graph4nlp/pytorch/test/dataset/jobs"
-    topology_subdir: 'NodeEmbGraph'
+    root_dir: "graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs"
+    topology_subdir: 'DynamicGraph_node_emb'
     thread_number: 4
     port: 9000
     timeout: 15000
@@ -45,7 +45,7 @@ graph_embedding_args:
     input_size: 300
     hidden_size: 300
     output_size: 300
-    direction_option: "undirected"
+    direction_option: "bi_fuse"
     feat_drop: 0
 
   graph_embedding_private:
@@ -63,8 +63,11 @@ decoder_args:
     rnn_emb_input_size: 300
     use_copy: true
     dropout: 0.1
+    graph_pooling_strategy: "max"
 
   rnn_decoder_private:
     max_dec_seq_length: 50
     max_dec_tree_depth_for_train: 50
     max_dec_tree_depth_for_test: 20
+    use_sibling: false
+    teacher_force_ratio: 1.0
