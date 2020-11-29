@@ -1,5 +1,6 @@
-from .coverage_loss import CoverageLoss
-from .cross_entropy_loss import CrossEntropyLoss
 from .general_loss import GeneralLoss
-from .graph2seq_loss import Graph2SeqLoss
-from .kg_loss import SigmoidLoss, SoftplusLoss, KGLoss
+from .coverage_loss import CoverageLoss
+from .seq_generation_loss import SeqGenerationLoss
+from .kg_loss import KGLoss
+
+__all__ = ["GeneralLoss", "CoverageLoss", "SeqGenerationLoss", "KGLoss"]
