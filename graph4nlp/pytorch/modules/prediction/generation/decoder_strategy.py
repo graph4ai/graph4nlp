@@ -240,6 +240,118 @@ class DecoderStrategy(StrategyBase):
                 ret[sent_id, i, :] = ids
         return ret
 
+    def _beam_search_for_tree_test(self, graph_node_embedding,
+                                    parent_state,
+                                    decoder_initial_state,
+                                    decoder_initial_input,
+                                    graph_node_mask=None, 
+                                    rnn_node_embedding=None, 
+                                    graph_level_embedding=None,
+                                    graph_edge_embedding=None,
+                                    graph_edge_mask=None,
+                                    src_seq=None,
+                                    enc_batch=None,
+                                    oov_dict=None,
+                                    beam_size=4,
+                                    sibling_state=None,
+                                    device=None,
+                                    topk=1):
+        assert 0 < topk <= beam_size
+        len_in_words = False
+
+        decoder_hidden = decoder_initial_state
+        decoder_input = decoder_initial_input
+
+        min_out_len = 1
+        max_out_len = self.max_decoder_step
+        batch_size = graph_node_embedding.shape[0]
+
+        assert batch_size == 1
+
+        results, backup_results = [], []
+        
+        if decoder_initial_input.item() == oov_dict.get_symbol_idx('('):
+            hypos = [Hypothesis(decoder_input, [], decoder_hidden, 0, [], use_coverage=self.use_coverage)]# tokens, log_probs, dec_state, num_non_words
+        else:
+            hypos = [Hypothesis(decoder_input, [], decoder_hidden, 1, [], use_coverage=self.use_coverage)]# tokens, log_probs, dec_state, num_non_words
+
+        step = 0
+        while len(hypos) > 0 and step <= self.max_decoder_step:
+            n_hypos = len(hypos)
+            if n_hypos < beam_size:
+                hypos.extend(hypos[-1] for _ in range(beam_size - n_hypos)) # check deep copy
+
+            decoder_input = torch.tensor([h.tokens[-1] for h in hypos]).to(graph_node_embedding.device)
+            enc_tmp = []
+            decoder_output, decoder_hidden, dec_attn_scores = self.decoder.decode_step(tgt_batch_size=1, 
+                                                                                       dec_single_input=decoder_input,
+                                                                                       dec_single_state=decoder_hidden,
+                                                                                       memory=graph_node_embedding,
+                                                                                       parent_state=parent_state,
+                                                                                       oov_dict=oov_dict,
+                                                                                       enc_batch=enc_batch)
+
+            decoder_output = torch.log(decoder_output + 1e-31)
+            top_v, top_i = decoder_output.data.topk(beam_size)
+            # print(top_v.shape, decoder_output.shape, dec_attn_scores.shape, "-----")
+
+            new_hypos = []
+            for in_idx in range(n_hypos):
+                for out_idx in range(beam_size):
+                    new_tok = top_i[in_idx][out_idx].item()
+                    new_prob = top_v[in_idx][out_idx].item()
+                    new_enc_attn_weights = dec_attn_scores[in_idx, :].unsqueeze(0).unsqueeze(0)
+
+
+                    non_word = new_tok == self.vocab.EOS  # only SOS & EOS don't count
+
+                    if self.rnn_type == "lstm":
+                        tmp_decoder_state = (
+                            decoder_hidden[0][:, in_idx, :].unsqueeze(1),
+                            decoder_hidden[1][:, in_idx, :].unsqueeze(1))
+                    elif self.rnn_type == "gru":
+                        tmp_decoder_state = decoder_hidden[:, in_idx, :].unsqueeze(1)
+                    else:
+                        raise NotImplementedError("RNN Type {} is not implemented, expected in ``lstm`` or ``gru``"
+                                                  .format(self.rnn_type))
+
+                    new_hypo = hypos[in_idx].create_next(token=new_tok, log_prob=new_prob,
+                                                         dec_state=tmp_decoder_state, non_word=non_word,
+                                                         add_enc_attn_weights=new_enc_attn_weights)
+                    new_hypos.append(new_hypo)
+
+            new_hypos = sorted(new_hypos, key=lambda h: -h.avg_log_prob)[:beam_size]
+            hypos = []
+            new_complete_results, new_incomplete_results = [], []
+            for nh in new_hypos:
+                length = len(nh)  # Does not count SOS and EOS
+                if nh.tokens[-1] == self.vocab.EOS:  # a complete hypothesis
+                    if len(new_complete_results) < beam_size and min_out_len <= length <= max_out_len:
+                        new_complete_results.append(nh)
+                elif len(hypos) < beam_size and length < max_out_len:  # an incomplete hypothesis
+                    hypos.append(nh)
+                elif length == max_out_len and len(new_incomplete_results) < beam_size:
+                    new_incomplete_results.append(nh)
+            if new_complete_results:
+                results.extend(new_complete_results)
+            elif new_incomplete_results:
+                backup_results.extend(new_incomplete_results)
+            step += 1
+        if not results:  # if no sequence ends with EOS within desired length, fallback to sequences
+            results = backup_results  # that are "truncated" at the end to max_out_len
+        batch_results.append(sorted(results, key=lambda h: -h.avg_log_prob)[:topk])
+
+        ret = torch.zeros(batch_size, topk, self.max_decoder_step).long()
+        for sent_id, each in enumerate(batch_results):
+            for i in range(topk):
+                ids = torch.Tensor(each[i].tokens[1:])[:self.max_decoder_step]
+                if ids.shape[0] < self.max_decoder_step:
+                    pad = torch.zeros(self.max_decoder_step - ids.shape[0])
+                    ids = torch.cat((ids, pad), dim=0)
+                ret[sent_id, i, :] = ids
+        return ret
+
+
     def beam_search_for_tree_decoding(self, decoder_initial_state,
                                         decoder_initial_input,
                                         parent_state,

@@ -66,8 +66,8 @@ decoder_args:
     graph_pooling_strategy: "max"
 
   rnn_decoder_private:
-    max_dec_seq_length: 50
-    max_dec_tree_depth_for_train: 50
+    max_decoder_step: 50
+    max_tree_depth: 50
     max_dec_tree_depth_for_test: 20
     use_sibling: false
     teacher_force_ratio: 1.0

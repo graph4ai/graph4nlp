@@ -190,7 +190,7 @@ class Jobs:
             # self.scheduler.step()
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
             # print(self.scheduler.get_lr())
-            if epoch > 20 and epoch % 10 == 0:
+            if epoch > 2 and epoch % 10 == 0:
                 # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                 # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
                 test_acc = self.eval((self.model))
@@ -201,12 +201,12 @@ class Jobs:
     def eval(self, model):
         device = model.device
 
-        max_dec_seq_length = self.opt["max_dec_seq_length"]
-        max_dec_tree_depth = self.opt["max_dec_tree_depth_for_test"]
+        max_dec_seq_length = self.opt["decoder_args"]["rnn_decoder_private"]["max_decoder_step"]
+        max_dec_tree_depth = self.opt["decoder_args"]["rnn_decoder_private"]["max_dec_tree_depth_for_test"]
         
         use_copy = self.test_data_loader.use_copy
-        enc_emb_size = model.src_vocab.embedding_dims
-        tgt_emb_size = model.tgt_vocab.embedding_dims
+        enc_emb_size = model.vocab_model.in_word_vocab.embedding_dims
+        tgt_emb_size = model.vocab_model.out_word_vocab.embedding_dims
 
         enc_hidden_size = model.decoder.enc_hidden_size
         dec_hidden_size = model.decoder.hidden_size
