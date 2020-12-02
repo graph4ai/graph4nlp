@@ -1615,8 +1615,10 @@ class SequenceLabelingDataset(Dataset):
             tgt_tag.append(item.output_id)
 
         # tgt_tags = torch.cat(tgt_tag, dim=0)
-        return [graph_data, tgt_tag]
-
+        #return [graph_data, tgt_tag]
+        return {"graph_data": graph_data,
+            "tgt_tag": tgt_tag}
+        
 
 class CNNSeq2SeqDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir,
