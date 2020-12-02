@@ -516,7 +516,7 @@ class Conll:
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NER')
-    parser.add_argument("--gpu", type=int, default=-1,
+    parser.add_argument("--gpu", type=int, default=0,
                         help="which GPU to use.")
     parser.add_argument("--epochs", type=int, default=10,
                         help="number of training epochs")
