@@ -456,7 +456,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                 beam_search_generator = DecoderStrategy(
                     beam_size=beam_width, vocab=form_manager, decoder=model.decoder, rnn_type="lstm", use_copy=True, use_coverage=False)
                 for idx in range(graph_node_embedding.size(0)):
-                    decoded_results = beam_search_generator._beam_search_for_tree_test(decoder_initial_state=(s[0], s[1]),
+                    decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]),
                                                                                           decoder_initial_input=prev_word,
                                                                                           parent_state=parent_h,
                                                                                           graph_node_embedding=enc_outputs,
