@@ -52,7 +52,10 @@ class RankingAndHits(EvaluationMetricBase):
         with open('output_model.txt', 'w') as file:
             for data in dataloader:
                 e1, rel, e2_multi, e2_multi_tensor_idx, \
-                e2, rel_eval, e1_multi, e1_multi_tensor_idx = data
+                e2, rel_eval, e1_multi, e1_multi_tensor_idx = data['e1'], data['rel'], \
+                                                              data['e2_multi'], data['e2_multi_tensor_idx'], \
+                                                              data['e2'], data['rel_eval'], \
+                                                              data['e1_multi'], data['e1_multi_tensor_idx']
 
                 e1 = e1.view(-1, 1).to(device)
                 rel = rel.view(-1, 1).to(device)
@@ -159,10 +162,6 @@ class RankingAndHits(EvaluationMetricBase):
 
         print('-' * 50)
         print('')
-
-
-# TODO: 1. initialize graph.node_features['edge_feat']/self.distmult.rel_emb with self.embedding_layer
-# TODO: 2. learn graph.node_features['edge_emb'] from GNN (edge2node)
 
 class Graph2DistMult(nn.Module):
     def __init__(self, args, vocab, device, num_entities, hidden_size=300, num_relations=None, direction_option='uni',
@@ -339,7 +338,7 @@ class Kinship:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = KinshipDataset(root_dir='/raid/ghn/graph4nlp/examples/pytorch/kg_completion/kinship',
+        dataset = KinshipDataset(root_dir='examples/pytorch/kg_completion/kinship',
                                  topology_builder=None,
                                  topology_subdir='e1rel_to_e2')
 
@@ -385,14 +384,15 @@ class Kinship:
 
             for data in self.train_dataloader:
                 e1, rel, e2_multi, e2_multi_tensor_idx, \
-                e2, rel_eval, e1_multi, e1_multi_tensor_idx = data
+                e2, rel_eval, e1_multi, e1_multi_tensor_idx = data['e1'], data['rel'],\
+                                                              data['e2_multi'], data['e2_multi_tensor_idx'], \
+                                                              data['e2'], data['rel_eval'], \
+                                                              data['e1_multi'], data['e1_multi_tensor_idx']
 
                 e1 = torch.cat([e1, e2]).to(self.device)
                 rel = torch.cat([rel, rel_eval]).to(self.device)
                 e2_multi = torch.cat([e2_multi, e1_multi], dim=0).to(self.device)
-                # e2_multi_tensor_idx = torch.cat([e2_multi_tensor_idx, e1_multi_tensor_idx]).to(self.device)
 
-                # TODO
                 if random.randint(0, 1) == 0:
                     e1 = torch.cat([e1]).to(self.device)
                     rel = torch.cat([rel]).to(self.device)
@@ -401,15 +401,6 @@ class Kinship:
                     e1 = torch.cat([e2]).to(self.device)
                     rel = torch.cat([rel_eval]).to(self.device)
                     e2_multi = torch.cat([e1_multi], dim=0).to(self.device)
-
-                # c = torch.randperm(e1.size()[0])
-                # e1 = e1[c]
-                # rel = rel[c]
-                # e2_multi = e2_multi[c]
-
-                # e1 = e1.to(self.device)
-                # rel = rel.to(self.device)
-                # e2_multi = e2_multi.to(self.device)
 
                 _, loss = self.model(self.kg_graph, e1, rel, e2_multi, require_loss=True)
                 loss_list.append(loss.item())
@@ -469,5 +460,3 @@ if __name__ == "__main__":
     max_score = runner.train()
     max_score = runner.test()
     print("Train finish, best MRR: {:.3f}".format(max_score))
-
-# nohup python -m examples.pytorch.kg_completion.kinship.main >> distmult_bce_gat_uni.log 2>&1 &
