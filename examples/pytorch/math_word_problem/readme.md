@@ -10,13 +10,23 @@
 | ---- | ---- | ---- | ---- |  
 | GraphSage | 64.08 | 60.23 | 61.37 | 
 
-## dynamic on node emb(1/5 of training data)
+## dynamic on node emb(1/5 of data)
 | Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
 | ---- | ---- | ---- | ---- |  
 | GraphSage | 58.95 | 59.10 | 61.00 | 
 | GCN | 60.62 | 59.48 | 60.31 | 
 | GGNN | - | - | - | 
 | GAT | - | - | - | 
+## constituency on node emb(1/5 of data)
+| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
+| ---- | ---- | ---- | ---- |  
+| GraphSage | 60.13 | 57.62 | 66.83 | 
+| GCN | 63.65 | 59.63 | 60.80 | 
+| GGNN | 62.14 | 63.14 | 59.46 | 
+| GAT | 65.83 | 66.16 | 62.65 | 
+
+
+
 
 # Results on Mawps
 
