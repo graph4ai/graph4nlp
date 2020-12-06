@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from .dataset import CNNDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -288,5 +288,5 @@ if __name__ == "__main__":
     # max_score = runner.train()
     # print("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint("best.pth")
-    runner.evaluate(split='test', test_mode=True)
-    # runner.translate()
+    # runner.evaluate(split='test', test_mode=True)
+    runner.translate()

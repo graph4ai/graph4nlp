@@ -220,7 +220,7 @@ class DecoderStrategy(StrategyBase):
                 step += 1
             if not results:  # if no sequence ends with EOS within desired length, fallback to sequences
                 results = backup_results  # that are "truncated" at the end to max_out_len
-            batch_results.append(sorted(results, key=lambda h: -h.avg_log_prob)[:topk])
+            batch_results.append(sorted(results, key=lambda h: -h.avg_log_prob)[:beam_size])
         ret = torch.zeros(batch_size, topk, self.max_decoder_step).long()
         for sent_id, each in enumerate(batch_results):
             for i in range(topk):
