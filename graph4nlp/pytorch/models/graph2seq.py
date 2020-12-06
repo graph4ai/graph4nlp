@@ -125,6 +125,9 @@ class Graph2Seq(Graph2XBase):
 
     def forward(self, graph_list, tgt_seq=None, oov_dict=None):
         batch_graph = self.graph_topology(graph_list)
+        # if torch.isnan(batch_graph.node_features['node_feat'].max()).item():
+        #     a = 0
+        #     batch_graph = self.graph_topology(graph_list)
         return self.encoder_decoder(batch_graph=batch_graph, old_graph_list=graph_list,
                                     oov_dict=oov_dict, tgt_seq=tgt_seq)
 

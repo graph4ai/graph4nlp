@@ -60,8 +60,10 @@ def read_file(path):
 
 if __name__ == "__main__":
     path = 'save_g2s_3w_copy_dep/'
-    gt_file = "save_g2s_3w_copy_dep/cnn_tgt_output.txt"
-    pred_file = "save_g2s_3w_copy_dep/cnn_pred_output.txt"
+    gt_file = "save_g2s_1w_copy_ie/cnn_tgt_output.txt"
+    pred_file = "save_g2s_1w_copy_ie/cnn_pred_output.txt"
+    # gt_file = "save_g2s_3w_copy_dep/cnn_tgt_output.txt"
+    # pred_file = "save_g2s_3w_copy_dep/cnn_pred_output.txt"
     # gt_file = "save_g2s_3w_copy_dep/cnn_tgt_output_bs2.txt"
     # pred_file = "save_g2s_3w_copy_dep/cnn_pred_output_bs2.txt"
     # gt_file = "save_g2s_3w_copy_dep/cnn_tgt_output_bs1.txt"

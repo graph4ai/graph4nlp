@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 from .dataset import CNNDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -187,6 +187,10 @@ class CNN:
             prob, enc_attn_weights, coverage_vectors = self.model(graph_list, tgt, oov_dict=oov_dict)
             loss = self.loss(logits=prob, label=tgt, enc_attn_weights=enc_attn_weights,
                              coverage_vectors=coverage_vectors)
+            # if torch.isnan(loss).item():
+            #     a = 0
+            #     prob, enc_attn_weights, coverage_vectors = self.model(graph_list, tgt, oov_dict=oov_dict)
+            #     continue
             loss_collect.append(loss.item())
             if step % self.opt["loss_display_step"] == 0 and step != 0:
                 self.logger.info("Epoch {}: [{} / {}] loss: {:.3f}".format(epoch, step, step_all_train,
