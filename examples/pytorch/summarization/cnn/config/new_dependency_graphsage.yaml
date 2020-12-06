@@ -1,14 +1,14 @@
 graph_construction_name: "dependency"
-graph_embedding_name: "gcn"
+graph_embedding_name: "graphsage"
 decoder_name: "stdrnn"
 
 graph_construction_args:
   graph_construction_share:
     graph_type: 'dependency'
-    root_dir: "examples/pytorch/summarization/cnn/dataset"
+    root_dir: "examples/pytorch/summarization/cnn"
     topology_subdir: 'DependencyGraph_3w'
     thread_number: 35
-    port: 9000
+    port: 9001
     timeout: 15000
 
   graph_construction_private:
