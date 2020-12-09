@@ -261,17 +261,26 @@ class Jobs:
         elif self.opt.graph_construction_type == "ConstituencyGraph":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
                                          topology_builder=ConstituencyBasedGraphConstruction,
-                                         topology_subdir='ConstituencyGraph', share_vocab=use_share_vocab,
-                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, min_freq=self.opt.min_freq)
+                                         topology_subdir='ConstituencyGraph', 
+                                         share_vocab=use_share_vocab,
+                                         enc_emb_size=self.opt.enc_emb_size, 
+                                         dec_emb_size=self.opt.tgt_emb_size,
+                                         device=self.device, 
+                                         min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
+            dataset = JobsDatasetForTree(root_dir=self.data_dir, 
+                                         seed=self.opt.seed, 
+                                         word_emb_size=self.opt.enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedGraphConstruction,
-                                         topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
-                                         dynamic_graph_type='node_emb', share_vocab=use_share_vocab,
-                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, min_freq=self.opt.min_freq)
+                                         topology_subdir='DynamicGraph_node_emb', 
+                                         graph_type='dynamic',
+                                         dynamic_graph_type='node_emb', 
+                                         share_vocab=use_share_vocab,
+                                         enc_emb_size=self.opt.enc_emb_size, 
+                                         dec_emb_size=self.opt.tgt_emb_size,
+                                         device=self.device, 
+                                         min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
             if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
@@ -573,7 +582,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument(
         '-gpuid', type=int, default=0, help='which gpu to use. -1 = use CPU')
     main_arg_parser.add_argument(
-        '-seed', type=int, default=123, help='torch manual random number generator seed')
+        '-seed', type=int, default=1234, help='torch manual random number generator seed')
     main_arg_parser.add_argument(
         '-use_copy', type=int, default=0, help='whether use copy mechanism')
 
