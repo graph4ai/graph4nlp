@@ -135,6 +135,11 @@ class Tree():
                 t.add_child(r_list[i])
         return t
 
+class VocabForAll():
+    def __init__(self, in_word_vocab, out_word_vocab, share_vocab):
+        self.in_word_vocab = in_word_vocab
+        self.out_word_vocab = out_word_vocab
+        self.share_vocab = share_vocab
 
 class Vocab():
     def __init__(self, lower_case=True, pretrained_embedding_fn=None, embedding_dims=300):

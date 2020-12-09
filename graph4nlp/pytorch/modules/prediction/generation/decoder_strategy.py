@@ -302,8 +302,9 @@ class DecoderStrategy(StrategyBase):
 
             for new_k in range(self.beam_size):
                 decoded_t = torch.tensor([indexes[0][new_k]], dtype=torch.long, device=device)
-
+                # print("wordid:", decoded_t)
                 log_p = log_prob[0][new_k].item()
+                # print("logp:", log_p)
 
                 node = BeamSearchNode(decoder_hidden, [], n, decoded_t, n.logp + log_p, n.leng + 1)
                 score = -node.eval()
