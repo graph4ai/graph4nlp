@@ -494,7 +494,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         # if not self.use_copy:
 
         rnn = TreeDecodingUnit(input_size, emb_size,
-                               hidden_size, dropout_input, use_sibling, share_embedding=self.embeddings)
+                               hidden_size, dropout_input, use_sibling, share_embedding=None)
 
         return rnn
 
