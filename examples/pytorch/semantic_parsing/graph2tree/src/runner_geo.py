@@ -405,7 +405,7 @@ class Geo:
             # self.scheduler.step()
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
             # print(self.scheduler.get_lr())
-            if epoch > 20 and epoch % 10 == 0:
+            if epoch > 0 and epoch % 10 == 0:
                 # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                 # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
                 test_acc = self.eval((self.model))
@@ -519,11 +519,11 @@ def is_all_same(c1, c2, form_manager):
         if all_same:
             return True
     if len(c1) != len(c2) or all_same == False:
-        n1 = Tree.deduplicate_tree(Tree.norm_tree(c1, form_manager), form_manager)
-        n2 = Tree.deduplicate_tree(Tree.norm_tree(c2, form_manager), form_manager)
-        # if np.array_equal(np.array(c1), np.array(n1)) == False:
-        #     print(form_manager.get_idx_symbol_for_list(c1))
-        #     print(form_manager.get_idx_symbol_for_list(n1))
+        n1 = Tree.norm_tree(Tree.deduplicate_tree(c1, form_manager), form_manager)
+        n2 = Tree.norm_tree(Tree.deduplicate_tree(c2, form_manager), form_manager)
+        # if np.array_equal(np.array(Tree.norm_tree(c2, form_manager)), np.array(n2)) == False:
+        #     print(form_manager.get_idx_symbol_for_list(c2))
+        #     print(form_manager.get_idx_symbol_for_list(n2))
         #     print("=================")
         if len(n1) == len(n2):
             all_same = True
@@ -533,6 +533,9 @@ def is_all_same(c1, c2, form_manager):
                     break
         else:
             return False
+        if all_same:
+            print(c1)
+            print(c2)
         return all_same
     raise NotImplementedError("you should not arrive here!")
 
