@@ -494,7 +494,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         # if not self.use_copy:
 
         rnn = TreeDecodingUnit(input_size, emb_size,
-                               hidden_size, dropout_input, use_sibling, share_embedding=None)
+                               hidden_size, dropout_input, use_sibling, share_embedding=self.embeddings)
 
         return rnn
 
@@ -603,7 +603,7 @@ class TreeDecodingUnit(nn.Module):
         else:
             self.embedding = nn.Embedding(
                 input_size, self.emb_size, padding_idx=0)
-            self.dropout = nn.Dropout(dropout_input)
+        self.dropout = nn.Dropout(dropout_input)
 
         self.lstm = nn.LSTMCell(
             emb_size + hidden_size * (2 if use_sibling else 1), hidden_size)
@@ -612,8 +612,7 @@ class TreeDecodingUnit(nn.Module):
     def forward(self, input_src, prev_c, prev_h, parent_h, sibling_state):
 
         src_emb = self.embedding(input_src)
-        if not self.share_embedding:
-            src_emb = self.dropout(src_emb)
+        src_emb = self.dropout(src_emb)
         if self.use_sibling:
             input_single_step = torch.cat(
                 (src_emb, parent_h, sibling_state), 1)

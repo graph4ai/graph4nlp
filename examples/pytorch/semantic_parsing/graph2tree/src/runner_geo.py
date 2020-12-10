@@ -534,8 +534,8 @@ def is_all_same(c1, c2, form_manager):
         else:
             return False
         if all_same:
-            print(c1)
-            print(c2)
+            print(" ".join(form_manager.get_idx_symbol_for_list(c1)))
+            print(" ".join(form_manager.get_idx_symbol_for_list(c2)))
         return all_same
     raise NotImplementedError("you should not arrive here!")
 

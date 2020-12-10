@@ -466,8 +466,8 @@ class Dataset(torch.utils.data.Dataset):
                                                       merge_strategy=merge_strategy,
                                                       edge_strategy=edge_strategy,
                                                       verbase=False)
-                    # print(" ".join([i[1]['token'] for i in graph.node_attributes.items()]))
-                    # print(graph.node_attributes)
+                    print(" ".join([i[1]['token'] for i in graph.node_attributes.items()]))
+                    print(graph.node_attributes)
                     ret.append(graph)
                 except TimeoutError as msg:
                     warnings.warn(RuntimeWarning(msg))
