@@ -314,6 +314,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             ptr_output = attn_scores
             output.scatter_add_(1, enc_batch, prob_ptr * ptr_output)
             decoder_output = output
+            # decoder_output = -F.threshold(-output, -1.0, -1.0)
         else:
             decoder_output = torch.softmax(decoder_output, dim=-1)
 

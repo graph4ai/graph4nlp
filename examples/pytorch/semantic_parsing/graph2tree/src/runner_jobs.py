@@ -482,13 +482,13 @@ class Jobs:
             cand_str = convert_to_string(
                 candidate, eval_vocab)
 
-            # for c in candidate:
-            #     if c >= self.test_data_loader.tgt_vocab.vocab_size:
-            #         print("====================")
-            #         print(oov_dict.symbol2idx)
-            #         print(cand_str)
-            #         print(ref_str)
-            #         print("====================")
+            for c in candidate:
+                if c >= self.test_data_loader.tgt_vocab.vocab_size:
+                    print("====================")
+                    print(oov_dict.symbol2idx)
+                    print(cand_str)
+                    print(ref_str)
+                    print("====================")
             # print(cand_str)
             # print(ref_str)
 
@@ -580,11 +580,11 @@ if __name__ == "__main__":
     main_arg_parser = argparse.ArgumentParser(description="parser")
 
     main_arg_parser.add_argument(
-        '-gpuid', type=int, default=0, help='which gpu to use. -1 = use CPU')
+        '-gpuid', type=int, default=1, help='which gpu to use. -1 = use CPU')
     main_arg_parser.add_argument(
         '-seed', type=int, default=1234, help='torch manual random number generator seed')
     main_arg_parser.add_argument(
-        '-use_copy', type=int, default=0, help='whether use copy mechanism')
+        '-use_copy', type=int, default=1, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str,
                                  default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs', help='data path')
@@ -600,9 +600,9 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
     main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
-    # DynamicGraph_node_emb_refined, DynamicGraph_node_emb
+    # DynamicGraph_node_emb_refined, DynamicGraph_node_emb, ConstituencyGraph
     main_arg_parser.add_argument(
-        '-graph_construction_type', type=str, default="ConstituencyGraph")
+        '-graph_construction_type', type=str, default="DynamicGraph_node_emb")
 
     # "None, line, dependency, constituency"
     main_arg_parser.add_argument(
@@ -637,7 +637,7 @@ if __name__ == "__main__":
         '-learning_rate', type=float, default=1e-3, help='learning rate')
     main_arg_parser.add_argument('-weight_decay', type=float, default=0)
 
-    main_arg_parser.add_argument('-max_epochs', type=int, default=150,
+    main_arg_parser.add_argument('-max_epochs', type=int, default=200,
                                  help='number of full passes through the training data')
     main_arg_parser.add_argument('-min_freq', type=int, default=1,
                                  help='minimum frequency for vocabulary')

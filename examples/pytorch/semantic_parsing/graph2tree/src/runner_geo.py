@@ -142,8 +142,8 @@ class Graph2Tree(nn.Module):
                                direction_option=direction_option, feat_drop=enc_dropout_for_feature,
                                attn_drop=enc_dropout_for_attn, activation=F.relu, residual=True)
         elif gnn_type == "GGNN":
-            self.encoder = GGNN(1, enc_hidden_size, enc_hidden_size,
-                                dropout=enc_dropout_for_feature, use_edge_weight=self.use_edge_weight,
+            self.encoder = GGNN(1, enc_hidden_size, enc_hidden_size, enc_hidden_size,
+                                feat_drop=enc_dropout_for_feature, use_edge_weight=self.use_edge_weight,
                                 direction_option=direction_option)
         elif gnn_type == "SAGE":
             # aggregate type: 'mean','gcn','pool','lstm'
@@ -156,7 +156,7 @@ class Graph2Tree(nn.Module):
                                enc_hidden_size,
                                enc_hidden_size,
                                direction_option=direction_option,
-                               norm="both",
+                               gcn_norm="both",
                                activation=F.relu,
                                use_edge_weight=self.use_edge_weight)
         else:
@@ -260,17 +260,26 @@ class Geo:
         elif self.opt.graph_construction_type == "ConstituencyGraph":
             dataset = GeoDatasetForTree(root_dir=self.data_dir,
                                          topology_builder=ConstituencyBasedGraphConstruction,
-                                         topology_subdir='ConstituencyGraph', share_vocab=use_share_vocab,
-                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, min_freq=self.opt.min_freq)
+                                         topology_subdir='ConstituencyGraph', 
+                                         share_vocab=use_share_vocab,
+                                         enc_emb_size=self.opt.enc_emb_size, 
+                                         dec_emb_size=self.opt.tgt_emb_size,
+                                         device=self.device, 
+                                         min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
-            dataset = GeoDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
+            dataset = GeoDatasetForTree(root_dir=self.data_dir, 
+                                         seed=self.opt.seed, 
+                                         word_emb_size=self.opt.enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedGraphConstruction,
-                                         topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
-                                         dynamic_graph_type='node_emb', share_vocab=use_share_vocab,
-                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, min_freq=self.opt.min_freq)
+                                         topology_subdir='DynamicGraph_node_emb', 
+                                         graph_type='dynamic',
+                                         dynamic_graph_type='node_emb', 
+                                         share_vocab=use_share_vocab,
+                                         enc_emb_size=self.opt.enc_emb_size, 
+                                         dec_emb_size=self.opt.tgt_emb_size,
+                                         device=self.device, 
+                                         min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
             if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
@@ -407,10 +416,8 @@ class Geo:
     def eval(self, model):
         device = model.device
 
-        # max_dec_seq_length = self.opt.max_dec_seq_length
-        # max_dec_tree_depth = self.opt.max_dec_tree_depth_for_test
-        max_dec_seq_length = 50
-        max_dec_tree_depth = 20
+        max_dec_seq_length = self.opt.max_dec_seq_length
+        max_dec_tree_depth = self.opt.max_dec_tree_depth_for_test
         
         use_copy = self.test_data_loader.use_copy
         enc_emb_size = model.src_vocab.embedding_dims
@@ -474,13 +481,13 @@ class Geo:
             cand_str = convert_to_string(
                 candidate, eval_vocab)
 
-            # for c in candidate:
-            #     if c >= self.test_data_loader.tgt_vocab.vocab_size:
-            #         print("====================")
-            #         print(oov_dict.symbol2idx)
-            #         print(cand_str)
-            #         print(ref_str)
-            #         print("====================")
+            for c in candidate:
+                if c >= self.test_data_loader.tgt_vocab.vocab_size:
+                    print("====================")
+                    print(oov_dict.symbol2idx)
+                    print(cand_str)
+                    print(ref_str)
+                    print("====================")
             # if cand_str.strip() != ref_str.strip():
             #     print(cand_str)
             #     print(ref_str)
@@ -560,11 +567,11 @@ if __name__ == "__main__":
     main_arg_parser = argparse.ArgumentParser(description="parser")
 
     main_arg_parser.add_argument(
-        '-gpuid', type=int, default=0, help='which gpu to use. -1 = use CPU')
+        '-gpuid', type=int, default=3, help='which gpu to use. -1 = use CPU')
     main_arg_parser.add_argument(
-        '-seed', type=int, default=123, help='torch manual random number generator seed')
+        '-seed', type=int, default=1234, help='torch manual random number generator seed')
     main_arg_parser.add_argument(
-        '-use_copy', type=int, default=0, help='whether use copy mechanism')
+        '-use_copy', type=int, default=1, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str,
                                  default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/geo', help='data path')
@@ -580,9 +587,9 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
     main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
-    # DynamicGraph_node_emb_refined, DynamicGraph_node_emb
+    # DynamicGraph_node_emb_refined, DynamicGraph_node_emb, ConstituencyGraph
     main_arg_parser.add_argument(
-        '-graph_construction_type', type=str, default="ConstituencyGraph")
+        '-graph_construction_type', type=str, default="DynamicGraph_node_emb")
 
     # "None, line, dependency, constituency"
     main_arg_parser.add_argument(
@@ -604,9 +611,9 @@ if __name__ == "__main__":
 
     main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=100)
     main_arg_parser.add_argument(
-        '-max_dec_tree_depth_for_train', type=int, default=25)
+        '-max_dec_tree_depth_for_train', type=int, default=30)
     main_arg_parser.add_argument(
-        '-max_dec_tree_depth_for_test', type=int, default=25)
+        '-max_dec_tree_depth_for_test', type=int, default=30)
 
     main_arg_parser.add_argument(
         '-teacher_force_ratio', type=float, default=1.0)
