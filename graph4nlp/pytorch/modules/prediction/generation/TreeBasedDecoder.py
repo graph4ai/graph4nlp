@@ -397,54 +397,25 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
             i_child = 1
 
-            if use_copy:
-                enc_context = None
-                input_mask = create_mask(torch.LongTensor(
-                    [enc_outputs.size(1)]*enc_outputs.size(0)), enc_outputs.size(1), device)
-                decoder_state = (s[0].unsqueeze(0), s[1].unsqueeze(0))
             if not use_beam_search:
                 while True:
-                    if not use_copy:
-                        prediction, s, _ = model.decoder.decode_step(tgt_batch_size=1,
-                                                                     dec_single_input=prev_word,
-                                                                     dec_single_state=s,
-                                                                     memory=enc_outputs,
-                                                                     parent_state=parent_h,
-                                                                     oov_dict=oov_dict,
-                                                                     enc_batch=enc_w_list)
-
-                        _, _prev_word = prediction.max(1)
-                        prev_word = _prev_word
-                    # else:
-                    #     # print(form_manager.idx2symbol[np.array(prev_word)[0]])
-                    #     decoder_embedded = model.decoder.embeddings(prev_word)
-                    #     pred, decoder_state, _, _, enc_context = model.decoder.rnn(parent_h, sibling_state, decoder_embedded,
-                    #                                                               decoder_state,
-                    #                                                               enc_outputs.transpose(
-                    #                                                                   0, 1),
-                    #                                                               None, None, input_mask=input_mask,
-                    #                                                               encoder_word_idx=enc_w_list,
-                    #                                                               ext_vocab_size=model.decoder.embeddings.num_embeddings,
-                    #                                                               log_prob=False,
-                    #                                                               prev_enc_context=enc_context,
-                    #                                                               encoder_outputs2=rnn_node_embedding.transpose(0, 1))
-
-                    #     dec_next_state_1 = decoder_state[0].squeeze(0)
-                    #     dec_next_state_2 = decoder_state[1].squeeze(0)
-
-                    #     pred = torch.log(pred + 1e-31)
-                    #     prev_word = pred.argmax(1)
+                    prediction, (curr_c, curr_h), _ = model.decoder.decode_step(tgt_batch_size=1,
+                                                                 dec_single_input=prev_word,
+                                                                 dec_single_state=s,
+                                                                 memory=enc_outputs,
+                                                                 parent_state=parent_h,
+                                                                 oov_dict=oov_dict,
+                                                                 enc_batch=enc_w_list)
+                    s = (curr_c, curr_h)
+                    prev_word = torch.log(prediction + 1e-31)
+                    prev_word = prev_word.argmax(1)
+                    # _, _prev_word = prediction.max(1)
+                    # prev_word = _prev_word
 
                     if int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.end_token) or t.num_children >= max_dec_seq_length:
                         break
                     elif int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
-                        #print("we predicted N");exit()
-                        if use_copy:
-                            queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone(
-                            )), "parent": head, "child_index": i_child, "t": Tree()})
-                        else:
-                            queue_decode.append({"s": (s[0].clone(), s[1].clone(
-                            )), "parent": head, "child_index": i_child, "t": Tree()})
+                        queue_decode.append({"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
                         t.add_child(int(prev_word[0]))
                     else:
                         t.add_child(int(prev_word[0]))
