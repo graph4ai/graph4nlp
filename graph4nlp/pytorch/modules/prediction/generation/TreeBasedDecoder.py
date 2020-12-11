@@ -331,6 +331,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                   max_dec_seq_length,
                   max_dec_tree_depth,
                   use_beam_search=True,
+                  beam_size=4,
                   oov_dict=None):
         # initialize the rnn state to all zeros
         prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
@@ -421,12 +422,11 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                         t.add_child(int(prev_word[0]))
                     i_child = i_child + 1
             else:
-                beam_width = 4
                 topk = 1
                 # decoding goes sentence by sentence
                 assert(graph_node_embedding.size(0) == 1)
                 beam_search_generator = DecoderStrategy(
-                    beam_size=beam_width, vocab=form_manager, decoder=model.decoder, rnn_type="lstm", use_copy=True, use_coverage=False)
+                    beam_size=beam_size, vocab=form_manager, decoder=model.decoder, rnn_type="lstm", use_copy=True, use_coverage=False)
                 for idx in range(graph_node_embedding.size(0)):
                     decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]),
                                                                                           decoder_initial_input=prev_word,

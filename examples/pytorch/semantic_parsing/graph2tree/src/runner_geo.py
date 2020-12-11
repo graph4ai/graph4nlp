@@ -405,7 +405,7 @@ class Geo:
             # self.scheduler.step()
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
             # print(self.scheduler.get_lr())
-            if epoch > 0 and epoch % 10 == 0:
+            if epoch > 20:
                 # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                 # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
                 test_acc = self.eval((self.model))
@@ -462,7 +462,9 @@ class Geo:
                                                 device,
                                                 max_dec_seq_length,
                                                 max_dec_tree_depth,
-                                                oov_dict=oov_dict)
+                                                oov_dict=oov_dict,
+                                                use_beam_search=False,
+                                                beam_size=self.opt.beam_size)
             
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
@@ -611,6 +613,9 @@ if __name__ == "__main__":
 
     main_arg_parser.add_argument(
         '-direction_option', type=str, default="undirected")
+
+    main_arg_parser.add_argument(
+        '-beam_size', type=int, default=2)
 
     main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=100)
     main_arg_parser.add_argument(
