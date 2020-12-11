@@ -101,10 +101,12 @@ class Tree():
                         k[t.children[i].to_string().strip()] = i
                     else:
                         k[str(t.children[i]).strip()] = i
+                cnt_deleted = 0
                 for index in (list(range(len(t.children)))):
                     if index not in ([item[1] for item in k.items()]):
-                        t.children.pop(index)
+                        t.children.pop(index - cnt_deleted)
                         t.num_children = t.num_children - 1
+                        cnt_deleted += 1
 
             for i in range(len(t.children)):
                 if isinstance(t.children[i], Tree):
