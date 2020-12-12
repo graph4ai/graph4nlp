@@ -255,6 +255,13 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                 else:
                     input_word = dec_batch[cur_index][:, i]
                 # input_word = self._filter_oov(input_word, self.tgt_vocab)
+                
+                # print("tgt_batch_size: ", tgt_batch_size)
+                # print("input_word: ", input_word)
+                # print("dec_single_state: ", dec_state[cur_index][i][1].size())
+                # print("enc_outputs: ", enc_outputs.size())
+                # print("parent_h: ", parent_h.size())
+                # print("enc_batch: ", enc_batch.size())
                 pred, rnn_state_iter, attn_scores = self.decode_step(tgt_batch_size=tgt_batch_size,
                                                                      dec_single_input=input_word,
                                                                      dec_single_state=(
@@ -428,7 +435,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                 beam_search_generator = DecoderStrategy(
                     beam_size=beam_size, vocab=form_manager, decoder=model.decoder, rnn_type="lstm", use_copy=True, use_coverage=False)
                 for idx in range(graph_node_embedding.size(0)):
-                    decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]),
+                    decoded_results = beam_search_generator.beam_search_for_tree_decoding_version_2(decoder_initial_state=(s[0], s[1]),
                                                                                           decoder_initial_input=prev_word,
                                                                                           parent_state=parent_h,
                                                                                           graph_node_embedding=enc_outputs,
