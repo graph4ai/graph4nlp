@@ -465,7 +465,8 @@ class Jobs:
                                                 max_dec_tree_depth,
                                                 oov_dict=oov_dict,
                                                 use_beam_search=True,
-                                                beam_size=self.opt.beam_size)
+                                                beam_size=self.opt.beam_size,
+                                                beam_search_version=self.opt.beam_search_version)
             
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
@@ -626,6 +627,9 @@ if __name__ == "__main__":
 
     main_arg_parser.add_argument(
         '-beam_size', type=int, default=2)
+
+    main_arg_parser.add_argument(
+        '-beam_search_version', type=int, default=2)
 
     main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=50)
     main_arg_parser.add_argument(
