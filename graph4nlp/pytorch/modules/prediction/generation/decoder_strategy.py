@@ -272,7 +272,7 @@ class DecoderStrategy(StrategyBase):
 
         # start beam search
         while True:
-            if qsize > self.max_decoder_step: break
+            if qsize > self.max_decoder_step*self.beam_size: break
 
             # fetch the best node
             score, _nounce, n = nodes.get()
