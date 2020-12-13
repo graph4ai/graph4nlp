@@ -463,7 +463,7 @@ class Geo:
                                                 max_dec_seq_length,
                                                 max_dec_tree_depth,
                                                 oov_dict=oov_dict,
-                                                use_beam_search=False,
+                                                use_beam_search=True,
                                                 beam_size=self.opt.beam_size,
                                                 beam_search_version=self.opt.beam_search_version)
             
