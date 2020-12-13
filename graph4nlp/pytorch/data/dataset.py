@@ -463,6 +463,7 @@ class Dataset(torch.utils.data.Dataset):
             else:
                 raise NotImplementedError
             print('CoreNLP server connected.')
+            pop_idxs = []
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
                     print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
@@ -473,11 +474,13 @@ class Dataset(torch.utils.data.Dataset):
                                                       merge_strategy=merge_strategy,
                                                       edge_strategy=edge_strategy,
                                                       verbase=False)
-                    ret.append(graph)
-                except TimeoutError as msg:
+                    item.graph = graph
+                except Exception as msg:
+                    pop_idxs.append(cnt)
+                    item.graph = None
                     warnings.warn(RuntimeWarning(msg))
-                    data_items.pop(data_items.index(item))
-
+                ret.append(item)
+            ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
         elif graph_type == 'dynamic':
             if dynamic_graph_type == 'node_emb':
                 for item in data_items:
@@ -534,8 +537,8 @@ class Dataset(torch.utils.data.Dataset):
                 else:
                     processor = None
                     processor_args = None
-
-                for item in data_items:
+                pop_idxs = []
+                for idx, item in enumerate(data_items):
                     try:
                         graph = topology_builder.init_topology(item.input_text,
                                                                dynamic_init_topology_builder=dynamic_init_topology_builder,
@@ -548,15 +551,19 @@ class Dataset(torch.utils.data.Dataset):
                                                                verbase=False,
                                                                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
-                        ret.append(graph)
-                    except TimeoutError as msg:
+                        item.graph = graph
+                    except Exception as msg:
+                        pop_idxs.append(idx)
+                        item.graph = None
                         warnings.warn(RuntimeWarning(msg))
-                        data_items.pop(data_items.index(item))
+                    ret.append(item)
+                ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
             else:
                 raise RuntimeError('Unknown dynamic_graph_type: {}'.format(dynamic_graph_type))
 
         else:
             raise NotImplementedError('Currently only static and dynamic are supported!')
+
         return ret
 
     def build_topology(self, data_items):
@@ -587,14 +594,14 @@ class Dataset(torch.utils.data.Dataset):
         pool.close()
         pool.join()
 
+        data_items = []
         for i in range(thread_number):
-            start_index = total * i // thread_number
-            end_index = total * (i + 1) // thread_number
-
             res = res_l[i].get()
-            datas = data_items[start_index:end_index]
-            for data, graph in zip(datas, res):
-                data.graph = graph.to(self.device)
+            for data in res:
+                data.graph = data.graph.to(self.device)
+                data_items.append(data)
+
+        return data_items
 
     def build_vocab(self):
         """
@@ -630,10 +637,10 @@ class Dataset(torch.utils.data.Dataset):
 
         self.read_raw_data()
 
-        self.build_topology(self.train)
-        self.build_topology(self.test)
+        self.train = self.build_topology(self.train)
+        self.test = self.build_topology(self.test)
         if 'val' in self.__dict__:
-            self.build_topology(self.val)
+            self.val = self.build_topology(self.val)
 
         self.build_vocab()
 
@@ -757,6 +764,15 @@ class Text2TextDataset(Dataset):
         output_numpy = [item.output_np for item in data_list]
         output_str = [item.output_text.lower().strip() for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
+
+        from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
+        max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
+        if max_num_tokens_a_node>1:
+            for x in data_list:
+                x.graph.node_features['token_id'] = torch.from_numpy(
+                    pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
+                                x.graph.node_features['token_id'].size()[0],
+                                max_num_tokens_a_node)).long()
 
         tgt_seq = torch.from_numpy(output_pad).long()
         # return [graph_data, tgt_seq, output_str]
@@ -1175,61 +1191,6 @@ class KGCompletionDataset(Dataset):
                          torch.ones(1, len(e1_multi.split()))).squeeze()
             item.e1_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()],
                                                     dtype=torch.long)
-
-    # @staticmethod
-    # def collate_fn(data_list: [KGDataItem]):
-    #     # graph_data = [item.graph for item in data_list]
-    #     e1 = torch.tensor([item.e1_tensor for item in data_list])
-    #     rel = torch.tensor([item.rel_tensor for item in data_list])
-    #     # e2_multi_tensor_idx = torch.tensor([item.e2_multi_tensor_idx for item in data_list])
-    #
-    #     e2_multi_tensor_idx_len = [item.e2_multi_tensor_idx.shape[0] for item in data_list]
-    #     max_e2_multi_tensor_idx_len = max(e2_multi_tensor_idx_len)
-    #     e2_multi_tensor_idx_pad = []
-    #     for item in data_list:
-    #         if item.e2_multi_tensor_idx.shape[0] < max_e2_multi_tensor_idx_len:
-    #             need_pad_length = max_e2_multi_tensor_idx_len - item.e2_multi_tensor_idx.shape[0]
-    #             pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-    #             e2_multi_tensor_idx_pad.append(torch.cat((item.e2_multi_tensor_idx, pad.long()), dim=0).unsqueeze(0))
-    #         elif item.e2_multi_tensor_idx.shape[0] == max_e2_multi_tensor_idx_len:
-    #             e2_multi_tensor_idx_pad.append(item.e2_multi_tensor_idx.unsqueeze(0))
-    #         else:
-    #             raise RuntimeError("Size mismatch error")
-    #
-    #     e2_multi_tensor_idx = torch.cat(e2_multi_tensor_idx_pad, dim=0)
-    #
-    #     # do padding here
-    #     e2_multi_len = [item.e2_multi_tensor.shape[0] for item in data_list]
-    #     max_e2_multi_len = max(e2_multi_len)
-    #     e2_multi_pad = []
-    #     for item in data_list:
-    #         if item.e2_multi_tensor.shape[0] < max_e2_multi_len:
-    #             need_pad_length = max_e2_multi_len - item.e2_multi_tensor.shape[0]
-    #             pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-    #             e2_multi_pad.append(torch.cat((item.e2_multi_tensor, pad.long()), dim=0).unsqueeze(0))
-    #         elif item.e2_multi_tensor.shape[0] == max_e2_multi_len:
-    #             e2_multi_pad.append(item.e2_multi_tensor.unsqueeze(0))
-    #         else:
-    #             raise RuntimeError("Size mismatch error")
-    #
-    #     e2_multi = torch.cat(e2_multi_pad, dim=0)
-    #
-    #     # # do padding here
-    #     # seq_len = [item.output_tensor.shape[0] for item in data_list]
-    #     # max_seq_len = max(seq_len)
-    #     # tgt_seq_pad = []
-    #     # for item in data_list:
-    #     #     if item.output_tensor.shape[0] < max_seq_len:
-    #     #         need_pad_length = max_seq_len - item.output_tensor.shape[0]
-    #     #         pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-    #     #         tgt_seq_pad.append(torch.cat((item.output_tensor, pad.long()), dim=0).unsqueeze(0))
-    #     #     elif item.output_tensor.shape[0] == max_seq_len:
-    #     #         tgt_seq_pad.append(item.output_tensor.unsqueeze(0))
-    #     #     else:
-    #     #         raise RuntimeError("Size mismatch error")
-    #     #
-    #     # tgt_seq = torch.cat(tgt_seq_pad, dim=0)
-    #     return [e1, rel, e2_multi, e2_multi_tensor_idx]
 
     @staticmethod
     def collate_fn(data_list: [KGDataItem]):

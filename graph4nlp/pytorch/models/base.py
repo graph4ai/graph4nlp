@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import \
     ConstituencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import \
     NodeEmbeddingBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import \
@@ -67,6 +68,14 @@ class Graph2XBase(nn.Module):
                                                                      word_dropout=emb_word_dropout,
                                                                      rnn_dropout=emb_rnn_dropout,
                                                                      fix_word_emb=emb_fix_word_emb)
+        elif graph_type == "ie":
+            self.graph_topology = IEBasedGraphConstruction(embedding_style=embedding_style,
+                                                           vocab=vocab_model.in_word_vocab,
+                                                           hidden_size=emb_hidden_size,
+                                                           device=device,
+                                                           word_dropout=emb_word_dropout,
+                                                           rnn_dropout=emb_rnn_dropout,
+                                                           fix_word_emb=emb_fix_word_emb)
         elif graph_type == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
                 vocab_model.in_word_vocab,

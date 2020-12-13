@@ -1,9 +1,12 @@
 from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 import torch
 import os
 import json
-from stanfordcorenlp import StanfordCoreNLP
+import stanfordcorenlp
+import warnings
 from multiprocessing import Pool
 import numpy as np
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
@@ -62,10 +65,9 @@ class CNNDataset(Text2TextDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        # return {'train': 'train.json', 'val': "val.json", 'test': 'test.json'}
-        # return {'train': 'train-0.json', 'val': "val-0.json", 'test': 'test-0.json'}
+        # return {'train': 'train_300.json', 'val': "train_30.json", 'test': 'train_30.json'}
+        # return {'train': 'train_1w.json', 'val': "val.json", 'test': 'test.json'}
         return {'train': 'train_3w.json', 'val': "val.json", 'test': 'test.json'}
-        # return {'train': 'train_9w.json', 'val': "val.json", 'test': 'test.json'}
 
     @property
     def processed_file_names(self):
@@ -115,35 +117,11 @@ class CNNDataset(Text2TextDataset):
         with open(file_path, 'r') as f:
             examples = json.load(f)
             for example_dict in examples:
-                # input = ' '.join(example_dict['article'][:10]).lower()
-                # output = ' '.join([sent[0]+' .' for sent in example_dict['highlight']]).lower()
-                # input = ' '.join(' '.join(example_dict['article']).split()).lower()
-                # input = input+input+input+input+input
-                input = ' '.join(' '.join(example_dict['article']).split()[:500]).lower()
+                input = ' '.join(' '.join(example_dict['article']).split()[:400]).lower()
                 output = ' '.join(' '.join(['<t> ' + sent[0] + ' . </t>' for sent in example_dict['highlight']]).split()[:99]).lower()
                 if input=='' or output=='':
                     continue
-                # output = ' '.join(["%s %s %s" % (constants._SOS_TOKEN, sent[0], constants._EOS_TOKEN) for sent in example_dict['highlight']])
                 data_item = Text2TextDataItem(input_text=input, output_text=output, tokenizer=self.tokenizer,
                                               share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
-
-
-if __name__ == "__main__":
-    dataset = CNNDataset(root_dir="/raid/ghn/graph4nlp/examples/pytorch/summarization/cnn",
-                         topology_builder=DependencyBasedGraphConstruction,
-                         topology_subdir='DependencyGraph_3w',
-                         word_emb_size=128,
-                         share_vocab=True)
-
-    # dataset = CNNDataset(root_dir="/raid/ghn/graph4nlp/examples/pytorch/summarization/cnn",
-    #                      topology_builder=LinearGraphConstruction,
-    #                      topology_subdir='LinearGraph',
-    #                      word_emb_size=128,
-    #                      share_vocab=True)
-
-    # dataset = CNNSeq2SeqDataset(root_dir="/raid/ghn/graph4nlp/examples/pytorch/summarization/cnn",
-    #                             topology_builder=DependencyBasedGraphConstruction,
-    #                             topology_subdir='DependencyGraph_seq2seq', share_vocab=True)
-    # a  = 0

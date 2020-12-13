@@ -45,9 +45,3 @@ def get_args():
                               decoder_name=our_args["decoder_name"])
     update_values(to_args=template, from_args_list=[our_args, vars(cfg)])
     return template
-
-# screen -S ghn_code1 python -m examples.pytorch.summarization.cnn.main_g2s --dataset_yaml examples/pytorch/summarization/cnn/config/new_dependency_graphsage.yaml --word-emb-size 128 --log-file examples/pytorch/summarization/cnn/log/log_gs.log --checkpoint-save-path examples/pytorch/summarization/cnn/save_g2s_3w_copy --learning-rate 0.001 --lr-decay-rate 0.8 --batch_size 30
-# screen -S ghn_code2 python -m examples.pytorch.summarization.cnn.main_g2s --dataset_yaml examples/pytorch/summarization/cnn/config/new_dependency_graphsage.yaml --word-emb-size 128 --log-file examples/pytorch/summarization/cnn/log/log_eval.log --checkpoint-save-path examples/pytorch/summarization/cnn/save_g2s_3w_copy --learning-rate 0.001 --lr-decay-rate 0.8 --batch_size 10
-# screen -S ghn_code3 python -m examples.pytorch.summarization.cnn.main_g2s --dataset_yaml examples/pytorch/summarization/cnn/config/new_dependency_graphsage.yaml --word-emb-size 128 --log-file examples/pytorch/summarization/cnn/log/log_trans.log --checkpoint-save-path examples/pytorch/summarization/cnn/save_g2s_3w_copy --learning-rate 0.001 --lr-decay-rate 0.8 --batch_size 10
-# screen -S ghn_code1 python -m examples.pytorch.summarization.cnn.main_g2s --dataset_yaml examples/pytorch/summarization/cnn/config/new_dependency_gcn.yaml --word-emb-size 128 --log-file examples/pytorch/summarization/cnn/log/log0.log --checkpoint-save-path examples/pytorch/summarization/cnn/save_g2s_3w_copy --learning-rate 0.001 --lr-decay-rate 0.8 --batch_size 10
-# --dataset_yaml config/new_dependency_gcn.yaml --word-emb-size 128 --log-file log/log0.log --checkpoint-save-path cnn/save_g2s_3w_copy --learning-rate 0.001 --lr-decay-rate 0.8

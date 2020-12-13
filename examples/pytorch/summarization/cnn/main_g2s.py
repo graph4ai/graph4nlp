@@ -1,9 +1,10 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from .dataset import CNNDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import \
     ConstituencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import \
@@ -20,7 +21,7 @@ from .args import get_args
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
 from .utils import get_log, wordid2str
 from .build_model import get_model
-from graph4nlp.pytorch.modules.loss.graph2seq_loss import Graph2SeqLoss
+from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
 
@@ -65,6 +66,10 @@ class CNN:
             topology_builder = ConstituencyBasedGraphConstruction
             graph_type = 'static'
             dynamic_init_topology_builder = None
+        elif self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"] == "ie":
+            topology_builder = IEBasedGraphConstruction
+            graph_type = 'static'
+            dynamic_init_topology_builder = None
         elif self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"] == "node_emb":
             topology_builder = NodeEmbeddingBasedGraphConstruction
             graph_type = 'dynamic'
@@ -91,11 +96,14 @@ class CNN:
                              merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
                                  "merge_strategy"],
                              tokenizer=None,
+                             device=self.device,
+                             timeout=self.opt["graph_construction_args"]["graph_construction_share"]["timeout"],
                              edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
                                  "edge_strategy"],
                              seed=self.opt["seed"],
                              word_emb_size=self.opt["word_emb_size"], share_vocab=self.opt["share_vocab"],
                              graph_type=graph_type,
+                             port=self.opt["graph_construction_args"]["graph_construction_share"]["port"],
                              topology_builder=topology_builder,
                              topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
                                  "topology_subdir"],
@@ -126,7 +134,7 @@ class CNN:
         self.metrics = [ROUGE()]
 
     def _build_loss_function(self):
-        self.loss = Graph2SeqLoss(vocab=self.vocab.in_word_vocab,
+        self.loss = Graph2SeqLoss(ignore_index=self.vocab.out_word_vocab.PAD,
                                   use_coverage=self.use_coverage, coverage_weight=0.3)
 
     def train(self):
@@ -169,7 +177,7 @@ class CNN:
         dataloader = self.train_dataloader
         step_all_train = len(dataloader)
         for step, data in enumerate(dataloader):
-            graph_list, tgt, gt_str = data
+            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             tgt = tgt[:, :self.opt['decoder_args']['rnn_decoder_private']['max_decoder_step']].to(self.device)
             oov_dict = None
             if self.use_copy:
@@ -179,6 +187,10 @@ class CNN:
             prob, enc_attn_weights, coverage_vectors = self.model(graph_list, tgt, oov_dict=oov_dict)
             loss = self.loss(logits=prob, label=tgt, enc_attn_weights=enc_attn_weights,
                              coverage_vectors=coverage_vectors)
+            # if torch.isnan(loss).item():
+            #     a = 0
+            #     prob, enc_attn_weights, coverage_vectors = self.model(graph_list, tgt, oov_dict=oov_dict)
+            #     continue
             loss_collect.append(loss.item())
             if step % self.opt["loss_display_step"] == 0 and step != 0:
                 self.logger.info("Epoch {}: [{} / {}] loss: {:.3f}".format(epoch, step, step_all_train,
@@ -195,7 +207,7 @@ class CNN:
         assert split in ["val", "test"]
         dataloader = self.val_dataloader if split == "val" else self.test_dataloader
         for data in dataloader:
-            graph_list, tgt, gt_str = data
+            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             if self.use_copy:
                 oov_dict = prepare_ext_vocab(graph_list=graph_list, vocab=self.vocab, device=self.device)
                 ref_dict = oov_dict
@@ -232,7 +244,7 @@ class CNN:
         for idx, data in enumerate(dataloader):
             if idx%10==0:
                 print(idx)
-            graph_list, tgt, gt_str = data
+            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             if self.use_copy:
                 oov_dict = prepare_ext_vocab(graph_list=graph_list, vocab=self.vocab, device=self.device)
                 ref_dict = oov_dict
@@ -249,11 +261,11 @@ class CNN:
             pred_collect.extend(pred_str)
             gt_collect.extend(gt_str)
 
-        with open(self.opt['checkpoint_save_path'] + '/cnn_pred_output_bs.txt', 'w+') as f:
+        with open(self.opt['checkpoint_save_path'] + '/cnn_pred_output_bs{}.txt'.format(self.opt['beam_size']), 'w+') as f:
             for line in pred_collect:
                 f.write(line + '\n')
 
-        with open(self.opt['checkpoint_save_path'] + '/cnn_tgt_output_bs.txt', 'w+') as f:
+        with open(self.opt['checkpoint_save_path'] + '/cnn_tgt_output_bs{}.txt'.format(self.opt['beam_size']), 'w+') as f:
             for line in gt_collect:
                 f.write(line + '\n')
 
@@ -276,5 +288,5 @@ if __name__ == "__main__":
     max_score = runner.train()
     print("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint("best.pth")
-    # runner.evaluate(split='test', test_mode=True)
-    runner.translate()
+    runner.evaluate(split='test', test_mode=True)
+    # runner.translate()
