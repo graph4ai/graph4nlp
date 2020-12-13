@@ -1262,7 +1262,14 @@ class KGCompletionDataset(Dataset):
 
         e2_multi = torch.cat(e2_multi_pad, dim=0)
 
-        return [e1, rel, e2_multi, e2_multi_tensor_idx, e2, rel_eval, e1_multi, e1_multi_tensor_idx]
+        return {'e1': e1,
+                'rel': rel,
+                'e2_multi': e2_multi,
+                'e2_multi_tensor_idx': e2_multi_tensor_idx,
+                'e2': e2,
+                'rel_eval': rel_eval,
+                'e1_multi': e1_multi,
+                'e1_multi_tensor_idx': e1_multi_tensor_idx}
 
 
 class Text2LabelDataset(Dataset):
