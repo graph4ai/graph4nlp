@@ -99,6 +99,7 @@ class Graph2Seq(Graph2XBase):
     def encoder_decoder(self, batch_graph, old_graph_list, oov_dict=None, tgt_seq=None):
         # run GNN
         batch_graph = self.gnn_encoder(batch_graph)
+        # batch_graph.node_features["node_emb"] = batch_graph.node_features['node_feat']
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
         graph_list_decoder = from_batch(batch_graph)
         if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():

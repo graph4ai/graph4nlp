@@ -6,7 +6,7 @@ graph_construction_args:
   graph_construction_share:
     graph_type: 'dependency'
     root_dir: 'examples/pytorch/question_generation/data/squad_split2'
-    topology_subdir: 'DependencyGraph'
+    topology_subdir: 'DependencyGraphfuck'
     thread_number: 4
     port: 9000
     timeout: 15000
@@ -23,7 +23,7 @@ graph_construction_args:
     word_dropout: 0.2
     rnn_dropout: 0.3
     fix_bert_emb: false
-    fix_word_emb: false
+    fix_word_emb: true
     embedding_style:
       single_token_item: true
       emb_strategy: "w2v_bilstm"
@@ -49,7 +49,7 @@ decoder_args:
   rnn_decoder_share:
     rnn_type: "lstm"
     input_size: 300
-    hidden_size: 512
+    hidden_size: 300
     rnn_emb_input_size: 300
     use_copy: true
     use_coverage: true
@@ -59,7 +59,7 @@ decoder_args:
     dropout: 0.3
 
   rnn_decoder_private:
-    max_decoder_step: 50
+    max_decoder_step: 100
     node_type_num: null
     tgt_emb_as_output_layer: true
 

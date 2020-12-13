@@ -33,8 +33,8 @@ from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import Dec
 from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
 import multiprocessing
 import torch.multiprocessing
-torch.multiprocessing.set_sharing_strategy('file_system')
-multiprocessing.set_start_method("spawn", force=True)
+# torch.multiprocessing.set_sharing_strategy('file_system')
+# multiprocessing.set_start_method("spawn", force=True)
 
 
 class QGModel(nn.Module):
@@ -111,7 +111,11 @@ class QGModel(nn.Module):
         prob, enc_attn_weights, coverage_vectors = self.g2s.encoder_decoder(batch_gd, data['graph_data'], oov_dict=oov_dict, tgt_seq=data['tgt_tensor'])
 
         if require_loss:
-            loss = self.loss_calc(prob, label=data['tgt_tensor'], enc_attn_weights=enc_attn_weights, coverage_vectors=coverage_vectors)
+            tgt = data['tgt_tensor']
+            min_length = min(prob.shape[1], tgt.shape[1])
+            prob = prob[:, :min_length, :]
+            tgt = tgt[:, :min_length]
+            loss = self.loss_calc(prob, label=tgt, enc_attn_weights=enc_attn_weights, coverage_vectors=coverage_vectors)
             return prob, loss
         else:
             return prob
@@ -271,11 +275,13 @@ class ModelHandler:
             train_loss = []
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
+                print(i, "------")
                 data = all_to_cuda(data, self.config['device'])
 
                 oov_dict = None
                 if self.use_copy:
-                    oov_dict, tgt = prepare_ext_vocab(data['graph_data'], self.vocab, gt_str=data['tgt_text'])
+                    oov_dict, tgt = prepare_ext_vocab(data['graph_data'], self.vocab, gt_str=data['tgt_text'],
+                                                        device=self.config['device'])
                     data['tgt_tensor'] = tgt
 
                 logits, loss = self.model(data, oov_dict=oov_dict, require_loss=True)
@@ -316,7 +322,7 @@ class ModelHandler:
                 data = all_to_cuda(data, self.config['device'])
 
                 if self.use_copy:
-                    oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab)
+                    oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab, device=self.config['device'])
                     ref_dict = oov_dict
                 else:
                     oov_dict = None
@@ -341,7 +347,7 @@ class ModelHandler:
             for i, data in enumerate(dataloader):
                 data = all_to_cuda(data, self.config['device'])
                 if self.use_copy:
-                    oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab)
+                    oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab, device=self.config['device'])
                     ref_dict = oov_dict
                 else:
                     oov_dict = None
@@ -423,8 +429,8 @@ def main(config):
     val_score = runner.train()
     test_scores = runner.test()
 
-    print('Removed best saved model file to save disk space')
-    os.remove(runner.stopper.save_model_path)
+    # print('Removed best saved model file to save disk space')
+    # os.remove(runner.stopper.save_model_path)
     runtime = time.time() - t0
     print('Total runtime: {:.2f}s'.format(time.time() - t0))
     runner.logger.write('Total runtime: {:.2f}s\n'.format(runtime))
@@ -525,7 +531,6 @@ if __name__ == '__main__':
                               graph_embedding_name=g2s_args['graph_embedding_name'],
                               decoder_name=g2s_args['decoder_name'])
     update_values(to_args=g2s_template, from_args_list=[g2s_args, task_args])
-
     print_config(g2s_template)
     if cfg['grid_search']:
         grid_search_main(g2s_template)
