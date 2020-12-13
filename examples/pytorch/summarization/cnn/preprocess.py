@@ -7,7 +7,7 @@ random.seed(10)
 def process_stories(root_dir):
     stories = os.listdir(root_dir)
     # random.shuffle(stories)
-    stories = stories[:500]
+    # stories = stories[:50000]
     examples = []
     cnt_words = []
     for i, f_name in enumerate(stories):
@@ -44,14 +44,14 @@ example1 = process_stories('raw/cnn_stories_tokenized/')
 examples = example1
 random.shuffle(examples)
 
-train_30 = examples[:30]
+# train_30 = examples[:30]
 # train_3k = examples[:3000]
 # train_1w = examples[:10000]
-# train_3w = examples[:30000]
+train_3w = examples[:30000]
 # train_9w = examples[:90000]
 
-with open('raw/train_30.json', 'w+') as f:
-    json.dump(train_30, f, indent=1)
+# with open('raw/train_30.json', 'w+') as f:
+#     json.dump(train_30, f, indent=1)
 
 # with open('raw/train_3k.json', 'w+') as f:
 #     json.dump(train_3k, f, indent=1)
@@ -59,8 +59,8 @@ with open('raw/train_30.json', 'w+') as f:
 # with open('raw/train_1w.json', 'w+') as f:
 #     json.dump(train_1w, f, indent=1)
 
-# with open('raw/train_3w.json', 'w+') as f:
-#     json.dump(train_3w, f, indent=1)
+with open('raw/train_3w.json', 'w+') as f:
+    json.dump(train_3w, f, indent=1)
 
 # with open('raw/train_9w.json', 'w+') as f:
 #     json.dump(train_9w, f, indent=1)

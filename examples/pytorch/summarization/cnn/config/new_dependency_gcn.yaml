@@ -5,10 +5,10 @@ decoder_name: "stdrnn"
 graph_construction_args:
   graph_construction_share:
     graph_type: 'dependency'
-    root_dir: "graph4nlp/pytorch/test/dataset/jobs"
-    topology_subdir: 'DependencyGraph'
-    thread_number: 4
-    port: 9000
+    root_dir: "examples/pytorch/summarization/cnn"
+    topology_subdir: 'DependencyGraph_3w_1'
+    thread_number: 40
+    port: 9010
     timeout: 15000
 
   graph_construction_private:
@@ -62,7 +62,7 @@ decoder_args:
     dropout: 0.3
 
   rnn_decoder_private:
-    max_decoder_step: 50
+    max_decoder_step: 100
     node_type_num: null
     tgt_emb_as_output_layer: true
 

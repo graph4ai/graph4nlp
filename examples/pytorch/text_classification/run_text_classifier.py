@@ -256,10 +256,7 @@ class ModelHandler:
                               topology_subdir=topology_subdir,
                               dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
-                              dynamic_init_topology_aux_args={'dummy_param': 0},
-                              thread_number=4,
-                              port=9000,
-                              timeout=15000)
+                              dynamic_init_topology_aux_args={'dummy_param': 0})
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config['batch_size'], shuffle=True,
                                            num_workers=self.config['num_workers'],
