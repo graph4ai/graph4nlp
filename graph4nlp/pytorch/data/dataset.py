@@ -10,6 +10,7 @@ import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 from sklearn import preprocessing
+from copy import deepcopy
 
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from ..data.data import GraphData
@@ -759,10 +760,10 @@ class Text2TextDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
-        graph_data = [item.graph for item in data_list]
+        graph_data = [deepcopy(item.graph) for item in data_list]
 
-        output_numpy = [item.output_np for item in data_list]
-        output_str = [item.output_text.lower().strip() for item in data_list]
+        output_numpy = [deepcopy(item.output_np) for item in data_list]
+        output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
 
         from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
@@ -883,8 +884,8 @@ class TextToTreeDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TreeDataItem]):
-        graph_data = [item.graph for item in data_list]
-        output_tree_list = [item.output_tree for item in data_list]
+        graph_data = [deepcopy(item.graph) for item in data_list]
+        output_tree_list = [deepcopy(item.output_tree) for item in data_list]
         return [graph_data, output_tree_list]
 
 
@@ -1194,6 +1195,7 @@ class KGCompletionDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [KGDataItem]):
+        data_list = deepcopy(data_list)
         # graph_data = [item.graph for item in data_list]
         e1 = torch.tensor([item.e1_tensor for item in data_list])
         e2 = torch.tensor([item.e2_tensor for item in data_list])
@@ -1352,9 +1354,9 @@ class Text2LabelDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2LabelDataItem]):
-        graph_data = [item.graph for item in data_list]
+        graph_data = [deepcopy(item.graph) for item in data_list]
 
-        tgt = [item.output for item in data_list]
+        tgt = [deepcopy(item.output) for item in data_list]
         tgt_tensor = torch.LongTensor(tgt)
 
         return [graph_data, tgt_tensor]
@@ -1479,12 +1481,12 @@ class DoubleText2TextDataset(Dataset):
         input_tensor2, input_length2, input_text2 = [], [], []
         tgt_tensor, tgt_text = [], []
         for item in data_list:
-            graph_data.append(item.graph)
-            input_tensor2.append(item.input_np2)
+            graph_data.append(deepcopy(item.graph))
+            input_tensor2.append(deepcopy(item.input_np2))
             input_length2.append(len(item.input_np2))
-            input_text2.append(item.input_text2)
-            tgt_tensor.append(item.output_np)
-            tgt_text.append(item.output_text)
+            input_text2.append(deepcopy(item.input_text2))
+            tgt_tensor.append(deepcopy(item.output_np))
+            tgt_text.append(deepcopy(item.output_text))
 
         input_tensor2 = torch.LongTensor(pad_2d_vals_no_size(input_tensor2))
         input_length2 = torch.LongTensor(input_length2)
@@ -1584,8 +1586,8 @@ class SequenceLabelingDataset(Dataset):
         graph_data = []
         for item in data_list:
             # if len(item.graph.node_attributes)== len(item.output_id):
-            graph_data.append(item.graph)
-            tgt_tag.append(item.output_id)
+            graph_data.append(deepcopy(item.graph))
+            tgt_tag.append(deepcopy(item.output_id))
 
         # tgt_tags = torch.cat(tgt_tag, dim=0)
         #return [graph_data, tgt_tag]
@@ -1721,20 +1723,20 @@ class CNNSeq2SeqDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem_seq2seq]):
-        input_numpy = [item.input_np for item in data_list]
+        input_numpy = [deepcopy(item.input_np) for item in data_list]
         src_len = [item.input_np.shape[0] for item in data_list]
         input_pad = pad_2d_vals_no_size(input_numpy)
 
         src_seq = torch.from_numpy(input_pad).long()
         src_len = torch.LongTensor(src_len)
 
-        output_numpy = [item.output_np for item in data_list]
+        output_numpy = [deepcopy(item.output_np) for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
 
         tgt_seq = torch.from_numpy(output_pad).long()
 
-        src_str = [item.input_text for item in data_list]
-        tgt_str = [item.output_text for item in data_list]
+        src_str = [deepcopy(item.input_text) for item in data_list]
+        tgt_str = [deepcopy(item.output_text) for item in data_list]
 
         sorted_x_len, indx = torch.sort(src_len, 0, descending=True)
         src_seq = src_seq[indx]
