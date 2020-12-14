@@ -254,6 +254,8 @@ class DecoderStrategy(StrategyBase):
                                         topk=1,
                                         enc_batch=None):
 
+        if self.beam_size == 1:
+            raise RuntimeError("If beam size is one, please use greedy search directly.")
         decoded_results = []
 
         decoder_hidden = decoder_initial_state
