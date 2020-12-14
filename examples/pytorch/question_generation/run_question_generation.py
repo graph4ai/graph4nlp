@@ -116,7 +116,7 @@ class QGModel(nn.Module):
             prob = prob[:, :min_length, :]
             tgt = tgt[:, :min_length]
             loss = self.loss_calc(prob, label=tgt, enc_attn_weights=enc_attn_weights, coverage_vectors=coverage_vectors)
-            return prob, loss
+            return prob, loss * min_length / 2
         else:
             return prob
 
@@ -275,7 +275,6 @@ class ModelHandler:
             train_loss = []
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
-                print(i, "------")
                 data = all_to_cuda(data, self.config['device'])
 
                 oov_dict = None
@@ -420,7 +419,7 @@ def main(config):
         config['device'] = torch.device('cpu')
 
     ts = datetime.datetime.now().timestamp()
-    config['out_dir'] += '_{}'.format(ts)
+    # config['out_dir'] += '_{}'.format(ts)
     print('\n' + config['out_dir'])
 
     runner = ModelHandler(config)

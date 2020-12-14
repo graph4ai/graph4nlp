@@ -50,7 +50,7 @@ class Graph2Seq(Graph2XBase):
                  emb_fix_word_emb=False, emb_fix_bert_emb=False, emb_word_dropout=0.0, emb_rnn_dropout=0.0,
                  dec_max_decoder_step=50,
                  dec_use_copy=False, dec_use_coverage=False,
-                 dec_graph_pooling_strategy=None, dec_rnn_type="lstm", dec_tgt_emb_as_output_layer=False,
+                 dec_graph_pooling_strategy=None, dec_rnn_type="lstm", dec_tgt_emb_as_output_layer=False, dec_teacher_forcing_rate=1.0,
                  dec_attention_type="uniform", dec_fuse_strategy="average", dec_node_type_num=None,
                  dec_dropout=0.0, device=None,
                  **kwargs):
@@ -77,12 +77,12 @@ class Graph2Seq(Graph2XBase):
                             use_copy=dec_use_copy, use_coverage=dec_use_coverage,
                             tgt_emb_as_output_layer=dec_tgt_emb_as_output_layer,
                             attention_type=dec_attention_type, node_type_num=dec_node_type_num,
-                            fuse_strategy=dec_fuse_strategy,
+                            fuse_strategy=dec_fuse_strategy, teacher_forcing_rate=dec_teacher_forcing_rate,
                             rnn_dropout=dec_dropout)
 
     def _build_decoder(self, decoder_length, input_size, rnn_input_size, hidden_size, graph_pooling_strategy,
                        vocab_model, word_emb,
-                       use_copy=False, use_coverage=False, tgt_emb_as_output_layer=False,
+                       use_copy=False, use_coverage=False, tgt_emb_as_output_layer=False, teacher_forcing_rate=1.0,
                        rnn_type="lstm", attention_type="uniform", node_type_num=None, fuse_strategy="average",
                        rnn_dropout=0.2):
 
@@ -95,6 +95,7 @@ class Graph2Seq(Graph2XBase):
                                          rnn_emb_input_size=rnn_input_size, use_coverage=use_coverage,
                                          use_copy=use_copy,
                                          tgt_emb_as_output_layer=tgt_emb_as_output_layer, dropout=rnn_dropout)
+        self.teacher_forcing_rate = teacher_forcing_rate
 
     def encoder_decoder(self, batch_graph, old_graph_list, oov_dict=None, tgt_seq=None):
         # run GNN
@@ -107,7 +108,7 @@ class Graph2Seq(Graph2XBase):
                 g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
 
         # down-task
-        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(graph_list_decoder, tgt_seq=tgt_seq,
+        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(graph_list_decoder, tgt_seq=tgt_seq, teacher_forcing_rate=self.teacher_forcing_rate,
                                                                     oov_dict=oov_dict)
         return prob, enc_attn_weights, coverage_vectors
 

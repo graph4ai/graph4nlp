@@ -6,7 +6,7 @@ graph_construction_args:
   graph_construction_share:
     graph_type: 'dependency'
     root_dir: 'examples/pytorch/question_generation/data/squad_split2'
-    topology_subdir: 'DependencyGraphfuck'
+    topology_subdir: 'DependencyGraph'
     thread_number: 4
     port: 9000
     timeout: 15000
@@ -53,15 +53,16 @@ decoder_args:
     rnn_emb_input_size: 300
     use_copy: true
     use_coverage: true
-    graph_pooling_strategy: null
+    graph_pooling_strategy: "max"
     attention_type: "sep_diff_encoder_type"
     fuse_strategy: "concatenate"
     dropout: 0.3
 
   rnn_decoder_private:
-    max_decoder_step: 100
+    max_decoder_step: 41
     node_type_num: null
     tgt_emb_as_output_layer: true
+    teacher_forcing_rate: 0.8
 
 
 
