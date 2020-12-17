@@ -23,7 +23,7 @@ def update_values_api(dict_from, dict_to):
     for key, value in dict_from.items():
         if isinstance(value, dict) and key in dict_to.keys():
             update_values_api(dict_from[key], dict_to[key])
-        elif value is not None:
+        else:
             dict_to[key] = dict_from[key]
 
 

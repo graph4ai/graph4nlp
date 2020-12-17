@@ -1,7 +1,7 @@
 # Data
 dataset: 'squad-split2'
-pre_word_emb_file: 'glove.840B.300d.txt' # path to the pretrained word embedding file
-out_dir: 'out/squad_split2/qg_ckpt'
+pre_word_emb_file: '/home/shiina/shiina/lib/graph4nlp/.vector_cache/glove.6B.300d.txt' # path to the pretrained word embedding file
+out_dir: 'out/squad_split2/qg_ckpt_dep_ggnn'
 
 # Preprocessing
 top_word_vocab: 70000
@@ -27,7 +27,7 @@ patience: 10
 lr: 0.001 # learning rate
 lr_patience: 2
 lr_reduce_factor: 0.5
-num_workers: 2 # number of data loader workers
+num_workers: 10 # number of data loader workers
 
 
 # Beam search
