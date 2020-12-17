@@ -1,2 +1,2 @@
-from .dataset import DataItem
+from .dataset import *
 from .data import GraphData

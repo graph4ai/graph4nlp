@@ -4,6 +4,7 @@ root_dir: 'examples/pytorch/text_classification/data/CNSST'
 pre_word_emb_file: '/raid/ghn/glove/glove.6B.300d.txt' # path to the pretrained word embedding file
 out_dir: 'examples/pytorch/text_classification/out/CNSST/graphsage_bi_sep_constituency_ckpt'
 
+emb_strategy: 'bert_bilstm'
 # Graph construction
 graph_type: 'constituency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
 

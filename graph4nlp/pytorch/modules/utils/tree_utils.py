@@ -65,7 +65,7 @@ class Tree():
         while head < len(q):
             t = q[head]
             exchangeable_symbol_idx_list = tgt_vocab.get_symbol_idx_for_list(
-                ['and', 'or', '+', '*'])
+                ['and', 'or'])
             if len(t.children) > 0 and (t.children[0] in exchangeable_symbol_idx_list):
                 k = []
                 for i in range(1, len(t.children)):
@@ -86,7 +86,31 @@ class Tree():
                     q.append(t.children[i])
 
             head = head + 1
-        return q[0]
+        return q[0].to_list(tgt_vocab)
+
+    @staticmethod
+    def deduplicate_tree(r_list, tgt_vocab):
+        q = [Tree.convert_to_tree(r_list, 0, len(r_list), tgt_vocab)]
+        head = 0
+        while head < len(q):
+            t = q[head]
+            if len(t.children) > 0:
+                k = {}
+                for i in range(len(t.children)):
+                    if isinstance(t.children[i], Tree):
+                        k[t.children[i].to_string().strip()] = i
+                    else:
+                        k[str(t.children[i]).strip()] = i
+                for index in (list(range(len(t.children)))):
+                    if index not in ([item[1] for item in k.items()]):
+                        t.children.pop(index)
+                        t.num_children = t.num_children - 1
+
+            for i in range(len(t.children)):
+                if isinstance(t.children[i], Tree):
+                    q.append(t.children[i])
+            head = head + 1
+        return q[0].to_list(tgt_vocab)
 
     @staticmethod
     def convert_to_tree(r_list, i_left, i_right, tgt_vocab):
@@ -111,6 +135,11 @@ class Tree():
                 t.add_child(r_list[i])
         return t
 
+class VocabForAll():
+    def __init__(self, in_word_vocab, out_word_vocab, share_vocab):
+        self.in_word_vocab = in_word_vocab
+        self.out_word_vocab = out_word_vocab
+        self.share_vocab = share_vocab
 
 class Vocab():
     def __init__(self, lower_case=True, pretrained_embedding_fn=None, embedding_dims=300):
@@ -366,16 +395,15 @@ class DataLoaderForSeqEncoder():
 
 
 class DataLoaderForGraphEncoder():
-    def __init__(self, use_copy, data, dataset, mode, batch_size, device):
+    def __init__(self, use_copy, use_share_vocab, data, dataset, mode, batch_size, device):
         self.mode = mode
         self.device = device
         self.use_copy = use_copy
         self.batch_size = batch_size
         self.src_vocab = dataset.src_vocab_model
         self.tgt_vocab = dataset.tgt_vocab_model
-
-        if self.use_copy:
-            self.share_vocab = self.tgt_vocab
+        if use_share_vocab and self.src_vocab.vocab_size == self.tgt_vocab.vocab_size:
+            self.share_vocab = self.src_vocab
         
         self.data = [(item.graph, item.output_text, item.output_tree) for item in data]
 
@@ -389,22 +417,26 @@ class DataLoaderForGraphEncoder():
 
         self.enc_batch_list = []
         self.enc_len_batch_list = []
+        self.original_target_tree_list = []
         self.dec_batch_list = []
 
         p = 0
         while p + batch_size <= len(self.data):
             vectorized_batch_graph = []
             tree_batch = []
+            original_target_tree = []
             enc_len_batch = 0
 
             for i in range(batch_size):
                 graph_item = self.data[p + i][0]
                 vectorized_batch_graph.append(graph_item)
                 enc_len_batch += graph_item.get_node_num()
+                original_target_tree.append(self.data[p+i][1])
                 tree_batch.append(self.data[p+i][2])
             
             self.enc_batch_list.append(vectorized_batch_graph)
             self.enc_len_batch_list.append(enc_len_batch)
+            self.original_target_tree_list.append(original_target_tree)
             self.dec_batch_list.append(tree_batch)
             p += batch_size
 
@@ -414,52 +446,17 @@ class DataLoaderForGraphEncoder():
 
     def random_batch(self):
         p = randint(0, self.num_batch-1)
-        return self.enc_batch_list[p], self.enc_len_batch_list[p], self.dec_batch_list[p]
-    
-    @staticmethod
-    def get_input_text_batch(batch_graph_list, use_copy, vocab):
-        if use_copy == False:
-            return None
-        batch_intput_text_list = []
-        max_batch_len = 0
-        for graph_i in batch_graph_list:
-            node_list = graph_i.node_attributes
-            node_list_tmp_1 = []
-            for i_ in node_list.values():
-                if i_['type'] == 0:
-                    node_list_tmp_1.append(i_)
-            max_sentence_id = np.max([item['sentence_id'] for item in node_list_tmp_1]) + 1
-
-            str_i = []
-            if vocab.get_symbol_idx(".") == vocab.get_symbol_idx(vocab.unk_token):
-                delimiter = []
-            else:
-                delimiter = [vocab.get_symbol_idx(".") ]
-
-            for sentence_id in range(max_sentence_id):
-                sentence_str = [item['token_id'] for item in node_list_tmp_1 if item['sentence_id']==sentence_id]
-                if sentence_id == max_sentence_id-1:
-                    str_i = str_i + sentence_str
-                else:
-                    str_i = str_i + sentence_str + delimiter
-            batch_intput_text_list.append(str_i)
-            if graph_i.get_node_num() > max_batch_len:
-                max_batch_len = graph_i.get_node_num()
-
-        ret_tensor = torch.zeros((len(batch_graph_list), max_batch_len), dtype=torch.long)
-        for index_1 in range(ret_tensor.size(0)):
-            for index_2 in range(ret_tensor.size(1)):
-                if index_2 < len(batch_intput_text_list[index_1]):
-                    ret_tensor[index_1][index_2] = batch_intput_text_list[index_1][index_2]
-                else:
-                    ret_tensor[index_1][index_2] = vocab.get_symbol_idx(vocab.pad_token)
-        return ret_tensor
-
+        return {'encoder_graph_batch': self.enc_batch_list[p],
+                'encoder_graph_node_number_batch': self.enc_len_batch_list[p],
+                'decoder_tree_batch': self.dec_batch_list[p],
+                'decoder_output_text_batch': self.original_target_tree_list[p]
+                }
+                
     def all_batch(self):
         r = []
         for p in range(self.num_batch):
             r.append([self.enc_batch_list[p],
-                      self.enc_len_batch_list[p], self.dec_batch_list[p]])
+                      self.enc_len_batch_list[p], self.dec_batch_list[p]], self.original_target_tree_list[p])
         return r
 
 

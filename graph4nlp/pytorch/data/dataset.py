@@ -10,6 +10,7 @@ import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 from sklearn import preprocessing
+from copy import deepcopy
 
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from ..data.data import GraphData
@@ -112,8 +113,7 @@ class Text2TreeDataItem(DataItem):
         self.output_text = output_text
         self.share_vocab = share_vocab
         self.output_tree = output_tree
-
-    def extract(self):
+    def extract(self, use_tok=True):
         """
         Returns
         -------
@@ -123,22 +123,19 @@ class Text2TreeDataItem(DataItem):
 
         input_tokens = []
         for i in range(g.get_node_num()):
-            if self.tokenizer is None:
-                tokenized_token = self.output_text.strip().split(' ')
+            if self.tokenizer is None or use_tok == False:
+                tokenized_token = g.node_attributes[i]['token'].strip().split(' ')
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
 
             input_tokens.extend(tokenized_token)
 
-        if self.tokenizer is None:
+        if self.tokenizer is None or use_tok == False:
             output_tokens = self.output_text.strip().split(' ')
         else:
             output_tokens = self.tokenizer(self.output_text)
 
-        if self.share_vocab:
-            return input_tokens + output_tokens
-        else:
-            return input_tokens, output_tokens
+        return input_tokens, output_tokens
 
 
 class Text2LabelDataItem(DataItem):
@@ -467,6 +464,7 @@ class Dataset(torch.utils.data.Dataset):
             else:
                 raise NotImplementedError
             print('CoreNLP server connected.')
+            pop_idxs = []
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
                     print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
@@ -477,11 +475,13 @@ class Dataset(torch.utils.data.Dataset):
                                                       merge_strategy=merge_strategy,
                                                       edge_strategy=edge_strategy,
                                                       verbase=False)
-                    ret.append(graph)
-                except TimeoutError as msg:
+                    item.graph = graph
+                except Exception as msg:
+                    pop_idxs.append(cnt)
+                    item.graph = None
                     warnings.warn(RuntimeWarning(msg))
-                    data_items.pop(data_items.index(item))
-
+                ret.append(item)
+            ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
         elif graph_type == 'dynamic':
             if dynamic_graph_type == 'node_emb':
                 for item in data_items:
@@ -538,8 +538,8 @@ class Dataset(torch.utils.data.Dataset):
                 else:
                     processor = None
                     processor_args = None
-
-                for item in data_items:
+                pop_idxs = []
+                for idx, item in enumerate(data_items):
                     try:
                         graph = topology_builder.init_topology(item.input_text,
                                                                dynamic_init_topology_builder=dynamic_init_topology_builder,
@@ -552,15 +552,19 @@ class Dataset(torch.utils.data.Dataset):
                                                                verbase=False,
                                                                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
-                        ret.append(graph)
-                    except TimeoutError as msg:
+                        item.graph = graph
+                    except Exception as msg:
+                        pop_idxs.append(idx)
+                        item.graph = None
                         warnings.warn(RuntimeWarning(msg))
-                        data_items.pop(data_items.index(item))
+                    ret.append(item)
+                ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
             else:
                 raise RuntimeError('Unknown dynamic_graph_type: {}'.format(dynamic_graph_type))
 
         else:
             raise NotImplementedError('Currently only static and dynamic are supported!')
+
         return ret
 
     def build_topology(self, data_items):
@@ -591,14 +595,14 @@ class Dataset(torch.utils.data.Dataset):
         pool.close()
         pool.join()
 
+        data_items = []
         for i in range(thread_number):
-            start_index = total * i // thread_number
-            end_index = total * (i + 1) // thread_number
-
             res = res_l[i].get()
-            datas = data_items[start_index:end_index]
-            for data, graph in zip(datas, res):
-                data.graph = graph.to(self.device)
+            for data in res:
+                data.graph = data.graph.to(self.device)
+                data_items.append(data)
+
+        return data_items
 
     def build_vocab(self):
         """
@@ -634,10 +638,10 @@ class Dataset(torch.utils.data.Dataset):
 
         self.read_raw_data()
 
-        self.build_topology(self.train)
-        self.build_topology(self.test)
+        self.train = self.build_topology(self.train)
+        self.test = self.build_topology(self.test)
         if 'val' in self.__dict__:
-            self.build_topology(self.val)
+            self.val = self.build_topology(self.val)
 
         self.build_vocab()
 
@@ -756,20 +760,35 @@ class Text2TextDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
-        graph_data = [item.graph for item in data_list]
+        graph_data = [deepcopy(item.graph) for item in data_list]
 
-        output_numpy = [item.output_np for item in data_list]
-        output_str = [item.output_text.lower().strip() for item in data_list]
+        output_numpy = [deepcopy(item.output_np) for item in data_list]
+        output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
 
+        from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
+        max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
+        if max_num_tokens_a_node>1:
+            for x in data_list:
+                x.graph.node_features['token_id'] = torch.from_numpy(
+                    pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
+                                x.graph.node_features['token_id'].size()[0],
+                                max_num_tokens_a_node)).long()
+
         tgt_seq = torch.from_numpy(output_pad).long()
-        return [graph_data, tgt_seq, output_str]
+        # return [graph_data, tgt_seq, output_str]
+        return {
+            "graph_data": graph_data,
+            "tgt_seq": tgt_seq,
+            "output_str": output_str
+        }
 
 
 class TextToTreeDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
+    def __init__(self, root_dir, topology_builder, topology_subdir, min_freq, share_vocab=True, **kwargs):
         self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
+        self.min_freq = min_freq
         super(TextToTreeDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
     def parse_file(self, file_path) -> list:
@@ -825,18 +844,21 @@ class TextToTreeDataset(Dataset):
             all_words = [Counter(), Counter()]
 
         for instance in data_for_vocab:
-            extracted_tokens = instance.extract()
+            extracted_tokens = instance.extract(use_tok=False)
             if self.share_vocab:
-                all_words.update(extracted_tokens)
+                all_words.update(extracted_tokens[0])
+                for w_i in extracted_tokens[1]:
+                    all_words[w_i] = 100000
             else:
                 all_words[0].update(extracted_tokens[0])
                 all_words[1].update(extracted_tokens[1])
 
         if self.share_vocab:
-            src_vocab_model.init_from_list(list(all_words.items()), min_freq=1, max_vocab_size=100000)
+            print("min_freq_for_word", self.min_freq)
+            src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_freq, max_vocab_size=100000)
             tgt_vocab_model = src_vocab_model
         else:
-            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=2, max_vocab_size=100000)
+            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=3, max_vocab_size=100000)
             tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=1, max_vocab_size=100000)
 
         self.src_vocab_model = src_vocab_model
@@ -862,8 +884,8 @@ class TextToTreeDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TreeDataItem]):
-        graph_data = [item.graph for item in data_list]
-        output_tree_list = [item.output_tree for item in data_list]
+        graph_data = [deepcopy(item.graph) for item in data_list]
+        output_tree_list = [deepcopy(item.output_tree) for item in data_list]
         return [graph_data, output_tree_list]
 
 
@@ -1171,63 +1193,9 @@ class KGCompletionDataset(Dataset):
             item.e1_multi_tensor_idx = torch.tensor([self.graph_nodes.index(i) for i in e1_multi.split()],
                                                     dtype=torch.long)
 
-    # @staticmethod
-    # def collate_fn(data_list: [KGDataItem]):
-    #     # graph_data = [item.graph for item in data_list]
-    #     e1 = torch.tensor([item.e1_tensor for item in data_list])
-    #     rel = torch.tensor([item.rel_tensor for item in data_list])
-    #     # e2_multi_tensor_idx = torch.tensor([item.e2_multi_tensor_idx for item in data_list])
-    #
-    #     e2_multi_tensor_idx_len = [item.e2_multi_tensor_idx.shape[0] for item in data_list]
-    #     max_e2_multi_tensor_idx_len = max(e2_multi_tensor_idx_len)
-    #     e2_multi_tensor_idx_pad = []
-    #     for item in data_list:
-    #         if item.e2_multi_tensor_idx.shape[0] < max_e2_multi_tensor_idx_len:
-    #             need_pad_length = max_e2_multi_tensor_idx_len - item.e2_multi_tensor_idx.shape[0]
-    #             pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-    #             e2_multi_tensor_idx_pad.append(torch.cat((item.e2_multi_tensor_idx, pad.long()), dim=0).unsqueeze(0))
-    #         elif item.e2_multi_tensor_idx.shape[0] == max_e2_multi_tensor_idx_len:
-    #             e2_multi_tensor_idx_pad.append(item.e2_multi_tensor_idx.unsqueeze(0))
-    #         else:
-    #             raise RuntimeError("Size mismatch error")
-    #
-    #     e2_multi_tensor_idx = torch.cat(e2_multi_tensor_idx_pad, dim=0)
-    #
-    #     # do padding here
-    #     e2_multi_len = [item.e2_multi_tensor.shape[0] for item in data_list]
-    #     max_e2_multi_len = max(e2_multi_len)
-    #     e2_multi_pad = []
-    #     for item in data_list:
-    #         if item.e2_multi_tensor.shape[0] < max_e2_multi_len:
-    #             need_pad_length = max_e2_multi_len - item.e2_multi_tensor.shape[0]
-    #             pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-    #             e2_multi_pad.append(torch.cat((item.e2_multi_tensor, pad.long()), dim=0).unsqueeze(0))
-    #         elif item.e2_multi_tensor.shape[0] == max_e2_multi_len:
-    #             e2_multi_pad.append(item.e2_multi_tensor.unsqueeze(0))
-    #         else:
-    #             raise RuntimeError("Size mismatch error")
-    #
-    #     e2_multi = torch.cat(e2_multi_pad, dim=0)
-    #
-    #     # # do padding here
-    #     # seq_len = [item.output_tensor.shape[0] for item in data_list]
-    #     # max_seq_len = max(seq_len)
-    #     # tgt_seq_pad = []
-    #     # for item in data_list:
-    #     #     if item.output_tensor.shape[0] < max_seq_len:
-    #     #         need_pad_length = max_seq_len - item.output_tensor.shape[0]
-    #     #         pad = torch.zeros(need_pad_length).fill_(Vocab.PAD)
-    #     #         tgt_seq_pad.append(torch.cat((item.output_tensor, pad.long()), dim=0).unsqueeze(0))
-    #     #     elif item.output_tensor.shape[0] == max_seq_len:
-    #     #         tgt_seq_pad.append(item.output_tensor.unsqueeze(0))
-    #     #     else:
-    #     #         raise RuntimeError("Size mismatch error")
-    #     #
-    #     # tgt_seq = torch.cat(tgt_seq_pad, dim=0)
-    #     return [e1, rel, e2_multi, e2_multi_tensor_idx]
-
     @staticmethod
     def collate_fn(data_list: [KGDataItem]):
+        data_list = deepcopy(data_list)
         # graph_data = [item.graph for item in data_list]
         e1 = torch.tensor([item.e1_tensor for item in data_list])
         e2 = torch.tensor([item.e2_tensor for item in data_list])
@@ -1296,7 +1264,14 @@ class KGCompletionDataset(Dataset):
 
         e2_multi = torch.cat(e2_multi_pad, dim=0)
 
-        return [e1, rel, e2_multi, e2_multi_tensor_idx, e2, rel_eval, e1_multi, e1_multi_tensor_idx]
+        return {'e1': e1,
+                'rel': rel,
+                'e2_multi': e2_multi,
+                'e2_multi_tensor_idx': e2_multi_tensor_idx,
+                'e2': e2,
+                'rel_eval': rel_eval,
+                'e1_multi': e1_multi,
+                'e1_multi_tensor_idx': e1_multi_tensor_idx}
 
 
 class Text2LabelDataset(Dataset):
@@ -1379,9 +1354,9 @@ class Text2LabelDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2LabelDataItem]):
-        graph_data = [item.graph for item in data_list]
+        graph_data = [deepcopy(item.graph) for item in data_list]
 
-        tgt = [item.output for item in data_list]
+        tgt = [deepcopy(item.output) for item in data_list]
         tgt_tensor = torch.LongTensor(tgt)
 
         return [graph_data, tgt_tensor]
@@ -1506,12 +1481,12 @@ class DoubleText2TextDataset(Dataset):
         input_tensor2, input_length2, input_text2 = [], [], []
         tgt_tensor, tgt_text = [], []
         for item in data_list:
-            graph_data.append(item.graph)
-            input_tensor2.append(item.input_np2)
+            graph_data.append(deepcopy(item.graph))
+            input_tensor2.append(deepcopy(item.input_np2))
             input_length2.append(len(item.input_np2))
-            input_text2.append(item.input_text2)
-            tgt_tensor.append(item.output_np)
-            tgt_text.append(item.output_text)
+            input_text2.append(deepcopy(item.input_text2))
+            tgt_tensor.append(deepcopy(item.output_np))
+            tgt_text.append(deepcopy(item.output_text))
 
         input_tensor2 = torch.LongTensor(pad_2d_vals_no_size(input_tensor2))
         input_length2 = torch.LongTensor(input_length2)
@@ -1611,12 +1586,14 @@ class SequenceLabelingDataset(Dataset):
         graph_data = []
         for item in data_list:
             # if len(item.graph.node_attributes)== len(item.output_id):
-            graph_data.append(item.graph)
-            tgt_tag.append(item.output_id)
+            graph_data.append(deepcopy(item.graph))
+            tgt_tag.append(deepcopy(item.output_id))
 
         # tgt_tags = torch.cat(tgt_tag, dim=0)
-        return [graph_data, tgt_tag]
-
+        #return [graph_data, tgt_tag]
+        return {"graph_data": graph_data,
+            "tgt_tag": tgt_tag}
+        
 
 class CNNSeq2SeqDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir,
@@ -1746,20 +1723,20 @@ class CNNSeq2SeqDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem_seq2seq]):
-        input_numpy = [item.input_np for item in data_list]
+        input_numpy = [deepcopy(item.input_np) for item in data_list]
         src_len = [item.input_np.shape[0] for item in data_list]
         input_pad = pad_2d_vals_no_size(input_numpy)
 
         src_seq = torch.from_numpy(input_pad).long()
         src_len = torch.LongTensor(src_len)
 
-        output_numpy = [item.output_np for item in data_list]
+        output_numpy = [deepcopy(item.output_np) for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
 
         tgt_seq = torch.from_numpy(output_pad).long()
 
-        src_str = [item.input_text for item in data_list]
-        tgt_str = [item.output_text for item in data_list]
+        src_str = [deepcopy(item.input_text) for item in data_list]
+        tgt_str = [deepcopy(item.output_text) for item in data_list]
 
         sorted_x_len, indx = torch.sort(src_len, 0, descending=True)
         src_seq = src_seq[indx]

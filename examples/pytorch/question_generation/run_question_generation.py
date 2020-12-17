@@ -1,7 +1,9 @@
 import os
 import time
 import datetime
+import copy
 import argparse
+from argparse import Namespace
 import yaml
 
 import numpy as np
@@ -18,15 +20,21 @@ from graph4nlp.pytorch.datasets.squad import SQuADDataset
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import RNNEmbedding, WordEmbedding
-from graph4nlp.pytorch.modules.graph_embedding import GAT, GraphSAGE, GGNN
-from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
+from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, dropout_fn, sparse_mx_to_torch_sparse_tensor, EarlyStopping
-from examples.pytorch.semantic_parsing.graph2seq.loss import Graph2seqLoss, CoverageLoss
+from graph4nlp.pytorch.modules.config import get_basic_args
+from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
+from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.evaluation import BLEU, METEOR, ROUGE
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils import constants as Constants
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
+from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
+import multiprocessing
 import torch.multiprocessing
 torch.multiprocessing.set_sharing_strategy('file_system')
+multiprocessing.set_start_method("spawn", force=True)
 
 
 class QGModel(nn.Module):
@@ -34,100 +42,27 @@ class QGModel(nn.Module):
         super(QGModel, self).__init__()
         self.config = config
         self.vocab = vocab
-        embedding_style = {'single_token_item': True if config['graph_type'] != 'ie' else False,
-                            'emb_strategy': config.get('emb_strategy', 'w2v_bilstm'),
-                            'num_rnn_layers': 1,
-                            'bert_model_name': config.get('bert_model_name', 'bert-base-uncased'),
-                            'bert_lower_case': True
-                           }
-        print('embedding_style: {}'.format(embedding_style))
+        self.use_coverage = self.config['decoder_args']['rnn_decoder_share']['use_coverage']
 
-        assert not (config['graph_type'] in ('node_emb', 'node_emb_refined') and config['gnn'] == 'gat'), \
-                                'dynamic graph construction does not support GAT'
+        # build Graph2Seq model
+        self.g2s = Graph2Seq.from_args(config, self.vocab, config['device'])
 
-        use_edge_weight = False
-        if config['graph_type'] == 'dependency':
-            self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
-                                                                   vocab=vocab.in_word_vocab,
-                                                                   hidden_size=config['num_hidden'],
-                                                                   word_dropout=config['word_dropout'],
-                                                                   rnn_dropout=config['enc_rnn_dropout'],
-                                                                   fix_word_emb=not config['no_fix_word_emb'],
-                                                                   fix_bert_emb=not config.get('no_fix_bert_emb', False),
-                                                                   device=config['device'])
-        elif config['graph_type'] == 'constituency':
-            self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
-                                                                   vocab=vocab.in_word_vocab,
-                                                                   hidden_size=config['num_hidden'],
-                                                                   word_dropout=config['word_dropout'],
-                                                                   rnn_dropout=config['enc_rnn_dropout'],
-                                                                   fix_word_emb=not config['no_fix_word_emb'],
-                                                                   device=config['device'])
-        elif config['graph_type'] == 'ie':
-            self.graph_topology = IEBasedGraphConstruction(embedding_style=embedding_style,
-                                                                   vocab=vocab.in_word_vocab,
-                                                                   hidden_size=config['num_hidden'],
-                                                                   word_dropout=config['word_dropout'],
-                                                                   rnn_dropout=config['enc_rnn_dropout'],
-                                                                   fix_word_emb=not config['no_fix_word_emb'],
-                                                                   device=config['device'])
-        elif config['graph_type'] == 'node_emb':
-            self.graph_topology = NodeEmbeddingBasedGraphConstruction(
-                                    vocab.in_word_vocab,
-                                    embedding_style,
-                                    sim_metric_type=config['gl_metric_type'],
-                                    num_heads=config['gl_num_heads'],
-                                    top_k_neigh=config['gl_top_k'],
-                                    epsilon_neigh=config['gl_epsilon'],
-                                    smoothness_ratio=config['gl_smoothness_ratio'],
-                                    connectivity_ratio=config['gl_connectivity_ratio'],
-                                    sparsity_ratio=config['gl_sparsity_ratio'],
-                                    input_size=config['num_hidden'],
-                                    hidden_size=config['gl_num_hidden'],
-                                    fix_word_emb=not config['no_fix_word_emb'],
-                                    word_dropout=config['word_dropout'],
-                                    rnn_dropout=config['enc_rnn_dropout'],
-                                    device=config['device'])
-            use_edge_weight = True
-        elif config['graph_type'] == 'node_emb_refined':
-            self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
-                                    vocab.in_word_vocab,
-                                    embedding_style,
-                                    config['init_adj_alpha'],
-                                    sim_metric_type=config['gl_metric_type'],
-                                    num_heads=config['gl_num_heads'],
-                                    top_k_neigh=config['gl_top_k'],
-                                    epsilon_neigh=config['gl_epsilon'],
-                                    smoothness_ratio=config['gl_smoothness_ratio'],
-                                    connectivity_ratio=config['gl_connectivity_ratio'],
-                                    sparsity_ratio=config['gl_sparsity_ratio'],
-                                    input_size=config['num_hidden'],
-                                    hidden_size=config['gl_num_hidden'],
-                                    fix_word_emb=not config['no_fix_word_emb'],
-                                    word_dropout=config['word_dropout'],
-                                    rnn_dropout=config['enc_rnn_dropout'],
-                                    device=config['device'])
-            use_edge_weight = True
-        else:
-            raise RuntimeError('Unknown graph_type: {}'.format(config['graph_type']))
-
-
-        if 'w2v' in self.graph_topology.embedding_layer.word_emb_layers:
-            self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
+        if 'w2v' in self.g2s.graph_topology.embedding_layer.word_emb_layers:
+            self.word_emb = self.g2s.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
         else:
             self.word_emb = WordEmbedding(
                             self.vocab.in_word_vocab.embeddings.shape[0],
                             self.vocab.in_word_vocab.embeddings.shape[1],
                             pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
-                            fix_emb=not config['no_fix_word_emb'],
+                            fix_emb=config['graph_construction_args']['node_embedding']['fix_word_emb'],
                             device=config['device']).word_emb_layer
 
         answer_feat_size = self.vocab.in_word_vocab.embeddings.shape[1]
-        if 'node_edge_bert' in self.graph_topology.embedding_layer.word_emb_layers:
-            self.bert_encoder = self.graph_topology.embedding_layer.word_emb_layers['node_edge_bert']
+        if 'node_edge_bert' in self.g2s.graph_topology.embedding_layer.word_emb_layers:
+            self.bert_encoder = self.g2s.graph_topology.embedding_layer.word_emb_layers['node_edge_bert']
             answer_feat_size += self.bert_encoder.bert_model.config.hidden_size
-        elif 'seq_bert' in self.graph_topology.embedding_layer.word_emb_layers:
-            self.bert_encoder = self.graph_topology.embedding_layer.word_emb_layers['seq_bert']
+        elif 'seq_bert' in self.g2s.graph_topology.embedding_layer.word_emb_layers:
+            self.bert_encoder = self.g2s.graph_topology.embedding_layer.word_emb_layers['seq_bert']
             answer_feat_size += self.bert_encoder.bert_model.config.hidden_size
         else:
             self.bert_encoder = None
@@ -146,67 +81,16 @@ class QGModel(nn.Module):
         self.ctx2ans_attn = Context2AnswerAttention(config['num_hidden'], config['num_hidden'])
         self.fuse_ctx_ans = nn.Linear(2 * config['num_hidden'], config['num_hidden'], bias=False)
 
+        self.loss_calc = Graph2SeqLoss(ignore_index=self.vocab.out_word_vocab.PAD,
+                                  use_coverage=self.use_coverage, coverage_weight=config['coverage_loss_ratio'])
 
-        if config['gnn'] == 'gat':
-            heads = [config['gat_num_heads']] * (config['gnn_num_layers'] - 1) + [config['gat_num_out_heads']]
-            self.gnn = GAT(config['gnn_num_layers'],
-                        config['num_hidden'],
-                        config['num_hidden'],
-                        config['num_hidden'],
-                        heads,
-                        direction_option=config['gnn_direction_option'],
-                        feat_drop=config['gnn_dropout'],
-                        attn_drop=config['gat_attn_dropout'],
-                        negative_slope=config['gat_negative_slope'],
-                        residual=config['gat_residual'],
-                        activation=F.elu)
-        elif config['gnn'] == 'graphsage':
-            self.gnn = GraphSAGE(config['gnn_num_layers'],
-                        config['num_hidden'],
-                        config['num_hidden'],
-                        config['num_hidden'],
-                        config['graphsage_aggreagte_type'],
-                        direction_option=config['gnn_direction_option'],
-                        feat_drop=config['gnn_dropout'],
-                        bias=True,
-                        norm=None,
-                        activation=F.relu,
-                        use_edge_weight=use_edge_weight)
-        elif config['gnn'] == 'ggnn':
-            self.gnn = GGNN(config['gnn_num_layers'],
-                        config['num_hidden'],
-                        config['num_hidden'],
-                        dropout=config['gnn_dropout'],
-                        direction_option=config['gnn_direction_option'],
-                        bias=True,
-                        use_edge_weight=use_edge_weight)
-        else:
-            raise RuntimeError('Unknown gnn type: {}'.format(config['gnn']))
-
-        self.seq_decoder = StdRNNDecoder(max_decoder_step=config['max_dec_steps'],
-                                         decoder_input_size=2 * config['num_hidden'] if config['gnn_direction_option'] == 'bi_sep' else config['num_hidden'],
-                                         decoder_hidden_size=config['num_hidden'],
-                                         graph_pooling_strategy=config['graph_pooling_strategy'],
-                                         word_emb=self.word_emb,
-                                         vocab=self.vocab.in_word_vocab,
-                                         attention_type=config['dec_attention_type'],
-                                         fuse_strategy=config['dec_fuse_strategy'],
-                                         rnn_emb_input_size=config['num_hidden'],
-                                         use_coverage=config['use_coverage'],
-                                         tgt_emb_as_output_layer=config['tgt_emb_as_output_layer'],
-                                         dropout=config['dec_rnn_dropout'],
-                                         device=config['device'])
-        self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
-        self.loss_cover = CoverageLoss(config['coverage_loss_ratio'])
-
-
-    def forward(self, data, require_loss=True):
+    def encode_init_node_feature(self, data):
         num_graph_nodes = []
         for g in data['graph_data']:
             num_graph_nodes.append(g.get_node_num())
 
         # graph embedding construction
-        batch_gd = self.graph_topology(data['graph_data'])
+        batch_gd = self.g2s.graph_topology(data['graph_data'])
 
         # answer alignment
         answer_feat = self.word_emb(data['input_tensor2'])
@@ -220,19 +104,17 @@ class QGModel(nn.Module):
         new_node_feat = self.answer_alignment(batch_gd.node_features['node_feat'], answer_feat, answer_feat, num_graph_nodes, data['input_length2'])
         batch_gd.node_features['node_feat'] = new_node_feat
 
-        # run GNN
-        self.gnn(batch_gd)
-        batch_gd.node_features['rnn_emb'] = batch_gd.node_features['node_feat']
+        return batch_gd
 
-        # seq decoder
-        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(from_batch(batch_gd), tgt_seq=data['tgt_tensor'])
+    def forward(self, data, oov_dict=None, require_loss=True):
+        batch_gd = self.encode_init_node_feature(data)
+        prob, enc_attn_weights, coverage_vectors = self.g2s.encoder_decoder(batch_gd, data['graph_data'], oov_dict=oov_dict, tgt_seq=data['tgt_tensor'])
+
         if require_loss:
-            loss = self.loss_calc(prob, data['tgt_tensor'])
-            loss += self.loss_cover(prob.shape[0], enc_attn_weights, coverage_vectors)
+            loss = self.loss_calc(prob, label=data['tgt_tensor'], enc_attn_weights=enc_attn_weights, coverage_vectors=coverage_vectors)
             return prob, loss
         else:
             return prob
-
 
     def answer_alignment(self, node_feat, answer_feat, out_answer_feat, num_nodes, answer_length):
         assert len(num_nodes) == len(answer_length)
@@ -287,6 +169,8 @@ class ModelHandler:
     def __init__(self, config):
         super(ModelHandler, self).__init__()
         self.config = config
+        self.use_copy = self.config['decoder_args']['rnn_decoder_share']['use_copy']
+        self.use_coverage = self.config['decoder_args']['rnn_decoder_share']['use_coverage']
         self.logger = Logger(config['out_dir'], config={k:v for k, v in config.items() if k != 'device'}, overwrite=True)
         self.logger.write(config['out_dir'])
         self._build_dataloader()
@@ -295,59 +179,54 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dynamic_init_topology_builder = None
-        if self.config['graph_type'] == 'dependency':
+        if self.config['graph_construction_args']["graph_construction_share"]["graph_type"] == "dependency":
             topology_builder = DependencyBasedGraphConstruction
             graph_type = 'static'
-            merge_strategy = 'tailhead'
-        elif self.config['graph_type'] == 'constituency':
+            dynamic_init_topology_builder = None
+        elif self.config['graph_construction_args']["graph_construction_share"]["graph_type"] == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction
             graph_type = 'static'
-            merge_strategy = 'tailhead'
-        elif self.config['graph_type'] == 'ie':
-            topology_builder = IEBasedGraphConstruction
-            graph_type = 'static'
-            merge_strategy = 'global'
-        elif self.config['graph_type'] == 'node_emb':
+            dynamic_init_topology_builder = None
+        elif self.config['graph_construction_args']["graph_construction_share"]["graph_type"] == "node_emb":
             topology_builder = NodeEmbeddingBasedGraphConstruction
             graph_type = 'dynamic'
-            merge_strategy = None
-        elif self.config['graph_type'] == 'node_emb_refined':
+            dynamic_init_topology_builder = None
+        elif self.config['graph_construction_args']["graph_construction_share"]["graph_type"] == "node_emb_refined":
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             graph_type = 'dynamic'
-            merge_strategy = 'tailhead'
-
-            if self.config['init_graph_type'] == 'line':
+            dynamic_init_graph_type = self.config['graph_construction_args'].graph_construction_private.dynamic_init_graph_type
+            if dynamic_init_graph_type is None or dynamic_init_graph_type == 'line':
                 dynamic_init_topology_builder = None
-            elif self.config['init_graph_type'] == 'dependency':
+            elif dynamic_init_graph_type == 'dependency':
                 dynamic_init_topology_builder = DependencyBasedGraphConstruction
-            elif self.config['init_graph_type'] == 'constituency':
+            elif dynamic_init_graph_type == 'constituency':
                 dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-            elif self.config['init_graph_type'] == 'ie':
-                merge_strategy = 'global'
-                dynamic_init_topology_builder = IEBasedGraphConstruction
             else:
                 # dynamic_init_topology_builder
                 raise RuntimeError('Define your own dynamic_init_topology_builder')
         else:
-            raise RuntimeError('Unknown graph_type: {}'.format(self.config['graph_type']))
+            raise NotImplementedError("Define your topology builder.")
 
-        topology_subdir = '{}_based_graph'.format(self.config['graph_type'])
-        if self.config['graph_type'] == 'node_emb_refined':
-            topology_subdir += '_{}'.format(self.config['init_graph_type'])
-
-        dataset = SQuADDataset(root_dir='examples/pytorch/question_generation/data/squad_split2',
+        dataset = SQuADDataset(root_dir=self.config['graph_construction_args']['graph_construction_share']['root_dir'],
                               pretrained_word_emb_file=self.config['pre_word_emb_file'],
-                              merge_strategy=merge_strategy,
+                              merge_strategy=self.config['graph_construction_args']['graph_construction_private']['merge_strategy'],
+                              edge_strategy=self.config['graph_construction_args']["graph_construction_private"]['edge_strategy'],
+                              max_word_vocab_size=self.config['top_word_vocab'],
+                              min_word_vocab_freq=self.config['min_word_freq'],
+                              word_emb_size=self.config['word_emb_size'],
+                              share_vocab=self.config['share_vocab'],
                               seed=self.config['seed'],
                               graph_type=graph_type,
                               topology_builder=topology_builder,
-                              topology_subdir=topology_subdir,
-                              dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
+                              topology_subdir=self.config['graph_construction_args']['graph_construction_share']['topology_subdir'],
+                              dynamic_graph_type=self.config['graph_construction_args']['graph_construction_share']['graph_type'],
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
-                              dynamic_init_topology_aux_args={'dummy_param': 0})
+                              dynamic_init_topology_aux_args={'dummy_param': 0},
+                              thread_number=4,
+                              port=9000,
+                              timeout=15000)
 
-        # TODO: use small ratio of the data
+        # TODO: use small ratio of the data (Test only)
         dataset.train = dataset.train[:self.config['n_samples']]
         dataset.val = dataset.val[:self.config['n_samples']]
         dataset.test = dataset.test[:self.config['n_samples']]
@@ -393,7 +272,13 @@ class ModelHandler:
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
                 data = all_to_cuda(data, self.config['device'])
-                logits, loss = self.model(data, require_loss=True)
+
+                oov_dict = None
+                if self.use_copy:
+                    oov_dict, tgt = prepare_ext_vocab(data['graph_data'], self.vocab, gt_str=data['tgt_text'])
+                    data['tgt_tensor'] = tgt
+
+                logits, loss = self.model(data, oov_dict=oov_dict, require_loss=True)
                 self.optimizer.zero_grad()
                 loss.backward()
                 if self.config.get('grad_clipping', None) not in (None, 0):
@@ -429,11 +314,51 @@ class ModelHandler:
             gt_collect = []
             for i, data in enumerate(dataloader):
                 data = all_to_cuda(data, self.config['device'])
-                prob = self.model(data, require_loss=False)
+
+                if self.use_copy:
+                    oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab)
+                    ref_dict = oov_dict
+                else:
+                    oov_dict = None
+                    ref_dict = self.vocab.out_word_vocab
+
+                prob = self.model(data, oov_dict=oov_dict, require_loss=False)
                 pred = prob.argmax(dim=-1)
 
-                pred_str = wordid2str(pred.detach().cpu(), self.vocab.in_word_vocab)
-                tgt_str = wordid2str(data['tgt_tensor'], self.vocab.in_word_vocab)
+                pred_str = wordid2str(pred.detach().cpu(), ref_dict)
+                pred_collect.extend(pred_str)
+                gt_collect.extend(data['tgt_text'])
+
+            scores = self.evaluate_predictions(gt_collect, pred_collect)
+
+            return scores
+
+    def translate(self, dataloader):
+        self.model.eval()
+        with torch.no_grad():
+            pred_collect = []
+            gt_collect = []
+            for i, data in enumerate(dataloader):
+                data = all_to_cuda(data, self.config['device'])
+                if self.use_copy:
+                    oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab)
+                    ref_dict = oov_dict
+                else:
+                    oov_dict = None
+                    ref_dict = self.vocab.out_word_vocab
+
+                batch_gd = self.model.encode_init_node_feature(data)
+                prob = self.model.g2s.encoder_decoder_beam_search(batch_gd, data['graph_data'], self.config['beam_size'], topk=1, oov_dict=oov_dict)
+
+                pred_ids = torch.zeros(len(prob), self.config['decoder_args']['rnn_decoder_private']['max_decoder_step']).fill_(ref_dict.EOS).to(self.config['device']).int()
+                for i, item in enumerate(prob):
+                    item = item[0]
+                    seq = [j.view(1, 1) for j in item]
+                    seq = torch.cat(seq, dim=1)
+                    pred_ids[i, :seq.shape[1]] = seq
+
+                pred_str = wordid2str(pred_ids.detach().cpu(), ref_dict)
+
                 pred_collect.extend(pred_str)
                 gt_collect.extend(data['tgt_text'])
 
@@ -446,7 +371,7 @@ class ModelHandler:
         self.stopper.load_checkpoint(self.model)
 
         t0 = time.time()
-        scores = self.evaluate(self.test_dataloader)
+        scores = self.translate(self.test_dataloader)
         dur = time.time() - t0
         format_str = 'Test examples: {} | Time: {:.2f}s |  Test scores:'.format(self.num_test, dur)
         format_str += self.metric_to_str(scores)
@@ -518,8 +443,7 @@ def wordid2str(word_ids, vocab):
                 break
             token = vocab.getWord(id_list[j])
             ret_inst.append(token)
-        ret.append(' '.join(ret_inst))
-
+        ret.append(" ".join(ret_inst))
     return ret
 
 def all_to_cuda(data, device=None):
@@ -538,18 +462,12 @@ def all_to_cuda(data, device=None):
 ################################################################################
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-config', '--config', required=True, type=str, help='path to the config file')
+    parser.add_argument('-task_config', '--task_config', required=True, type=str, help='path to the config file')
+    parser.add_argument('-g2s_config', '--g2s_config', required=True, type=str, help='path to the config file')
     parser.add_argument('--grid_search', action='store_true', help='flag: grid search')
     args = vars(parser.parse_args())
 
     return args
-
-
-def get_config(config_path='config.yml'):
-    with open(config_path, 'r') as setting:
-        config = yaml.load(setting)
-
-    return config
 
 
 def print_config(config):
@@ -600,9 +518,16 @@ def grid_search_main(config):
 
 if __name__ == '__main__':
     cfg = get_args()
-    config = get_config(cfg['config'])
-    print_config(config)
+    task_args = get_yaml_config(cfg['task_config'])
+    g2s_args = get_yaml_config(cfg['g2s_config'])
+    # load Graph2Seq template config
+    g2s_template = get_basic_args(graph_construction_name=g2s_args['graph_construction_name'],
+                              graph_embedding_name=g2s_args['graph_embedding_name'],
+                              decoder_name=g2s_args['decoder_name'])
+    update_values(to_args=g2s_template, from_args_list=[g2s_args, task_args])
+
+    print_config(g2s_template)
     if cfg['grid_search']:
-        grid_search_main(config)
+        grid_search_main(g2s_template)
     else:
-        main(config)
+        main(g2s_template)

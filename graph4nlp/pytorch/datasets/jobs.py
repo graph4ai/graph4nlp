@@ -74,20 +74,20 @@ class JobsDataset(Text2TextDataset):
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
-    @classmethod
-    def from_args(cls, args, graph_type, topology_builder, dynamic_graph_type=None, dynamic_init_topology_builder=None,
-                  dynamic_init_topology_aux_args=None):
-        return cls(root_dir=args.root_dir,
-                   pretrained_word_emb_file=args.pretrained_word_emb_file,
-                   val_split_ratio=args.val_split_ratio,
-                   merge_strategy=args.merge_strategy, edge_strategy=args.edge_strategy,
-                   seed=args.seed,
-                   word_emb_size=args.word_emb_size, share_vocab=args.share_vocab,
-                   graph_type=graph_type,
-                   topology_builder=topology_builder, topology_subdir=args.topology_subdir,
-                   dynamic_graph_type= dynamic_graph_type,
-                   dynamic_init_topology_builder=dynamic_init_topology_builder,
-                   dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+    # @classmethod
+    # def from_args(cls, args, graph_type, topology_builder, dynamic_graph_type=None, dynamic_init_topology_builder=None,
+    #               dynamic_init_topology_aux_args=None):
+    #     return cls(root_dir=args.root_dir,
+    #                pretrained_word_emb_file=args.pretrained_word_emb_file,
+    #                val_split_ratio=args.val_split_ratio,
+    #                merge_strategy=args.merge_strategy, edge_strategy=args.edge_strategy,
+    #                seed=args.seed,
+    #                word_emb_size=args.word_emb_size, share_vocab=args.share_vocab,
+    #                graph_type=graph_type,
+    #                topology_builder=topology_builder, topology_subdir=args.topology_subdir,
+    #                dynamic_graph_type= dynamic_graph_type,
+    #                dynamic_init_topology_builder=dynamic_init_topology_builder,
+    #                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
 
 
 
@@ -121,7 +121,8 @@ class JobsDatasetForTree(TextToTreeDataset):
                  dynamic_init_topology_aux_args=None,
                  enc_emb_size=300,
                  dec_emb_size=300,
-                 device='cpu'):
+                 device='cpu',
+                 min_freq=1):
         """
 
         Parameters
@@ -158,7 +159,8 @@ class JobsDatasetForTree(TextToTreeDataset):
                                           dynamic_graph_type=dynamic_graph_type,
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-                                          enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size, device=device)
+                                          enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size, device=device,
+                                          min_freq=min_freq)
 
 
 if __name__ == '__main__':

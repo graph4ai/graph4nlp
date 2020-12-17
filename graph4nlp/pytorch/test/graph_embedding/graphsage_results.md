@@ -57,13 +57,13 @@ python -m graph4nlp.pytorch.test.graph_embedding.run_graphsage --dataset=pubmed 
 
 #### ogbn-arxiv
 <!-- ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_graphsage --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option uni 
+python -m graph4nlp.pytorch.test.graph_construction.run_graphsage --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option uni 
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_graphsage --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option bi_sep 
+python -m graph4nlp.pytorch.test.graph_construction.run_graphsage --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option bi_sep 
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_graphsage --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option bi_fuse
+python -m graph4nlp.pytorch.test.graph_construction.run_graphsage --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option bi_fuse
 ``` -->
 
 ```bash

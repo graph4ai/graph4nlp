@@ -454,7 +454,7 @@ class Conll:
             pred_collect = []
             gt_collect = []
             for data in self.train_dataloader:
-                graph_list, tgt = data
+                graph_list, tgt = data["graph_data"], data["tgt_tag"]
                 tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
                 pred_tags, loss = self.model(graph_list, tgt_l, require_loss=True)
                 pred_collect.extend(pred_tags)   #pred: list of batch_sentence pred tensor         
@@ -481,7 +481,7 @@ class Conll:
         tokens_collect=[]
         with torch.no_grad():
             for data in self.val_dataloader:
-                graph_list, tgt = data
+                graph_list, tgt = data["graph_data"], data["tgt_tag"]
                 tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
                 pred,loss= self.model(graph_list, tgt_l, require_loss=True)
                 pred_collect.extend(pred)   #pred: list of batch_sentence pred tensor         
@@ -503,7 +503,7 @@ class Conll:
         tgt_collect=[]
         with torch.no_grad():       
             for data in self.test_dataloader:
-                graph_list, tgt = data
+                graph_list, tgt = data["graph_data"], data["tgt_tag"]
                 tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
                 pred,loss = self.model(graph_list, tgt_l,require_loss=True)
                 #pred = logits2tag(g)
@@ -516,7 +516,7 @@ class Conll:
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NER')
-    parser.add_argument("--gpu", type=int, default=-1,
+    parser.add_argument("--gpu", type=int, default=0,
                         help="which GPU to use.")
     parser.add_argument("--epochs", type=int, default=10,
                         help="number of training epochs")

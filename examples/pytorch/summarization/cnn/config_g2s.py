@@ -4,7 +4,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--root_dir", type=str, default="examples/pytorch/summarization/cnn",
                         help="")
-    parser.add_argument("--topology_subdir", type=str, default='DependencyGraph', help="")
+    parser.add_argument("--topology_subdir", type=str, default='DependencyGraph_3w', help="")
     parser.add_argument('--word-emb-size', type=int, default=128, help='')
     parser.add_argument("--log-file", type=str, default="examples/pytorch/summarization/cnn/log/log_dep_30k.txt")
     parser.add_argument("--checkpoint-save-path", type=str, default="examples/pytorch/summarization/cnn/save_dep_30k")
@@ -32,20 +32,8 @@ def get_args():
     cfg = parser.parse_args()
     return cfg
 
-# screen -S ghn_code1 python -m examples.pytorch.summarization.cnn.main --word-emb-size 128 --topology_subdir DependencyGraph5 --hidden-size 256 --lr-decay-per-epoch 1 --batch_size 20 --log-file examples/pytorch/summarization/cnn/log/log5.txt
-# screen -S ghn_code2 python -m examples.pytorch.summarization.cnn.main --word-emb-size 128 --topology_subdir DependencyGraph5 --hidden-size 256 --lr-decay-per-epoch 1 --batch_size 30 --log-file examples/pytorch/summarization/cnn/log/log5_0.txt
-# screen -S ghn_code3 python -m examples.pytorch.summarization.cnn.main --word-emb-size 128 --topology_subdir DependencyGraph1 --hidden-size 256 --lr-decay-per-epoch 1 --batch_size 30 --log-file examples/pytorch/summarization/cnn/log/log1.txt
-# screen -S ghn_code1 python -m examples.pytorch.summarization.cnn.main --word-emb-size 128 --topology_subdir DependencyGraph2 --hidden-size 256 --lr-decay-per-epoch 1 --batch_size 30 --log-file examples/pytorch/summarization/cnn/log/log2.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_dep2
-# screen -S ghn_code2 python -m examples.pytorch.summarization.cnn.main --word-emb-size 128 --topology_subdir DependencyGraph2 --hidden-size 256 --lr-decay-per-epoch 1 --batch_size 30 --log-file examples/pytorch/summarization/cnn/log/log2_0.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_dep2_0 --learning-rate 0.0005
-# screen -S ghn_code3 python -m examples.pytorch.summarization.cnn.main --word-emb-size 128 --topology_subdir DependencyGraph_10 --hidden-size 256 --batch_size 30 --log-file examples/pytorch/summarization/cnn/log/log_10.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_dep_10 --lr-decay-rate  0.8
-# screen -S ghn_code2 python -m examples.pytorch.summarization.cnn.main --word-emb-size 128 --topology_subdir DependencyGraph_10 --hidden-size 256 --batch_size 30 --log-file examples/pytorch/summarization/cnn/log/log_10_3.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_dep_10_3 --lr-decay-rate 0.8
-# screen -S ghn_code3 python -m examples.pytorch.summarization.cnn.main --word-emb-size 128 --topology_subdir LinearGraph --hidden-size 256 --batch_size 30 --log-file examples/pytorch/summarization/cnn/log/log_lg_0.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_lg_0 --lr-decay-rate  0.8
-# screen -S ghn_code3 python -m examples.pytorch.summarization.cnn.main --word-emb-size 300 --topology_subdir DependencyGraph_seq2seq --hidden-size 256 --batch_size 30 --log-file examples/pytorch/summarization/cnn/log/log_s2s.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_dep_s2s --lr-decay-rate 0.8 --gpu 1 --learning-rate 0.01
-# screen -S ghn_code2 python -m examples.pytorch.summarization.cnn.main --word-emb-size 300 --topology_subdir DependencyGraph_seq2seq --hidden-size 256 --batch_size 40 --log-file examples/pytorch/summarization/cnn/log/log_s2s.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_dep_s2s --lr-decay-rate 0.8 --learning-rate 0.01 --gpu 2
-# screen -S ghn_code1 python -m examples.pytorch.summarization.cnn.main --word-emb-size 300 --topology_subdir Seq2seq_90k --hidden-size 256 --batch_size 50 --log-file examples/pytorch/summarization/cnn/log/log_s2s_90k.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_s2s_90k --lr-decay-rate 0.8 --learning-rate 0.01
-# screen -S ghn_code1 python -m examples.pytorch.summarization.cnn.main --word-emb-size 128 --topology_subdir Seq2seq_30k --hidden-size 512 --batch_size 50 --log-file examples/pytorch/summarization/cnn/log/log_s2s_30k.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_s2s_30k --lr-decay-rate 0.8 --learning-rate 0.01
-# screen -S ghn_code2 python -m examples.pytorch.summarization.cnn.main --word-emb-size 128 --topology_subdir Seq2seq_30k --hidden-size 512 --batch_size 50 --log-file examples/pytorch/summarization/cnn/log/log_s2s_30k_copy.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_s2s_30k_copy --lr-decay-rate 0.8 --learning-rate 1e-3
-# screen -S ghn_code1 python -m examples.pytorch.summarization.cnn.main_g2s --word-emb-size 128 --topology_subdir DependencyGraph_30k_t --hidden-size 512 --batch_size 40 --log-file examples/pytorch/summarization/cnn/log/log_g2s_30k_copy_t.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_g2s_30k_copy_t --lr-decay-rate 0.8 --learning-rate 1e-3 --use_copy True --use_coverage True
+# screen -S ghn_code1 python -m examples.pytorch.summarization.cnn.main_g2s --word-emb-size 128 --topology_subdir DependencyGraph_3w --hidden-size 512 --batch_size 40 --log-file examples/pytorch/summarization/cnn/log/log_g2s_30w_copy.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_g2s_3w_copy --lr-decay-rate 0.8 --learning-rate 1e-3 --use_copy True --use_coverage True
+# screen -S ghn_code2 python -m examples.pytorch.summarization.cnn.main_g2s --word-emb-size 128 --topology_subdir DependencyGraph_9w --hidden-size 512 --batch_size 40 --log-file examples/pytorch/summarization/cnn/log/log_g2s_9w_copy.txt --checkpoint-save-path /raid/ghn/graph4nlp/examples/pytorch/summarization/cnn/save_g2s_9w_copy --lr-decay-rate 0.8 --learning-rate 1e-3 --use_copy True --use_coverage True
 
 # --root_dir
 # .

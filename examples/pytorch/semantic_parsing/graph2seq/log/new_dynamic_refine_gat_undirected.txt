@@ -1,0 +1,657 @@
+2020-11-21 20:40:10,640 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 0
+2020-11-21 20:40:12,964 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 0: [3 / 21] loss: 4.927
+2020-11-21 20:40:14,606 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 0: [6 / 21] loss: 3.174
+2020-11-21 20:40:16,039 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 0: [9 / 21] loss: 2.717
+2020-11-21 20:40:17,405 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 0: [12 / 21] loss: 2.433
+2020-11-21 20:40:19,095 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 0: [15 / 21] loss: 2.302
+2020-11-21 20:40:20,501 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 0: [18 / 21] loss: 2.039
+2020-11-21 20:40:23,923 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.000
+2020-11-21 20:40:23,930 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 0
+2020-11-21 20:40:23,998 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 1
+2020-11-21 20:40:25,887 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 1: [3 / 21] loss: 1.886
+2020-11-21 20:40:27,468 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 1: [6 / 21] loss: 1.762
+2020-11-21 20:40:28,881 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 1: [9 / 21] loss: 1.499
+2020-11-21 20:40:30,413 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 1: [12 / 21] loss: 1.411
+2020-11-21 20:40:32,069 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 1: [15 / 21] loss: 1.313
+2020-11-21 20:40:33,464 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 1: [18 / 21] loss: 1.390
+2020-11-21 20:40:37,070 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.000
+2020-11-21 20:40:37,077 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 1
+2020-11-21 20:40:37,145 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 2
+2020-11-21 20:40:38,964 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 2: [3 / 21] loss: 1.145
+2020-11-21 20:40:40,257 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 2: [6 / 21] loss: 1.239
+2020-11-21 20:40:41,597 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 2: [9 / 21] loss: 1.163
+2020-11-21 20:40:42,985 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 2: [12 / 21] loss: 1.096
+2020-11-21 20:40:44,329 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 2: [15 / 21] loss: 1.293
+2020-11-21 20:40:45,761 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 2: [18 / 21] loss: 1.059
+2020-11-21 20:40:49,109 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.107
+2020-11-21 20:40:49,118 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 2
+2020-11-21 20:40:49,192 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 3
+2020-11-21 20:40:51,039 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 3: [3 / 21] loss: 1.051
+2020-11-21 20:40:52,569 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 3: [6 / 21] loss: 0.965
+2020-11-21 20:40:53,869 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 3: [9 / 21] loss: 1.059
+2020-11-21 20:40:55,076 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 3: [12 / 21] loss: 0.991
+2020-11-21 20:40:56,555 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 3: [15 / 21] loss: 0.920
+2020-11-21 20:40:57,754 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 3: [18 / 21] loss: 0.906
+2020-11-21 20:41:01,024 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.271
+2020-11-21 20:41:01,030 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 3
+2020-11-21 20:41:01,125 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 4
+2020-11-21 20:41:02,845 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 4: [3 / 21] loss: 0.886
+2020-11-21 20:41:04,111 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 4: [6 / 21] loss: 0.894
+2020-11-21 20:41:05,417 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 4: [9 / 21] loss: 0.879
+2020-11-21 20:41:06,880 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 4: [12 / 21] loss: 0.970
+2020-11-21 20:41:08,247 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 4: [15 / 21] loss: 0.830
+2020-11-21 20:41:09,656 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 4: [18 / 21] loss: 0.863
+2020-11-21 20:41:12,740 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.293
+2020-11-21 20:41:12,748 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 4
+2020-11-21 20:41:12,805 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 5
+2020-11-21 20:41:14,569 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 5: [3 / 21] loss: 0.852
+2020-11-21 20:41:15,784 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 5: [6 / 21] loss: 0.808
+2020-11-21 20:41:17,020 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 5: [9 / 21] loss: 0.851
+2020-11-21 20:41:18,282 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 5: [12 / 21] loss: 0.769
+2020-11-21 20:41:19,652 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 5: [15 / 21] loss: 0.815
+2020-11-21 20:41:20,858 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 5: [18 / 21] loss: 0.811
+2020-11-21 20:41:24,036 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.421
+2020-11-21 20:41:24,041 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 5
+2020-11-21 20:41:24,097 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 6
+2020-11-21 20:41:25,907 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 6: [3 / 21] loss: 0.708
+2020-11-21 20:41:27,260 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 6: [6 / 21] loss: 0.752
+2020-11-21 20:41:28,764 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 6: [9 / 21] loss: 0.802
+2020-11-21 20:41:30,369 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 6: [12 / 21] loss: 0.705
+2020-11-21 20:41:31,755 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 6: [15 / 21] loss: 0.678
+2020-11-21 20:41:33,149 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 6: [18 / 21] loss: 0.768
+2020-11-21 20:41:36,380 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.479
+2020-11-21 20:41:36,385 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 6
+2020-11-21 20:41:36,444 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 7
+2020-11-21 20:41:38,318 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 7: [3 / 21] loss: 0.654
+2020-11-21 20:41:39,742 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 7: [6 / 21] loss: 0.661
+2020-11-21 20:41:41,028 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 7: [9 / 21] loss: 0.651
+2020-11-21 20:41:42,339 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 7: [12 / 21] loss: 0.711
+2020-11-21 20:41:43,925 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 7: [15 / 21] loss: 0.702
+2020-11-21 20:41:45,292 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 7: [18 / 21] loss: 0.682
+2020-11-21 20:41:48,440 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.507
+2020-11-21 20:41:48,453 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 7
+2020-11-21 20:41:48,576 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 8
+2020-11-21 20:41:50,492 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 8: [3 / 21] loss: 0.625
+2020-11-21 20:41:51,844 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 8: [6 / 21] loss: 0.705
+2020-11-21 20:41:53,194 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 8: [9 / 21] loss: 0.645
+2020-11-21 20:41:54,611 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 8: [12 / 21] loss: 0.641
+2020-11-21 20:41:55,983 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 8: [15 / 21] loss: 0.614
+2020-11-21 20:41:57,322 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 8: [18 / 21] loss: 0.602
+2020-11-21 20:42:00,412 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.614
+2020-11-21 20:42:00,420 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 8
+2020-11-21 20:42:00,475 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 9
+2020-11-21 20:42:02,162 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 9: [3 / 21] loss: 0.616
+2020-11-21 20:42:03,636 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 9: [6 / 21] loss: 0.640
+2020-11-21 20:42:04,972 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 9: [9 / 21] loss: 0.556
+2020-11-21 20:42:06,466 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 9: [12 / 21] loss: 0.583
+2020-11-21 20:42:07,843 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 9: [15 / 21] loss: 0.604
+2020-11-21 20:42:09,361 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 9: [18 / 21] loss: 0.637
+2020-11-21 20:42:12,730 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.614
+2020-11-21 20:42:12,744 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 9
+2020-11-21 20:42:12,810 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 10
+2020-11-21 20:42:14,615 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 10: [3 / 21] loss: 0.559
+2020-11-21 20:42:15,817 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 10: [6 / 21] loss: 0.594
+2020-11-21 20:42:17,461 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 10: [9 / 21] loss: 0.542
+2020-11-21 20:42:18,813 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 10: [12 / 21] loss: 0.566
+2020-11-21 20:42:20,048 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 10: [15 / 21] loss: 0.543
+2020-11-21 20:42:21,616 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 10: [18 / 21] loss: 0.582
+2020-11-21 20:42:24,880 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.657
+2020-11-21 20:42:24,887 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 10
+2020-11-21 20:42:24,964 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 11
+2020-11-21 20:42:27,018 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 11: [3 / 21] loss: 0.548
+2020-11-21 20:42:28,353 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 11: [6 / 21] loss: 0.524
+2020-11-21 20:42:29,676 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 11: [9 / 21] loss: 0.494
+2020-11-21 20:42:31,217 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 11: [12 / 21] loss: 0.555
+2020-11-21 20:42:32,602 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 11: [15 / 21] loss: 0.537
+2020-11-21 20:42:33,823 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 11: [18 / 21] loss: 0.469
+2020-11-21 20:42:36,902 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.614
+2020-11-21 20:42:36,907 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 12
+2020-11-21 20:42:38,811 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 12: [3 / 21] loss: 0.528
+2020-11-21 20:42:40,224 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 12: [6 / 21] loss: 0.521
+2020-11-21 20:42:41,647 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 12: [9 / 21] loss: 0.534
+2020-11-21 20:42:43,052 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 12: [12 / 21] loss: 0.510
+2020-11-21 20:42:44,379 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 12: [15 / 21] loss: 0.538
+2020-11-21 20:42:45,696 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 12: [18 / 21] loss: 0.529
+2020-11-21 20:42:49,019 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.750
+2020-11-21 20:42:49,025 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 12
+2020-11-21 20:42:49,104 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 13
+2020-11-21 20:42:50,796 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 13: [3 / 21] loss: 0.469
+2020-11-21 20:42:52,243 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 13: [6 / 21] loss: 0.496
+2020-11-21 20:42:53,728 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 13: [9 / 21] loss: 0.480
+2020-11-21 20:42:55,236 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 13: [12 / 21] loss: 0.553
+2020-11-21 20:42:56,712 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 13: [15 / 21] loss: 0.553
+2020-11-21 20:42:58,092 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 13: [18 / 21] loss: 0.495
+2020-11-21 20:43:01,412 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.743
+2020-11-21 20:43:01,419 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 14
+2020-11-21 20:43:03,176 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 14: [3 / 21] loss: 0.495
+2020-11-21 20:43:04,777 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 14: [6 / 21] loss: 0.502
+2020-11-21 20:43:06,174 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 14: [9 / 21] loss: 0.500
+2020-11-21 20:43:07,332 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 14: [12 / 21] loss: 0.428
+2020-11-21 20:43:08,847 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 14: [15 / 21] loss: 0.478
+2020-11-21 20:43:10,350 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 14: [18 / 21] loss: 0.493
+2020-11-21 20:43:13,612 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.786
+2020-11-21 20:43:13,620 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 14
+2020-11-21 20:43:13,713 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 15
+2020-11-21 20:43:15,460 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 15: [3 / 21] loss: 0.466
+2020-11-21 20:43:16,800 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 15: [6 / 21] loss: 0.451
+2020-11-21 20:43:18,130 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 15: [9 / 21] loss: 0.462
+2020-11-21 20:43:19,534 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 15: [12 / 21] loss: 0.533
+2020-11-21 20:43:20,781 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 15: [15 / 21] loss: 0.421
+2020-11-21 20:43:22,002 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 15: [18 / 21] loss: 0.456
+2020-11-21 20:43:25,102 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.793
+2020-11-21 20:43:25,110 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 15
+2020-11-21 20:43:25,185 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 16
+2020-11-21 20:43:27,031 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 16: [3 / 21] loss: 0.443
+2020-11-21 20:43:28,491 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 16: [6 / 21] loss: 0.440
+2020-11-21 20:43:29,861 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 16: [9 / 21] loss: 0.462
+2020-11-21 20:43:31,031 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 16: [12 / 21] loss: 0.422
+2020-11-21 20:43:32,570 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 16: [15 / 21] loss: 0.465
+2020-11-21 20:43:33,869 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 16: [18 / 21] loss: 0.432
+2020-11-21 20:43:37,220 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.800
+2020-11-21 20:43:37,232 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 16
+2020-11-21 20:43:37,288 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 17
+2020-11-21 20:43:39,387 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 17: [3 / 21] loss: 0.445
+2020-11-21 20:43:40,816 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 17: [6 / 21] loss: 0.490
+2020-11-21 20:43:42,159 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 17: [9 / 21] loss: 0.444
+2020-11-21 20:43:43,579 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 17: [12 / 21] loss: 0.447
+2020-11-21 20:43:44,914 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 17: [15 / 21] loss: 0.441
+2020-11-21 20:43:46,250 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 17: [18 / 21] loss: 0.461
+2020-11-21 20:43:49,705 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.786
+2020-11-21 20:43:49,713 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 18
+2020-11-21 20:43:52,080 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 18: [3 / 21] loss: 0.452
+2020-11-21 20:43:53,567 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 18: [6 / 21] loss: 0.477
+2020-11-21 20:43:54,716 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 18: [9 / 21] loss: 0.390
+2020-11-21 20:43:56,255 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 18: [12 / 21] loss: 0.456
+2020-11-21 20:43:57,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 18: [15 / 21] loss: 0.470
+2020-11-21 20:43:58,993 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 18: [18 / 21] loss: 0.457
+2020-11-21 20:44:02,574 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.779
+2020-11-21 20:44:02,582 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 19
+2020-11-21 20:44:04,948 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 19: [3 / 21] loss: 0.448
+2020-11-21 20:44:06,373 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 19: [6 / 21] loss: 0.553
+2020-11-21 20:44:07,691 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 19: [9 / 21] loss: 0.478
+2020-11-21 20:44:08,944 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 19: [12 / 21] loss: 0.431
+2020-11-21 20:44:10,369 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 19: [15 / 21] loss: 0.463
+2020-11-21 20:44:11,778 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 19: [18 / 21] loss: 0.441
+2020-11-21 20:44:15,285 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-21 20:44:15,292 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 19
+2020-11-21 20:44:15,398 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 20
+2020-11-21 20:44:17,666 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 20: [3 / 21] loss: 0.435
+2020-11-21 20:44:19,035 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 20: [6 / 21] loss: 0.419
+2020-11-21 20:44:20,520 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 20: [9 / 21] loss: 0.417
+2020-11-21 20:44:22,075 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 20: [12 / 21] loss: 0.459
+2020-11-21 20:44:23,449 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 20: [15 / 21] loss: 0.477
+2020-11-21 20:44:24,730 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 20: [18 / 21] loss: 0.427
+2020-11-21 20:44:29,342 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.814
+2020-11-21 20:44:29,351 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 21
+2020-11-21 20:44:31,375 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 21: [3 / 21] loss: 0.413
+2020-11-21 20:44:32,641 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 21: [6 / 21] loss: 0.406
+2020-11-21 20:44:33,868 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 21: [9 / 21] loss: 0.448
+2020-11-21 20:44:35,353 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 21: [12 / 21] loss: 0.381
+2020-11-21 20:44:36,544 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 21: [15 / 21] loss: 0.405
+2020-11-21 20:44:38,097 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 21: [18 / 21] loss: 0.425
+2020-11-21 20:44:41,268 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.800
+2020-11-21 20:44:41,277 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 22
+2020-11-21 20:44:43,611 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 22: [3 / 21] loss: 0.415
+2020-11-21 20:44:45,298 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 22: [6 / 21] loss: 0.394
+2020-11-21 20:44:46,425 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 22: [9 / 21] loss: 0.400
+2020-11-21 20:44:47,767 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 22: [12 / 21] loss: 0.381
+2020-11-21 20:44:49,037 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 22: [15 / 21] loss: 0.433
+2020-11-21 20:44:50,487 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 22: [18 / 21] loss: 0.367
+2020-11-21 20:44:54,025 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-21 20:44:54,030 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 23
+2020-11-21 20:44:56,629 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 23: [3 / 21] loss: 0.404
+2020-11-21 20:44:58,035 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 23: [6 / 21] loss: 0.424
+2020-11-21 20:44:59,320 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 23: [9 / 21] loss: 0.367
+2020-11-21 20:45:00,697 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 23: [12 / 21] loss: 0.432
+2020-11-21 20:45:01,982 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 23: [15 / 21] loss: 0.425
+2020-11-21 20:45:03,627 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 23: [18 / 21] loss: 0.409
+2020-11-21 20:45:06,953 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-21 20:45:06,960 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 24
+2020-11-21 20:45:09,400 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 24: [3 / 21] loss: 0.407
+2020-11-21 20:45:10,889 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 24: [6 / 21] loss: 0.411
+2020-11-21 20:45:12,231 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 24: [9 / 21] loss: 0.387
+2020-11-21 20:45:13,867 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 24: [12 / 21] loss: 0.443
+2020-11-21 20:45:15,116 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 24: [15 / 21] loss: 0.442
+2020-11-21 20:45:16,731 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 24: [18 / 21] loss: 0.405
+2020-11-21 20:45:19,853 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.771
+2020-11-21 20:45:19,859 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 25
+2020-11-21 20:45:22,101 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 25: [3 / 21] loss: 0.453
+2020-11-21 20:45:23,585 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 25: [6 / 21] loss: 0.415
+2020-11-21 20:45:24,950 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 25: [9 / 21] loss: 0.423
+2020-11-21 20:45:26,224 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 25: [12 / 21] loss: 0.415
+2020-11-21 20:45:27,667 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 25: [15 / 21] loss: 0.386
+2020-11-21 20:45:28,881 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 25: [18 / 21] loss: 0.427
+2020-11-21 20:45:32,365 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 20:45:32,374 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 26
+2020-11-21 20:45:34,363 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 26: [3 / 21] loss: 0.385
+2020-11-21 20:45:35,951 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 26: [6 / 21] loss: 0.389
+2020-11-21 20:45:37,378 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 26: [9 / 21] loss: 0.421
+2020-11-21 20:45:38,999 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 26: [12 / 21] loss: 0.393
+2020-11-21 20:45:40,486 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 26: [15 / 21] loss: 0.395
+2020-11-21 20:45:42,094 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 26: [18 / 21] loss: 0.431
+2020-11-21 20:45:45,745 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-21 20:45:45,750 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 27
+2020-11-21 20:45:48,130 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 27: [3 / 21] loss: 0.388
+2020-11-21 20:45:49,539 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 27: [6 / 21] loss: 0.417
+2020-11-21 20:45:51,066 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 27: [9 / 21] loss: 0.365
+2020-11-21 20:45:52,355 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 27: [12 / 21] loss: 0.363
+2020-11-21 20:45:53,824 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 27: [15 / 21] loss: 0.391
+2020-11-21 20:45:55,284 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 27: [18 / 21] loss: 0.410
+2020-11-21 20:45:58,462 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:45:58,469 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 27
+2020-11-21 20:45:58,569 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 28
+2020-11-21 20:46:00,829 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 28: [3 / 21] loss: 0.367
+2020-11-21 20:46:02,453 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 28: [6 / 21] loss: 0.412
+2020-11-21 20:46:04,181 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 28: [9 / 21] loss: 0.400
+2020-11-21 20:46:05,648 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 28: [12 / 21] loss: 0.391
+2020-11-21 20:46:07,047 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 28: [15 / 21] loss: 0.362
+2020-11-21 20:46:08,399 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 28: [18 / 21] loss: 0.362
+2020-11-21 20:46:12,091 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:46:12,098 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 28
+2020-11-21 20:46:12,179 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 29
+2020-11-21 20:46:14,302 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 29: [3 / 21] loss: 0.389
+2020-11-21 20:46:15,702 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 29: [6 / 21] loss: 0.383
+2020-11-21 20:46:16,969 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 29: [9 / 21] loss: 0.367
+2020-11-21 20:46:18,576 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 29: [12 / 21] loss: 0.383
+2020-11-21 20:46:20,019 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 29: [15 / 21] loss: 0.368
+2020-11-21 20:46:21,517 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 29: [18 / 21] loss: 0.349
+2020-11-21 20:46:25,354 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 20:46:25,360 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 30
+2020-11-21 20:46:27,714 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 30: [3 / 21] loss: 0.404
+2020-11-21 20:46:29,034 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 30: [6 / 21] loss: 0.401
+2020-11-21 20:46:30,420 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 30: [9 / 21] loss: 0.371
+2020-11-21 20:46:31,863 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 30: [12 / 21] loss: 0.403
+2020-11-21 20:46:33,243 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 30: [15 / 21] loss: 0.355
+2020-11-21 20:46:34,625 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 30: [18 / 21] loss: 0.380
+2020-11-21 20:46:38,206 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-21 20:46:38,227 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 31
+2020-11-21 20:46:40,332 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 31: [3 / 21] loss: 0.353
+2020-11-21 20:46:41,580 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 31: [6 / 21] loss: 0.356
+2020-11-21 20:46:43,032 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 31: [9 / 21] loss: 0.386
+2020-11-21 20:46:44,338 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 31: [12 / 21] loss: 0.319
+2020-11-21 20:46:45,911 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 31: [15 / 21] loss: 0.364
+2020-11-21 20:46:47,194 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 31: [18 / 21] loss: 0.393
+2020-11-21 20:46:50,792 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.814
+2020-11-21 20:46:50,813 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 32
+2020-11-21 20:46:53,530 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 32: [3 / 21] loss: 0.378
+2020-11-21 20:46:54,947 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 32: [6 / 21] loss: 0.370
+2020-11-21 20:46:56,176 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 32: [9 / 21] loss: 0.358
+2020-11-21 20:46:57,533 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 32: [12 / 21] loss: 0.367
+2020-11-21 20:46:58,895 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 32: [15 / 21] loss: 0.371
+2020-11-21 20:47:00,364 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 32: [18 / 21] loss: 0.372
+2020-11-21 20:47:03,748 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:47:03,756 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 32
+2020-11-21 20:47:03,827 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 33
+2020-11-21 20:47:06,180 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 33: [3 / 21] loss: 0.366
+2020-11-21 20:47:07,622 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 33: [6 / 21] loss: 0.377
+2020-11-21 20:47:09,112 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 33: [9 / 21] loss: 0.324
+2020-11-21 20:47:10,651 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 33: [12 / 21] loss: 0.378
+2020-11-21 20:47:12,393 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 33: [15 / 21] loss: 0.375
+2020-11-21 20:47:13,748 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 33: [18 / 21] loss: 0.356
+2020-11-21 20:47:17,324 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 20:47:17,332 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 34
+2020-11-21 20:47:19,547 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 34: [3 / 21] loss: 0.372
+2020-11-21 20:47:20,859 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 34: [6 / 21] loss: 0.378
+2020-11-21 20:47:22,265 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 34: [9 / 21] loss: 0.360
+2020-11-21 20:47:23,723 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 34: [12 / 21] loss: 0.348
+2020-11-21 20:47:25,166 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 34: [15 / 21] loss: 0.396
+2020-11-21 20:47:26,606 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 34: [18 / 21] loss: 0.372
+2020-11-21 20:47:30,168 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 20:47:30,176 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 35
+2020-11-21 20:47:32,395 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 35: [3 / 21] loss: 0.403
+2020-11-21 20:47:33,674 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 35: [6 / 21] loss: 0.393
+2020-11-21 20:47:35,111 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 35: [9 / 21] loss: 0.373
+2020-11-21 20:47:36,624 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 35: [12 / 21] loss: 0.392
+2020-11-21 20:47:38,232 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 35: [15 / 21] loss: 0.348
+2020-11-21 20:47:39,759 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 35: [18 / 21] loss: 0.352
+2020-11-21 20:47:43,130 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 20:47:43,138 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 36
+2020-11-21 20:47:44,909 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 36: [3 / 21] loss: 0.351
+2020-11-21 20:47:46,259 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 36: [6 / 21] loss: 0.373
+2020-11-21 20:47:47,653 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 36: [9 / 21] loss: 0.334
+2020-11-21 20:47:49,194 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 36: [12 / 21] loss: 0.371
+2020-11-21 20:47:50,745 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 36: [15 / 21] loss: 0.349
+2020-11-21 20:47:52,308 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 36: [18 / 21] loss: 0.402
+2020-11-21 20:47:55,688 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 20:47:55,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 36
+2020-11-21 20:47:55,766 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 37
+2020-11-21 20:47:57,844 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 37: [3 / 21] loss: 0.371
+2020-11-21 20:47:59,521 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 37: [6 / 21] loss: 0.384
+2020-11-21 20:48:01,050 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 37: [9 / 21] loss: 0.382
+2020-11-21 20:48:02,383 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 37: [12 / 21] loss: 0.382
+2020-11-21 20:48:03,897 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 37: [15 / 21] loss: 0.368
+2020-11-21 20:48:05,309 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 37: [18 / 21] loss: 0.343
+2020-11-21 20:48:08,945 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.779
+2020-11-21 20:48:08,957 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 38
+2020-11-21 20:48:11,326 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 38: [3 / 21] loss: 0.340
+2020-11-21 20:48:12,774 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 38: [6 / 21] loss: 0.353
+2020-11-21 20:48:14,131 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 38: [9 / 21] loss: 0.384
+2020-11-21 20:48:15,536 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 38: [12 / 21] loss: 0.389
+2020-11-21 20:48:17,061 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 38: [15 / 21] loss: 0.381
+2020-11-21 20:48:18,504 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 38: [18 / 21] loss: 0.365
+2020-11-21 20:48:21,969 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-21 20:48:21,978 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 39
+2020-11-21 20:48:24,144 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 39: [3 / 21] loss: 0.374
+2020-11-21 20:48:25,467 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 39: [6 / 21] loss: 0.345
+2020-11-21 20:48:26,893 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 39: [9 / 21] loss: 0.367
+2020-11-21 20:48:28,276 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 39: [12 / 21] loss: 0.340
+2020-11-21 20:48:29,601 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 39: [15 / 21] loss: 0.362
+2020-11-21 20:48:31,162 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 39: [18 / 21] loss: 0.370
+2020-11-21 20:48:34,697 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 20:48:34,703 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 40
+2020-11-21 20:48:36,514 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 40: [3 / 21] loss: 0.331
+2020-11-21 20:48:38,012 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 40: [6 / 21] loss: 0.359
+2020-11-21 20:48:39,557 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 40: [9 / 21] loss: 0.354
+2020-11-21 20:48:41,138 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 40: [12 / 21] loss: 0.355
+2020-11-21 20:48:42,603 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 40: [15 / 21] loss: 0.375
+2020-11-21 20:48:44,157 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 40: [18 / 21] loss: 0.359
+2020-11-21 20:48:47,426 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.771
+2020-11-21 20:48:47,433 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 41
+2020-11-21 20:48:49,589 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 41: [3 / 21] loss: 0.369
+2020-11-21 20:48:51,206 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 41: [6 / 21] loss: 0.351
+2020-11-21 20:48:52,714 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 41: [9 / 21] loss: 0.363
+2020-11-21 20:48:54,344 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 41: [12 / 21] loss: 0.364
+2020-11-21 20:48:55,894 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 41: [15 / 21] loss: 0.334
+2020-11-21 20:48:57,235 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 41: [18 / 21] loss: 0.325
+2020-11-21 20:49:00,687 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-21 20:49:00,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 42
+2020-11-21 20:49:02,582 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 42: [3 / 21] loss: 0.358
+2020-11-21 20:49:04,089 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 42: [6 / 21] loss: 0.360
+2020-11-21 20:49:05,495 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 42: [9 / 21] loss: 0.395
+2020-11-21 20:49:07,182 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 42: [12 / 21] loss: 0.331
+2020-11-21 20:49:08,592 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 42: [15 / 21] loss: 0.331
+2020-11-21 20:49:10,040 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 42: [18 / 21] loss: 0.365
+2020-11-21 20:49:13,493 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 20:49:13,502 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 43
+2020-11-21 20:49:15,448 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 43: [3 / 21] loss: 0.343
+2020-11-21 20:49:16,977 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 43: [6 / 21] loss: 0.381
+2020-11-21 20:49:18,400 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 43: [9 / 21] loss: 0.369
+2020-11-21 20:49:19,994 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 43: [12 / 21] loss: 0.321
+2020-11-21 20:49:21,342 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 43: [15 / 21] loss: 0.351
+2020-11-21 20:49:22,800 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 43: [18 / 21] loss: 0.353
+2020-11-21 20:49:26,239 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-21 20:49:26,248 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 44
+2020-11-21 20:49:28,421 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 44: [3 / 21] loss: 0.368
+2020-11-21 20:49:29,822 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 44: [6 / 21] loss: 0.341
+2020-11-21 20:49:31,361 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 44: [9 / 21] loss: 0.362
+2020-11-21 20:49:32,744 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 44: [12 / 21] loss: 0.335
+2020-11-21 20:49:34,189 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 44: [15 / 21] loss: 0.354
+2020-11-21 20:49:35,638 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 44: [18 / 21] loss: 0.328
+2020-11-21 20:49:39,017 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-21 20:49:39,025 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 45
+2020-11-21 20:49:41,046 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 45: [3 / 21] loss: 0.383
+2020-11-21 20:49:42,744 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 45: [6 / 21] loss: 0.377
+2020-11-21 20:49:44,302 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 45: [9 / 21] loss: 0.329
+2020-11-21 20:49:45,711 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 45: [12 / 21] loss: 0.381
+2020-11-21 20:49:46,912 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 45: [15 / 21] loss: 0.356
+2020-11-21 20:49:48,469 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 45: [18 / 21] loss: 0.394
+2020-11-21 20:49:51,750 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 20:49:51,756 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 46
+2020-11-21 20:49:53,513 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 46: [3 / 21] loss: 0.396
+2020-11-21 20:49:55,061 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 46: [6 / 21] loss: 0.365
+2020-11-21 20:49:56,658 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 46: [9 / 21] loss: 0.348
+2020-11-21 20:49:58,116 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 46: [12 / 21] loss: 0.340
+2020-11-21 20:49:59,479 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 46: [15 / 21] loss: 0.348
+2020-11-21 20:50:01,009 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 46: [18 / 21] loss: 0.337
+2020-11-21 20:50:04,549 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 20:50:04,557 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 47
+2020-11-21 20:50:06,942 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 47: [3 / 21] loss: 0.379
+2020-11-21 20:50:08,544 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 47: [6 / 21] loss: 0.342
+2020-11-21 20:50:09,927 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 47: [9 / 21] loss: 0.366
+2020-11-21 20:50:11,219 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 47: [12 / 21] loss: 0.330
+2020-11-21 20:50:12,627 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 47: [15 / 21] loss: 0.321
+2020-11-21 20:50:14,265 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 47: [18 / 21] loss: 0.336
+2020-11-21 20:50:17,623 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 20:50:17,631 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 48
+2020-11-21 20:50:19,506 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 48: [3 / 21] loss: 0.346
+2020-11-21 20:50:20,906 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 48: [6 / 21] loss: 0.359
+2020-11-21 20:50:22,347 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 48: [9 / 21] loss: 0.340
+2020-11-21 20:50:23,799 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 48: [12 / 21] loss: 0.313
+2020-11-21 20:50:25,529 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 48: [15 / 21] loss: 0.335
+2020-11-21 20:50:27,143 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 48: [18 / 21] loss: 0.332
+2020-11-21 20:50:30,608 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 20:50:30,616 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 48
+2020-11-21 20:50:30,694 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 49
+2020-11-21 20:50:32,698 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 49: [3 / 21] loss: 0.332
+2020-11-21 20:50:33,961 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 49: [6 / 21] loss: 0.360
+2020-11-21 20:50:35,417 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 49: [9 / 21] loss: 0.340
+2020-11-21 20:50:36,846 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 49: [12 / 21] loss: 0.334
+2020-11-21 20:50:38,375 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 49: [15 / 21] loss: 0.332
+2020-11-21 20:50:39,928 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 49: [18 / 21] loss: 0.323
+2020-11-21 20:50:43,603 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 20:50:43,611 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 50
+2020-11-21 20:50:45,593 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 50: [3 / 21] loss: 0.323
+2020-11-21 20:50:47,069 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 50: [6 / 21] loss: 0.311
+2020-11-21 20:50:48,541 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 50: [9 / 21] loss: 0.324
+2020-11-21 20:50:49,947 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 50: [12 / 21] loss: 0.323
+2020-11-21 20:50:51,381 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 50: [15 / 21] loss: 0.319
+2020-11-21 20:50:52,826 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 50: [18 / 21] loss: 0.330
+2020-11-21 20:50:56,267 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 20:50:56,275 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 51
+2020-11-21 20:50:58,220 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 51: [3 / 21] loss: 0.326
+2020-11-21 20:50:59,768 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 51: [6 / 21] loss: 0.344
+2020-11-21 20:51:01,167 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 51: [9 / 21] loss: 0.310
+2020-11-21 20:51:02,623 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 51: [12 / 21] loss: 0.307
+2020-11-21 20:51:04,002 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 51: [15 / 21] loss: 0.339
+2020-11-21 20:51:05,575 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 51: [18 / 21] loss: 0.331
+2020-11-21 20:51:09,299 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 20:51:09,307 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 52
+2020-11-21 20:51:11,272 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 52: [3 / 21] loss: 0.309
+2020-11-21 20:51:12,890 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 52: [6 / 21] loss: 0.325
+2020-11-21 20:51:14,432 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 52: [9 / 21] loss: 0.336
+2020-11-21 20:51:15,778 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 52: [12 / 21] loss: 0.302
+2020-11-21 20:51:17,139 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 52: [15 / 21] loss: 0.334
+2020-11-21 20:51:18,597 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 52: [18 / 21] loss: 0.314
+2020-11-21 20:51:22,055 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:51:22,068 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 53
+2020-11-21 20:51:24,108 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 53: [3 / 21] loss: 0.320
+2020-11-21 20:51:25,659 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 53: [6 / 21] loss: 0.382
+2020-11-21 20:51:26,956 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 53: [9 / 21] loss: 0.339
+2020-11-21 20:51:28,266 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 53: [12 / 21] loss: 0.330
+2020-11-21 20:51:29,800 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 53: [15 / 21] loss: 0.309
+2020-11-21 20:51:31,261 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 53: [18 / 21] loss: 0.350
+2020-11-21 20:51:34,879 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 20:51:34,885 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 54
+2020-11-21 20:51:36,833 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 54: [3 / 21] loss: 0.350
+2020-11-21 20:51:38,229 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 54: [6 / 21] loss: 0.302
+2020-11-21 20:51:39,642 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 54: [9 / 21] loss: 0.343
+2020-11-21 20:51:41,093 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 54: [12 / 21] loss: 0.314
+2020-11-21 20:51:42,527 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 54: [15 / 21] loss: 0.343
+2020-11-21 20:51:43,882 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 54: [18 / 21] loss: 0.326
+2020-11-21 20:51:47,633 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:51:47,644 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 55
+2020-11-21 20:51:49,627 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 55: [3 / 21] loss: 0.336
+2020-11-21 20:51:50,954 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 55: [6 / 21] loss: 0.335
+2020-11-21 20:51:52,359 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 55: [9 / 21] loss: 0.352
+2020-11-21 20:51:53,675 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 55: [12 / 21] loss: 0.332
+2020-11-21 20:51:55,143 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 55: [15 / 21] loss: 0.319
+2020-11-21 20:51:56,585 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 55: [18 / 21] loss: 0.331
+2020-11-21 20:51:59,863 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:51:59,872 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 56
+2020-11-21 20:52:02,039 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 56: [3 / 21] loss: 0.332
+2020-11-21 20:52:03,356 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 56: [6 / 21] loss: 0.336
+2020-11-21 20:52:04,746 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 56: [9 / 21] loss: 0.330
+2020-11-21 20:52:06,317 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 56: [12 / 21] loss: 0.314
+2020-11-21 20:52:07,842 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 56: [15 / 21] loss: 0.314
+2020-11-21 20:52:09,135 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 56: [18 / 21] loss: 0.315
+2020-11-21 20:52:12,758 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 20:52:12,765 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 56
+2020-11-21 20:52:12,825 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 57
+2020-11-21 20:52:14,689 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 57: [3 / 21] loss: 0.317
+2020-11-21 20:52:15,992 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 57: [6 / 21] loss: 0.334
+2020-11-21 20:52:17,362 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 57: [9 / 21] loss: 0.306
+2020-11-21 20:52:18,911 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 57: [12 / 21] loss: 0.345
+2020-11-21 20:52:20,315 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 57: [15 / 21] loss: 0.322
+2020-11-21 20:52:21,719 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 57: [18 / 21] loss: 0.316
+2020-11-21 20:52:25,119 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 20:52:25,124 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Best model saved, epoch 57
+2020-11-21 20:52:25,189 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 58
+2020-11-21 20:52:27,195 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 58: [3 / 21] loss: 0.328
+2020-11-21 20:52:28,674 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 58: [6 / 21] loss: 0.315
+2020-11-21 20:52:30,198 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 58: [9 / 21] loss: 0.335
+2020-11-21 20:52:31,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 58: [12 / 21] loss: 0.313
+2020-11-21 20:52:33,344 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 58: [15 / 21] loss: 0.352
+2020-11-21 20:52:34,699 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 58: [18 / 21] loss: 0.308
+2020-11-21 20:52:38,387 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:52:38,394 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 59
+2020-11-21 20:52:40,569 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 59: [3 / 21] loss: 0.350
+2020-11-21 20:52:42,034 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 59: [6 / 21] loss: 0.295
+2020-11-21 20:52:43,428 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 59: [9 / 21] loss: 0.314
+2020-11-21 20:52:44,922 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 59: [12 / 21] loss: 0.340
+2020-11-21 20:52:46,250 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 59: [15 / 21] loss: 0.341
+2020-11-21 20:52:47,669 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 59: [18 / 21] loss: 0.308
+2020-11-21 20:52:50,945 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:52:50,952 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 60
+2020-11-21 20:52:52,964 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 60: [3 / 21] loss: 0.308
+2020-11-21 20:52:54,466 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 60: [6 / 21] loss: 0.324
+2020-11-21 20:52:55,727 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 60: [9 / 21] loss: 0.294
+2020-11-21 20:52:57,343 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 60: [12 / 21] loss: 0.319
+2020-11-21 20:52:58,742 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 60: [15 / 21] loss: 0.341
+2020-11-21 20:53:00,240 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 60: [18 / 21] loss: 0.329
+2020-11-21 20:53:03,645 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 20:53:03,653 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 61
+2020-11-21 20:53:05,764 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 61: [3 / 21] loss: 0.352
+2020-11-21 20:53:07,199 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 61: [6 / 21] loss: 0.297
+2020-11-21 20:53:08,610 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 61: [9 / 21] loss: 0.313
+2020-11-21 20:53:09,995 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 61: [12 / 21] loss: 0.319
+2020-11-21 20:53:11,482 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 61: [15 / 21] loss: 0.325
+2020-11-21 20:53:13,035 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 61: [18 / 21] loss: 0.366
+2020-11-21 20:53:16,733 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 20:53:16,743 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 62
+2020-11-21 20:53:18,624 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 62: [3 / 21] loss: 0.313
+2020-11-21 20:53:20,389 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 62: [6 / 21] loss: 0.332
+2020-11-21 20:53:21,856 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 62: [9 / 21] loss: 0.315
+2020-11-21 20:53:23,221 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 62: [12 / 21] loss: 0.317
+2020-11-21 20:53:24,623 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 62: [15 / 21] loss: 0.323
+2020-11-21 20:53:26,020 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 62: [18 / 21] loss: 0.305
+2020-11-21 20:53:29,487 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:53:29,495 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 63
+2020-11-21 20:53:31,207 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 63: [3 / 21] loss: 0.303
+2020-11-21 20:53:32,561 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 63: [6 / 21] loss: 0.313
+2020-11-21 20:53:33,986 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 63: [9 / 21] loss: 0.333
+2020-11-21 20:53:35,625 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 63: [12 / 21] loss: 0.338
+2020-11-21 20:53:37,079 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 63: [15 / 21] loss: 0.326
+2020-11-21 20:53:38,553 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 63: [18 / 21] loss: 0.371
+2020-11-21 20:53:42,170 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:53:42,177 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 64
+2020-11-21 20:53:44,122 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 64: [3 / 21] loss: 0.322
+2020-11-21 20:53:45,353 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 64: [6 / 21] loss: 0.314
+2020-11-21 20:53:46,960 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 64: [9 / 21] loss: 0.317
+2020-11-21 20:53:48,391 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 64: [12 / 21] loss: 0.309
+2020-11-21 20:53:49,694 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 64: [15 / 21] loss: 0.307
+2020-11-21 20:53:51,157 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 64: [18 / 21] loss: 0.311
+2020-11-21 20:53:54,723 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:53:54,731 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 65
+2020-11-21 20:53:56,662 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 65: [3 / 21] loss: 0.322
+2020-11-21 20:53:58,013 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 65: [6 / 21] loss: 0.300
+2020-11-21 20:53:59,424 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 65: [9 / 21] loss: 0.315
+2020-11-21 20:54:01,064 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 65: [12 / 21] loss: 0.325
+2020-11-21 20:54:02,494 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 65: [15 / 21] loss: 0.314
+2020-11-21 20:54:04,122 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 65: [18 / 21] loss: 0.308
+2020-11-21 20:54:07,396 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:54:07,404 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 66
+2020-11-21 20:54:09,340 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 66: [3 / 21] loss: 0.350
+2020-11-21 20:54:10,698 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 66: [6 / 21] loss: 0.331
+2020-11-21 20:54:12,215 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 66: [9 / 21] loss: 0.312
+2020-11-21 20:54:13,518 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 66: [12 / 21] loss: 0.323
+2020-11-21 20:54:15,072 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 66: [15 / 21] loss: 0.319
+2020-11-21 20:54:16,475 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 66: [18 / 21] loss: 0.298
+2020-11-21 20:54:19,702 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:54:19,710 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 67
+2020-11-21 20:54:21,615 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 67: [3 / 21] loss: 0.310
+2020-11-21 20:54:23,246 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 67: [6 / 21] loss: 0.355
+2020-11-21 20:54:24,687 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 67: [9 / 21] loss: 0.323
+2020-11-21 20:54:26,173 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 67: [12 / 21] loss: 0.299
+2020-11-21 20:54:27,499 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 67: [15 / 21] loss: 0.307
+2020-11-21 20:54:28,783 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 67: [18 / 21] loss: 0.318
+2020-11-21 20:54:31,973 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:54:31,980 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 68
+2020-11-21 20:54:33,841 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 68: [3 / 21] loss: 0.339
+2020-11-21 20:54:35,221 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 68: [6 / 21] loss: 0.311
+2020-11-21 20:54:36,584 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 68: [9 / 21] loss: 0.290
+2020-11-21 20:54:37,825 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 68: [12 / 21] loss: 0.293
+2020-11-21 20:54:39,267 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 68: [15 / 21] loss: 0.303
+2020-11-21 20:54:40,676 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 68: [18 / 21] loss: 0.320
+2020-11-21 20:54:43,956 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:54:43,964 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 69
+2020-11-21 20:54:46,049 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 69: [3 / 21] loss: 0.304
+2020-11-21 20:54:47,381 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 69: [6 / 21] loss: 0.293
+2020-11-21 20:54:48,839 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 69: [9 / 21] loss: 0.308
+2020-11-21 20:54:50,268 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 69: [12 / 21] loss: 0.310
+2020-11-21 20:54:51,820 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 69: [15 / 21] loss: 0.337
+2020-11-21 20:54:53,135 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 69: [18 / 21] loss: 0.323
+2020-11-21 20:54:56,224 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:54:56,237 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 70
+2020-11-21 20:54:58,128 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 70: [3 / 21] loss: 0.299
+2020-11-21 20:54:59,692 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 70: [6 / 21] loss: 0.296
+2020-11-21 20:55:01,073 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 70: [9 / 21] loss: 0.304
+2020-11-21 20:55:02,528 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 70: [12 / 21] loss: 0.339
+2020-11-21 20:55:03,976 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 70: [15 / 21] loss: 0.328
+2020-11-21 20:55:05,425 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 70: [18 / 21] loss: 0.323
+2020-11-21 20:55:09,094 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 20:55:09,103 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 71
+2020-11-21 20:55:10,867 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 71: [3 / 21] loss: 0.320
+2020-11-21 20:55:12,270 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 71: [6 / 21] loss: 0.311
+2020-11-21 20:55:13,771 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 71: [9 / 21] loss: 0.317
+2020-11-21 20:55:15,276 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 71: [12 / 21] loss: 0.321
+2020-11-21 20:55:16,534 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 71: [15 / 21] loss: 0.304
+2020-11-21 20:55:17,823 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 71: [18 / 21] loss: 0.306
+2020-11-21 20:55:21,222 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:55:21,229 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 72
+2020-11-21 20:55:23,069 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 72: [3 / 21] loss: 0.320
+2020-11-21 20:55:24,395 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 72: [6 / 21] loss: 0.317
+2020-11-21 20:55:25,746 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 72: [9 / 21] loss: 0.303
+2020-11-21 20:55:27,071 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 72: [12 / 21] loss: 0.357
+2020-11-21 20:55:28,714 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 72: [15 / 21] loss: 0.400
+2020-11-21 20:55:30,310 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 72: [18 / 21] loss: 0.314
+2020-11-21 20:55:33,721 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:55:33,730 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 73
+2020-11-21 20:55:35,814 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 73: [3 / 21] loss: 0.315
+2020-11-21 20:55:37,204 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 73: [6 / 21] loss: 0.325
+2020-11-21 20:55:38,706 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 73: [9 / 21] loss: 0.334
+2020-11-21 20:55:40,133 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 73: [12 / 21] loss: 0.337
+2020-11-21 20:55:41,637 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 73: [15 / 21] loss: 0.310
+2020-11-21 20:55:43,274 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 73: [18 / 21] loss: 0.307
+2020-11-21 20:55:46,654 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 20:55:46,662 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 74
+2020-11-21 20:55:48,456 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 74: [3 / 21] loss: 0.296
+2020-11-21 20:55:49,801 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 74: [6 / 21] loss: 0.356
+2020-11-21 20:55:51,255 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 74: [9 / 21] loss: 0.312
+2020-11-21 20:55:52,738 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 74: [12 / 21] loss: 0.319
+2020-11-21 20:55:54,216 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 74: [15 / 21] loss: 0.331
+2020-11-21 20:55:55,730 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 74: [18 / 21] loss: 0.315
+2020-11-21 20:55:59,329 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:55:59,335 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 75
+2020-11-21 20:56:01,605 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 75: [3 / 21] loss: 0.308
+2020-11-21 20:56:02,883 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 75: [6 / 21] loss: 0.337
+2020-11-21 20:56:04,429 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 75: [9 / 21] loss: 0.321
+2020-11-21 20:56:05,689 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 75: [12 / 21] loss: 0.337
+2020-11-21 20:56:07,252 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 75: [15 / 21] loss: 0.334
+2020-11-21 20:56:08,693 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 75: [18 / 21] loss: 0.302
+2020-11-21 20:56:11,897 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:56:11,910 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 76
+2020-11-21 20:56:13,894 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 76: [3 / 21] loss: 0.316
+2020-11-21 20:56:15,307 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 76: [6 / 21] loss: 0.332
+2020-11-21 20:56:16,757 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 76: [9 / 21] loss: 0.330
+2020-11-21 20:56:18,349 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 76: [12 / 21] loss: 0.305
+2020-11-21 20:56:19,761 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 76: [15 / 21] loss: 0.348
+2020-11-21 20:56:21,243 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 76: [18 / 21] loss: 0.335
+2020-11-21 20:56:24,469 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:56:24,474 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 77
+2020-11-21 20:56:26,567 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 77: [3 / 21] loss: 0.297
+2020-11-21 20:56:28,255 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 77: [6 / 21] loss: 0.294
+2020-11-21 20:56:29,574 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 77: [9 / 21] loss: 0.305
+2020-11-21 20:56:30,975 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 77: [12 / 21] loss: 0.322
+2020-11-21 20:56:32,670 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 77: [15 / 21] loss: 0.342
+2020-11-21 20:56:34,420 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 77: [18 / 21] loss: 0.311
+2020-11-21 20:56:37,529 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:56:37,558 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Start training in split train, Epoch: 78
+2020-11-21 20:56:39,647 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 78: [3 / 21] loss: 0.333
+2020-11-21 20:56:41,093 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 78: [6 / 21] loss: 0.306
+2020-11-21 20:56:42,561 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 78: [9 / 21] loss: 0.331
+2020-11-21 20:56:43,719 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 78: [12 / 21] loss: 0.313
+2020-11-21 20:56:45,272 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 78: [15 / 21] loss: 0.323
+2020-11-21 20:56:46,761 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Epoch 78: [18 / 21] loss: 0.322
+2020-11-21 20:56:49,895 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 20:56:49,902 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Train finish, best val score: 0.921
+2020-11-21 20:57:20,652 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_refine_gat_undirected.txt - INFO - Evaluation accuracy in `test` split: 0.921
