@@ -435,9 +435,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                 assert(graph_node_embedding.size(0) == 1)
                 beam_search_generator = DecoderStrategy(
                     beam_size=beam_size, vocab=form_manager, decoder=model.decoder, rnn_type="lstm", use_copy=True, use_coverage=False)
-                for idx in range(graph_node_embedding.size(0)):
-                    if beam_search_version == 2:
-                        decoded_results = beam_search_generator.beam_search_for_tree_decoding_version_2(decoder_initial_state=(s[0], s[1]),
+                    decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]),
                                                                                           decoder_initial_input=prev_word,
                                                                                           parent_state=parent_h,
                                                                                           graph_node_embedding=enc_outputs,
@@ -446,18 +444,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                                                                                           topk=topk,
                                                                                           oov_dict=oov_dict,
                                                                                           enc_batch=enc_w_list)
-                    elif beam_search_version == 1:
-                        decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]),
-                                                                                          decoder_initial_input=prev_word,
-                                                                                          parent_state=parent_h,
-                                                                                          graph_node_embedding=enc_outputs,
-                                                                                          rnn_node_embedding=rnn_node_embedding,
-                                                                                          device=device,
-                                                                                          topk=topk,
-                                                                                          oov_dict=oov_dict,
-                                                                                          enc_batch=enc_w_list)
-                    else:
-                        raise NotImplementedError("Wrong beam search version !")
                 generated_sentence = decoded_results[0][0]
                 # print(" ".join(form_manager.get_idx_symbol_for_list([int(node_i.wordid.item()) for node_i in generated_sentence])))
                 for node_i in generated_sentence:
