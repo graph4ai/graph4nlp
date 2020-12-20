@@ -362,7 +362,11 @@ class MathQA:
         loss_to_print = 0
         for i in range(self.train_data_loader.num_batch):
             self.optimizer.zero_grad()
-            batch_graph_list, _, batch_tree_list, batch_original_tree_list = self.train_data_loader.random_batch()
+            input_dict = self.train_data_loader.random_batch()
+
+            batch_graph_list = input_dict['encoder_graph_batch']
+            batch_tree_list = input_dict['decoder_tree_batch']
+            batch_original_tree_list = input_dict['decoder_output_text_batch']
 
             oov_dict = self.prepare_ext_vocab(
                 batch_graph_list, self.src_vocab) if self.use_copy else None

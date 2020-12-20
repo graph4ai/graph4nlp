@@ -112,24 +112,24 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                                    'src': {
                                        'tokens': triple[0],
                                        'id': graph_nodes.index(triple[0]),
-                                       'type': 'ent_node'
+                                       'type': 0,  # 'ent_node'
                                    },
                                    'tgt': {
                                        'tokens': triple[1],
                                        'id': graph_nodes.index(triple[1]),
-                                       'type': 'edge_node'
+                                       'type': 3,  # 'edge_node'
                                    }}
 
                 triple_info_1_2 = {'edge_tokens': [],
                                    'src': {
                                        'tokens': triple[1],
                                        'id': graph_nodes.index(triple[1]),
-                                       'type': 'edge_node'
+                                       'type': 3,  # 'edge_node'
                                    },
                                    'tgt': {
                                        'tokens': triple[2],
                                        'id': graph_nodes.index(triple[2]),
-                                       'type': 'ent_node'
+                                       'type': 0,  # 'ent_node'
                                    }}
 
                 if triple_info_0_1 not in parsed_results['graph_content']:
@@ -194,7 +194,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         coref_json = nlp_processor.annotate(raw_text_data.strip(), properties=props_coref)
         from .utils import CORENLP_TIMEOUT_SIGNATURE
         if CORENLP_TIMEOUT_SIGNATURE in coref_json:
-            raise TimeoutError('CoreNLP timed out at input: \n{}\n This item will be skipped. '
+            raise TimeoutError('Coref-CoreNLP timed out at input: \n{}\n This item will be skipped. '
                                'Please check the input or change the timeout threshold.'.format(raw_text_data))
 
         coref_dict = json.loads(coref_json)
@@ -245,8 +245,10 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         for sent in sentences:
             resolved_sent = sent['resolvedText']
             openie_json = nlp_processor.annotate(resolved_sent.strip(), properties=props_openie)
+            if CORENLP_TIMEOUT_SIGNATURE in openie_json:
+                raise TimeoutError('OpenIE-CoreNLP timed out at input: \n{}\n This item will be skipped. '
+                                   'Please check the input or change the timeout threshold.'.format(raw_text_data))
             openie_dict = json.loads(openie_json)
-
             for triple_dict in openie_dict['sentences'][0]['openie']:
                 sbj = triple_dict['subject']
                 rel = triple_dict['relation']
@@ -378,6 +380,8 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         """
         ret_graph = GraphData()
         node_num = parsed_object["node_num"]
+        if node_num == 0:
+            raise RuntimeError('"The number of nodes to be added should be greater than 0. (Got {})"'.format(node_num))
         ret_graph.add_nodes(node_num)
         for triple_info in parsed_object["graph_content"]:
             if edge_strategy is None:
@@ -447,41 +451,29 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         node_size = []
         edge_size = []
         num_nodes = []
+        # num_word_nodes = []  # number of nodes that are extracted from the raw text in each graph
         num_edges = []
-
-        token_id_max_len = 0
-        edge_token_id_max_len = 0
-        for g in batch_graphdata:
-            token_id_len = g.node_features['token_id'].size()[1]
-            if token_id_max_len < token_id_len:
-                token_id_max_len = token_id_len
-            if 'token' in batch_graphdata[0].edge_attributes[0].keys():
-                edge_token_id_len = g.edge_features['token_id'].size()[1]
-                if edge_token_id_max_len < edge_token_id_len:
-                    edge_token_id_max_len = edge_token_id_len
+        # num_word_edges = []  # number of edges that are extracted from the raw text in each graph
 
         for g in batch_graphdata:
-            g.node_features['token_id'] = torch.tensor(pad_2d_vals(np.array(g.node_features['token_id']),
-                                                       g.node_features['token_id'].size()[0],
-                                                       token_id_max_len),
-                                                       dtype=torch.int64)
+            g.to(self.device)
             g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
             num_nodes.append(g.get_node_num())
-            node_size.extend([len(g.node_attributes[i]['token_id']) for i in range(num_nodes[-1])])
+            # num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))
+            node_size.extend([1 for i in range(num_nodes[-1])])
 
             if 'token' in g.edge_attributes[0].keys():
-                g.edge_features['token_id'] = torch.tensor(pad_2d_vals(np.array(g.edge_features['token_id']),
-                                                                       g.edge_features['token_id'].size()[0],
-                                                                       edge_token_id_max_len),
-                                                           dtype=torch.int64)
                 g.edge_features['token_id'] = g.edge_features['token_id'].to(self.device)
                 num_edges.append(g.get_edge_num())
-                edge_size.extend([len(g.edge_attributes[i]['token_id']) for i in range(num_edges[-1])])
-
+                edge_size.extend([1 for i in range(num_edges[-1])])
+                # num_word_edges.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 3]))
 
         batch_gd = to_batch(batch_graphdata)
+        b_node = batch_gd.get_node_num()
+        assert b_node == sum(num_nodes), print(b_node, sum(num_nodes))
         node_size = torch.Tensor(node_size).to(self.device).int()
         num_nodes = torch.Tensor(num_nodes).to(self.device).int()
+        # num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
         node_emb = self.embedding_layer(batch_gd, node_size, num_nodes)
         batch_gd.node_features["node_feat"] = node_emb
         if edge_size != [] and num_edges != []:

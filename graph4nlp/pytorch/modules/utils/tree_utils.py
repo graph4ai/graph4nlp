@@ -448,8 +448,12 @@ class DataLoaderForGraphEncoder():
 
     def random_batch(self):
         p = randint(0, self.num_batch-1)
-        return self.enc_batch_list[p], self.enc_len_batch_list[p], self.dec_batch_list[p], self.original_target_tree_list[p]
-    
+        return {'encoder_graph_batch': self.enc_batch_list[p],
+                'encoder_graph_node_number_batch': self.enc_len_batch_list[p],
+                'decoder_tree_batch': self.dec_batch_list[p],
+                'decoder_output_text_batch': self.original_target_tree_list[p]
+                }
+                
     def all_batch(self):
         r = []
         for p in range(self.num_batch):

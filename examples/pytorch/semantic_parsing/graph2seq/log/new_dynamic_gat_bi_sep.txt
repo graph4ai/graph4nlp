@@ -1,0 +1,1149 @@
+2020-11-21 20:42:29,008 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 0
+2020-11-21 20:42:31,406 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 0: [3 / 21] loss: 5.864
+2020-11-21 20:42:32,782 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 0: [6 / 21] loss: 3.693
+2020-11-21 20:42:34,074 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 0: [9 / 21] loss: 3.125
+2020-11-21 20:42:35,512 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 0: [12 / 21] loss: 2.824
+2020-11-21 20:42:36,940 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 0: [15 / 21] loss: 2.542
+2020-11-21 20:42:38,345 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 0: [18 / 21] loss: 2.268
+2020-11-21 20:42:42,009 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.000
+2020-11-21 20:42:42,018 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 0
+2020-11-21 20:42:42,089 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 1
+2020-11-21 20:42:44,177 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 1: [3 / 21] loss: 2.031
+2020-11-21 20:42:45,706 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 1: [6 / 21] loss: 1.808
+2020-11-21 20:42:47,204 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 1: [9 / 21] loss: 1.758
+2020-11-21 20:42:48,534 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 1: [12 / 21] loss: 1.603
+2020-11-21 20:42:50,145 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 1: [15 / 21] loss: 1.577
+2020-11-21 20:42:51,569 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 1: [18 / 21] loss: 1.504
+2020-11-21 20:42:54,918 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.000
+2020-11-21 20:42:54,928 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 1
+2020-11-21 20:42:55,161 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 2
+2020-11-21 20:42:57,022 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 2: [3 / 21] loss: 1.278
+2020-11-21 20:42:58,505 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 2: [6 / 21] loss: 1.273
+2020-11-21 20:42:59,752 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 2: [9 / 21] loss: 1.233
+2020-11-21 20:43:01,130 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 2: [12 / 21] loss: 1.156
+2020-11-21 20:43:02,575 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 2: [15 / 21] loss: 1.123
+2020-11-21 20:43:04,187 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 2: [18 / 21] loss: 1.256
+2020-11-21 20:43:07,837 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.100
+2020-11-21 20:43:07,846 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 2
+2020-11-21 20:43:07,963 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 3
+2020-11-21 20:43:10,243 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 3: [3 / 21] loss: 1.150
+2020-11-21 20:43:11,686 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 3: [6 / 21] loss: 0.972
+2020-11-21 20:43:13,286 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 3: [9 / 21] loss: 0.977
+2020-11-21 20:43:14,520 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 3: [12 / 21] loss: 0.982
+2020-11-21 20:43:16,089 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 3: [15 / 21] loss: 1.054
+2020-11-21 20:43:17,316 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 3: [18 / 21] loss: 0.979
+2020-11-21 20:43:20,870 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.036
+2020-11-21 20:43:20,879 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 4
+2020-11-21 20:43:22,653 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 4: [3 / 21] loss: 0.878
+2020-11-21 20:43:24,387 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 4: [6 / 21] loss: 0.912
+2020-11-21 20:43:25,955 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 4: [9 / 21] loss: 0.989
+2020-11-21 20:43:27,425 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 4: [12 / 21] loss: 0.931
+2020-11-21 20:43:28,834 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 4: [15 / 21] loss: 0.860
+2020-11-21 20:43:30,239 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 4: [18 / 21] loss: 0.882
+2020-11-21 20:43:33,862 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.271
+2020-11-21 20:43:33,872 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 4
+2020-11-21 20:43:33,944 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 5
+2020-11-21 20:43:36,367 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 5: [3 / 21] loss: 0.775
+2020-11-21 20:43:37,654 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 5: [6 / 21] loss: 0.845
+2020-11-21 20:43:39,050 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 5: [9 / 21] loss: 0.879
+2020-11-21 20:43:40,444 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 5: [12 / 21] loss: 0.881
+2020-11-21 20:43:42,018 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 5: [15 / 21] loss: 0.800
+2020-11-21 20:43:43,276 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 5: [18 / 21] loss: 0.776
+2020-11-21 20:43:46,810 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.036
+2020-11-21 20:43:46,819 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 6
+2020-11-21 20:43:49,013 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 6: [3 / 21] loss: 0.794
+2020-11-21 20:43:50,486 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 6: [6 / 21] loss: 0.785
+2020-11-21 20:43:51,832 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 6: [9 / 21] loss: 0.745
+2020-11-21 20:43:53,224 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 6: [12 / 21] loss: 0.821
+2020-11-21 20:43:54,540 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 6: [15 / 21] loss: 0.743
+2020-11-21 20:43:55,966 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 6: [18 / 21] loss: 0.760
+2020-11-21 20:43:59,690 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.421
+2020-11-21 20:43:59,700 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 6
+2020-11-21 20:43:59,774 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 7
+2020-11-21 20:44:02,094 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 7: [3 / 21] loss: 0.828
+2020-11-21 20:44:03,554 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 7: [6 / 21] loss: 0.770
+2020-11-21 20:44:04,850 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 7: [9 / 21] loss: 0.690
+2020-11-21 20:44:06,275 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 7: [12 / 21] loss: 0.705
+2020-11-21 20:44:07,687 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 7: [15 / 21] loss: 0.720
+2020-11-21 20:44:09,031 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 7: [18 / 21] loss: 0.672
+2020-11-21 20:44:12,592 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.436
+2020-11-21 20:44:12,599 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 7
+2020-11-21 20:44:12,707 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 8
+2020-11-21 20:44:15,139 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 8: [3 / 21] loss: 0.693
+2020-11-21 20:44:16,532 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 8: [6 / 21] loss: 0.683
+2020-11-21 20:44:18,023 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 8: [9 / 21] loss: 0.757
+2020-11-21 20:44:19,222 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 8: [12 / 21] loss: 0.685
+2020-11-21 20:44:20,637 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 8: [15 / 21] loss: 0.667
+2020-11-21 20:44:21,915 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 8: [18 / 21] loss: 0.649
+2020-11-21 20:44:25,650 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.457
+2020-11-21 20:44:25,656 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 8
+2020-11-21 20:44:25,725 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 9
+2020-11-21 20:44:28,108 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 9: [3 / 21] loss: 0.673
+2020-11-21 20:44:29,422 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 9: [6 / 21] loss: 0.635
+2020-11-21 20:44:31,021 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 9: [9 / 21] loss: 0.646
+2020-11-21 20:44:32,448 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 9: [12 / 21] loss: 0.631
+2020-11-21 20:44:33,822 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 9: [15 / 21] loss: 0.607
+2020-11-21 20:44:35,295 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 9: [18 / 21] loss: 0.626
+2020-11-21 20:44:38,910 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.557
+2020-11-21 20:44:38,917 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 9
+2020-11-21 20:44:39,024 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 10
+2020-11-21 20:44:41,193 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 10: [3 / 21] loss: 0.614
+2020-11-21 20:44:42,643 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 10: [6 / 21] loss: 0.598
+2020-11-21 20:44:43,963 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 10: [9 / 21] loss: 0.638
+2020-11-21 20:44:45,359 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 10: [12 / 21] loss: 0.565
+2020-11-21 20:44:46,554 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 10: [15 / 21] loss: 0.575
+2020-11-21 20:44:48,032 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 10: [18 / 21] loss: 0.624
+2020-11-21 20:44:51,326 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.607
+2020-11-21 20:44:51,334 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 10
+2020-11-21 20:44:51,459 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 11
+2020-11-21 20:44:53,761 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 11: [3 / 21] loss: 0.620
+2020-11-21 20:44:55,154 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 11: [6 / 21] loss: 0.564
+2020-11-21 20:44:56,564 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 11: [9 / 21] loss: 0.533
+2020-11-21 20:44:57,780 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 11: [12 / 21] loss: 0.525
+2020-11-21 20:44:59,059 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 11: [15 / 21] loss: 0.581
+2020-11-21 20:45:00,569 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 11: [18 / 21] loss: 0.551
+2020-11-21 20:45:03,995 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.650
+2020-11-21 20:45:04,005 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 11
+2020-11-21 20:45:04,073 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 12
+2020-11-21 20:45:06,418 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 12: [3 / 21] loss: 0.570
+2020-11-21 20:45:07,865 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 12: [6 / 21] loss: 0.537
+2020-11-21 20:45:09,153 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 12: [9 / 21] loss: 0.542
+2020-11-21 20:45:10,552 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 12: [12 / 21] loss: 0.556
+2020-11-21 20:45:11,870 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 12: [15 / 21] loss: 0.532
+2020-11-21 20:45:13,361 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 12: [18 / 21] loss: 0.555
+2020-11-21 20:45:16,795 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.629
+2020-11-21 20:45:16,803 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 13
+2020-11-21 20:45:19,162 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 13: [3 / 21] loss: 0.526
+2020-11-21 20:45:20,616 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 13: [6 / 21] loss: 0.511
+2020-11-21 20:45:21,846 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 13: [9 / 21] loss: 0.483
+2020-11-21 20:45:23,222 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 13: [12 / 21] loss: 0.557
+2020-11-21 20:45:24,596 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 13: [15 / 21] loss: 0.508
+2020-11-21 20:45:26,239 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 13: [18 / 21] loss: 0.497
+2020-11-21 20:45:29,780 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.693
+2020-11-21 20:45:29,788 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 13
+2020-11-21 20:45:29,855 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 14
+2020-11-21 20:45:32,437 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 14: [3 / 21] loss: 0.474
+2020-11-21 20:45:33,865 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 14: [6 / 21] loss: 0.489
+2020-11-21 20:45:35,231 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 14: [9 / 21] loss: 0.535
+2020-11-21 20:45:36,802 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 14: [12 / 21] loss: 0.519
+2020-11-21 20:45:38,184 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 14: [15 / 21] loss: 0.479
+2020-11-21 20:45:39,443 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 14: [18 / 21] loss: 0.520
+2020-11-21 20:45:42,768 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.700
+2020-11-21 20:45:42,777 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 14
+2020-11-21 20:45:42,848 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 15
+2020-11-21 20:45:45,184 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 15: [3 / 21] loss: 0.488
+2020-11-21 20:45:46,511 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 15: [6 / 21] loss: 0.555
+2020-11-21 20:45:47,852 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 15: [9 / 21] loss: 0.515
+2020-11-21 20:45:49,095 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 15: [12 / 21] loss: 0.479
+2020-11-21 20:45:50,390 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 15: [15 / 21] loss: 0.485
+2020-11-21 20:45:51,722 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 15: [18 / 21] loss: 0.481
+2020-11-21 20:45:55,229 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.693
+2020-11-21 20:45:55,238 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 16
+2020-11-21 20:45:57,651 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 16: [3 / 21] loss: 0.477
+2020-11-21 20:45:58,984 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 16: [6 / 21] loss: 0.479
+2020-11-21 20:46:00,425 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 16: [9 / 21] loss: 0.472
+2020-11-21 20:46:01,724 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 16: [12 / 21] loss: 0.474
+2020-11-21 20:46:03,015 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 16: [15 / 21] loss: 0.480
+2020-11-21 20:46:04,495 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 16: [18 / 21] loss: 0.499
+2020-11-21 20:46:07,899 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.750
+2020-11-21 20:46:07,907 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 16
+2020-11-21 20:46:07,993 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 17
+2020-11-21 20:46:10,243 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 17: [3 / 21] loss: 0.472
+2020-11-21 20:46:11,554 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 17: [6 / 21] loss: 0.475
+2020-11-21 20:46:13,106 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 17: [9 / 21] loss: 0.469
+2020-11-21 20:46:14,779 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 17: [12 / 21] loss: 0.511
+2020-11-21 20:46:16,232 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 17: [15 / 21] loss: 0.452
+2020-11-21 20:46:17,595 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 17: [18 / 21] loss: 0.482
+2020-11-21 20:46:20,977 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.721
+2020-11-21 20:46:20,986 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 18
+2020-11-21 20:46:23,405 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 18: [3 / 21] loss: 0.473
+2020-11-21 20:46:24,927 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 18: [6 / 21] loss: 0.460
+2020-11-21 20:46:26,281 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 18: [9 / 21] loss: 0.476
+2020-11-21 20:46:27,493 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 18: [12 / 21] loss: 0.416
+2020-11-21 20:46:28,926 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 18: [15 / 21] loss: 0.449
+2020-11-21 20:46:30,252 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 18: [18 / 21] loss: 0.420
+2020-11-21 20:46:33,778 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.786
+2020-11-21 20:46:33,787 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 18
+2020-11-21 20:46:33,856 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 19
+2020-11-21 20:46:36,358 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 19: [3 / 21] loss: 0.461
+2020-11-21 20:46:37,863 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 19: [6 / 21] loss: 0.436
+2020-11-21 20:46:39,323 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 19: [9 / 21] loss: 0.495
+2020-11-21 20:46:40,708 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 19: [12 / 21] loss: 0.432
+2020-11-21 20:46:42,077 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 19: [15 / 21] loss: 0.449
+2020-11-21 20:46:43,277 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 19: [18 / 21] loss: 0.432
+2020-11-21 20:46:46,449 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.814
+2020-11-21 20:46:46,459 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 19
+2020-11-21 20:46:46,531 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 20
+2020-11-21 20:46:48,717 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 20: [3 / 21] loss: 0.421
+2020-11-21 20:46:50,136 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 20: [6 / 21] loss: 0.505
+2020-11-21 20:46:51,563 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 20: [9 / 21] loss: 0.462
+2020-11-21 20:46:53,074 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 20: [12 / 21] loss: 0.460
+2020-11-21 20:46:54,510 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 20: [15 / 21] loss: 0.464
+2020-11-21 20:46:56,001 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 20: [18 / 21] loss: 0.469
+2020-11-21 20:46:59,459 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.764
+2020-11-21 20:46:59,467 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 21
+2020-11-21 20:47:01,760 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 21: [3 / 21] loss: 0.412
+2020-11-21 20:47:03,139 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 21: [6 / 21] loss: 0.430
+2020-11-21 20:47:04,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 21: [9 / 21] loss: 0.470
+2020-11-21 20:47:06,098 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 21: [12 / 21] loss: 0.415
+2020-11-21 20:47:07,307 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 21: [15 / 21] loss: 0.397
+2020-11-21 20:47:08,660 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 21: [18 / 21] loss: 0.463
+2020-11-21 20:47:12,235 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-21 20:47:12,244 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 21
+2020-11-21 20:47:12,329 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 22
+2020-11-21 20:47:14,970 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 22: [3 / 21] loss: 0.435
+2020-11-21 20:47:16,425 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 22: [6 / 21] loss: 0.388
+2020-11-21 20:47:17,764 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 22: [9 / 21] loss: 0.457
+2020-11-21 20:47:19,072 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 22: [12 / 21] loss: 0.365
+2020-11-21 20:47:20,259 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 22: [15 / 21] loss: 0.397
+2020-11-21 20:47:21,587 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 22: [18 / 21] loss: 0.404
+2020-11-21 20:47:25,207 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-21 20:47:25,216 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 22
+2020-11-21 20:47:25,309 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 23
+2020-11-21 20:47:27,654 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 23: [3 / 21] loss: 0.401
+2020-11-21 20:47:28,996 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 23: [6 / 21] loss: 0.439
+2020-11-21 20:47:30,411 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 23: [9 / 21] loss: 0.406
+2020-11-21 20:47:31,761 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 23: [12 / 21] loss: 0.385
+2020-11-21 20:47:33,280 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 23: [15 / 21] loss: 0.391
+2020-11-21 20:47:34,602 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 23: [18 / 21] loss: 0.400
+2020-11-21 20:47:38,083 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 20:47:38,090 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 24
+2020-11-21 20:47:40,405 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 24: [3 / 21] loss: 0.364
+2020-11-21 20:47:41,654 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 24: [6 / 21] loss: 0.408
+2020-11-21 20:47:43,153 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 24: [9 / 21] loss: 0.417
+2020-11-21 20:47:44,396 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 24: [12 / 21] loss: 0.403
+2020-11-21 20:47:45,994 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 24: [15 / 21] loss: 0.417
+2020-11-21 20:47:47,350 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 24: [18 / 21] loss: 0.400
+2020-11-21 20:47:50,761 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 20:47:50,767 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 25
+2020-11-21 20:47:52,740 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 25: [3 / 21] loss: 0.405
+2020-11-21 20:47:54,224 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 25: [6 / 21] loss: 0.433
+2020-11-21 20:47:55,484 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 25: [9 / 21] loss: 0.403
+2020-11-21 20:47:56,931 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 25: [12 / 21] loss: 0.414
+2020-11-21 20:47:58,351 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 25: [15 / 21] loss: 0.432
+2020-11-21 20:47:59,650 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 25: [18 / 21] loss: 0.397
+2020-11-21 20:48:03,749 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.771
+2020-11-21 20:48:03,757 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 26
+2020-11-21 20:48:05,719 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 26: [3 / 21] loss: 0.390
+2020-11-21 20:48:07,211 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 26: [6 / 21] loss: 0.391
+2020-11-21 20:48:08,730 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 26: [9 / 21] loss: 0.395
+2020-11-21 20:48:10,289 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 26: [12 / 21] loss: 0.416
+2020-11-21 20:48:11,586 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 26: [15 / 21] loss: 0.406
+2020-11-21 20:48:13,015 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 26: [18 / 21] loss: 0.398
+2020-11-21 20:48:16,429 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-21 20:48:16,437 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 26
+2020-11-21 20:48:16,517 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 27
+2020-11-21 20:48:18,453 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 27: [3 / 21] loss: 0.412
+2020-11-21 20:48:19,951 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 27: [6 / 21] loss: 0.400
+2020-11-21 20:48:21,291 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 27: [9 / 21] loss: 0.435
+2020-11-21 20:48:22,894 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 27: [12 / 21] loss: 0.411
+2020-11-21 20:48:24,333 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 27: [15 / 21] loss: 0.395
+2020-11-21 20:48:25,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 27: [18 / 21] loss: 0.432
+2020-11-21 20:48:29,053 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.814
+2020-11-21 20:48:29,063 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 28
+2020-11-21 20:48:30,952 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 28: [3 / 21] loss: 0.414
+2020-11-21 20:48:32,530 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 28: [6 / 21] loss: 0.406
+2020-11-21 20:48:34,004 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 28: [9 / 21] loss: 0.361
+2020-11-21 20:48:35,428 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 28: [12 / 21] loss: 0.437
+2020-11-21 20:48:36,957 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 28: [15 / 21] loss: 0.387
+2020-11-21 20:48:38,435 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 28: [18 / 21] loss: 0.402
+2020-11-21 20:48:41,985 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-21 20:48:41,994 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 29
+2020-11-21 20:48:44,044 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 29: [3 / 21] loss: 0.381
+2020-11-21 20:48:45,521 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 29: [6 / 21] loss: 0.363
+2020-11-21 20:48:47,178 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 29: [9 / 21] loss: 0.352
+2020-11-21 20:48:48,782 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 29: [12 / 21] loss: 0.372
+2020-11-21 20:48:50,378 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 29: [15 / 21] loss: 0.401
+2020-11-21 20:48:51,890 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 29: [18 / 21] loss: 0.384
+2020-11-21 20:48:55,256 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-21 20:48:55,264 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 30
+2020-11-21 20:48:57,211 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 30: [3 / 21] loss: 0.372
+2020-11-21 20:48:58,582 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 30: [6 / 21] loss: 0.369
+2020-11-21 20:49:00,173 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 30: [9 / 21] loss: 0.376
+2020-11-21 20:49:01,583 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 30: [12 / 21] loss: 0.353
+2020-11-21 20:49:03,172 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 30: [15 / 21] loss: 0.389
+2020-11-21 20:49:04,624 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 30: [18 / 21] loss: 0.389
+2020-11-21 20:49:08,228 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 20:49:08,237 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 30
+2020-11-21 20:49:08,310 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 31
+2020-11-21 20:49:10,443 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 31: [3 / 21] loss: 0.395
+2020-11-21 20:49:11,957 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 31: [6 / 21] loss: 0.373
+2020-11-21 20:49:13,554 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 31: [9 / 21] loss: 0.348
+2020-11-21 20:49:15,022 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 31: [12 / 21] loss: 0.369
+2020-11-21 20:49:16,429 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 31: [15 / 21] loss: 0.349
+2020-11-21 20:49:17,703 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 31: [18 / 21] loss: 0.386
+2020-11-21 20:49:21,191 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 20:49:21,200 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 32
+2020-11-21 20:49:23,327 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 32: [3 / 21] loss: 0.387
+2020-11-21 20:49:24,730 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 32: [6 / 21] loss: 0.352
+2020-11-21 20:49:26,193 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 32: [9 / 21] loss: 0.346
+2020-11-21 20:49:27,687 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 32: [12 / 21] loss: 0.375
+2020-11-21 20:49:29,093 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 32: [15 / 21] loss: 0.371
+2020-11-21 20:49:30,601 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 32: [18 / 21] loss: 0.414
+2020-11-21 20:49:34,333 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 20:49:34,342 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 32
+2020-11-21 20:49:34,436 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 33
+2020-11-21 20:49:36,790 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 33: [3 / 21] loss: 0.336
+2020-11-21 20:49:38,330 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 33: [6 / 21] loss: 0.363
+2020-11-21 20:49:39,991 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 33: [9 / 21] loss: 0.401
+2020-11-21 20:49:41,544 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 33: [12 / 21] loss: 0.378
+2020-11-21 20:49:43,195 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 33: [15 / 21] loss: 0.386
+2020-11-21 20:49:45,053 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 33: [18 / 21] loss: 0.370
+2020-11-21 20:49:48,749 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:49:48,759 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 33
+2020-11-21 20:49:48,852 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 34
+2020-11-21 20:49:51,065 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 34: [3 / 21] loss: 0.391
+2020-11-21 20:49:52,649 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 34: [6 / 21] loss: 0.356
+2020-11-21 20:49:54,258 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 34: [9 / 21] loss: 0.366
+2020-11-21 20:49:55,796 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 34: [12 / 21] loss: 0.357
+2020-11-21 20:49:57,299 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 34: [15 / 21] loss: 0.367
+2020-11-21 20:49:58,841 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 34: [18 / 21] loss: 0.406
+2020-11-21 20:50:02,696 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:50:02,706 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 35
+2020-11-21 20:50:05,108 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 35: [3 / 21] loss: 0.398
+2020-11-21 20:50:06,403 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 35: [6 / 21] loss: 0.356
+2020-11-21 20:50:07,929 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 35: [9 / 21] loss: 0.387
+2020-11-21 20:50:09,507 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 35: [12 / 21] loss: 0.362
+2020-11-21 20:50:11,071 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 35: [15 / 21] loss: 0.336
+2020-11-21 20:50:12,509 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 35: [18 / 21] loss: 0.333
+2020-11-21 20:50:16,076 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 20:50:16,084 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 35
+2020-11-21 20:50:16,211 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 36
+2020-11-21 20:50:18,387 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 36: [3 / 21] loss: 0.362
+2020-11-21 20:50:19,975 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 36: [6 / 21] loss: 0.379
+2020-11-21 20:50:21,589 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 36: [9 / 21] loss: 0.345
+2020-11-21 20:50:23,184 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 36: [12 / 21] loss: 0.356
+2020-11-21 20:50:24,948 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 36: [15 / 21] loss: 0.342
+2020-11-21 20:50:26,574 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 36: [18 / 21] loss: 0.372
+2020-11-21 20:50:30,236 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:50:30,255 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 37
+2020-11-21 20:50:32,419 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 37: [3 / 21] loss: 0.356
+2020-11-21 20:50:34,107 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 37: [6 / 21] loss: 0.359
+2020-11-21 20:50:35,963 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 37: [9 / 21] loss: 0.359
+2020-11-21 20:50:37,581 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 37: [12 / 21] loss: 0.346
+2020-11-21 20:50:39,046 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 37: [15 / 21] loss: 0.391
+2020-11-21 20:50:40,637 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 37: [18 / 21] loss: 0.365
+2020-11-21 20:50:44,214 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-21 20:50:44,221 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 38
+2020-11-21 20:50:46,447 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 38: [3 / 21] loss: 0.378
+2020-11-21 20:50:48,009 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 38: [6 / 21] loss: 0.341
+2020-11-21 20:50:49,672 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 38: [9 / 21] loss: 0.353
+2020-11-21 20:50:51,249 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 38: [12 / 21] loss: 0.384
+2020-11-21 20:50:52,751 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 38: [15 / 21] loss: 0.363
+2020-11-21 20:50:54,295 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 38: [18 / 21] loss: 0.348
+2020-11-21 20:50:57,923 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 20:50:57,931 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 39
+2020-11-21 20:51:00,062 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 39: [3 / 21] loss: 0.405
+2020-11-21 20:51:01,709 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 39: [6 / 21] loss: 0.394
+2020-11-21 20:51:03,263 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 39: [9 / 21] loss: 0.379
+2020-11-21 20:51:04,875 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 39: [12 / 21] loss: 0.408
+2020-11-21 20:51:06,732 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 39: [15 / 21] loss: 0.361
+2020-11-21 20:51:08,513 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 39: [18 / 21] loss: 0.353
+2020-11-21 20:51:12,331 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-21 20:51:12,340 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 40
+2020-11-21 20:51:14,377 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 40: [3 / 21] loss: 0.349
+2020-11-21 20:51:15,839 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 40: [6 / 21] loss: 0.376
+2020-11-21 20:51:17,455 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 40: [9 / 21] loss: 0.353
+2020-11-21 20:51:18,968 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 40: [12 / 21] loss: 0.392
+2020-11-21 20:51:20,328 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 40: [15 / 21] loss: 0.356
+2020-11-21 20:51:21,832 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 40: [18 / 21] loss: 0.346
+2020-11-21 20:51:25,673 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 20:51:25,679 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 41
+2020-11-21 20:51:27,808 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 41: [3 / 21] loss: 0.355
+2020-11-21 20:51:29,404 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 41: [6 / 21] loss: 0.336
+2020-11-21 20:51:30,980 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 41: [9 / 21] loss: 0.341
+2020-11-21 20:51:32,499 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 41: [12 / 21] loss: 0.346
+2020-11-21 20:51:34,172 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 41: [15 / 21] loss: 0.320
+2020-11-21 20:51:36,073 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 41: [18 / 21] loss: 0.359
+2020-11-21 20:51:39,930 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:51:39,939 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 42
+2020-11-21 20:51:42,022 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 42: [3 / 21] loss: 0.343
+2020-11-21 20:51:43,582 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 42: [6 / 21] loss: 0.312
+2020-11-21 20:51:45,222 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 42: [9 / 21] loss: 0.362
+2020-11-21 20:51:46,638 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 42: [12 / 21] loss: 0.369
+2020-11-21 20:51:48,173 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 42: [15 / 21] loss: 0.348
+2020-11-21 20:51:49,736 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 42: [18 / 21] loss: 0.351
+2020-11-21 20:51:53,425 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:51:53,432 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 42
+2020-11-21 20:51:53,530 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 43
+2020-11-21 20:51:55,629 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 43: [3 / 21] loss: 0.337
+2020-11-21 20:51:57,171 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 43: [6 / 21] loss: 0.317
+2020-11-21 20:51:58,704 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 43: [9 / 21] loss: 0.320
+2020-11-21 20:52:00,295 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 43: [12 / 21] loss: 0.321
+2020-11-21 20:52:01,887 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 43: [15 / 21] loss: 0.344
+2020-11-21 20:52:03,263 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 43: [18 / 21] loss: 0.390
+2020-11-21 20:52:06,889 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 20:52:06,897 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 44
+2020-11-21 20:52:09,052 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 44: [3 / 21] loss: 0.336
+2020-11-21 20:52:10,745 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 44: [6 / 21] loss: 0.333
+2020-11-21 20:52:12,352 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 44: [9 / 21] loss: 0.345
+2020-11-21 20:52:13,864 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 44: [12 / 21] loss: 0.341
+2020-11-21 20:52:15,488 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 44: [15 / 21] loss: 0.344
+2020-11-21 20:52:17,065 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 44: [18 / 21] loss: 0.332
+2020-11-21 20:52:20,691 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:52:20,699 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 45
+2020-11-21 20:52:22,901 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 45: [3 / 21] loss: 0.377
+2020-11-21 20:52:24,407 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 45: [6 / 21] loss: 0.352
+2020-11-21 20:52:25,916 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 45: [9 / 21] loss: 0.359
+2020-11-21 20:52:27,399 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 45: [12 / 21] loss: 0.351
+2020-11-21 20:52:28,965 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 45: [15 / 21] loss: 0.306
+2020-11-21 20:52:30,803 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 45: [18 / 21] loss: 0.345
+2020-11-21 20:52:34,408 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:52:34,418 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 45
+2020-11-21 20:52:34,525 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 46
+2020-11-21 20:52:36,663 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 46: [3 / 21] loss: 0.345
+2020-11-21 20:52:38,203 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 46: [6 / 21] loss: 0.331
+2020-11-21 20:52:39,523 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 46: [9 / 21] loss: 0.316
+2020-11-21 20:52:41,124 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 46: [12 / 21] loss: 0.333
+2020-11-21 20:52:42,665 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 46: [15 / 21] loss: 0.319
+2020-11-21 20:52:44,166 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 46: [18 / 21] loss: 0.323
+2020-11-21 20:52:47,310 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:52:47,320 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 47
+2020-11-21 20:52:49,372 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 47: [3 / 21] loss: 0.349
+2020-11-21 20:52:50,913 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 47: [6 / 21] loss: 0.315
+2020-11-21 20:52:52,539 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 47: [9 / 21] loss: 0.375
+2020-11-21 20:52:54,054 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 47: [12 / 21] loss: 0.365
+2020-11-21 20:52:55,472 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 47: [15 / 21] loss: 0.447
+2020-11-21 20:52:56,940 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 47: [18 / 21] loss: 0.452
+2020-11-21 20:53:00,763 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-21 20:53:00,772 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 48
+2020-11-21 20:53:02,819 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 48: [3 / 21] loss: 0.372
+2020-11-21 20:53:04,263 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 48: [6 / 21] loss: 0.350
+2020-11-21 20:53:05,654 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 48: [9 / 21] loss: 0.414
+2020-11-21 20:53:07,215 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 48: [12 / 21] loss: 0.389
+2020-11-21 20:53:08,634 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 48: [15 / 21] loss: 0.385
+2020-11-21 20:53:10,140 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 48: [18 / 21] loss: 0.377
+2020-11-21 20:53:13,644 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:53:13,653 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 49
+2020-11-21 20:53:15,672 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 49: [3 / 21] loss: 0.375
+2020-11-21 20:53:17,273 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 49: [6 / 21] loss: 0.350
+2020-11-21 20:53:18,741 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 49: [9 / 21] loss: 0.369
+2020-11-21 20:53:20,205 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 49: [12 / 21] loss: 0.377
+2020-11-21 20:53:21,649 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 49: [15 / 21] loss: 0.381
+2020-11-21 20:53:23,135 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 49: [18 / 21] loss: 0.368
+2020-11-21 20:53:26,818 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:53:26,826 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 49
+2020-11-21 20:53:26,923 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 50
+2020-11-21 20:53:29,120 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 50: [3 / 21] loss: 0.333
+2020-11-21 20:53:30,524 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 50: [6 / 21] loss: 0.355
+2020-11-21 20:53:32,175 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 50: [9 / 21] loss: 0.340
+2020-11-21 20:53:33,654 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 50: [12 / 21] loss: 0.350
+2020-11-21 20:53:35,183 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 50: [15 / 21] loss: 0.348
+2020-11-21 20:53:36,698 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 50: [18 / 21] loss: 0.350
+2020-11-21 20:53:40,471 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 20:53:40,480 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 51
+2020-11-21 20:53:42,772 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 51: [3 / 21] loss: 0.355
+2020-11-21 20:53:44,170 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 51: [6 / 21] loss: 0.317
+2020-11-21 20:53:45,943 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 51: [9 / 21] loss: 0.366
+2020-11-21 20:53:47,527 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 51: [12 / 21] loss: 0.368
+2020-11-21 20:53:48,988 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 51: [15 / 21] loss: 0.346
+2020-11-21 20:53:50,684 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 51: [18 / 21] loss: 0.334
+2020-11-21 20:53:54,511 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.800
+2020-11-21 20:53:54,520 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 52
+2020-11-21 20:53:56,775 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 52: [3 / 21] loss: 0.373
+2020-11-21 20:53:58,315 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 52: [6 / 21] loss: 0.358
+2020-11-21 20:53:59,845 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 52: [9 / 21] loss: 0.341
+2020-11-21 20:54:01,284 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 52: [12 / 21] loss: 0.324
+2020-11-21 20:54:02,872 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 52: [15 / 21] loss: 0.380
+2020-11-21 20:54:04,679 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 52: [18 / 21] loss: 0.351
+2020-11-21 20:54:07,998 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 20:54:08,007 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 53
+2020-11-21 20:54:10,321 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 53: [3 / 21] loss: 0.350
+2020-11-21 20:54:11,710 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 53: [6 / 21] loss: 0.338
+2020-11-21 20:54:13,246 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 53: [9 / 21] loss: 0.348
+2020-11-21 20:54:14,757 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 53: [12 / 21] loss: 0.352
+2020-11-21 20:54:16,259 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 53: [15 / 21] loss: 0.393
+2020-11-21 20:54:17,891 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 53: [18 / 21] loss: 0.349
+2020-11-21 20:54:21,216 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 20:54:21,223 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 54
+2020-11-21 20:54:23,256 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 54: [3 / 21] loss: 0.330
+2020-11-21 20:54:24,769 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 54: [6 / 21] loss: 0.336
+2020-11-21 20:54:25,981 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 54: [9 / 21] loss: 0.330
+2020-11-21 20:54:27,707 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 54: [12 / 21] loss: 0.341
+2020-11-21 20:54:29,230 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 54: [15 / 21] loss: 0.333
+2020-11-21 20:54:30,636 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 54: [18 / 21] loss: 0.321
+2020-11-21 20:54:34,000 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 20:54:34,011 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 55
+2020-11-21 20:54:36,087 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 55: [3 / 21] loss: 0.329
+2020-11-21 20:54:37,612 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 55: [6 / 21] loss: 0.318
+2020-11-21 20:54:39,200 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 55: [9 / 21] loss: 0.351
+2020-11-21 20:54:40,526 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 55: [12 / 21] loss: 0.353
+2020-11-21 20:54:42,063 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 55: [15 / 21] loss: 0.332
+2020-11-21 20:54:43,590 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 55: [18 / 21] loss: 0.340
+2020-11-21 20:54:47,318 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-21 20:54:47,327 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 56
+2020-11-21 20:54:49,549 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 56: [3 / 21] loss: 0.359
+2020-11-21 20:54:51,005 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 56: [6 / 21] loss: 0.321
+2020-11-21 20:54:52,385 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 56: [9 / 21] loss: 0.333
+2020-11-21 20:54:53,847 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 56: [12 / 21] loss: 0.316
+2020-11-21 20:54:55,297 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 56: [15 / 21] loss: 0.349
+2020-11-21 20:54:56,856 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 56: [18 / 21] loss: 0.343
+2020-11-21 20:55:00,172 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 20:55:00,179 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 57
+2020-11-21 20:55:02,137 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 57: [3 / 21] loss: 0.324
+2020-11-21 20:55:03,612 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 57: [6 / 21] loss: 0.334
+2020-11-21 20:55:05,003 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 57: [9 / 21] loss: 0.315
+2020-11-21 20:55:06,396 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 57: [12 / 21] loss: 0.329
+2020-11-21 20:55:07,769 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 57: [15 / 21] loss: 0.373
+2020-11-21 20:55:09,225 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 57: [18 / 21] loss: 0.320
+2020-11-21 20:55:12,597 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 20:55:12,606 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 58
+2020-11-21 20:55:14,922 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 58: [3 / 21] loss: 0.322
+2020-11-21 20:55:16,641 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 58: [6 / 21] loss: 0.335
+2020-11-21 20:55:18,017 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 58: [9 / 21] loss: 0.310
+2020-11-21 20:55:19,400 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 58: [12 / 21] loss: 0.303
+2020-11-21 20:55:20,857 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 58: [15 / 21] loss: 0.317
+2020-11-21 20:55:22,246 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 58: [18 / 21] loss: 0.331
+2020-11-21 20:55:25,521 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 20:55:25,529 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 59
+2020-11-21 20:55:27,593 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 59: [3 / 21] loss: 0.308
+2020-11-21 20:55:29,203 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 59: [6 / 21] loss: 0.331
+2020-11-21 20:55:30,640 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 59: [9 / 21] loss: 0.320
+2020-11-21 20:55:32,205 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 59: [12 / 21] loss: 0.306
+2020-11-21 20:55:33,838 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 59: [15 / 21] loss: 0.321
+2020-11-21 20:55:35,402 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 59: [18 / 21] loss: 0.343
+2020-11-21 20:55:38,643 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 20:55:38,651 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 59
+2020-11-21 20:55:38,738 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 60
+2020-11-21 20:55:40,700 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 60: [3 / 21] loss: 0.310
+2020-11-21 20:55:42,212 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 60: [6 / 21] loss: 0.326
+2020-11-21 20:55:43,691 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 60: [9 / 21] loss: 0.284
+2020-11-21 20:55:45,180 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 60: [12 / 21] loss: 0.322
+2020-11-21 20:55:46,842 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 60: [15 / 21] loss: 0.329
+2020-11-21 20:55:48,346 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 60: [18 / 21] loss: 0.308
+2020-11-21 20:55:52,032 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 20:55:52,041 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 61
+2020-11-21 20:55:54,036 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 61: [3 / 21] loss: 0.322
+2020-11-21 20:55:55,548 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 61: [6 / 21] loss: 0.304
+2020-11-21 20:55:57,115 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 61: [9 / 21] loss: 0.316
+2020-11-21 20:55:58,723 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 61: [12 / 21] loss: 0.294
+2020-11-21 20:56:00,208 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 61: [15 / 21] loss: 0.308
+2020-11-21 20:56:01,645 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 61: [18 / 21] loss: 0.319
+2020-11-21 20:56:05,280 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:56:05,289 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 62
+2020-11-21 20:56:07,229 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 62: [3 / 21] loss: 0.304
+2020-11-21 20:56:08,790 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 62: [6 / 21] loss: 0.308
+2020-11-21 20:56:10,226 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 62: [9 / 21] loss: 0.315
+2020-11-21 20:56:11,928 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 62: [12 / 21] loss: 0.324
+2020-11-21 20:56:13,630 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 62: [15 / 21] loss: 0.348
+2020-11-21 20:56:15,194 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 62: [18 / 21] loss: 0.305
+2020-11-21 20:56:18,813 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 20:56:18,823 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 63
+2020-11-21 20:56:20,992 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 63: [3 / 21] loss: 0.315
+2020-11-21 20:56:22,399 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 63: [6 / 21] loss: 0.317
+2020-11-21 20:56:23,988 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 63: [9 / 21] loss: 0.314
+2020-11-21 20:56:25,537 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 63: [12 / 21] loss: 0.311
+2020-11-21 20:56:27,003 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 63: [15 / 21] loss: 0.321
+2020-11-21 20:56:28,689 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 63: [18 / 21] loss: 0.323
+2020-11-21 20:56:32,096 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 20:56:32,105 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 64
+2020-11-21 20:56:34,312 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 64: [3 / 21] loss: 0.319
+2020-11-21 20:56:35,848 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 64: [6 / 21] loss: 0.316
+2020-11-21 20:56:37,289 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 64: [9 / 21] loss: 0.304
+2020-11-21 20:56:38,565 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 64: [12 / 21] loss: 0.331
+2020-11-21 20:56:39,944 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 64: [15 / 21] loss: 0.325
+2020-11-21 20:56:41,468 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 64: [18 / 21] loss: 0.318
+2020-11-21 20:56:45,477 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 20:56:45,483 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 64
+2020-11-21 20:56:45,570 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 65
+2020-11-21 20:56:47,514 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 65: [3 / 21] loss: 0.311
+2020-11-21 20:56:49,190 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 65: [6 / 21] loss: 0.305
+2020-11-21 20:56:50,694 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 65: [9 / 21] loss: 0.321
+2020-11-21 20:56:52,038 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 65: [12 / 21] loss: 0.328
+2020-11-21 20:56:53,485 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 65: [15 / 21] loss: 0.348
+2020-11-21 20:56:54,766 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 65: [18 / 21] loss: 0.299
+2020-11-21 20:56:58,131 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 20:56:58,141 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 66
+2020-11-21 20:56:59,937 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 66: [3 / 21] loss: 0.305
+2020-11-21 20:57:01,475 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 66: [6 / 21] loss: 0.343
+2020-11-21 20:57:02,997 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 66: [9 / 21] loss: 0.318
+2020-11-21 20:57:04,453 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 66: [12 / 21] loss: 0.310
+2020-11-21 20:57:06,039 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 66: [15 / 21] loss: 0.318
+2020-11-21 20:57:07,589 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 66: [18 / 21] loss: 0.322
+2020-11-21 20:57:11,219 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-21 20:57:11,227 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 67
+2020-11-21 20:57:13,197 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 67: [3 / 21] loss: 0.298
+2020-11-21 20:57:14,848 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 67: [6 / 21] loss: 0.330
+2020-11-21 20:57:16,133 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 67: [9 / 21] loss: 0.315
+2020-11-21 20:57:17,569 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 67: [12 / 21] loss: 0.295
+2020-11-21 20:57:19,024 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 67: [15 / 21] loss: 0.312
+2020-11-21 20:57:20,668 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 67: [18 / 21] loss: 0.312
+2020-11-21 20:57:24,657 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 20:57:24,666 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 67
+2020-11-21 20:57:24,762 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 68
+2020-11-21 20:57:27,024 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 68: [3 / 21] loss: 0.315
+2020-11-21 20:57:28,656 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 68: [6 / 21] loss: 0.284
+2020-11-21 20:57:30,208 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 68: [9 / 21] loss: 0.307
+2020-11-21 20:57:31,806 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 68: [12 / 21] loss: 0.302
+2020-11-21 20:57:33,330 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 68: [15 / 21] loss: 0.303
+2020-11-21 20:57:34,852 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 68: [18 / 21] loss: 0.333
+2020-11-21 20:57:38,466 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:57:38,472 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 69
+2020-11-21 20:57:40,655 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 69: [3 / 21] loss: 0.305
+2020-11-21 20:57:41,884 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 69: [6 / 21] loss: 0.303
+2020-11-21 20:57:43,235 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 69: [9 / 21] loss: 0.303
+2020-11-21 20:57:44,647 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 69: [12 / 21] loss: 0.304
+2020-11-21 20:57:46,379 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 69: [15 / 21] loss: 0.302
+2020-11-21 20:57:47,929 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 69: [18 / 21] loss: 0.302
+2020-11-21 20:57:51,548 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.807
+2020-11-21 20:57:51,556 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 70
+2020-11-21 20:57:53,536 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 70: [3 / 21] loss: 0.303
+2020-11-21 20:57:55,174 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 70: [6 / 21] loss: 0.316
+2020-11-21 20:57:56,565 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 70: [9 / 21] loss: 0.295
+2020-11-21 20:57:58,038 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 70: [12 / 21] loss: 0.317
+2020-11-21 20:57:59,552 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 70: [15 / 21] loss: 0.294
+2020-11-21 20:58:01,091 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 70: [18 / 21] loss: 0.308
+2020-11-21 20:58:04,718 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-21 20:58:04,725 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 71
+2020-11-21 20:58:06,703 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 71: [3 / 21] loss: 0.326
+2020-11-21 20:58:08,282 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 71: [6 / 21] loss: 0.297
+2020-11-21 20:58:09,720 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 71: [9 / 21] loss: 0.303
+2020-11-21 20:58:11,353 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 71: [12 / 21] loss: 0.331
+2020-11-21 20:58:12,667 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 71: [15 / 21] loss: 0.317
+2020-11-21 20:58:14,257 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 71: [18 / 21] loss: 0.316
+2020-11-21 20:58:17,761 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-21 20:58:17,769 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 72
+2020-11-21 20:58:19,905 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 72: [3 / 21] loss: 0.307
+2020-11-21 20:58:21,482 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 72: [6 / 21] loss: 0.313
+2020-11-21 20:58:23,013 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 72: [9 / 21] loss: 0.303
+2020-11-21 20:58:24,569 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 72: [12 / 21] loss: 0.300
+2020-11-21 20:58:26,226 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 72: [15 / 21] loss: 0.292
+2020-11-21 20:58:27,688 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 72: [18 / 21] loss: 0.305
+2020-11-21 20:58:30,976 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 20:58:30,984 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 73
+2020-11-21 20:58:32,932 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 73: [3 / 21] loss: 0.295
+2020-11-21 20:58:34,336 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 73: [6 / 21] loss: 0.308
+2020-11-21 20:58:35,784 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 73: [9 / 21] loss: 0.321
+2020-11-21 20:58:37,480 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 73: [12 / 21] loss: 0.317
+2020-11-21 20:58:38,849 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 73: [15 / 21] loss: 0.283
+2020-11-21 20:58:40,266 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 73: [18 / 21] loss: 0.310
+2020-11-21 20:58:43,766 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:58:43,776 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 74
+2020-11-21 20:58:45,672 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 74: [3 / 21] loss: 0.319
+2020-11-21 20:58:47,400 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 74: [6 / 21] loss: 0.295
+2020-11-21 20:58:48,849 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 74: [9 / 21] loss: 0.310
+2020-11-21 20:58:50,275 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 74: [12 / 21] loss: 0.306
+2020-11-21 20:58:51,777 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 74: [15 / 21] loss: 0.306
+2020-11-21 20:58:53,431 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 74: [18 / 21] loss: 0.326
+2020-11-21 20:58:57,026 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 20:58:57,034 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 74
+2020-11-21 20:58:57,106 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 75
+2020-11-21 20:58:59,248 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 75: [3 / 21] loss: 0.295
+2020-11-21 20:59:00,819 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 75: [6 / 21] loss: 0.300
+2020-11-21 20:59:02,412 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 75: [9 / 21] loss: 0.279
+2020-11-21 20:59:03,805 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 75: [12 / 21] loss: 0.291
+2020-11-21 20:59:05,239 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 75: [15 / 21] loss: 0.299
+2020-11-21 20:59:06,979 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 75: [18 / 21] loss: 0.293
+2020-11-21 20:59:10,668 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 20:59:10,674 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 76
+2020-11-21 20:59:12,620 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 76: [3 / 21] loss: 0.316
+2020-11-21 20:59:14,259 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 76: [6 / 21] loss: 0.312
+2020-11-21 20:59:15,805 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 76: [9 / 21] loss: 0.280
+2020-11-21 20:59:17,317 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 76: [12 / 21] loss: 0.287
+2020-11-21 20:59:18,955 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 76: [15 / 21] loss: 0.300
+2020-11-21 20:59:20,496 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 76: [18 / 21] loss: 0.304
+2020-11-21 20:59:24,138 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 20:59:24,147 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 77
+2020-11-21 20:59:26,274 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 77: [3 / 21] loss: 0.304
+2020-11-21 20:59:27,650 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 77: [6 / 21] loss: 0.289
+2020-11-21 20:59:28,959 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 77: [9 / 21] loss: 0.282
+2020-11-21 20:59:30,545 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 77: [12 / 21] loss: 0.351
+2020-11-21 20:59:32,204 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 77: [15 / 21] loss: 0.293
+2020-11-21 20:59:33,918 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 77: [18 / 21] loss: 0.286
+2020-11-21 20:59:37,328 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 20:59:37,334 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 78
+2020-11-21 20:59:39,469 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 78: [3 / 21] loss: 0.329
+2020-11-21 20:59:41,081 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 78: [6 / 21] loss: 0.323
+2020-11-21 20:59:42,717 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 78: [9 / 21] loss: 0.317
+2020-11-21 20:59:44,218 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 78: [12 / 21] loss: 0.315
+2020-11-21 20:59:45,560 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 78: [15 / 21] loss: 0.289
+2020-11-21 20:59:47,189 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 78: [18 / 21] loss: 0.302
+2020-11-21 20:59:50,912 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 20:59:50,921 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 79
+2020-11-21 20:59:52,793 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 79: [3 / 21] loss: 0.300
+2020-11-21 20:59:54,511 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 79: [6 / 21] loss: 0.311
+2020-11-21 20:59:56,073 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 79: [9 / 21] loss: 0.299
+2020-11-21 20:59:57,769 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 79: [12 / 21] loss: 0.299
+2020-11-21 20:59:59,297 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 79: [15 / 21] loss: 0.303
+2020-11-21 21:00:01,145 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 79: [18 / 21] loss: 0.301
+2020-11-21 21:00:04,964 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 21:00:04,972 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 80
+2020-11-21 21:00:06,912 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 80: [3 / 21] loss: 0.296
+2020-11-21 21:00:08,269 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 80: [6 / 21] loss: 0.304
+2020-11-21 21:00:09,742 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 80: [9 / 21] loss: 0.293
+2020-11-21 21:00:11,426 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 80: [12 / 21] loss: 0.320
+2020-11-21 21:00:12,897 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 80: [15 / 21] loss: 0.296
+2020-11-21 21:00:14,424 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 80: [18 / 21] loss: 0.296
+2020-11-21 21:00:17,876 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 21:00:17,885 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 81
+2020-11-21 21:00:19,768 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 81: [3 / 21] loss: 0.299
+2020-11-21 21:00:21,174 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 81: [6 / 21] loss: 0.296
+2020-11-21 21:00:22,622 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 81: [9 / 21] loss: 0.270
+2020-11-21 21:00:24,161 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 81: [12 / 21] loss: 0.298
+2020-11-21 21:00:25,790 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 81: [15 / 21] loss: 0.359
+2020-11-21 21:00:27,387 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 81: [18 / 21] loss: 0.328
+2020-11-21 21:00:30,940 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 21:00:30,952 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 81
+2020-11-21 21:00:31,043 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 82
+2020-11-21 21:00:33,173 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 82: [3 / 21] loss: 0.326
+2020-11-21 21:00:34,696 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 82: [6 / 21] loss: 0.314
+2020-11-21 21:00:36,202 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 82: [9 / 21] loss: 0.324
+2020-11-21 21:00:37,598 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 82: [12 / 21] loss: 0.315
+2020-11-21 21:00:39,093 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 82: [15 / 21] loss: 0.320
+2020-11-21 21:00:40,596 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 82: [18 / 21] loss: 0.324
+2020-11-21 21:00:44,331 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 21:00:44,338 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 83
+2020-11-21 21:00:46,520 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 83: [3 / 21] loss: 0.313
+2020-11-21 21:00:48,086 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 83: [6 / 21] loss: 0.305
+2020-11-21 21:00:49,815 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 83: [9 / 21] loss: 0.334
+2020-11-21 21:00:51,320 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 83: [12 / 21] loss: 0.323
+2020-11-21 21:00:53,120 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 83: [15 / 21] loss: 0.311
+2020-11-21 21:00:54,746 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 83: [18 / 21] loss: 0.316
+2020-11-21 21:00:58,447 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 21:00:58,454 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 84
+2020-11-21 21:01:00,366 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 84: [3 / 21] loss: 0.296
+2020-11-21 21:01:01,912 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 84: [6 / 21] loss: 0.340
+2020-11-21 21:01:03,539 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 84: [9 / 21] loss: 0.320
+2020-11-21 21:01:04,968 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 84: [12 / 21] loss: 0.305
+2020-11-21 21:01:06,334 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 84: [15 / 21] loss: 0.290
+2020-11-21 21:01:07,999 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 84: [18 / 21] loss: 0.300
+2020-11-21 21:01:11,460 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 21:01:11,469 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 85
+2020-11-21 21:01:13,664 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 85: [3 / 21] loss: 0.297
+2020-11-21 21:01:15,195 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 85: [6 / 21] loss: 0.304
+2020-11-21 21:01:16,873 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 85: [9 / 21] loss: 0.287
+2020-11-21 21:01:18,387 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 85: [12 / 21] loss: 0.294
+2020-11-21 21:01:19,834 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 85: [15 / 21] loss: 0.301
+2020-11-21 21:01:21,412 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 85: [18 / 21] loss: 0.313
+2020-11-21 21:01:24,972 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 21:01:24,981 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 86
+2020-11-21 21:01:26,946 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 86: [3 / 21] loss: 0.330
+2020-11-21 21:01:28,621 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 86: [6 / 21] loss: 0.287
+2020-11-21 21:01:30,051 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 86: [9 / 21] loss: 0.294
+2020-11-21 21:01:31,725 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 86: [12 / 21] loss: 0.299
+2020-11-21 21:01:33,233 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 86: [15 / 21] loss: 0.304
+2020-11-21 21:01:34,748 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 86: [18 / 21] loss: 0.286
+2020-11-21 21:01:38,172 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 21:01:38,181 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 87
+2020-11-21 21:01:40,209 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 87: [3 / 21] loss: 0.292
+2020-11-21 21:01:41,765 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 87: [6 / 21] loss: 0.303
+2020-11-21 21:01:43,387 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 87: [9 / 21] loss: 0.282
+2020-11-21 21:01:45,099 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 87: [12 / 21] loss: 0.280
+2020-11-21 21:01:46,571 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 87: [15 / 21] loss: 0.303
+2020-11-21 21:01:47,984 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 87: [18 / 21] loss: 0.290
+2020-11-21 21:01:51,356 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 21:01:51,363 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 88
+2020-11-21 21:01:53,560 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 88: [3 / 21] loss: 0.289
+2020-11-21 21:01:55,240 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 88: [6 / 21] loss: 0.294
+2020-11-21 21:01:56,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 88: [9 / 21] loss: 0.278
+2020-11-21 21:01:58,366 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 88: [12 / 21] loss: 0.298
+2020-11-21 21:01:59,857 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 88: [15 / 21] loss: 0.316
+2020-11-21 21:02:01,455 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 88: [18 / 21] loss: 0.293
+2020-11-21 21:02:04,855 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 21:02:04,864 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 88
+2020-11-21 21:02:04,934 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 89
+2020-11-21 21:02:07,044 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 89: [3 / 21] loss: 0.281
+2020-11-21 21:02:08,596 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 89: [6 / 21] loss: 0.288
+2020-11-21 21:02:09,937 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 89: [9 / 21] loss: 0.288
+2020-11-21 21:02:11,797 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 89: [12 / 21] loss: 0.323
+2020-11-21 21:02:13,211 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 89: [15 / 21] loss: 0.296
+2020-11-21 21:02:14,870 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 89: [18 / 21] loss: 0.310
+2020-11-21 21:02:18,387 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 21:02:18,397 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 90
+2020-11-21 21:02:20,527 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 90: [3 / 21] loss: 0.280
+2020-11-21 21:02:22,131 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 90: [6 / 21] loss: 0.316
+2020-11-21 21:02:23,747 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 90: [9 / 21] loss: 0.314
+2020-11-21 21:02:25,255 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 90: [12 / 21] loss: 0.327
+2020-11-21 21:02:26,878 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 90: [15 / 21] loss: 0.276
+2020-11-21 21:02:28,343 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 90: [18 / 21] loss: 0.298
+2020-11-21 21:02:31,798 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 21:02:31,807 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 91
+2020-11-21 21:02:33,646 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 91: [3 / 21] loss: 0.286
+2020-11-21 21:02:35,176 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 91: [6 / 21] loss: 0.300
+2020-11-21 21:02:36,777 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 91: [9 / 21] loss: 0.290
+2020-11-21 21:02:38,193 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 91: [12 / 21] loss: 0.316
+2020-11-21 21:02:39,671 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 91: [15 / 21] loss: 0.298
+2020-11-21 21:02:41,337 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 91: [18 / 21] loss: 0.292
+2020-11-21 21:02:44,990 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 21:02:44,996 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 92
+2020-11-21 21:02:47,024 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 92: [3 / 21] loss: 0.302
+2020-11-21 21:02:48,547 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 92: [6 / 21] loss: 0.329
+2020-11-21 21:02:50,197 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 92: [9 / 21] loss: 0.278
+2020-11-21 21:02:51,658 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 92: [12 / 21] loss: 0.322
+2020-11-21 21:02:53,063 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 92: [15 / 21] loss: 0.316
+2020-11-21 21:02:54,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 92: [18 / 21] loss: 0.295
+2020-11-21 21:02:58,073 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 21:02:58,082 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 93
+2020-11-21 21:03:00,222 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 93: [3 / 21] loss: 0.299
+2020-11-21 21:03:01,766 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 93: [6 / 21] loss: 0.297
+2020-11-21 21:03:03,467 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 93: [9 / 21] loss: 0.316
+2020-11-21 21:03:04,863 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 93: [12 / 21] loss: 0.279
+2020-11-21 21:03:06,164 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 93: [15 / 21] loss: 0.311
+2020-11-21 21:03:07,557 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 93: [18 / 21] loss: 0.271
+2020-11-21 21:03:11,045 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 21:03:11,052 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 94
+2020-11-21 21:03:13,064 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 94: [3 / 21] loss: 0.301
+2020-11-21 21:03:14,522 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 94: [6 / 21] loss: 0.292
+2020-11-21 21:03:15,844 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 94: [9 / 21] loss: 0.295
+2020-11-21 21:03:17,281 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 94: [12 / 21] loss: 0.310
+2020-11-21 21:03:18,888 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 94: [15 / 21] loss: 0.303
+2020-11-21 21:03:20,478 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 94: [18 / 21] loss: 0.301
+2020-11-21 21:03:24,027 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.929
+2020-11-21 21:03:24,033 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 94
+2020-11-21 21:03:24,107 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 95
+2020-11-21 21:03:26,099 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 95: [3 / 21] loss: 0.305
+2020-11-21 21:03:27,809 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 95: [6 / 21] loss: 0.294
+2020-11-21 21:03:29,368 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 95: [9 / 21] loss: 0.276
+2020-11-21 21:03:30,815 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 95: [12 / 21] loss: 0.280
+2020-11-21 21:03:32,473 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 95: [15 / 21] loss: 0.296
+2020-11-21 21:03:33,785 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 95: [18 / 21] loss: 0.282
+2020-11-21 21:03:37,359 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-21 21:03:37,368 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 96
+2020-11-21 21:03:39,434 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 96: [3 / 21] loss: 0.289
+2020-11-21 21:03:40,933 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 96: [6 / 21] loss: 0.281
+2020-11-21 21:03:42,715 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 96: [9 / 21] loss: 0.284
+2020-11-21 21:03:44,258 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 96: [12 / 21] loss: 0.300
+2020-11-21 21:03:45,919 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 96: [15 / 21] loss: 0.296
+2020-11-21 21:03:47,411 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 96: [18 / 21] loss: 0.321
+2020-11-21 21:03:50,676 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 21:03:50,684 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 97
+2020-11-21 21:03:52,807 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 97: [3 / 21] loss: 0.293
+2020-11-21 21:03:54,313 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 97: [6 / 21] loss: 0.291
+2020-11-21 21:03:55,856 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 97: [9 / 21] loss: 0.279
+2020-11-21 21:03:57,369 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 97: [12 / 21] loss: 0.291
+2020-11-21 21:03:58,790 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 97: [15 / 21] loss: 0.300
+2020-11-21 21:04:00,328 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 97: [18 / 21] loss: 0.292
+2020-11-21 21:04:03,931 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.929
+2020-11-21 21:04:03,940 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 97
+2020-11-21 21:04:04,034 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 98
+2020-11-21 21:04:06,079 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 98: [3 / 21] loss: 0.283
+2020-11-21 21:04:07,713 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 98: [6 / 21] loss: 0.287
+2020-11-21 21:04:09,052 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 98: [9 / 21] loss: 0.279
+2020-11-21 21:04:10,457 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 98: [12 / 21] loss: 0.286
+2020-11-21 21:04:11,831 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 98: [15 / 21] loss: 0.281
+2020-11-21 21:04:13,405 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 98: [18 / 21] loss: 0.297
+2020-11-21 21:04:16,789 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 21:04:16,798 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 99
+2020-11-21 21:04:19,080 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 99: [3 / 21] loss: 0.309
+2020-11-21 21:04:20,564 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 99: [6 / 21] loss: 0.292
+2020-11-21 21:04:22,282 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 99: [9 / 21] loss: 0.287
+2020-11-21 21:04:24,048 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 99: [12 / 21] loss: 0.295
+2020-11-21 21:04:25,560 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 99: [15 / 21] loss: 0.280
+2020-11-21 21:04:26,945 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 99: [18 / 21] loss: 0.271
+2020-11-21 21:04:30,568 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 21:04:30,576 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 100
+2020-11-21 21:04:32,471 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 100: [3 / 21] loss: 0.292
+2020-11-21 21:04:34,144 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 100: [6 / 21] loss: 0.287
+2020-11-21 21:04:35,644 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 100: [9 / 21] loss: 0.290
+2020-11-21 21:04:37,255 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 100: [12 / 21] loss: 0.292
+2020-11-21 21:04:38,639 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 100: [15 / 21] loss: 0.268
+2020-11-21 21:04:40,055 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 100: [18 / 21] loss: 0.287
+2020-11-21 21:04:43,568 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 21:04:43,575 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 101
+2020-11-21 21:04:45,757 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 101: [3 / 21] loss: 0.309
+2020-11-21 21:04:47,261 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 101: [6 / 21] loss: 0.293
+2020-11-21 21:04:49,000 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 101: [9 / 21] loss: 0.292
+2020-11-21 21:04:50,472 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 101: [12 / 21] loss: 0.290
+2020-11-21 21:04:51,982 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 101: [15 / 21] loss: 0.273
+2020-11-21 21:04:53,676 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 101: [18 / 21] loss: 0.279
+2020-11-21 21:04:57,103 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 21:04:57,109 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 102
+2020-11-21 21:04:59,378 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 102: [3 / 21] loss: 0.282
+2020-11-21 21:05:00,931 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 102: [6 / 21] loss: 0.288
+2020-11-21 21:05:02,399 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 102: [9 / 21] loss: 0.286
+2020-11-21 21:05:04,147 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 102: [12 / 21] loss: 0.306
+2020-11-21 21:05:05,795 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 102: [15 / 21] loss: 0.290
+2020-11-21 21:05:07,330 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 102: [18 / 21] loss: 0.304
+2020-11-21 21:05:10,932 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-21 21:05:10,941 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 103
+2020-11-21 21:05:13,182 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 103: [3 / 21] loss: 0.308
+2020-11-21 21:05:14,641 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 103: [6 / 21] loss: 0.297
+2020-11-21 21:05:16,196 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 103: [9 / 21] loss: 0.323
+2020-11-21 21:05:17,657 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 103: [12 / 21] loss: 0.345
+2020-11-21 21:05:19,173 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 103: [15 / 21] loss: 0.310
+2020-11-21 21:05:20,607 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 103: [18 / 21] loss: 0.345
+2020-11-21 21:05:24,433 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-21 21:05:24,442 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 104
+2020-11-21 21:05:26,535 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 104: [3 / 21] loss: 0.354
+2020-11-21 21:05:28,009 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 104: [6 / 21] loss: 0.318
+2020-11-21 21:05:29,522 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 104: [9 / 21] loss: 0.346
+2020-11-21 21:05:30,972 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 104: [12 / 21] loss: 0.321
+2020-11-21 21:05:32,415 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 104: [15 / 21] loss: 0.289
+2020-11-21 21:05:33,831 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 104: [18 / 21] loss: 0.326
+2020-11-21 21:05:37,374 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-21 21:05:37,383 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 105
+2020-11-21 21:05:39,431 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 105: [3 / 21] loss: 0.311
+2020-11-21 21:05:41,034 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 105: [6 / 21] loss: 0.349
+2020-11-21 21:05:42,504 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 105: [9 / 21] loss: 0.345
+2020-11-21 21:05:44,275 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 105: [12 / 21] loss: 0.341
+2020-11-21 21:05:45,878 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 105: [15 / 21] loss: 0.358
+2020-11-21 21:05:47,356 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 105: [18 / 21] loss: 0.317
+2020-11-21 21:05:51,195 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 21:05:51,203 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 106
+2020-11-21 21:05:53,349 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 106: [3 / 21] loss: 0.299
+2020-11-21 21:05:55,125 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 106: [6 / 21] loss: 0.330
+2020-11-21 21:05:56,814 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 106: [9 / 21] loss: 0.334
+2020-11-21 21:05:58,363 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 106: [12 / 21] loss: 0.304
+2020-11-21 21:05:59,888 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 106: [15 / 21] loss: 0.301
+2020-11-21 21:06:01,374 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 106: [18 / 21] loss: 0.323
+2020-11-21 21:06:04,980 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 21:06:04,990 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 107
+2020-11-21 21:06:07,186 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 107: [3 / 21] loss: 0.302
+2020-11-21 21:06:08,725 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 107: [6 / 21] loss: 0.294
+2020-11-21 21:06:10,189 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 107: [9 / 21] loss: 0.300
+2020-11-21 21:06:11,649 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 107: [12 / 21] loss: 0.303
+2020-11-21 21:06:13,083 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 107: [15 / 21] loss: 0.318
+2020-11-21 21:06:14,651 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 107: [18 / 21] loss: 0.327
+2020-11-21 21:06:18,314 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 21:06:18,322 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 108
+2020-11-21 21:06:20,577 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 108: [3 / 21] loss: 0.297
+2020-11-21 21:06:22,106 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 108: [6 / 21] loss: 0.297
+2020-11-21 21:06:23,855 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 108: [9 / 21] loss: 0.322
+2020-11-21 21:06:25,344 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 108: [12 / 21] loss: 0.309
+2020-11-21 21:06:27,030 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 108: [15 / 21] loss: 0.303
+2020-11-21 21:06:28,499 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 108: [18 / 21] loss: 0.302
+2020-11-21 21:06:31,830 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 21:06:31,840 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 109
+2020-11-21 21:06:33,837 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 109: [3 / 21] loss: 0.296
+2020-11-21 21:06:35,364 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 109: [6 / 21] loss: 0.293
+2020-11-21 21:06:37,048 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 109: [9 / 21] loss: 0.302
+2020-11-21 21:06:38,454 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 109: [12 / 21] loss: 0.281
+2020-11-21 21:06:40,000 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 109: [15 / 21] loss: 0.312
+2020-11-21 21:06:41,710 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 109: [18 / 21] loss: 0.298
+2020-11-21 21:06:45,386 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 21:06:45,394 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 110
+2020-11-21 21:06:47,177 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 110: [3 / 21] loss: 0.293
+2020-11-21 21:06:48,884 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 110: [6 / 21] loss: 0.321
+2020-11-21 21:06:50,411 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 110: [9 / 21] loss: 0.318
+2020-11-21 21:06:52,081 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 110: [12 / 21] loss: 0.286
+2020-11-21 21:06:53,560 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 110: [15 / 21] loss: 0.319
+2020-11-21 21:06:55,184 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 110: [18 / 21] loss: 0.327
+2020-11-21 21:06:58,670 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 21:06:58,679 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 111
+2020-11-21 21:07:00,849 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 111: [3 / 21] loss: 0.288
+2020-11-21 21:07:02,548 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 111: [6 / 21] loss: 0.295
+2020-11-21 21:07:04,019 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 111: [9 / 21] loss: 0.309
+2020-11-21 21:07:05,400 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 111: [12 / 21] loss: 0.302
+2020-11-21 21:07:07,043 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 111: [15 / 21] loss: 0.299
+2020-11-21 21:07:08,696 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 111: [18 / 21] loss: 0.308
+2020-11-21 21:07:12,394 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.929
+2020-11-21 21:07:12,402 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 111
+2020-11-21 21:07:12,509 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 112
+2020-11-21 21:07:14,536 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 112: [3 / 21] loss: 0.297
+2020-11-21 21:07:16,046 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 112: [6 / 21] loss: 0.315
+2020-11-21 21:07:17,665 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 112: [9 / 21] loss: 0.316
+2020-11-21 21:07:19,215 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 112: [12 / 21] loss: 0.313
+2020-11-21 21:07:20,710 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 112: [15 / 21] loss: 0.294
+2020-11-21 21:07:22,286 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 112: [18 / 21] loss: 0.293
+2020-11-21 21:07:25,725 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 21:07:25,733 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 113
+2020-11-21 21:07:27,786 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 113: [3 / 21] loss: 0.292
+2020-11-21 21:07:29,394 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 113: [6 / 21] loss: 0.318
+2020-11-21 21:07:31,030 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 113: [9 / 21] loss: 0.318
+2020-11-21 21:07:32,418 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 113: [12 / 21] loss: 0.283
+2020-11-21 21:07:33,833 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 113: [15 / 21] loss: 0.286
+2020-11-21 21:07:35,461 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 113: [18 / 21] loss: 0.288
+2020-11-21 21:07:39,085 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-21 21:07:39,094 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 114
+2020-11-21 21:07:41,281 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 114: [3 / 21] loss: 0.282
+2020-11-21 21:07:42,725 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 114: [6 / 21] loss: 0.271
+2020-11-21 21:07:44,365 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 114: [9 / 21] loss: 0.316
+2020-11-21 21:07:46,055 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 114: [12 / 21] loss: 0.313
+2020-11-21 21:07:47,359 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 114: [15 / 21] loss: 0.285
+2020-11-21 21:07:48,918 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 114: [18 / 21] loss: 0.311
+2020-11-21 21:07:52,694 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 21:07:52,703 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 115
+2020-11-21 21:07:54,998 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 115: [3 / 21] loss: 0.340
+2020-11-21 21:07:56,819 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 115: [6 / 21] loss: 0.323
+2020-11-21 21:07:58,420 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 115: [9 / 21] loss: 0.323
+2020-11-21 21:07:59,861 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 115: [12 / 21] loss: 0.272
+2020-11-21 21:08:01,589 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 115: [15 / 21] loss: 0.277
+2020-11-21 21:08:02,995 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 115: [18 / 21] loss: 0.279
+2020-11-21 21:08:06,700 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 21:08:06,709 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 116
+2020-11-21 21:08:08,936 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 116: [3 / 21] loss: 0.306
+2020-11-21 21:08:10,588 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 116: [6 / 21] loss: 0.282
+2020-11-21 21:08:12,145 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 116: [9 / 21] loss: 0.282
+2020-11-21 21:08:13,563 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 116: [12 / 21] loss: 0.281
+2020-11-21 21:08:15,117 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 116: [15 / 21] loss: 0.294
+2020-11-21 21:08:16,714 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 116: [18 / 21] loss: 0.272
+2020-11-21 21:08:20,058 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 21:08:20,066 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 117
+2020-11-21 21:08:22,158 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 117: [3 / 21] loss: 0.292
+2020-11-21 21:08:23,666 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 117: [6 / 21] loss: 0.285
+2020-11-21 21:08:25,149 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 117: [9 / 21] loss: 0.269
+2020-11-21 21:08:26,555 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 117: [12 / 21] loss: 0.280
+2020-11-21 21:08:28,152 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 117: [15 / 21] loss: 0.292
+2020-11-21 21:08:29,717 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 117: [18 / 21] loss: 0.292
+2020-11-21 21:08:33,234 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.936
+2020-11-21 21:08:33,241 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Best model saved, epoch 117
+2020-11-21 21:08:33,317 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 118
+2020-11-21 21:08:35,188 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 118: [3 / 21] loss: 0.299
+2020-11-21 21:08:36,711 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 118: [6 / 21] loss: 0.284
+2020-11-21 21:08:38,331 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 118: [9 / 21] loss: 0.297
+2020-11-21 21:08:39,675 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 118: [12 / 21] loss: 0.280
+2020-11-21 21:08:41,106 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 118: [15 / 21] loss: 0.291
+2020-11-21 21:08:42,510 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 118: [18 / 21] loss: 0.316
+2020-11-21 21:08:45,985 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 21:08:45,994 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 119
+2020-11-21 21:08:47,845 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 119: [3 / 21] loss: 0.255
+2020-11-21 21:08:49,452 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 119: [6 / 21] loss: 0.290
+2020-11-21 21:08:50,848 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 119: [9 / 21] loss: 0.270
+2020-11-21 21:08:52,381 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 119: [12 / 21] loss: 0.294
+2020-11-21 21:08:53,928 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 119: [15 / 21] loss: 0.274
+2020-11-21 21:08:55,510 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 119: [18 / 21] loss: 0.312
+2020-11-21 21:08:58,922 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 21:08:58,930 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 120
+2020-11-21 21:09:00,916 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 120: [3 / 21] loss: 0.283
+2020-11-21 21:09:02,734 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 120: [6 / 21] loss: 0.290
+2020-11-21 21:09:04,264 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 120: [9 / 21] loss: 0.288
+2020-11-21 21:09:05,760 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 120: [12 / 21] loss: 0.292
+2020-11-21 21:09:07,142 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 120: [15 / 21] loss: 0.285
+2020-11-21 21:09:08,572 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 120: [18 / 21] loss: 0.276
+2020-11-21 21:09:12,331 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 21:09:12,339 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 121
+2020-11-21 21:09:14,333 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 121: [3 / 21] loss: 0.280
+2020-11-21 21:09:16,122 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 121: [6 / 21] loss: 0.292
+2020-11-21 21:09:17,549 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 121: [9 / 21] loss: 0.267
+2020-11-21 21:09:19,039 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 121: [12 / 21] loss: 0.282
+2020-11-21 21:09:20,774 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 121: [15 / 21] loss: 0.295
+2020-11-21 21:09:22,522 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 121: [18 / 21] loss: 0.287
+2020-11-21 21:09:25,934 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 21:09:25,943 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 122
+2020-11-21 21:09:28,014 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 122: [3 / 21] loss: 0.276
+2020-11-21 21:09:29,587 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 122: [6 / 21] loss: 0.275
+2020-11-21 21:09:30,984 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 122: [9 / 21] loss: 0.285
+2020-11-21 21:09:32,371 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 122: [12 / 21] loss: 0.266
+2020-11-21 21:09:33,788 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 122: [15 / 21] loss: 0.292
+2020-11-21 21:09:35,293 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 122: [18 / 21] loss: 0.259
+2020-11-21 21:09:38,905 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 21:09:38,914 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 123
+2020-11-21 21:09:40,861 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 123: [3 / 21] loss: 0.264
+2020-11-21 21:09:42,686 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 123: [6 / 21] loss: 0.273
+2020-11-21 21:09:44,180 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 123: [9 / 21] loss: 0.286
+2020-11-21 21:09:45,736 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 123: [12 / 21] loss: 0.258
+2020-11-21 21:09:47,261 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 123: [15 / 21] loss: 0.289
+2020-11-21 21:09:49,113 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 123: [18 / 21] loss: 0.279
+2020-11-21 21:09:52,849 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 21:09:52,858 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 124
+2020-11-21 21:09:55,064 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 124: [3 / 21] loss: 0.277
+2020-11-21 21:09:56,504 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 124: [6 / 21] loss: 0.257
+2020-11-21 21:09:57,950 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 124: [9 / 21] loss: 0.255
+2020-11-21 21:09:59,645 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 124: [12 / 21] loss: 0.275
+2020-11-21 21:10:00,978 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 124: [15 / 21] loss: 0.292
+2020-11-21 21:10:02,646 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 124: [18 / 21] loss: 0.286
+2020-11-21 21:10:06,174 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 21:10:06,183 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 125
+2020-11-21 21:10:08,146 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 125: [3 / 21] loss: 0.297
+2020-11-21 21:10:09,684 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 125: [6 / 21] loss: 0.295
+2020-11-21 21:10:11,203 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 125: [9 / 21] loss: 0.304
+2020-11-21 21:10:12,606 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 125: [12 / 21] loss: 0.259
+2020-11-21 21:10:14,170 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 125: [15 / 21] loss: 0.267
+2020-11-21 21:10:15,744 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 125: [18 / 21] loss: 0.280
+2020-11-21 21:10:19,380 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 21:10:19,388 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 126
+2020-11-21 21:10:21,475 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 126: [3 / 21] loss: 0.310
+2020-11-21 21:10:23,045 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 126: [6 / 21] loss: 0.284
+2020-11-21 21:10:24,453 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 126: [9 / 21] loss: 0.269
+2020-11-21 21:10:25,991 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 126: [12 / 21] loss: 0.268
+2020-11-21 21:10:27,458 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 126: [15 / 21] loss: 0.269
+2020-11-21 21:10:29,198 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 126: [18 / 21] loss: 0.289
+2020-11-21 21:10:32,878 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.929
+2020-11-21 21:10:32,890 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 127
+2020-11-21 21:10:35,022 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 127: [3 / 21] loss: 0.258
+2020-11-21 21:10:36,668 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 127: [6 / 21] loss: 0.285
+2020-11-21 21:10:38,257 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 127: [9 / 21] loss: 0.257
+2020-11-21 21:10:39,969 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 127: [12 / 21] loss: 0.281
+2020-11-21 21:10:41,588 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 127: [15 / 21] loss: 0.266
+2020-11-21 21:10:43,073 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 127: [18 / 21] loss: 0.277
+2020-11-21 21:10:46,581 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 21:10:46,590 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 128
+2020-11-21 21:10:48,802 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 128: [3 / 21] loss: 0.275
+2020-11-21 21:10:50,198 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 128: [6 / 21] loss: 0.257
+2020-11-21 21:10:51,680 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 128: [9 / 21] loss: 0.270
+2020-11-21 21:10:52,996 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 128: [12 / 21] loss: 0.265
+2020-11-21 21:10:54,674 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 128: [15 / 21] loss: 0.262
+2020-11-21 21:10:56,268 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 128: [18 / 21] loss: 0.279
+2020-11-21 21:10:59,512 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.921
+2020-11-21 21:10:59,520 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 129
+2020-11-21 21:11:01,279 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 129: [3 / 21] loss: 0.264
+2020-11-21 21:11:02,843 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 129: [6 / 21] loss: 0.278
+2020-11-21 21:11:04,312 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 129: [9 / 21] loss: 0.266
+2020-11-21 21:11:05,831 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 129: [12 / 21] loss: 0.286
+2020-11-21 21:11:07,282 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 129: [15 / 21] loss: 0.272
+2020-11-21 21:11:08,521 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 129: [18 / 21] loss: 0.272
+2020-11-21 21:11:11,963 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-21 21:11:11,970 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 130
+2020-11-21 21:11:14,159 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 130: [3 / 21] loss: 0.279
+2020-11-21 21:11:15,577 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 130: [6 / 21] loss: 0.266
+2020-11-21 21:11:17,147 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 130: [9 / 21] loss: 0.269
+2020-11-21 21:11:18,577 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 130: [12 / 21] loss: 0.275
+2020-11-21 21:11:19,980 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 130: [15 / 21] loss: 0.275
+2020-11-21 21:11:21,464 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 130: [18 / 21] loss: 0.286
+2020-11-21 21:11:24,741 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 21:11:24,747 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 131
+2020-11-21 21:11:26,907 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 131: [3 / 21] loss: 0.277
+2020-11-21 21:11:28,507 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 131: [6 / 21] loss: 0.283
+2020-11-21 21:11:29,817 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 131: [9 / 21] loss: 0.271
+2020-11-21 21:11:31,338 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 131: [12 / 21] loss: 0.263
+2020-11-21 21:11:33,079 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 131: [15 / 21] loss: 0.270
+2020-11-21 21:11:34,846 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 131: [18 / 21] loss: 0.283
+2020-11-21 21:11:38,061 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 21:11:38,070 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 132
+2020-11-21 21:11:40,390 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 132: [3 / 21] loss: 0.260
+2020-11-21 21:11:41,823 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 132: [6 / 21] loss: 0.289
+2020-11-21 21:11:43,251 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 132: [9 / 21] loss: 0.269
+2020-11-21 21:11:44,617 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 132: [12 / 21] loss: 0.268
+2020-11-21 21:11:45,974 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 132: [15 / 21] loss: 0.267
+2020-11-21 21:11:47,380 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 132: [18 / 21] loss: 0.263
+2020-11-21 21:11:50,651 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.893
+2020-11-21 21:11:50,658 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 133
+2020-11-21 21:11:52,996 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 133: [3 / 21] loss: 0.263
+2020-11-21 21:11:54,319 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 133: [6 / 21] loss: 0.261
+2020-11-21 21:11:55,721 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 133: [9 / 21] loss: 0.256
+2020-11-21 21:11:57,184 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 133: [12 / 21] loss: 0.275
+2020-11-21 21:11:58,722 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 133: [15 / 21] loss: 0.283
+2020-11-21 21:12:00,143 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 133: [18 / 21] loss: 0.282
+2020-11-21 21:12:03,696 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 21:12:03,705 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 134
+2020-11-21 21:12:05,776 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 134: [3 / 21] loss: 0.286
+2020-11-21 21:12:07,121 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 134: [6 / 21] loss: 0.256
+2020-11-21 21:12:08,470 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 134: [9 / 21] loss: 0.266
+2020-11-21 21:12:09,835 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 134: [12 / 21] loss: 0.285
+2020-11-21 21:12:11,115 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 134: [15 / 21] loss: 0.258
+2020-11-21 21:12:12,503 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 134: [18 / 21] loss: 0.297
+2020-11-21 21:12:16,099 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 21:12:16,108 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 135
+2020-11-21 21:12:18,128 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 135: [3 / 21] loss: 0.270
+2020-11-21 21:12:19,694 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 135: [6 / 21] loss: 0.259
+2020-11-21 21:12:21,009 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 135: [9 / 21] loss: 0.273
+2020-11-21 21:12:22,264 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 135: [12 / 21] loss: 0.262
+2020-11-21 21:12:23,735 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 135: [15 / 21] loss: 0.275
+2020-11-21 21:12:25,148 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 135: [18 / 21] loss: 0.290
+2020-11-21 21:12:28,749 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.900
+2020-11-21 21:12:28,757 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 136
+2020-11-21 21:12:30,778 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 136: [3 / 21] loss: 0.271
+2020-11-21 21:12:32,267 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 136: [6 / 21] loss: 0.268
+2020-11-21 21:12:33,636 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 136: [9 / 21] loss: 0.285
+2020-11-21 21:12:35,053 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 136: [12 / 21] loss: 0.270
+2020-11-21 21:12:36,441 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 136: [15 / 21] loss: 0.268
+2020-11-21 21:12:37,598 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 136: [18 / 21] loss: 0.269
+2020-11-21 21:12:40,989 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-21 21:12:40,999 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 137
+2020-11-21 21:12:43,462 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 137: [3 / 21] loss: 0.273
+2020-11-21 21:12:44,934 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 137: [6 / 21] loss: 0.266
+2020-11-21 21:12:46,228 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 137: [9 / 21] loss: 0.296
+2020-11-21 21:12:47,558 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 137: [12 / 21] loss: 0.280
+2020-11-21 21:12:48,867 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 137: [15 / 21] loss: 0.257
+2020-11-21 21:12:50,385 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 137: [18 / 21] loss: 0.264
+2020-11-21 21:12:53,778 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.914
+2020-11-21 21:12:53,787 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Start training in split train, Epoch: 138
+2020-11-21 21:12:56,068 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 138: [3 / 21] loss: 0.254
+2020-11-21 21:12:57,552 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 138: [6 / 21] loss: 0.290
+2020-11-21 21:12:58,809 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 138: [9 / 21] loss: 0.276
+2020-11-21 21:13:00,440 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 138: [12 / 21] loss: 0.268
+2020-11-21 21:13:01,787 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 138: [15 / 21] loss: 0.272
+2020-11-21 21:13:03,061 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Epoch 138: [18 / 21] loss: 0.268
+2020-11-21 21:13:06,821 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.907
+2020-11-21 21:13:06,829 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Train finish, best val score: 0.936
+2020-11-21 21:13:38,099 - examples/pytorch/semantic_parsing/graph2seq/log/new_dynamic_gat_bi_sep.txt - INFO - Evaluation accuracy in `test` split: 0.936

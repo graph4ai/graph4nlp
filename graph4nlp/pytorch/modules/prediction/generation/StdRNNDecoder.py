@@ -261,7 +261,7 @@ class StdRNNDecoder(RNNDecoderBase):
         """
         target_len = self.max_decoder_step
         if tgt_seq is not None:
-            target_len = min(tgt_seq.shape[1], target_len)
+            target_len = tgt_seq.shape[1]
 
         batch_size = graph_node_embedding.shape[0]
         decoder_input = torch.tensor([self.vocab.SOS] * batch_size).to(graph_node_embedding.device)
@@ -273,11 +273,6 @@ class StdRNNDecoder(RNNDecoderBase):
         coverage_vectors = []
 
         for i in range(target_len):
-            # if i == 4:
-            #     print(len(enc_attn_weights_average))
-            #     print(enc_attn_weights_average[0].shape)
-            #     exit(0)
-
             decoder_output, decoder_state, dec_attn_scores, coverage_vec = \
                 self.decode_step(decoder_input=decoder_input, rnn_state=decoder_state, dec_input_mask=graph_node_mask,
                                  encoder_out=graph_node_embedding, rnn_emb=rnn_node_embedding,
@@ -333,14 +328,16 @@ class StdRNNDecoder(RNNDecoderBase):
             if coverage_repr is not None:
                 coverage_repr = coverage_repr.unsqueeze(-1) * self.coverage_weight
             if self.attention_type == "uniform" or self.attention_type == "sep_diff_encoder_type":
-                # enc_mask = self.extract_mask(dec_input_mask, token=0)
+                # enc_mask = extract_mask(dec_input_mask, token=-1)
+                # enc_mask = 1 - enc_mask
                 enc_mask = None
+                
                 attn_res, scores = self.enc_attention(query=hidden, memory=encoder_out, memory_mask=enc_mask,
                                                       coverage=coverage_repr)
                 attn_collect.append(attn_res)
                 score_collect.append(scores)
                 if self.attention_type == "sep_diff_encoder_type":
-                    rnn_attn_res, rnn_scores = self.rnn_attention(query=hidden, memory=rnn_emb, coverage=coverage_repr)
+                    rnn_attn_res, rnn_scores = self.rnn_attention(query=hidden, memory=rnn_emb, memory_mask=enc_mask, coverage=coverage_repr)
                     score_collect.append(rnn_scores)
                     attn_collect.append(rnn_attn_res)
             elif self.attention_type == "sep_diff_node_type":

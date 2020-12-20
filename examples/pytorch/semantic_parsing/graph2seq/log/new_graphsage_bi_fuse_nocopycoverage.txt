@@ -1,0 +1,813 @@
+2020-11-22 00:22:53,272 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 0
+2020-11-22 00:22:54,451 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 0: [3 / 21] loss: 3.962
+2020-11-22 00:22:55,336 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 0: [6 / 21] loss: 2.767
+2020-11-22 00:22:56,182 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 0: [9 / 21] loss: 2.278
+2020-11-22 00:22:59,234 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 0: [12 / 21] loss: 1.974
+2020-11-22 00:23:00,006 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 0: [15 / 21] loss: 1.747
+2020-11-22 00:23:00,835 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 0: [18 / 21] loss: 1.490
+2020-11-22 00:23:02,733 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.000
+2020-11-22 00:23:02,740 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 0
+2020-11-22 00:23:02,816 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 1
+2020-11-22 00:23:03,799 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 1: [3 / 21] loss: 1.359
+2020-11-22 00:23:04,610 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 1: [6 / 21] loss: 1.186
+2020-11-22 00:23:05,356 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 1: [9 / 21] loss: 1.134
+2020-11-22 00:23:06,129 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 1: [12 / 21] loss: 1.190
+2020-11-22 00:23:06,952 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 1: [15 / 21] loss: 0.989
+2020-11-22 00:23:07,729 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 1: [18 / 21] loss: 1.103
+2020-11-22 00:23:09,665 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.000
+2020-11-22 00:23:09,671 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 1
+2020-11-22 00:23:09,759 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 2
+2020-11-22 00:23:10,720 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 2: [3 / 21] loss: 0.913
+2020-11-22 00:23:11,428 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 2: [6 / 21] loss: 1.018
+2020-11-22 00:23:12,119 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 2: [9 / 21] loss: 0.842
+2020-11-22 00:23:12,833 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 2: [12 / 21] loss: 0.856
+2020-11-22 00:23:13,535 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 2: [15 / 21] loss: 0.775
+2020-11-22 00:23:14,257 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 2: [18 / 21] loss: 0.742
+2020-11-22 00:23:16,635 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.000
+2020-11-22 00:23:16,640 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 2
+2020-11-22 00:23:16,727 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 3
+2020-11-22 00:23:18,169 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 3: [3 / 21] loss: 0.829
+2020-11-22 00:23:18,933 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 3: [6 / 21] loss: 0.778
+2020-11-22 00:23:19,691 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 3: [9 / 21] loss: 0.804
+2020-11-22 00:23:20,382 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 3: [12 / 21] loss: 0.705
+2020-11-22 00:23:21,075 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 3: [15 / 21] loss: 0.717
+2020-11-22 00:23:21,760 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 3: [18 / 21] loss: 0.630
+2020-11-22 00:23:23,533 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.000
+2020-11-22 00:23:23,540 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 3
+2020-11-22 00:23:23,628 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 4
+2020-11-22 00:23:25,247 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 4: [3 / 21] loss: 0.704
+2020-11-22 00:23:26,153 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 4: [6 / 21] loss: 0.686
+2020-11-22 00:23:26,913 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 4: [9 / 21] loss: 0.702
+2020-11-22 00:23:27,666 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 4: [12 / 21] loss: 0.750
+2020-11-22 00:23:28,404 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 4: [15 / 21] loss: 0.648
+2020-11-22 00:23:29,156 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 4: [18 / 21] loss: 0.642
+2020-11-22 00:23:30,870 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.121
+2020-11-22 00:23:30,874 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 4
+2020-11-22 00:23:30,960 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 5
+2020-11-22 00:23:32,099 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 5: [3 / 21] loss: 0.603
+2020-11-22 00:23:32,793 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 5: [6 / 21] loss: 0.581
+2020-11-22 00:23:33,473 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 5: [9 / 21] loss: 0.629
+2020-11-22 00:23:34,230 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 5: [12 / 21] loss: 0.611
+2020-11-22 00:23:34,973 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 5: [15 / 21] loss: 0.622
+2020-11-22 00:23:35,748 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 5: [18 / 21] loss: 0.624
+2020-11-22 00:23:37,689 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.079
+2020-11-22 00:23:37,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 6
+2020-11-22 00:23:38,991 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 6: [3 / 21] loss: 0.580
+2020-11-22 00:23:39,696 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 6: [6 / 21] loss: 0.553
+2020-11-22 00:23:40,451 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 6: [9 / 21] loss: 0.563
+2020-11-22 00:23:41,164 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 6: [12 / 21] loss: 0.571
+2020-11-22 00:23:41,791 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 6: [15 / 21] loss: 0.496
+2020-11-22 00:23:42,461 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 6: [18 / 21] loss: 0.445
+2020-11-22 00:23:44,675 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.314
+2020-11-22 00:23:44,681 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 6
+2020-11-22 00:23:44,766 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 7
+2020-11-22 00:23:46,257 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 7: [3 / 21] loss: 0.442
+2020-11-22 00:23:47,008 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 7: [6 / 21] loss: 0.474
+2020-11-22 00:23:47,785 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 7: [9 / 21] loss: 0.440
+2020-11-22 00:23:48,540 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 7: [12 / 21] loss: 0.453
+2020-11-22 00:23:49,321 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 7: [15 / 21] loss: 0.424
+2020-11-22 00:23:50,064 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 7: [18 / 21] loss: 0.410
+2020-11-22 00:23:51,832 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.464
+2020-11-22 00:23:51,837 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 7
+2020-11-22 00:23:51,923 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 8
+2020-11-22 00:23:52,971 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 8: [3 / 21] loss: 0.398
+2020-11-22 00:23:53,701 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 8: [6 / 21] loss: 0.392
+2020-11-22 00:23:54,454 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 8: [9 / 21] loss: 0.350
+2020-11-22 00:23:55,207 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 8: [12 / 21] loss: 0.391
+2020-11-22 00:23:55,989 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 8: [15 / 21] loss: 0.428
+2020-11-22 00:23:56,775 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 8: [18 / 21] loss: 0.370
+2020-11-22 00:23:58,497 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.479
+2020-11-22 00:23:58,502 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 8
+2020-11-22 00:23:58,588 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 9
+2020-11-22 00:23:59,613 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 9: [3 / 21] loss: 0.379
+2020-11-22 00:24:00,353 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 9: [6 / 21] loss: 0.366
+2020-11-22 00:24:01,093 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 9: [9 / 21] loss: 0.324
+2020-11-22 00:24:01,778 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 9: [12 / 21] loss: 0.312
+2020-11-22 00:24:02,470 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 9: [15 / 21] loss: 0.324
+2020-11-22 00:24:03,321 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 9: [18 / 21] loss: 0.330
+2020-11-22 00:24:05,479 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.593
+2020-11-22 00:24:05,484 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 9
+2020-11-22 00:24:05,571 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 10
+2020-11-22 00:24:07,091 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 10: [3 / 21] loss: 0.301
+2020-11-22 00:24:07,831 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 10: [6 / 21] loss: 0.302
+2020-11-22 00:24:08,547 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 10: [9 / 21] loss: 0.270
+2020-11-22 00:24:09,226 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 10: [12 / 21] loss: 0.298
+2020-11-22 00:24:09,950 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 10: [15 / 21] loss: 0.308
+2020-11-22 00:24:10,684 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 10: [18 / 21] loss: 0.310
+2020-11-22 00:24:12,429 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.543
+2020-11-22 00:24:12,435 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 11
+2020-11-22 00:24:13,547 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 11: [3 / 21] loss: 0.295
+2020-11-22 00:24:14,247 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 11: [6 / 21] loss: 0.270
+2020-11-22 00:24:14,979 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 11: [9 / 21] loss: 0.267
+2020-11-22 00:24:15,674 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 11: [12 / 21] loss: 0.282
+2020-11-22 00:24:16,376 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 11: [15 / 21] loss: 0.292
+2020-11-22 00:24:17,090 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 11: [18 / 21] loss: 0.263
+2020-11-22 00:24:18,784 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.600
+2020-11-22 00:24:18,789 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 11
+2020-11-22 00:24:18,876 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 12
+2020-11-22 00:24:19,849 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 12: [3 / 21] loss: 0.256
+2020-11-22 00:24:20,594 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 12: [6 / 21] loss: 0.221
+2020-11-22 00:24:21,315 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 12: [9 / 21] loss: 0.273
+2020-11-22 00:24:22,060 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 12: [12 / 21] loss: 0.236
+2020-11-22 00:24:22,848 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 12: [15 / 21] loss: 0.224
+2020-11-22 00:24:23,555 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 12: [18 / 21] loss: 0.209
+2020-11-22 00:24:25,481 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.621
+2020-11-22 00:24:25,488 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 12
+2020-11-22 00:24:25,574 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 13
+2020-11-22 00:24:26,602 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 13: [3 / 21] loss: 0.217
+2020-11-22 00:24:27,323 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 13: [6 / 21] loss: 0.192
+2020-11-22 00:24:28,003 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 13: [9 / 21] loss: 0.200
+2020-11-22 00:24:28,754 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 13: [12 / 21] loss: 0.226
+2020-11-22 00:24:29,519 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 13: [15 / 21] loss: 0.228
+2020-11-22 00:24:30,221 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 13: [18 / 21] loss: 0.226
+2020-11-22 00:24:32,567 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.614
+2020-11-22 00:24:32,573 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 14
+2020-11-22 00:24:34,044 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 14: [3 / 21] loss: 0.181
+2020-11-22 00:24:34,905 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 14: [6 / 21] loss: 0.167
+2020-11-22 00:24:35,720 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 14: [9 / 21] loss: 0.179
+2020-11-22 00:24:36,473 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 14: [12 / 21] loss: 0.184
+2020-11-22 00:24:37,229 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 14: [15 / 21] loss: 0.190
+2020-11-22 00:24:37,977 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 14: [18 / 21] loss: 0.218
+2020-11-22 00:24:39,733 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.679
+2020-11-22 00:24:39,738 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 14
+2020-11-22 00:24:39,824 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 15
+2020-11-22 00:24:40,874 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 15: [3 / 21] loss: 0.188
+2020-11-22 00:24:41,641 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 15: [6 / 21] loss: 0.178
+2020-11-22 00:24:42,407 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 15: [9 / 21] loss: 0.169
+2020-11-22 00:24:43,140 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 15: [12 / 21] loss: 0.152
+2020-11-22 00:24:43,888 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 15: [15 / 21] loss: 0.147
+2020-11-22 00:24:44,673 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 15: [18 / 21] loss: 0.141
+2020-11-22 00:24:46,422 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.729
+2020-11-22 00:24:46,427 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 15
+2020-11-22 00:24:46,519 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 16
+2020-11-22 00:24:47,521 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 16: [3 / 21] loss: 0.166
+2020-11-22 00:24:48,271 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 16: [6 / 21] loss: 0.135
+2020-11-22 00:24:49,027 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 16: [9 / 21] loss: 0.196
+2020-11-22 00:24:49,734 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 16: [12 / 21] loss: 0.148
+2020-11-22 00:24:50,435 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 16: [15 / 21] loss: 0.148
+2020-11-22 00:24:51,166 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 16: [18 / 21] loss: 0.161
+2020-11-22 00:24:53,552 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.729
+2020-11-22 00:24:53,558 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 16
+2020-11-22 00:24:53,668 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 17
+2020-11-22 00:24:55,155 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 17: [3 / 21] loss: 0.118
+2020-11-22 00:24:55,924 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 17: [6 / 21] loss: 0.189
+2020-11-22 00:24:56,643 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 17: [9 / 21] loss: 0.162
+2020-11-22 00:24:57,330 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 17: [12 / 21] loss: 0.159
+2020-11-22 00:24:58,024 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 17: [15 / 21] loss: 0.122
+2020-11-22 00:24:58,784 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 17: [18 / 21] loss: 0.141
+2020-11-22 00:25:00,545 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.736
+2020-11-22 00:25:00,551 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 17
+2020-11-22 00:25:00,639 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 18
+2020-11-22 00:25:01,666 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 18: [3 / 21] loss: 0.133
+2020-11-22 00:25:02,404 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 18: [6 / 21] loss: 0.103
+2020-11-22 00:25:03,143 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 18: [9 / 21] loss: 0.119
+2020-11-22 00:25:03,878 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 18: [12 / 21] loss: 0.128
+2020-11-22 00:25:04,643 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 18: [15 / 21] loss: 0.134
+2020-11-22 00:25:05,347 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 18: [18 / 21] loss: 0.142
+2020-11-22 00:25:07,079 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.736
+2020-11-22 00:25:07,083 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 18
+2020-11-22 00:25:07,168 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 19
+2020-11-22 00:25:08,243 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 19: [3 / 21] loss: 0.121
+2020-11-22 00:25:08,987 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 19: [6 / 21] loss: 0.102
+2020-11-22 00:25:09,710 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 19: [9 / 21] loss: 0.133
+2020-11-22 00:25:10,468 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 19: [12 / 21] loss: 0.136
+2020-11-22 00:25:11,233 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 19: [15 / 21] loss: 0.114
+2020-11-22 00:25:12,004 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 19: [18 / 21] loss: 0.089
+2020-11-22 00:25:14,443 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.764
+2020-11-22 00:25:14,449 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 19
+2020-11-22 00:25:14,538 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 20
+2020-11-22 00:25:15,593 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 20: [3 / 21] loss: 0.108
+2020-11-22 00:25:16,380 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 20: [6 / 21] loss: 0.130
+2020-11-22 00:25:17,154 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 20: [9 / 21] loss: 0.095
+2020-11-22 00:25:18,000 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 20: [12 / 21] loss: 0.117
+2020-11-22 00:25:18,802 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 20: [15 / 21] loss: 0.124
+2020-11-22 00:25:19,571 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 20: [18 / 21] loss: 0.123
+2020-11-22 00:25:21,614 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.721
+2020-11-22 00:25:21,621 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 21
+2020-11-22 00:25:23,119 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 21: [3 / 21] loss: 0.143
+2020-11-22 00:25:23,958 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 21: [6 / 21] loss: 0.148
+2020-11-22 00:25:24,665 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 21: [9 / 21] loss: 0.123
+2020-11-22 00:25:25,446 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 21: [12 / 21] loss: 0.150
+2020-11-22 00:25:26,229 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 21: [15 / 21] loss: 0.151
+2020-11-22 00:25:27,050 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 21: [18 / 21] loss: 0.147
+2020-11-22 00:25:28,806 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.721
+2020-11-22 00:25:28,811 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 22
+2020-11-22 00:25:29,854 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 22: [3 / 21] loss: 0.117
+2020-11-22 00:25:30,656 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 22: [6 / 21] loss: 0.107
+2020-11-22 00:25:31,462 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 22: [9 / 21] loss: 0.104
+2020-11-22 00:25:32,200 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 22: [12 / 21] loss: 0.078
+2020-11-22 00:25:33,007 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 22: [15 / 21] loss: 0.116
+2020-11-22 00:25:33,874 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 22: [18 / 21] loss: 0.089
+2020-11-22 00:25:35,890 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.764
+2020-11-22 00:25:35,896 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 22
+2020-11-22 00:25:35,986 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 23
+2020-11-22 00:25:36,988 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 23: [3 / 21] loss: 0.083
+2020-11-22 00:25:37,693 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 23: [6 / 21] loss: 0.087
+2020-11-22 00:25:38,421 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 23: [9 / 21] loss: 0.073
+2020-11-22 00:25:39,173 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 23: [12 / 21] loss: 0.130
+2020-11-22 00:25:39,891 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 23: [15 / 21] loss: 0.083
+2020-11-22 00:25:40,584 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 23: [18 / 21] loss: 0.124
+2020-11-22 00:25:42,594 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.750
+2020-11-22 00:25:42,600 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 24
+2020-11-22 00:25:44,113 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 24: [3 / 21] loss: 0.103
+2020-11-22 00:25:44,895 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 24: [6 / 21] loss: 0.115
+2020-11-22 00:25:45,685 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 24: [9 / 21] loss: 0.104
+2020-11-22 00:25:46,458 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 24: [12 / 21] loss: 0.121
+2020-11-22 00:25:47,281 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 24: [15 / 21] loss: 0.107
+2020-11-22 00:25:48,031 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 24: [18 / 21] loss: 0.094
+2020-11-22 00:25:49,831 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.807
+2020-11-22 00:25:49,837 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 24
+2020-11-22 00:25:49,927 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 25
+2020-11-22 00:25:51,011 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 25: [3 / 21] loss: 0.076
+2020-11-22 00:25:51,985 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 25: [6 / 21] loss: 0.114
+2020-11-22 00:25:52,759 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 25: [9 / 21] loss: 0.092
+2020-11-22 00:25:53,513 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 25: [12 / 21] loss: 0.107
+2020-11-22 00:25:54,193 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 25: [15 / 21] loss: 0.115
+2020-11-22 00:25:54,907 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 25: [18 / 21] loss: 0.085
+2020-11-22 00:25:57,020 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.779
+2020-11-22 00:25:57,025 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 26
+2020-11-22 00:25:58,072 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 26: [3 / 21] loss: 0.125
+2020-11-22 00:25:58,825 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 26: [6 / 21] loss: 0.117
+2020-11-22 00:25:59,587 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 26: [9 / 21] loss: 0.078
+2020-11-22 00:26:00,349 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 26: [12 / 21] loss: 0.086
+2020-11-22 00:26:01,146 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 26: [15 / 21] loss: 0.110
+2020-11-22 00:26:02,036 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 26: [18 / 21] loss: 0.083
+2020-11-22 00:26:04,099 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.807
+2020-11-22 00:26:04,105 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 26
+2020-11-22 00:26:04,196 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 27
+2020-11-22 00:26:05,617 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 27: [3 / 21] loss: 0.086
+2020-11-22 00:26:06,380 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 27: [6 / 21] loss: 0.083
+2020-11-22 00:26:07,152 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 27: [9 / 21] loss: 0.075
+2020-11-22 00:26:07,959 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 27: [12 / 21] loss: 0.094
+2020-11-22 00:26:08,800 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 27: [15 / 21] loss: 0.093
+2020-11-22 00:26:09,596 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 27: [18 / 21] loss: 0.052
+2020-11-22 00:26:11,338 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.793
+2020-11-22 00:26:11,344 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 28
+2020-11-22 00:26:13,085 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 28: [3 / 21] loss: 0.073
+2020-11-22 00:26:13,811 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 28: [6 / 21] loss: 0.071
+2020-11-22 00:26:14,537 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 28: [9 / 21] loss: 0.075
+2020-11-22 00:26:15,266 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 28: [12 / 21] loss: 0.100
+2020-11-22 00:26:16,015 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 28: [15 / 21] loss: 0.078
+2020-11-22 00:26:16,739 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 28: [18 / 21] loss: 0.079
+2020-11-22 00:26:18,452 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-22 00:26:18,457 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 28
+2020-11-22 00:26:18,544 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 29
+2020-11-22 00:26:19,527 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 29: [3 / 21] loss: 0.060
+2020-11-22 00:26:20,300 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 29: [6 / 21] loss: 0.082
+2020-11-22 00:26:21,094 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 29: [9 / 21] loss: 0.068
+2020-11-22 00:26:21,828 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 29: [12 / 21] loss: 0.087
+2020-11-22 00:26:22,620 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 29: [15 / 21] loss: 0.063
+2020-11-22 00:26:23,334 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 29: [18 / 21] loss: 0.052
+2020-11-22 00:26:25,186 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.807
+2020-11-22 00:26:25,192 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 30
+2020-11-22 00:26:26,727 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 30: [3 / 21] loss: 0.065
+2020-11-22 00:26:27,480 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 30: [6 / 21] loss: 0.070
+2020-11-22 00:26:28,186 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 30: [9 / 21] loss: 0.082
+2020-11-22 00:26:28,922 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 30: [12 / 21] loss: 0.063
+2020-11-22 00:26:29,567 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 30: [15 / 21] loss: 0.076
+2020-11-22 00:26:30,276 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 30: [18 / 21] loss: 0.076
+2020-11-22 00:26:32,013 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.800
+2020-11-22 00:26:32,019 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 31
+2020-11-22 00:26:33,272 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 31: [3 / 21] loss: 0.066
+2020-11-22 00:26:34,060 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 31: [6 / 21] loss: 0.074
+2020-11-22 00:26:34,790 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 31: [9 / 21] loss: 0.072
+2020-11-22 00:26:35,544 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 31: [12 / 21] loss: 0.054
+2020-11-22 00:26:36,261 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 31: [15 / 21] loss: 0.069
+2020-11-22 00:26:37,076 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 31: [18 / 21] loss: 0.065
+2020-11-22 00:26:38,899 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:26:38,905 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 32
+2020-11-22 00:26:39,984 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 32: [3 / 21] loss: 0.053
+2020-11-22 00:26:40,739 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 32: [6 / 21] loss: 0.058
+2020-11-22 00:26:41,540 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 32: [9 / 21] loss: 0.066
+2020-11-22 00:26:42,310 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 32: [12 / 21] loss: 0.069
+2020-11-22 00:26:43,093 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 32: [15 / 21] loss: 0.061
+2020-11-22 00:26:43,980 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 32: [18 / 21] loss: 0.046
+2020-11-22 00:26:45,949 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-22 00:26:45,954 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 33
+2020-11-22 00:26:47,468 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 33: [3 / 21] loss: 0.055
+2020-11-22 00:26:48,156 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 33: [6 / 21] loss: 0.074
+2020-11-22 00:26:48,823 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 33: [9 / 21] loss: 0.049
+2020-11-22 00:26:49,540 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 33: [12 / 21] loss: 0.068
+2020-11-22 00:26:50,265 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 33: [15 / 21] loss: 0.082
+2020-11-22 00:26:50,975 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 33: [18 / 21] loss: 0.050
+2020-11-22 00:26:52,732 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-22 00:26:52,739 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 34
+2020-11-22 00:26:53,697 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 34: [3 / 21] loss: 0.051
+2020-11-22 00:26:54,549 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 34: [6 / 21] loss: 0.054
+2020-11-22 00:26:55,317 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 34: [9 / 21] loss: 0.088
+2020-11-22 00:26:56,119 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 34: [12 / 21] loss: 0.077
+2020-11-22 00:26:56,843 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 34: [15 / 21] loss: 0.076
+2020-11-22 00:26:57,619 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 34: [18 / 21] loss: 0.084
+2020-11-22 00:26:59,688 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-22 00:26:59,694 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 35
+2020-11-22 00:27:00,730 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 35: [3 / 21] loss: 0.055
+2020-11-22 00:27:01,550 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 35: [6 / 21] loss: 0.097
+2020-11-22 00:27:02,358 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 35: [9 / 21] loss: 0.083
+2020-11-22 00:27:03,128 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 35: [12 / 21] loss: 0.062
+2020-11-22 00:27:03,857 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 35: [15 / 21] loss: 0.058
+2020-11-22 00:27:04,646 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 35: [18 / 21] loss: 0.059
+2020-11-22 00:27:06,657 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.807
+2020-11-22 00:27:06,663 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 36
+2020-11-22 00:27:08,181 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 36: [3 / 21] loss: 0.057
+2020-11-22 00:27:08,933 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 36: [6 / 21] loss: 0.062
+2020-11-22 00:27:09,604 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 36: [9 / 21] loss: 0.054
+2020-11-22 00:27:10,302 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 36: [12 / 21] loss: 0.086
+2020-11-22 00:27:11,008 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 36: [15 / 21] loss: 0.053
+2020-11-22 00:27:11,720 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 36: [18 / 21] loss: 0.077
+2020-11-22 00:27:13,453 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:27:13,459 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 37
+2020-11-22 00:27:14,512 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 37: [3 / 21] loss: 0.075
+2020-11-22 00:27:15,299 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 37: [6 / 21] loss: 0.040
+2020-11-22 00:27:16,109 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 37: [9 / 21] loss: 0.053
+2020-11-22 00:27:16,861 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 37: [12 / 21] loss: 0.068
+2020-11-22 00:27:17,601 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 37: [15 / 21] loss: 0.053
+2020-11-22 00:27:18,284 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 37: [18 / 21] loss: 0.045
+2020-11-22 00:27:20,366 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-22 00:27:20,373 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 38
+2020-11-22 00:27:21,460 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 38: [3 / 21] loss: 0.064
+2020-11-22 00:27:22,225 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 38: [6 / 21] loss: 0.077
+2020-11-22 00:27:22,959 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 38: [9 / 21] loss: 0.040
+2020-11-22 00:27:23,730 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 38: [12 / 21] loss: 0.051
+2020-11-22 00:27:24,426 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 38: [15 / 21] loss: 0.037
+2020-11-22 00:27:25,515 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 38: [18 / 21] loss: 0.071
+2020-11-22 00:27:27,468 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-22 00:27:27,473 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 39
+2020-11-22 00:27:28,904 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 39: [3 / 21] loss: 0.066
+2020-11-22 00:27:29,670 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 39: [6 / 21] loss: 0.059
+2020-11-22 00:27:30,394 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 39: [9 / 21] loss: 0.049
+2020-11-22 00:27:31,177 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 39: [12 / 21] loss: 0.057
+2020-11-22 00:27:31,947 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 39: [15 / 21] loss: 0.048
+2020-11-22 00:27:32,761 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 39: [18 / 21] loss: 0.036
+2020-11-22 00:27:34,501 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-22 00:27:34,506 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 40
+2020-11-22 00:27:36,199 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 40: [3 / 21] loss: 0.060
+2020-11-22 00:27:36,974 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 40: [6 / 21] loss: 0.026
+2020-11-22 00:27:37,738 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 40: [9 / 21] loss: 0.074
+2020-11-22 00:27:38,497 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 40: [12 / 21] loss: 0.041
+2020-11-22 00:27:39,195 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 40: [15 / 21] loss: 0.050
+2020-11-22 00:27:39,935 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 40: [18 / 21] loss: 0.054
+2020-11-22 00:27:41,601 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-22 00:27:41,607 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 40
+2020-11-22 00:27:41,695 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 41
+2020-11-22 00:27:42,742 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 41: [3 / 21] loss: 0.042
+2020-11-22 00:27:43,544 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 41: [6 / 21] loss: 0.068
+2020-11-22 00:27:44,291 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 41: [9 / 21] loss: 0.058
+2020-11-22 00:27:45,032 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 41: [12 / 21] loss: 0.052
+2020-11-22 00:27:45,795 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 41: [15 / 21] loss: 0.026
+2020-11-22 00:27:46,555 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 41: [18 / 21] loss: 0.063
+2020-11-22 00:27:48,885 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:27:48,891 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 42
+2020-11-22 00:27:50,467 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 42: [3 / 21] loss: 0.032
+2020-11-22 00:27:51,254 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 42: [6 / 21] loss: 0.030
+2020-11-22 00:27:52,029 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 42: [9 / 21] loss: 0.043
+2020-11-22 00:27:52,831 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 42: [12 / 21] loss: 0.055
+2020-11-22 00:27:53,612 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 42: [15 / 21] loss: 0.058
+2020-11-22 00:27:54,422 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 42: [18 / 21] loss: 0.033
+2020-11-22 00:27:56,420 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:27:56,426 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 43
+2020-11-22 00:27:57,846 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 43: [3 / 21] loss: 0.051
+2020-11-22 00:27:58,574 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 43: [6 / 21] loss: 0.026
+2020-11-22 00:27:59,269 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 43: [9 / 21] loss: 0.063
+2020-11-22 00:28:00,030 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 43: [12 / 21] loss: 0.038
+2020-11-22 00:28:00,742 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 43: [15 / 21] loss: 0.050
+2020-11-22 00:28:01,372 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 43: [18 / 21] loss: 0.053
+2020-11-22 00:28:03,123 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:28:03,129 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 44
+2020-11-22 00:28:04,183 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 44: [3 / 21] loss: 0.041
+2020-11-22 00:28:04,931 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 44: [6 / 21] loss: 0.050
+2020-11-22 00:28:05,750 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 44: [9 / 21] loss: 0.038
+2020-11-22 00:28:06,479 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 44: [12 / 21] loss: 0.110
+2020-11-22 00:28:07,182 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 44: [15 / 21] loss: 0.054
+2020-11-22 00:28:07,956 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 44: [18 / 21] loss: 0.092
+2020-11-22 00:28:09,793 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.807
+2020-11-22 00:28:09,800 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 45
+2020-11-22 00:28:11,275 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 45: [3 / 21] loss: 0.046
+2020-11-22 00:28:12,087 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 45: [6 / 21] loss: 0.049
+2020-11-22 00:28:12,904 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 45: [9 / 21] loss: 0.049
+2020-11-22 00:28:13,634 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 45: [12 / 21] loss: 0.057
+2020-11-22 00:28:14,375 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 45: [15 / 21] loss: 0.080
+2020-11-22 00:28:15,151 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 45: [18 / 21] loss: 0.046
+2020-11-22 00:28:17,105 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.807
+2020-11-22 00:28:17,110 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 46
+2020-11-22 00:28:18,492 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 46: [3 / 21] loss: 0.042
+2020-11-22 00:28:19,172 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 46: [6 / 21] loss: 0.038
+2020-11-22 00:28:19,905 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 46: [9 / 21] loss: 0.057
+2020-11-22 00:28:20,631 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 46: [12 / 21] loss: 0.067
+2020-11-22 00:28:21,304 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 46: [15 / 21] loss: 0.026
+2020-11-22 00:28:22,008 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 46: [18 / 21] loss: 0.059
+2020-11-22 00:28:23,693 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:28:23,700 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 47
+2020-11-22 00:28:24,712 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 47: [3 / 21] loss: 0.056
+2020-11-22 00:28:25,493 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 47: [6 / 21] loss: 0.075
+2020-11-22 00:28:26,242 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 47: [9 / 21] loss: 0.060
+2020-11-22 00:28:26,987 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 47: [12 / 21] loss: 0.073
+2020-11-22 00:28:27,720 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 47: [15 / 21] loss: 0.057
+2020-11-22 00:28:28,668 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 47: [18 / 21] loss: 0.046
+2020-11-22 00:28:30,614 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-22 00:28:30,621 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 48
+2020-11-22 00:28:32,146 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 48: [3 / 21] loss: 0.035
+2020-11-22 00:28:32,921 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 48: [6 / 21] loss: 0.068
+2020-11-22 00:28:33,742 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 48: [9 / 21] loss: 0.069
+2020-11-22 00:28:34,513 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 48: [12 / 21] loss: 0.079
+2020-11-22 00:28:35,251 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 48: [15 / 21] loss: 0.042
+2020-11-22 00:28:36,004 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 48: [18 / 21] loss: 0.037
+2020-11-22 00:28:37,937 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.814
+2020-11-22 00:28:37,943 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 49
+2020-11-22 00:28:39,369 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 49: [3 / 21] loss: 0.056
+2020-11-22 00:28:40,128 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 49: [6 / 21] loss: 0.045
+2020-11-22 00:28:40,822 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 49: [9 / 21] loss: 0.024
+2020-11-22 00:28:41,536 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 49: [12 / 21] loss: 0.049
+2020-11-22 00:28:42,343 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 49: [15 / 21] loss: 0.042
+2020-11-22 00:28:43,096 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 49: [18 / 21] loss: 0.044
+2020-11-22 00:28:44,971 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-22 00:28:44,976 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 50
+2020-11-22 00:28:45,987 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 50: [3 / 21] loss: 0.045
+2020-11-22 00:28:46,727 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 50: [6 / 21] loss: 0.031
+2020-11-22 00:28:47,522 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 50: [9 / 21] loss: 0.041
+2020-11-22 00:28:48,271 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 50: [12 / 21] loss: 0.046
+2020-11-22 00:28:48,932 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 50: [15 / 21] loss: 0.033
+2020-11-22 00:28:49,570 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 50: [18 / 21] loss: 0.026
+2020-11-22 00:28:51,362 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-22 00:28:51,368 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 50
+2020-11-22 00:28:51,453 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 51
+2020-11-22 00:28:52,937 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 51: [3 / 21] loss: 0.034
+2020-11-22 00:28:53,622 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 51: [6 / 21] loss: 0.026
+2020-11-22 00:28:54,396 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 51: [9 / 21] loss: 0.046
+2020-11-22 00:28:55,216 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 51: [12 / 21] loss: 0.040
+2020-11-22 00:28:55,984 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 51: [15 / 21] loss: 0.034
+2020-11-22 00:28:56,756 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 51: [18 / 21] loss: 0.050
+2020-11-22 00:28:59,134 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:28:59,140 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 52
+2020-11-22 00:29:00,129 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 52: [3 / 21] loss: 0.047
+2020-11-22 00:29:00,892 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 52: [6 / 21] loss: 0.039
+2020-11-22 00:29:01,581 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 52: [9 / 21] loss: 0.030
+2020-11-22 00:29:02,303 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 52: [12 / 21] loss: 0.028
+2020-11-22 00:29:03,019 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 52: [15 / 21] loss: 0.051
+2020-11-22 00:29:03,806 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 52: [18 / 21] loss: 0.081
+2020-11-22 00:29:05,608 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-22 00:29:05,613 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 53
+2020-11-22 00:29:06,602 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 53: [3 / 21] loss: 0.024
+2020-11-22 00:29:07,360 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 53: [6 / 21] loss: 0.039
+2020-11-22 00:29:08,148 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 53: [9 / 21] loss: 0.030
+2020-11-22 00:29:08,866 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 53: [12 / 21] loss: 0.039
+2020-11-22 00:29:09,655 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 53: [15 / 21] loss: 0.052
+2020-11-22 00:29:10,395 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 53: [18 / 21] loss: 0.034
+2020-11-22 00:29:12,300 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-22 00:29:12,306 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 54
+2020-11-22 00:29:13,696 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 54: [3 / 21] loss: 0.044
+2020-11-22 00:29:14,437 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 54: [6 / 21] loss: 0.043
+2020-11-22 00:29:15,223 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 54: [9 / 21] loss: 0.052
+2020-11-22 00:29:15,951 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 54: [12 / 21] loss: 0.028
+2020-11-22 00:29:16,764 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 54: [15 / 21] loss: 0.031
+2020-11-22 00:29:17,524 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 54: [18 / 21] loss: 0.040
+2020-11-22 00:29:19,909 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-22 00:29:19,915 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 55
+2020-11-22 00:29:21,358 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 55: [3 / 21] loss: 0.027
+2020-11-22 00:29:22,103 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 55: [6 / 21] loss: 0.037
+2020-11-22 00:29:22,882 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 55: [9 / 21] loss: 0.042
+2020-11-22 00:29:23,648 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 55: [12 / 21] loss: 0.050
+2020-11-22 00:29:24,361 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 55: [15 / 21] loss: 0.026
+2020-11-22 00:29:25,104 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 55: [18 / 21] loss: 0.043
+2020-11-22 00:29:26,876 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:29:26,882 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 56
+2020-11-22 00:29:27,899 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 56: [3 / 21] loss: 0.034
+2020-11-22 00:29:28,603 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 56: [6 / 21] loss: 0.047
+2020-11-22 00:29:29,320 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 56: [9 / 21] loss: 0.041
+2020-11-22 00:29:30,073 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 56: [12 / 21] loss: 0.073
+2020-11-22 00:29:30,795 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 56: [15 / 21] loss: 0.033
+2020-11-22 00:29:31,791 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 56: [18 / 21] loss: 0.058
+2020-11-22 00:29:33,674 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-22 00:29:33,681 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 57
+2020-11-22 00:29:34,727 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 57: [3 / 21] loss: 0.055
+2020-11-22 00:29:35,539 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 57: [6 / 21] loss: 0.040
+2020-11-22 00:29:36,193 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 57: [9 / 21] loss: 0.037
+2020-11-22 00:29:36,963 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 57: [12 / 21] loss: 0.043
+2020-11-22 00:29:37,689 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 57: [15 / 21] loss: 0.025
+2020-11-22 00:29:38,364 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 57: [18 / 21] loss: 0.037
+2020-11-22 00:29:40,639 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:29:40,645 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 58
+2020-11-22 00:29:41,640 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 58: [3 / 21] loss: 0.030
+2020-11-22 00:29:42,432 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 58: [6 / 21] loss: 0.032
+2020-11-22 00:29:43,222 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 58: [9 / 21] loss: 0.027
+2020-11-22 00:29:43,951 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 58: [12 / 21] loss: 0.022
+2020-11-22 00:29:44,720 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 58: [15 / 21] loss: 0.037
+2020-11-22 00:29:45,503 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 58: [18 / 21] loss: 0.038
+2020-11-22 00:29:47,316 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-22 00:29:47,321 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 58
+2020-11-22 00:29:47,410 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 59
+2020-11-22 00:29:48,433 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 59: [3 / 21] loss: 0.026
+2020-11-22 00:29:49,199 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 59: [6 / 21] loss: 0.028
+2020-11-22 00:29:49,953 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 59: [9 / 21] loss: 0.037
+2020-11-22 00:29:50,712 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 59: [12 / 21] loss: 0.050
+2020-11-22 00:29:51,493 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 59: [15 / 21] loss: 0.045
+2020-11-22 00:29:52,391 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 59: [18 / 21] loss: 0.058
+2020-11-22 00:29:54,537 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-22 00:29:54,542 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 59
+2020-11-22 00:29:54,630 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 60
+2020-11-22 00:29:55,711 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 60: [3 / 21] loss: 0.051
+2020-11-22 00:29:56,466 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 60: [6 / 21] loss: 0.019
+2020-11-22 00:29:57,209 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 60: [9 / 21] loss: 0.038
+2020-11-22 00:29:58,001 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 60: [12 / 21] loss: 0.033
+2020-11-22 00:29:58,774 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 60: [15 / 21] loss: 0.049
+2020-11-22 00:29:59,537 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 60: [18 / 21] loss: 0.035
+2020-11-22 00:30:01,741 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-22 00:30:01,747 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 61
+2020-11-22 00:30:03,235 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 61: [3 / 21] loss: 0.028
+2020-11-22 00:30:04,004 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 61: [6 / 21] loss: 0.016
+2020-11-22 00:30:04,781 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 61: [9 / 21] loss: 0.023
+2020-11-22 00:30:05,504 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 61: [12 / 21] loss: 0.025
+2020-11-22 00:30:06,267 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 61: [15 / 21] loss: 0.037
+2020-11-22 00:30:07,055 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 61: [18 / 21] loss: 0.045
+2020-11-22 00:30:08,832 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:30:08,838 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 62
+2020-11-22 00:30:09,909 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 62: [3 / 21] loss: 0.040
+2020-11-22 00:30:10,729 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 62: [6 / 21] loss: 0.023
+2020-11-22 00:30:11,496 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 62: [9 / 21] loss: 0.039
+2020-11-22 00:30:12,224 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 62: [12 / 21] loss: 0.029
+2020-11-22 00:30:12,983 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 62: [15 / 21] loss: 0.021
+2020-11-22 00:30:13,873 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 62: [18 / 21] loss: 0.036
+2020-11-22 00:30:16,170 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-22 00:30:16,176 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 63
+2020-11-22 00:30:17,208 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 63: [3 / 21] loss: 0.025
+2020-11-22 00:30:17,991 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 63: [6 / 21] loss: 0.041
+2020-11-22 00:30:18,736 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 63: [9 / 21] loss: 0.012
+2020-11-22 00:30:19,536 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 63: [12 / 21] loss: 0.021
+2020-11-22 00:30:20,269 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 63: [15 / 21] loss: 0.036
+2020-11-22 00:30:21,046 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 63: [18 / 21] loss: 0.035
+2020-11-22 00:30:23,359 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:30:23,365 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 64
+2020-11-22 00:30:24,852 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 64: [3 / 21] loss: 0.013
+2020-11-22 00:30:25,653 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 64: [6 / 21] loss: 0.015
+2020-11-22 00:30:26,419 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 64: [9 / 21] loss: 0.029
+2020-11-22 00:30:27,170 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 64: [12 / 21] loss: 0.035
+2020-11-22 00:30:27,974 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 64: [15 / 21] loss: 0.023
+2020-11-22 00:30:28,755 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 64: [18 / 21] loss: 0.027
+2020-11-22 00:30:30,639 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:30:30,645 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 65
+2020-11-22 00:30:31,613 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 65: [3 / 21] loss: 0.025
+2020-11-22 00:30:32,332 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 65: [6 / 21] loss: 0.016
+2020-11-22 00:30:33,134 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 65: [9 / 21] loss: 0.029
+2020-11-22 00:30:33,859 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 65: [12 / 21] loss: 0.024
+2020-11-22 00:30:34,551 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 65: [15 / 21] loss: 0.034
+2020-11-22 00:30:35,263 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 65: [18 / 21] loss: 0.030
+2020-11-22 00:30:37,116 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-22 00:30:37,123 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 66
+2020-11-22 00:30:38,214 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 66: [3 / 21] loss: 0.029
+2020-11-22 00:30:38,952 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 66: [6 / 21] loss: 0.021
+2020-11-22 00:30:39,715 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 66: [9 / 21] loss: 0.024
+2020-11-22 00:30:40,497 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 66: [12 / 21] loss: 0.025
+2020-11-22 00:30:41,262 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 66: [15 / 21] loss: 0.030
+2020-11-22 00:30:42,002 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 66: [18 / 21] loss: 0.028
+2020-11-22 00:30:44,281 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-22 00:30:44,287 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 67
+2020-11-22 00:30:45,800 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 67: [3 / 21] loss: 0.021
+2020-11-22 00:30:46,641 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 67: [6 / 21] loss: 0.031
+2020-11-22 00:30:47,390 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 67: [9 / 21] loss: 0.022
+2020-11-22 00:30:48,188 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 67: [12 / 21] loss: 0.044
+2020-11-22 00:30:48,930 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 67: [15 / 21] loss: 0.031
+2020-11-22 00:30:49,733 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 67: [18 / 21] loss: 0.036
+2020-11-22 00:30:51,512 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:30:51,518 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 68
+2020-11-22 00:30:52,539 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 68: [3 / 21] loss: 0.023
+2020-11-22 00:30:53,270 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 68: [6 / 21] loss: 0.032
+2020-11-22 00:30:53,987 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 68: [9 / 21] loss: 0.021
+2020-11-22 00:30:54,682 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 68: [12 / 21] loss: 0.018
+2020-11-22 00:30:55,380 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 68: [15 / 21] loss: 0.021
+2020-11-22 00:30:56,133 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 68: [18 / 21] loss: 0.035
+2020-11-22 00:30:57,949 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:30:57,954 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 69
+2020-11-22 00:30:59,064 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 69: [3 / 21] loss: 0.022
+2020-11-22 00:30:59,819 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 69: [6 / 21] loss: 0.015
+2020-11-22 00:31:00,571 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 69: [9 / 21] loss: 0.024
+2020-11-22 00:31:01,344 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 69: [12 / 21] loss: 0.023
+2020-11-22 00:31:02,164 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 69: [15 / 21] loss: 0.036
+2020-11-22 00:31:02,933 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 69: [18 / 21] loss: 0.020
+2020-11-22 00:31:05,041 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-22 00:31:05,048 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 70
+2020-11-22 00:31:06,542 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 70: [3 / 21] loss: 0.023
+2020-11-22 00:31:07,379 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 70: [6 / 21] loss: 0.012
+2020-11-22 00:31:08,104 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 70: [9 / 21] loss: 0.022
+2020-11-22 00:31:08,856 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 70: [12 / 21] loss: 0.014
+2020-11-22 00:31:09,632 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 70: [15 / 21] loss: 0.038
+2020-11-22 00:31:10,389 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 70: [18 / 21] loss: 0.023
+2020-11-22 00:31:12,214 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-22 00:31:12,221 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 71
+2020-11-22 00:31:13,298 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 71: [3 / 21] loss: 0.027
+2020-11-22 00:31:14,110 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 71: [6 / 21] loss: 0.021
+2020-11-22 00:31:14,816 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 71: [9 / 21] loss: 0.029
+2020-11-22 00:31:15,555 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 71: [12 / 21] loss: 0.031
+2020-11-22 00:31:16,235 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 71: [15 / 21] loss: 0.023
+2020-11-22 00:31:16,871 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 71: [18 / 21] loss: 0.026
+2020-11-22 00:31:18,705 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-22 00:31:18,710 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 71
+2020-11-22 00:31:18,801 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 72
+2020-11-22 00:31:19,839 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 72: [3 / 21] loss: 0.029
+2020-11-22 00:31:20,538 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 72: [6 / 21] loss: 0.012
+2020-11-22 00:31:21,380 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 72: [9 / 21] loss: 0.033
+2020-11-22 00:31:22,124 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 72: [12 / 21] loss: 0.020
+2020-11-22 00:31:22,928 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 72: [15 / 21] loss: 0.008
+2020-11-22 00:31:23,715 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 72: [18 / 21] loss: 0.014
+2020-11-22 00:31:25,765 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-22 00:31:25,772 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 73
+2020-11-22 00:31:27,258 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 73: [3 / 21] loss: 0.018
+2020-11-22 00:31:28,108 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 73: [6 / 21] loss: 0.046
+2020-11-22 00:31:28,908 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 73: [9 / 21] loss: 0.043
+2020-11-22 00:31:29,591 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 73: [12 / 21] loss: 0.035
+2020-11-22 00:31:30,367 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 73: [15 / 21] loss: 0.040
+2020-11-22 00:31:31,173 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 73: [18 / 21] loss: 0.026
+2020-11-22 00:31:32,920 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-22 00:31:32,925 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 74
+2020-11-22 00:31:33,955 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 74: [3 / 21] loss: 0.022
+2020-11-22 00:31:34,691 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 74: [6 / 21] loss: 0.019
+2020-11-22 00:31:35,444 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 74: [9 / 21] loss: 0.027
+2020-11-22 00:31:36,165 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 74: [12 / 21] loss: 0.059
+2020-11-22 00:31:36,914 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 74: [15 / 21] loss: 0.037
+2020-11-22 00:31:37,662 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 74: [18 / 21] loss: 0.046
+2020-11-22 00:31:39,408 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.850
+2020-11-22 00:31:39,414 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 75
+2020-11-22 00:31:40,443 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 75: [3 / 21] loss: 0.023
+2020-11-22 00:31:41,195 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 75: [6 / 21] loss: 0.031
+2020-11-22 00:31:41,966 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 75: [9 / 21] loss: 0.017
+2020-11-22 00:31:42,660 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 75: [12 / 21] loss: 0.016
+2020-11-22 00:31:43,446 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 75: [15 / 21] loss: 0.015
+2020-11-22 00:31:44,217 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 75: [18 / 21] loss: 0.017
+2020-11-22 00:31:46,484 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-22 00:31:46,491 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 76
+2020-11-22 00:31:48,007 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 76: [3 / 21] loss: 0.015
+2020-11-22 00:31:48,831 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 76: [6 / 21] loss: 0.029
+2020-11-22 00:31:49,521 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 76: [9 / 21] loss: 0.021
+2020-11-22 00:31:50,194 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 76: [12 / 21] loss: 0.018
+2020-11-22 00:31:50,878 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 76: [15 / 21] loss: 0.020
+2020-11-22 00:31:51,560 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 76: [18 / 21] loss: 0.017
+2020-11-22 00:31:53,237 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.886
+2020-11-22 00:31:53,243 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Best model saved, epoch 76
+2020-11-22 00:31:53,329 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 77
+2020-11-22 00:31:54,341 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 77: [3 / 21] loss: 0.026
+2020-11-22 00:31:55,281 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 77: [6 / 21] loss: 0.022
+2020-11-22 00:31:56,088 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 77: [9 / 21] loss: 0.026
+2020-11-22 00:31:56,858 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 77: [12 / 21] loss: 0.024
+2020-11-22 00:31:57,564 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 77: [15 / 21] loss: 0.021
+2020-11-22 00:31:58,277 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 77: [18 / 21] loss: 0.050
+2020-11-22 00:32:00,193 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-22 00:32:00,199 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 78
+2020-11-22 00:32:01,329 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 78: [3 / 21] loss: 0.021
+2020-11-22 00:32:02,078 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 78: [6 / 21] loss: 0.014
+2020-11-22 00:32:02,854 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 78: [9 / 21] loss: 0.034
+2020-11-22 00:32:03,622 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 78: [12 / 21] loss: 0.023
+2020-11-22 00:32:04,420 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 78: [15 / 21] loss: 0.026
+2020-11-22 00:32:05,144 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 78: [18 / 21] loss: 0.018
+2020-11-22 00:32:07,310 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-22 00:32:07,315 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 79
+2020-11-22 00:32:08,729 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 79: [3 / 21] loss: 0.029
+2020-11-22 00:32:09,620 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 79: [6 / 21] loss: 0.044
+2020-11-22 00:32:10,388 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 79: [9 / 21] loss: 0.021
+2020-11-22 00:32:11,096 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 79: [12 / 21] loss: 0.022
+2020-11-22 00:32:11,844 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 79: [15 / 21] loss: 0.022
+2020-11-22 00:32:12,706 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 79: [18 / 21] loss: 0.030
+2020-11-22 00:32:14,488 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-22 00:32:14,493 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 80
+2020-11-22 00:32:15,488 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 80: [3 / 21] loss: 0.013
+2020-11-22 00:32:16,220 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 80: [6 / 21] loss: 0.035
+2020-11-22 00:32:16,909 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 80: [9 / 21] loss: 0.028
+2020-11-22 00:32:17,648 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 80: [12 / 21] loss: 0.038
+2020-11-22 00:32:18,399 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 80: [15 / 21] loss: 0.018
+2020-11-22 00:32:19,149 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 80: [18 / 21] loss: 0.029
+2020-11-22 00:32:20,941 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.879
+2020-11-22 00:32:20,946 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 81
+2020-11-22 00:32:21,965 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 81: [3 / 21] loss: 0.014
+2020-11-22 00:32:22,727 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 81: [6 / 21] loss: 0.017
+2020-11-22 00:32:23,442 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 81: [9 / 21] loss: 0.018
+2020-11-22 00:32:24,187 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 81: [12 / 21] loss: 0.024
+2020-11-22 00:32:24,944 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 81: [15 / 21] loss: 0.019
+2020-11-22 00:32:25,659 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 81: [18 / 21] loss: 0.030
+2020-11-22 00:32:28,008 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.814
+2020-11-22 00:32:28,014 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 82
+2020-11-22 00:32:29,459 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 82: [3 / 21] loss: 0.018
+2020-11-22 00:32:30,307 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 82: [6 / 21] loss: 0.028
+2020-11-22 00:32:31,060 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 82: [9 / 21] loss: 0.021
+2020-11-22 00:32:31,851 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 82: [12 / 21] loss: 0.020
+2020-11-22 00:32:32,642 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 82: [15 / 21] loss: 0.016
+2020-11-22 00:32:33,403 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 82: [18 / 21] loss: 0.015
+2020-11-22 00:32:35,160 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-22 00:32:35,165 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 83
+2020-11-22 00:32:36,175 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 83: [3 / 21] loss: 0.025
+2020-11-22 00:32:36,888 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 83: [6 / 21] loss: 0.019
+2020-11-22 00:32:37,639 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 83: [9 / 21] loss: 0.017
+2020-11-22 00:32:38,403 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 83: [12 / 21] loss: 0.025
+2020-11-22 00:32:39,122 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 83: [15 / 21] loss: 0.017
+2020-11-22 00:32:39,860 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 83: [18 / 21] loss: 0.025
+2020-11-22 00:32:41,688 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-22 00:32:41,694 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 84
+2020-11-22 00:32:42,623 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 84: [3 / 21] loss: 0.016
+2020-11-22 00:32:43,370 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 84: [6 / 21] loss: 0.036
+2020-11-22 00:32:44,187 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 84: [9 / 21] loss: 0.020
+2020-11-22 00:32:44,960 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 84: [12 / 21] loss: 0.030
+2020-11-22 00:32:45,691 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 84: [15 / 21] loss: 0.017
+2020-11-22 00:32:46,436 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 84: [18 / 21] loss: 0.023
+2020-11-22 00:32:48,758 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:32:48,764 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 85
+2020-11-22 00:32:50,295 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 85: [3 / 21] loss: 0.017
+2020-11-22 00:32:51,104 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 85: [6 / 21] loss: 0.013
+2020-11-22 00:32:51,860 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 85: [9 / 21] loss: 0.021
+2020-11-22 00:32:52,555 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 85: [12 / 21] loss: 0.016
+2020-11-22 00:32:53,226 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 85: [15 / 21] loss: 0.027
+2020-11-22 00:32:53,915 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 85: [18 / 21] loss: 0.014
+2020-11-22 00:32:55,618 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-22 00:32:55,624 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 86
+2020-11-22 00:32:56,595 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 86: [3 / 21] loss: 0.012
+2020-11-22 00:32:57,528 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 86: [6 / 21] loss: 0.019
+2020-11-22 00:32:58,289 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 86: [9 / 21] loss: 0.021
+2020-11-22 00:32:58,980 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 86: [12 / 21] loss: 0.015
+2020-11-22 00:32:59,731 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 86: [15 / 21] loss: 0.027
+2020-11-22 00:33:00,505 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 86: [18 / 21] loss: 0.029
+2020-11-22 00:33:02,401 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.836
+2020-11-22 00:33:02,406 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 87
+2020-11-22 00:33:03,504 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 87: [3 / 21] loss: 0.017
+2020-11-22 00:33:04,300 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 87: [6 / 21] loss: 0.019
+2020-11-22 00:33:05,038 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 87: [9 / 21] loss: 0.018
+2020-11-22 00:33:05,822 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 87: [12 / 21] loss: 0.010
+2020-11-22 00:33:06,603 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 87: [15 / 21] loss: 0.017
+2020-11-22 00:33:07,345 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 87: [18 / 21] loss: 0.020
+2020-11-22 00:33:09,524 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-22 00:33:09,530 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 88
+2020-11-22 00:33:10,981 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 88: [3 / 21] loss: 0.021
+2020-11-22 00:33:11,826 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 88: [6 / 21] loss: 0.011
+2020-11-22 00:33:12,641 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 88: [9 / 21] loss: 0.025
+2020-11-22 00:33:13,393 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 88: [12 / 21] loss: 0.008
+2020-11-22 00:33:14,183 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 88: [15 / 21] loss: 0.025
+2020-11-22 00:33:14,947 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 88: [18 / 21] loss: 0.019
+2020-11-22 00:33:16,720 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:33:16,726 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 89
+2020-11-22 00:33:17,713 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 89: [3 / 21] loss: 0.024
+2020-11-22 00:33:18,444 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 89: [6 / 21] loss: 0.018
+2020-11-22 00:33:19,196 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 89: [9 / 21] loss: 0.015
+2020-11-22 00:33:19,918 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 89: [12 / 21] loss: 0.024
+2020-11-22 00:33:20,637 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 89: [15 / 21] loss: 0.035
+2020-11-22 00:33:21,388 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 89: [18 / 21] loss: 0.031
+2020-11-22 00:33:23,185 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.821
+2020-11-22 00:33:23,192 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 90
+2020-11-22 00:33:24,195 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 90: [3 / 21] loss: 0.029
+2020-11-22 00:33:24,965 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 90: [6 / 21] loss: 0.019
+2020-11-22 00:33:25,766 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 90: [9 / 21] loss: 0.032
+2020-11-22 00:33:26,524 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 90: [12 / 21] loss: 0.035
+2020-11-22 00:33:27,309 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 90: [15 / 21] loss: 0.022
+2020-11-22 00:33:28,081 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 90: [18 / 21] loss: 0.026
+2020-11-22 00:33:30,268 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-22 00:33:30,274 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 91
+2020-11-22 00:33:31,787 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 91: [3 / 21] loss: 0.029
+2020-11-22 00:33:32,606 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 91: [6 / 21] loss: 0.020
+2020-11-22 00:33:33,391 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 91: [9 / 21] loss: 0.027
+2020-11-22 00:33:34,163 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 91: [12 / 21] loss: 0.017
+2020-11-22 00:33:34,918 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 91: [15 / 21] loss: 0.019
+2020-11-22 00:33:35,702 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 91: [18 / 21] loss: 0.016
+2020-11-22 00:33:37,461 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.829
+2020-11-22 00:33:37,466 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 92
+2020-11-22 00:33:38,469 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 92: [3 / 21] loss: 0.012
+2020-11-22 00:33:39,287 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 92: [6 / 21] loss: 0.016
+2020-11-22 00:33:40,090 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 92: [9 / 21] loss: 0.014
+2020-11-22 00:33:40,844 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 92: [12 / 21] loss: 0.019
+2020-11-22 00:33:41,581 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 92: [15 / 21] loss: 0.032
+2020-11-22 00:33:42,475 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 92: [18 / 21] loss: 0.018
+2020-11-22 00:33:44,199 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-22 00:33:44,205 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 93
+2020-11-22 00:33:45,214 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 93: [3 / 21] loss: 0.022
+2020-11-22 00:33:46,027 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 93: [6 / 21] loss: 0.024
+2020-11-22 00:33:46,812 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 93: [9 / 21] loss: 0.018
+2020-11-22 00:33:47,591 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 93: [12 / 21] loss: 0.028
+2020-11-22 00:33:48,367 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 93: [15 / 21] loss: 0.013
+2020-11-22 00:33:49,077 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 93: [18 / 21] loss: 0.028
+2020-11-22 00:33:50,994 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.857
+2020-11-22 00:33:50,999 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 94
+2020-11-22 00:33:52,463 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 94: [3 / 21] loss: 0.023
+2020-11-22 00:33:53,289 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 94: [6 / 21] loss: 0.026
+2020-11-22 00:33:53,921 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 94: [9 / 21] loss: 0.024
+2020-11-22 00:33:54,595 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 94: [12 / 21] loss: 0.025
+2020-11-22 00:33:55,328 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 94: [15 / 21] loss: 0.030
+2020-11-22 00:33:55,954 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 94: [18 / 21] loss: 0.044
+2020-11-22 00:33:57,656 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:33:57,662 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 95
+2020-11-22 00:33:58,578 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 95: [3 / 21] loss: 0.015
+2020-11-22 00:33:59,251 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 95: [6 / 21] loss: 0.031
+2020-11-22 00:33:59,948 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 95: [9 / 21] loss: 0.037
+2020-11-22 00:34:00,608 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 95: [12 / 21] loss: 0.050
+2020-11-22 00:34:01,235 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 95: [15 / 21] loss: 0.038
+2020-11-22 00:34:01,892 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 95: [18 / 21] loss: 0.019
+2020-11-22 00:34:03,758 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.843
+2020-11-22 00:34:03,764 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 96
+2020-11-22 00:34:04,745 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 96: [3 / 21] loss: 0.035
+2020-11-22 00:34:05,397 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 96: [6 / 21] loss: 0.023
+2020-11-22 00:34:06,066 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 96: [9 / 21] loss: 0.033
+2020-11-22 00:34:06,681 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 96: [12 / 21] loss: 0.032
+2020-11-22 00:34:07,317 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 96: [15 / 21] loss: 0.018
+2020-11-22 00:34:07,991 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 96: [18 / 21] loss: 0.026
+2020-11-22 00:34:09,554 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.864
+2020-11-22 00:34:09,559 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Start training in split train, Epoch: 97
+2020-11-22 00:34:10,846 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 97: [3 / 21] loss: 0.023
+2020-11-22 00:34:11,582 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 97: [6 / 21] loss: 0.033
+2020-11-22 00:34:12,180 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 97: [9 / 21] loss: 0.015
+2020-11-22 00:34:12,813 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 97: [12 / 21] loss: 0.015
+2020-11-22 00:34:13,500 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 97: [15 / 21] loss: 0.028
+2020-11-22 00:34:14,304 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Epoch 97: [18 / 21] loss: 0.010
+2020-11-22 00:34:15,975 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.871
+2020-11-22 00:34:15,980 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Train finish, best val score: 0.886
+2020-11-22 00:34:28,511 - examples/pytorch/semantic_parsing/graph2seq/log/new_graphsage_bi_fuse_nocopycoverage.txt - INFO - Evaluation accuracy in `test` split: 0.871

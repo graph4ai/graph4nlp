@@ -26,16 +26,25 @@ How to run
     java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
 ```
 
+
+#### Run the model:
+
+```python
+ python -m examples.pytorch.question_generation.run_question_generation   -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
+```
+
+
 #### Run the model with grid search:
 
 ```python
-    python -m examples.pytorch.question_generation.run_question_generation   -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/new_dependency_ggnn.yaml
+ python -m examples.pytorch.question_generation.run_question_generation   -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml --grid_search
 ```
 
 Note: 
-1) `XYZ.yaml` should be replaced by the exact config file.
+1) `XYZ.yaml` should be replaced by the exact g2s config file such as `new_dependency.yaml`.
 2) You can find the output files in the `out/squad_split2/` folder. 
-3) You can save your time by downloading the preprocessed data for dependency graph from [here](https://drive.google.com/drive/folders/1UPrlBvzXXgmUqx41CzO6ULrA3E1v24P9?usp=sharing), and moving the `squad_split2` folder to `examples/pytorch/question_generation/data/`.
+3) You need to specify `pre_word_emb_file` and `out_dir` in qg.yaml config file.
+<!-- 3) You can save your time by downloading the preprocessed data for dependency graph from [here](https://drive.google.com/drive/folders/1UPrlBvzXXgmUqx41CzO6ULrA3E1v24P9?usp=sharing), and moving the `squad_split2` folder to `examples/pytorch/question_generation/data/`. -->
 
 <!-- 
 SQuAD-split2 Results

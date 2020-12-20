@@ -7,6 +7,7 @@ import torch.nn as nn
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.prediction.generation.base import DecoderBase
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
+from copy import deepcopy
 
 
 class StrategyBase(nn.Module):
@@ -113,7 +114,7 @@ class DecoderStrategy(StrategyBase):
         len_in_words = False
 
         min_out_len = 1
-        max_out_len = self.max_decoder_step
+        max_out_len = self.max_decoder_step + 1
         batch_size = graph_node_embedding.shape[0]
 
         decoder_state = self.decoder.get_decoder_init_state(rnn_type=self.rnn_type, batch_size=batch_size,
@@ -143,7 +144,7 @@ class DecoderStrategy(StrategyBase):
             while len(hypos) > 0 and step <= self.max_decoder_step:
                 n_hypos = len(hypos)
                 if n_hypos < beam_size:
-                    hypos.extend(hypos[-1] for _ in range(beam_size - n_hypos)) # check deep copy
+                    hypos.extend(deepcopy(hypos[-1]) for _ in range(beam_size - n_hypos)) # check deep copy
 
                 decoder_input = torch.tensor([h.tokens[-1] for h in hypos]).to(graph_node_embedding.device)
 
@@ -164,14 +165,6 @@ class DecoderStrategy(StrategyBase):
                     for ii in range(step):
                         coverage_input.append(torch.cat([h.enc_attn_weights[ii] for h in hypos], dim=1))
 
-
-
-                # single_enc_attn_weights = torch.cat([h.enc_attn_weights for h in hypos])
-                # print(decoder_input.shape)
-                # print(single_decoder_state[0].shape, single_decoder_state[1].shape)
-                # print(single_graph_node_mask.shape)
-                # print(single_graph_node_embedding.shape, "1111")
-                # print(single_rnn_node_embedding.shape, "2222")
                 decoder_output, single_decoder_state, dec_attn_scores, _ = \
                     self.decoder.decode_step(decoder_input=decoder_input, rnn_state=single_decoder_state,
                                              dec_input_mask=single_graph_node_mask,
@@ -189,7 +182,6 @@ class DecoderStrategy(StrategyBase):
                         new_tok = top_i[in_idx][out_idx].item()
                         new_prob = top_v[in_idx][out_idx].item()
                         new_enc_attn_weights = dec_attn_scores[in_idx, :].unsqueeze(0).unsqueeze(0)
-
 
                         non_word = new_tok == self.vocab.EOS  # only SOS & EOS don't count
 
@@ -231,7 +223,7 @@ class DecoderStrategy(StrategyBase):
                 step += 1
             if not results:  # if no sequence ends with EOS within desired length, fallback to sequences
                 results = backup_results  # that are "truncated" at the end to max_out_len
-            batch_results.append(sorted(results, key=lambda h: -h.avg_log_prob)[:topk])
+            batch_results.append(sorted(results, key=lambda h: -h.avg_log_prob)[:beam_size])
         ret = torch.zeros(batch_size, topk, self.max_decoder_step).long()
         for sent_id, each in enumerate(batch_results):
             for i in range(topk):

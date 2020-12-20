@@ -50,7 +50,7 @@ class Graph2Seq(Graph2XBase):
                  emb_fix_word_emb=False, emb_fix_bert_emb=False, emb_word_dropout=0.0, emb_rnn_dropout=0.0,
                  dec_max_decoder_step=50,
                  dec_use_copy=False, dec_use_coverage=False,
-                 dec_graph_pooling_strategy=None, dec_rnn_type="lstm", dec_tgt_emb_as_output_layer=False,
+                 dec_graph_pooling_strategy=None, dec_rnn_type="lstm", dec_tgt_emb_as_output_layer=False, dec_teacher_forcing_rate=1.0,
                  dec_attention_type="uniform", dec_fuse_strategy="average", dec_node_type_num=None,
                  dec_dropout=0.0, device=None,
                  **kwargs):
@@ -68,6 +68,7 @@ class Graph2Seq(Graph2XBase):
 
         self.use_copy = dec_use_copy
         self.use_coverage = dec_use_coverage
+        self.dec_rnn_type = dec_rnn_type
 
         self._build_decoder(rnn_type=dec_rnn_type, decoder_length=dec_max_decoder_step, vocab_model=vocab_model,
                             word_emb=self.word_emb, rnn_input_size=emb_hidden_size,
@@ -76,12 +77,12 @@ class Graph2Seq(Graph2XBase):
                             use_copy=dec_use_copy, use_coverage=dec_use_coverage,
                             tgt_emb_as_output_layer=dec_tgt_emb_as_output_layer,
                             attention_type=dec_attention_type, node_type_num=dec_node_type_num,
-                            fuse_strategy=dec_fuse_strategy,
+                            fuse_strategy=dec_fuse_strategy, teacher_forcing_rate=dec_teacher_forcing_rate,
                             rnn_dropout=dec_dropout)
 
     def _build_decoder(self, decoder_length, input_size, rnn_input_size, hidden_size, graph_pooling_strategy,
                        vocab_model, word_emb,
-                       use_copy=False, use_coverage=False, tgt_emb_as_output_layer=False,
+                       use_copy=False, use_coverage=False, tgt_emb_as_output_layer=False, teacher_forcing_rate=1.0,
                        rnn_type="lstm", attention_type="uniform", node_type_num=None, fuse_strategy="average",
                        rnn_dropout=0.2):
 
@@ -94,10 +95,12 @@ class Graph2Seq(Graph2XBase):
                                          rnn_emb_input_size=rnn_input_size, use_coverage=use_coverage,
                                          use_copy=use_copy,
                                          tgt_emb_as_output_layer=tgt_emb_as_output_layer, dropout=rnn_dropout)
+        self.teacher_forcing_rate = teacher_forcing_rate
 
-    def _encoder_decoder(self, batch_graph, old_graph_list, oov_dict=None, tgt_seq=None):
+    def encoder_decoder(self, batch_graph, old_graph_list, oov_dict=None, tgt_seq=None):
         # run GNN
         batch_graph = self.gnn_encoder(batch_graph)
+        # batch_graph.node_features["node_emb"] = batch_graph.node_features['node_feat']
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
         graph_list_decoder = from_batch(batch_graph)
         if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
@@ -105,14 +108,30 @@ class Graph2Seq(Graph2XBase):
                 g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
 
         # down-task
-        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(graph_list_decoder, tgt_seq=tgt_seq,
+        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(graph_list_decoder, tgt_seq=tgt_seq, teacher_forcing_rate=self.teacher_forcing_rate,
                                                                     oov_dict=oov_dict)
         return prob, enc_attn_weights, coverage_vectors
 
+    def encoder_decoder_beam_search(self, batch_graph, old_graph_list, beam_size, topk=1, oov_dict=None):
+        generator = DecoderStrategy(beam_size=beam_size, vocab=self.seq_decoder.vocab, rnn_type=self.dec_rnn_type,
+                                    decoder=self.seq_decoder, use_copy=self.use_copy,
+                                    use_coverage=self.use_coverage)
+        batch_graph = self.gnn_encoder(batch_graph)
+        batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
+        graph_list_decoder = from_batch(batch_graph)
+        if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
+            for g, g_ori in zip(graph_list_decoder, old_graph_list):
+                g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
+        beam_results = generator.generate(graph_list=graph_list_decoder, oov_dict=oov_dict, topk=topk)
+        return beam_results
+
     def forward(self, graph_list, tgt_seq=None, oov_dict=None):
         batch_graph = self.graph_topology(graph_list)
-        return self._encoder_decoder(batch_graph=batch_graph, old_graph_list=graph_list,
-                                     oov_dict=oov_dict, tgt_seq=tgt_seq)
+        # if torch.isnan(batch_graph.node_features['node_feat'].max()).item():
+        #     a = 0
+        #     batch_graph = self.graph_topology(graph_list)
+        return self.encoder_decoder(batch_graph=batch_graph, old_graph_list=graph_list,
+                                    oov_dict=oov_dict, tgt_seq=tgt_seq)
 
     def translate(self, graph_list, beam_size, topk=1, oov_dict=None):
         """
@@ -126,7 +145,7 @@ class Graph2Seq(Graph2XBase):
             The beam width. When it is 1, the output is equal to greedy search's output.
         topk: int, default=1
             The number of decoded sequence to be reserved.
-            Usually, ``topk`` shoule be smaller or equal to ``beam_size``
+            Usually, ``topk`` should be smaller or equal to ``beam_size``
         oov_dict: VocabModel, default=None
             The vocabulary for copy.
 
@@ -135,18 +154,10 @@ class Graph2Seq(Graph2XBase):
         results: torch.Tensor
             The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes.
         """
-        generator = DecoderStrategy(beam_size=beam_size, vocab=self.seq_decoder.vocab, rnn_type="lstm",
-                                    decoder=self.seq_decoder, use_copy=self.use_copy,
-                                    use_coverage=self.use_coverage)
+
         batch_graph = self.graph_topology(graph_list)
-        batch_graph = self.gnn_encoder(batch_graph)
-        batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
-        graph_list_decoder = from_batch(batch_graph)
-        if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
-            for g, g_ori in zip(graph_list_decoder, graph_list):
-                g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
-        beam_results = generator.generate(graph_list=graph_list_decoder, oov_dict=oov_dict, topk=topk)
-        return beam_results
+        return self.encoder_decoder_beam_search(batch_graph=batch_graph, old_graph_list=graph_list, beam_size=beam_size,
+                                                topk=topk, oov_dict=oov_dict)
 
     @classmethod
     def from_args(cls, opt, vocab_model, device):

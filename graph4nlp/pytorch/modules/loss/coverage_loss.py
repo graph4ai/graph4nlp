@@ -2,9 +2,6 @@ from .base import GeneralLossBase
 import torch
 
 
-
-
-
 class CoverageLoss(GeneralLossBase):
     """
         The loss function for coverage mechanism.

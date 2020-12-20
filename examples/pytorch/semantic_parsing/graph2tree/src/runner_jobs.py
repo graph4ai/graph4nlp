@@ -628,9 +628,6 @@ if __name__ == "__main__":
     main_arg_parser.add_argument(
         '-beam_size', type=int, default=2)
 
-    main_arg_parser.add_argument(
-        '-beam_search_version', type=int, default=2)
-
     main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=50)
     main_arg_parser.add_argument(
         '-max_dec_tree_depth_for_train', type=int, default=50)
