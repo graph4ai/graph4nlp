@@ -405,7 +405,7 @@ class Geo:
             # self.scheduler.step()
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
             # print(self.scheduler.get_lr())
-            if epoch > 20 and epoch % 5 == 0:
+            if epoch > 20 and epoch % 2 == 0:
                 # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                 # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
                 test_acc = self.eval((self.model))
@@ -604,10 +604,10 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-batch_size', type=int, default=20)
 
     main_arg_parser.add_argument(
-        '-dropout_for_word_embedding', type=float, default=0.1)
+        '-dropout_for_word_embedding', type=float, default=0.3)
 
     main_arg_parser.add_argument(
-        '-dropout_for_encoder', type=float, default=0)
+        '-dropout_for_encoder', type=float, default=0.1)
 
     main_arg_parser.add_argument(
         '-dropout_for_decoder', type=float, default=0.1)
@@ -616,7 +616,7 @@ if __name__ == "__main__":
         '-direction_option', type=str, default="undirected")
 
     main_arg_parser.add_argument(
-        '-beam_size', type=int, default=2)
+        '-beam_size', type=int, default=3)
 
     main_arg_parser.add_argument(
         '-beam_search_version', type=int, default=2)
