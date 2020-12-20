@@ -435,7 +435,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                 assert(graph_node_embedding.size(0) == 1)
                 beam_search_generator = DecoderStrategy(
                     beam_size=beam_size, vocab=form_manager, decoder=model.decoder, rnn_type="lstm", use_copy=True, use_coverage=False)
-                    decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]),
+                decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]),
                                                                                           decoder_initial_input=prev_word,
                                                                                           parent_state=parent_h,
                                                                                           graph_node_embedding=enc_outputs,
