@@ -20,10 +20,10 @@ if __name__ == '__main__':
                            'scikit-learn >= 0.23.2', 'networkx >= 2.5', 'dgl{} >= 0.4'.format(get_cuda_version())]
     setup(
         name='graph4nlp{}'.format(get_cuda_version()),
-        version='0.1a100006',
+        version='0.1a100012',
         description='GNN for NLP library',
         author='graph4nlp team',
         license='MIT',
-        packages=find_packages(),
+        packages=find_packages('.', exclude=("examples.*", "examples", "graph4nlp.pytorch.test.*", "graph4nlp.pytorch.test")),
         install_requires=install_requirement,
     )
