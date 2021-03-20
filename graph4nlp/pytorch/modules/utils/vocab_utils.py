@@ -145,7 +145,8 @@ class VocabModel(object):
         """
         if os.path.exists(saved_vocab_file):
             print('Loading pre-built vocab model stored in {}'.format(saved_vocab_file))
-            vocab_model = pickle.load(open(saved_vocab_file, 'rb'))
+            with open(saved_vocab_file, 'rb') as f:
+                vocab_model = pickle.load(f)
 
         else:
             vocab_model = VocabModel(data_set=data_set, tokenizer=tokenizer,

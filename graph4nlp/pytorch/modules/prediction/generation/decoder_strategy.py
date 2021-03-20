@@ -7,6 +7,7 @@ import torch.nn as nn
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.prediction.generation.base import DecoderBase
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
+from copy import deepcopy
 
 
 class StrategyBase(nn.Module):
@@ -141,7 +142,7 @@ class DecoderStrategy(StrategyBase):
             while len(hypos) > 0 and step <= self.max_decoder_step:
                 n_hypos = len(hypos)
                 if n_hypos < beam_size:
-                    hypos.extend(hypos[-1] for _ in range(beam_size - n_hypos)) # check deep copy
+                    hypos.extend(deepcopy(hypos[-1]) for _ in range(beam_size - n_hypos)) # check deep copy
 
                 decoder_input = torch.tensor([h.tokens[-1] for h in hypos]).to(graph_node_embedding.device)
 
