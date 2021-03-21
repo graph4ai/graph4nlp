@@ -85,7 +85,7 @@ def normalize_adj(mx):
 #     return torch.mm(torch.mm(r_mat_inv_sqrt, mx), c_mat_inv_sqrt)
 
 def normalize_sparse_adj(mx):
-    """Row-normalize sparse matrix: symmetric normalized Laplacian"""
+    """symmetric normalized Laplacian"""
     rowsum = np.array(mx.sum(1))
     r_inv_sqrt = np.power(rowsum, -0.5).flatten()
     r_inv_sqrt[np.isinf(r_inv_sqrt)] = 0.
@@ -139,6 +139,15 @@ class Identity(nn.Module):
         return x
 
 class EarlyStopping:
+    """Early stopping class.
+
+    Parameters
+    ----------
+    save_model_path : str
+        The path to the saved checkpoint.
+    patience : int
+        The patience of applying early stopping, default: ``10``.
+    """
     def __init__(self, save_model_path, patience=10):
         self.patience = patience
         self.counter = 0
@@ -163,10 +172,23 @@ class EarlyStopping:
         return self.early_stop
 
     def save_checkpoint(self, model):
-        '''Saves model when validation loss decrease.'''
+        '''Saves model when validation loss decrease.
+
+        Parameters
+        ----------
+        model : class
+            The ML model to be saved.
+        '''
         torch.save(model.state_dict(), self.save_model_path)
         print('Saved model to {}'.format(self.save_model_path))
 
     def load_checkpoint(self, model):
+        '''Load the previously saved model.
+
+        Parameters
+        ----------
+        model : class
+            The ML model to be loaded.
+        '''
         model.load_state_dict(torch.load(self.save_model_path))
         print('Loaded model from {}'.format(self.save_model_path))
