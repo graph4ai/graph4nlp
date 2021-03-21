@@ -1,2 +1,2 @@
-from .dataset import *
+import dataset
 from .data import GraphData
