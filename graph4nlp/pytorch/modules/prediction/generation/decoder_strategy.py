@@ -35,8 +35,9 @@ class BeamSearchNode(object):
 
 
 class Hypothesis(object):
-    def __init__(self, tokens, log_probs, dec_state, num_non_words, enc_attn_weights, use_coverage):
+    def __init__(self, tokens, log_probs, dec_state, num_non_words, enc_attn_weights, use_coverage, states_for_tree = None):
         self.tokens = tokens
+        self.states_for_tree = states_for_tree # to record decoder hidden states to be sent to descendant decoding process.
         self.log_probs = log_probs
         self.dec_state = dec_state
         self.num_non_words = num_non_words
@@ -67,7 +68,8 @@ class Hypothesis(object):
         return Hypothesis(tokens=self.tokens + [token], log_probs=self.log_probs + [log_prob],
                           dec_state=dec_state,
                           num_non_words=self.num_non_words + 1 if non_word else self.num_non_words,
-                          enc_attn_weights=enc_attn_weights_processed, use_coverage=self.use_coverage)
+                          enc_attn_weights=enc_attn_weights_processed, use_coverage=self.use_coverage,
+                          states_for_tree=self.states_for_tree + [dec_state])
 
 
 
@@ -243,87 +245,112 @@ class DecoderStrategy(StrategyBase):
                                         device=None,
                                         topk=1,
                                         enc_batch=None):
-
-        decoded_results = []
-
+        min_out_len = 1
+        max_out_len = self.max_decoder_step
+        batch_size = graph_node_embedding.size(0) 
+        assert batch_size == 1
         decoder_hidden = decoder_initial_state
-        decoder_input = decoder_initial_input
-        form_manager = self.vocab
 
-        # Number of sentence to generate
-        endnodes = []
-        number_required = min((topk + 1), topk - len(endnodes))
+        batch_results = []
+        for batch_idx in range(batch_size):
+            single_graph_node_embedding = graph_node_embedding.expand(self.beam_size, -1, -1).contiguous()
+            single_rnn_node_embedding = rnn_node_embedding.expand(self.beam_size, -1, -1).contiguous() if rnn_node_embedding is not None else None
+            single_parent_state = parent_state.expand(self.beam_size, -1).contiguous() 
 
-        # starting node -  hidden vector, previous node, word id, logp, length
-        node = BeamSearchNode(decoder_hidden, [], None, decoder_input, 0, 1)
-        nodes = PriorityQueue()
-
-        # start the queue
-        nodes.put((-node.eval(), torch.randn(1).item(), node))
-        qsize = 1
-
-        # start beam search
-        while True:
-            if qsize > self.max_decoder_step: break
-
-            # fetch the best node
-            score, _nounce, n = nodes.get()
-            decoder_input = n.wordid
-            decoder_hidden = n.h
-
-            if n.wordid.item() == form_manager.get_symbol_idx(form_manager.end_token) and n.prevNode != None:
-                endnodes.append((score, _nounce, n))
-                # if we reached maximum # of sentences required
-                if len(endnodes) >= number_required:
-                    break
-                else:
-                    continue
+            step = 0
+            results, backup_results = [], []
+    
+            # start_id = self.vocab.get_symbol_idx(self.vocab.start_token)
+            hypos = [Hypothesis([decoder_initial_input], [], decoder_hidden, 1, [], use_coverage=self.use_coverage, states_for_tree=[decoder_hidden])]
+    
+            while len(hypos) > 0 and step <= self.max_decoder_step:
+                n_hypos = len(hypos)
+                if n_hypos < self.beam_size:
+                    hypos.extend(hypos[-1] for _ in range(self.beam_size - n_hypos)) # check deep copy
+                decoder_input = torch.tensor([h.tokens[-1] for h in hypos]).to(graph_node_embedding.device)
+                decoder_hidden = (torch.cat([h.dec_state[0] for h in hypos], 0), torch.cat([h.dec_state[1] for h in hypos], 0))
                 
-            # decode for one step using decoder
-            prediction, decoder_hidden, _ = self.decoder.decode_step(tgt_batch_size=1, 
+                # print("input_word: ", decoder_input)
+                # print("dec_single_state: ", decoder_hidden[0].size())
+                # print("enc_outputs: ", single_graph_node_embedding.size())
+                # print("parent_h: ", single_parent_state.size())
+                # print("enc_batch: ", enc_batch.size())
+
+                prediction, decoder_hidden, dec_attn_scores = self.decoder.decode_step(tgt_batch_size=self.beam_size, 
                                                         dec_single_input=decoder_input,
                                                         dec_single_state=decoder_hidden,
-                                                        memory=graph_node_embedding,
-                                                        parent_state=parent_state,
+                                                        memory=single_graph_node_embedding,
+                                                        parent_state=single_parent_state,
                                                         oov_dict=oov_dict,
                                                         enc_batch=enc_batch)
+                prediction = torch.log(prediction + 1e-31)
+                top_v, top_i = prediction.data.topk(self.beam_size)
 
-            # PUT HERE REAL BEAM SEARCH OF TOP
-            log_prob, indexes = torch.topk(prediction, self.beam_size)
-            nextnodes = []
 
-            for new_k in range(self.beam_size):
-                decoded_t = torch.tensor([indexes[0][new_k]], dtype=torch.long, device=device)
+                new_hypos = []
+                for in_idx in range(n_hypos):
+                    for out_idx in range(self.beam_size):
+                        new_tok = top_i[in_idx][out_idx].item()
+                        new_prob = top_v[in_idx][out_idx].item()
+                        new_enc_attn_weights = dec_attn_scores[in_idx, :].unsqueeze(0).unsqueeze(0)
 
-                log_p = log_prob[0][new_k].item()
+                        non_word = new_tok == self.vocab.get_symbol_idx(self.vocab.end_token)  # only SOS & EOS don't count
+                        tmp_decoder_state = (decoder_hidden[0][in_idx, :].unsqueeze(0),
+                                            decoder_hidden[1][in_idx, :].unsqueeze(0))
 
-                node = BeamSearchNode(decoder_hidden, [], n, decoded_t, n.logp + log_p, n.leng + 1)
-                score = -node.eval()
-                nextnodes.append((score, torch.randn(1).item(), node))
+                        new_hypo = hypos[in_idx].create_next(token=new_tok, log_prob=new_prob,
+                                                             dec_state=tmp_decoder_state, non_word=non_word,
+                                                             add_enc_attn_weights=new_enc_attn_weights)
+                        new_hypos.append(new_hypo)
 
-            # put them into queue
-            for i in range(len(nextnodes)):
-                score, _nounce, nn = nextnodes[i]
-                nodes.put((score, _nounce, nn))
-                # increase qsize
-            qsize += len(nextnodes) - 1
+                new_hypos = sorted(new_hypos, key=lambda h: -h.avg_log_prob)[:self.beam_size]
+                hypos = []
+                new_complete_results, new_incomplete_results = [], []
+                for nh in new_hypos:
+                    length = len(nh)  # Does not count SOS and EOS
+                    if nh.tokens[-1] == self.vocab.get_symbol_idx(self.vocab.end_token) :  # a complete hypothesis
+                        if len(new_complete_results) < self.beam_size and min_out_len <= length <= max_out_len:
+                            new_complete_results.append(nh)
+                    elif len(hypos) < self.beam_size and length < max_out_len:  # an incomplete hypothesis
+                        hypos.append(nh)
+                    elif length == max_out_len and len(new_incomplete_results) < self.beam_size:
+                        new_incomplete_results.append(nh)
+                if new_complete_results:
+                    results.extend(new_complete_results)
+                elif new_incomplete_results:
+                    backup_results.extend(new_incomplete_results)
+                step += 1
 
-        # choose nbest paths, back trace them
-        if len(endnodes) == 0:
-            endnodes = [nodes.get() for _ in range(topk)]
+            if not results:  # if no sequence ends with EOS within desired length, fallback to sequences
+                results = backup_results  # that are "truncated" at the end to max_out_len
+            batch_results.append(sorted(results, key=lambda h: -h.avg_log_prob)[:topk])
 
-        utterances = []
-        for score, _, n in sorted(endnodes, key=operator.itemgetter(0)):
-            utterance = []
-            utterance.append(n)
-            # back trace
-            while n.prevNode != None:
-                n = n.prevNode
-                utterance.append(n)
+        ret = torch.zeros(batch_size, topk, self.max_decoder_step).long()
+        states = []
+        for sent_id, each in enumerate(batch_results):
+            for i in range(topk):
+                ids = torch.Tensor(each[i].tokens[:])[:self.max_decoder_step]
+                if ids.shape[0] < self.max_decoder_step:
+                    pad = torch.zeros(self.max_decoder_step - ids.shape[0])
+                    ids = torch.cat((ids, pad), dim=0)
+                ret[sent_id, i, :] = ids
+                states.append(each[i].states_for_tree[:][:self.max_decoder_step])
+        assert batch_size == 1 and topk == 1
+        # for id 
+        output_results = [[[]]]
 
-            utterance = utterance[::-1]
-            utterances.append(utterance)
+        token_id_list = ret[0][0]
+        states_emb_list = states[0]
+        for index in range(self.max_decoder_step):
+            if token_id_list[index] != self.vocab.get_symbol_idx(self.vocab.pad_token):
+                output_results[0][0].append(BeamSearchNode(hiddenstate=states_emb_list[index],
+                                                     enc_attn_weights_average=None,
+                                                     previousNode=None,
+                                                     wordId=token_id_list[index],
+                                                     logProb=0,
+                                                     length=-1))
 
-        decoded_results.append(utterances)
-        assert(len(decoded_results) == 1 and len(utterances) == topk)
-        return decoded_results
+        # print(self.vocab.get_idx_symbol_for_list(ret[0][0]))
+        return output_results
+
+

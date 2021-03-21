@@ -8,6 +8,9 @@ from graph4nlp.pytorch.data.dataset import TextToTreeDataset
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 
+def tokenize_geo(str_input):
+    return str_input.strip().split()
+
 class GeoDatasetForTree(TextToTreeDataset):
     @property
     def raw_file_names(self):
@@ -38,7 +41,8 @@ class GeoDatasetForTree(TextToTreeDataset):
                  enc_emb_size=300,
                  dec_emb_size=300,
                  device='cpu',
-                 min_freq=1):
+                 min_freq=1,
+                 tokenizer=tokenize_geo):
         """
 
         Parameters
@@ -76,5 +80,6 @@ class GeoDatasetForTree(TextToTreeDataset):
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
                                           enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size, device=device,
-                                          min_freq=min_freq)
+                                          min_freq=min_freq,
+                                          tokenizer=tokenizer)
 

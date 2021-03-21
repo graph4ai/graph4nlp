@@ -255,6 +255,13 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                 else:
                     input_word = dec_batch[cur_index][:, i]
                 # input_word = self._filter_oov(input_word, self.tgt_vocab)
+                
+                # print("tgt_batch_size: ", tgt_batch_size)
+                # print("input_word: ", input_word)
+                # print("dec_single_state: ", dec_state[cur_index][i][1].size())
+                # print("enc_outputs: ", enc_outputs.size())
+                # print("parent_h: ", parent_h.size())
+                # print("enc_batch: ", enc_batch.size())
                 pred, rnn_state_iter, attn_scores = self.decode_step(tgt_batch_size=tgt_batch_size,
                                                                      dec_single_input=input_word,
                                                                      dec_single_state=(
@@ -314,6 +321,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             ptr_output = attn_scores
             output.scatter_add_(1, enc_batch, prob_ptr * ptr_output)
             decoder_output = output
+            # decoder_output = -F.threshold(-output, -1.0, -1.0)
         else:
             decoder_output = torch.softmax(decoder_output, dim=-1)
 
@@ -330,7 +338,9 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                   max_dec_seq_length,
                   max_dec_tree_depth,
                   use_beam_search=True,
-                  oov_dict=None):
+                  beam_size=4,
+                  oov_dict=None,
+                  beam_search_version=1):
         # initialize the rnn state to all zeros
         prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
         prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
@@ -396,67 +406,36 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
             i_child = 1
 
-            if use_copy:
-                enc_context = None
-                input_mask = create_mask(torch.LongTensor(
-                    [enc_outputs.size(1)]*enc_outputs.size(0)), enc_outputs.size(1), device)
-                decoder_state = (s[0].unsqueeze(0), s[1].unsqueeze(0))
             if not use_beam_search:
                 while True:
-                    if not use_copy:
-                        prediction, s, _ = model.decoder.decode_step(tgt_batch_size=1,
-                                                                     dec_single_input=prev_word,
-                                                                     dec_single_state=s,
-                                                                     memory=enc_outputs,
-                                                                     parent_state=parent_h,
-                                                                     oov_dict=oov_dict,
-                                                                     enc_batch=enc_w_list)
-
-                        _, _prev_word = prediction.max(1)
-                        prev_word = _prev_word
-                    # else:
-                    #     # print(form_manager.idx2symbol[np.array(prev_word)[0]])
-                    #     decoder_embedded = model.decoder.embeddings(prev_word)
-                    #     pred, decoder_state, _, _, enc_context = model.decoder.rnn(parent_h, sibling_state, decoder_embedded,
-                    #                                                               decoder_state,
-                    #                                                               enc_outputs.transpose(
-                    #                                                                   0, 1),
-                    #                                                               None, None, input_mask=input_mask,
-                    #                                                               encoder_word_idx=enc_w_list,
-                    #                                                               ext_vocab_size=model.decoder.embeddings.num_embeddings,
-                    #                                                               log_prob=False,
-                    #                                                               prev_enc_context=enc_context,
-                    #                                                               encoder_outputs2=rnn_node_embedding.transpose(0, 1))
-
-                    #     dec_next_state_1 = decoder_state[0].squeeze(0)
-                    #     dec_next_state_2 = decoder_state[1].squeeze(0)
-
-                    #     pred = torch.log(pred + 1e-31)
-                    #     prev_word = pred.argmax(1)
+                    prediction, (curr_c, curr_h), _ = model.decoder.decode_step(tgt_batch_size=1,
+                                                                 dec_single_input=prev_word,
+                                                                 dec_single_state=s,
+                                                                 memory=enc_outputs,
+                                                                 parent_state=parent_h,
+                                                                 oov_dict=oov_dict,
+                                                                 enc_batch=enc_w_list)
+                    s = (curr_c, curr_h)
+                    prev_word = torch.log(prediction + 1e-31)
+                    prev_word = prev_word.argmax(1)
+                    # _, _prev_word = prediction.max(1)
+                    # prev_word = _prev_word
 
                     if int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.end_token) or t.num_children >= max_dec_seq_length:
                         break
                     elif int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
-                        #print("we predicted N");exit()
-                        if use_copy:
-                            queue_decode.append({"s": (dec_next_state_1.clone(), dec_next_state_2.clone(
-                            )), "parent": head, "child_index": i_child, "t": Tree()})
-                        else:
-                            queue_decode.append({"s": (s[0].clone(), s[1].clone(
-                            )), "parent": head, "child_index": i_child, "t": Tree()})
+                        queue_decode.append({"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
                         t.add_child(int(prev_word[0]))
                     else:
                         t.add_child(int(prev_word[0]))
                     i_child = i_child + 1
             else:
-                beam_width = 4
                 topk = 1
                 # decoding goes sentence by sentence
                 assert(graph_node_embedding.size(0) == 1)
                 beam_search_generator = DecoderStrategy(
-                    beam_size=beam_width, vocab=form_manager, decoder=model.decoder, rnn_type=None)
-                for idx in range(graph_node_embedding.size(0)):
-                    decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]),
+                    beam_size=beam_size, vocab=form_manager, decoder=model.decoder, rnn_type="lstm", use_copy=True, use_coverage=False)
+                decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]),
                                                                                           decoder_initial_input=prev_word,
                                                                                           parent_state=parent_h,
                                                                                           graph_node_embedding=enc_outputs,
@@ -602,7 +581,7 @@ class TreeDecodingUnit(nn.Module):
         else:
             self.embedding = nn.Embedding(
                 input_size, self.emb_size, padding_idx=0)
-            self.dropout = nn.Dropout(dropout_input)
+        self.dropout = nn.Dropout(dropout_input)
 
         self.lstm = nn.LSTMCell(
             emb_size + hidden_size * (2 if use_sibling else 1), hidden_size)
@@ -611,8 +590,7 @@ class TreeDecodingUnit(nn.Module):
     def forward(self, input_src, prev_c, prev_h, parent_h, sibling_state):
 
         src_emb = self.embedding(input_src)
-        if not self.share_embedding:
-            src_emb = self.dropout(src_emb)
+        src_emb = self.dropout(src_emb)
         if self.use_sibling:
             input_single_step = torch.cat(
                 (src_emb, parent_h, sibling_state), 1)

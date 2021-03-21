@@ -113,7 +113,7 @@ class Text2TreeDataItem(DataItem):
         self.output_text = output_text
         self.share_vocab = share_vocab
         self.output_tree = output_tree
-    def extract(self, use_tok=True):
+    def extract(self):
         """
         Returns
         -------
@@ -123,17 +123,10 @@ class Text2TreeDataItem(DataItem):
 
         input_tokens = []
         for i in range(g.get_node_num()):
-            if self.tokenizer is None or use_tok == False:
-                tokenized_token = g.node_attributes[i]['token'].strip().split(' ')
-            else:
-                tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
-
+            tokenized_token = self.tokenizer(g.node_attributes[i]['token'])
             input_tokens.extend(tokenized_token)
 
-        if self.tokenizer is None or use_tok == False:
-            output_tokens = self.output_text.strip().split(' ')
-        else:
-            output_tokens = self.tokenizer(self.output_text)
+        output_tokens = self.tokenizer(self.output_text)
 
         return input_tokens, output_tokens
 
@@ -456,8 +449,8 @@ class Dataset(torch.utils.data.Dataset):
                 processor_args = {
                     'annotators': "tokenize,ssplit,pos,parse",
                     "tokenize.options":
-                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
-                    "tokenize.whitespace": False,
+                        "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                    "tokenize.whitespace": True,
                     'ssplit.isOneSentence': False,
                     'outputFormat': 'json'
                 }
@@ -844,11 +837,10 @@ class TextToTreeDataset(Dataset):
             all_words = [Counter(), Counter()]
 
         for instance in data_for_vocab:
-            extracted_tokens = instance.extract(use_tok=False)
+            extracted_tokens = instance.extract()
             if self.share_vocab:
                 all_words.update(extracted_tokens[0])
-                for w_i in extracted_tokens[1]:
-                    all_words[w_i] = 100000
+                all_words.update(extracted_tokens[1])
             else:
                 all_words[0].update(extracted_tokens[0])
                 all_words[1].update(extracted_tokens[1])
@@ -858,8 +850,8 @@ class TextToTreeDataset(Dataset):
             src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_freq, max_vocab_size=100000)
             tgt_vocab_model = src_vocab_model
         else:
-            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=3, max_vocab_size=100000)
-            tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=1, max_vocab_size=100000)
+            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=self.min_freq, max_vocab_size=100000)
+            tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=self.min_freq, max_vocab_size=100000)
 
         self.src_vocab_model = src_vocab_model
         self.tgt_vocab_model = tgt_vocab_model

@@ -66,6 +66,7 @@ class Graph2Tree(Graph2XBase):
 
         self.use_copy = dec_use_copy
         self.device = device
+        self.vocab_model = vocab_model
 
         self._build_decoder(decoder_length=dec_max_decoder_step,
                             decoder_tree_depth=dec_max_tree_depth,
