@@ -3,6 +3,8 @@ import torch.nn as nn
 
 
 class GNNLayerBase(nn.Module):
+    """Base class for GNN layer.
+    """
     def __init__(self):
         super(GNNLayerBase, self).__init__()
 
@@ -11,6 +13,8 @@ class GNNLayerBase(nn.Module):
         raise NotImplementedError('GNNLayerBase: Not Implemented.')
 
 class GNNBase(nn.Module):
+    """Base class for GNN module.
+    """
     def __init__(self):
         super(GNNBase, self).__init__()
 

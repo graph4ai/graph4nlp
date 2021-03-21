@@ -8,6 +8,25 @@ import torch
 # Take *weighted* average of the word embeddings through all layers.
 
 def extract_bert_hidden_states(all_encoder_layers, max_doc_len, features, weighted_avg=False):
+  """Extract BERT hidden states.
+
+  Parameters
+  ----------
+  all_encoder_layers : torch.Tensor
+      All layer outputs of the BERT encoder.
+  max_doc_len : torch.Tensor
+      The maximal document lenght tensor.
+  features : torch.Tensor
+      The feature tensor.
+  weighted_avg : boolean
+    Specify whether to compute the weighted average (with leranable weight vector) or average of
+    the embeddings of all hidden layers, default: ``False``.
+
+  Returns
+  -------
+  torch.Tensor
+      The output BERT embeddings.
+  """
   # assert all_encoder_layers.requires_grad == False
   num_layers, batch_size, num_chunk, max_token_len, bert_dim = all_encoder_layers.shape
   out_features = torch.Tensor(num_layers, batch_size, max_doc_len, bert_dim).fill_(0)
@@ -37,6 +56,7 @@ def extract_bert_hidden_states(all_encoder_layers, max_doc_len, features, weight
   return out_features
 
 def convert_text_to_bert_features(text, bert_tokenizer, max_seq_length, doc_stride):
+  """Helper function to convert text to BERT features.
   # The convention in BERT is:
       # (a) For sequence pairs:
       #  tokens:   [CLS] is this jack ##son ##ville ? [SEP] no it is not . [SEP]
@@ -44,7 +64,7 @@ def convert_text_to_bert_features(text, bert_tokenizer, max_seq_length, doc_stri
       # (b) For single sequences:
       #  tokens:   [CLS] the dog is hairy . [SEP]
       #  type_ids: 0   0   0   0  0     0 0
-
+  """
   tok_to_orig_index = []
   all_doc_tokens = []
   for (i, token) in enumerate(text):

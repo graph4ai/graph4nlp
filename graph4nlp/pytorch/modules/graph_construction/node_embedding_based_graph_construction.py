@@ -39,6 +39,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         ----------
         batch_graphdata : list of GraphData
             The input graph data list.
+
         Returns
         -------
         GraphData

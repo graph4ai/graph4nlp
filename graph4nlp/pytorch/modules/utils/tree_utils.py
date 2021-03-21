@@ -218,7 +218,7 @@ class Vocab():
         for i in range(len(l)):
             r.append(self.get_symbol_idx(l[i]))
         return r
-    
+
     def get_idx_symbol_for_list(self, l):
         l = np.array(l)
         r = []
@@ -287,7 +287,7 @@ class DataLoaderForSeqEncoder():
             self.src_vocab.init_from_file(share_vocab_file_path, min_freq, max_vocab_size)
             self.tgt_vocab = self.src_vocab
             self.share_vocab = self.src_vocab
-            
+
         print("loading data file...")
         self.data = self._get_seq_tree_pair_data()
 
@@ -406,7 +406,7 @@ class DataLoaderForGraphEncoder():
         self.tgt_vocab = dataset.tgt_vocab_model
         if use_share_vocab and self.src_vocab.vocab_size == self.tgt_vocab.vocab_size:
             self.share_vocab = self.src_vocab
-        
+
         self.data = [(item.graph, item.output_text, item.output_tree) for item in data]
 
         if self.mode == "test":
@@ -435,7 +435,7 @@ class DataLoaderForGraphEncoder():
                 enc_len_batch += graph_item.get_node_num()
                 original_target_tree.append(self.data[p+i][1])
                 tree_batch.append(self.data[p+i][2])
-            
+
             self.enc_batch_list.append(vectorized_batch_graph)
             self.enc_len_batch_list.append(enc_len_batch)
             self.original_target_tree_list.append(original_target_tree)
@@ -453,7 +453,7 @@ class DataLoaderForGraphEncoder():
                 'decoder_tree_batch': self.dec_batch_list[p],
                 'decoder_output_text_batch': self.original_target_tree_list[p]
                 }
-                
+
     def all_batch(self):
         r = []
         for p in range(self.num_batch):

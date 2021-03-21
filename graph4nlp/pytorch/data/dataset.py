@@ -1503,13 +1503,13 @@ class SequenceLabelingDataset(Dataset):
         Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
         base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
         For SequenceLabelingDataset, the format of the input file should contain lines of tokens, each line representing one
-        record of token at first column and its tag at the last column. 
+        record of token at first column and its tag at the last column.
         Examples
         --------
         "EU       I-ORG "
          rejects  O
          German   I-MISC
-         
+
         Parameters
         ----------
 
@@ -1585,7 +1585,7 @@ class SequenceLabelingDataset(Dataset):
         #return [graph_data, tgt_tag]
         return {"graph_data": graph_data,
             "tgt_tag": tgt_tag}
-        
+
 
 class CNNSeq2SeqDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir,

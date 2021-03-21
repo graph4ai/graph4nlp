@@ -50,6 +50,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         ----------
         batch_graphdata : list of GraphData
             The input graph data list.
+
         Returns
         -------
         GraphData
@@ -163,7 +164,17 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         lower_case : boolean
             Specify whether to lower case the input text, default: ``True``.
         tokenizer : callable, optional
-            The tokenization function.
+            The tokenization function, default: ``nltk.tokenize.word_tokenize``.
+        nlp_processor: StanfordCoreNLP, optional
+            The NLP processor, default: ``None``.
+        processor_args: dict, optional
+            The NLP processor arguments, default: ``None``.
+        merge_strategy: str
+            Strategy to merge sub-graphs into one graph, depends on specific ``dynamic_init_topology_builder``, default: ``None``.
+        edge_strategy: str
+            Strategy to process edge, depends on specific ``dynamic_init_topology_builder``, default: ``None``.
+        verbase: boolean
+            verbase flag, default: ``False``.
         dynamic_init_topology_builder : class, optional
             The initial graph topology builder, default: ``None``.
         dynamic_init_topology_aux_args : dict, optional
