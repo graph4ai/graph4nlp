@@ -20,7 +20,7 @@ class VocabModel(object):
     data_set: iterable
         A list of instances where each instance is a list of str.
     tokenizer: function, optional
-        Word tokenization function, default: nltk.tokenize.word_tokenize.
+        Word tokenization function, default: ``nltk.tokenize.word_tokenize``.
     max_word_vocab_size: int, optional
         Maximal word vocab size, default: ``None``.
     min_word_vocab_freq: int, optional
@@ -29,6 +29,8 @@ class VocabModel(object):
         Path to the pretrained word embedding file, default: ``None``.
     word_emb_size: int, optional
         Word embedding size, default: ``None``.
+    share_vocab : boolean
+        Specify whether to share vocab between input and output text, default: ``True``.
 
     Examples
     -------
@@ -137,6 +139,8 @@ class VocabModel(object):
             Path to the pretrained word embedding file, default: ``None``.
         word_emb_size: int, optional
             Word embedding size, default: ``None``.
+        share_vocab : boolean
+            Specify whether to share vocab between input and output text, default: ``True``.
 
         Returns:
         -------
@@ -184,6 +188,8 @@ class Vocab(object):
 
     Parameters
     ----------
+    lower_case : boolean
+        Specify whether to lowercase text, default: ``True``.
     tokenizer: function, optional
         Word tokenization function, default: nltk.tokenize.word_tokenize.
 

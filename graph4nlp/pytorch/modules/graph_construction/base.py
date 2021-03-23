@@ -29,10 +29,6 @@ class GraphConstructionBase(nn.Module):
         Specify whether to fix pretrained word embeddings, default: ``True``.
     fix_bert_emb : boolean, optional
         Specify whether to fix pretrained BERT embeddings, default: ``True``.
-    bert_model_name : str, optional
-        Specify the BERT model name, default: ``'bert-base-uncased'``.
-    bert_lower_case : bool, optional
-        Specify whether to lower case the input text for BERT embeddings, default: ``True``.
     word_dropout : float, optional
         Dropout ratio for word embedding, default: ``None``.
     rnn_dropout : float, optional
@@ -114,26 +110,28 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     """
     Base class for static graph construction.
 
-    ...
-
-    Attributes
+    Parameters
     ----------
+    word_vocab : Vocab
+        The word vocabulary.
     embedding_styles : dict
-        Specify embedding styles including ``word_emb_type``, ``node_edge_emb_strategy`` and ``seq_info_encode_strategy``.
-
-    Methods
-    -------
-    add_vocab()
-        Add new parsed words or syntactic components into vocab.
-
-    topology()
-        Generate graph topology.
-
-    embedding(raw_data, structure)
-        Generate graph embeddings.
-
-    forward(raw_data)
-        Generate static graph embeddings and topology.
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``emb_strategy`` : specify the embedding construction strategy.
+        - ``num_rnn_layers``: specify the number of RNN layers.
+        - ``bert_model_name``: specify the BERT model name.
+        - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
+    hidden_size : int, optional
+        The hidden size of RNN layer, default: ``None``.
+    fix_word_emb : boolean, optional
+        Specify whether to fix pretrained word embeddings, default: ``True``.
+    fix_bert_emb : boolean, optional
+        Specify whether to fix pretrained BERT embeddings, default: ``True``.
+    word_dropout : float, optional
+        Dropout ratio for word embedding, default: ``None``.
+    rnn_dropout : float, optional
+        Dropout ratio for RNN embedding, default: ``None``.
+    device : torch.device, optional
+        Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
 
     def __init__(self, word_vocab, embedding_styles, hidden_size,
@@ -215,10 +213,6 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         Specify whether to fix pretrained word embeddings, default: ``False``.
     fix_bert_emb : boolean, optional
         Specify whether to fix pretrained BERT embeddings, default: ``True``.
-    bert_model_name : str, optional
-        Specify the BERT model name, default: ``'bert-base-uncased'``.
-    bert_lower_case : bool, optional
-        Specify whether to lower case the input text for BERT embeddings, default: ``True``.
     word_dropout : float, optional
         Dropout ratio for word embedding, default: ``None``.
     rnn_dropout : float, optional
@@ -400,6 +394,19 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         return attention
 
     def sparsify_graph(self, adj):
+        """Return a sparsified graph of the input graph. The graph sparsification strategy
+        is determined by ``top_k_neigh`` and ``epsilon_neigh``.
+
+        Parameters
+        ----------
+        adj : torch.Tensor
+            The input adjacency matrix.
+
+        Returns
+        -------
+        torch.Tensor
+            The output adjacency matrix.
+        """
         if self.epsilon_neigh is not None:
             adj = self._build_epsilon_neighbourhood(adj, self.epsilon_neigh)
 
@@ -483,6 +490,18 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
 
     def _compute_distance_matrix(self, X, weight=None):
         """Compute distance matrix for RBF kernel.
+
+        Parameters
+        ----------
+        X : torch.Tensor
+            The input node embedding matrix.
+        weight : torch.Tensor, optional
+            The learnable weight matrix, default ``None``.
+
+        Returns
+        -------
+        torch.Tensor
+            The distance matrix.
         """
         if weight is not None:
             trans_X = torch.mm(X, weight)
@@ -495,6 +514,18 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         return dists
 
     def _get_node_mask_for_batch_graph(self, num_nodes):
+        """Get node mask matrix for batch graph.
+
+        Parameters
+        ----------
+        num_nodes : torch.Tensor
+            The node size matrix.
+
+        Returns
+        -------
+        torch.Tensor
+            The node mask matrix.
+        """
         node_mask = []
         for i in range(num_nodes.shape[0]): # batch
             graph_node_num = num_nodes[i].item()
@@ -506,6 +537,18 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         return node_mask
 
     def _get_normalized_init_adj(self, graph):
+        """Compute the symmetric normalized Laplacian matrix of the input graph data.
+
+        Parameters
+        ----------
+        graph : GraphData
+            The input graph data.
+
+        Returns
+        -------
+        torch.Tensor
+            The symmetric normalized Laplacian matrix.
+        """
         adj = graph.scipy_sparse_adj()
         adj = normalize_sparse_adj(adj)
         adj = to_cuda(sparse_mx_to_torch_sparse_tensor(adj), self.device)

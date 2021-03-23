@@ -142,8 +142,8 @@ class Graph2Tree(nn.Module):
                                direction_option=direction_option, feat_drop=enc_dropout_for_feature,
                                attn_drop=enc_dropout_for_attn, activation=F.relu, residual=True)
         elif gnn_type == "GGNN":
-            self.encoder = GGNN(1, enc_hidden_size, enc_hidden_size,
-                                dropout=enc_dropout_for_feature, use_edge_weight=self.use_edge_weight,
+            self.encoder = GGNN(1, enc_hidden_size, enc_hidden_size, enc_hidden_size,
+                                feat_drop=enc_dropout_for_feature, use_edge_weight=self.use_edge_weight,
                                 direction_option=direction_option)
         elif gnn_type == "SAGE":
             # aggregate type: 'mean','gcn','pool','lstm'
@@ -156,7 +156,7 @@ class Graph2Tree(nn.Module):
                                enc_hidden_size,
                                enc_hidden_size,
                                direction_option=direction_option,
-                               norm="both",
+                               gcn_norm="both",
                                activation=F.relu,
                                use_edge_weight=self.use_edge_weight)
         else:
@@ -260,17 +260,26 @@ class Geo:
         elif self.opt.graph_construction_type == "ConstituencyGraph":
             dataset = GeoDatasetForTree(root_dir=self.data_dir,
                                          topology_builder=ConstituencyBasedGraphConstruction,
-                                         topology_subdir='ConstituencyGraph', share_vocab=use_share_vocab,
-                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, min_freq=self.opt.min_freq)
+                                         topology_subdir='ConstituencyGraph', 
+                                         share_vocab=use_share_vocab,
+                                         enc_emb_size=self.opt.enc_emb_size, 
+                                         dec_emb_size=self.opt.tgt_emb_size,
+                                         device=self.device, 
+                                         min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
-            dataset = GeoDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
+            dataset = GeoDatasetForTree(root_dir=self.data_dir, 
+                                         seed=self.opt.seed, 
+                                         word_emb_size=self.opt.enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedGraphConstruction,
-                                         topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
-                                         dynamic_graph_type='node_emb', share_vocab=use_share_vocab,
-                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, min_freq=self.opt.min_freq)
+                                         topology_subdir='DynamicGraph_node_emb', 
+                                         graph_type='dynamic',
+                                         dynamic_graph_type='node_emb', 
+                                         share_vocab=use_share_vocab,
+                                         enc_emb_size=self.opt.enc_emb_size, 
+                                         dec_emb_size=self.opt.tgt_emb_size,
+                                         device=self.device, 
+                                         min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
             if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
@@ -396,7 +405,7 @@ class Geo:
             # self.scheduler.step()
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
             # print(self.scheduler.get_lr())
-            if epoch > 20 and epoch % 10 == 0:
+            if epoch > 20 and epoch % 2 == 0:
                 # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                 # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
                 test_acc = self.eval((self.model))
@@ -407,10 +416,8 @@ class Geo:
     def eval(self, model):
         device = model.device
 
-        # max_dec_seq_length = self.opt.max_dec_seq_length
-        # max_dec_tree_depth = self.opt.max_dec_tree_depth_for_test
-        max_dec_seq_length = 50
-        max_dec_tree_depth = 20
+        max_dec_seq_length = self.opt.max_dec_seq_length
+        max_dec_tree_depth = self.opt.max_dec_tree_depth_for_test
         
         use_copy = self.test_data_loader.use_copy
         enc_emb_size = model.src_vocab.embedding_dims
@@ -455,7 +462,10 @@ class Geo:
                                                 device,
                                                 max_dec_seq_length,
                                                 max_dec_tree_depth,
-                                                oov_dict=oov_dict)
+                                                oov_dict=oov_dict,
+                                                use_beam_search=True,
+                                                beam_size=self.opt.beam_size,
+                                                beam_search_version=self.opt.beam_search_version)
             
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
@@ -474,13 +484,13 @@ class Geo:
             cand_str = convert_to_string(
                 candidate, eval_vocab)
 
-            # for c in candidate:
-            #     if c >= self.test_data_loader.tgt_vocab.vocab_size:
-            #         print("====================")
-            #         print(oov_dict.symbol2idx)
-            #         print(cand_str)
-            #         print(ref_str)
-            #         print("====================")
+            for c in candidate:
+                if c >= self.test_data_loader.tgt_vocab.vocab_size:
+                    print("====================")
+                    print(oov_dict.symbol2idx)
+                    print(cand_str)
+                    print(ref_str)
+                    print("====================")
             # if cand_str.strip() != ref_str.strip():
             #     print(cand_str)
             #     print(ref_str)
@@ -512,11 +522,11 @@ def is_all_same(c1, c2, form_manager):
         if all_same:
             return True
     if len(c1) != len(c2) or all_same == False:
-        n1 = Tree.deduplicate_tree(Tree.norm_tree(c1, form_manager), form_manager)
-        n2 = Tree.deduplicate_tree(Tree.norm_tree(c2, form_manager), form_manager)
-        # if np.array_equal(np.array(c1), np.array(n1)) == False:
-        #     print(form_manager.get_idx_symbol_for_list(c1))
-        #     print(form_manager.get_idx_symbol_for_list(n1))
+        n1 = Tree.norm_tree(Tree.deduplicate_tree(c1, form_manager), form_manager)
+        n2 = Tree.norm_tree(Tree.deduplicate_tree(c2, form_manager), form_manager)
+        # if np.array_equal(np.array(Tree.norm_tree(c2, form_manager)), np.array(n2)) == False:
+        #     print(form_manager.get_idx_symbol_for_list(c2))
+        #     print(form_manager.get_idx_symbol_for_list(n2))
         #     print("=================")
         if len(n1) == len(n2):
             all_same = True
@@ -526,6 +536,9 @@ def is_all_same(c1, c2, form_manager):
                     break
         else:
             return False
+        if all_same:
+            print(" ".join(form_manager.get_idx_symbol_for_list(c1)))
+            print(" ".join(form_manager.get_idx_symbol_for_list(c2)))
         return all_same
     raise NotImplementedError("you should not arrive here!")
 
@@ -560,11 +573,11 @@ if __name__ == "__main__":
     main_arg_parser = argparse.ArgumentParser(description="parser")
 
     main_arg_parser.add_argument(
-        '-gpuid', type=int, default=0, help='which gpu to use. -1 = use CPU')
+        '-gpuid', type=int, default=3, help='which gpu to use. -1 = use CPU')
     main_arg_parser.add_argument(
-        '-seed', type=int, default=123, help='torch manual random number generator seed')
+        '-seed', type=int, default=1234, help='torch manual random number generator seed')
     main_arg_parser.add_argument(
-        '-use_copy', type=int, default=0, help='whether use copy mechanism')
+        '-use_copy', type=int, default=1, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str,
                                  default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/geo', help='data path')
@@ -580,9 +593,9 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
     main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
-    # DynamicGraph_node_emb_refined, DynamicGraph_node_emb
+    # DynamicGraph_node_emb_refined, DynamicGraph_node_emb, ConstituencyGraph
     main_arg_parser.add_argument(
-        '-graph_construction_type', type=str, default="ConstituencyGraph")
+        '-graph_construction_type', type=str, default="DynamicGraph_node_emb")
 
     # "None, line, dependency, constituency"
     main_arg_parser.add_argument(
@@ -591,10 +604,10 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-batch_size', type=int, default=20)
 
     main_arg_parser.add_argument(
-        '-dropout_for_word_embedding', type=float, default=0.1)
+        '-dropout_for_word_embedding', type=float, default=0.3)
 
     main_arg_parser.add_argument(
-        '-dropout_for_encoder', type=float, default=0)
+        '-dropout_for_encoder', type=float, default=0.1)
 
     main_arg_parser.add_argument(
         '-dropout_for_decoder', type=float, default=0.1)
@@ -602,11 +615,17 @@ if __name__ == "__main__":
     main_arg_parser.add_argument(
         '-direction_option', type=str, default="undirected")
 
+    main_arg_parser.add_argument(
+        '-beam_size', type=int, default=3)
+
+    main_arg_parser.add_argument(
+        '-beam_search_version', type=int, default=2)
+
     main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=100)
     main_arg_parser.add_argument(
-        '-max_dec_tree_depth_for_train', type=int, default=25)
+        '-max_dec_tree_depth_for_train', type=int, default=30)
     main_arg_parser.add_argument(
-        '-max_dec_tree_depth_for_test', type=int, default=25)
+        '-max_dec_tree_depth_for_test', type=int, default=30)
 
     main_arg_parser.add_argument(
         '-teacher_force_ratio', type=float, default=1.0)
