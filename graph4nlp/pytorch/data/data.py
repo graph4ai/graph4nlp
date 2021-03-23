@@ -301,6 +301,7 @@ class GraphData(object):
             return
 
         # Append to the mapping list
+        # TODO: Is this mapping really necessary?
         eid = self.get_edge_num()
         self._eid_nids_mapping[eid] = endpoint_tuple
         self._nids_eid_mapping[endpoint_tuple] = eid
@@ -737,15 +738,64 @@ def to_batch(graphs: list = None) -> GraphData:
     GraphData
         The large graph containing all the graphs in the batch.
     """
-    batch = GraphData(graphs[0], graphs[0].device)
-    batch.batch_size = len(graphs)
-    batch.batch = [0] * graphs[0].get_node_num()
-    batch._batch_num_nodes = [g.get_node_num() for g in graphs]
-    batch._batch_num_edges = [g.get_edge_num() for g in graphs]
-    for i in range(1, len(graphs)):
-        batch.union(graphs[i])
-        batch.batch += [i] * graphs[i].get_node_num()
-    return batch
+    big_graph = GraphData()
+    big_graph.device = graphs[0].device
+
+    total_num_nodes = sum([g.get_node_num() for g in graphs])
+    # Step 1: Add nodes
+    big_graph.add_nodes(total_num_nodes)
+    # Step 2: Set node features
+    node_features = dict()
+    for g in graphs:
+        for feature_name in g.node_features.keys():
+            if feature_name in node_features:
+                node_features[feature_name].append(g.node_features[feature_name])
+            else:
+                node_features[feature_name] = [g.node_features[feature_name]]
+    for k, v in node_features.items():
+        if None in v:
+            continue
+        else:
+            feature_tensor = torch.cat(v, dim=0)
+            big_graph.node_features[k] = feature_tensor
+    # Step 3: Set node attributes
+    total_node_count = 0
+    for g in graphs:
+        for i in range(g.get_node_num()):
+            big_graph.node_attributes[total_node_count] = g.node_attributes[i]
+            total_node_count += 1
+    # Step 4: Add edges
+    for g in graphs:
+        for e in g.get_all_edges():
+            big_graph.add_edge(*e)
+    # Step 5: Add edge features
+    edge_features = dict()
+    for g in graphs:
+        for feature_name in g.edge_features.keys():
+            if feature_name in edge_features:
+                edge_features[feature_name].append(g.edge_features[feature_name])
+            else:
+                edge_features[feature_name] = [g.edge_features[feature_name]]
+    for k, v in edge_features.items():
+        if None in v:
+            continue
+        else:
+            feature_tensor = torch.cat(v, dim=0)
+            big_graph.edge_features[k] = feature_tensor
+    # Step 6: Add edge attributes
+    total_edge_count = 0
+    for g in graphs:
+        for i in range(g.get_edge_num()):
+            big_graph.edge_attributes[total_edge_count] = g.edge_attributes[i]
+            total_edge_count += 1
+
+    # Step 7: Batch information preparation
+    big_graph.batch_size = len(graphs)
+    big_graph.batch = sum([[i] * graphs[i].get_node_num() for i in range(len(graphs))], start=[])
+    big_graph._batch_num_nodes = [g.get_node_num() for g in graphs]
+    big_graph._batch_num_edges = [g.get_edge_num() for g in graphs]
+
+    return big_graph
 
 
 def from_batch(batch: GraphData) -> list:
@@ -796,6 +846,7 @@ def from_batch(batch: GraphData) -> list:
             for i in range(batch_size):
                 ret[i].edge_features[k] = v[cum_n_edges:cum_n_edges + num_edges[i]]
                 cum_n_edges += num_edges[i]
+
     cum_n_nodes = 0
     cum_n_edges = 0
 
