@@ -704,6 +704,66 @@ class GraphData(object):
         self._batch_num_edges = batch._batch_num_edges
         self._batch_num_nodes = batch._batch_num_nodes
 
+class BatchGraphData(GraphData):
+    """
+    Batched graph data inherited from GraphData
+    """
+
+    def __init__(self, src=None, device=None):
+        super(BatchGraphData, self).__init__(src, device)
+        self.node_feature_lists = dict()
+        self.edge_feature_lists = dict()
+
+    @property
+    def batch_node_features(self):
+        """
+        Get the batched view of node feature tensors, i.e., tensors in (B, N, D) view
+        Returns
+        -------
+        dict:
+            A dictionary containing the node feature names and the corresponding batch-view tensors.
+        """
+        batch_node_features = dict()
+        from torch.nn.utils.rnn import pad_sequence
+        for k, v in self.node_feature_lists.items():
+            self.batch_node_features[k] = pad_sequence(v, batch_first=True)
+        return batch_node_features
+
+    @property
+    def batch_edge_features(self):
+        """
+        An edge version of :py:method `batch_node_features`.
+        Returns
+        -------
+        dict:
+            A dictionary containing the edge feature names and the corresponding batch-view tensors.
+        """
+        batch_edge_features = dict()
+        from torch.nn.utils.rnn import pad_sequence
+        for k, v in self.edge_feature_lists.items():
+            batch_edge_features[k] = pad_sequence(v, batch_first=True)
+        return batch_edge_features
+
+    @property
+    def split_node_features(self):
+        node_features = dict()
+        for feature in self.node_features.keys():
+            if self.node_features[feature] is None:
+                continue
+            node_features[feature] = torch.split(self.node_features[feature],
+                                                 split_size_or_sections=self._batch_num_nodes)
+        return node_features
+
+    @property
+    def split_edge_features(self):
+        edge_features = dict()
+        for feature in self.edge_features.keys():
+            if self.edge_features[feature] is None:
+                continue
+            edge_features[feature] = torch.split(self.edge_features[feature],
+                                                 split_size_or_sections=self._batch_num_edges)
+        return edge_features
+
 
 def from_dgl(g: dgl.DGLGraph) -> GraphData:
     """
@@ -723,8 +783,7 @@ def from_dgl(g: dgl.DGLGraph) -> GraphData:
     graph.from_dgl(g)
     return graph
 
-
-def to_batch(graphs: list = None) -> GraphData:
+def to_batch(graphs: list = None) -> BatchGraphData:
     """
     Convert a list of GraphData to a large graph (a batch).
 
@@ -735,10 +794,12 @@ def to_batch(graphs: list = None) -> GraphData:
 
     Returns
     -------
-    GraphData
+    BatchGraphData
         The large graph containing all the graphs in the batch.
     """
-    big_graph = GraphData()
+
+    # Optimized version
+    big_graph = BatchGraphData()
     big_graph.device = graphs[0].device
 
     total_num_nodes = sum([g.get_node_num() for g in graphs])
@@ -756,6 +817,7 @@ def to_batch(graphs: list = None) -> GraphData:
         if None in v:
             continue
         else:
+            big_graph.node_feature_lists[k] = v
             feature_tensor = torch.cat(v, dim=0)
             big_graph.node_features[k] = feature_tensor
     # Step 3: Set node attributes
@@ -780,6 +842,7 @@ def to_batch(graphs: list = None) -> GraphData:
         if None in v:
             continue
         else:
+            big_graph.edge_feature_lists[k] = v
             feature_tensor = torch.cat(v, dim=0)
             big_graph.edge_features[k] = feature_tensor
     # Step 6: Add edge attributes
@@ -798,13 +861,13 @@ def to_batch(graphs: list = None) -> GraphData:
     return big_graph
 
 
-def from_batch(batch: GraphData) -> list:
+def from_batch(batch: BatchGraphData) -> list:
     """
     Convert a batch consisting of several GraphData instances to a list of GraphData instances.
 
     Parameters
     ----------
-    batch: GraphData
+    batch: BatchGraphData
         The source batch to be split.
 
     Returns
@@ -833,6 +896,7 @@ def from_batch(batch: GraphData) -> list:
         ret.append(g)
 
     # Add node and edge features
+
     for k, v in batch._node_features.items():
         if v is not None:
             cum_n_nodes = 0  # Cumulative node numbers
