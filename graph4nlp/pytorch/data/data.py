@@ -121,8 +121,7 @@ class GraphData(object):
         current_num_nodes = self.get_node_num()
 
         # Create placeholders in the node attribute dictionary
-        for new_node_idx in range(current_num_nodes, current_num_nodes + node_num):
-            self._node_attributes += [single_node_attr_factory(**res_init_node_attr)] * node_num
+        self._node_attributes += [single_node_attr_factory(**res_init_node_attr)] * node_num
 
         # Do padding in the node feature dictionary
         for key in self._node_features.keys():
@@ -310,9 +309,7 @@ class GraphData(object):
             return
 
         # Append to the mapping list
-        # TODO: Is this mapping really necessary?
         eid = self.get_edge_num()
-        self._eid_nids_mapping[eid] = endpoint_tuple
         self._nids_eid_mapping[endpoint_tuple] = eid
 
         # Add edge
@@ -321,7 +318,7 @@ class GraphData(object):
 
         # Initialize edge feature and attribute
         # 1. create placeholder in edge attribute dictionary
-        self._edge_attributes[eid] = single_edge_attr_factory(res_init_edge_attributes)
+        self._edge_attributes.append(single_edge_attr_factory(**res_init_edge_attributes))
         # 2. perform zero padding
         for key in self._edge_features.keys():
             self._edge_features[key] = entail_zero_padding(self._edge_features[key], 1)
@@ -359,9 +356,10 @@ class GraphData(object):
                 warnings.warn('Edge {} is already in the graph. Skipping this edge.'.format(endpoint_tuple), Warning)
                 duplicate_edge_indices.append(i)
                 continue
-            self._nids_eid_mapping[endpoint_tuple] = current_num_edges + i + 1
+            self._nids_eid_mapping[endpoint_tuple] = current_num_edges + i
 
         # Remove duplicate edges
+        duplicate_edge_indices.reverse()    # Needs to be reversed first to avoid index overflow after popping.
         for edge_index in duplicate_edge_indices:
             src.pop(edge_index)
             tgt.pop(edge_index)
@@ -369,11 +367,11 @@ class GraphData(object):
         num_edges = len(src)
 
         # Add edge indices
-        self._edge_indices.src += src
-        self._edge_indices.tgt += tgt
+        self._edge_indices.src.extend(src)
+        self._edge_indices.tgt.extend(tgt)
 
         # Initialize edge attributes and features
-        self._edge_attributes += [single_edge_attr_factory(**res_init_edge_attributes)] * num_edges
+        self._edge_attributes.extend([single_edge_attr_factory(**res_init_edge_attributes)] * num_edges)
         for key in self._edge_features.keys():
             self._edge_features[key] = entail_zero_padding(self._edge_features[key], num_edges)
 
@@ -636,8 +634,9 @@ class GraphData(object):
             raise Exception("Calling batch_node_features() method on a non-batch graph.")
         batch_node_features = dict()
         from torch.nn.utils.rnn import pad_sequence
-        for k, v in self.split_node_features.items():
-            self.batch_node_features[k] = pad_sequence(v, batch_first=True)
+        separate_features = self.split_node_features
+        for k, v in separate_features.items():
+            batch_node_features[k] = pad_sequence(list(v), batch_first=True)
         return batch_node_features
 
     @property
@@ -654,7 +653,7 @@ class GraphData(object):
         batch_edge_features = dict()
         from torch.nn.utils.rnn import pad_sequence
         for k, v in self.split_edge_features.items():
-            batch_edge_features[k] = pad_sequence(v, batch_first=True)
+            batch_edge_features[k] = pad_sequence(list(v), batch_first=True)
         return batch_edge_features
 
     @property
@@ -701,7 +700,7 @@ def from_dgl(g: dgl.DGLGraph) -> GraphData:
     return graph
 
 
-def to_batch(graphs: list = None) -> BatchGraphData:
+def to_batch(graphs: list = None) -> GraphData:
     """
     Convert a list of GraphData to a large graph (a batch).
 
@@ -712,12 +711,12 @@ def to_batch(graphs: list = None) -> BatchGraphData:
 
     Returns
     -------
-    BatchGraphData
+    GraphData
         The large graph containing all the graphs in the batch.
     """
 
     # Optimized version
-    big_graph = BatchGraphData()
+    big_graph = GraphData()
     big_graph._is_batch = True
     big_graph.device = graphs[0].device
 
@@ -738,7 +737,6 @@ def to_batch(graphs: list = None) -> BatchGraphData:
         if None in v:
             continue
         else:
-            big_graph.node_feature_lists[k] = v
             feature_tensor = torch.cat(v, dim=0)
             big_graph.node_features[k] = feature_tensor
 
@@ -750,9 +748,21 @@ def to_batch(graphs: list = None) -> BatchGraphData:
             total_node_count += 1
 
     # Step 4: Add edges
-    for g in graphs:
-        for e in g.get_all_edges():
-            big_graph.add_edge(*e)
+    def stack_edge_indices(gs: [GraphData]):
+        all_edge_indices = EdgeIndex(src=[], tgt=[])
+        cumulative_node_num = 0
+        for g in gs:
+            for edge_index_tuple in g.get_all_edges():
+                src, tgt = edge_index_tuple
+                src += cumulative_node_num
+                tgt += cumulative_node_num
+                all_edge_indices.src.append(src)
+                all_edge_indices.tgt.append(tgt)
+            cumulative_node_num += g.get_node_num()
+        return all_edge_indices
+
+    all_edge_indices = stack_edge_indices(graphs)
+    big_graph.add_edges(all_edge_indices.src, all_edge_indices.tgt)
 
     # Step 5: Add edge features
     edge_features = dict()
@@ -766,7 +776,6 @@ def to_batch(graphs: list = None) -> BatchGraphData:
         if None in v:
             continue
         else:
-            big_graph.edge_feature_lists[k] = v
             feature_tensor = torch.cat(v, dim=0)
             big_graph.edge_features[k] = feature_tensor
 
@@ -786,13 +795,13 @@ def to_batch(graphs: list = None) -> BatchGraphData:
     return big_graph
 
 
-def from_batch(batch: BatchGraphData) -> list:
+def from_batch(batch: GraphData) -> list:
     """
     Convert a batch consisting of several GraphData instances to a list of GraphData instances.
 
     Parameters
     ----------
-    batch: BatchGraphData
+    batch: GraphData
         The source batch to be split.
 
     Returns

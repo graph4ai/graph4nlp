@@ -19,7 +19,7 @@ def test_add_nodes():
         pass
 
     g.add_nodes(10)
-    assert g.get_node_num() == 10                       # Test node number
+    assert g.get_node_num() == 10  # Test node number
 
     # Test reserved fields
     assert g.node_features['node_feat'] is None
@@ -32,9 +32,10 @@ def test_add_nodes():
     assert torch.all(torch.eq(g.node_features['zero'][10:], torch.zeros(9)))
 
 
-def test_set_node_features():
+def test_set_node_features_cpu():
     g = GraphData()
     g.add_nodes(10)
+
     # Test adding node features at whole graph level.
     try:
         g.node_features['node_feat'] = torch.randn((9, 10))
@@ -59,6 +60,51 @@ def test_set_node_features():
     embedding_layer = nn.Embedding(num_embeddings=100, embedding_dim=10)
     optimizer = torch.optim.Adam(params=embedding_layer.parameters())
     target = torch.ones(10)
+    init_loss = - torch.nn.functional.cosine_similarity(embedding_layer(g.node_features['idx']).sum(dim=-1), target,
+                                                        dim=0)
+    for i in range(100):
+        g.node_features['node_emb'] = embedding_layer(g.node_features['idx'])
+        node_emb_sum = g.node_features['node_emb'].sum(dim=-1)
+        loss = - torch.nn.functional.cosine_similarity(node_emb_sum, target, dim=0)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    print('Initial loss = {}. Final loss = {}'.format(init_loss, loss))
+    assert init_loss > loss
+
+
+def test_set_node_features_gpu():
+    g = GraphData()
+    g.add_nodes(10)
+    device = torch.device("cuda:0")
+    g.to(device)
+
+    # Test adding node features at whole graph level.
+    try:
+        g.node_features['node_feat'] = torch.randn((9, 10))
+        fail_here()
+    except AssertionError:
+        pass
+
+    g.node_features['node_feat'] = torch.randn((10, 10))
+    g.node_features['zero'] = torch.zeros(10)
+    g.node_features['idx'] = torch.tensor(list(range(10)), dtype=torch.long)
+
+    assert g.node_features['node_feat'].device == device
+
+    for i in range(g.get_node_num()):
+        assert g.node_features['idx'][i] == i
+        assert g.node_features['node_feat'][i].shape == torch.Size([10])
+
+    # Test modifying node features partially
+    g.node_features['zero'][:5] = torch.ones(5)
+    for i in range(5):
+        assert g.node_features['zero'][i] == 1
+
+    # Test computational graph consistency when modifying node features both partially and completely
+    embedding_layer = nn.Embedding(num_embeddings=100, embedding_dim=10).to(device)
+    optimizer = torch.optim.Adam(params=embedding_layer.parameters())
+    target = torch.ones(10).to(device)
     init_loss = - torch.nn.functional.cosine_similarity(embedding_layer(g.node_features['idx']).sum(dim=-1), target,
                                                         dim=0)
     for i in range(100):
@@ -242,3 +288,27 @@ def test_batch():
     gll = from_batch(b)
     for i in range(5):
         print(gll[i].get_edge_num())
+
+
+def test_batch_feature_view():
+    # A batch composed of 5 graphs with node num being 10, 20, ..., 50 respectively
+    graphs = []
+    features = []
+    for i in range(5):
+        j = i + 1
+        g = GraphData()
+        g.add_nodes(j * 10)
+        feature = torch.ones(size=(g.get_node_num(), 100))
+        g.node_features['node_feat'] = feature
+        graphs.append(g)
+        features.append(feature)
+
+    batch_graph = to_batch(graphs)
+    assert torch.all(
+        torch.eq(batch_graph.batch_node_features['node_feat'], torch.nn.utils.rnn.pad_sequence(features, batch_first=True)))
+
+    assert batch_graph.split_node_features['node_feat'][0].shape == (10, 100)
+    assert batch_graph.split_node_features['node_feat'][1].shape == (20, 100)
+    assert batch_graph.split_node_features['node_feat'][2].shape == (30, 100)
+    assert batch_graph.split_node_features['node_feat'][3].shape == (40, 100)
+    assert batch_graph.split_node_features['node_feat'][4].shape == (50, 100)
