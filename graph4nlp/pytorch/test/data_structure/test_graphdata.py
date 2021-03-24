@@ -63,7 +63,6 @@ def test_set_node_features():
         g.node_features['node_emb'] = embedding_layer(g.node_features['idx'])
         node_emb_sum = g.node_features['node_emb'].sum(dim=-1)
         loss = - torch.nn.functional.cosine_similarity(node_emb_sum, target, dim=0)
-        # print('Epoch {}: loss = {}.'.format(i + 1, loss))
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -164,7 +163,7 @@ def test_conversion_dgl():
     g.edge_features['idx'] = torch.tensor(list(range(10)), dtype=torch.long)
     # Test to_dgl
     dgl_g = g.to_dgl()
-    for node_feat_name in g.get_node_feature_names():
+    for node_feat_name in g.node_feature_names():
         if g.node_features[node_feat_name] is None:
             assert node_feat_name not in dgl_g.ndata.keys()
         else:
@@ -182,7 +181,7 @@ def test_conversion_dgl():
     assert g.get_all_edges() == dgl_g_edges
     # Test from_dgl
     g1 = from_dgl(dgl_g)
-    for node_feat_name in g.get_node_feature_names():
+    for node_feat_name in g.node_feature_names():
         try:
             assert torch.all(torch.eq(g1.node_features[node_feat_name], g.node_features[node_feat_name]))
         except TypeError:

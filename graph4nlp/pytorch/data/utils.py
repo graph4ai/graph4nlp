@@ -18,7 +18,7 @@ def int_to_list(x: int or list):
     return x if isinstance(x, list) else [x]
 
 
-def check_and_expand(x: list, y: list):
+def check_and_expand(x: list, y: list) -> (list, list):
     assert isinstance(x, list) and isinstance(y, list)
     max_len = max(len(x), len(y))
     if len(x) == len(y):

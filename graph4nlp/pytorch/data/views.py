@@ -68,7 +68,7 @@ class NodeFeatView(object):
         return repr(self._graph.get_node_features(self._nodes))
 
     def keys(self):
-        return self._graph.get_node_feature_names()
+        return self._graph.node_feature_names()
 
 
 class NodeAttrView(object):
