@@ -19,12 +19,14 @@ def test_add_nodes():
         pass
 
     g.add_nodes(10)
-    assert g.get_node_num() == 10
+    assert g.get_node_num() == 10                       # Test node number
+
+    # Test reserved fields
     assert g.node_features['node_feat'] is None
     assert g.node_features['node_emb'] is None
     assert g.node_attributes[0]['node_attr'] is None
 
-    g.node_features['zero'] = torch.zeros(10)
+    g.node_features['zero'] = torch.ones(10)
     g.add_nodes(9)
     assert g.get_node_num() == 19
     assert torch.all(torch.eq(g.node_features['zero'][10:], torch.zeros(9)))
