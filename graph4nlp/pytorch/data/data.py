@@ -118,10 +118,9 @@ class GraphData(object):
             The number of nodes to be added
         """
         assert node_num > 0, "The number of nodes to be added should be greater than 0. (Got {})".format(node_num)
-        current_num_nodes = self.get_node_num()
 
         # Create placeholders in the node attribute dictionary
-        self._node_attributes += [single_node_attr_factory(**res_init_node_attr)] * node_num
+        self._node_attributes.extend([single_node_attr_factory(**res_init_node_attr) for _ in range(node_num)])
 
         # Do padding in the node feature dictionary
         for key in self._node_features.keys():
@@ -371,7 +370,7 @@ class GraphData(object):
         self._edge_indices.tgt.extend(tgt)
 
         # Initialize edge attributes and features
-        self._edge_attributes.extend([single_edge_attr_factory(**res_init_edge_attributes)] * num_edges)
+        self._edge_attributes.extend([single_edge_attr_factory(**res_init_edge_attributes) for _ in range(num_edges)])
         for key in self._edge_features.keys():
             self._edge_features[key] = entail_zero_padding(self._edge_features[key], num_edges)
 
