@@ -1,4 +1,6 @@
 # Graph4NLP
+graph4nlp versio 0.2 is a fully ready release except the runtime optimization, pespecially for graphData and Batching.  
+
 Graph4NLP is the library for the easy use of Graph Neural Networks for NLP
 
 ## Installation
