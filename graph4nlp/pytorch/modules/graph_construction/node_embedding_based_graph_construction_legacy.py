@@ -3,7 +3,7 @@ import torch
 from torch import nn
 
 from ...data.data import GraphData
-from .base_new import DynamicGraphConstructionBase
+from .base import DynamicGraphConstructionBase
 from ..utils.generic_utils import normalize_adj, to_cuda
 from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
@@ -32,7 +32,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
                                                             embedding_styles,
                                                             **kwargs)
 
-    def forward(self, batch_graphdata):
+    def forward(self, batch_graphdata: list):
         """Compute graph topology and initial node embeddings.
 
         Parameters
@@ -45,46 +45,30 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         GraphData
             The constructed batched graph.
         """
-        
+        node_size = []
+        num_nodes = []
 
-        batch_graphdata = self.embedding(batch_graphdata)
+        for g in batch_graphdata:
+            g.node_features['token_id'] = to_cuda(g.node_features['token_id'], self.device)
+            num_nodes.append(g.get_node_num())
+            node_size.extend([1 for i in range(num_nodes[-1])])
 
-        
+        node_size = to_cuda(torch.Tensor(node_size), self.device).int()
+        num_nodes = to_cuda(torch.Tensor(num_nodes), self.device).int()
+        batch_gd = to_batch(batch_graphdata)
 
-        batch_graphdata = self.topology_1(batch_graphdata)
+        node_emb = self.embedding(batch_gd, node_size, num_nodes)
 
+        node_mask = self._get_node_mask_for_batch_graph(num_nodes)
+        new_batch_gd = self.topology(node_emb, node_mask=node_mask)
+        new_batch_gd.node_features['node_feat'] = node_emb
+        # new_batch_gd.batch = batch_gd.batch
+        new_batch_gd.copy_batch_info(batch_gd)
 
-        return batch_graphdata
-
-    def topology_1(self, graph):
-        node_emb = graph.batch_node_features["node_feat"]
-        node_mask = (graph.batch_node_features["token_id"] != 0)
-
-
-        raw_adj = self.compute_similarity_metric(node_emb, node_mask)
-        raw_adj = self.sparsify_graph(raw_adj)
-        # graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
-
-        if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
-            assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
-            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
-            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-2, keepdim=True), min=VERY_SMALL_NUMBER)
-        elif self.sim_metric_type == 'cosine':
-            raw_adj = (raw_adj > 0).float()
-            adj = normalize_adj(raw_adj)
-            reverse_adj = adj
-        else:
-            adj = torch.softmax(raw_adj, dim=-1)
-            reverse_adj = torch.softmax(raw_adj, dim=-2)
-
-        graph = convert_adj_to_graph(graph, adj, reverse_adj, 0)
-        # graph_data.graph_attributes['graph_reg'] = graph_reg
-
-        return graph
+        return new_batch_gd
 
 
-
-    def topology(self, graph):
+    def topology(self, node_emb, node_mask=None):
         """Compute graph topology.
 
         Parameters
@@ -99,10 +83,6 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         GraphData
             The constructed graph.
         """
-
-        node_emb = graph.node_features["node_feat"]
-
-        node_mask = self._get_node_mask_for_batch_graph(torch.Tensor(graph._batch_num_nodes).long())
         raw_adj = self.compute_similarity_metric(node_emb, node_mask)
         raw_adj = self.sparsify_graph(raw_adj)
         graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
@@ -119,37 +99,13 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             adj = torch.softmax(raw_adj, dim=-1)
             reverse_adj = torch.softmax(raw_adj, dim=0)
 
-        graph = convert_adj_to_graph(graph, adj, reverse_adj, 0)
-        graph.graph_attributes['graph_reg'] = graph_reg
+        graph_data = convert_adj_to_graph(adj, reverse_adj, 0)
+        graph_data.graph_attributes['graph_reg'] = graph_reg
 
-        return graph
-    #     node_emb = graph.batch_node_features["node_feat"]
-    #     node_mask = (graph.batch_node_features["token_id"] != 0)
+        return graph_data
 
 
-    #     raw_adj = self.compute_similarity_metric(node_emb, node_mask)
-    #     raw_adj = self.sparsify_graph(raw_adj)
-    #     # graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
-
-    #     if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
-    #         assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
-    #         adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
-    #         reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=0, keepdim=True), min=VERY_SMALL_NUMBER)
-    #     elif self.sim_metric_type == 'cosine':
-    #         raw_adj = (raw_adj > 0).float()
-    #         adj = normalize_adj(raw_adj)
-    #         reverse_adj = adj
-    #     else:
-    #         adj = torch.softmax(raw_adj, dim=-1)
-    #         reverse_adj = torch.softmax(raw_adj, dim=-2)
-
-    #     graph_data = convert_adj_to_graph(graph, adj, reverse_adj, 0)
-    #     # graph_data.graph_attributes['graph_reg'] = graph_reg
-
-    #     return graph_data
-
-
-    def embedding(self, batch_graph):
+    def embedding(self, node_word_idx, node_size, num_nodes):
         """Compute initial node embeddings.
 
         Parameters
@@ -166,7 +122,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         torch.Tensor
             The initial node embeddings.
         """
-        return self.embedding_layer(batch_graph)
+        return self.embedding_layer(node_word_idx, node_size, num_nodes)
 
 
     @classmethod
@@ -202,5 +158,5 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
 
         for idx in range(len(token_list)):
             graph.node_attributes[idx]['token'] = token_list[idx].lower() if lower_case else token_list[idx]
-
+            
         return graph

@@ -45,19 +45,7 @@ def prepare_ext_vocab(batch_graph, vocab, gt_str=None, device=None):
         oov_dict._add_words(unk_token)
         token_matrix_oov[idx] = oov_dict.getIndex(unk_token)
     batch_graph.node_features["token_id_oov"] = token_matrix_oov
-    # print(unk_token)
-    # print(len(unk_index))
-    # exit(0)
 
-    # for g in graph_list:
-    #     token_matrix = []
-    #     for node_idx in range(g.get_node_num()):
-    #         node_token = g.node_attributes[node_idx]['token']
-    #         if oov_dict.getIndex(node_token) == oov_dict.UNK:
-    #             oov_dict._add_words(node_token)
-    #         token_matrix.append([oov_dict.getIndex(node_token)])
-    #     token_matrix = torch.tensor(token_matrix, dtype=torch.long).to(device)
-    #     g.node_features['token_id_oov'] = token_matrix
 
     if gt_str is not None:
         oov_tgt_collect = []

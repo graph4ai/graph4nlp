@@ -20,7 +20,7 @@ from graph4nlp.pytorch.datasets.squad import SQuADDataset
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import RNNEmbedding, WordEmbedding
-from graph4nlp.pytorch.models.seq2seq import Graph2Seq
+from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, dropout_fn, sparse_mx_to_torch_sparse_tensor, EarlyStopping
 from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
@@ -87,9 +87,6 @@ class QGModel(nn.Module):
                                   use_coverage=self.use_coverage, coverage_weight=config['coverage_loss_ratio'])
 
     def encode_init_node_feature(self, data):
-        # num_graph_nodes = []
-        # for g in data['graph_data']:
-        #     num_graph_nodes.append(g.get_node_num())
 
         # graph embedding construction
         batch_gd = self.g2s.graph_topology(data['graph_data'])
@@ -327,9 +324,6 @@ class ModelHandler:
                         'ROUGE': ROUGE()}
 
     def train(self):
-        
-        
-        val_scores = self.evaluate(self.val_dataloader)
         for epoch in range(self.config['epochs']):
             self.model.train()
             train_loss = []
@@ -338,11 +332,6 @@ class ModelHandler:
             for i, data in enumerate(self.train_dataloader):
                 data = all_to_cuda(data, self.config['device'])
                 data["graph_data"] = data["graph_data"].to(self.config["device"])
-                # token_ids = data["graph_data"].batch_node_features["token_id"].squeeze(2)
-                # num_all = (token_ids != 0).float().sum()
-                # num_unk = (token_ids == 3).float().sum()
-                # print(num_unk , num_all)
-
                 oov_dict = None
                 if self.use_copy:
                     oov_dict, tgt = prepare_ext_vocab(data['graph_data'], self.vocab, gt_str=data['tgt_text'],
@@ -355,8 +344,6 @@ class ModelHandler:
                 if self.config.get('grad_clipping', None) not in (None, 0):
                     # Clip gradients
                     parameters = [p for p in self.model.parameters() if p.requires_grad]
-                    # if self.config['use_bert'] and self.config.get('finetune_bert', None):
-                    #     parameters += [p for p in self.config['bert_model'].parameters() if p.requires_grad]
 
                     torch.nn.utils.clip_grad_norm_(parameters, self.config['grad_clipping'])
 
@@ -502,7 +489,7 @@ def main(config):
     runner = ModelHandler(config)
     t0 = time.time()
 
-    # val_score = runner.train()
+    val_score = runner.train()
     test_scores = runner.test()
 
     # print('Removed best saved model file to save disk space')

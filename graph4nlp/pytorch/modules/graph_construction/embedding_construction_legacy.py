@@ -226,7 +226,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             self.seq_info_encode_layer = None
 
 
-    def forward(self, batch_gd):
+    def forward(self, batch_gd, item_size, num_items, num_word_items=None):
         """Compute initial node/edge embeddings.
 
         Parameters
@@ -250,42 +250,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         torch.Tensor
             The output item embeddings.
         """
-
-        token_ids = batch_gd.batch_node_features["token_id"]
-        feat = []
-        if 'w2v' in self.word_emb_layers:
-            input_data = token_ids.long().squeeze(2)
-            feat.append(self.word_emb_layers['w2v'](input_data))
-        msk = (token_ids != 0)
-        lens = msk.float().squeeze(2).sum(-1).int()
-        feat = feat[0]
-        rnn_state = self.seq_info_encode_layer(feat, lens)
-        if isinstance(rnn_state, (tuple, list)):
-            rnn_state = rnn_state[0]
-        
-
-
-
-        ret_feat = []
-        for i in range(lens.shape[0]):
-            tmp_feat = rnn_state[i][:lens[i]]
-            # if len(tmp_feat) < num_items[i].item():
-            #     prev_feat = new_feat[i, lens[i]: num_items[i]]
-            #     if prev_feat.shape[-1] != tmp_feat.shape[-1]:
-            #         prev_feat = self.linear_transform(prev_feat)
-
-            #     tmp_feat = torch.cat([tmp_feat, prev_feat], 0)
-            ret_feat.append(tmp_feat)
-
-        ret_feat = torch.cat(ret_feat, 0)
-
-        batch_gd.node_features["node_feat"] = ret_feat
-
-        return batch_gd
-
-
-
-
 
         feat = []
         if 'w2v' in self.word_emb_layers:
@@ -394,10 +358,6 @@ class WordEmbedding(nn.Module):
             print('[ Fix word embeddings ]')
             for param in self.word_emb_layer.parameters():
                 param.requires_grad = False
-    
-    @property
-    def embedding_dim(self):
-        return self.word_emb_layer.embedding_dim
 
     def forward(self, input_tensor):
         """Compute word embeddings.

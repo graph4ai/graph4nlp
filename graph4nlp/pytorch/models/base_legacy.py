@@ -7,7 +7,7 @@ from graph4nlp.pytorch.modules.graph_construction.constituency_graph_constructio
     ConstituencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction_new import \
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import \
     NodeEmbeddingBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import \
     NodeEmbeddingBasedRefinedGraphConstruction
