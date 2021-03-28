@@ -9,9 +9,14 @@ run_*.sh
 log.txt
 examples/pytorch/semantic_parsing/jobs/log/*
 # Byte-compiled / optimized / DLL files
-__pycache__/
+**/__pycache__/*
 *.py[cod]
 *$py.class
+**/data/*
+**/out/*
+**/log/*
+**/save/*
+**/out/*
 
 # C extensions
 *.so

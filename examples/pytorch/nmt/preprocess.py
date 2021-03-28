@@ -2,90 +2,56 @@ import json, re, string
 from unicodedata import normalize
 import argparse
 import tqdm
+import os
+import pickle as pkl
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_raw_dataset_src', default='/home/shiina/shiina/lib/dataset/europarl-v7.fr-en.fr', type=str, help='path to the config file')
+    parser.add_argument('--raw_data_root', default='/home/shiina/data/nmt/iwslt14/iwslt14.tokenized.de-en', type=str, help='path to the config file')
     parser.add_argument('--train_raw_dataset_tgt', type=str, default='/home/shiina/shiina/lib/dataset/europarl-v7.fr-en.en', help='rank')
-    parser.add_argument('--train_output_dataset', type=str, default='/home/shiina/shiina/lib/dataset/raw/train.json', help="raw data path")
+    parser.add_argument('--output_dir_root', default="examples/pytorch/nmt/data/raw", type=str, help="")
 
-    parser.add_argument('--val_raw_dataset_src', default='/home/shiina/shiina/lib/dataset/test2011/newstest2011.fr',
-                        type=str, help='path to the config file')
-    parser.add_argument('--val_raw_dataset_tgt', type=str,
-                        default='/home/shiina/shiina/lib/dataset/test2011/newstest2011.en', help='rank')
-    parser.add_argument('--val_output_dataset', type=str, default='/home/shiina/shiina/lib/dataset/raw/test.json',
-                        help="raw data path")
 
     cfg = parser.parse_args()
     return cfg
 
 
+def process(source_file_path, target_file_path):
+    with open(source_file_path, "r") as f:
+        source = f.read().split("\n")
+    with open(target_file_path, "r") as f:
+        target = f.read().split("\n")
+    assert len(source) == len(target)
+    output = []
+    for s, t in zip(source, target):
+        output.append((s, t))
+    return output
 
-class TextProcessor:
-    def __init__(self, raw_dataset_src, raw_dataset_tgt, output_dataset):
-        self.raw_dataset_src = raw_dataset_src
-        self.raw_dataset_tgt = raw_dataset_tgt
-        self.output_dataset = output_dataset
-
-    def _preprocess(self, lines):
-
-        # clean a list of lines
-        cleaned = list()
-        # prepare regex for char filtering
-        re_print = re.compile('[^%s]' % re.escape(string.printable))
-        # prepare translation table for removing punctuation
-        table = str.maketrans('', '', string.punctuation)
-        for line in lines:
-            # normalize unicode characters
-            line = normalize('NFD', line).encode('ascii', 'ignore')
-            line = line.decode('UTF-8')
-            # tokenize on white space
-            line = line.split()
-            # convert to lower case
-            line = [word.lower() for word in line]
-            # remove punctuation from each token
-            line = [word.translate(table) for word in line]
-            # remove non-printable chars form each token
-            line = [re_print.sub('', w) for w in line]
-            # remove tokens with numbers in them
-            line = [word for word in line if word.isalpha()]
-            # store as string
-            cleaned.append(' '.join(line))
-        return cleaned
-
-    def run(self):
-        src_lines = self._read(self.raw_dataset_src)
-        tgt_lines = self._read(self.raw_dataset_tgt)
-        print(len(src_lines), len(tgt_lines))
-        assert len(src_lines) == len(tgt_lines)
-        output_content = []
-        for src, tgt in zip(src_lines, tgt_lines):
-            if src.strip() == "":
-                continue
-            processed = self._preprocess([src, tgt])
-            output_content.append((processed[0], processed[1]))
-        with open(self.output_dataset, "w") as f:
-            json.dump(output_content, f)
-        print("done")
-
-    def _read(self, path):
-        with open(path, "r") as f:
-            content = f.read()
-        sentences = content.strip().split("\n")
-        print(sentences[0])
-        return sentences
 
 if __name__ == "__main__":
     opt = get_args()
-    # process training set
-    # processor = TextProcessor(raw_dataset_src=opt.train_raw_dataset_src, raw_dataset_tgt=opt.train_raw_dataset_tgt,
-    #                           output_dataset=opt.train_output_dataset)
-    # processor.run()
-    # process validation set
-    processor = TextProcessor(raw_dataset_src=opt.val_raw_dataset_src, raw_dataset_tgt=opt.val_raw_dataset_tgt,
-                              output_dataset=opt.val_output_dataset)
-    processor.run()
+    train_source_file_path_raw = os.path.join(opt.raw_data_root, "train.de")
+    train_target_file_path_raw = os.path.join(opt.raw_data_root, "train.en")
+    os.makedirs(opt.output_dir_root, exist_ok=True)
+    train_split_path_processed = os.path.join(opt.output_dir_root, "train.pkl")
+    train_split = process(train_source_file_path_raw, train_target_file_path_raw)
+    with open(train_split_path_processed, "wb") as f:
+        pkl.dump(train_split, f)
+    
+    val_source_file_path_raw = os.path.join(opt.raw_data_root, "valid.de")
+    val_target_file_path_raw = os.path.join(opt.raw_data_root, "valid.en")
+    val_split_path_processed = os.path.join(opt.output_dir_root, "val.pkl")
+    val_split = process(val_source_file_path_raw, val_target_file_path_raw)
+    with open(val_split_path_processed, "wb") as f:
+        pkl.dump(val_split, f)
+    
+    test_source_file_path_raw = os.path.join(opt.raw_data_root, "test.de")
+    test_target_file_path_raw = os.path.join(opt.raw_data_root, "test.en")
+    test_split_path_processed = os.path.join(opt.output_dir_root, "test.pkl")
+    test_split = process(test_source_file_path_raw, test_target_file_path_raw)
+    with open(test_split_path_processed, "wb") as f:
+        pkl.dump(test_split, f)
 
 
 

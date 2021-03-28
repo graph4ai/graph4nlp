@@ -61,4 +61,6 @@ SQuAD-split2 Results
  -->
 
 
+Test examples: 8964 | Time: 59.14s |  Test scores: BLEU_1 = 0.45166, BLEU_2 = 0.28409, BLEU_3 = 0.19311, BLEU_4 = 0.13667, METEOR = 0.18770, ROUGE = 0.43926
+
 

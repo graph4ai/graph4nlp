@@ -7,7 +7,7 @@ from ...data.data import GraphData
 from .vocab_utils import VocabModel, Vocab
 
 
-def prepare_ext_vocab(graph_list, vocab, gt_str=None, device=None):
+def prepare_ext_vocab(batch_graph, vocab, gt_str=None, device=None):
     """
         The function for copy mechanism.
         It will find the oov dict in ``gt_str`` and build ``oov_dict``.
@@ -15,8 +15,8 @@ def prepare_ext_vocab(graph_list, vocab, gt_str=None, device=None):
         Note that, the word_index in ``oov_dict`` is saved in ``token_id_oov`` of GraphData.
     Parameters
     ----------
-    graph_list: list[GraphData]
-        The graph list.
+    batch_graph: GraphData
+        The graph.
     vocab: VocabModel
         The VocabModel.
     gt_str: list[str], default=None
@@ -28,21 +28,36 @@ def prepare_ext_vocab(graph_list, vocab, gt_str=None, device=None):
     Returns
     -------
     oov_dict: Vocab
-        The vocab contains the out-of-vocabulary words in graph_list.
+        The vocab contains the out-of-vocabulary words in batch_graph.
     tgt_seq: torch.Tensor
         If the ``gt_str`` is not ``None``, it will be calculated.
         We process the ``gt_str`` with ``oov_dict``.
     """
     oov_dict = copy.deepcopy(vocab.in_word_vocab)
-    for g in graph_list:
-        token_matrix = []
-        for node_idx in range(g.get_node_num()):
-            node_token = g.node_attributes[node_idx]['token']
-            if oov_dict.getIndex(node_token) == oov_dict.UNK:
-                oov_dict._add_words(node_token)
-            token_matrix.append([oov_dict.getIndex(node_token)])
-        token_matrix = torch.tensor(token_matrix, dtype=torch.long).to(device)
-        g.node_features['token_id_oov'] = token_matrix
+    token_matrix = batch_graph.node_features["token_id"].squeeze(1)
+    unk_index = (token_matrix == oov_dict.UNK).nonzero().squeeze(1).detach().cpu().numpy()
+    # unk_token = batch_graph.node_attributes[unk_index.squeeze(1).detach().cpu().numpy().tolist()[:]]["token"]
+    unk_token = [batch_graph.node_attributes[index]["token"] for index in unk_index]
+    oov_dict._add_words(unk_token)
+    token_matrix_oov = token_matrix.clone()
+    for idx in unk_index:
+        unk_token = batch_graph.node_attributes[idx]["token"]
+        oov_dict._add_words(unk_token)
+        token_matrix_oov[idx] = oov_dict.getIndex(unk_token)
+    batch_graph.node_features["token_id_oov"] = token_matrix_oov
+    # print(unk_token)
+    # print(len(unk_index))
+    # exit(0)
+
+    # for g in graph_list:
+    #     token_matrix = []
+    #     for node_idx in range(g.get_node_num()):
+    #         node_token = g.node_attributes[node_idx]['token']
+    #         if oov_dict.getIndex(node_token) == oov_dict.UNK:
+    #             oov_dict._add_words(node_token)
+    #         token_matrix.append([oov_dict.getIndex(node_token)])
+    #     token_matrix = torch.tensor(token_matrix, dtype=torch.long).to(device)
+    #     g.node_features['token_id_oov'] = token_matrix
 
     if gt_str is not None:
         oov_tgt_collect = []

@@ -20,7 +20,7 @@ from graph4nlp.pytorch.datasets.squad import SQuADDataset
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import RNNEmbedding, WordEmbedding
-from graph4nlp.pytorch.models.graph2seq import Graph2Seq
+from graph4nlp.pytorch.models.seq2seq import Graph2Seq
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, dropout_fn, sparse_mx_to_torch_sparse_tensor, EarlyStopping
 from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
@@ -33,6 +33,7 @@ from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import Dec
 from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
 import multiprocessing
 import torch.multiprocessing
+import math
 # torch.multiprocessing.set_sharing_strategy('file_system')
 # multiprocessing.set_start_method("spawn", force=True)
 
@@ -56,6 +57,7 @@ class QGModel(nn.Module):
                             pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
                             fix_emb=config['graph_construction_args']['node_embedding']['fix_word_emb'],
                             device=config['device']).word_emb_layer
+        self.g2s.seq_decoder.tgt_emb = self.word_emb
 
         answer_feat_size = self.vocab.in_word_vocab.embeddings.shape[1]
         if 'node_edge_bert' in self.g2s.graph_topology.embedding_layer.word_emb_layers:
@@ -79,15 +81,15 @@ class QGModel(nn.Module):
 
         # soft-alignment between context and answer
         self.ctx2ans_attn = Context2AnswerAttention(config['num_hidden'], config['num_hidden'])
-        self.fuse_ctx_ans = nn.Linear(2 * config['num_hidden'], config['num_hidden'], bias=False)
+        self.fuse_ctx_ans = nn.Linear(2 * config['num_hidden'], config['num_hidden'], bias=True)
 
         self.loss_calc = Graph2SeqLoss(ignore_index=self.vocab.out_word_vocab.PAD,
                                   use_coverage=self.use_coverage, coverage_weight=config['coverage_loss_ratio'])
 
     def encode_init_node_feature(self, data):
-        num_graph_nodes = []
-        for g in data['graph_data']:
-            num_graph_nodes.append(g.get_node_num())
+        # num_graph_nodes = []
+        # for g in data['graph_data']:
+        #     num_graph_nodes.append(g.get_node_num())
 
         # graph embedding construction
         batch_gd = self.g2s.graph_topology(data['graph_data'])
@@ -101,8 +103,28 @@ class QGModel(nn.Module):
             answer_feat = torch.cat([answer_feat, answer_bert_feat], -1)
 
         answer_feat = self.ans_rnn_encoder(answer_feat, data['input_length2'])[0]
-        new_node_feat = self.answer_alignment(batch_gd.node_features['node_feat'], answer_feat, answer_feat, num_graph_nodes, data['input_length2'])
-        batch_gd.node_features['node_feat'] = new_node_feat
+        node_feats = batch_gd.batch_node_features["node_feat"]
+        mask_text = (batch_gd.batch_node_features["token_id"] != 0).squeeze(2)
+
+        ans_mask = (data["input_tensor2"] != 0)
+        
+        new_node_feat = self.answer_alignment(node_feats, answer_feat, mask_text, ans_mask)
+
+        lens = mask_text.float().sum(-1).int()
+        ret_feat = []
+        for i in range(lens.shape[0]):
+            tmp_feat = new_node_feat[i][:lens[i]]
+            # if len(tmp_feat) < num_items[i].item():
+            #     prev_feat = new_feat[i, lens[i]: num_items[i]]
+            #     if prev_feat.shape[-1] != tmp_feat.shape[-1]:
+            #         prev_feat = self.linear_transform(prev_feat)
+
+            #     tmp_feat = torch.cat([tmp_feat, prev_feat], 0)
+            ret_feat.append(tmp_feat)
+
+        ret_feat = torch.cat(ret_feat, 0)
+
+        batch_gd.node_features["node_feat"] = ret_feat
 
         return batch_gd
 
@@ -120,53 +142,89 @@ class QGModel(nn.Module):
         else:
             return prob
 
-    def answer_alignment(self, node_feat, answer_feat, out_answer_feat, num_nodes, answer_length):
-        assert len(num_nodes) == len(answer_length)
-        mask = []
-        for i in range(len(num_nodes)): # batch
-            tmp_mask = np.ones((num_nodes[i], answer_feat.shape[1]))
-            tmp_mask[:, answer_length[i]:] = 0
-            mask.append(sparse.coo_matrix(tmp_mask))
-
-        mask = sparse.block_diag(mask)
-        mask = to_cuda(sparse_mx_to_torch_sparse_tensor(mask).to_dense(), self.config['device'])
-
-        answer_feat = answer_feat.reshape(-1, answer_feat.shape[-1])
-        out_answer_feat = out_answer_feat.reshape(-1, out_answer_feat.shape[-1])
-        ctx_aware_ans_feat = self.ctx2ans_attn(node_feat, answer_feat, out_answer_feat, mask)
+    def answer_alignment(self, node_feat, answer_feat, mask_node, mask_ans):
+        
+        ctx_aware_ans_feat = self.ctx2ans_attn(node_feat, answer_feat, mask_node, mask_ans)
         new_node_feat = self.fuse_ctx_ans(torch.cat([node_feat, ctx_aware_ans_feat], -1))
 
         return new_node_feat
 
-
 class Context2AnswerAttention(nn.Module):
     def __init__(self, dim, hidden_size):
         super(Context2AnswerAttention, self).__init__()
-        self.linear_sim = nn.Linear(dim, hidden_size, bias=False)
+        self.linear_content = nn.Linear(dim, hidden_size, bias=True)
+        self.linear_ques = nn.Linear(dim, hidden_size, bias=True)
+        self.prj = nn.Linear(hidden_size, 1)
+        self.dropout = nn.Dropout(0.2)
 
-    def forward(self, context, answers, out_answers, mask=None):
+    def forward(self, context, answers, mask_content=None, mask_answers=None):
         """
         Parameters
-        :context, (L, dim)
-        :answers, (N, dim)
-        :out_answers, (N, dim)
+        :context, (B, L, dim)
+        :answers, (B, N, dim)
         :mask, (L, N)
 
         Returns
         :ques_emb, (L, dim)
         """
-        context_fc = torch.relu(self.linear_sim(context))
-        questions_fc = torch.relu(self.linear_sim(answers))
+        ans_old = answers
 
-        # shape: (L, N)
-        attention = torch.matmul(context_fc, questions_fc.transpose(-1, -2))
-        if mask is not None:
-            attention = attention.masked_fill_(~mask.bool(), -Constants.INF)
+        context_fc = self.linear_content(context)
+        questions_fc = self.linear_ques(answers)
+
+        sim = context_fc.unsqueeze(2) + questions_fc.unsqueeze(1)
+        sim = self.dropout(sim)
+        sim = self.prj(F.tanh(sim)).squeeze(3)
+
+
+        if mask_answers is not None:
+            attention = sim.masked_fill(~mask_answers.unsqueeze(1).bool(), -Constants.INF)
+        
+
         prob = torch.softmax(attention, dim=-1)
-        # shape: (L, dim)
-        emb = torch.matmul(prob, out_answers)
+        # shape: (B, L, dim)
+        emb = torch.matmul(prob, ans_old)
+
+        # if mask_content is not None:
+        #     emb = emb.masked_fill(~mask_content.unsqueeze(2).bool(), 0)
 
         return emb
+
+
+# class Context2AnswerAttention(nn.Module):
+#     def __init__(self, dim, hidden_size):
+#         super(Context2AnswerAttention, self).__init__()
+#         self.linear_sim = nn.Linear(dim, hidden_size, bias=False)
+
+#     def forward(self, context, answers, mask_content=None, mask_answers=None):
+#         """
+#         Parameters
+#         :context, (B, L, dim)
+#         :answers, (B, N, dim)
+#         :mask, (L, N)
+
+#         Returns
+#         :ques_emb, (L, dim)
+#         """
+#         ans_old = answers
+#         context_fc = torch.relu(self.linear_sim(context))
+#         questions_fc = torch.relu(self.linear_sim(answers))
+
+#         # shape: (B, L, N)
+#         attention = torch.matmul(context_fc, questions_fc.transpose(-1, -2))
+        
+#         if mask_answers is not None:
+#             attention = attention.masked_fill(~mask_answers.unsqueeze(1).bool(), -Constants.INF)
+        
+
+#         prob = torch.softmax(attention, dim=-1)
+#         # shape: (B, L, dim)
+#         emb = torch.matmul(prob, ans_old)
+
+#         # if mask_content is not None:
+#         #     emb = emb.masked_fill(~mask_content.unsqueeze(2).bool(), 0)
+
+#         return emb
 
 
 class ModelHandler:
@@ -226,14 +284,14 @@ class ModelHandler:
                               dynamic_graph_type=self.config['graph_construction_args']['graph_construction_share']['graph_type'],
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
                               dynamic_init_topology_aux_args={'dummy_param': 0},
-                              thread_number=4,
-                              port=9000,
-                              timeout=15000)
+                              thread_number=self.config["graph_construction_args"]["graph_construction_share"]["thread_number"],
+                              port=self.config["graph_construction_args"]["graph_construction_share"]["port"],
+                              timeout=self.config["graph_construction_args"]["graph_construction_share"]["timeout"])
 
         # TODO: use small ratio of the data (Test only)
-        dataset.train = dataset.train[:self.config['n_samples']]
-        dataset.val = dataset.val[:self.config['n_samples']]
-        dataset.test = dataset.test[:self.config['n_samples']]
+        dataset.train = dataset.train
+        dataset.val = dataset.val
+        dataset.test = dataset.test
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config['batch_size'], shuffle=True,
                                            num_workers=self.config['num_workers'],
@@ -269,13 +327,21 @@ class ModelHandler:
                         'ROUGE': ROUGE()}
 
     def train(self):
-        dur = []
+        
+        
+        val_scores = self.evaluate(self.val_dataloader)
         for epoch in range(self.config['epochs']):
             self.model.train()
             train_loss = []
+            dur = []
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
                 data = all_to_cuda(data, self.config['device'])
+                data["graph_data"] = data["graph_data"].to(self.config["device"])
+                # token_ids = data["graph_data"].batch_node_features["token_id"].squeeze(2)
+                # num_all = (token_ids != 0).float().sum()
+                # num_unk = (token_ids == 3).float().sum()
+                # print(num_unk , num_all)
 
                 oov_dict = None
                 if self.use_copy:
@@ -297,17 +363,24 @@ class ModelHandler:
                 self.optimizer.step()
                 train_loss.append(loss.item())
 
-                pred = torch.max(logits, dim=-1)[1].cpu()
+                # pred = torch.max(logits, dim=-1)[1].cpu()
                 dur.append(time.time() - t0)
+                if (i + 1) % 100 == 0:
+                    format_str = 'Epoch: [{} / {}] | Step: {} / {} | Time: {:.2f}s | Loss: {:.4f} | Val scores:'.format(epoch + 1, self.config['epochs'], i, len(self.train_dataloader),
+                     np.mean(dur), np.mean(train_loss))
+                    print(format_str)
+                    self.logger.write(format_str)
+
 
             val_scores = self.evaluate(self.val_dataloader)
-            self.scheduler.step(val_scores[self.config['early_stop_metric']])
+            if epoch > 15:
+                self.scheduler.step(val_scores[self.config['early_stop_metric']])
             format_str = 'Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} | Val scores:'.format(epoch + 1, self.config['epochs'], np.mean(dur), np.mean(train_loss))
             format_str += self.metric_to_str(val_scores)
             print(format_str)
             self.logger.write(format_str)
 
-            if self.stopper.step(val_scores[self.config['early_stop_metric']], self.model):
+            if epoch > 15 and self.stopper.step(val_scores[self.config['early_stop_metric']], self.model):
                 break
 
         return self.stopper.best_score
@@ -319,6 +392,8 @@ class ModelHandler:
             gt_collect = []
             for i, data in enumerate(dataloader):
                 data = all_to_cuda(data, self.config['device'])
+                data["graph_data"] = data["graph_data"].to(self.config["device"])
+                
 
                 if self.use_copy:
                     oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab, device=self.config['device'])
@@ -334,8 +409,8 @@ class ModelHandler:
                 pred_collect.extend(pred_str)
                 gt_collect.extend(data['tgt_text'])
 
+                
             scores = self.evaluate_predictions(gt_collect, pred_collect)
-
             return scores
 
     def translate(self, dataloader):
@@ -345,6 +420,7 @@ class ModelHandler:
             gt_collect = []
             for i, data in enumerate(dataloader):
                 data = all_to_cuda(data, self.config['device'])
+            
                 if self.use_copy:
                     oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab, device=self.config['device'])
                     ref_dict = oov_dict
@@ -376,7 +452,8 @@ class ModelHandler:
         self.stopper.load_checkpoint(self.model)
 
         t0 = time.time()
-        scores = self.translate(self.test_dataloader)
+        scores = self.evaluate(self.test_dataloader)
+        # scores = self.translate(self.test_dataloader)
         dur = time.time() - t0
         format_str = 'Test examples: {} | Time: {:.2f}s |  Test scores:'.format(self.num_test, dur)
         format_str += self.metric_to_str(scores)
@@ -425,7 +502,7 @@ def main(config):
     runner = ModelHandler(config)
     t0 = time.time()
 
-    val_score = runner.train()
+    # val_score = runner.train()
     test_scores = runner.test()
 
     # print('Removed best saved model file to save disk space')
@@ -444,7 +521,7 @@ def wordid2str(word_ids, vocab):
         id_list = word_ids[i, :]
         ret_inst = []
         for j in range(id_list.shape[0]):
-            if id_list[j] == vocab.EOS:
+            if id_list[j] == vocab.EOS or id_list[j] == vocab.PAD:
                 break
             token = vocab.getWord(id_list[j])
             ret_inst.append(token)

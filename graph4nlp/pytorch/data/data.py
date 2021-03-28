@@ -78,10 +78,10 @@ class GraphData(object):
         self.device = device
         for k, v in self._node_features.items():
             if isinstance(v, torch.Tensor):
-                v = v.to(device)
+                self._node_features[k] = v.to(device)
         for k, v in self._edge_features.items():
             if isinstance(v, torch.Tensor):
-                v = v.to(device)
+                self._edge_features[k] = v.to(device)
         return self
 
     # Node operations

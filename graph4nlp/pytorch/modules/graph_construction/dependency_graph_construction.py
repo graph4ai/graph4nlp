@@ -1,10 +1,11 @@
 import copy
+import enum
 import json
 
 import torch
 from stanfordcorenlp import StanfordCoreNLP
 
-from .base import StaticGraphConstructionBase
+from .base_new import StaticGraphConstructionBase
 from ...data.data import GraphData, to_batch
 
 
@@ -183,6 +184,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             The merged graph data-structure.
         """
         cls.verbase = verbase
+            
 
         parsed_results = cls.parsing(raw_text_data=raw_text_data, nlp_processor=nlp_processor,
                                      processor_args=processor_args)
@@ -333,10 +335,11 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                     print(edge_idx_new, edge_idx_old)
                     print(s_g.edge_attributes[edge_idx_old], "--------")
                 g.edge_attributes[edge_idx_new] = copy.deepcopy(s_g.edge_attributes[edge_idx_old])
-            tmp = {}
-            for key, value in s_g.node_attributes.items():
-                tmp[key + node_idx_off] = copy.deepcopy(value)
-            g.node_attributes.update(tmp)
+            # tmp = {}
+            for key, value in enumerate(s_g.node_attributes):
+                g.node_attributes[key + node_idx_off] = copy.deepcopy(value)
+            #     tmp[key + node_idx_off] = copy.deepcopy(value)
+            # g.node_attributes.update(tmp)
             node_idx_off += s_g.get_node_num()
 
         headtail_list = []
@@ -346,7 +349,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         node_idx_off = 0
         for i in range(len(nx_graph_list)):
-            for node_idx, node_attrs in nx_graph_list[i].node_attributes.items():
+            for node_idx, node_attrs in enumerate(nx_graph_list[i].node_attributes):
                 if node_attrs['head'] is True:
                     head = node_idx + node_idx_off
                 if node_attrs['tail'] is True:
@@ -377,7 +380,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         else:
             raise NotImplementedError()
 
-        for node_idx, node_attrs in g.node_attributes.items():
+        for node_idx, node_attrs in enumerate(g.node_attributes):
             node_attrs['head'] = node_idx == head_g
             node_attrs['tail'] = node_idx == tail_g
 
@@ -394,27 +397,29 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         return g
 
     def forward(self, batch_graphdata: list):
-        node_size = []
-        num_nodes = []
-        num_word_nodes = []  # number of nodes that are extracted from the raw text in each graph
+        # node_size = []
+        # num_nodes = []
+        # num_word_nodes = []  # number of nodes that are extracted from the raw text in each graph
 
-        for g in batch_graphdata:
-            g.to(self.device)
-            g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
-            num_nodes.append(g.get_node_num())
-            num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))
-            node_size.extend([1 for i in range(num_nodes[-1])])
+        # for g in batch_graphdata:
+        #     g.to(self.device)
+        #     g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
+        #     num_nodes.append(g.get_node_num())
+        #     num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))
+        #     node_size.extend([1 for i in range(num_nodes[-1])])
 
-        batch_gd = to_batch(batch_graphdata)
-        b_node = batch_gd.get_node_num()
-        assert b_node == sum(num_nodes), print(b_node, sum(num_nodes))
-        node_size = torch.Tensor(node_size).to(self.device).int()
-        num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(batch_gd, node_size, num_nodes, num_word_items=num_word_nodes)
-        batch_gd.node_features["node_feat"] = node_emb
+        # batch_gd = to_batch(batch_graphdata)
+        # b_node = batch_gd.get_node_num()
+        # assert b_node == sum(num_nodes), print(b_node, sum(num_nodes))
+        # node_size = torch.Tensor(node_size).to(self.device).int()
+        # num_nodes = torch.Tensor(num_nodes).to(self.device).int()
+        # num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
+        batch_graphdata = self.embedding_layer(batch_graphdata)
 
-        return batch_gd
+        # node_emb = self.embedding_layer(batch_gd, node_size, num_nodes, num_word_items=num_word_nodes)
+        # batch_gd.node_features["node_feat"] = node_emb
+
+        return batch_graphdata
 
     def embedding(self, node_attributes, edge_attributes):
         node_emb, edge_emb = self.embedding_layer(
