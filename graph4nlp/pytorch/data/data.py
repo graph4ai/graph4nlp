@@ -747,7 +747,7 @@ def to_batch(graphs: list = None) -> GraphData:
             total_node_count += 1
 
     # Step 4: Add edges
-    def stack_edge_indices(gs: [GraphData]):
+    def stack_edge_indices(gs):
         all_edge_indices = EdgeIndex(src=[], tgt=[])
         cumulative_node_num = 0
         for g in gs:
