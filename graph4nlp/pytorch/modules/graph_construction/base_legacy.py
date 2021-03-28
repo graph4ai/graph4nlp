@@ -465,7 +465,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         top_k_neigh = min(top_k_neigh, attention.size(-1))
         knn_val, knn_ind = torch.topk(attention, top_k_neigh, dim=-1)
         weighted_adj = to_cuda((self.mask_off_val * torch.ones_like(attention)).scatter_(-1, knn_ind, knn_val), self.device)
-        weighted_adj[weighted_adj <= 0] = 0
+
         return weighted_adj
 
     def _build_epsilon_neighbourhood(self, attention, epsilon_neigh):

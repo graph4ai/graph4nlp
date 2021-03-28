@@ -1,6 +1,6 @@
 # Data
 dataset: 'squad-split2'
-pre_word_emb_file: '/home/shiina/shiina/lib/graph4nlp/.vector_cache/glove.6B.300d.txt' # path to the pretrained word embedding file
+pre_word_emb_file: '/home/shiina/data/.vector_cache/glove.6B.300d.txt' # path to the pretrained word embedding file
 out_dir: 'out/squad_split2/qg_ckpt_dep_ggnn'
 
 # Preprocessing
@@ -19,14 +19,14 @@ coverage_loss_ratio: 0.3 # coverage loss ratio
 
 # Training
 seed: 1234
-batch_size: 50 # batch size
+batch_size: 80 # batch size
 epochs: 100 # number of maximal training epochs
 grad_clipping: 10
 early_stop_metric: 'BLEU_4'
-patience: 10
+patience: 30
 lr: 0.001 # learning rate
-lr_patience: 2
-lr_reduce_factor: 0.5
+lr_patience: 3
+lr_reduce_factor: 0.7
 num_workers: 10 # number of data loader workers
 
 

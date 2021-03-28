@@ -1,5 +1,6 @@
 import os
 import torch
+import nltk
 
 from ..data.dataset import DoubleText2TextDataset
 
@@ -21,10 +22,12 @@ class SQuADDataset(DoubleText2TextDataset):
 
     def __init__(self, root_dir, topology_builder=None, topology_subdir=None, graph_type='static',
                  edge_strategy=None, merge_strategy='tailhead', max_word_vocab_size=None,
+                 tokenizer=nltk.RegexpTokenizer(" ", gaps=True).tokenize,
                  min_word_vocab_freq=1, word_emb_size=None, **kwargs):
         super(SQuADDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy,
                                           max_word_vocab_size=max_word_vocab_size,
                                           min_word_vocab_freq=min_word_vocab_freq,
+                                          tokenizer=tokenizer,
                                           word_emb_size=word_emb_size, **kwargs)

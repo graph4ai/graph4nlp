@@ -78,10 +78,10 @@ class GraphData(object):
         self.device = device
         for k, v in self._node_features.items():
             if isinstance(v, torch.Tensor):
-                v = v.to(device)
+                self._node_features[k] = v.to(device)
         for k, v in self._edge_features.items():
             if isinstance(v, torch.Tensor):
-                v = v.to(device)
+                self._edge_features[k] = v.to(device)
         return self
 
     # Node operations
@@ -747,7 +747,7 @@ def to_batch(graphs: list = None) -> GraphData:
             total_node_count += 1
 
     # Step 4: Add edges
-    def stack_edge_indices(gs: [GraphData]):
+    def stack_edge_indices(gs):
         all_edge_indices = EdgeIndex(src=[], tgt=[])
         cumulative_node_num = 0
         for g in gs:

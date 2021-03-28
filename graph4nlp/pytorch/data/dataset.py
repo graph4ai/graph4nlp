@@ -13,7 +13,7 @@ from sklearn import preprocessing
 from copy import deepcopy
 
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
-from ..data.data import GraphData
+from ..data.data import GraphData, to_batch
 from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
@@ -441,8 +441,8 @@ class Dataset(torch.utils.data.Dataset):
                     'annotators': 'ssplit,tokenize,depparse',
                     "tokenize.options":
                         "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
-                    "tokenize.whitespace": False,
-                    'ssplit.isOneSentence': False,
+                    "tokenize.whitespace": True,
+                    'ssplit.isOneSentence': True,
                     'outputFormat': 'json'
                 }
             elif topology_builder == ConstituencyBasedGraphConstruction:
@@ -461,6 +461,13 @@ class Dataset(torch.utils.data.Dataset):
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
                     print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
+                # graph = topology_builder.topology(raw_text_data=item.input_text,
+                #                                     nlp_processor=processor,
+                #                                     processor_args=processor_args,
+                #                                     merge_strategy=merge_strategy,
+                #                                     edge_strategy=edge_strategy,
+                #                                     verbase=False)
+
                 try:
                     graph = topology_builder.topology(raw_text_data=item.input_text,
                                                       nlp_processor=processor,
@@ -472,6 +479,11 @@ class Dataset(torch.utils.data.Dataset):
                 except Exception as msg:
                     pop_idxs.append(cnt)
                     item.graph = None
+                    # import traceback
+                    # traceback.print_exc()
+                    # print(item.input_text)
+                    # exit(0)
+                    # print(msg)
                     warnings.warn(RuntimeWarning(msg))
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
@@ -481,7 +493,8 @@ class Dataset(torch.utils.data.Dataset):
                     graph = topology_builder.init_topology(item.input_text,
                                                            lower_case=lower_case,
                                                            tokenizer=tokenizer)
-                    ret.append(graph)
+                    item.graph = graph
+                    ret.append(item)
             elif dynamic_graph_type == 'node_emb_refined':
                 if dynamic_init_topology_builder in (
                 IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
@@ -544,7 +557,7 @@ class Dataset(torch.utils.data.Dataset):
                                                                edge_strategy=edge_strategy,
                                                                verbase=False,
                                                                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
-
+                        
                         item.graph = graph
                     except Exception as msg:
                         pop_idxs.append(idx)
@@ -613,6 +626,7 @@ class Dataset(torch.utils.data.Dataset):
                                        lower_case=self.lower_case,
                                        max_word_vocab_size=self.max_word_vocab_size,
                                        min_word_vocab_freq=self.min_word_vocab_size,
+                                       share_vocab=self.share_vocab,
                                        pretrained_word_emb_file=self.pretrained_word_emb_file,
                                        word_emb_size=self.word_emb_size)
         self.vocab_model = vocab_model
@@ -716,9 +730,11 @@ class Text2TextDataset(Dataset):
             graph: GraphData = item.graph
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
+
                 node_token = graph.node_attributes[node_idx]['token']
                 node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token, use_ie)
                 graph.node_attributes[node_idx]['token_id'] = node_token_id
+
                 token_matrix.append([node_token_id])
             if self.topology_builder == IEBasedGraphConstruction:
                 for i in range(len(token_matrix)):
@@ -1389,8 +1405,8 @@ class DoubleText2TextDataset(Dataset):
         with open(file_path, 'r') as f:
             for line in f:
                 input, input2, output = line.split('\t')
-                data_item = DoubleText2TextDataItem(input_text=input.strip(), input_text2=input2.strip(),
-                                                    output_text=output.strip(), tokenizer=self.tokenizer,
+                data_item = DoubleText2TextDataItem(input_text=input.strip().lower(), input_text2=input2.strip().lower(),
+                                                    output_text=output.strip().lower(), tokenizer=self.tokenizer,
                                                     share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
@@ -1473,7 +1489,7 @@ class DoubleText2TextDataset(Dataset):
         input_tensor2, input_length2, input_text2 = [], [], []
         tgt_tensor, tgt_text = [], []
         for item in data_list:
-            graph_data.append(deepcopy(item.graph))
+            graph_data.append(item.graph)
             input_tensor2.append(deepcopy(item.input_np2))
             input_length2.append(len(item.input_np2))
             input_text2.append(deepcopy(item.input_text2))
@@ -1483,6 +1499,7 @@ class DoubleText2TextDataset(Dataset):
         input_tensor2 = torch.LongTensor(pad_2d_vals_no_size(input_tensor2))
         input_length2 = torch.LongTensor(input_length2)
         tgt_tensor = torch.LongTensor(pad_2d_vals_no_size(tgt_tensor))
+        graph_data = to_batch(graph_data)
 
         return {'graph_data': graph_data,
                 'input_tensor2': input_tensor2,
