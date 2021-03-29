@@ -122,11 +122,11 @@ class Graph2Seq(Graph2XBase):
                                     use_coverage=self.use_coverage)
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
-        graph_list_decoder = from_batch(batch_graph)
-        if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
-            for g, g_ori in zip(graph_list_decoder, old_graph_list):
-                g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
-        beam_results = generator.generate(graph_list=graph_list_decoder, oov_dict=oov_dict, topk=topk)
+        # graph_list_decoder = from_batch(batch_graph)
+        # if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
+        #     for g, g_ori in zip(graph_list_decoder, old_graph_list):
+        #         g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
+        beam_results = generator.generate(graph_list=batch_graph, oov_dict=oov_dict, topk=topk)
         return beam_results
 
     def forward(self, graph, tgt_seq=None, oov_dict=None):

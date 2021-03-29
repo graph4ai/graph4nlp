@@ -281,8 +281,10 @@ class StdRNNDecoder(RNNDecoderBase):
 
         batch_size = graph_node_embedding.shape[0]
         decoder_input = torch.tensor([self.vocab.SOS] * batch_size).to(graph_node_embedding.device)
+        
         decoder_state = self.get_decoder_init_state(rnn_type=self.rnn_type, batch_size=batch_size,
                                                     content=graph_level_embedding)
+        
         input_feed = torch.zeros(batch_size, self.input_feed_size).to(graph_node_embedding.device)
 
 
@@ -311,6 +313,7 @@ class StdRNNDecoder(RNNDecoderBase):
                 decoder_input = decoder_output.squeeze(1).argmax(dim=-1)
             decoder_input = self._filter_oov(decoder_input)
         ret = torch.cat(outputs, dim=1)
+        
         return ret, enc_attn_weights_average, coverage_vectors
 
     def decode_step(self, decoder_input, input_feed, rnn_state, encoder_out, dec_input_mask, rnn_emb=None,
@@ -388,7 +391,6 @@ class StdRNNDecoder(RNNDecoderBase):
             decoder_output = dec_out
         
         out = self.memory_to_feed(decoder_output)
-        # print(out.shape, self.memory_to_feed)
 
         # project
         if self.tgt_emb_as_output_layer:
@@ -404,8 +406,7 @@ class StdRNNDecoder(RNNDecoderBase):
             output = torch.zeros(batch_size, oov_dict.get_vocab_size()).to(decoder_input.device)
             attn_ptr = torch.cat(attn_collect, dim=-1)
             pgen_collect = [dec_emb, hidden, attn_ptr]
-            # print(self.ptr)
-            # print(dec_emb.shape, hidden.shape, attn_ptr.shape)
+
             prob_ptr = torch.sigmoid(self.ptr(torch.cat(pgen_collect, -1)))
             prob_gen = 1 - prob_ptr
             gen_output = torch.softmax(decoder_output, dim=-1)
@@ -414,7 +415,6 @@ class StdRNNDecoder(RNNDecoderBase):
             output[:, :self.vocab.get_vocab_size()] = ret
 
             ptr_output = dec_attn_scores
-            # print(output.shape, src_seq.shape, prob_ptr.shape, ptr_output.shape, "-----")
 
             output.scatter_add_(1, src_seq, prob_ptr * ptr_output)
             decoder_output = output
@@ -476,19 +476,7 @@ class StdRNNDecoder(RNNDecoderBase):
         # [s_g.node_features["node_emb"] for s_g in graph_list]
         rnn_node_emb = batch_data_dict["rnn_emb"]
 
-
         graph_node_mask = (batch_data_dict["token_id"] != 0).squeeze(-1).float() - 1
-
-        # rnn_node_emb = [s_g.node_features["rnn_emb"] for s_g in graph_list]
-
-        def pad_tensor(x, dim, pad_size):
-            if len(x.shape) == 2:
-                assert (0 <= dim <= 1)
-                assert pad_size >= 0
-                dim1, dim2 = x.shape
-                pad = torch.zeros(pad_size, dim2, dtype=x.dtype) if dim == 0 else torch.zeros(dim1, pad_size, dtype=x.dtype)
-                pad = pad.to(x.device)
-                return torch.cat((x, pad), dim=dim)
 
         if self.use_copy:
             src_seq_ret = graph.batch_node_features["token_id_oov"]

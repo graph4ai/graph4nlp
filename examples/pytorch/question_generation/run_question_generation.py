@@ -127,7 +127,11 @@ class QGModel(nn.Module):
 
     def forward(self, data, oov_dict=None, require_loss=True):
         batch_gd = self.encode_init_node_feature(data)
-        prob, enc_attn_weights, coverage_vectors = self.g2s.encoder_decoder(batch_gd, data['graph_data'], oov_dict=oov_dict, tgt_seq=data['tgt_tensor'])
+        if require_loss:
+            tgt = data['tgt_tensor']
+        else:
+            tgt = None
+        prob, enc_attn_weights, coverage_vectors = self.g2s.encoder_decoder(batch_gd, data['graph_data'], oov_dict=oov_dict, tgt_seq=tgt)
 
         if require_loss:
             tgt = data['tgt_tensor']
@@ -381,7 +385,6 @@ class ModelHandler:
                 data = all_to_cuda(data, self.config['device'])
                 data["graph_data"] = data["graph_data"].to(self.config["device"])
                 
-
                 if self.use_copy:
                     oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab, device=self.config['device'])
                     ref_dict = oov_dict
@@ -396,7 +399,6 @@ class ModelHandler:
                 pred_collect.extend(pred_str)
                 gt_collect.extend(data['tgt_text'])
 
-                
             scores = self.evaluate_predictions(gt_collect, pred_collect)
             return scores
 
@@ -407,7 +409,7 @@ class ModelHandler:
             gt_collect = []
             for i, data in enumerate(dataloader):
                 data = all_to_cuda(data, self.config['device'])
-            
+                data["graph_data"] = data["graph_data"].to(self.config["device"])
                 if self.use_copy:
                     oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab, device=self.config['device'])
                     ref_dict = oov_dict
@@ -429,6 +431,10 @@ class ModelHandler:
 
                 pred_collect.extend(pred_str)
                 gt_collect.extend(data['tgt_text'])
+                # print(pred_collect)
+                # print("=========")
+                # print(gt_collect)
+                # exit(0)
 
             scores = self.evaluate_predictions(gt_collect, pred_collect)
 
