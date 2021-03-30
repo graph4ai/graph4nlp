@@ -12,10 +12,11 @@ import dgl
 import numpy as np
 import scipy.sparse
 import torch
+from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 
 from .utils import SizeMismatchException, EdgeNotFoundException
 from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list
-from .views import NodeView, NodeFeatView, EdgeView
+from .views import NodeView, NodeFeatView, EdgeView, BatchNodeFeatView, BatchEdgeFeatView
 
 EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
 
@@ -62,11 +63,11 @@ class GraphData(object):
         self.device = device
 
         # Batch information. If this instance is not a batch, then the following attributes are all `None`.
-        self._is_batch = False          # Bool flag indicating whether this graph is a batch graph
-        self.batch = None               # Batch node indices
-        self.batch_size = None          # Batch size
-        self._batch_num_nodes = None    # Subgraph node number list with the length of batch size
-        self._batch_num_edges = None    # Subgraph edge number list with the length of batch size
+        self._is_batch = False  # Bool flag indicating whether this graph is a batch graph
+        self.batch = None  # Batch node indices
+        self.batch_size = None  # Batch size
+        self._batch_num_nodes = None  # Subgraph node number list with the length of batch size
+        self._batch_num_edges = None  # Subgraph edge number list with the length of batch size
 
         if src is not None:
             if isinstance(src, GraphData):
@@ -358,7 +359,7 @@ class GraphData(object):
             self._nids_eid_mapping[endpoint_tuple] = current_num_edges + i
 
         # Remove duplicate edges
-        duplicate_edge_indices.reverse()    # Needs to be reversed first to avoid index overflow after popping.
+        duplicate_edge_indices.reverse()  # Needs to be reversed first to avoid index overflow after popping.
         for edge_index in duplicate_edge_indices:
             src.pop(edge_index)
             tgt.pop(edge_index)
@@ -457,7 +458,7 @@ class GraphData(object):
 
         Parameters
         ----------
-        edges: list
+        edges: int or list or slice
             Edge indices
         new_data: dict
             New data
@@ -623,37 +624,91 @@ class GraphData(object):
     @property
     def batch_node_features(self):
         """
-        Get the batched view of node feature tensors, i.e., tensors in (B, N, D) view
+        Get a view of the batched(padded) version of the node features. Shape: (B, N, D)
+
         Returns
         -------
-        dict:
-            A dictionary containing the node feature names and the corresponding batch-view tensors.
+        BatchNodeFeatView
+        """
+        return BatchNodeFeatView(self)
+
+    def _get_batch_node_features(self, item=None):
+        """
+        Get the batched view of node feature tensors, i.e., tensors in (B, N, D) view
+
+        Parameters
+        -------
+        item: str
+            The name of the features. If None then return a dictionary of all the features.
+
+        Returns
+        -------
+        dict or tensor:
+            A dictionary containing the node feature names and the corresponding batch-view tensors, or just the
+            specified tensor.
         """
         if not self._is_batch:
             raise Exception("Calling batch_node_features() method on a non-batch graph.")
-        batch_node_features = dict()
-        from torch.nn.utils.rnn import pad_sequence
-        separate_features = self.split_node_features
-        for k, v in separate_features.items():
-            batch_node_features[k] = pad_sequence(list(v), batch_first=True)
-        return batch_node_features
+        if item is None:
+            batch_node_features = dict()
+            separate_features = self.split_node_features
+            for k, v in separate_features.items():
+                batch_node_features[k] = pad_sequence(list(v), batch_first=True)
+            return batch_node_features
+        else:
+            if (item not in self.node_features.keys()) or (self.node_features[item] is None):
+                raise Exception("Node feature {} doesn't exist!".format(item))
+            return pad_sequence(self.split_node_features[item], batch_first=True)
+
+    def _set_batch_node_features(self, key, value):
+        """
+        Set node features in batch view.
+
+        Parameters
+        ----------
+        key: str
+            The name of the feature.
+        value: Tensor
+            The values to be written, in the shape of (B, N, D)
+        """
+        individual_features = [value[i, :self._batch_num_nodes[i]] for i in range(len(self._batch_num_nodes))]
+        self.set_node_features(slice(None, None, None), {key: torch.cat(individual_features)})
 
     @property
     def batch_edge_features(self):
         """
-        An edge version of :py:method `batch_node_features`.
+        Edge version of self.batch_node_features
+
         Returns
         -------
-        dict:
+        BatchEdgeFeatView
+        """
+        return BatchEdgeFeatView(self)
+
+    def _get_batch_edge_features(self, item=None):
+        """
+        An edge version of :py:method `batch_node_features`.
+
+        Returns
+        -------
+        dict or tensor:
             A dictionary containing the edge feature names and the corresponding batch-view tensors.
         """
         if not self._is_batch:
             raise Exception("Calling batch_edge_features() method on a non-batch graph.")
-        batch_edge_features = dict()
-        from torch.nn.utils.rnn import pad_sequence
-        for k, v in self.split_edge_features.items():
-            batch_edge_features[k] = pad_sequence(list(v), batch_first=True)
-        return batch_edge_features
+        if item is None:
+            batch_edge_features = dict()
+            for k, v in self.split_edge_features.items():
+                batch_edge_features[k] = pad_sequence(list(v), batch_first=True)
+            return batch_edge_features
+        else:
+            if (item not in self.edge_features.keys()) or (self.edge_features[item] is None):
+                raise Exception("Edge feature {} doesn't exist!".format(item))
+            return pad_sequence(self.split_edge_features[item], batch_first=True)
+
+    def _set_batch_edge_features(self, key, value):
+        individual_features = [value[i, :self._batch_num_edges[i]] for i in range(len(self._batch_num_edges))]
+        self.set_edge_feature(slice(None, None, None), {key: torch.cat(individual_features)})
 
     @property
     def split_node_features(self):
@@ -713,6 +768,10 @@ def to_batch(graphs: list = None) -> GraphData:
     GraphData
         The large graph containing all the graphs in the batch.
     """
+
+    # Check
+    assert isinstance(graphs, list), "to_batch() only accepts list of GraphData!"
+    assert len(graphs) > 0, "Cannot convert an empty list of graphs into a big batched graph!"
 
     # Optimized version
     big_graph = GraphData()
