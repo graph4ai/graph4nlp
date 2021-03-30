@@ -65,3 +65,8 @@ Test examples: 8964 | Time: 1590.95s |  Test scores: BLEU_1 = 0.39766, BLEU_2 = 
 
 
 
+
+Test examples: 8964 | Time: 83.54s |  Test scores: BLEU_1 = 0.39332, BLEU_2 = 0.22917, BLEU_3 = 0.15234, BLEU_4 = 0.10504, METEOR = 0.15556, ROUGE = 0.38295 coverage
+
+
+

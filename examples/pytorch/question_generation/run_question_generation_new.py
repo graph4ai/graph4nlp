@@ -46,7 +46,7 @@ class QGModel(nn.Module):
         self.use_coverage = self.config['decoder_args']['rnn_decoder_share']['use_coverage']
 
         # build Graph2Seq model
-        self.g2s = Graph2Seq.from_args(config, self.vocab)
+        self.g2s = Graph2Seq.from_args(config, self.vocab, config['device'])
 
         if 'w2v' in self.g2s.graph_topology.embedding_layer.word_emb_layers:
             self.word_emb = self.g2s.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
@@ -76,7 +76,8 @@ class QGModel(nn.Module):
                                     bidirectional=True,
                                     num_layers=1,
                                     rnn_type='lstm',
-                                    dropout=config['enc_rnn_dropout'])
+                                    dropout=config['enc_rnn_dropout'],
+                                    device=config['device'])
 
         # soft-alignment between context and answer
         self.ctx2ans_attn = Context2AnswerAttention(config['num_hidden'], config['num_hidden'])

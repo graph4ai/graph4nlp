@@ -171,7 +171,7 @@ class StdRNNDecoder(RNNDecoderBase):
         self.vocab_size = vocab_size
         self.out_project = nn.Linear(size_before_output, vocab_size, bias=False)
         if self.tgt_emb_as_output_layer:
-            self.out_project.weight = self.tgt_emb.weight
+            self.out_project.weight = self.tgt_emb.word_emb_layer.weight
 
         
 
