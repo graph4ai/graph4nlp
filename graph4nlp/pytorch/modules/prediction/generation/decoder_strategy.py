@@ -137,7 +137,8 @@ class DecoderStrategy(StrategyBase):
                                           .format(self.rnn_type))
 
             single_graph_node_embedding = graph_node_embedding[batch_idx, :, :].unsqueeze(0).expand(beam_size, -1, -1).contiguous()
-            single_graph_node_mask = graph_node_mask[batch_idx, :].unsqueeze(0).expand(beam_size, -1, -1).contiguous() if graph_node_mask is not None else None
+            
+            single_graph_node_mask = graph_node_mask[batch_idx, :].unsqueeze(0).expand(beam_size, -1).contiguous() if graph_node_mask is not None else None
             single_rnn_node_embedding = rnn_node_embedding[batch_idx, :, :].unsqueeze(
                 0).expand(beam_size, -1, -1).contiguous() if rnn_node_embedding is not None else None
             single_input_feed = input_feed[batch_idx, :].unsqueeze(0)

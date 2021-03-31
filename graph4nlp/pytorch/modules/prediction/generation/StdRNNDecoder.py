@@ -164,7 +164,7 @@ class StdRNNDecoder(RNNDecoderBase):
             self.pre_out = nn.Linear(self.input_feed_size, self.out_embed_size)
             size_before_output = self.out_embed_size
         else:  # don't use pre_out layer
-            size_before_output = self.out_logits_size
+            size_before_output = self.input_feed_size
 
         # size_before_output = self.input_feed_size
         self.vocab = vocab
@@ -351,10 +351,9 @@ class StdRNNDecoder(RNNDecoderBase):
             if coverage_repr is not None:
                 coverage_repr = coverage_repr.unsqueeze(-1) * self.coverage_weight
             if self.attention_type == "uniform" or self.attention_type == "sep_diff_encoder_type":
-                # enc_mask = extract_mask(dec_input_mask, token=-1)
-                # enc_mask = 1 - enc_mask
-                enc_mask = None
-                
+                enc_mask = extract_mask(dec_input_mask, token=-1)
+                enc_mask = 1 - enc_mask
+
                 attn_res, scores = self.enc_attention(query=hidden, memory=encoder_out, memory_mask=enc_mask,
                                                       coverage=coverage_repr)
                 attn_collect.append(attn_res)

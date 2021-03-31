@@ -125,17 +125,17 @@ class Graph2Seq(Graph2XBase):
         beam_results = generator.generate(graph_list=batch_graph, oov_dict=oov_dict, topk=topk)
         return beam_results
 
-    def forward(self, graph, tgt_seq=None, oov_dict=None):
-        batch_graph = self.graph_topology(graph)
+    def forward(self, batch_graph, tgt_seq=None, oov_dict=None):
+        batch_graph = self.graph_topology(batch_graph)
         return self.encoder_decoder(batch_graph=batch_graph, oov_dict=oov_dict, tgt_seq=tgt_seq)
 
-    def translate(self, graph_list, beam_size, topk=1, oov_dict=None):
+    def translate(self, batch_graph, beam_size, topk=1, oov_dict=None):
         """
             Decoding with the support of beam_search.
             Specifically, when ``beam_size`` is 1, it is equal to greedy search.
         Parameters
         ----------
-        graph_list: list[GraphData]
+        batch_graph: list[GraphData]
             The graph input
         beam_size: int
             The beam width. When it is 1, the output is equal to greedy search's output.
@@ -151,9 +151,8 @@ class Graph2Seq(Graph2XBase):
             The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes.
         """
 
-        batch_graph = self.graph_topology(graph_list)
-        return self.encoder_decoder_beam_search(batch_graph=batch_graph, old_graph_list=graph_list, beam_size=beam_size,
-                                                topk=topk, oov_dict=oov_dict)
+        batch_graph = self.graph_topology(batch_graph)
+        return self.encoder_decoder_beam_search(batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict)
 
     @classmethod
     def from_args(cls, opt, vocab_model):
@@ -165,8 +164,6 @@ class Graph2Seq(Graph2XBase):
             The configuration dict. It should has the same hierarchy and keys as the template.
         vocab_model: VocabModel
             The vocabulary.
-        device: torch.device
-            The device.
 
         Returns
         -------
@@ -179,6 +176,7 @@ class Graph2Seq(Graph2XBase):
         args = (copy.deepcopy(emb_args))
         args.update(gnn_args)
         args.update(dec_args)
+        args["share_vocab"] = opt.get("share_vocab", False)
 
         return cls(vocab_model=vocab_model, **args)
 

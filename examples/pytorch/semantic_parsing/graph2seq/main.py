@@ -114,7 +114,7 @@ class Jobs:
 
     def _build_model(self):
 
-        self.model = get_model(self.opt, vocab_model=self.vocab, device=self.device).to(self.device)
+        self.model = get_model(self.opt, vocab_model=self.vocab).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -167,13 +167,14 @@ class Jobs:
         dataloader = self.train_dataloader
         step_all_train = len(dataloader)
         for step, data in enumerate(dataloader):
-            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
+            graph, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
+            graph = graph.to(self.device)
             tgt = tgt.to(self.device)
             oov_dict = None
             if self.use_copy:
-                oov_dict, tgt = prepare_ext_vocab(graph_list, self.vocab, gt_str=gt_str, device=self.device)
+                oov_dict, tgt = prepare_ext_vocab(graph, self.vocab, gt_str=gt_str, device=self.device)
 
-            prob, enc_attn_weights, coverage_vectors = self.model(graph_list, tgt, oov_dict=oov_dict)
+            prob, enc_attn_weights, coverage_vectors = self.model(graph, tgt, oov_dict=oov_dict)
             loss = self.loss(logits=prob, label=tgt, enc_attn_weights=enc_attn_weights,
                              coverage_vectors=coverage_vectors)
             loss_collect.append(loss.item())
@@ -192,15 +193,16 @@ class Jobs:
         assert split in ["val", "test"]
         dataloader = self.val_dataloader if split == "val" else self.test_dataloader
         for data in dataloader:
-            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
+            graph, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
+            graph = graph.to(self.device)
             if self.use_copy:
-                oov_dict = prepare_ext_vocab(graph_list=graph_list, vocab=self.vocab, device=self.device)
+                oov_dict = prepare_ext_vocab(batch_graph=graph, vocab=self.vocab, device=self.device)
                 ref_dict = oov_dict
             else:
                 oov_dict = None
                 ref_dict = self.vocab.out_word_vocab
 
-            prob, _, _ = self.model(graph_list, oov_dict=oov_dict)
+            prob, _, _ = self.model(graph, oov_dict=oov_dict)
             pred = prob.argmax(dim=-1)
 
             pred_str = wordid2str(pred.detach().cpu(), ref_dict)
@@ -211,6 +213,7 @@ class Jobs:
         self.logger.info("Evaluation accuracy in `{}` split: {:.3f}".format(split, score))
         return score
 
+    @torch.no_grad()
     def translate(self):
         self.model.eval()
 
@@ -218,15 +221,16 @@ class Jobs:
         gt_collect = []
         dataloader = self.test_dataloader
         for data in dataloader:
-            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
+            graph, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
+            graph = graph.to(self.device)
             if self.use_copy:
-                oov_dict = prepare_ext_vocab(graph_list=graph_list, vocab=self.vocab, device=self.device)
+                oov_dict = prepare_ext_vocab(batch_graph=graph, vocab=self.vocab, device=self.device)
                 ref_dict = oov_dict
             else:
                 oov_dict = None
                 ref_dict = self.vocab.out_word_vocab
 
-            pred = self.model.translate(graph_list=graph_list, oov_dict=oov_dict, beam_size=3, topk=1)
+            pred = self.model.translate(batch_graph=graph, oov_dict=oov_dict, beam_size=4, topk=1)
 
             pred_ids = pred[:, 0, :]  # we just use the top-1
 
@@ -253,7 +257,8 @@ class Jobs:
 if __name__ == "__main__":
     opt = get_args()
     runner = Jobs(opt)
-    max_score = runner.train()
-    runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
+    # max_score = runner.train()
+    # runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint("best.pth")
+    # runner.evaluate("test")
     runner.translate()
