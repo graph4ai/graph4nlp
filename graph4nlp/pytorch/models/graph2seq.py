@@ -44,7 +44,7 @@ class Graph2Seq(Graph2XBase):
     """
     def __init__(self, vocab_model, emb_input_size, emb_hidden_size, embedding_style,
                  graph_type, gnn_direction_option, gnn_input_size, gnn_hidden_size, gnn_output_size,
-                 gnn, gnn_num_layers, dec_hidden_size,
+                 gnn, gnn_num_layers, dec_hidden_size, share_vocab=False,
                  # dropout
                  gnn_feat_drop=0.0, gnn_attn_drop=0.0,
                  emb_fix_word_emb=False, emb_fix_bert_emb=False, emb_word_dropout=0.0, emb_rnn_dropout=0.0,
@@ -69,9 +69,10 @@ class Graph2Seq(Graph2XBase):
         self.use_copy = dec_use_copy
         self.use_coverage = dec_use_coverage
         self.dec_rnn_type = dec_rnn_type
+        self.share_vocab = share_vocab
 
         self._build_decoder(rnn_type=dec_rnn_type, decoder_length=dec_max_decoder_step, vocab_model=vocab_model,
-                            rnn_input_size=emb_hidden_size,
+                            rnn_input_size=emb_hidden_size, share_vocab=share_vocab,
                             input_size=2 * gnn_hidden_size if gnn_direction_option == 'bi_sep' else gnn_hidden_size,
                             hidden_size=dec_hidden_size, graph_pooling_strategy=dec_graph_pooling_strategy,
                             use_copy=dec_use_copy, use_coverage=dec_use_coverage,
@@ -82,20 +83,22 @@ class Graph2Seq(Graph2XBase):
                             rnn_dropout=dec_dropout)
 
     def _build_decoder(self, decoder_length, input_size, rnn_input_size, hidden_size, graph_pooling_strategy,
-                       vocab_model, fix_word_emb=False,
+                       vocab_model, fix_word_emb=False, share_vocab=False,
                        use_copy=False, use_coverage=False, tgt_emb_as_output_layer=False, teacher_forcing_rate=1.0,
                        rnn_type="lstm", attention_type="uniform", node_type_num=None, fuse_strategy="average",
                        rnn_dropout=0.2):
-        decoder_word_emb = WordEmbedding(
-                            vocab_model.out_word_vocab.embeddings.shape[0],
-                            vocab_model.out_word_vocab.embeddings.shape[1],
-                            pretrained_word_emb=vocab_model.out_word_vocab.embeddings,
-                            fix_emb=fix_word_emb)
+        if share_vocab:
+            self.dec_word_emb = self.enc_word_emb
+        else:
+            self.dec_word_emb = WordEmbedding(vocab_model.out_word_vocab.embeddings.shape[0],
+                                              vocab_model.out_word_vocab.embeddings.shape[1],
+                                              pretrained_word_emb=vocab_model.out_word_vocab.embeddings,
+                                              fix_emb=fix_word_emb)
 
         self.seq_decoder = StdRNNDecoder(rnn_type=rnn_type, max_decoder_step=decoder_length,
                                          input_size=input_size,
                                          hidden_size=hidden_size, graph_pooling_strategy=graph_pooling_strategy,
-                                         word_emb=decoder_word_emb, vocab=vocab_model.out_word_vocab,
+                                         word_emb=self.dec_word_emb, vocab=vocab_model.out_word_vocab,
                                          attention_type=attention_type, fuse_strategy=fuse_strategy,
                                          node_type_num=node_type_num,
                                          rnn_emb_input_size=rnn_input_size, use_coverage=use_coverage,
@@ -103,7 +106,7 @@ class Graph2Seq(Graph2XBase):
                                          tgt_emb_as_output_layer=tgt_emb_as_output_layer, dropout=rnn_dropout)
         self.teacher_forcing_rate = teacher_forcing_rate
 
-    def encoder_decoder(self, batch_graph, old_graph_list=None, oov_dict=None, tgt_seq=None):
+    def encoder_decoder(self, batch_graph, oov_dict=None, tgt_seq=None):
         # run GNN
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
@@ -113,7 +116,7 @@ class Graph2Seq(Graph2XBase):
                                                                     oov_dict=oov_dict)
         return prob, enc_attn_weights, coverage_vectors
 
-    def encoder_decoder_beam_search(self, batch_graph, old_graph_list, beam_size, topk=1, oov_dict=None):
+    def encoder_decoder_beam_search(self, batch_graph, beam_size, topk=1, oov_dict=None):
         generator = DecoderStrategy(beam_size=beam_size, vocab=self.seq_decoder.vocab, rnn_type=self.dec_rnn_type,
                                     decoder=self.seq_decoder, use_copy=self.use_copy,
                                     use_coverage=self.use_coverage)

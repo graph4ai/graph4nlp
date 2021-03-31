@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import datetime
@@ -106,21 +107,21 @@ class QGModel(nn.Module):
         
         new_node_feat = self.answer_alignment(node_feats, answer_feat, mask_text, ans_mask)
 
-        lens = mask_text.float().sum(-1).int()
-        ret_feat = []
-        for i in range(lens.shape[0]):
-            tmp_feat = new_node_feat[i][:lens[i]]
-            # if len(tmp_feat) < num_items[i].item():
-            #     prev_feat = new_feat[i, lens[i]: num_items[i]]
-            #     if prev_feat.shape[-1] != tmp_feat.shape[-1]:
-            #         prev_feat = self.linear_transform(prev_feat)
+        # lens = mask_text.float().sum(-1).int()
+        # ret_feat = []
+        # for i in range(lens.shape[0]):
+        #     tmp_feat = new_node_feat[i][:lens[i]]
+        #     # if len(tmp_feat) < num_items[i].item():
+        #     #     prev_feat = new_feat[i, lens[i]: num_items[i]]
+        #     #     if prev_feat.shape[-1] != tmp_feat.shape[-1]:
+        #     #         prev_feat = self.linear_transform(prev_feat)
 
-            #     tmp_feat = torch.cat([tmp_feat, prev_feat], 0)
-            ret_feat.append(tmp_feat)
+        #     #     tmp_feat = torch.cat([tmp_feat, prev_feat], 0)
+        #     ret_feat.append(tmp_feat)
 
-        ret_feat = torch.cat(ret_feat, 0)
+        # ret_feat = torch.cat(ret_feat, 0)
 
-        batch_gd.node_features["node_feat"] = ret_feat
+        batch_gd.batch_node_features["node_feat"] = new_node_feat
 
         return batch_gd
 
@@ -130,7 +131,7 @@ class QGModel(nn.Module):
             tgt = data['tgt_tensor']
         else:
             tgt = None
-        prob, enc_attn_weights, coverage_vectors = self.g2s.encoder_decoder(batch_gd, data['graph_data'], oov_dict=oov_dict, tgt_seq=tgt)
+        prob, enc_attn_weights, coverage_vectors = self.g2s.encoder_decoder(batch_gd, oov_dict=oov_dict, tgt_seq=tgt)
 
         if require_loss:
             tgt = data['tgt_tensor']
@@ -417,7 +418,7 @@ class ModelHandler:
                     ref_dict = self.vocab.out_word_vocab
 
                 batch_gd = self.model.encode_init_node_feature(data)
-                prob = self.model.g2s.encoder_decoder_beam_search(batch_gd, data['graph_data'], self.config['beam_size'], topk=1, oov_dict=oov_dict)
+                prob = self.model.g2s.encoder_decoder_beam_search(batch_gd, self.config['beam_size'], topk=1, oov_dict=oov_dict)
 
                 pred_ids = torch.zeros(len(prob), self.config['decoder_args']['rnn_decoder_private']['max_decoder_step']).fill_(ref_dict.EOS).to(self.config['device']).int()
                 for i, item in enumerate(prob):
@@ -444,8 +445,8 @@ class ModelHandler:
         self.stopper.load_checkpoint(self.model)
 
         t0 = time.time()
-        scores = self.evaluate(self.test_dataloader)
-        # scores = self.translate(self.test_dataloader)
+        # scores = self.evaluate(self.test_dataloader)
+        scores = self.translate(self.test_dataloader)
         dur = time.time() - t0
         format_str = 'Test examples: {} | Time: {:.2f}s |  Test scores:'.format(self.num_test, dur)
         format_str += self.metric_to_str(scores)
@@ -549,7 +550,7 @@ def print_config(config):
     for key in sorted(config.keys()):
         val = config[key]
         keystr = '{}'.format(key) + (' ' * (24 - len(key)))
-        print('{} -->   {}'.format(keystr, val))
+        print('{} -->  {}'.format(keystr, val))
     print('**************** MODEL CONFIGURATION ****************')
 
 

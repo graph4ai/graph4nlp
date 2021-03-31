@@ -159,13 +159,14 @@ class StdRNNDecoder(RNNDecoderBase):
 
         # project logits to labels
         # self.tgt_emb_as_output_layer = tgt_emb_as_output_layer
-        # if self.tgt_emb_as_output_layer:  # use pre_out layer
-        #     self.out_embed_size = self.word_emb_size
-        #     self.pre_out = nn.Linear(self.out_logits_size, self.out_embed_size, bias=False)
-        #     size_before_output = self.out_embed_size
-        # else:  # don't use pre_out layer
-        #     size_before_output = self.out_logits_size
-        size_before_output = self.input_feed_size
+        if self.tgt_emb_as_output_layer:  # use pre_out layer
+            self.out_embed_size = self.word_emb_size
+            self.pre_out = nn.Linear(self.input_feed_size, self.out_embed_size)
+            size_before_output = self.out_embed_size
+        else:  # don't use pre_out layer
+            size_before_output = self.out_logits_size
+
+        # size_before_output = self.input_feed_size
         self.vocab = vocab
         vocab_size = len(vocab)
         self.vocab_size = vocab_size
@@ -394,10 +395,12 @@ class StdRNNDecoder(RNNDecoderBase):
 
         # project
         if self.tgt_emb_as_output_layer:
-            out_embed = torch.tanh(out)
+            out_embed = torch.tanh(self.pre_out(out))
+            # out_embed = torch.tanh(out)
+            out_embed = self.dropout(out_embed)
         else:
             out_embed = out
-        # out_embed = self.dropout(out_embed)
+        
         decoder_output = self.out_project(out_embed)  # [B, S, Vocab]
 
         if self.use_copy:

@@ -64,7 +64,7 @@ decoder_args:
   rnn_decoder_private:
     max_decoder_step: 50
     node_type_num: null
-    tgt_emb_as_output_layer: false
+    tgt_emb_as_output_layer: true
     teacher_forcing_rate: 0.8
 
 

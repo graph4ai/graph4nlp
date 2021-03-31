@@ -256,14 +256,14 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         if isinstance(rnn_state, (tuple, list)):
             rnn_state = rnn_state[0]
         
-        ret_feat = []
-        for i in range(lens.shape[0]):
-            tmp_feat = rnn_state[i][:lens[i]]
-            ret_feat.append(tmp_feat)
+        # ret_feat = []
+        # for i in range(lens.shape[0]):
+        #     tmp_feat = rnn_state[i][:lens[i]]
+        #     ret_feat.append(tmp_feat)
 
-        ret_feat = torch.cat(ret_feat, 0)
+        # ret_feat = torch.cat(ret_feat, 0)
 
-        batch_gd.node_features["node_feat"] = ret_feat
+        batch_gd.batch_node_features["node_feat"] = rnn_state
 
         return batch_gd
 
