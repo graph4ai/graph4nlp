@@ -305,10 +305,93 @@ def test_batch_feature_view():
 
     batch_graph = to_batch(graphs)
     assert torch.all(
-        torch.eq(batch_graph.batch_node_features['node_feat'], torch.nn.utils.rnn.pad_sequence(features, batch_first=True)))
+        torch.eq(batch_graph.batch_node_features['node_feat'],
+                 torch.nn.utils.rnn.pad_sequence(features, batch_first=True)))
 
     assert batch_graph.split_node_features['node_feat'][0].shape == (10, 100)
     assert batch_graph.split_node_features['node_feat'][1].shape == (20, 100)
     assert batch_graph.split_node_features['node_feat'][2].shape == (30, 100)
     assert batch_graph.split_node_features['node_feat'][3].shape == (40, 100)
     assert batch_graph.split_node_features['node_feat'][4].shape == (50, 100)
+
+
+def generate_sequential_graphs(bs=5, num_nodes=10):
+    start_index = list(range(0, num_nodes - 1, 1))
+    end_index = list(range(1, num_nodes, 1))
+    graphs = []
+    node_features = []
+    node_features_2 = []
+    edge_features = []
+    edge_features_2 = []
+    for i in range(bs):
+        g = GraphData()
+        g.add_nodes(num_nodes)
+        g.add_edges(src=start_index, tgt=end_index)
+        node_feat = torch.FloatTensor([i + 1] * num_nodes)
+        node_feat_2 = torch.FloatTensor([i] * num_nodes)
+        g.node_features['node_feat'] = node_feat
+        node_features.append(node_feat)
+        node_features_2.append(node_feat_2)
+
+        edge_feat = torch.FloatTensor([(i + 1) * 10] * (num_nodes - 1))
+        edge_feat_2 = torch.FloatTensor([i * 10] * (num_nodes - 1))
+        g.edge_features['edge_feat'] = edge_feat
+        edge_features.append(edge_feat)
+        edge_features_2.append(edge_feat_2)
+        graphs.append(g)
+    return edge_features, edge_features_2, graphs, node_features, node_features_2
+
+
+def test_batch_node_features():
+    edge_features, edge_features_2, graphs, node_features, node_features_2 = generate_sequential_graphs(bs=5)
+
+    batch = to_batch(graphs)
+    batch_node_features = batch.batch_node_features
+    batch_edge_features = batch.batch_edge_features
+    assert torch.all(
+        torch.eq(batch_node_features['node_feat'], torch.nn.utils.rnn.pad_sequence(node_features, batch_first=True)))
+    assert torch.all(
+        torch.eq(batch_edge_features['edge_feat'], torch.nn.utils.rnn.pad_sequence(edge_features, batch_first=True)))
+
+    new_batch_edge_features = torch.stack(edge_features_2).unsqueeze(-1)
+    batch.batch_edge_features['edge_feat'] = new_batch_edge_features
+    graphs = from_batch(batch)
+    for i in range(len(graphs)):
+        g = graphs[i]
+        assert torch.all(torch.eq(g.edge_features['edge_feat'], new_batch_edge_features[i]))
+
+
+import matplotlib.pyplot as plt
+import time
+
+def test_batch_feat_perf():
+    batch_size_list = [5, 10, 20, 40, 60, 100, 150, 200, 400, 600, 800, 1000]
+    times = []
+    for bs in batch_size_list:
+        edge_features, edge_features_2, graphs, node_features, node_features_2 = generate_sequential_graphs(bs=bs)
+        batch = to_batch(graphs)
+        new_batch_edge_features = torch.stack(edge_features_2).unsqueeze(-1)
+        start = time.time()
+        batch.batch_edge_features['edge_feat'] = new_batch_edge_features
+        time_elapsed = time.time() - start
+        times.append(time_elapsed)
+
+    plt.plot(batch_size_list, times)
+    plt.title("Time vs batch size")
+    plt.show()
+
+def test_batch_feat_perf_nnodes():
+    batch_size_list = [5, 10, 20, 40, 60, 100, 150, 200, 400, 600, 800, 1000]
+    times = []
+    for bs in batch_size_list:
+        edge_features, edge_features_2, graphs, node_features, node_features_2 = generate_sequential_graphs(num_nodes=bs)
+        batch = to_batch(graphs)
+        new_batch_edge_features = torch.stack(edge_features_2).unsqueeze(-1)
+        start = time.time()
+        batch.batch_edge_features['edge_feat'] = new_batch_edge_features
+        time_elapsed = time.time() - start
+        times.append(time_elapsed)
+
+    plt.plot(batch_size_list, times)
+    plt.title("Time vs #node")
+    plt.show()

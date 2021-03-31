@@ -34,7 +34,7 @@ def check_and_expand(x: list, y: list) -> (list, list):
             'The two lists {} and {} cannot be automatically broadcasted to the same length.'.format(x, y))
 
 
-def slice_to_list(sl, max_len):
+def slice_to_list(sl, max_len) -> list:
     """
     Turn a slice object into a list
 
