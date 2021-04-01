@@ -846,7 +846,10 @@ def to_batch(graphs: list = None) -> GraphData:
 
     # Step 7: Batch information preparation
     big_graph.batch_size = len(graphs)
-    big_graph.batch = sum([[i] * graphs[i].get_node_num() for i in range(len(graphs))], start=[])
+    # big_graph.batch = sum([[i] * graphs[i].get_node_num() for i in range(len(graphs))], start=[])
+    big_graph.batch = []
+    for tmp in [[i] * graphs[i].get_node_num() for i in range(len(graphs))]:
+        big_graph.batch.extend(tmp)
     big_graph._batch_num_nodes = [g.get_node_num() for g in graphs]
     big_graph._batch_num_edges = [g.get_edge_num() for g in graphs]
 

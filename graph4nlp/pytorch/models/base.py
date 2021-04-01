@@ -15,6 +15,7 @@ from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.graph_construction.triples_graph_construction import TriplesBasedGraphConstruction
 
 
 class Graph2XBase(nn.Module):
@@ -113,6 +114,14 @@ class Graph2XBase(nn.Module):
                 word_dropout=emb_word_dropout,
                 rnn_dropout=emb_rnn_dropout,
                 device=device)
+        elif graph_type == "triples":
+            self.graph_topology = TriplesBasedGraphConstruction(embedding_style=embedding_style,
+                                                                vocab=vocab_model.in_word_vocab,
+                                                                hidden_size=emb_hidden_size,
+                                                                word_dropout=emb_word_dropout,
+                                                                rnn_dropout=emb_rnn_dropout, device=device,
+                                                                fix_word_emb=emb_fix_word_emb,
+                                                                fix_bert_emb=emb_fix_bert_emb)
         else:
             raise NotImplementedError()
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer

@@ -645,10 +645,10 @@ class Dataset(torch.utils.data.Dataset):
 
         self.read_raw_data()
 
-        self.train = self.build_topology(self.train)
-        self.test = self.build_topology(self.test)
+        self.train = self.build_topology(self.train[:2])
+        self.test = self.build_topology(self.test[:2])
         if 'val' in self.__dict__:
-            self.val = self.build_topology(self.val)
+            self.val = self.build_topology(self.val[:2])
 
         self.build_vocab()
 

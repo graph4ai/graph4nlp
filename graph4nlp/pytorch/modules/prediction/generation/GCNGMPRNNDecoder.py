@@ -17,7 +17,7 @@ def extract_mask(mask, token):
     return mask_ret
 
 
-class StdRNNDecoder(RNNDecoderBase):
+class GCNGMPRNNDecoder(RNNDecoderBase):
     """
         The standard rnn for sequence decoder.
     Parameters
@@ -73,8 +73,8 @@ class StdRNNDecoder(RNNDecoderBase):
                  use_copy=False, use_coverage=False, coverage_strategy="sum",
                  tgt_emb_as_output_layer=False,  # share label projection with word embedding
                  dropout=0.3):
-        super(StdRNNDecoder, self).__init__(use_attention=use_attention, use_copy=use_copy, use_coverage=use_coverage,
-                                            attention_type=attention_type, fuse_strategy=fuse_strategy)
+        super(GCNGMPRNNDecoder, self).__init__(use_attention=use_attention, use_copy=use_copy, use_coverage=use_coverage,
+                                               attention_type=attention_type, fuse_strategy=fuse_strategy)
         self.max_decoder_step = max_decoder_step
         self.word_emb_size = word_emb.embedding_dim
         self.decoder_input_size = input_size
@@ -115,7 +115,8 @@ class StdRNNDecoder(RNNDecoderBase):
                                                memory_size=input_size, has_bias=True,
                                                attention_funtion=attention_function)
                 self.out_logits_size += self.decoder_input_size
-                self.rnn_attention = Attention(hidden_size=self.decoder_hidden_size, query_size=query_size,
+                self.rnn_attention = Attention(hidden_size=self.decoder_hidden_size,
+                                               query_size=query_size,
                                                memory_size=rnn_emb_input_size, has_bias=True,
                                                attention_funtion=attention_function)
                 if self.fuse_strategy == "concatenate":
@@ -151,11 +152,11 @@ class StdRNNDecoder(RNNDecoderBase):
             raise NotImplementedError()
 
         # input_feed
-        
+
         self.memory_to_feed = nn.Sequential(nn.Linear(self.out_logits_size, self.input_feed_size),
                                             nn.ReLU(),
                                             nn.Dropout(dropout))
-        
+
 
         # project logits to labels
         # self.tgt_emb_as_output_layer = tgt_emb_as_output_layer
@@ -173,7 +174,7 @@ class StdRNNDecoder(RNNDecoderBase):
         if self.tgt_emb_as_output_layer:
             self.out_project.weight = self.tgt_emb.weight
 
-        
+
 
         # coverage strategy
         if self.use_coverage:
@@ -187,14 +188,21 @@ class StdRNNDecoder(RNNDecoderBase):
                     coverage_vector, _ = torch.max(torch.cat(enc_attn_weights), dim=0)
                 elif coverage_strategy == 'sum':
                     coverage_vector = torch.sum(torch.cat(enc_attn_weights), dim=0)
+                elif coverage_strategy == 'sep_sum':
+                    coverage_vector_gcn = torch.sum(torch.cat(enc_attn_weights[0]), dim=0)
+                    coverage_vector_gmp = torch.sum(torch.cat(enc_attn_weights[1]), dim=0)
+                    return (coverage_vector_gcn, coverage_vector_gmp)
                 else:
                     raise ValueError('Unrecognized cover_func: ' + self.cover_func)
                 return coverage_vector
 
             self.coverage_function = get_coverage_vector
 
-            self.coverage_weight = torch.Tensor(1, 1, self.decoder_hidden_size)
-            self.coverage_weight = nn.Parameter(nn.init.xavier_uniform_(self.coverage_weight))
+            self.coverage_weight_gcn = torch.Tensor(1, 1, self.decoder_hidden_size)
+            self.coverage_weight_gcn = nn.Parameter(nn.init.xavier_uniform_(self.coverage_weight_gcn))
+
+            self.coverage_weight_gmp = torch.Tensor(1, 1, self.decoder_hidden_size)
+            self.coverage_weight_gmp = nn.Parameter(nn.init.xavier_uniform_(self.coverage_weight_gmp))
 
         # copy: pointer network
         if self.use_copy:
@@ -229,9 +237,18 @@ class StdRNNDecoder(RNNDecoderBase):
         else:
             raise NotImplementedError("RNN type: {} is not supported.".format(rnn_type))
 
-    def _run_forward_pass(self, graph_node_embedding, graph_node_mask=None, rnn_node_embedding=None,
+    def _run_forward_pass(self,
+                          graph_node_embedding,
+                          graph_node_mask=None,
+                          gmp_node_embedding=None,
+                          gmp_emb_mask=None,
                           graph_level_embedding=None,
-                          graph_edge_embedding=None, graph_edge_mask=None, tgt_seq=None, src_seq=None, oov_dict=None,
+                          gmp_level_embedding=None,
+                          graph_edge_embedding=None,
+                          graph_edge_mask=None,
+                          tgt_seq=None,
+                          src_seq=None,
+                          oov_dict=None,
                           teacher_forcing_rate=1.0):
         """
             The forward function for RNN.
@@ -279,26 +296,42 @@ class StdRNNDecoder(RNNDecoderBase):
         if tgt_seq is not None:
             target_len = tgt_seq.shape[1]
 
+        combine_init_emb = graph_level_embedding + gmp_level_embedding
+        # combine_init_emb = gmp_level_embedding
+        # combine_init_emb = graph_level_embedding
+        # combine_init_emb = None
+
         batch_size = graph_node_embedding.shape[0]
-        decoder_input = torch.tensor([self.vocab.SOS] * batch_size).to(graph_node_embedding.device)
+        decoder_input = torch.Tensor([self.vocab.SOS] * batch_size).long().to(graph_node_embedding.device)
         decoder_state = self.get_decoder_init_state(rnn_type=self.rnn_type, batch_size=batch_size,
-                                                    content=graph_level_embedding)
+                                                    content=combine_init_emb)
         input_feed = torch.zeros(batch_size, self.input_feed_size).to(graph_node_embedding.device)
 
 
         outputs = []
-        enc_attn_weights_average = []
-        coverage_vectors = []
+        enc_attn_weights_average_gcn = []
+        enc_attn_weights_average_gmp = []
+        coverage_vectors_gcn = []
+        coverage_vectors_gmp = []
 
         for i in range(target_len):
             decoder_output, input_feed, decoder_state, dec_attn_scores, coverage_vec = \
-                self.decode_step(decoder_input=decoder_input, input_feed=input_feed, rnn_state=decoder_state, dec_input_mask=graph_node_mask,
-                                 encoder_out=graph_node_embedding, rnn_emb=rnn_node_embedding,
-                                 enc_attn_weights_average=enc_attn_weights_average,
+                self.decode_step(decoder_input=decoder_input,
+                                 rnn_state=decoder_state,
+                                 input_feed=input_feed,
+                                 gnn_dec_input_mask=graph_node_mask,
+                                 gnn_encoder_out=graph_node_embedding,
+                                 gmp_encoder_out=gmp_node_embedding,
+                                 gmp_emb_mask=gmp_emb_mask,
+                                 enc_attn_weights_average_gcn=enc_attn_weights_average_gcn,
+                                 enc_attn_weights_average_gmp=enc_attn_weights_average_gmp,
                                  src_seq=src_seq, oov_dict=oov_dict)
             if self.use_coverage:
-                enc_attn_weights_average.append(dec_attn_scores.unsqueeze(0))
-                coverage_vectors.append(coverage_vec)
+                enc_attn_weights_average_gcn.append(dec_attn_scores[0].unsqueeze(0))
+                enc_attn_weights_average_gmp.append(dec_attn_scores[1].unsqueeze(0))
+                # enc_attn_weights_average.append(dec_attn_scores.unsqueeze(0))
+                coverage_vectors_gcn.append(coverage_vec[0])
+                coverage_vectors_gmp.append(coverage_vec[1])
 
             outputs.append(decoder_output.unsqueeze(1))
 
@@ -307,23 +340,27 @@ class StdRNNDecoder(RNNDecoderBase):
                 decoder_input = tgt_seq[:, i]
             else:
                 # sampling
-                # TODO: now argmax sampling
                 decoder_input = decoder_output.squeeze(1).argmax(dim=-1)
             decoder_input = self._filter_oov(decoder_input)
         ret = torch.cat(outputs, dim=1)
-        return ret, enc_attn_weights_average, coverage_vectors
+        return ret, (enc_attn_weights_average_gcn, enc_attn_weights_average_gmp), (coverage_vectors_gcn, coverage_vectors_gmp)
 
-    def decode_step(self, decoder_input, input_feed, rnn_state, encoder_out, dec_input_mask, rnn_emb=None,
-                    enc_attn_weights_average=None,
-                    src_seq=None, oov_dict=None):
+    def decode_step(self,
+                    decoder_input, input_feed, rnn_state,
+                    gnn_encoder_out, gnn_dec_input_mask,
+                    gmp_encoder_out, gmp_emb_mask,
+                    enc_attn_weights_average_gcn=None,
+                    enc_attn_weights_average_gmp=None,
+                    src_seq=None,
+                    oov_dict=None):
         batch_size = decoder_input.shape[0]
         dec_emb = self.tgt_emb(decoder_input)
         dec_emb = torch.cat((dec_emb, input_feed), dim=1)
         dec_emb = self.dropout(dec_emb)
-        if self.use_coverage and enc_attn_weights_average:
-            coverage_vec = self.coverage_function(enc_attn_weights_average)
+        if self.use_coverage and enc_attn_weights_average_gcn and enc_attn_weights_average_gmp:
+            coverage_vec = self.coverage_function((enc_attn_weights_average_gcn, enc_attn_weights_average_gmp))
         else:
-            coverage_vec = None
+            coverage_vec = (None, None)
 
         dec_out, rnn_state = self.rnn(dec_emb.unsqueeze(0), rnn_state)
         dec_out = dec_out.squeeze(0)
@@ -341,29 +378,37 @@ class StdRNNDecoder(RNNDecoderBase):
 
         if self.use_attention:
             if self.use_coverage and coverage_vec is not None:
-                coverage_repr = coverage_vec
+                coverage_repr_gcn, coverage_repr_gmp = coverage_vec
             else:
-                coverage_repr = None
-            if coverage_repr is not None:
-                coverage_repr = coverage_repr.unsqueeze(-1) * self.coverage_weight
-            if self.attention_type == "uniform" or self.attention_type == "sep_diff_encoder_type":
-                # enc_mask = extract_mask(dec_input_mask, token=-1)
-                # enc_mask = 1 - enc_mask
-                enc_mask = None
-                
-                attn_res, scores = self.enc_attention(query=hidden, memory=encoder_out, memory_mask=enc_mask,
-                                                      coverage=coverage_repr)
+                coverage_repr_gcn = None
+                coverage_repr_gmp = None
+            if coverage_repr_gcn is not None:
+                coverage_repr_gcn = coverage_repr_gcn.unsqueeze(-1) * self.coverage_weight_gcn
+                coverage_repr_gmp = coverage_repr_gmp.unsqueeze(-1) * self.coverage_weight_gmp
+            if self.attention_type == "uniform":
+                enc_out = torch.cat([gnn_encoder_out, gmp_encoder_out], dim=1)
+                enc_mask = torch.cat([gnn_dec_input_mask, gmp_emb_mask], dim=1)
+                attn_res, scores = self.enc_attention(query=hidden, memory=enc_out, memory_mask=enc_mask,
+                                                      coverage=None)
                 attn_collect.append(attn_res)
                 score_collect.append(scores)
-                if self.attention_type == "sep_diff_encoder_type":
-                    rnn_attn_res, rnn_scores = self.rnn_attention(query=hidden, memory=rnn_emb, memory_mask=enc_mask, coverage=coverage_repr)
-                    score_collect.append(rnn_scores)
-                    attn_collect.append(rnn_attn_res)
+            elif self.attention_type == "sep_diff_encoder_type":
+                attn_res, scores = self.enc_attention(query=hidden, memory=gnn_encoder_out,
+                                                      memory_mask=gnn_dec_input_mask,
+                                                      coverage=coverage_repr_gcn)
+                attn_collect.append(attn_res)
+                score_collect.append(scores)
+
+                rnn_attn_res, rnn_scores = self.rnn_attention(query=hidden, memory=gmp_encoder_out,
+                                                              memory_mask=gmp_emb_mask,
+                                                              coverage=coverage_repr_gmp)
+                attn_collect.append(rnn_attn_res)
+                score_collect.append(rnn_scores)
             elif self.attention_type == "sep_diff_node_type":
                 for i in range(self.node_type_num):
-                    node_mask = extract_mask(dec_input_mask, token=i)
-                    attn, scores = self.attn_modules[i](query=hidden, memory=encoder_out, memory_mask=node_mask,
-                                                        coverage=coverage_repr)
+                    node_mask = extract_mask(gnn_dec_input_mask, token=i)
+                    attn, scores = self.attn_modules[i](query=hidden, memory=gnn_encoder_out, memory_mask=node_mask,
+                                                        coverage=coverage_repr_gmp)
                     attn_collect.append(attn)
                     score_collect.append(scores)
 
@@ -383,10 +428,11 @@ class StdRNNDecoder(RNNDecoderBase):
                 raise NotImplementedError()
 
             decoder_output = torch.cat((dec_out, attn_total), dim=-1)
-            dec_attn_scores = reduce(lambda x, y: x + y, score_collect) / len(score_collect)
+            # dec_attn_scores = reduce(lambda x, y: x + y, score_collect) / len(score_collect)
+            dec_attn_scores = score_collect
         else:
             decoder_output = dec_out
-        
+
         out = self.memory_to_feed(decoder_output)
         # print(out.shape, self.memory_to_feed)
 
@@ -401,21 +447,21 @@ class StdRNNDecoder(RNNDecoderBase):
         if self.use_copy:
             assert src_seq is not None
             assert oov_dict is not None
-            # output = torch.zeros(batch_size, oov_dict.get_vocab_size()).to(decoder_input.device)
             output = torch.zeros(batch_size, oov_dict.get_vocab_size(), device=decoder_input.device)
             attn_ptr = torch.cat(attn_collect, dim=-1)
             pgen_collect = [dec_emb, hidden, attn_ptr]
-            # print(self.ptr)
-            # print(dec_emb.shape, hidden.shape, attn_ptr.shape)
-            prob_ptr = torch.sigmoid(self.ptr(torch.cat(pgen_collect, -1)))
-            prob_gen = 1 - prob_ptr
+            prob_gen = torch.sigmoid(self.ptr(torch.cat(pgen_collect, -1)))
+            prob_ptr = 1 - prob_gen
             gen_output = torch.softmax(decoder_output, dim=-1)
 
             ret = prob_gen * gen_output
             output[:, :self.vocab.get_vocab_size()] = ret
 
-            ptr_output = dec_attn_scores
-            # print(output.shape, src_seq.shape, prob_ptr.shape, ptr_output.shape, "-----")
+            # copy from gnn only
+            # ptr_output = score_collect[0]
+            # copy from gmp only
+            ptr_output = score_collect[1]
+            # ptr_output = dec_attn_scores
 
             output.scatter_add_(1, src_seq, prob_ptr * ptr_output)
             decoder_output = output
@@ -453,14 +499,16 @@ class StdRNNDecoder(RNNDecoderBase):
         ret[tokens >= self.vocab_size] = self.vocab.UNK
         return ret
 
-    def forward(self, g, tgt_seq=None, oov_dict=None, teacher_forcing_rate=1.0):
+    def forward(self, g, tgt_seq=None, oov_dict=None, teacher_forcing_rate=1.0, gmp_level_embs=None):
         params = self.extract_params(g)
         params['tgt_seq'] = tgt_seq
         params['teacher_forcing_rate'] = teacher_forcing_rate
         params["oov_dict"] = oov_dict
+
+        # params["gmp_level_embedding"] = gmp_level_embs
         return self._run_forward_pass(**params)
 
-    def extract_params(self, graph):
+    def extract_params(self, graph_list):
         """
 
         Parameters
@@ -471,16 +519,9 @@ class StdRNNDecoder(RNNDecoderBase):
         -------
         params: dict
         """
-        batch_data_dict = graph.batch_node_features
-        graph_node_emb = batch_data_dict["node_emb"]
-        
-        # [s_g.node_features["node_emb"] for s_g in graph_list]
-        rnn_node_emb = batch_data_dict["rnn_emb"]
-
-
-        graph_node_mask = (batch_data_dict["token_id"] != 0).squeeze(-1).float() - 1
-
-        # rnn_node_emb = [s_g.node_features["rnn_emb"] for s_g in graph_list]
+        graph_node_emb = [s_g.node_features["node_emb"] for s_g in graph_list]
+        gmp_node_emb = [s_g.graph_attributes["gmp_emb"] for s_g in graph_list]
+        gmp_emb_mask = torch.stack([s_g.graph_attributes["gmp_mask"] for s_g in graph_list], dim=0)
 
         def pad_tensor(x, dim, pad_size):
             if len(x.shape) == 2:
@@ -492,17 +533,71 @@ class StdRNNDecoder(RNNDecoderBase):
                 return torch.cat((x, pad), dim=dim)
 
         if self.use_copy:
-            src_seq_ret = graph.batch_node_features["token_id_oov"]
+            # copy from gnn
+            # src_seq_list = [s_g.node_features["token_id_oov"].view(1, -1) for s_g in graph_list]
+            # copy from gmp
+            src_seq_list = [s_g.graph_attributes["gmp_seq"].view(1, -1) for s_g in graph_list]
+
+            max_src_seq_len = max([seq.shape[1] for seq in src_seq_list])
+            src_seq_collect = []
+            for seq in src_seq_list:
+                if seq.shape[1] < max_src_seq_len:
+                    seq = pad_tensor(seq, 1, max_src_seq_len - seq.shape[1])
+                src_seq_collect.append(seq)
+            src_seq_ret = torch.cat(src_seq_collect, dim=0)
         else:
             src_seq_ret = None
-        
-        graph_level_emb = self.graph_pooling(graph_node_emb)
+
+        batch_size = len(graph_list)
+        max_node_num = max([emb.shape[0] for emb in graph_node_emb])
+
+        graph_node_emb_ret = []
+        for emb in graph_node_emb:
+            if emb.shape[0] < max_node_num:
+                emb = pad_tensor(emb, 0, max_node_num - emb.shape[0])
+            graph_node_emb_ret.append(emb.unsqueeze(0))
+        graph_node_emb_ret = torch.cat(graph_node_emb_ret, dim=0)
+
+        if self.graph_pooling_strategy == "mean":
+            from graph4nlp.pytorch.modules.prediction.classification.graph_classification.avg_pooling import AvgPooling
+            pool_func = AvgPooling()
+        elif self.graph_pooling_strategy == "max":
+            from graph4nlp.pytorch.modules.prediction.classification.graph_classification.max_pooling import MaxPooling
+            pool_func = MaxPooling()
+
+        graph_level_emb = pool_func(graph_list, "node_emb")
+        # graph_level_emb = self.graph_pooling(graph_node_emb_ret)
+
+        graph_node_mask = torch.zeros(batch_size, max_node_num).fill_(-1)
+
+        for i, s_g in enumerate(graph_list):
+            node_num = s_g.get_node_num()
+            for j in range(node_num):
+                node_type = s_g.node_attributes[j].get('type')
+                if node_type is not None:
+                    graph_node_mask[i][j] = node_type
+        graph_node_mask_ret = graph_node_mask.to(graph_node_emb_ret.device)
+
+        gmp_node_emb_ret = None
+        # if self.attention_type == "sep_diff_encoder_type":
+        max_gmp_num = max([gmp_emb.shape[0] for gmp_emb in gmp_node_emb])
+        gmp_node_emb_ret = []
+        # assert max_rnn_num == max_node_num
+        for gmp_emb in gmp_node_emb:
+            if gmp_emb.shape[0] < max_gmp_num:
+                gmp_emb = pad_tensor(gmp_emb, 0, max_gmp_num - gmp_emb.shape[0])
+            gmp_node_emb_ret.append(gmp_emb.unsqueeze(0))
+        gmp_node_emb_ret = torch.cat(gmp_node_emb_ret, dim=0)
+
+        gmp_level_emb = torch.max(gmp_node_emb_ret, dim=1)[0]
 
         return {
-            "graph_node_embedding": graph_node_emb,
-            "graph_node_mask": graph_node_mask,
-            "rnn_node_embedding": rnn_node_emb,
+            "graph_node_embedding": graph_node_emb_ret,
+            "graph_node_mask": graph_node_mask_ret,
+            "gmp_node_embedding": gmp_node_emb_ret,
+            "gmp_emb_mask": gmp_emb_mask,
             "graph_level_embedding": graph_level_emb,
+            "gmp_level_embedding": gmp_level_emb,
             "graph_edge_embedding": None,
             "graph_edge_mask": None,
             "src_seq": src_seq_ret.long() if self.use_copy else None
