@@ -56,7 +56,7 @@ decoder_args:
     rnn_emb_input_size: 300
     use_copy: true
     use_coverage: true
-    graph_pooling_strategy: null
+    graph_pooling_strategy: "max"
     attention_type: "sep_diff_encoder_type"
     fuse_strategy: "concatenate"
     dropout: 0.3
