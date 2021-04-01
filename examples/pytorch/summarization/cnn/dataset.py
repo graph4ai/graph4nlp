@@ -39,7 +39,8 @@ class CNNDataset(Text2TextDataset):
                  word_emb_size=300,
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
-                 dynamic_init_topology_aux_args=None
+                 dynamic_init_topology_aux_args=None,
+                 **kwargs
                  ):
         super(CNNDataset, self).__init__(root_dir=root_dir,
                                          topology_builder=topology_builder,
@@ -60,14 +61,16 @@ class CNNDataset(Text2TextDataset):
                                          word_emb_size=word_emb_size,
                                          dynamic_graph_type=dynamic_graph_type,
                                          dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                         dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+                                         dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+                                         **kwargs)
 
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
         # return {'train': 'train_300.json', 'val': "train_30.json", 'test': 'train_30.json'}
         # return {'train': 'train_1w.json', 'val': "val.json", 'test': 'test.json'}
-        return {'train': 'train_3w.json', 'val': "val.json", 'test': 'test.json'}
+        # return {'train': 'train_3w.json', 'val': "val.json", 'test': 'test.json'}
+        return {'train': 'val.json', 'val': "val.json", 'test': 'test.json'}
 
     @property
     def processed_file_names(self):
