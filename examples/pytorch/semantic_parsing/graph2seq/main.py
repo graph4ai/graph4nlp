@@ -257,8 +257,8 @@ class Jobs:
 if __name__ == "__main__":
     opt = get_args()
     runner = Jobs(opt)
-    # max_score = runner.train()
-    # runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
+    max_score = runner.train()
+    runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint("best.pth")
     # runner.evaluate("test")
     runner.translate()

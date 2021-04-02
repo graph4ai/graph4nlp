@@ -405,7 +405,7 @@ class StdRNNDecoder(RNNDecoderBase):
         if self.use_copy:
             assert src_seq is not None
             assert oov_dict is not None
-            output = torch.zeros(batch_size, oov_dict.get_vocab_size()).to(decoder_input.device)
+            #output = torch.zeros(batch_size, oov_dict.get_vocab_size()).to(decoder_input.device)
             attn_ptr = torch.cat(attn_collect, dim=-1)
             pgen_collect = [dec_emb, hidden, attn_ptr]
 
@@ -414,7 +414,9 @@ class StdRNNDecoder(RNNDecoderBase):
             gen_output = torch.softmax(decoder_output, dim=-1)
 
             ret = prob_gen * gen_output
-            output[:, :self.vocab.get_vocab_size()] = ret
+            need_pad_length = oov_dict.get_vocab_size() - self.vocab.get_vocab_size()
+            output = torch.cat((ret, ret.new_zeros((batch_size, need_pad_length))), dim=1)
+            # output[:, :self.vocab.get_vocab_size()] = ret
 
             ptr_output = dec_attn_scores
 
