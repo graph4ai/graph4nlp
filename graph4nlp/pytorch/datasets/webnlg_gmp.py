@@ -7,6 +7,7 @@ import pickle as pkl
 from multiprocessing import Pool
 from copy import deepcopy
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+from graph4nlp.pytorch.data.data import to_batch
 import numpy as np
 
 class TripleGMP2TextDataItem(DataItem):
@@ -307,7 +308,6 @@ class WebNLGGMPDataset(Text2TextDataset):
     @staticmethod
     def collate_fn(data_list: [TripleGMP2TextDataItem]):
         graph_data = [item.graph for item in data_list]
-        from graph4nlp.pytorch.data.data import to_batch
         big_graph = to_batch(graph_data)
 
         # input_str = [deepcopy(item.input_text.strip()) for item in data_list]
@@ -315,9 +315,7 @@ class WebNLGGMPDataset(Text2TextDataset):
 
         gmp_jump = [item.gmp_jump for item in data_list]
 
-        # output_numpy = [deepcopy(item.output_np) for item in data_list]
         output_numpy = [item.output_np for item in data_list]
-        # output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
         output_str = [item.output_text.strip() for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
         tgt_seq = torch.from_numpy(output_pad).long()
@@ -327,14 +325,14 @@ class WebNLGGMPDataset(Text2TextDataset):
         gmp_seq_pad = pad_2d_vals_no_size(gmp_seq_numpy)
         gmp_seq = torch.from_numpy(gmp_seq_pad).long()
 
-        from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
-        max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
-        if max_num_tokens_a_node > 1:
-            for x in data_list:
-                x.graph.node_features['token_id'] = torch.from_numpy(
-                    pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
-                                x.graph.node_features['token_id'].size()[0],
-                                max_num_tokens_a_node)).long()
+        # from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
+        # max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
+        # if max_num_tokens_a_node > 1:
+        #     for x in data_list:
+        #         x.graph.node_features['token_id'] = torch.from_numpy(
+        #             pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
+        #                         x.graph.node_features['token_id'].size()[0],
+        #                         max_num_tokens_a_node)).long()
 
         def merge_jump(sequences):
             tmp = torch.ones(gmp_seq.size()).tolist()
