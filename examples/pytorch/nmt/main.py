@@ -197,10 +197,6 @@ class NMT:
             tgt = tgt.to(self.device)
             graph = graph.to(self.device)
             oov_dict = None
-            
-            # if self.use_copy:
-            #     oov_dict, tgt = prepare_ext_vocab(graph_list, self.vocab, gt_str=gt_str, device=self.device)
-            # print(graph.fetch_batching_tensor("token_id").squeeze(-1))
             prob, enc_attn_weights, coverage_vectors = self.model(graph, tgt, oov_dict=oov_dict)
             loss = self.loss(logits=prob, label=tgt, enc_attn_weights=enc_attn_weights,
                              coverage_vectors=coverage_vectors)

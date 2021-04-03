@@ -94,6 +94,9 @@ class Graph2Seq(Graph2XBase):
                                               vocab_model.out_word_vocab.embeddings.shape[1],
                                               pretrained_word_emb=vocab_model.out_word_vocab.embeddings,
                                               fix_emb=fix_word_emb)
+        import torch.nn as nn
+        self.dec_word_emb = nn.Embedding(vocab_model.out_word_vocab.embeddings.shape[0],
+                                        vocab_model.out_word_vocab.embeddings.shape[1])
 
         self.seq_decoder = StdRNNDecoder(rnn_type=rnn_type, max_decoder_step=decoder_length,
                                          input_size=input_size,

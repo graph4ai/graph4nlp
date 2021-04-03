@@ -232,8 +232,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                 fix_word_emb=False,
                 fix_bert_emb=False,
                 word_dropout=None,
-                rnn_dropout=None,
-                device=None):
+                rnn_dropout=None):
         super(DynamicGraphConstructionBase, self).__init__(
                                                     word_vocab,
                                                     embedding_styles,
@@ -241,11 +240,9 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                                                     fix_word_emb=fix_word_emb,
                                                     fix_bert_emb=fix_bert_emb,
                                                     word_dropout=word_dropout,
-                                                    rnn_dropout=rnn_dropout,
-                                                    device=device)
+                                                    rnn_dropout=rnn_dropout)
         assert top_k_neigh is None or epsilon_neigh is None, \
             'top_k_neigh and epsilon_neigh cannot be activated at the same time!'
-        self.device = device
         self.top_k_neigh = top_k_neigh
         self.epsilon_neigh = epsilon_neigh
         self.sim_metric_type = sim_metric_type
