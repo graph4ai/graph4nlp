@@ -6,7 +6,7 @@ import time
 import torch.backends.cudnn as cudnn
 import numpy as np
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from .dataset import CNNDataset
 from .model_g2s import Graph2seq
