@@ -35,7 +35,7 @@ def prepare_ext_vocab(batch_graph, vocab, gt_str=None, device=None):
     """
     oov_dict = copy.deepcopy(vocab.in_word_vocab)
     token_matrix = batch_graph.node_features["token_id"].squeeze(1)
-    unk_index = (token_matrix == oov_dict.UNK).nonzero().squeeze(1).detach().cpu().numpy()
+    unk_index = (token_matrix == oov_dict.UNK).nonzero(as_tuple=False).squeeze(1).detach().cpu().numpy()
     # unk_token = batch_graph.node_attributes[unk_index.squeeze(1).detach().cpu().numpy().tolist()[:]]["token"]
     unk_token = [batch_graph.node_attributes[index]["token"] for index in unk_index]
     oov_dict._add_words(unk_token)

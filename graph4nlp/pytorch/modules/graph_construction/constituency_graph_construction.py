@@ -49,18 +49,15 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     """
 
     def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, fix_bert_emb=True, word_dropout=None,
-                 rnn_dropout=None, device=None):
+                 rnn_dropout=None):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                  embedding_styles=embedding_style,
                                                                  hidden_size=hidden_size,
                                                                  fix_word_emb=fix_word_emb,
                                                                  fix_bert_emb=fix_bert_emb,
                                                                  word_dropout=word_dropout,
-                                                                 rnn_dropout=rnn_dropout,
-                                                                 device=device)
+                                                                 rnn_dropout=rnn_dropout)
         self.vocab = vocab
-        assert (self.embedding_layer.device == device)
-        self.device = self.embedding_layer.device
 
     @classmethod
     def parsing(cls, raw_text_data, nlp_processor, processor_args):

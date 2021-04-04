@@ -33,7 +33,7 @@ def get_args():
     parser.add_argument("--share-vocab", type=bool, default=True, help="whether to share vocab")
     parser.add_argument("--val_split_ratio", type=float, default=0, help="")
     parser.add_argument("--pretrained_word_emb_file", type=str,
-                        default='/home/shiina/shiina/lib/graph4nlp/.vector_cache/glove.6B.300d.txt', help="")
+                        default='/home/shiina/data/.vector_cache/glove.6B.300d.txt', help="")
 
     parser.add_argument("--beam-size", type=int, default=4, help="the beam size of beam search")
 

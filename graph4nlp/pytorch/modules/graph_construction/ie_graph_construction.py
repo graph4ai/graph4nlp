@@ -32,11 +32,9 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                                                        fix_word_emb=fix_word_emb,
                                                        fix_bert_emb=fix_bert_emb,
                                                        word_dropout=word_dropout,
-                                                       rnn_dropout=rnn_dropout,
-                                                       device=device)
+                                                       rnn_dropout=rnn_dropout)
         self.vocab = vocab
         self.verbase = 1
-        self.device = self.embedding_layer.device
 
     def add_vocab(self, g):
         """

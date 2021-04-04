@@ -9,6 +9,8 @@ from .base import Graph2XBase
 from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
+
 
 
 class Graph2Seq(Graph2XBase):
@@ -39,12 +41,10 @@ class Graph2Seq(Graph2XBase):
         The graph type. Excepted in ["dependency", "constituency", "node_emb", "node_emb_refined"].
     gnn: str
         The graph neural network's name. Expected in ["gcn", "gat", "graphsage", "ggnn"]
-    device: torch.device
-        The device.
     """
     def __init__(self, vocab_model, emb_input_size, emb_hidden_size, embedding_style,
                  graph_type, gnn_direction_option, gnn_input_size, gnn_hidden_size, gnn_output_size,
-                 gnn, gnn_num_layers, dec_hidden_size,
+                 gnn, gnn_num_layers, dec_hidden_size, share_vocab=False,
                  # dropout
                  gnn_feat_drop=0.0, gnn_attn_drop=0.0,
                  emb_fix_word_emb=False, emb_fix_bert_emb=False, emb_word_dropout=0.0, emb_rnn_dropout=0.0,
@@ -52,12 +52,12 @@ class Graph2Seq(Graph2XBase):
                  dec_use_copy=False, dec_use_coverage=False,
                  dec_graph_pooling_strategy=None, dec_rnn_type="lstm", dec_tgt_emb_as_output_layer=False, dec_teacher_forcing_rate=1.0,
                  dec_attention_type="uniform", dec_fuse_strategy="average", dec_node_type_num=None,
-                 dec_dropout=0.0, device=None,
+                 dec_dropout=0.0,
                  **kwargs):
         super(Graph2Seq, self).__init__(vocab_model=vocab_model, emb_input_size=emb_input_size, emb_hidden_size=emb_hidden_size,
                                         graph_type=graph_type, gnn_direction_option=gnn_direction_option,
                                         gnn=gnn, gnn_num_layers=gnn_num_layers, embedding_style=embedding_style,
-                                        device=device, gnn_feats_dropout=gnn_feat_drop,
+                                        gnn_feats_dropout=gnn_feat_drop,
                                         gnn_attn_dropout=gnn_attn_drop,
                                         emb_rnn_dropout=emb_rnn_dropout, emb_fix_word_emb=emb_fix_word_emb,
                                         emb_fix_bert_emb=emb_fix_bert_emb,
@@ -69,9 +69,10 @@ class Graph2Seq(Graph2XBase):
         self.use_copy = dec_use_copy
         self.use_coverage = dec_use_coverage
         self.dec_rnn_type = dec_rnn_type
+        self.share_vocab = share_vocab
 
         self._build_decoder(rnn_type=dec_rnn_type, decoder_length=dec_max_decoder_step, vocab_model=vocab_model,
-                            rnn_input_size=emb_hidden_size,
+                            rnn_input_size=emb_hidden_size, share_vocab=share_vocab,
                             input_size=2 * gnn_hidden_size if gnn_direction_option == 'bi_sep' else gnn_hidden_size,
                             hidden_size=dec_hidden_size, graph_pooling_strategy=dec_graph_pooling_strategy,
                             use_copy=dec_use_copy, use_coverage=dec_use_coverage,
@@ -82,23 +83,22 @@ class Graph2Seq(Graph2XBase):
                             rnn_dropout=dec_dropout)
 
     def _build_decoder(self, decoder_length, input_size, rnn_input_size, hidden_size, graph_pooling_strategy,
-                       vocab_model, fix_word_emb=False,
+                       vocab_model, fix_word_emb=False, share_vocab=False,
                        use_copy=False, use_coverage=False, tgt_emb_as_output_layer=False, teacher_forcing_rate=1.0,
                        rnn_type="lstm", attention_type="uniform", node_type_num=None, fuse_strategy="average",
                        rnn_dropout=0.2):
-        # from graph4nlp.pytorch.modules.graph_construction.embedding_construction_new import WordEmbedding
-        # decoder_word_emb = WordEmbedding(
-        #                     vocab_model.out_word_vocab.embeddings.shape[0],
-        #                     vocab_model.out_word_vocab.embeddings.shape[1],
-        #                     pretrained_word_emb=vocab_model.out_word_vocab.embeddings,
-        #                     fix_emb=fix_word_emb)
-        import torch.nn as nn
-        decoder_word_emb = nn.Embedding(len(vocab_model.out_word_vocab), rnn_input_size)
+        if share_vocab:
+            self.dec_word_emb = self.enc_word_emb
+        else:
+            self.dec_word_emb = WordEmbedding(vocab_model.out_word_vocab.embeddings.shape[0],
+                                              vocab_model.out_word_vocab.embeddings.shape[1],
+                                              pretrained_word_emb=vocab_model.out_word_vocab.embeddings,
+                                              fix_emb=fix_word_emb)
 
         self.seq_decoder = StdRNNDecoder(rnn_type=rnn_type, max_decoder_step=decoder_length,
                                          input_size=input_size,
                                          hidden_size=hidden_size, graph_pooling_strategy=graph_pooling_strategy,
-                                         word_emb=decoder_word_emb, vocab=vocab_model.out_word_vocab,
+                                         word_emb=self.dec_word_emb, vocab=vocab_model.out_word_vocab,
                                          attention_type=attention_type, fuse_strategy=fuse_strategy,
                                          node_type_num=node_type_num,
                                          rnn_emb_input_size=rnn_input_size, use_coverage=use_coverage,
@@ -106,7 +106,7 @@ class Graph2Seq(Graph2XBase):
                                          tgt_emb_as_output_layer=tgt_emb_as_output_layer, dropout=rnn_dropout)
         self.teacher_forcing_rate = teacher_forcing_rate
 
-    def encoder_decoder(self, batch_graph, old_graph_list=None, oov_dict=None, tgt_seq=None):
+    def encoder_decoder(self, batch_graph, oov_dict=None, tgt_seq=None):
         # run GNN
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
@@ -116,30 +116,26 @@ class Graph2Seq(Graph2XBase):
                                                                     oov_dict=oov_dict)
         return prob, enc_attn_weights, coverage_vectors
 
-    def encoder_decoder_beam_search(self, batch_graph, old_graph_list, beam_size, topk=1, oov_dict=None):
+    def encoder_decoder_beam_search(self, batch_graph, beam_size, topk=1, oov_dict=None):
         generator = DecoderStrategy(beam_size=beam_size, vocab=self.seq_decoder.vocab, rnn_type=self.dec_rnn_type,
                                     decoder=self.seq_decoder, use_copy=self.use_copy,
                                     use_coverage=self.use_coverage)
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
-        graph_list_decoder = from_batch(batch_graph)
-        if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
-            for g, g_ori in zip(graph_list_decoder, old_graph_list):
-                g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
-        beam_results = generator.generate(graph_list=graph_list_decoder, oov_dict=oov_dict, topk=topk)
+        beam_results = generator.generate(graph_list=batch_graph, oov_dict=oov_dict, topk=topk)
         return beam_results
 
-    def forward(self, graph, tgt_seq=None, oov_dict=None):
-        batch_graph = self.graph_topology(graph)
+    def forward(self, batch_graph, tgt_seq=None, oov_dict=None):
+        batch_graph = self.graph_topology(batch_graph)
         return self.encoder_decoder(batch_graph=batch_graph, oov_dict=oov_dict, tgt_seq=tgt_seq)
 
-    def translate(self, graph_list, beam_size, topk=1, oov_dict=None):
+    def translate(self, batch_graph, beam_size, topk=1, oov_dict=None):
         """
             Decoding with the support of beam_search.
             Specifically, when ``beam_size`` is 1, it is equal to greedy search.
         Parameters
         ----------
-        graph_list: list[GraphData]
+        batch_graph: list[GraphData]
             The graph input
         beam_size: int
             The beam width. When it is 1, the output is equal to greedy search's output.
@@ -155,12 +151,11 @@ class Graph2Seq(Graph2XBase):
             The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes.
         """
 
-        batch_graph = self.graph_topology(graph_list)
-        return self.encoder_decoder_beam_search(batch_graph=batch_graph, old_graph_list=graph_list, beam_size=beam_size,
-                                                topk=topk, oov_dict=oov_dict)
+        batch_graph = self.graph_topology(batch_graph)
+        return self.encoder_decoder_beam_search(batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict)
 
     @classmethod
-    def from_args(cls, opt, vocab_model, device):
+    def from_args(cls, opt, vocab_model):
         """
             The function for building ``Graph2Seq`` model.
         Parameters
@@ -169,8 +164,6 @@ class Graph2Seq(Graph2XBase):
             The configuration dict. It should has the same hierarchy and keys as the template.
         vocab_model: VocabModel
             The vocabulary.
-        device: torch.device
-            The device.
 
         Returns
         -------
@@ -183,8 +176,9 @@ class Graph2Seq(Graph2XBase):
         args = (copy.deepcopy(emb_args))
         args.update(gnn_args)
         args.update(dec_args)
+        args["share_vocab"] = opt.get("share_vocab", False)
 
-        return cls(vocab_model=vocab_model, device=device, **args)
+        return cls(vocab_model=vocab_model, **args)
 
     @staticmethod
     def _get_decoder_params(opt):
