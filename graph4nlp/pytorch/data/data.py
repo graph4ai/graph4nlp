@@ -503,6 +503,8 @@ class GraphData(object):
     def to_dgl(self) -> dgl.DGLGraph:
         """
         Convert to dgl.DGLGraph
+        Note that there will be some information loss when calling this funciton, e.g. the batch-related information
+        will not be copied to DGLGraph since it is only intended for computation.
 
         Returns
         -------
@@ -580,12 +582,42 @@ class GraphData(object):
             ret[u][v] = 1
         return ret
 
-    def scipy_sparse_adj(self):
+    def scipy_sparse_adj(self, batch_view=False):
+        """
+        Return the scipy.sparse.coo_matrix form of the adjacency matrix
+        Parameters
+        ----------
+        batch_view: bool
+            Whether to return the split view of the adjacency matrix. Return a list of COO matrix if True
+
+        Returns
+        -------
+        scipy.sparse.coo_matrix or list
+        """
         row = np.array(self._edge_indices[0])
         col = np.array(self._edge_indices[1])
         data = np.ones(self.get_edge_num())
-        matrix = scipy.sparse.coo_matrix((data, (row, col)), shape=(self.get_node_num(), self.get_node_num()))
-        return matrix
+        if not batch_view:
+            matrix = scipy.sparse.coo_matrix((data, (row, col)), shape=(self.get_node_num(), self.get_node_num()))
+            return matrix
+        else:
+            if self._is_batch is not True:
+                raise Exception("Cannot enable batch view of COO adjacency matrix on a non-batch graph.")
+            matrices = []
+            cum_num_edges = 0
+            cum_num_nodes = 0
+            for i in range(self.batch_size):
+                num_edges = self._batch_num_edges[i]
+                num_nodes = self._batch_num_nodes[i]
+                # Slicing the matrix one by one
+                cur_row = row[cum_num_edges:cum_num_edges + num_edges]
+                cur_col = col[cum_num_edges:cum_num_edges + num_edges]
+                cur_data = data[cum_num_nodes:cum_num_nodes + num_nodes]
+                cur_matrix = scipy.sparse.coo_matrix((cur_data, (cur_row, cur_col)), shape=(num_nodes, num_nodes))
+                matrices.append(cur_matrix)
+                cum_num_edges += num_edges
+                cum_num_nodes += num_nodes
+            return matrices
 
     def from_graphdata(self, src):
         """Build a clone from a source GraphData"""
@@ -778,7 +810,9 @@ def to_batch(graphs: list = None) -> GraphData:
     big_graph._is_batch = True
     big_graph.device = graphs[0].device
 
-    total_num_nodes = sum([g.get_node_num() for g in graphs])
+    total_num_nodes = 0
+    for g in graphs:
+        total_num_nodes += g.get_node_num()
 
     # Step 1: Add nodes
     big_graph.add_nodes(total_num_nodes)
@@ -846,7 +880,10 @@ def to_batch(graphs: list = None) -> GraphData:
 
     # Step 7: Batch information preparation
     big_graph.batch_size = len(graphs)
-    big_graph.batch = sum([[i] * graphs[i].get_node_num() for i in range(len(graphs))], start=[])
+    batch_numbers = []
+    for i in range(len(graphs)):
+        batch_numbers.extend([i] * graphs[i].get_node_num())
+    big_graph.batch = batch_numbers
     big_graph._batch_num_nodes = [g.get_node_num() for g in graphs]
     big_graph._batch_num_edges = [g.get_edge_num() for g in graphs]
 
