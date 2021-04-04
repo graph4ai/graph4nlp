@@ -67,3 +67,5 @@ if __name__ == "__main__":
     assert len(gt_collect) == len(pred_collect)
 
     metric = SummarizationRouge().calculate_scores(ground_truth=gt_collect, predict=pred_collect)
+
+# https://blog.csdn.net/taoyafan/article/details/84069044
