@@ -59,9 +59,9 @@ def read_file(path):
     return ret
 
 if __name__ == "__main__":
-    path = '/raid/user8/graph4nlp/out/cnn/gcn_uni_l2_ckpt/'
-    gt_file = "/raid/user8/graph4nlp/out/cnn/gcn_uni_l2_ckpt/gcn_uni_l2_ckpt_gt.txt"
-    pred_file = "/raid/user8/graph4nlp/out/cnn/gcn_uni_l2_ckpt/gcn_uni_l2_ckpt_pred.txt"
+    path = '/raid/user8/graph4nlp/out/cnn/gcn_bi_fuse_l2_ckpt/'
+    gt_file = "/raid/user8/graph4nlp/out/cnn/gcn_bi_fuse_l2_ckpt/gcn_bi_fuse_l2_ckpt_gt.txt"
+    pred_file = "/raid/user8/graph4nlp/out/cnn/gcn_bi_fuse_l2_ckpt/gcn_bi_fuse_l2_ckpt_pred.txt"
     gt_collect = read_file(gt_file)
     pred_collect = read_file(pred_file)
     assert len(gt_collect) == len(pred_collect)
