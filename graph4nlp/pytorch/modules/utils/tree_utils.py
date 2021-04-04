@@ -4,7 +4,7 @@ import torch
 from random import randint
 import numpy as np
 import copy
-
+# from ...data import to_batch
 
 class Tree():
     def __init__(self):
@@ -448,6 +448,7 @@ class DataLoaderForGraphEncoder():
 
     def random_batch(self):
         p = randint(0, self.num_batch-1)
+        # return {'encoder_graph_batch': to_batch(self.enc_batch_list[p]),
         return {'encoder_graph_batch': self.enc_batch_list[p],
                 'encoder_graph_node_number_batch': self.enc_len_batch_list[p],
                 'decoder_tree_batch': self.dec_batch_list[p],

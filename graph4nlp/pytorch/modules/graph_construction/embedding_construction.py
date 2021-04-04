@@ -243,7 +243,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         torch.Tensor
             The output item embeddings.
         """
-
         token_ids = batch_gd.batch_node_features["token_id"]
         feat = []
         if 'w2v' in self.word_emb_layers:

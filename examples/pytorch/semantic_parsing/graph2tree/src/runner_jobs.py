@@ -87,7 +87,7 @@ class Graph2Tree(nn.Module):
         elif graph_construction_type == "ConstituencyGraph":
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                      vocab=self.src_vocab,
-                                                                     hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=dropout_for_word_embedding, device=device,
+                                                                     hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=dropout_for_word_embedding,
                                                                      fix_word_emb=False)
         elif graph_construction_type == "DynamicGraph_node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
@@ -186,7 +186,7 @@ class Graph2Tree(nn.Module):
                                       max_dec_tree_depth=max_dec_tree_depth,
                                       tgt_vocab=self.tgt_vocab)
 
-    def forward(self, graph_list, tgt_tree_batch, oov_dict=None):
+    def forward(self, batch_graph, tgt_tree_batch, oov_dict=None):
         # batch_graph = self.graph_topology(graph_list)
         # batch_graph = self.encoder(batch_graph)
         # batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
@@ -198,8 +198,10 @@ class Graph2Tree(nn.Module):
 
         # loss = self.decoder(g=batch_graph_list_decoder_input,
         #                     tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
-        batch_graph = self.graph_topology(graph_list)
+        batch_graph = self.graph_topology(batch_graph)
         batch_graph = self.encoder(batch_graph)
+        batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
+
         loss = self.decoder(g=batch_graph,
                             tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
         return loss

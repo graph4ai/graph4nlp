@@ -11,7 +11,6 @@ import torch.utils.data
 from nltk.tokenize import word_tokenize
 from sklearn import preprocessing
 from copy import deepcopy
-import warnings
 
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from ..data.data import GraphData, to_batch
@@ -278,12 +277,11 @@ class Dataset(torch.utils.data.Dataset):
                  lower_case=True,
                  pretrained_word_emb_file=None,
                  use_val_for_vocab=False,
-                 share_vocab=False,
-                 input_text_language="en",
-                 output_text_language="en",
                  seed=1234,
+                 device='cpu',
                  thread_number=4,
-                 nlp_tools_args={},
+                 port=9000,
+                 timeout=15000,
                  **kwargs):
         """
 
@@ -305,6 +303,8 @@ class Dataset(torch.utils.data.Dataset):
             Whether to add val split in the final split.
         seed: int, default=1234
             The seed for random function.
+        device: str, default='cpu'
+            The device of the current environment.
         thread_number: int, default=4
             The thread number for building initial graph. For most case, it may be the number of your CPU cores.
         port: int, default=9000
@@ -319,22 +319,18 @@ class Dataset(torch.utils.data.Dataset):
         self.seed = seed
 
         # stanfordcorenlp hyper-parameter
-        self.nlp_tools_args = nlp_tools_args
-        if self.nlp_tools_args == {}:
-            warnings.warn("The nlp tool's arguments is empty.")
-        assert thread_number >= 1
         self.thread_number = thread_number
+        self.port = port
+        self.timeout = timeout
 
         # Processing-specific attributes
         self.tokenizer = tokenizer
         self.lower_case = lower_case
-        self.share_vocab = share_vocab
-        self.input_text_language = input_text_language
-        self.output_text_language = output_text_language
         self.pretrained_word_emb_file = pretrained_word_emb_file
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         self.use_val_for_vocab = use_val_for_vocab
+        self.device = device
         for k, v in kwargs.items():
             setattr(self, k, v)
         self.__indices__ = None
@@ -411,53 +407,67 @@ class Dataset(torch.utils.data.Dataset):
                 self.train = old_train_set[:new_train_length]
 
     @staticmethod
-    def _build_topology_process(language, data_items, topology_builder,
+    def _build_topology_process(data_items, topology_builder,
                                 graph_type, dynamic_graph_type, dynamic_init_topology_builder,
                                 merge_strategy, edge_strategy, dynamic_init_topology_aux_args,
-                                lower_case, tokenizer, nlp_tools_args):
+                                lower_case, tokenizer, port, timeout):
 
         ret = []
         if graph_type == 'static':
-            if nlp_tools_args["name"] == "stanfordcorenlp":            
-                print('Connecting to stanfordcorenlp server...')
-                processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=int(nlp_tools_args["port"]), timeout=int(nlp_tools_args["timeout"]), lang=language)
-                opt = {0: "false", 1: "true"}
-                stanford_corenlp_args = {
-                    "annotators": "",
-                    "tokenize.options": "splitHyphenated={},normalizeParentheses={},normalizeOtherBrackets={}".format(
-                        opt[int(nlp_tools_args["split_hyphenated"])], opt[int(nlp_tools_args["normalize_parentheses"])], opt[int(nlp_tools_args["normalize_other_brackets"])]
-                    ),
-                    "tokenize.whitespace": bool(nlp_tools_args["tokenizer_args"]["whitespace"]),
-                    "ssplit.isOneSentence": bool(nlp_tools_args["is_oneSentence"]),
-                    'outputFormat': 'json'
-                }
-                print('CoreNLP server connected.')
-            else:
-                raise NotImplementedError("NLP tool:{} is not supported. We currently only support ``stanford corenlp``.".format(nlp_tools_args["name"]))
+            print('Connecting to stanfordcorenlp server...')
+            processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=port, timeout=timeout)
 
             if topology_builder == IEBasedGraphConstruction:
-                open_ie_args = deepcopy(stanford_corenlp_args)
-                open_ie_args["openie.triple.strict"] = "true"
-                stanford_corenlp_args["annotators"] = 'tokenize, ssplit, pos, lemma, ner, parse, coref'
-                open_ie_args["annotators"] = 'tokenize, ssplit, pos, ner, parse, openie'
-                processor_args = [stanford_corenlp_args, open_ie_args]
-                print("Stanford corenlp's coref args:", stanford_corenlp_args)
-                print("Stanford corenlp's open_id args:", open_ie_args)
+                props_coref = {
+                    'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
+                    "tokenize.options":
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
+                props_openie = {
+                    'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
+                    "tokenize.options":
+                        "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                    "tokenize.whitespace": False,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json',
+                    "openie.triple.strict": "true"
+                }
+                processor_args = [props_coref, props_openie]
             elif topology_builder == DependencyBasedGraphConstruction:
-                stanford_corenlp_args["annotators"] = 'ssplit,tokenize,depparse'
-                print("Stanford corenlp args:", stanford_corenlp_args)
-                processor_args = stanford_corenlp_args
+                processor_args = {
+                    'annotators': 'ssplit,tokenize,depparse',
+                    "tokenize.options":
+                        "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                    "tokenize.whitespace": True,
+                    'ssplit.isOneSentence': True,
+                    'outputFormat': 'json'
+                }
             elif topology_builder == ConstituencyBasedGraphConstruction:
-                stanford_corenlp_args["annotators"] = "tokenize,ssplit,pos,parse"
-                print("Stanford corenlp args:", stanford_corenlp_args)
-                processor_args = stanford_corenlp_args
+                processor_args = {
+                    'annotators': "tokenize,ssplit,pos,parse",
+                    "tokenize.options":
+                        "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                    "tokenize.whitespace": True,
+                    'ssplit.isOneSentence': False,
+                    'outputFormat': 'json'
+                }
             else:
-                raise NotImplementedError("topology builder is not implemented")
-            
+                raise NotImplementedError
+            print('CoreNLP server connected.')
             pop_idxs = []
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
-                    print("Port {}, processing: {} / {}".format(nlp_tools_args["port"], cnt, len(data_items)))
+                    print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
+                # graph = topology_builder.topology(raw_text_data=item.input_text,
+                #                                     nlp_processor=processor,
+                #                                     processor_args=processor_args,
+                #                                     merge_strategy=merge_strategy,
+                #                                     edge_strategy=edge_strategy,
+                #                                     verbase=False)
+
                 try:
                     graph = topology_builder.topology(raw_text_data=item.input_text,
                                                       nlp_processor=processor,
@@ -469,6 +479,11 @@ class Dataset(torch.utils.data.Dataset):
                 except Exception as msg:
                     pop_idxs.append(cnt)
                     item.graph = None
+                    # import traceback
+                    # traceback.print_exc()
+                    # print(item.input_text)
+                    # exit(0)
+                    # print(msg)
                     warnings.warn(RuntimeWarning(msg))
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
@@ -483,41 +498,49 @@ class Dataset(torch.utils.data.Dataset):
             elif dynamic_graph_type == 'node_emb_refined':
                 if dynamic_init_topology_builder in (
                 IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
-                    if nlp_tools_args["name"] == "stanfordcorenlp":            
-                        print('Connecting to stanfordcorenlp server...')
-                        processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=int(nlp_tools_args["port"]), timeout=int(nlp_tools_args["timeout"]), lang=language)
-                        opt = {0: "false", 1: "true"}
-                        stanford_corenlp_args = {
-                            "annotators": "",
-                            "tokenize.options": "splitHyphenated={},normalizeParentheses={},normalizeOtherBrackets={}".format(
-                                opt[int(nlp_tools_args["split_hyphenated"])], opt[int(nlp_tools_args["normalize_parentheses"])], opt[int(nlp_tools_args["normalize_other_brackets"])]
-                            ),
-                            "tokenize.whitespace": bool(nlp_tools_args["tokenizer_args"]["whitespace"]),
-                            "ssplit.isOneSentence": bool(nlp_tools_args["is_oneSentence"]),
+                    print('Connecting to stanfordcorenlp server...')
+                    processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=port, timeout=timeout)
+
+                    if dynamic_init_topology_builder == IEBasedGraphConstruction:
+                        props_coref = {
+                            'annotators': 'tokenize, ssplit, pos, lemma, ner, parse, coref',
+                            "tokenize.options":
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
                             'outputFormat': 'json'
                         }
-                        print('CoreNLP server connected.')
+                        props_openie = {
+                            'annotators': 'tokenize, ssplit, pos, ner, parse, openie',
+                            "tokenize.options":
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json',
+                            "openie.triple.strict": "true"
+                        }
+                        processor_args = [props_coref, props_openie]
+                    elif dynamic_init_topology_builder == DependencyBasedGraphConstruction:
+                        processor_args = {
+                            'annotators': 'ssplit,tokenize,depparse',
+                            "tokenize.options":
+                                "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
+                    elif dynamic_init_topology_builder == ConstituencyBasedGraphConstruction:
+                        processor_args = {
+                            'annotators': "tokenize,ssplit,pos,parse",
+                            "tokenize.options":
+                                "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
+                            "tokenize.whitespace": False,
+                            'ssplit.isOneSentence': False,
+                            'outputFormat': 'json'
+                        }
                     else:
-                        raise NotImplementedError("NLP tool:{} is not supported. We currently only support ``stanford corenlp``.".format(nlp_tools_args["name"]))
-
-                    if topology_builder == IEBasedGraphConstruction:
-                        open_ie_args = deepcopy(stanford_corenlp_args)
-                        open_ie_args["openie.triple.strict"] = "true"
-                        stanford_corenlp_args["annotators"] = 'tokenize, ssplit, pos, lemma, ner, parse, coref'
-                        open_ie_args["annotators"] = 'tokenize, ssplit, pos, ner, parse, openie'
-                        processor_args = [stanford_corenlp_args, open_ie_args]
-                        print("Stanford corenlp's coref args:", stanford_corenlp_args)
-                        print("Stanford corenlp's open_id args:", open_ie_args)
-                    elif topology_builder == DependencyBasedGraphConstruction:
-                        stanford_corenlp_args["annotators"] = 'ssplit,tokenize,depparse'
-                        print("Stanford corenlp args:", stanford_corenlp_args)
-                        processor_args = stanford_corenlp_args
-                    elif topology_builder == ConstituencyBasedGraphConstruction:
-                        stanford_corenlp_args["annotators"] = "tokenize,ssplit,pos,parse"
-                        print("Stanford corenlp args:", stanford_corenlp_args)
-                        processor_args = stanford_corenlp_args
-                    else:
-                        raise NotImplementedError("topology builder is not implemented")
+                        raise NotImplementedError
+                    print('CoreNLP server connected.')
                 else:
                     processor = None
                     processor_args = None
@@ -563,11 +586,17 @@ class Dataset(torch.utils.data.Dataset):
             start_index = total * i // thread_number
             end_index = total * (i + 1) // thread_number
 
+            """
+            data_items, topology_builder,
+                                graph_type, dynamic_graph_type, dynamic_init_topology_builder,
+                                merge_strategy, edge_strategy, dynamic_init_topology_aux_args,
+                                lower_case, tokenizer, port, timeout
+            """
             r = pool.apply_async(self._build_topology_process,
-                                 args=(self.input_text_language, data_items[start_index:end_index], self.topology_builder, self.graph_type,
+                                 args=(data_items[start_index:end_index], self.topology_builder, self.graph_type,
                                        self.dynamic_graph_type, self.dynamic_init_topology_builder,
                                        self.merge_strategy, self.edge_strategy, self.dynamic_init_topology_aux_args,
-                                       self.lower_case, self.tokenizer, self.nlp_tools_args))
+                                       self.lower_case, self.tokenizer, self.port, self.timeout))
             res_l.append(r)
         pool.close()
         pool.join()
@@ -576,6 +605,7 @@ class Dataset(torch.utils.data.Dataset):
         for i in range(thread_number):
             res = res_l[i].get()
             for data in res:
+                data.graph = data.graph.to(self.device)
                 data_items.append(data)
 
         return data_items
@@ -634,10 +664,10 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class Text2TextDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, lower_case=True, **kwargs):
+    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
         self.data_item_type = Text2TextDataItem
-        super(Text2TextDataset, self).__init__(root=root_dir, topology_builder=topology_builder, topology_subdir=topology_subdir, 
-                                                share_vocab=share_vocab, lower_case=lower_case, **kwargs)
+        self.share_vocab = share_vocab
+        super(Text2TextDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
     def parse_file(self, file_path) -> list:
         """
@@ -667,9 +697,6 @@ class Text2TextDataset(Dataset):
         with open(file_path, 'r') as f:
             lines = f.readlines()
             for line in lines:
-                line = line.strip()
-                if self.lower_case:
-                    line = line.lower()
                 input, output = line.split('\t')
                 data_item = Text2TextDataItem(input_text=input, output_text=output, tokenizer=self.tokenizer,
                                               share_vocab=self.share_vocab)
@@ -742,21 +769,20 @@ class Text2TextDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
-        graph_list = [item.graph for item in data_list]
-        graph_data = to_batch(graph_list)
+        graph_data = [deepcopy(item.graph) for item in data_list]
 
         output_numpy = [deepcopy(item.output_np) for item in data_list]
         output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
 
-        # from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
-        # max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
-        # if max_num_tokens_a_node>1:
-        #     for x in data_list:
-        #         x.graph.node_features['token_id'] = torch.from_numpy(
-        #             pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
-        #                         x.graph.node_features['token_id'].size()[0],
-        #                         max_num_tokens_a_node)).long()
+        from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
+        max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
+        if max_num_tokens_a_node>1:
+            for x in data_list:
+                x.graph.node_features['token_id'] = torch.from_numpy(
+                    pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
+                                x.graph.node_features['token_id'].size()[0],
+                                max_num_tokens_a_node)).long()
 
         tgt_seq = torch.from_numpy(output_pad).long()
         # return [graph_data, tgt_seq, output_str]
