@@ -769,20 +769,21 @@ class Text2TextDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
-        graph_data = [deepcopy(item.graph) for item in data_list]
+        graph_list = [item.graph for item in data_list]
+        graph_data = to_batch(graph_list)
 
         output_numpy = [deepcopy(item.output_np) for item in data_list]
         output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
 
-        from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
-        max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
-        if max_num_tokens_a_node>1:
-            for x in data_list:
-                x.graph.node_features['token_id'] = torch.from_numpy(
-                    pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
-                                x.graph.node_features['token_id'].size()[0],
-                                max_num_tokens_a_node)).long()
+        # from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
+        # max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
+        # if max_num_tokens_a_node>1:
+        #     for x in data_list:
+        #         x.graph.node_features['token_id'] = torch.from_numpy(
+        #             pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
+        #                         x.graph.node_features['token_id'].size()[0],
+        #                         max_num_tokens_a_node)).long()
 
         tgt_seq = torch.from_numpy(output_pad).long()
         # return [graph_data, tgt_seq, output_str]

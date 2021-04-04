@@ -198,6 +198,7 @@ class Graph2Tree(nn.Module):
 
         # loss = self.decoder(g=batch_graph_list_decoder_input,
         #                     tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
+        batch_graph.batch_node_features["token_id"] = batch_graph.batch_node_features["token_id"].to(self.device)
         batch_graph = self.graph_topology(batch_graph)
         batch_graph = self.encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
@@ -378,23 +379,23 @@ class Jobs:
         for i in range(self.train_data_loader.num_batch):
             self.optimizer.zero_grad()
             batch_graph_list, _, batch_tree_list, batch_original_tree_list = self.train_data_loader.random_batch()
+            # print(batch_graph_list.device)
+            # oov_dict = self.prepare_ext_vocab(
+            #     batch_graph_list, self.src_vocab) if self.use_copy else None
 
-            oov_dict = self.prepare_ext_vocab(
-                batch_graph_list, self.src_vocab) if self.use_copy else None
 
-
-            if self.use_copy and self.revectorization:
-                batch_tree_list_refined = []
-                for item in batch_original_tree_list:
-                    tgt_list = oov_dict.get_symbol_idx_for_list(item.strip().split())
-                    tgt_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), oov_dict)
-                    batch_tree_list_refined.append(tgt_tree)
+            # if self.use_copy and self.revectorization:
+            #     batch_tree_list_refined = []
+            #     for item in batch_original_tree_list:
+            #         tgt_list = oov_dict.get_symbol_idx_for_list(item.strip().split())
+            #         tgt_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), oov_dict)
+            #         batch_tree_list_refined.append(tgt_tree)
             # for index in range(len(batch_tree_list_refined)):
             #     print("---------------------------------------")
             #     print(batch_tree_list[index])
             #     print(batch_tree_list_refined[index])
             # loss = self.model(batch_graph_list, batch_tree_list, oov_dict=oov_dict)
-            loss = self.model(batch_graph_list, batch_tree_list_refined if self.use_copy else batch_tree_list, oov_dict=oov_dict)
+            loss = self.model(batch_graph_list, batch_tree_list if self.use_copy else batch_tree_list, oov_dict=None)
             loss.backward()
             torch.nn.utils.clip_grad_value_(
                 self.model.parameters(), self.opt.grad_clip)
@@ -412,7 +413,7 @@ class Jobs:
             # self.scheduler.step()
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
             # print(self.scheduler.get_lr())
-            if epoch > 20 and epoch % 5 == 0:
+            if epoch > 2 and epoch % 5 == 0:
                 # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                 # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
                 test_acc = self.eval((self.model))
@@ -470,9 +471,9 @@ class Jobs:
                                                 max_dec_seq_length,
                                                 max_dec_tree_depth,
                                                 oov_dict=oov_dict,
-                                                use_beam_search=True,
-                                                beam_size=self.opt.beam_size,
-                                                beam_search_version=self.opt.beam_search_version)
+                                                use_beam_search=False,
+                                                beam_size=self.opt.beam_size)
+                                                # beam_search_version=self.opt.beam_search_version)
             
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
@@ -498,8 +499,8 @@ class Jobs:
                     print(cand_str)
                     print(ref_str)
                     print("====================")
-            print(cand_str)
-            print(ref_str)
+            # print(cand_str)
+            # print(ref_str)
 
             reference_list.append(reference)
             candidate_list.append(candidate)
