@@ -187,16 +187,20 @@ class Graph2Tree(nn.Module):
                                       tgt_vocab=self.tgt_vocab)
 
     def forward(self, graph_list, tgt_tree_batch, oov_dict=None):
+        # batch_graph = self.graph_topology(graph_list)
+        # batch_graph = self.encoder(batch_graph)
+        # batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
+
+        # batch_graph_list_decoder_input = from_batch(batch_graph)
+        # if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
+        #     for g, g_ in zip(batch_graph_list_decoder_input, graph_list):
+        #         g.node_features['token_id_oov'] = g_.node_features['token_id_oov']
+
+        # loss = self.decoder(g=batch_graph_list_decoder_input,
+        #                     tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
         batch_graph = self.graph_topology(graph_list)
         batch_graph = self.encoder(batch_graph)
-        batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
-
-        batch_graph_list_decoder_input = from_batch(batch_graph)
-        if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
-            for g, g_ in zip(batch_graph_list_decoder_input, graph_list):
-                g.node_features['token_id_oov'] = g_.node_features['token_id_oov']
-
-        loss = self.decoder(g=batch_graph_list_decoder_input,
+        loss = self.decoder(g=batch_graph,
                             tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
         return loss
 
@@ -590,9 +594,9 @@ if __name__ == "__main__":
         '-use_copy', type=int, default=1, help='whether use copy mechanism')
 
     main_arg_parser.add_argument('-data_dir', type=str,
-                                 default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/jobs', help='data path')
+                                 default='/home/lishucheng/Graph4AI/graph4nlp1/examples/pytorch/semantic_parsing/graph2tree/data/jobs', help='data path')
     main_arg_parser.add_argument('-checkpoint_dir', type=str,
-                                 default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs', help='output directory where checkpoints get written')
+                                 default='/home/lishucheng/Graph4AI/graph4nlp1/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_jobs', help='output directory where checkpoints get written')
 
     main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")
     main_arg_parser.add_argument('-rnn_type', type=str, default="lstm")
