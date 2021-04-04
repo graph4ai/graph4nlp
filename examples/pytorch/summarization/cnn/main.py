@@ -6,7 +6,7 @@ import time
 import torch.backends.cudnn as cudnn
 import numpy as np
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 from .dataset import CNNDataset
 from .model_g2s import Graph2seq
@@ -55,7 +55,7 @@ class SumModel(nn.Module):
         self.use_coverage = self.config['decoder_args']['rnn_decoder_share']['use_coverage']
 
         # build Graph2Seq model
-        self.g2s = Graph2Seq.from_args(config, self.vocab, config['device'])
+        self.g2s = Graph2Seq.from_args(config, self.vocab)
 
         if 'w2v' in self.g2s.graph_topology.embedding_layer.word_emb_layers:
             self.word_emb = self.g2s.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
@@ -64,8 +64,7 @@ class SumModel(nn.Module):
                 self.vocab.in_word_vocab.embeddings.shape[0],
                 self.vocab.in_word_vocab.embeddings.shape[1],
                 pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
-                fix_emb=config['graph_construction_args']['node_embedding']['fix_word_emb'],
-                device=config['device']).word_emb_layer
+                fix_emb=config['graph_construction_args']['node_embedding']['fix_word_emb']).word_emb_layer
 
         self.g2s.seq_decoder.tgt_emb = self.word_emb
 
