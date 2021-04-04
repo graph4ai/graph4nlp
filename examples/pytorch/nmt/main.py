@@ -4,8 +4,8 @@ from random import shuffle
 import resource
 
 from torch.functional import split
-rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
-resource.setrlimit(resource.RLIMIT_NOFILE, (409600, rlimit[1]))
+# rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
+# resource.setrlimit(resource.RLIMIT_NOFILE, (409600, rlimit[1]))
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -123,7 +123,7 @@ class NMT:
                                   "graph_type"],
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
                               dynamic_init_topology_aux_args=None)
-        
+
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True,
                                            num_workers=8,
@@ -191,7 +191,7 @@ class NMT:
         loss_collect = []
         dataloader = self.train_dataloader
         step_all_train = len(dataloader)
-        
+
         for step, data in enumerate(dataloader):
             graph, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             tgt = tgt.to(self.device)
@@ -203,7 +203,7 @@ class NMT:
 
             loss_collect.append(loss.item())
             self.global_steps += 1
-            
+
             if step % self.opt["loss_display_step"] == 0 and step != 0:
                 self.logger.info("Epoch {}: [{} / {}] loss: {:.3f}".format(epoch, step, step_all_train,
                                                                            np.mean(loss_collect)))

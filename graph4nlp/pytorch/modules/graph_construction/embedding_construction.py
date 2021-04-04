@@ -3,6 +3,7 @@ from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 import dgl
 
+from ..utils.vocab_utils import Vocab
 from ..utils.generic_utils import to_cuda, dropout_fn, create_mask
 from ..utils.bert_utils import *
 
@@ -249,13 +250,13 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         if 'w2v' in self.word_emb_layers:
             input_data = token_ids.long().squeeze(2)
             feat.append(self.word_emb_layers['w2v'](input_data))
-        msk = (token_ids != 0)
+        msk = (token_ids != Vocab.PAD)
         lens = msk.float().squeeze(2).sum(-1).int()
         feat = feat[0]
         rnn_state = self.seq_info_encode_layer(feat, lens)
         if isinstance(rnn_state, (tuple, list)):
             rnn_state = rnn_state[0]
-        
+
         # ret_feat = []
         # for i in range(lens.shape[0]):
         #     tmp_feat = rnn_state[i][:lens[i]]
@@ -377,7 +378,7 @@ class WordEmbedding(nn.Module):
             print('[ Fix word embeddings ]')
             for param in self.word_emb_layer.parameters():
                 param.requires_grad = False
-    
+
     @property
     def embedding_dim(self):
         return self.word_emb_layer.embedding_dim
