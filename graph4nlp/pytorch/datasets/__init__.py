@@ -9,3 +9,4 @@ from .kinship import KinshipDataset
 from .mawps import MawpsDatasetForTree
 from .squad import SQuADDataset
 from .trec import TrecDataset
+from .mathqa import MathQADatasetForTree

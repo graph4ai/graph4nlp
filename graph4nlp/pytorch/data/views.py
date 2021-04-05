@@ -68,7 +68,7 @@ class NodeFeatView(object):
         return repr(self._graph.get_node_features(self._nodes))
 
     def keys(self):
-        return self._graph.get_node_feature_names()
+        return self._graph.node_feature_names()
 
 
 class NodeAttrView(object):
@@ -127,3 +127,31 @@ class EdgeFeatView(object):
 
     def keys(self):
         return self._graph.get_edge_feature_names()
+
+
+class BatchNodeFeatView(object):
+    def __init__(self, graph):
+        self._graph = graph
+
+    def __getitem__(self, item):
+        return self._graph._get_batch_node_features(item)
+
+    def __setitem__(self, key, value):
+        return self._graph._set_batch_node_features(key, value)
+
+    def __repr__(self):
+        return self._graph._get_batch_node_features()
+
+
+class BatchEdgeFeatView(object):
+    def __init__(self, graph):
+        self._graph = graph
+
+    def __getitem__(self, item):
+        return self._graph._get_batch_edge_features(item)
+
+    def __setitem__(self, key, value):
+        return self._graph._set_batch_edge_features(key, value)
+
+    def __repr__(self):
+        return self._graph._get_batch_edge_features()

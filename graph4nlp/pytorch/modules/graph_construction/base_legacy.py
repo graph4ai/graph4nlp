@@ -43,7 +43,8 @@ class GraphConstructionBase(nn.Module):
                 fix_word_emb=True,
                 fix_bert_emb=True,
                 word_dropout=None,
-                rnn_dropout=None):
+                rnn_dropout=None,
+                device=None):
         super(GraphConstructionBase, self).__init__()
         self.embedding_layer = EmbeddingConstruction(word_vocab,
                                         embedding_styles['single_token_item'],
@@ -55,7 +56,8 @@ class GraphConstructionBase(nn.Module):
                                         bert_model_name=embedding_styles.get('bert_model_name', 'bert-base-uncased'),
                                         bert_lower_case=embedding_styles.get('bert_lower_case', True),
                                         word_dropout=word_dropout,
-                                        rnn_dropout=rnn_dropout)
+                                        rnn_dropout=rnn_dropout,
+                                        device=device)
 
     def forward(self, raw_text_data, **kwargs):
         """Compute graph topology and initial node/edge embeddings.
@@ -133,14 +135,15 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     """
 
     def __init__(self, word_vocab, embedding_styles, hidden_size,
-                 fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None):
+                 fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
         super(StaticGraphConstructionBase, self).__init__(word_vocab,
                                                            embedding_styles,
                                                            hidden_size,
                                                            fix_word_emb=fix_word_emb,
                                                            fix_bert_emb=fix_bert_emb,
                                                            word_dropout=word_dropout,
-                                                           rnn_dropout=rnn_dropout)
+                                                           rnn_dropout=rnn_dropout,
+                                                           device=device)
 
     def add_vocab(self, **kwargs):
         raise NotImplementedError()
@@ -462,7 +465,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         top_k_neigh = min(top_k_neigh, attention.size(-1))
         knn_val, knn_ind = torch.topk(attention, top_k_neigh, dim=-1)
         weighted_adj = to_cuda((self.mask_off_val * torch.ones_like(attention)).scatter_(-1, knn_ind, knn_val), self.device)
-        weighted_adj[weighted_adj <= 0] = 0
+
         return weighted_adj
 
     def _build_epsilon_neighbourhood(self, attention, epsilon_neigh):

@@ -82,6 +82,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         Dropout ratio for word embedding, default: ``None``.
     rnn_dropout : float, optional
         Dropout ratio for RNN embedding, default: ``None``.
+    device : torch.device, optional
+        Specify computation device (e.g., CPU), default: ``None`` for using CPU.
 
     Note
     ----------
@@ -122,8 +124,10 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                     bert_model_name='bert-base-uncased',
                     bert_lower_case=True,
                     word_dropout=None,
-                    rnn_dropout=None):
+                    rnn_dropout=None,
+                    device=None):
         super(EmbeddingConstruction, self).__init__()
+        self.device = device
         self.word_dropout = word_dropout
         self.rnn_dropout = rnn_dropout
 
@@ -170,7 +174,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                             word_vocab.embeddings.shape[0],
                             word_vocab.embeddings.shape[1],
                             pretrained_word_emb=word_vocab.embeddings,
-                            fix_emb=fix_word_emb)
+                            fix_emb=fix_word_emb,
+                            device=self.device)
             word_emb_size += word_vocab.embeddings.shape[1]
 
         if 'node_edge_bert' in word_emb_type:
@@ -191,7 +196,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                                     bidirectional=True,
                                     num_layers=num_rnn_layers,
                                     rnn_type='lstm' if node_edge_emb_strategy == 'bilstm' else 'gru',
-                                    dropout=rnn_dropout)
+                                    dropout=rnn_dropout,
+                                    device=device)
             rnn_input_size = hidden_size
         else:
             self.node_edge_emb_layer = MeanEmbedding()
@@ -208,7 +214,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                                     bidirectional=True,
                                     num_layers=num_rnn_layers,
                                     rnn_type='lstm' if seq_info_encode_strategy == 'bilstm' else 'gru',
-                                    dropout=rnn_dropout)
+                                    dropout=rnn_dropout,
+                                    device=device)
 
             # apply a linear projection to make rnn_input_size equal hidden_size
             if rnn_input_size != hidden_size:
@@ -219,7 +226,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             self.seq_info_encode_layer = None
 
 
-    def forward(self, batch_gd):
+    def forward(self, batch_gd, item_size, num_items, num_word_items=None):
         """Compute initial node/edge embeddings.
 
         Parameters
@@ -243,33 +250,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         torch.Tensor
             The output item embeddings.
         """
-
-        token_ids = batch_gd.batch_node_features["token_id"]
-        feat = []
-        if 'w2v' in self.word_emb_layers:
-            input_data = token_ids.long().squeeze(2)
-            feat.append(self.word_emb_layers['w2v'](input_data))
-        msk = (token_ids != 0)
-        lens = msk.float().squeeze(2).sum(-1).int()
-        feat = feat[0]
-        rnn_state = self.seq_info_encode_layer(feat, lens)
-        if isinstance(rnn_state, (tuple, list)):
-            rnn_state = rnn_state[0]
-        
-        # ret_feat = []
-        # for i in range(lens.shape[0]):
-        #     tmp_feat = rnn_state[i][:lens[i]]
-        #     ret_feat.append(tmp_feat)
-
-        # ret_feat = torch.cat(ret_feat, 0)
-
-        batch_gd.batch_node_features["node_feat"] = rnn_state
-
-        return batch_gd
-
-
-
-
 
         feat = []
         if 'w2v' in self.word_emb_layers:
@@ -367,20 +347,17 @@ class WordEmbedding(nn.Module):
     >>> word_emb_layer = WordEmbedding(1000, 300, padding_idx=0, pretrained_word_emb=None, fix_emb=True)
     """
     def __init__(self, vocab_size, emb_size, padding_idx=0,
-                    pretrained_word_emb=None, fix_emb=True):
+                    pretrained_word_emb=None, fix_emb=True, device=None):
         super(WordEmbedding, self).__init__()
         self.word_emb_layer = nn.Embedding(vocab_size, emb_size, padding_idx=padding_idx,
                             _weight=torch.from_numpy(pretrained_word_emb).float()
                             if pretrained_word_emb is not None else None)
+        self.device = device
 
         if fix_emb:
             print('[ Fix word embeddings ]')
             for param in self.word_emb_layer.parameters():
                 param.requires_grad = False
-    
-    @property
-    def embedding_dim(self):
-        return self.word_emb_layer.embedding_dim
 
     def forward(self, input_tensor):
         """Compute word embeddings.
@@ -531,6 +508,8 @@ class RNNEmbedding(nn.Module):
         Whether to use bidirectional RNN, default: ``False``.
     rnn_type : str
         The RNN cell type, default: ``lstm``.
+    device : torch.device, optional
+        Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
     def __init__(self,
                 input_size,
@@ -538,7 +517,8 @@ class RNNEmbedding(nn.Module):
                 bidirectional=False,
                 num_layers=1,
                 rnn_type='lstm',
-                dropout=None):
+                dropout=None,
+                device=None):
         super(RNNEmbedding, self).__init__()
         if not rnn_type in ('lstm', 'gru'):
             raise RuntimeError('rnn_type is expected to be lstm or gru, got {}'.format(rnn_type))
@@ -551,6 +531,7 @@ class RNNEmbedding(nn.Module):
         if bidirectional and hidden_size % 2 != 0:
             raise RuntimeError('hidden_size is expected to be even in the bidirectional mode!')
 
+        self.device = device
         self.dropout = dropout
         self.rnn_type = rnn_type
         self.num_layers = num_layers
@@ -577,12 +558,11 @@ class RNNEmbedding(nn.Module):
             The hidden state at the last time step.
         """
         sorted_x_len, indx = torch.sort(x_len, 0, descending=True)
-        device = x.device
         x = pack_padded_sequence(x[indx], sorted_x_len.data.tolist(), batch_first=True)
 
-        h0 = torch.zeros(self.num_directions * self.num_layers, x_len.size(0), self.hidden_size).to(device)
+        h0 = to_cuda(torch.zeros(self.num_directions * self.num_layers, x_len.size(0), self.hidden_size), self.device)
         if self.rnn_type == 'lstm':
-            c0 = torch.zeros(self.num_directions * self.num_layers, x_len.size(0), self.hidden_size).to(device)
+            c0 = to_cuda(torch.zeros(self.num_directions * self.num_layers, x_len.size(0), self.hidden_size), self.device)
             packed_h, (packed_h_t, _) = self.model(x, (h0, c0))
         else:
             packed_h, packed_h_t = self.model(x, h0)

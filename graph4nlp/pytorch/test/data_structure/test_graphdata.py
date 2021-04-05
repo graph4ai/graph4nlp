@@ -19,20 +19,23 @@ def test_add_nodes():
         pass
 
     g.add_nodes(10)
-    assert g.get_node_num() == 10
+    assert g.get_node_num() == 10  # Test node number
+
+    # Test reserved fields
     assert g.node_features['node_feat'] is None
     assert g.node_features['node_emb'] is None
     assert g.node_attributes[0]['node_attr'] is None
 
-    g.node_features['zero'] = torch.zeros(10)
+    g.node_features['zero'] = torch.ones(10)
     g.add_nodes(9)
     assert g.get_node_num() == 19
     assert torch.all(torch.eq(g.node_features['zero'][10:], torch.zeros(9)))
 
 
-def test_set_node_features():
+def test_set_node_features_cpu():
     g = GraphData()
     g.add_nodes(10)
+
     # Test adding node features at whole graph level.
     try:
         g.node_features['node_feat'] = torch.randn((9, 10))
@@ -63,7 +66,51 @@ def test_set_node_features():
         g.node_features['node_emb'] = embedding_layer(g.node_features['idx'])
         node_emb_sum = g.node_features['node_emb'].sum(dim=-1)
         loss = - torch.nn.functional.cosine_similarity(node_emb_sum, target, dim=0)
-        # print('Epoch {}: loss = {}.'.format(i + 1, loss))
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    print('Initial loss = {}. Final loss = {}'.format(init_loss, loss))
+    assert init_loss > loss
+
+
+def test_set_node_features_gpu():
+    g = GraphData()
+    g.add_nodes(10)
+    device = torch.device("cuda:0")
+    g.to(device)
+
+    # Test adding node features at whole graph level.
+    try:
+        g.node_features['node_feat'] = torch.randn((9, 10))
+        fail_here()
+    except AssertionError:
+        pass
+
+    g.node_features['node_feat'] = torch.randn((10, 10))
+    g.node_features['zero'] = torch.zeros(10)
+    g.node_features['idx'] = torch.tensor(list(range(10)), dtype=torch.long)
+
+    assert g.node_features['node_feat'].device == device
+
+    for i in range(g.get_node_num()):
+        assert g.node_features['idx'][i] == i
+        assert g.node_features['node_feat'][i].shape == torch.Size([10])
+
+    # Test modifying node features partially
+    g.node_features['zero'][:5] = torch.ones(5)
+    for i in range(5):
+        assert g.node_features['zero'][i] == 1
+
+    # Test computational graph consistency when modifying node features both partially and completely
+    embedding_layer = nn.Embedding(num_embeddings=100, embedding_dim=10).to(device)
+    optimizer = torch.optim.Adam(params=embedding_layer.parameters())
+    target = torch.ones(10).to(device)
+    init_loss = - torch.nn.functional.cosine_similarity(embedding_layer(g.node_features['idx']).sum(dim=-1), target,
+                                                        dim=0)
+    for i in range(100):
+        g.node_features['node_emb'] = embedding_layer(g.node_features['idx'])
+        node_emb_sum = g.node_features['node_emb'].sum(dim=-1)
+        loss = - torch.nn.functional.cosine_similarity(node_emb_sum, target, dim=0)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -164,7 +211,7 @@ def test_conversion_dgl():
     g.edge_features['idx'] = torch.tensor(list(range(10)), dtype=torch.long)
     # Test to_dgl
     dgl_g = g.to_dgl()
-    for node_feat_name in g.get_node_feature_names():
+    for node_feat_name in g.node_feature_names():
         if g.node_features[node_feat_name] is None:
             assert node_feat_name not in dgl_g.ndata.keys()
         else:
@@ -182,7 +229,7 @@ def test_conversion_dgl():
     assert g.get_all_edges() == dgl_g_edges
     # Test from_dgl
     g1 = from_dgl(dgl_g)
-    for node_feat_name in g.get_node_feature_names():
+    for node_feat_name in g.node_feature_names():
         try:
             assert torch.all(torch.eq(g1.node_features[node_feat_name], g.node_features[node_feat_name]))
         except TypeError:
@@ -241,3 +288,110 @@ def test_batch():
     gll = from_batch(b)
     for i in range(5):
         print(gll[i].get_edge_num())
+
+
+def test_batch_feature_view():
+    # A batch composed of 5 graphs with node num being 10, 20, ..., 50 respectively
+    graphs = []
+    features = []
+    for i in range(5):
+        j = i + 1
+        g = GraphData()
+        g.add_nodes(j * 10)
+        feature = torch.ones(size=(g.get_node_num(), 100))
+        g.node_features['node_feat'] = feature
+        graphs.append(g)
+        features.append(feature)
+
+    batch_graph = to_batch(graphs)
+    assert torch.all(
+        torch.eq(batch_graph.batch_node_features['node_feat'],
+                 torch.nn.utils.rnn.pad_sequence(features, batch_first=True)))
+
+    assert batch_graph.split_node_features['node_feat'][0].shape == (10, 100)
+    assert batch_graph.split_node_features['node_feat'][1].shape == (20, 100)
+    assert batch_graph.split_node_features['node_feat'][2].shape == (30, 100)
+    assert batch_graph.split_node_features['node_feat'][3].shape == (40, 100)
+    assert batch_graph.split_node_features['node_feat'][4].shape == (50, 100)
+
+
+def generate_sequential_graphs(bs=5, num_nodes=10):
+    start_index = list(range(0, num_nodes - 1, 1))
+    end_index = list(range(1, num_nodes, 1))
+    graphs = []
+    node_features = []
+    node_features_2 = []
+    edge_features = []
+    edge_features_2 = []
+    for i in range(bs):
+        g = GraphData()
+        g.add_nodes(num_nodes)
+        g.add_edges(src=start_index, tgt=end_index)
+        node_feat = torch.FloatTensor([i + 1] * num_nodes)
+        node_feat_2 = torch.FloatTensor([i] * num_nodes)
+        g.node_features['node_feat'] = node_feat
+        node_features.append(node_feat)
+        node_features_2.append(node_feat_2)
+
+        edge_feat = torch.FloatTensor([(i + 1) * 10] * (num_nodes - 1))
+        edge_feat_2 = torch.FloatTensor([i * 10] * (num_nodes - 1))
+        g.edge_features['edge_feat'] = edge_feat
+        edge_features.append(edge_feat)
+        edge_features_2.append(edge_feat_2)
+        graphs.append(g)
+    return edge_features, edge_features_2, graphs, node_features, node_features_2
+
+
+def test_batch_node_features():
+    edge_features, edge_features_2, graphs, node_features, node_features_2 = generate_sequential_graphs(bs=5)
+
+    batch = to_batch(graphs)
+    batch_node_features = batch.batch_node_features
+    batch_edge_features = batch.batch_edge_features
+    assert torch.all(
+        torch.eq(batch_node_features['node_feat'], torch.nn.utils.rnn.pad_sequence(node_features, batch_first=True)))
+    assert torch.all(
+        torch.eq(batch_edge_features['edge_feat'], torch.nn.utils.rnn.pad_sequence(edge_features, batch_first=True)))
+
+    new_batch_edge_features = torch.stack(edge_features_2).unsqueeze(-1)
+    batch.batch_edge_features['edge_feat'] = new_batch_edge_features
+    graphs = from_batch(batch)
+    for i in range(len(graphs)):
+        g = graphs[i]
+        assert torch.all(torch.eq(g.edge_features['edge_feat'], new_batch_edge_features[i]))
+
+
+import matplotlib.pyplot as plt
+import time
+
+def test_batch_feat_perf():
+    batch_size_list = [5, 10, 20, 40, 60, 100, 150, 200, 400, 600, 800, 1000]
+    times = []
+    for bs in batch_size_list:
+        edge_features, edge_features_2, graphs, node_features, node_features_2 = generate_sequential_graphs(bs=bs)
+        batch = to_batch(graphs)
+        new_batch_edge_features = torch.stack(edge_features_2).unsqueeze(-1)
+        start = time.time()
+        batch.batch_edge_features['edge_feat'] = new_batch_edge_features
+        time_elapsed = time.time() - start
+        times.append(time_elapsed)
+
+    plt.plot(batch_size_list, times)
+    plt.title("Time vs batch size")
+    plt.show()
+
+def test_batch_feat_perf_nnodes():
+    batch_size_list = [5, 10, 20, 40, 60, 100, 150, 200, 400, 600, 800, 1000]
+    times = []
+    for bs in batch_size_list:
+        edge_features, edge_features_2, graphs, node_features, node_features_2 = generate_sequential_graphs(num_nodes=bs)
+        batch = to_batch(graphs)
+        new_batch_edge_features = torch.stack(edge_features_2).unsqueeze(-1)
+        start = time.time()
+        batch.batch_edge_features['edge_feat'] = new_batch_edge_features
+        time_elapsed = time.time() - start
+        times.append(time_elapsed)
+
+    plt.plot(batch_size_list, times)
+    plt.title("Time vs #node")
+    plt.show()

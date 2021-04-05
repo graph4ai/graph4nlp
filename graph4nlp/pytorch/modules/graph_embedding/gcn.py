@@ -503,6 +503,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
             summary += ', activation={_activation}'
         return summary.format(**self.__dict__)
 
+import torch.nn.functional as F
 
 class BiFuseGCNLayerConv(GNNLayerBase):
     r"""Bidirection version GCN layer from paper `GCN <https://arxiv.org/abs/1609.02907>`__.
@@ -581,6 +582,14 @@ class BiFuseGCNLayerConv(GNNLayerBase):
         self._activation = activation
 
         self.fuse_linear = nn.Linear(4 * output_size, output_size, bias=True)
+
+
+        if self._input_size != output_size:
+            self.res_fc = nn.Linear(
+                self._input_size, output_size, bias=True)
+        else:
+            self.res_fc = nn.Identity()
+
 
     def reset_parameters(self):
         r"""
@@ -773,8 +782,13 @@ class BiFuseGCNLayerConv(GNNLayerBase):
         fuse_gate_vector = torch.sigmoid(self.fuse_linear(fuse_vector))
         rst = fuse_gate_vector * rst_fw + (1 - fuse_gate_vector) * rst_bw
 
-        # if self._activation is not None:
-        #     rst = self._activation(rst)
+
+        h_dst = feat
+        resval = self.res_fc(h_dst).view(h_dst.shape[0], self._output_size)
+        rst = rst + resval
+
+        if self._activation is not None:
+            rst = self._activation(rst)
 
         return rst
 

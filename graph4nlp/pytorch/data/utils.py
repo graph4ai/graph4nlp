@@ -18,7 +18,7 @@ def int_to_list(x: int or list):
     return x if isinstance(x, list) else [x]
 
 
-def check_and_expand(x: list, y: list):
+def check_and_expand(x: list, y: list) -> (list, list):
     assert isinstance(x, list) and isinstance(y, list)
     max_len = max(len(x), len(y))
     if len(x) == len(y):
@@ -34,7 +34,7 @@ def check_and_expand(x: list, y: list):
             'The two lists {} and {} cannot be automatically broadcasted to the same length.'.format(x, y))
 
 
-def slice_to_list(sl, max_len):
+def slice_to_list(sl, max_len) -> list:
     """
     Turn a slice object into a list
 
