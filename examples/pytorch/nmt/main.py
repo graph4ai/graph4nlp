@@ -4,14 +4,16 @@ from random import shuffle
 import resource
 
 from torch.functional import split
-# rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
-# resource.setrlimit(resource.RLIMIT_NOFILE, (409600, rlimit[1]))
+rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
+resource.setrlimit(resource.RLIMIT_NOFILE, (409600, rlimit[1]))
+
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from examples.pytorch.nmt.dataset import IWSLT14Dataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import \
     ConstituencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import \
@@ -83,6 +85,10 @@ class NMT:
             dynamic_init_topology_builder = None
         elif self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"] == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction
+            graph_type = 'static'
+            dynamic_init_topology_builder = None
+        elif self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"] == "ie":
+            topology_builder = IEBasedGraphConstruction
             graph_type = 'static'
             dynamic_init_topology_builder = None
         elif self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"] == "node_emb":
@@ -295,6 +301,10 @@ class NMT:
 
 
 if __name__ == "__main__":
+    # import platform, multiprocessing
+    # if platform.system() == "Darwin":
+    #     multiprocessing.set_start_method('spawn')
+
     opt = get_args()
     runner = NMT(opt)
     runner.logger.info("------ Running Training ----------")
