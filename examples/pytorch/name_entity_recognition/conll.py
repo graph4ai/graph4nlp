@@ -39,11 +39,13 @@ class ConllDataset(SequenceLabelingDataset):
     #    raise NotImplementedError(
     #        'This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
 
-    def __init__(self, root_dir, topology_builder=None, topology_subdir=None, graph_type='static',
+    def __init__(self, root_dir, topology_builder=None, topology_subdir=None, graph_type='static',pretrained_word_emb_file=None,
                  edge_strategy=None, merge_strategy=None,tag_types=None, dynamic_init_graph_type=None, dynamic_init_topology_builder=None, **kwargs):
         super(ConllDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
-                                          edge_strategy=edge_strategy, merge_strategy=merge_strategy,tag_types=tag_types, dynamic_init_topology_builder=dynamic_init_topology_builder, **kwargs)
+                                          edge_strategy=edge_strategy, merge_strategy=merge_strategy,tag_types=tag_types, 
+                                          dynamic_init_topology_builder=dynamic_init_topology_builder, 
+                                          pretrained_word_emb_file=pretrained_word_emb_file, **kwargs)
 
      
         self.dynamic_init_topology_builder=dynamic_init_topology_builder
@@ -206,6 +208,7 @@ class ConllDataset(SequenceLabelingDataset):
 
         else:
             raise NotImplementedError('Currently only static and dynamic are supported!')
+        return data_items            
 
 # if __name__ == '__main__':
 #     ConllDataset(root_dir='../test/dataset/conll/', topology_builder=DependencyBasedGraphConstruction,

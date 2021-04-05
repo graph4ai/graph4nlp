@@ -60,24 +60,16 @@ class BiLSTMFeedForwardNN(NodeClassifierBase):
                       in the node feature field named "node_logits".
                       logit tensor shape is: [num_class] 
         """ 
-        sent_graph_list=from_batch(input_graph)
-        emb_list=[]
-        sent_len=[]
-
-        for g in sent_graph_list:
-            emb_list.append(g.node_features['node_emb'])
-            sent_len.append(g.node_features['node_emb'].size()[0])            
+        if input_graph.batch_size is None:
+           node_emb_padded=input_graph.node_features['node_emb']
+           len_emb=node_emb_padded.shape[0]
+           bilstm_emb=self.classifier(node_emb_padded.reshape([1,len_emb,-1])) #dimension: batch*max_sent_len*emb_len                     
+           input_graph.node_features['logits']=bilstm_emb.reshape(-1,self.num_class)         
+        else:                
+            node_emb_padded=input_graph.batch_node_features['node_emb']
+            bilstm_emb=self.classifier(node_emb_padded) #dimension: batch*max_sent_len*emb_len                     
+            input_graph.batch_node_features['logits']=bilstm_emb
             
-        node_emb_padded=pad_sequence(emb_list,batch_first=True) #get the padded node embeddings from a batch of sentence graph         
-        bilstm_emb=self.classifier(node_emb_padded) #dimension: batch*max_sent_len*emb_len 
-
-          
-        #write back into the sent_graph_list
-        unpadded_emb=[]
-        for i in range(len(bilstm_emb)):            
-           unpadded_emb.append(bilstm_emb[i][:sent_len[i]]) #store the logits tensor into the graph
-           
-        input_graph.node_features['logits']=th.cat(unpadded_emb)
         return input_graph
 
 
