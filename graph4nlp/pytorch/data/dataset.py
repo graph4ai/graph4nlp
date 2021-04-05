@@ -557,7 +557,7 @@ class Dataset(torch.utils.data.Dataset):
                                                                edge_strategy=edge_strategy,
                                                                verbase=False,
                                                                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
-                        
+
                         item.graph = graph
                     except Exception as msg:
                         pop_idxs.append(idx)
@@ -1363,12 +1363,16 @@ class Text2LabelDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2LabelDataItem]):
-        graph_data = [deepcopy(item.graph) for item in data_list]
+        graph_list = [item.graph for item in data_list]
+        graph_data = to_batch(graph_list)
 
         tgt = [deepcopy(item.output) for item in data_list]
         tgt_tensor = torch.LongTensor(tgt)
 
-        return [graph_data, tgt_tensor]
+        return {
+            "graph_data": graph_data,
+            "tgt_tensor": tgt_tensor
+        }
 
 
 class DoubleText2TextDataset(Dataset):
