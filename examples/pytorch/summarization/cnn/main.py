@@ -6,7 +6,7 @@ import time
 import torch.backends.cudnn as cudnn
 import numpy as np
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 from .dataset import CNNDataset
 from .model_g2s import Graph2seq
@@ -433,7 +433,7 @@ def main(config):
     runner = ModelHandler(config)
     t0 = time.time()
 
-    val_score = runner.train()
+    # val_score = runner.train()
     # test_scores = runner.test()
     runner.stopper.load_checkpoint(runner.model)
     test_scores = runner.evaluate(runner.test_dataloader, write2file=True, part='test')
