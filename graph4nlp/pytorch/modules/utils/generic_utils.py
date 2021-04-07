@@ -1,9 +1,24 @@
+import yaml
 from collections import OrderedDict
 import numpy as np
 from scipy import sparse
 import torch
 import torch.nn as nn
 
+
+
+def get_config(config_path="config.yml"):
+    with open(config_path, "r") as setting:
+        config = yaml.load(setting)
+    return config
+
+def print_config(config):
+    print("**************** MODEL CONFIGURATION ****************")
+    for key in sorted(config.keys()):
+        val = config[key]
+        keystr = "{}".format(key) + (" " * (24 - len(key)))
+        print("{} -->   {}".format(keystr, val))
+    print("**************** MODEL CONFIGURATION ****************")
 
 def grid(kwargs):
     """Builds a mesh grid with given keyword arguments for this Config class.
@@ -139,15 +154,6 @@ class Identity(nn.Module):
         return x
 
 class EarlyStopping:
-    """Early stopping class.
-
-    Parameters
-    ----------
-    save_model_path : str
-        The path to the saved checkpoint.
-    patience : int
-        The patience of applying early stopping, default: ``10``.
-    """
     def __init__(self, save_model_path, patience=10):
         self.patience = patience
         self.counter = 0
@@ -162,6 +168,7 @@ class EarlyStopping:
             self.save_checkpoint(model)
         elif score < self.best_score:
             self.counter += 1
+            print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
             if self.counter >= self.patience:
                 self.early_stop = True
         else:
@@ -172,23 +179,11 @@ class EarlyStopping:
         return self.early_stop
 
     def save_checkpoint(self, model):
-        '''Saves model when validation loss decrease.
-
-        Parameters
-        ----------
-        model : class
-            The ML model to be saved.
-        '''
+        '''Saves model when validation loss decrease.'''
         torch.save(model.state_dict(), self.save_model_path)
         print('Saved model to {}'.format(self.save_model_path))
 
     def load_checkpoint(self, model):
-        '''Load the previously saved model.
-
-        Parameters
-        ----------
-        model : class
-            The ML model to be loaded.
-        '''
         model.load_state_dict(torch.load(self.save_model_path))
-        print('Loaded model from {}'.format(self.save_model_path))
+
+        return model
