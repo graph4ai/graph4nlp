@@ -438,6 +438,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         assert reverse_edge_weight is None
         graph = graph.local_var()
 
+        feat_origin = feat
         feat = self._feat_drop(feat)
 
         if self._gcn_norm == 'both':
@@ -496,7 +497,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
             rst = rst + self.bias
 
         if self.res_fc is not None:
-            h_dst = feat
+            h_dst = feat_origing
             resval = self.res_fc(h_dst).view(h_dst.shape[0], self._output_size)
             rst = rst + resval
 
@@ -996,7 +997,7 @@ class BiSepGCNLayerConv(GNNLayerBase):
 
             # residual
             if self.res_fc_fw is not None:
-                h_dst_fw = feat_fw
+                h_dst_fw = feat[0]
                 resval_fw = self.res_fc_fw(h_dst_fw).view(h_dst_fw.shape[0], self._output_size)
                 # .view(h_dst.shape[0], self._output_size)
                 rst_fw = rst_fw + resval_fw
@@ -1066,7 +1067,7 @@ class BiSepGCNLayerConv(GNNLayerBase):
 
             # residual
             if self.res_fc_bw is not None:
-                h_dst_bw = feat_bw
+                h_dst_bw = feat[1]
                 resval_bw = self.res_fc_bw(h_dst_bw).view(h_dst_bw.shape[0], self._output_size)
                 rst_bw = rst_bw + resval_bw
 
