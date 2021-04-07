@@ -34,7 +34,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import torch.optim as optim
 import dgl
-from torchcrf import CRF
+#from torchcrf import CRF
 
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.prediction.classification.node_classification.FeedForwardNN import FeedForwardNN 
@@ -43,6 +43,17 @@ from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
 from conlleval import evaluate
 
+
+def all_to_cuda(data, device=None):
+    if isinstance(data, torch.Tensor):
+        data = to_cuda(data, device)
+    elif isinstance(data, (list, dict)):
+        keys = range(len(data)) if isinstance(data, list) else data.keys()
+        for k in keys:
+            if isinstance(data[k], torch.Tensor):
+                data[k] = to_cuda(data[k], device)
+
+    return data
 
 def conll_score(preds, tgts,tag_types):
     #preds is a list and each elements is the list of tags of a sentence
@@ -87,7 +98,7 @@ def get_tokens(g_list):
         sent_token=[]
         dic=g.node_attributes
         for node in dic:
-            sent_token.append(dic[node]['token'])
+            sent_token.append(node['token'])
             if 'ROOT' in sent_token:
                sent_token.remove('ROOT')
         tokens.append(sent_token)    
@@ -325,8 +336,8 @@ class Word2tag(nn.Module):
               
      
 
-    def forward(self, graph_list, tgt=None, require_loss=True):
-        batch_graph = self.graph_topology(graph_list)
+    def forward(self, graph, tgt=None, require_loss=True):
+        batch_graph = self.graph_topology(graph)
 
         if self.use_gnn is False:
             batch_graph.node_features['node_emb']=batch_graph.node_features['node_feat']
@@ -420,6 +431,7 @@ class Conll:
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
                               dynamic_init_topology_aux_args={'dummy_param': 0})          
           
+        print(len(dataset.train))
         print("strating loading the training data")
         self.train_dataloader = DataLoader(dataset.train, batch_size=args.batch_size, shuffle=True,
                                            num_workers=1,
@@ -454,9 +466,9 @@ class Conll:
             pred_collect = []
             gt_collect = []
             for data in self.train_dataloader:
-                graph_list, tgt = data["graph_data"], data["tgt_tag"]
+                graph, tgt = data["graph_data"], data["tgt_tag"]
                 tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
-                pred_tags, loss = self.model(graph_list, tgt_l, require_loss=True)
+                pred_tags, loss = self.model(graph.to(self.device), tgt_l, require_loss=True)
                 pred_collect.extend(pred_tags)   #pred: list of batch_sentence pred tensor         
                 gt_collect.extend(tgt)  #tgt:list of sentence token tensor                
                 #num_tokens=len(torch.cat(pred_tags).view(-1))
@@ -481,12 +493,12 @@ class Conll:
         tokens_collect=[]
         with torch.no_grad():
             for data in self.val_dataloader:
-                graph_list, tgt = data["graph_data"], data["tgt_tag"]
+                graph, tgt = data["graph_data"], data["tgt_tag"]
                 tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
-                pred,loss= self.model(graph_list, tgt_l, require_loss=True)
+                pred,loss= self.model(graph.to(self.device), tgt_l, require_loss=True)
                 pred_collect.extend(pred)   #pred: list of batch_sentence pred tensor         
                 gt_collect.extend(tgt)  #tgt:list of sentence token tensor
-                tokens_collect.extend(get_tokens(graph_list))  
+                tokens_collect.extend(get_tokens(from_batch(graph)))  
                 
         prec, rec, f1 = conll_score(pred_collect,gt_collect,self.tag_types)
         print("Testing results: precision is %5.2f, rec is %5.2f, f1 is %5.2f"%(prec,rec,f1))          
@@ -503,22 +515,22 @@ class Conll:
         tgt_collect=[]
         with torch.no_grad():       
             for data in self.test_dataloader:
-                graph_list, tgt = data["graph_data"], data["tgt_tag"]
+                graph, tgt = data["graph_data"], data["tgt_tag"]
                 tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
-                pred,loss = self.model(graph_list, tgt_l,require_loss=True)
+                pred,loss = self.model(graph.to(self.device), tgt_l,require_loss=True)
                 #pred = logits2tag(g)
                 pred_collect.extend(pred)
                 tgt_collect.extend(tgt)             
-                tokens_collect.extend(get_tokens(graph_list))  
+                tokens_collect.extend(get_tokens(from_batch(graph)))  
         prec, rec, f1 = conll_score(pred_collect,tgt_collect,self.tag_types)
         print("Testing results: precision is %5.2f, rec is %5.2f, f1 is %5.2f"%(prec,rec,f1))          
         return f1
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NER')
-    parser.add_argument("--gpu", type=int, default=0,
+    parser.add_argument("--gpu", type=int, default=-1,
                         help="which GPU to use.")
-    parser.add_argument("--epochs", type=int, default=10,
+    parser.add_argument("--epochs", type=int, default=150,
                         help="number of training epochs")
     parser.add_argument("--direction_option", type=str, default='bi_fuse',
                         help="direction type (`undirected`, `bi_fuse`, `bi_sep`)")
@@ -526,7 +538,7 @@ if __name__ == "__main__":
                         help="number of hidden layers in lstm")
     parser.add_argument("--gnn_num_layers", type=int, default=1,
                         help="number of hidden layers in gnn")    
-    parser.add_argument("--init_hidden_size", type=int, default=400,
+    parser.add_argument("--init_hidden_size", type=int, default=300,
                         help="initial_emb_hidden_size")
     parser.add_argument("--hidden_size", type=int, default=128,
                         help="initial_emb_hidden_size")    
@@ -542,23 +554,23 @@ if __name__ == "__main__":
                         help="input feature dropout")    
     parser.add_argument("--rnn_dropout", type=list, default=0.33,
                         help="dropout for rnn in word_emb")      
-    parser.add_argument("--lr", type=float, default=0.001,
+    parser.add_argument("--lr", type=float, default=0.01,
                         help="learning rate")
     parser.add_argument('--weight-decay', type=float, default=5e-5,
                         help="weight decay")
     parser.add_argument('--aggregate_type', type=str, default='mean',
                         help="aggregate type: 'mean','gcn','pool','lstm'")
-    parser.add_argument('--gnn_type', type=str, default='gat',
+    parser.add_argument('--gnn_type', type=str, default='graphsage',
                         help="ingnn type: 'gat','graphsage','ggnn'")  
     parser.add_argument('--use_gnn', type=bool, default=True,
                         help="whether to use gnn")      
-    parser.add_argument("--batch_size", type=int, default=50,
+    parser.add_argument("--batch_size", type=int, default=100,
                         help="batch size for training")
     parser.add_argument("--graph_type", type=str, default="line_graph",
                         help="graph_type:line_graph, dependency_graph, dynamic_graph")    
     parser.add_argument("--init_graph_type", type=str, default="line",
                         help="initial graph construction type ('line', 'dependency', 'constituency', 'ie')")      
-    parser.add_argument("--pre_word_emb_file", type=str, default= None,
+    parser.add_argument("--pre_word_emb_file", type=str, default= 'F:/xiaojie/stanford-corenlp-4.1.0/',
                         help="path of pretrained_word_emb_file")     
     parser.add_argument("--gl_num_heads", type=int, default=1,
                         help="num of heads for dynamic graph construction")  
@@ -576,18 +588,25 @@ if __name__ == "__main__":
                         help="alpha ratio for combining initial graph adjacency matrix") 
     parser.add_argument("--gl_metric_type", type=str, default='weighted_cosine',
                         help="similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', 'rbf_kernel', 'cosine')" )   
-    parser.add_argument("--no_fix_word_emb", type=bool, default=True,
+    parser.add_argument("--no_fix_word_emb", type=bool, default=False,
                         help="Not fix pretrained word embeddings (default: false)" )   
     parser.add_argument("--no_fix_bert_emb", type=bool, default=False,
                         help="Not fix pretrained word embeddings (default: false)" )   
   
 
+    import datetime
+    starttime = datetime.datetime.now()
+    #long running
+    #do something other
+
     args = parser.parse_args() 
     runner = Conll()
     max_score,max_idx=runner.train()
     print("Train finish, best score: {:.3f}".format(max_score))
-    print(max_idx)
-    score=runner.test()    
+    print(max_idx)    
+    #score=runner.test()    
+    endtime = datetime.datetime.now()
+    print((endtime - starttime).seconds)   
     
 #    best_score=-1
 #    param_grid={
