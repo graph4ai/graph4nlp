@@ -497,7 +497,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
             rst = rst + self.bias
 
         if self.res_fc is not None:
-            h_dst = feat_origing
+            h_dst = feat_origin
             resval = self.res_fc(h_dst).view(h_dst.shape[0], self._output_size)
             rst = rst + resval
 
