@@ -20,7 +20,7 @@ import torch.nn as nn
 
 from torch.utils.data import DataLoader
 import torch.optim as optim
-from .config_g2s import get_args
+# from .config_g2s import get_args
 from .utils import get_log, wordid2str
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
 from graph4nlp.pytorch.data.data import from_batch, GraphData
@@ -394,6 +394,16 @@ class ModelHandler:
             format_str += ' {} = {:0.5f},'.format(k.upper(), metrics[k])
 
         return format_str[:-1]
+
+import argparse
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-task_config', '--task_config', required=True, type=str, help='path to the config file')
+    parser.add_argument('-g2s_config', '--g2s_config', required=True, type=str, help='path to the config file')
+    parser.add_argument('--grid_search', action='store_true', help='flag: grid search')
+    args = vars(parser.parse_args())
+
+    return args
 
 def print_config(config):
     print('**************** MODEL CONFIGURATION ****************')
