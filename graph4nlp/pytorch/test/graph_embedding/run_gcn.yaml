@@ -5,8 +5,8 @@ no_cuda: False
 gpu: -1
 epochs: 400
 to_undirected: # False # convert the input graph to undirected graph
-    - False
-#    - True
+#    - False
+    - True
 direction_option: # 'bi_fuse' # direction type (`'undirected'`, `'bi_fuse'`, `'bi_sep'`)
     - 'bi_fuse'
     - 'undirected'
