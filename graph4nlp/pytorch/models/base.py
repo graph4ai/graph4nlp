@@ -110,7 +110,7 @@ class Graph2XBase(nn.Module):
                 rnn_dropout=emb_rnn_dropout)
         else:
             raise NotImplementedError()
-        self.enc_word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v']
+        self.enc_word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'] if 'w2v' in self.graph_topology.embedding_layer.word_emb_layers else None
 
     def _build_gnn_encoder(self, gnn, num_layers, input_size, hidden_size, output_size, direction_option, feats_dropout,
                            gnn_heads=None, gnn_use_residual=True, gnn_attn_dropout=0.0, gnn_activation=F.relu,  # gat
