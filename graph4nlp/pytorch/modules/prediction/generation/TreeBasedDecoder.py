@@ -316,7 +316,9 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             gen_output = torch.softmax(decoder_output, dim=-1)
 
             ret = prob_gen * gen_output
-            output[:, :self.tgt_vocab.vocab_size] = ret
+            need_pad_length = len(oov_dict) - len(self.tgt_vocab)
+            output = torch.cat((ret, ret.new_zeros((tgt_batch_size, need_pad_length))), dim=1)
+            # output[:, :self.tgt_vocab.vocab_size] = ret
 
             ptr_output = attn_scores
             output.scatter_add_(1, enc_batch, prob_ptr * ptr_output)
@@ -342,8 +344,8 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                   oov_dict=None):
                 #   beam_search_version=1):
         # initialize the rnn state to all zeros
-        from graph4nlp.pytorch.data.data import to_batch
-        input_graph_list = to_batch(input_graph_list)
+        # from graph4nlp.pytorch.data.data import to_batch
+        # input_graph_list = to_batch(input_graph_list)
         input_graph_list.batch_node_features["token_id"] = input_graph_list.batch_node_features["token_id"].to(device)
         prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
         prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
