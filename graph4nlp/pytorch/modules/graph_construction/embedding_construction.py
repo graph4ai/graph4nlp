@@ -281,11 +281,12 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         if 'w2v' in self.word_emb_layers:
             feat.append(self.word_emb_layers['w2v'](token_ids))
 
-        # if 'node_edge_bert' in self.word_emb_layers: # multi-token node
-        #     input_data = [[batch_gd.node_attributes[i]['token']] for i in range(batch_gd.get_node_num())]
-        # bert_feat = self.word_emb_layers['node_edge_bert'](input_data)
-                # bert_feat = dropout_fn(bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
-        #     feat.append()
+        if 'node_edge_bert' in self.word_emb_layers: # multi-token node
+            input_data = [[batch_gd.node_attributes[i]['token']] for i in range(batch_gd.get_node_num())]
+            node_edge_bert_feat = self.word_emb_layers['node_edge_bert'](input_data)
+            node_edge_bert_feat = dropout_fn(node_edge_bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
+            batch_bert_beat = GraphData.split_features(node_edge_bert_feat)
+            feat.append(batch_bert_beat)
             #         gd_list = from_batch(batch_gd)
             # for gd in gd_list:
             #     for i in range(gd.get_node_num()):
