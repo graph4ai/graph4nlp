@@ -557,7 +557,7 @@ class Dataset(torch.utils.data.Dataset):
                                                                edge_strategy=edge_strategy,
                                                                verbase=False,
                                                                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
-                        
+
                         item.graph = graph
                     except Exception as msg:
                         pop_idxs.append(idx)
@@ -644,14 +644,15 @@ class Dataset(torch.utils.data.Dataset):
         os.makedirs(self.processed_dir, exist_ok=True)
 
         self.read_raw_data()
-
+        
         self.train = self.build_topology(self.train)
+
         self.test = self.build_topology(self.test)
         if 'val' in self.__dict__:
             self.val = self.build_topology(self.val)
-
+        
         self.build_vocab()
-
+   
         self.vectorization(self.train)
         self.vectorization(self.test)
         if 'val' in self.__dict__:
@@ -1363,12 +1364,16 @@ class Text2LabelDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2LabelDataItem]):
-        graph_data = [deepcopy(item.graph) for item in data_list]
+        graph_list = [item.graph for item in data_list]
+        graph_data = to_batch(graph_list)
 
         tgt = [deepcopy(item.output) for item in data_list]
         tgt_tensor = torch.LongTensor(tgt)
 
-        return [graph_data, tgt_tensor]
+        return {
+            "graph_data": graph_data,
+            "tgt_tensor": tgt_tensor
+        }
 
 
 class DoubleText2TextDataset(Dataset):
@@ -1592,12 +1597,9 @@ class SequenceLabelingDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [SequenceLabelingDataItem]):
-        tgt_tag = []
-        graph_data = []
-        for item in data_list:
-            # if len(item.graph.node_attributes)== len(item.output_id):
-            graph_data.append(deepcopy(item.graph))
-            tgt_tag.append(deepcopy(item.output_id))
+        graph_list= [item.graph for item in data_list]
+        graph_data=to_batch(graph_list)
+        tgt_tag = [deepcopy(item.output_id) for item in data_list]
 
         # tgt_tags = torch.cat(tgt_tag, dim=0)
         #return [graph_data, tgt_tag]
