@@ -287,7 +287,7 @@ class ModelHandler:
 
             return scores
 
-    def translate(self, dataloader):
+    def translate(self, dataloader, write2file=True):
         self.model.eval()
         with torch.no_grad():
             pred_collect = []
@@ -295,6 +295,8 @@ class ModelHandler:
             for i, data in enumerate(dataloader):
                 print(i)
                 data = all_to_cuda(data, self.config['device'])
+                data["graph_data"] = data["graph_data"].to(self.config["device"])
+
                 if self.use_copy:
                     oov_dict = prepare_ext_vocab(data['graph_data'], self.vocab, device=self.config['device'])
                     ref_dict = oov_dict
@@ -302,11 +304,7 @@ class ModelHandler:
                     oov_dict = None
                     ref_dict = self.vocab.out_word_vocab
 
-                batch_gd = self.model.encode_init_node_feature(data)
-                prob = self.model.g2s.encoder_decoder_beam_search(batch_gd,
-                                                                  data['graph_data'],
-                                                                  data['gmp_seq'],
-                                                                  data['gmp_jump'],
+                prob = self.model.g2s.encoder_decoder_beam_search(data['graph_data'],
                                                                   self.config['beam_size'],
                                                                   topk=1,
                                                                   oov_dict=oov_dict)
@@ -323,42 +321,23 @@ class ModelHandler:
                 pred_collect.extend(pred_str)
                 gt_collect.extend(data['output_str'])
 
-            # scores = self.evaluate_predictions(gt_collect, pred_collect)
 
-            with open('{}/{}_ent_pred.txt'.format(self.config['out_dir'], self.config['out_dir'].split('/')[-1]), 'w+') as f:
-                for line in pred_collect:
-                    f.write(line + '\n')
+            if write2file == True:
+                with open('{}/{}_bs{}_pred.txt'.format(self.config['out_dir'],
+                                                       self.config['out_dir'].split('/')[-1],
+                                                       self.config['beam_size']
+                                                       ), 'w+') as f:
+                    for line in pred_collect:
+                        f.write(line + '\n')
 
-            rplc_list = [x.rplc_dict for x in dataloader.dataset]
-            assert len(rplc_list) == len(pred_collect)
-            rplc_pred_collect = []
-            with open('{}/{}_pred.txt'.format(self.config['out_dir'], self.config['out_dir'].split('/')[-1]), 'w+') as f:
-                for line, rplc_dict in zip(pred_collect, rplc_list):
-                    for k, v in rplc_dict.items():
-                        k = k.lower()
-                        v = v.lower()
-                        line = line.replace(k, v)
-                    f.write(line + '\n')
-                    rplc_pred_collect.append(line)
+                with open('{}/{}_bs{}_gt.txt'.format(self.config['out_dir'],
+                                                     self.config['out_dir'].split('/')[-1],
+                                                     self.config['beam_size']
+                                                     ), 'w+') as f:
+                    for line in gt_collect:
+                        f.write(line + '\n')
 
-            hyps = relexicalise(rplc_pred_collect, self.config['dataset'], part='test', lowercased=True)
-
-            all_ref_lists = []
-
-            root_dir = 'examples/pytorch/rdf2text/data/{}'.format(self.config['dataset'])
-
-            for i in range(5):
-                all_ref_lists.append(open('{}/raw/test-all-notdelex-reference{}.lex'.format(root_dir, i)).readlines())
-
-            all_refs = []
-            for i in range(len(all_ref_lists[0])):
-                one_refs = []
-                for j in range(5):
-                    if all_ref_lists[j][i] != '\n':
-                        one_refs.append(all_ref_lists[j][i])
-                all_refs.append(one_refs)
-
-            scores = self.evaluate_predictions(all_refs, hyps)
+            scores = self.evaluate_predictions(gt_collect, pred_collect)
 
             return scores
 
@@ -434,9 +413,11 @@ def main(config):
     t0 = time.time()
 
     # val_score = runner.train()
-    # test_scores = runner.test()
-    runner.stopper.load_checkpoint(runner.model)
-    test_scores = runner.evaluate(runner.test_dataloader, write2file=True, part='test')
+    # greedy search
+    # runner.stopper.load_checkpoint(runner.model)
+    # test_scores = runner.evaluate(runner.test_dataloader, write2file=True, part='test')
+    # beam search
+    test_scores = runner.test()
 
     # print('Removed best saved model file to save disk space')
     # os.remove(runner.stopper.save_model_path)
