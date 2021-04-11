@@ -125,24 +125,10 @@ class IWSLT14Dataset(Text2TextDataset):
         graph_data = [item.graph for item in data_list]
         from graph4nlp.pytorch.data.data import to_batch
         big_graph = to_batch(graph_data)
-        # print(big_graph._batching_node_features["token_id"].shape, "++++")
-        # print(big_graph.fetch_batching_tensor("token_id").shape, "+++___")
-        # print(big_graph.node_features["token_id"].shape, "--------")
-        # print(big_graph._batching_node_features["token_id"].shape, "++++")
-        # exit(0)
 
         output_numpy = [item.output_np for item in data_list]
         output_str = [item.output_text.lower().strip() for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
-
-        # from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
-        # max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
-        # if max_num_tokens_a_node>1:
-        #     for x in data_list:
-        #         x.graph.node_features['token_id'] = torch.from_numpy(
-        #             pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
-        #                         x.graph.node_features['token_id'].size()[0],
-        #                         max_num_tokens_a_node)).long()
 
         tgt_seq = torch.from_numpy(output_pad).long()
         # return [graph_data, tgt_seq, output_str]
@@ -152,34 +138,6 @@ class IWSLT14Dataset(Text2TextDataset):
             "output_str": output_str
         }
 
-
-
-
-
-
-
-        graph_data = [deepcopy(item.graph) for item in data_list]
-
-        output_numpy = [deepcopy(item.output_np) for item in data_list]
-        output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
-        output_pad = pad_2d_vals_no_size(output_numpy)
-
-        from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
-        max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
-        if max_num_tokens_a_node>1:
-            for x in data_list:
-                x.graph.node_features['token_id'] = torch.from_numpy(
-                    pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
-                                x.graph.node_features['token_id'].size()[0],
-                                max_num_tokens_a_node)).long()
-
-        tgt_seq = torch.from_numpy(output_pad).long()
-        # return [graph_data, tgt_seq, output_str]
-        return {
-            "graph_data": graph_data,
-            "tgt_seq": tgt_seq,
-            "output_str": output_str
-        }
 
 
 class EuroparlNMTDataset(Text2TextDataset):

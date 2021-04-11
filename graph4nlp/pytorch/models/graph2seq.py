@@ -87,13 +87,16 @@ class Graph2Seq(Graph2XBase):
                        use_copy=False, use_coverage=False, tgt_emb_as_output_layer=False, teacher_forcing_rate=1.0,
                        rnn_type="lstm", attention_type="uniform", node_type_num=None, fuse_strategy="average",
                        rnn_dropout=0.2):
-        if share_vocab:
+        if share_vocab and self.enc_word_emb is not None:
             self.dec_word_emb = self.enc_word_emb
         else:
             self.dec_word_emb = WordEmbedding(vocab_model.out_word_vocab.embeddings.shape[0],
                                               vocab_model.out_word_vocab.embeddings.shape[1],
                                               pretrained_word_emb=vocab_model.out_word_vocab.embeddings,
                                               fix_emb=fix_word_emb)
+        import torch.nn as nn
+        self.dec_word_emb = nn.Embedding(vocab_model.out_word_vocab.embeddings.shape[0],
+                                        vocab_model.out_word_vocab.embeddings.shape[1])
 
         self.seq_decoder = StdRNNDecoder(rnn_type=rnn_type, max_decoder_step=decoder_length,
                                          input_size=input_size,
