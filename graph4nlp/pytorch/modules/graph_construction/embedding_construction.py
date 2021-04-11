@@ -279,24 +279,20 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         feat = []
         token_ids = batch_gd.batch_node_features["token_id"]
         if 'w2v' in self.word_emb_layers:
-            feat.append(self.word_emb_layers['w2v'](token_ids))
+            word_feat = self.word_emb_layers['w2v'](token_ids)
+            word_feat = dropout_fn(word_feat, self.word_dropout, shared_axes=[-2], training=self.training)
+            feat.append(word_feat)
 
         if 'node_edge_bert' in self.word_emb_layers: # multi-token node
-            input_data = [[batch_gd.node_attributes[i]['token']] for i in range(batch_gd.get_node_num())]
+            input_data = [batch_gd.node_attributes[i]['token'].strip().split(' ') for i in range(batch_gd.get_node_num())]
             node_edge_bert_feat = self.word_emb_layers['node_edge_bert'](input_data)
             node_edge_bert_feat = dropout_fn(node_edge_bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
-            batch_bert_beat = GraphData.split_features(node_edge_bert_feat)
+            batch_bert_beat = batch_gd.split_features(node_edge_bert_feat)
             feat.append(batch_bert_beat)
-            #         gd_list = from_batch(batch_gd)
-            # for gd in gd_list:
-            #     for i in range(gd.get_node_num()):
-            #         gd.node_attributes[i]['token']
-            # raw_tokens = [for gd in gd_list]
 
 
         if len(feat) > 0:
             feat = torch.cat(feat, dim=-1)
-            feat = dropout_fn(feat, self.word_dropout, shared_axes=[-2], training=self.training)
             node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
             feat = self.node_edge_emb_layer(feat, node_token_lens)
             if isinstance(feat, (tuple, list)):
