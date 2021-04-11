@@ -210,7 +210,7 @@ class GraphData(object):
 
             assert isinstance(value, torch.Tensor), "`{}' is not a tensor. Node features are expected to be tensor."
 
-            value_on_device = value.to(self.device)
+            value_on_device = value
             if key not in self._node_features or self._node_features[key] is None:
                 self._node_features[key] = value_on_device
             else:

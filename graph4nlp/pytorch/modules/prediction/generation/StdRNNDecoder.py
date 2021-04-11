@@ -151,11 +151,11 @@ class StdRNNDecoder(RNNDecoderBase):
             raise NotImplementedError()
 
         # input_feed
-        
+
         self.memory_to_feed = nn.Sequential(nn.Linear(self.out_logits_size, self.input_feed_size),
                                             nn.ReLU(),
                                             nn.Dropout(dropout))
-        
+
 
         # project logits to labels
         # self.tgt_emb_as_output_layer = tgt_emb_as_output_layer
@@ -172,9 +172,10 @@ class StdRNNDecoder(RNNDecoderBase):
         self.vocab_size = vocab_size
         self.out_project = nn.Linear(size_before_output, vocab_size, bias=False)
         if self.tgt_emb_as_output_layer:
-            self.out_project.weight = self.tgt_emb.word_emb_layer.weight
+            # self.out_project.weight = self.tgt_emb.word_emb_layer.weight
+            self.out_project.weight = self.tgt_emb.weight
 
-        
+
 
         # coverage strategy
         if self.use_coverage:
@@ -282,10 +283,10 @@ class StdRNNDecoder(RNNDecoderBase):
 
         batch_size = graph_node_embedding.shape[0]
         decoder_input = torch.tensor([self.vocab.SOS] * batch_size).to(graph_node_embedding.device)
-        
+
         decoder_state = self.get_decoder_init_state(rnn_type=self.rnn_type, batch_size=batch_size,
                                                     content=graph_level_embedding)
-        
+
         input_feed = torch.zeros(batch_size, self.input_feed_size).to(graph_node_embedding.device)
 
 
@@ -314,7 +315,7 @@ class StdRNNDecoder(RNNDecoderBase):
                 decoder_input = decoder_output.squeeze(1).argmax(dim=-1)
             decoder_input = self._filter_oov(decoder_input)
         ret = torch.cat(outputs, dim=1)
-        
+
         return ret, enc_attn_weights_average, coverage_vectors
 
     def decode_step(self, decoder_input, input_feed, rnn_state, encoder_out, dec_input_mask, rnn_emb=None,
@@ -389,7 +390,7 @@ class StdRNNDecoder(RNNDecoderBase):
             dec_attn_scores = reduce(lambda x, y: x + y, score_collect) / len(score_collect)
         else:
             decoder_output = dec_out
-        
+
         out = self.memory_to_feed(decoder_output)
 
         # project
@@ -399,7 +400,7 @@ class StdRNNDecoder(RNNDecoderBase):
             out_embed = self.dropout(out_embed)
         else:
             out_embed = out
-        
+
         decoder_output = self.out_project(out_embed)  # [B, S, Vocab]
 
         if self.use_copy:
@@ -476,7 +477,7 @@ class StdRNNDecoder(RNNDecoderBase):
         """
         batch_data_dict = graph.batch_node_features
         graph_node_emb = batch_data_dict["node_emb"]
-        
+
         # [s_g.node_features["node_emb"] for s_g in graph_list]
         rnn_node_emb = batch_data_dict["rnn_emb"]
 
@@ -486,7 +487,7 @@ class StdRNNDecoder(RNNDecoderBase):
             src_seq_ret = graph.batch_node_features["token_id_oov"]
         else:
             src_seq_ret = None
-        
+
         graph_level_emb = self.graph_pooling(graph_node_emb)
 
         return {

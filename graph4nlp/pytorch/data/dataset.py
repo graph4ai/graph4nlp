@@ -461,13 +461,6 @@ class Dataset(torch.utils.data.Dataset):
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
                     print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
-                # graph = topology_builder.topology(raw_text_data=item.input_text,
-                #                                     nlp_processor=processor,
-                #                                     processor_args=processor_args,
-                #                                     merge_strategy=merge_strategy,
-                #                                     edge_strategy=edge_strategy,
-                #                                     verbase=False)
-
                 try:
                     graph = topology_builder.topology(raw_text_data=item.input_text,
                                                       nlp_processor=processor,
@@ -479,11 +472,6 @@ class Dataset(torch.utils.data.Dataset):
                 except Exception as msg:
                     pop_idxs.append(cnt)
                     item.graph = None
-                    # import traceback
-                    # traceback.print_exc()
-                    # print(item.input_text)
-                    # exit(0)
-                    # print(msg)
                     warnings.warn(RuntimeWarning(msg))
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
@@ -557,7 +545,7 @@ class Dataset(torch.utils.data.Dataset):
                                                                edge_strategy=edge_strategy,
                                                                verbase=False,
                                                                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
-                        
+
                         item.graph = graph
                     except Exception as msg:
                         pop_idxs.append(idx)
@@ -644,14 +632,15 @@ class Dataset(torch.utils.data.Dataset):
         os.makedirs(self.processed_dir, exist_ok=True)
 
         self.read_raw_data()
-
+        
         self.train = self.build_topology(self.train)
+
         self.test = self.build_topology(self.test)
         if 'val' in self.__dict__:
             self.val = self.build_topology(self.val)
-
+        
         self.build_vocab()
-
+   
         self.vectorization(self.train)
         self.vectorization(self.test)
         if 'val' in self.__dict__:
@@ -1363,12 +1352,16 @@ class Text2LabelDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2LabelDataItem]):
-        graph_data = [deepcopy(item.graph) for item in data_list]
+        graph_list = [item.graph for item in data_list]
+        graph_data = to_batch(graph_list)
 
         tgt = [deepcopy(item.output) for item in data_list]
         tgt_tensor = torch.LongTensor(tgt)
 
-        return [graph_data, tgt_tensor]
+        return {
+            "graph_data": graph_data,
+            "tgt_tensor": tgt_tensor
+        }
 
 
 class DoubleText2TextDataset(Dataset):
@@ -1592,12 +1585,9 @@ class SequenceLabelingDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [SequenceLabelingDataItem]):
-        tgt_tag = []
-        graph_data = []
-        for item in data_list:
-            # if len(item.graph.node_attributes)== len(item.output_id):
-            graph_data.append(deepcopy(item.graph))
-            tgt_tag.append(deepcopy(item.output_id))
+        graph_list= [item.graph for item in data_list]
+        graph_data=to_batch(graph_list)
+        tgt_tag = [deepcopy(item.output_id) for item in data_list]
 
         # tgt_tags = torch.cat(tgt_tag, dim=0)
         #return [graph_data, tgt_tag]

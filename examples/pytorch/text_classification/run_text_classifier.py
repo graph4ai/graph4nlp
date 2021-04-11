@@ -52,8 +52,7 @@ class TextClassifier(nn.Module):
                                                                    word_dropout=config['word_dropout'],
                                                                    rnn_dropout=config['rnn_dropout'],
                                                                    fix_word_emb=not config['no_fix_word_emb'],
-                                                                   fix_bert_emb=not config.get('no_fix_bert_emb', False),
-                                                                   device=config['device'])
+                                                                   fix_bert_emb=not config.get('no_fix_bert_emb', False))
         elif config['graph_type'] == 'constituency':
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=vocab.in_word_vocab,
@@ -61,8 +60,7 @@ class TextClassifier(nn.Module):
                                                                    word_dropout=config['word_dropout'],
                                                                    rnn_dropout=config['rnn_dropout'],
                                                                    fix_word_emb=not config['no_fix_word_emb'],
-                                                                   fix_bert_emb=not config.get('no_fix_bert_emb', False),
-                                                                   device=config['device'])
+                                                                   fix_bert_emb=not config.get('no_fix_bert_emb', False))
         elif config['graph_type'] == 'ie':
             self.graph_topology = IEBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=vocab.in_word_vocab,
@@ -70,8 +68,7 @@ class TextClassifier(nn.Module):
                                                                    word_dropout=config['word_dropout'],
                                                                    rnn_dropout=config['rnn_dropout'],
                                                                    fix_word_emb=not config['no_fix_word_emb'],
-                                                                   fix_bert_emb=not config.get('no_fix_bert_emb', False),
-                                                                   device=config['device'])
+                                                                   fix_bert_emb=not config.get('no_fix_bert_emb', False))
         elif config['graph_type'] == 'node_emb':
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
                                     vocab.in_word_vocab,
@@ -88,8 +85,7 @@ class TextClassifier(nn.Module):
                                     fix_word_emb=not config['no_fix_word_emb'],
                                     fix_bert_emb=not config.get('no_fix_bert_emb', False),
                                     word_dropout=config['word_dropout'],
-                                    rnn_dropout=config['rnn_dropout'],
-                                    device=config['device'])
+                                    rnn_dropout=config['rnn_dropout'])
             use_edge_weight = True
         elif config['graph_type'] == 'node_emb_refined':
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
@@ -238,7 +234,7 @@ class ModelHandler:
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(self.config['graph_type']))
 
-        topology_subdir = '{}_based_graph'.format(self.config['graph_type'])
+        topology_subdir = '{}_graph'.format(self.config['graph_type'])
         if self.config['graph_type'] == 'node_emb_refined':
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
@@ -300,10 +296,8 @@ class ModelHandler:
             train_acc = []
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
-                graph_list, tgt = data
-                graph_list = [to_cuda(g, self.config['device']) for g in graph_list]
-                tgt = to_cuda(tgt, self.config['device'])
-                logits, loss = self.model(graph_list, tgt, require_loss=True)
+                tgt = to_cuda(data['tgt_tensor'], self.config['device'])
+                logits, loss = self.model(data['graph_data'], tgt, require_loss=True)
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
@@ -331,9 +325,8 @@ class ModelHandler:
             pred_collect = []
             gt_collect = []
             for i, data in enumerate(dataloader):
-                graph_list, tgt = data
-                graph_list = [to_cuda(g, self.config['device']) for g in graph_list]
-                logits = self.model(graph_list, require_loss=False)
+                tgt = to_cuda(data['tgt_tensor'], self.config['device'])
+                logits = self.model(data['graph_data'], require_loss=False)
                 pred_collect.append(logits)
                 gt_collect.append(tgt)
 
@@ -457,6 +450,10 @@ def grid_search_main(config):
 
 
 if __name__ == '__main__':
+    import platform, multiprocessing
+    if platform.system() == "Darwin":
+        multiprocessing.set_start_method('spawn')
+
     cfg = get_args()
     config = get_config(cfg['config'])
     print_config(config)
