@@ -9,10 +9,9 @@ import warnings
 from collections import namedtuple
 
 import dgl
-import numpy as np
 import scipy.sparse
 import torch
-from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
+from torch.nn.utils.rnn import pad_sequence
 
 from .utils import SizeMismatchException, EdgeNotFoundException
 from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list
@@ -592,13 +591,15 @@ class GraphData(object):
 
         Returns
         -------
-        scipy.sparse.coo_matrix or list
+        torch.sparse_coo_tensor or list of torch.sparse_coo_tensor
         """
-        row = np.array(self._edge_indices[0])
-        col = np.array(self._edge_indices[1])
-        data = np.ones(self.get_edge_num())
+        row = torch.tensor(self._edge_indices[0]).to(self.device)
+        col = torch.tensor(self._edge_indices[1]).to(self.device)
+        data = torch.ones(self.get_edge_num()).to(self.device)
         if not batch_view:
-            matrix = scipy.sparse.coo_matrix((data, (row, col)), shape=(self.get_node_num(), self.get_node_num()))
+            indices = torch.stack([row, col])
+            matrix = torch.sparse_coo_tensor(indices=indices, values=data,
+                                             size=(self.get_node_num(), self.get_node_num()))
             return matrix
         else:
             if self._is_batch is not True:
@@ -613,7 +614,10 @@ class GraphData(object):
                 cur_row = row[cum_num_edges:cum_num_edges + num_edges]
                 cur_col = col[cum_num_edges:cum_num_edges + num_edges]
                 cur_data = data[cum_num_nodes:cum_num_nodes + num_nodes]
-                cur_matrix = scipy.sparse.coo_matrix((cur_data, (cur_row, cur_col)), shape=(num_nodes, num_nodes))
+                cur_row -= cum_num_nodes
+                cur_col -= cum_num_nodes
+                indices = torch.stack([cur_row, cur_col])
+                cur_matrix = torch.sparse_coo_tensor(indices=indices, values=cur_data, size=(num_nodes, num_nodes))
                 matrices.append(cur_matrix)
                 cum_num_edges += num_edges
                 cum_num_nodes += num_nodes
