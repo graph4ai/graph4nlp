@@ -770,6 +770,43 @@ class GraphData(object):
                                                  split_size_or_sections=self._batch_num_edges)
         return edge_features
 
+    def split_features(self, input_tensor: torch.Tensor, type='node') -> torch.Tensor:
+        """
+        Convert a tensor from [N, *] to [B, N_max, *] with zero padding according to the batch information stored in
+        the graph.
+        Parameters
+        ----------
+        input_tensor: torch.Tensor
+        The original tensor to be split.
+        type: str
+        'node' or 'edge'. Indicates the source of batch information.
+        Returns
+        -------
+        torch.Tensor
+        The split tensor.
+        """
+        input_tensor = input_tensor.to(self.device)
+        assert self._is_batch, "Cannot invoke `batch_split` method on a non-batch graph."
+        if type == 'node':
+            info_src = self._batch_num_nodes
+        elif type == 'edge':
+            info_src = self._batch_num_edges
+        else:
+            raise NotImplementedError("Currently only 'node' and 'edge' is accepted in GraphData.split_features().")
+        num_instance = 0
+        for number in info_src:
+            num_instance += number
+        assert num_instance == input_tensor.shape[0], "Number of instances " \
+                                                      "doesn't match: The graph " \
+                                                      "has {} instances while the input " \
+                                                      "contains {}".format(num_instance, input_tensor.shape[0])
+        n_max = max(info_src)
+        output = torch.zeros(size=(self.batch_size, n_max, *input_tensor.shape[1:])).to(self.device)
+        split_input = torch.split(tensor=input_tensor, split_size_or_sections=info_src)
+        for i in range(self.batch_size):
+            output[i, :info_src[i]] = split_input[i]
+        return output
+
 
 def from_dgl(g: dgl.DGLGraph) -> GraphData:
     """

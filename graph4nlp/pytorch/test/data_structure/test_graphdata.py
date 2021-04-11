@@ -220,6 +220,34 @@ def test_scipy_sparse_adj():
     adj = batch.scipy_sparse_adj(batch_view=True)
     print(adj)
 
+def test_batch_split_features():
+    g_list = []
+    batched_edges = []
+    graph_edges_list = []
+    for i in range(5):
+        g = GraphData()
+        g.add_nodes(10)
+        for j in range(10):
+            g.add_edge(src=j, tgt=(j + 1) % 10)
+            batched_edges.append((i * 10 + j, i * 10 + ((j + 1) % 10)))
+        g.node_features['idx'] = torch.ones(10) * i
+        g.edge_features['idx'] = torch.ones(10) * i
+        graph_edges_list.append(g.get_all_edges())
+        g_list.append(g)
+    g = GraphData()
+    g.add_nodes(11)
+    for j in range(11):
+        g.add_edge(src=j, tgt=(j + 1) % 11)
+    g.node_features['idx'] = torch.ones(11) * 5
+    g.edge_features['idx'] = torch.ones(11) * 5
+    graph_edges_list.append(g.get_all_edges())
+    g_list.append(g)
+
+    # Test to_batch
+    batch = to_batch(g_list)
+    init_feature = torch.rand(size=(61, 100))
+    split_f = batch.split_features(init_feature, 'node')
+    print(split_f)
 
 
 def test_conversion_dgl():
