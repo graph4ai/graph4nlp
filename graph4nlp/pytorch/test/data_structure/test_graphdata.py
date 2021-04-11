@@ -217,7 +217,7 @@ def test_scipy_sparse_adj():
     # Test to_batch
     batch = to_batch(g_list)
 
-    adj = batch.scipy_sparse_adj(batch_view=True)
+    adj = batch.sparse_adj(batch_view=True)
     print(adj)
 
 def test_batch_split_features():

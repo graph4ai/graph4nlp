@@ -581,7 +581,7 @@ class GraphData(object):
             ret[u][v] = 1
         return ret
 
-    def scipy_sparse_adj(self, batch_view=False):
+    def sparse_adj(self, batch_view=False):
         """
         Return the scipy.sparse.coo_matrix form of the adjacency matrix
         Parameters
