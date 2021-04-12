@@ -461,6 +461,13 @@ class Dataset(torch.utils.data.Dataset):
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
                     print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
+                # graph = topology_builder.topology(raw_text_data=item.input_text,
+                #                                     nlp_processor=processor,
+                #                                     processor_args=processor_args,
+                #                                     merge_strategy=merge_strategy,
+                #                                     edge_strategy=edge_strategy,
+                #                                     verbase=False)
+
                 try:
                     graph = topology_builder.topology(raw_text_data=item.input_text,
                                                       nlp_processor=processor,
@@ -472,6 +479,11 @@ class Dataset(torch.utils.data.Dataset):
                 except Exception as msg:
                     pop_idxs.append(cnt)
                     item.graph = None
+                    # import traceback
+                    # traceback.print_exc()
+                    # print(item.input_text)
+                    # exit(0)
+                    # print(msg)
                     warnings.warn(RuntimeWarning(msg))
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
