@@ -23,7 +23,7 @@ from ...modules.utils.generic_utils import *
 from ...modules.graph_embedding.gcn import GCN
 from ...data.data import GraphData
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 def accuracy(logits, labels):
@@ -344,3 +344,15 @@ if __name__ == '__main__':
         grid_search_main(config)
     else:
         multi_run(config)
+
+"""
+fairseq-preprocess \
+  --source-lang "source" \
+  --target-lang "target" \
+  --trainpref "${TASK}/train.bpe" \
+  --validpref "${TASK}/val.bpe" \
+  --destdir "${TASK}-bin/" \
+  --workers 60 \
+  --srcdict dict.txt \
+  --tgtdict dict.txt;
+"""
