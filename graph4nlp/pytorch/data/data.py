@@ -613,7 +613,7 @@ class GraphData(object):
                 # Slicing the matrix one by one
                 cur_row = row[cum_num_edges:cum_num_edges + num_edges]
                 cur_col = col[cum_num_edges:cum_num_edges + num_edges]
-                cur_data = data[cum_num_nodes:cum_num_nodes + num_nodes]
+                cur_data = data[cum_num_edges:cum_num_edges + num_edges]
                 cur_row -= cum_num_nodes
                 cur_col -= cum_num_nodes
                 indices = torch.stack([cur_row, cur_col])
