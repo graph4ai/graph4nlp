@@ -33,7 +33,8 @@ class JobsDataset(Text2TextDataset):
                  graph_type='static',
                  merge_strategy="tailhead", edge_strategy=None,
                  seed=None,
-                 word_emb_size=300, share_vocab=True,
+                 word_emb_size=300, share_vocab=True, lower_case=True,
+                 nlp_tools_args={}, thread_number=1,
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
                  dynamic_init_topology_aux_args=None):
@@ -67,28 +68,12 @@ class JobsDataset(Text2TextDataset):
         super(JobsDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy,
-                                          share_vocab=share_vocab, pretrained_word_emb_file=pretrained_word_emb_file,
+                                          share_vocab=share_vocab, lower_case=lower_case, pretrained_word_emb_file=pretrained_word_emb_file,
                                           val_split_ratio=val_split_ratio, seed=seed, word_emb_size=word_emb_size,
-
+                                          nlp_tools_args=nlp_tools_args, thread_number=thread_number,
                                           dynamic_graph_type=dynamic_graph_type,
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
-
-    # @classmethod
-    # def from_args(cls, args, graph_type, topology_builder, dynamic_graph_type=None, dynamic_init_topology_builder=None,
-    #               dynamic_init_topology_aux_args=None):
-    #     return cls(root_dir=args.root_dir,
-    #                pretrained_word_emb_file=args.pretrained_word_emb_file,
-    #                val_split_ratio=args.val_split_ratio,
-    #                merge_strategy=args.merge_strategy, edge_strategy=args.edge_strategy,
-    #                seed=args.seed,
-    #                word_emb_size=args.word_emb_size, share_vocab=args.share_vocab,
-    #                graph_type=graph_type,
-    #                topology_builder=topology_builder, topology_subdir=args.topology_subdir,
-    #                dynamic_graph_type= dynamic_graph_type,
-    #                dynamic_init_topology_builder=dynamic_init_topology_builder,
-    #                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
-
 
 
 

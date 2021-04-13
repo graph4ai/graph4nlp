@@ -2,13 +2,11 @@ graph_construction_share:
   graph_type: 'dependency'
   root_dir: null
   topology_subdir: 'DependencyGraph'
-  thread_number: 4
-  port: 9000
-  timeout: 15000
   lower_case: true
   share_vocab: true
   input_language: "en"
   output_language: "en"
+  thread_number: 4
 
 graph_construction_private:
   edge_strategy: 'homogeneous'
@@ -23,6 +21,8 @@ graph_construction_private:
     normalize_other_brackets: false # Whether to map other common bracket characters to -LCB-, -LRB-, -RCB-, -RRB-, roughly as in the Penn Treebank
     split_hyphenated: false # Whether or not to tokenize hyphenated words as several tokens (“school” “-“ “aged”, “frog” “-“ “lipped”)
     is_oneSentence: true # Whether to regard the inputs as one sentence
+    port: 9000
+    timeout: 15000
 
 
 node_embedding:

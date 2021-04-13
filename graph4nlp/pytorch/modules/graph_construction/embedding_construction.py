@@ -235,7 +235,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         GraphData
             The output graph data with updated node embeddings.
         """
-
         feat = []
         if self.single_token_item: # single-token node graph
             token_ids = batch_gd.batch_node_features["token_id"]

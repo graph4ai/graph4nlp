@@ -94,9 +94,6 @@ class Graph2Seq(Graph2XBase):
                                               vocab_model.out_word_vocab.embeddings.shape[1],
                                               pretrained_word_emb=vocab_model.out_word_vocab.embeddings,
                                               fix_emb=fix_word_emb)
-        import torch.nn as nn
-        self.dec_word_emb = nn.Embedding(vocab_model.out_word_vocab.embeddings.shape[0],
-                                        vocab_model.out_word_vocab.embeddings.shape[1])
 
         self.seq_decoder = StdRNNDecoder(rnn_type=rnn_type, max_decoder_step=decoder_length,
                                          input_size=input_size,
@@ -180,7 +177,7 @@ class Graph2Seq(Graph2XBase):
         args = (copy.deepcopy(emb_args))
         args.update(gnn_args)
         args.update(dec_args)
-        args["share_vocab"] = opt.get("share_vocab", False)
+        args["share_vocab"] = opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
 
         return cls(vocab_model=vocab_model, **args)
 
