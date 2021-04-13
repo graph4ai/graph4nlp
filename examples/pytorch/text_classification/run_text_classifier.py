@@ -242,7 +242,6 @@ class ModelHandler:
                               pretrained_word_emb_file=self.config['pre_word_emb_file'],
                               merge_strategy=merge_strategy,
                               seed=self.config['seed'],
-                              device=config['device'],
                               thread_number=4,
                               port=9000,
                               timeout=15000,
