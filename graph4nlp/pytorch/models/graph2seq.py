@@ -123,6 +123,7 @@ class Graph2Seq(Graph2XBase):
         generator = DecoderStrategy(beam_size=beam_size, vocab=self.seq_decoder.vocab, rnn_type=self.dec_rnn_type,
                                     decoder=self.seq_decoder, use_copy=self.use_copy,
                                     use_coverage=self.use_coverage)
+        batch_graph = self.graph_topology(batch_graph)
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
         beam_results = generator.generate(graph_list=batch_graph, oov_dict=oov_dict, topk=topk)
