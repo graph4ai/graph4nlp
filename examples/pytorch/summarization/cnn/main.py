@@ -412,7 +412,7 @@ def main(config):
     runner = ModelHandler(config)
     t0 = time.time()
 
-    # val_score = runner.train()
+    val_score = runner.train()
     # greedy search
     # runner.stopper.load_checkpoint(runner.model)
     # test_scores = runner.evaluate(runner.test_dataloader, write2file=True, part='test')
