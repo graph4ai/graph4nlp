@@ -1,12 +1,15 @@
 graph_construction_name: "ie"
-graph_embedding_name: "graphsage"
+graph_embedding_name: "gcn"
 decoder_name: "stdrnn"
+out_dir: "out/cnn/gcn_uni_l2_wornn_wocopy_ie_ckpt"
+
+vocab_lower_case: true
 
 graph_construction_args:
   graph_construction_share:
     graph_type: 'ie'
     root_dir: "examples/pytorch/summarization/cnn"
-    topology_subdir: 'IEGraph_1w'
+    topology_subdir: 'IEGraph'
     thread_number: 40
     port: 9001
     timeout: 30000
@@ -24,10 +27,10 @@ graph_construction_args:
     fix_word_emb: false
     embedding_style:
       single_token_item: false
-      emb_strategy: "w2v_bert_bilstm"
+      emb_strategy: "w2v_bilstm"
       num_rnn_layers: 1
-      bert_model_name: 'bert-base-uncased'
-      bert_lower_case: True
+      bert_model_name: null
+      bert_lower_case: null
 
 graph_embedding_args:
   graph_embedding_share:
@@ -54,7 +57,7 @@ decoder_args:
     rnn_emb_input_size: 300
     use_copy: false
     use_coverage: false
-    graph_pooling_strategy: null
+    graph_pooling_strategy: "max"
     attention_type: "sep_diff_encoder_type"
     fuse_strategy: "concatenate"
     dropout: 0.3
@@ -63,7 +66,4 @@ decoder_args:
     max_decoder_step: 100
     node_type_num: null
     tgt_emb_as_output_layer: true
-
-
-
 
