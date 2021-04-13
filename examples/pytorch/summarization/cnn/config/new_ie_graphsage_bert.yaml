@@ -1,12 +1,15 @@
 graph_construction_name: "ie"
 graph_embedding_name: "graphsage"
 decoder_name: "stdrnn"
+out_dir: "out/cnn/gs_uni_l1_ie_ckpt"
+
+vocab_lower_case: true
 
 graph_construction_args:
   graph_construction_share:
     graph_type: 'ie'
     root_dir: "examples/pytorch/summarization/cnn"
-    topology_subdir: 'IEGraph_1w'
+    topology_subdir: 'IEGraph'
     thread_number: 40
     port: 9001
     timeout: 30000
@@ -63,7 +66,4 @@ decoder_args:
     max_decoder_step: 100
     node_type_num: null
     tgt_emb_as_output_layer: true
-
-
-
 
