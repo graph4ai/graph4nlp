@@ -95,11 +95,14 @@ class Jobs:
                               edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
                                   "edge_strategy"],
                               seed=self.opt["seed"],
-                              word_emb_size=self.opt["word_emb_size"], share_vocab=self.opt["share_vocab"],
+                              word_emb_size=self.opt["word_emb_size"], share_vocab=self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"],
                               graph_type=graph_type,
                               topology_builder=topology_builder,
                               topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
                                   "topology_subdir"],
+                              nlp_tools_args=self.opt["graph_construction_args"]["graph_construction_private"]["nlp_tools_args"],
+                              thread_number=self.opt["graph_construction_args"]["graph_construction_share"][
+                                  "thread_number"],
                               dynamic_graph_type=self.opt["graph_construction_args"]["graph_construction_share"][
                                   "graph_type"],
                               dynamic_init_topology_builder=dynamic_init_topology_builder,

@@ -71,9 +71,6 @@ class Graph2Tree(nn.Module):
         self.use_copy = use_copy
         self.use_edge_weight = False
 
-        # embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
-        #                    'seq_info_encode_strategy': "bilstm"}
-
         embedding_style = {'single_token_item': True,
                            'emb_strategy': "w2v_bilstm",
                            'num_rnn_layers': 1
@@ -82,58 +79,54 @@ class Graph2Tree(nn.Module):
         if graph_construction_type == "DependencyGraph":
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=self.src_vocab,
-                                                                   hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=dropout_for_word_embedding, device=device,
+                                                                   hidden_size=enc_hidden_size, 
+                                                                   word_dropout=dropout_for_word_embedding, 
+                                                                   rnn_dropout=dropout_for_word_embedding, 
                                                                    fix_word_emb=False)
         elif graph_construction_type == "ConstituencyGraph":
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                      vocab=self.src_vocab,
-                                                                     hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=dropout_for_word_embedding, device=device,
+                                                                     hidden_size=enc_hidden_size,
+                                                                     word_dropout=dropout_for_word_embedding,
+                                                                     rnn_dropout=dropout_for_word_embedding,
                                                                      fix_word_emb=False)
         elif graph_construction_type == "DynamicGraph_node_emb":
-            self.graph_topology = NodeEmbeddingBasedGraphConstruction(
-                self.src_vocab,
-                embedding_style,
-                sim_metric_type='weighted_cosine',
-                num_heads=1,
-                top_k_neigh=None,
-                epsilon_neigh=0.5,
-                smoothness_ratio=0.1,
-                connectivity_ratio=0.05,
-                sparsity_ratio=0.1,
-                input_size=enc_hidden_size,
-                hidden_size=enc_hidden_size,
-                fix_word_emb=False,
-                word_dropout=dropout_for_word_embedding,
-                rnn_dropout=dropout_for_word_embedding,
-                device=device)
+            self.graph_topology = NodeEmbeddingBasedGraphConstruction(self.src_vocab,
+                                                                      embedding_style,
+                                                                      sim_metric_type='weighted_cosine',
+                                                                      num_heads=1,
+                                                                      top_k_neigh=None,
+                                                                      epsilon_neigh=0.5,
+                                                                      smoothness_ratio=0.1,
+                                                                      connectivity_ratio=0.05,
+                                                                      sparsity_ratio=0.1,
+                                                                      input_size=enc_hidden_size,
+                                                                      hidden_size=enc_hidden_size,
+                                                                      fix_word_emb=False,
+                                                                      word_dropout=dropout_for_word_embedding,
+                                                                      rnn_dropout=dropout_for_word_embedding
+                                                                      )
             self.use_edge_weight = True
         elif graph_construction_type == "DynamicGraph_node_emb_refined":
-            self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
-                self.src_vocab,
-                embedding_style,
-                0.2,
-                sim_metric_type="weighted_cosine",
-                num_heads=1,
-                top_k_neigh=None,
-                epsilon_neigh=0.5,
-                smoothness_ratio=0.1,
-                connectivity_ratio=0.05,
-                sparsity_ratio=0.1,
-                input_size=enc_hidden_size,
-                hidden_size=enc_hidden_size,
-                fix_word_emb=False,
-                word_dropout=dropout_for_word_embedding,
-                rnn_dropout=dropout_for_word_embedding,
-                device=device)
+            self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(self.src_vocab,
+                                                                             embedding_style,
+                                                                             0.2,
+                                                                             sim_metric_type="weighted_cosine",
+                                                                             num_heads=1,
+                                                                             top_k_neigh=None,
+                                                                             epsilon_neigh=0.5,
+                                                                             smoothness_ratio=0.1,
+                                                                             connectivity_ratio=0.05,
+                                                                             sparsity_ratio=0.1,
+                                                                             input_size=enc_hidden_size,
+                                                                             hidden_size=enc_hidden_size,
+                                                                             fix_word_emb=False,
+                                                                             word_dropout=dropout_for_word_embedding,
+                                                                             rnn_dropout=dropout_for_word_embedding,
+                                                                             device=device)
             self.use_edge_weight = True
         else:
             raise NotImplementedError()
-            # self.graph_topology = NodeEmbeddingBasedGraphConstruction(word_vocab=self.src_vocab,
-            #                                                     embedding_styles=embedding_style,
-            #                                                     input_size=enc_hidden_size,
-            #                                                     hidden_size=enc_hidden_size,
-            #                                                     top_k_neigh=200,
-            #                                                     device=device)
 
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[
             'w2v'].word_emb_layer
@@ -186,18 +179,13 @@ class Graph2Tree(nn.Module):
                                       max_dec_tree_depth=max_dec_tree_depth,
                                       tgt_vocab=self.tgt_vocab)
 
-    def forward(self, graph_list, tgt_tree_batch, oov_dict=None):
-        batch_graph = self.graph_topology(graph_list)
+    def forward(self, batch_graph, tgt_tree_batch, oov_dict=None):
+        batch_graph.batch_node_features["token_id"] = batch_graph.batch_node_features["token_id"].to(self.device)
+        batch_graph = self.graph_topology(batch_graph)
         batch_graph = self.encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
-        batch_graph_list_decoder_input = from_batch(batch_graph)
-        if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
-            for g, g_ in zip(batch_graph_list_decoder_input, graph_list):
-                g.node_features['token_id_oov'] = g_.node_features['token_id_oov']
-
-        loss = self.decoder(g=batch_graph_list_decoder_input,
-                            tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
+        loss = self.decoder(g=batch_graph, tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
         return loss
 
     def init(self, init_weight):
@@ -352,30 +340,27 @@ class Jobs:
             parameters, lr=optim_state['learningRate'], weight_decay=optim_state['weight_decay'])
         # self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size = self.opt.max_epochs//3, gamma=0.5)
 
-    def prepare_ext_vocab(self, batch_graphs, src_vocab):
+    def prepare_ext_vocab(self, batch_graph, src_vocab):
         oov_dict = copy.deepcopy(src_vocab)
-        for g in batch_graphs:
-            token_matrix = []
-            for node_idx in range(g.get_node_num()):
-                node_token = g.node_attributes[node_idx]['token']
-                if (g.node_attributes[node_idx].get('type') == None or g.node_attributes[node_idx].get('type') == 0) \
-                        and oov_dict.get_symbol_idx(node_token) == oov_dict.get_symbol_idx(oov_dict.unk_token):
-                    oov_dict.add_symbol(node_token)
-                token_matrix.append([oov_dict.get_symbol_idx(node_token)])
-            token_matrix = torch.tensor(
-                token_matrix, dtype=torch.long).to(self.device)
-            g.node_features['token_id_oov'] = token_matrix
+        token_matrix = []
+        for n in batch_graph.node_attributes:
+            node_token = n['token']
+            if (n.get('type') == None or n.get('type') == 0) and oov_dict.get_symbol_idx(node_token) == oov_dict.get_symbol_idx(oov_dict.unk_token):
+                oov_dict.add_symbol(node_token)
+                # print("add", node_token)
+            token_matrix.append(oov_dict.get_symbol_idx(node_token))
+        batch_graph.node_features['token_id_oov'] = torch.tensor(token_matrix, dtype=torch.long).to(self.device)
         return oov_dict
 
     def train_epoch(self, epoch):
+        from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
         loss_to_print = 0
         for i in range(self.train_data_loader.num_batch):
             self.optimizer.zero_grad()
             batch_graph_list, _, batch_tree_list, batch_original_tree_list = self.train_data_loader.random_batch()
-
+            # print(batch_graph_list.device)
             oov_dict = self.prepare_ext_vocab(
                 batch_graph_list, self.src_vocab) if self.use_copy else None
-
 
             if self.use_copy and self.revectorization:
                 batch_tree_list_refined = []
@@ -406,15 +391,17 @@ class Jobs:
             # self.scheduler.step()
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
             # print(self.scheduler.get_lr())
-            if epoch > 20 and epoch % 5 == 0:
+            if epoch > 2 and epoch % 5 == 0:
                 # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                 # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
                 test_acc = self.eval((self.model))
                 if test_acc > best_acc:
                     best_acc = test_acc
         print("Best Acc: {:.3f}\n".format(best_acc))
+        return best_acc
 
     def eval(self, model):
+        from graph4nlp.pytorch.data.data import to_batch
         device = model.device
 
         max_dec_seq_length = self.opt.max_dec_seq_length
@@ -438,7 +425,7 @@ class Jobs:
             x = data[i]
 
             # get input graph list
-            input_graph_list = [x[0]]
+            input_graph_list = to_batch([x[0]])
             # if use_copy:
             oov_dict = self.prepare_ext_vocab(
                 input_graph_list, self.test_data_loader.src_vocab)
@@ -465,8 +452,8 @@ class Jobs:
                                                 max_dec_tree_depth,
                                                 oov_dict=oov_dict,
                                                 use_beam_search=True,
-                                                beam_size=self.opt.beam_size,
-                                                beam_search_version=self.opt.beam_search_version)
+                                                beam_size=self.opt.beam_size)
+                                                # beam_search_version=self.opt.beam_search_version)
             
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
@@ -492,8 +479,8 @@ class Jobs:
                     print(cand_str)
                     print(ref_str)
                     print("====================")
-            print(cand_str)
-            print(ref_str)
+            # print(cand_str)
+            # print(ref_str)
 
             reference_list.append(reference)
             candidate_list.append(candidate)
@@ -653,7 +640,7 @@ if __name__ == "__main__":
     args = main_arg_parser.parse_args()
 
     runner = Jobs(opt=args)
-    runner.train()
+    best_acc = runner.train()
 
     end = time.time()
     print("total time: {} minutes\n".format((end - start)/60))
