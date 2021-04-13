@@ -228,23 +228,12 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         Parameters
         ----------
         batch_gd : GraphData
-            The batched graph data.
-        item_size : torch.LongTensor
-            The length of word sequence per item with shape :math:`(N)`.
-        num_items : torch.LongTensor
-            The number of items per graph with shape :math:`(B,)`
-            where :math:`B` is the number of graphs in the batched graph.
-        num_word_items : torch.LongTensor, optional
-            The number of word items (that are extracted from the raw text)
-            per graph with shape :math:`(B,)` where :math:`B` is the number
-            of graphs in the batched graph. We assume that the word items are
-            not reordered and interpolated, and always appear before the non-word
-            items in the graph. Default: ``None``.
+            The input graph data.
 
         Returns
         -------
-        torch.Tensor
-            The output item embeddings.
+        GraphData
+            The output graph data with updated node embeddings.
         """
 
         feat = []
@@ -291,7 +280,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 bert_feat = dropout_fn(bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
 
                 if len(new_feat) > 0:
-                    new_feat = torch.cat([new_feat, bert_feat], -1)
+                    new_feat.append(bert_feat)
+                    new_feat = torch.cat(new_feat, -1)
                 else:
                     new_feat = bert_feat
 
