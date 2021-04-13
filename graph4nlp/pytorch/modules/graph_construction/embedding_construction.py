@@ -277,14 +277,9 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 raw_tokens = [[gd.node_attributes[i]['token'] for i in range(gd.get_node_num())] for gd in gd_list]
                 bert_feat = self.word_emb_layers['seq_bert'](raw_tokens)
                 bert_feat = dropout_fn(bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
+                new_feat.append(bert_feat)
 
-                if len(new_feat) > 0:
-                    new_feat.append(bert_feat)
-                    new_feat = torch.cat(new_feat, -1)
-                else:
-                    new_feat = bert_feat
-
-
+            new_feat = torch.cat(new_feat, -1)
             if self.seq_info_encode_layer is None:
                 batch_gd.batch_node_features["node_feat"] = new_feat
 
