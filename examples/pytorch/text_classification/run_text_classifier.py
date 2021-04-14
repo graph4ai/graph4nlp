@@ -1,4 +1,5 @@
 import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import time
 import datetime
 import argparse
@@ -296,6 +297,7 @@ class ModelHandler:
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
                 tgt = to_cuda(data['tgt_tensor'], self.config['device'])
+                data['graph_data'] = data['graph_data'].to(self.config['device'])
                 logits, loss = self.model(data['graph_data'], tgt, require_loss=True)
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -325,6 +327,7 @@ class ModelHandler:
             gt_collect = []
             for i, data in enumerate(dataloader):
                 tgt = to_cuda(data['tgt_tensor'], self.config['device'])
+                data['graph_data'] = data['graph_data'].to(self.config["device"])
                 logits = self.model(data['graph_data'], require_loss=False)
                 pred_collect.append(logits)
                 gt_collect.append(tgt)
