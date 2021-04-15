@@ -3,8 +3,10 @@ from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 import dgl
 
+from ..utils.vocab_utils import Vocab
 from ..utils.generic_utils import to_cuda, dropout_fn, create_mask
 from ..utils.bert_utils import *
+from ...data.data import from_batch
 
 
 class EmbeddingConstructionBase(nn.Module):
@@ -122,9 +124,11 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                     bert_model_name='bert-base-uncased',
                     bert_lower_case=True,
                     word_dropout=None,
+                    bert_dropout=None,
                     rnn_dropout=None):
         super(EmbeddingConstruction, self).__init__()
         self.word_dropout = word_dropout
+        self.bert_dropout = bert_dropout
         self.rnn_dropout = rnn_dropout
 
         assert emb_strategy in ('w2v', 'w2v_bilstm', 'w2v_bigru',
@@ -243,46 +247,56 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         torch.Tensor
             The output item embeddings.
         """
+        # token_ids = batch_gd.batch_node_features["token_id"]
+        # feat = []
+        # if 'w2v' in self.word_emb_layers:
+        #     input_data = token_ids.long().squeeze(2)
+        #     feat.append(self.word_emb_layers['w2v'](input_data))
+        # msk = (token_ids != Vocab.PAD)
+        # lens = msk.float().squeeze(2).sum(-1).int()
+        # feat = feat[0]
+        # rnn_state = self.seq_info_encode_layer(feat, lens)
+        # if isinstance(rnn_state, (tuple, list)):
+        #     rnn_state = rnn_state[0]
+
+        # # ret_feat = []
+        # # for i in range(lens.shape[0]):
+        # #     tmp_feat = rnn_state[i][:lens[i]]
+        # #     ret_feat.append(tmp_feat)
+
+        # # ret_feat = torch.cat(ret_feat, 0)
+
+        # batch_gd.batch_node_features["node_feat"] = rnn_state
+
+        # return batch_gd
+
+
+
+
+
+        # new code
+        feat = []
         token_ids = batch_gd.batch_node_features["token_id"]
-        feat = []
         if 'w2v' in self.word_emb_layers:
-            input_data = token_ids.long().squeeze(2)
-            feat.append(self.word_emb_layers['w2v'](input_data))
-        msk = (token_ids != 0)
-        lens = msk.float().squeeze(2).sum(-1).int()
-        feat = feat[0]
-        rnn_state = self.seq_info_encode_layer(feat, lens)
-        if isinstance(rnn_state, (tuple, list)):
-            rnn_state = rnn_state[0]
-        
-        # ret_feat = []
-        # for i in range(lens.shape[0]):
-        #     tmp_feat = rnn_state[i][:lens[i]]
-        #     ret_feat.append(tmp_feat)
+            feat.append(self.word_emb_layers['w2v'](token_ids))
 
-        # ret_feat = torch.cat(ret_feat, 0)
+        # if 'node_edge_bert' in self.word_emb_layers: # multi-token node
+        #     input_data = [[batch_gd.node_attributes[i]['token']] for i in range(batch_gd.get_node_num())]
+        # bert_feat = self.word_emb_layers['node_edge_bert'](input_data)
+                # bert_feat = dropout_fn(bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
+        #     feat.append()
+            #         gd_list = from_batch(batch_gd)
+            # for gd in gd_list:
+            #     for i in range(gd.get_node_num()):
+            #         gd.node_attributes[i]['token']
+            # raw_tokens = [for gd in gd_list]
 
-        batch_gd.batch_node_features["node_feat"] = rnn_state
-
-        return batch_gd
-
-
-
-
-
-        feat = []
-        if 'w2v' in self.word_emb_layers:
-            input_data = batch_gd.node_features['token_id'].long()
-            feat.append(self.word_emb_layers['w2v'](input_data))
-
-        if 'node_edge_bert' in self.word_emb_layers:
-            input_data = [[batch_gd.node_attributes[i]['token']] for i in range(batch_gd.get_node_num())]
-            feat.append(self.word_emb_layers['node_edge_bert'](input_data))
 
         if len(feat) > 0:
             feat = torch.cat(feat, dim=-1)
             feat = dropout_fn(feat, self.word_dropout, shared_axes=[-2], training=self.training)
-            feat = self.node_edge_emb_layer(feat, item_size)
+            node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
+            feat = self.node_edge_emb_layer(feat, node_token_lens)
             if isinstance(feat, (tuple, list)):
                 feat = feat[-1]
 
@@ -290,30 +304,14 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         if self.seq_info_encode_layer is None and 'seq_bert' not in self.word_emb_layers:
             return feat
         else:
-            # unbatching
-            new_feat = []
-            raw_text_data = []
-            start_idx = 0
-            max_num_items = torch.max(num_items).item()
-            for i in range(num_items.shape[0]):
-                if len(feat) > 0:
-                    tmp_feat = feat[start_idx: start_idx + num_items[i].item()]
-                    if num_items[i].item() < max_num_items:
-                        tmp_feat = torch.cat([tmp_feat, to_cuda(torch.zeros(
-                            max_num_items - num_items[i], tmp_feat.shape[1]), self.device)], 0)
-                    new_feat.append(tmp_feat)
+            new_feat = feat
+            if 'seq_bert' in self.word_emb_layers: # single-token node
+                gd_list = from_batch(batch_gd)
+                raw_tokens = [[gd.node_attributes[i]['token'] for i in range(gd.get_node_num())] for gd in gd_list]
+                bert_feat = self.word_emb_layers['seq_bert'](raw_tokens)
+                bert_feat = dropout_fn(bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
 
-                if 'seq_bert' in self.word_emb_layers:
-                    raw_text_data.append([batch_gd.node_attributes[j]['token'] for j in range(start_idx, start_idx + num_items[i].item())])
 
-                start_idx += num_items[i].item()
-
-            # computation
-            if len(new_feat) > 0:
-                new_feat = torch.stack(new_feat, 0)
-
-            if 'seq_bert' in self.word_emb_layers:
-                bert_feat = self.word_emb_layers['seq_bert'](raw_text_data)
                 if len(new_feat) > 0:
                     new_feat = torch.cat([new_feat, bert_feat], -1)
                 else:
@@ -323,26 +321,89 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             if self.seq_info_encode_layer is None:
                 return new_feat
 
-            len_ = num_word_items if num_word_items is not None else num_items
-            rnn_state = self.seq_info_encode_layer(new_feat, len_)
+            rnn_state = self.seq_info_encode_layer(new_feat, torch.LongTensor(batch_gd._batch_num_nodes).to(batch_gd.device))
             if isinstance(rnn_state, (tuple, list)):
                 rnn_state = rnn_state[0]
 
-            # batching
-            ret_feat = []
-            for i in range(len_.shape[0]):
-                tmp_feat = rnn_state[i][:len_[i]]
-                if len(tmp_feat) < num_items[i].item():
-                    prev_feat = new_feat[i, len_[i]: num_items[i]]
-                    if prev_feat.shape[-1] != tmp_feat.shape[-1]:
-                        prev_feat = self.linear_transform(prev_feat)
+            batch_gd.batch_node_features["node_feat"] = rnn_state
 
-                    tmp_feat = torch.cat([tmp_feat, prev_feat], 0)
-                ret_feat.append(tmp_feat)
+            return batch_gd
 
-            ret_feat = torch.cat(ret_feat, 0)
 
-            return ret_feat
+        # # legacy code below
+        # feat = []
+        # if 'w2v' in self.word_emb_layers:
+        #     input_data = batch_gd.node_features['token_id'].long()
+        #     feat.append(self.word_emb_layers['w2v'](input_data))
+
+        # if 'node_edge_bert' in self.word_emb_layers:
+        #     input_data = [[batch_gd.node_attributes[i]['token']] for i in range(batch_gd.get_node_num())]
+        #     feat.append(self.word_emb_layers['node_edge_bert'](input_data))
+
+        # if len(feat) > 0:
+        #     feat = torch.cat(feat, dim=-1)
+        #     feat = dropout_fn(feat, self.word_dropout, shared_axes=[-2], training=self.training)
+        #     feat = self.node_edge_emb_layer(feat, item_size)
+        #     if isinstance(feat, (tuple, list)):
+        #         feat = feat[-1]
+
+
+        # if self.seq_info_encode_layer is None and 'seq_bert' not in self.word_emb_layers:
+        #     return feat
+        # else:
+        #     # unbatching
+        #     new_feat = []
+        #     raw_text_data = []
+        #     start_idx = 0
+        #     max_num_items = torch.max(num_items).item()
+        #     for i in range(num_items.shape[0]):
+        #         if len(feat) > 0:
+        #             tmp_feat = feat[start_idx: start_idx + num_items[i].item()]
+        #             if num_items[i].item() < max_num_items:
+        #                 tmp_feat = torch.cat([tmp_feat, to_cuda(torch.zeros(
+        #                     max_num_items - num_items[i], tmp_feat.shape[1]), self.device)], 0)
+        #             new_feat.append(tmp_feat)
+
+        #         if 'seq_bert' in self.word_emb_layers:
+        #             raw_text_data.append([batch_gd.node_attributes[j]['token'] for j in range(start_idx, start_idx + num_items[i].item())])
+
+        #         start_idx += num_items[i].item()
+
+            # # computation
+            # if len(new_feat) > 0:
+            #     new_feat = torch.stack(new_feat, 0)
+
+            # if 'seq_bert' in self.word_emb_layers:
+            #     bert_feat = self.word_emb_layers['seq_bert'](raw_text_data)
+            #     if len(new_feat) > 0:
+            #         new_feat = torch.cat([new_feat, bert_feat], -1)
+            #     else:
+            #         new_feat = bert_feat
+
+
+            # if self.seq_info_encode_layer is None:
+            #     return new_feat
+
+            # len_ = num_word_items if num_word_items is not None else num_items
+            # rnn_state = self.seq_info_encode_layer(new_feat, len_)
+            # if isinstance(rnn_state, (tuple, list)):
+            #     rnn_state = rnn_state[0]
+
+            # # batching
+            # ret_feat = []
+            # for i in range(len_.shape[0]):
+            #     tmp_feat = rnn_state[i][:len_[i]]
+            #     if len(tmp_feat) < num_items[i].item():
+            #         prev_feat = new_feat[i, len_[i]: num_items[i]]
+            #         if prev_feat.shape[-1] != tmp_feat.shape[-1]:
+            #             prev_feat = self.linear_transform(prev_feat)
+
+            #         tmp_feat = torch.cat([tmp_feat, prev_feat], 0)
+            #     ret_feat.append(tmp_feat)
+
+            # ret_feat = torch.cat(ret_feat, 0)
+
+            # return ret_feat
 
 
 class WordEmbedding(nn.Module):
@@ -376,7 +437,7 @@ class WordEmbedding(nn.Module):
             print('[ Fix word embeddings ]')
             for param in self.word_emb_layer.parameters():
                 param.requires_grad = False
-    
+
     @property
     def embedding_dim(self):
         return self.word_emb_layer.embedding_dim
@@ -510,9 +571,9 @@ class MeanEmbedding(nn.Module):
         torch.Tensor
             The average embedding tensor.
         """
-        sumed_emb = torch.sum(emb, dim=1)
-        len_ = len_.unsqueeze(1).expand_as(sumed_emb).float()
-        return sumed_emb / len_
+        summed = torch.sum(emb, dim=-2)
+        len_ = len_.unsqueeze(-1).expand_as(summed).float()
+        return summed / len_
 
 
 class RNNEmbedding(nn.Module):
