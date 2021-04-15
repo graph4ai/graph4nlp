@@ -124,7 +124,7 @@ class CNN:
 
     def _build_model(self):
 
-        self.model = get_model(self.opt, vocab_model=self.vocab, device=self.device).to(self.device)
+        self.model = get_model(self.opt, vocab_model=self.vocab).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]

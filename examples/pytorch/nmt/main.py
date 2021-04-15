@@ -5,7 +5,7 @@ import resource
 
 from torch.functional import split
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
-resource.setrlimit(resource.RLIMIT_NOFILE, (409600, rlimit[1]))
+# resource.setrlimit(resource.RLIMIT_NOFILE, (409600, rlimit[1]))
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
