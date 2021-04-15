@@ -284,9 +284,10 @@ class DecoderStrategy(StrategyBase):
 
             step = 0
             results, backup_results = [], []
-    
+        # def __init__(self, tokens, log_probs, dec_state, input_feed, num_non_words, enc_attn_weights, use_coverage, states_for_tree = None):
+
             # start_id = self.vocab.get_symbol_idx(self.vocab.start_token)
-            hypos = [Hypothesis([decoder_initial_input], [], decoder_hidden, 1, [], use_coverage=self.use_coverage, states_for_tree=[decoder_hidden])]
+            hypos = [Hypothesis(tokens=[decoder_initial_input], log_probs=[], dec_state=decoder_hidden, input_feed=None, num_non_words=1, enc_attn_weights=[], use_coverage=self.use_coverage, states_for_tree=[decoder_hidden])]
     
             while len(hypos) > 0 and step <= self.max_decoder_step:
                 n_hypos = len(hypos)
@@ -324,7 +325,7 @@ class DecoderStrategy(StrategyBase):
                                             decoder_hidden[1][in_idx, :].unsqueeze(0))
 
                         new_hypo = hypos[in_idx].create_next(token=new_tok, log_prob=new_prob,
-                                                             dec_state=tmp_decoder_state, non_word=non_word,
+                                                             dec_state=tmp_decoder_state, input_feed=None, non_word=non_word,
                                                              add_enc_attn_weights=new_enc_attn_weights)
                         new_hypos.append(new_hypo)
 

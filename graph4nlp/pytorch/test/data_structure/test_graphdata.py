@@ -199,6 +199,57 @@ def test_edge_features():
     assert init_loss > loss
 
 
+def test_scipy_sparse_adj():
+    g_list = []
+    batched_edges = []
+    graph_edges_list = []
+    for i in range(5):
+        g = GraphData()
+        g.add_nodes(10)
+        for j in range(10):
+            g.add_edge(src=j, tgt=(j + 1) % 10)
+            batched_edges.append((i * 10 + j, i * 10 + ((j + 1) % 10)))
+        g.node_features['idx'] = torch.ones(10) * i
+        g.edge_features['idx'] = torch.ones(10) * i
+        graph_edges_list.append(g.get_all_edges())
+        g_list.append(g)
+
+    # Test to_batch
+    batch = to_batch(g_list)
+
+    adj = batch.sparse_adj(batch_view=True)
+    print(adj)
+
+def test_batch_split_features():
+    g_list = []
+    batched_edges = []
+    graph_edges_list = []
+    for i in range(5):
+        g = GraphData()
+        g.add_nodes(10)
+        for j in range(10):
+            g.add_edge(src=j, tgt=(j + 1) % 10)
+            batched_edges.append((i * 10 + j, i * 10 + ((j + 1) % 10)))
+        g.node_features['idx'] = torch.ones(10) * i
+        g.edge_features['idx'] = torch.ones(10) * i
+        graph_edges_list.append(g.get_all_edges())
+        g_list.append(g)
+    g = GraphData()
+    g.add_nodes(11)
+    for j in range(11):
+        g.add_edge(src=j, tgt=(j + 1) % 11)
+    g.node_features['idx'] = torch.ones(11) * 5
+    g.edge_features['idx'] = torch.ones(11) * 5
+    graph_edges_list.append(g.get_all_edges())
+    g_list.append(g)
+
+    # Test to_batch
+    batch = to_batch(g_list)
+    init_feature = torch.rand(size=(61, 100))
+    split_f = batch.split_features(init_feature, 'node')
+    print(split_f)
+
+
 def test_conversion_dgl():
     g = GraphData()
     g.add_nodes(10)
@@ -364,6 +415,7 @@ def test_batch_node_features():
 import matplotlib.pyplot as plt
 import time
 
+
 def test_batch_feat_perf():
     batch_size_list = [5, 10, 20, 40, 60, 100, 150, 200, 400, 600, 800, 1000]
     times = []
@@ -380,11 +432,13 @@ def test_batch_feat_perf():
     plt.title("Time vs batch size")
     plt.show()
 
+
 def test_batch_feat_perf_nnodes():
     batch_size_list = [5, 10, 20, 40, 60, 100, 150, 200, 400, 600, 800, 1000]
     times = []
     for bs in batch_size_list:
-        edge_features, edge_features_2, graphs, node_features, node_features_2 = generate_sequential_graphs(num_nodes=bs)
+        edge_features, edge_features_2, graphs, node_features, node_features_2 = generate_sequential_graphs(
+            num_nodes=bs)
         batch = to_batch(graphs)
         new_batch_edge_features = torch.stack(edge_features_2).unsqueeze(-1)
         start = time.time()
