@@ -12,6 +12,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 import torch.optim as optim
+from torch.utils.data import DataLoader
+
 from stanfordcorenlp import StanfordCoreNLP
 
 from graph4nlp.pytorch.data.data import GraphData, from_batch
@@ -291,19 +293,24 @@ class Jobs:
         else:
             raise NotImplementedError
 
-        self.train_data_loader = DataLoaderForGraphEncoder(
-            use_copy=use_copy, use_share_vocab=use_share_vocab, data=dataset.train, dataset=dataset, mode="train", batch_size=self.opt.batch_size, device=self.device)
-        print("train sample size:", len(self.train_data_loader.data))
-        self.test_data_loader = DataLoaderForGraphEncoder(
-            use_copy=use_copy, use_share_vocab=use_share_vocab, data=dataset.test, dataset=dataset, mode="test", batch_size=1, device=self.device)
-        print("test sample size:", len(self.test_data_loader.data))
+        # self.train_data_loader = DataLoaderForGraphEncoder(
+        #     use_copy=use_copy, use_share_vocab=use_share_vocab, data=dataset.train, dataset=dataset, mode="train", batch_size=self.opt.batch_size, device=self.device)
+        # print("train sample size:", len(self.train_data_loader.data))
+        # self.test_data_loader = DataLoaderForGraphEncoder(
+        #     use_copy=use_copy, use_share_vocab=use_share_vocab, data=dataset.test, dataset=dataset, mode="test", batch_size=1, device=self.device)
 
-        self.src_vocab = self.train_data_loader.src_vocab
-        self.tgt_vocab = self.train_data_loader.tgt_vocab
+        self.train_data_loader = DataLoader(dataset.train, batch_size=self.opt.batch_size, shuffle=True, num_workers=1,
+                                           collate_fn=dataset.collate_fn)
+        self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=1,
+                                          collate_fn=dataset.collate_fn)
+        print("test sample size:", len(dataset.test))
+
+        self.src_vocab = dataset.src_vocab_model
+        self.tgt_vocab = dataset.tgt_vocab_model
         # print(self.src_vocab.symbol2idx)
         # print(self.tgt_vocab.symbol2idx)
         if use_share_vocab:
-            self.share_vocab = self.train_data_loader.share_vocab
+            self.share_vocab = dataset.share_vocab_model
         print(self.share_vocab.symbol2idx)
         print("---Loading data done---\n")
 
@@ -355,9 +362,16 @@ class Jobs:
     def train_epoch(self, epoch):
         from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
         loss_to_print = 0
-        for i in range(self.train_data_loader.num_batch):
+        # for i in range(self.train_data_loader.num_batch):
+        num_batch = len(self.train_data_loader)
+        for step, data in enumerate(self.train_data_loader):
+            batch_graph_list, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
             self.optimizer.zero_grad()
-            batch_graph_list, _, batch_tree_list, batch_original_tree_list = self.train_data_loader.random_batch()
+            # print(batch_graph_list.node_attributes)
+            # print(batch_tree_list[0])
+            # print(batch_original_tree_list[0])
+            # batch_graph_list, _, batch_tree_list, batch_original_tree_list = self.train_data_loader.random_batch()
+            # print(self.train_data_loader.num_batch) 25
             # print(batch_graph_list.device)
             oov_dict = self.prepare_ext_vocab(
                 batch_graph_list, self.src_vocab) if self.use_copy else None
@@ -379,7 +393,7 @@ class Jobs:
                 self.model.parameters(), self.opt.grad_clip)
             self.optimizer.step()
             loss_to_print += loss
-        return loss_to_print/self.train_data_loader.num_batch
+        return loss_to_print/num_batch
 
     def train(self):
         best_acc = -1
@@ -407,7 +421,7 @@ class Jobs:
         max_dec_seq_length = self.opt.max_dec_seq_length
         max_dec_tree_depth = self.opt.max_dec_tree_depth_for_test
         
-        use_copy = self.test_data_loader.use_copy
+        use_copy = self.use_copy
         enc_emb_size = model.src_vocab.embedding_dims
         tgt_emb_size = model.tgt_vocab.embedding_dims
 
@@ -419,34 +433,36 @@ class Jobs:
         reference_list = []
         candidate_list = []
 
-        data = self.test_data_loader.data
+        data_loader = self.test_data_loader
+        for data in data_loader:
+            input_graph_list, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
+        # for i in range(len(data)):
+        #     x = data[i]
 
-        for i in range(len(data)):
-            x = data[i]
-
-            # get input graph list
-            input_graph_list = to_batch([x[0]])
+        #     # get input graph list
+        #     input_graph_list = to_batch([x[0]])
             # if use_copy:
             oov_dict = self.prepare_ext_vocab(
-                input_graph_list, self.test_data_loader.src_vocab)
+                input_graph_list, self.src_vocab)
 
             # get indexed tgt sequence
             if self.use_copy and self.revectorization:
-                reference = oov_dict.get_symbol_idx_for_list(x[1].split())
+                assert len(batch_original_tree_list) == 1
+                reference = oov_dict.get_symbol_idx_for_list(batch_original_tree_list[0].split())
                 # reference = Tree.convert_to_tree(tmp_list, 0, len(tmp_list), oov_dict)
                 eval_vocab = oov_dict
-
             else:
-                reference = model.tgt_vocab.get_symbol_idx_for_list(x[1].split())
-                eval_vocab = self.test_data_loader.tgt_vocab
+                assert len(batch_original_tree_list) == 1
+                reference = model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
+                eval_vocab = self.tgt_vocab
 
             candidate = model.decoder.translate(use_copy,
                                                 enc_hidden_size,
                                                 dec_hidden_size,
                                                 model,
                                                 input_graph_list,
-                                                self.test_data_loader.src_vocab,
-                                                self.test_data_loader.tgt_vocab,
+                                                self.src_vocab,
+                                                self.tgt_vocab,
                                                 device,
                                                 max_dec_seq_length,
                                                 max_dec_tree_depth,
@@ -473,7 +489,7 @@ class Jobs:
                 candidate, eval_vocab)
 
             for c in candidate:
-                if c >= self.test_data_loader.tgt_vocab.vocab_size:
+                if c >= self.tgt_vocab.vocab_size:
                     print("====================")
                     print(oov_dict.symbol2idx)
                     print(cand_str)
