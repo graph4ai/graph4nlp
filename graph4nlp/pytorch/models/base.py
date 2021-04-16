@@ -15,6 +15,7 @@ from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.graph_construction.triples_graph_construction import TriplesBasedGraphConstruction
 
 
 class Graph2XBase(nn.Module):

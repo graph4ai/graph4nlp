@@ -31,14 +31,7 @@ num_workers: 0 # number of data loader workers
 
 
 # Beam search
-<<<<<<< HEAD
 beam_size: 3
 
 gpu: -1
 no_cuda: false
-=======
-beam_size: 15
-
-gpu: -1
-no_cuda: false
->>>>>>> sum_develop_pilot

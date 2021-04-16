@@ -5,15 +5,15 @@ import torch
 
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
+from graph4nlp.pytorch.modules.prediction.generation.GCNGMPRNNDecoder import GCNGMPRNNDecoder
 from .base import Graph2XBase
-from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy_gmp import DecoderStrategy
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
 
+from examples.pytorch.rdf2text.gmp import GMPEncoder
 
-
-class Graph2Seq(Graph2XBase):
+class GraphGMP2Seq(Graph2XBase):
     """
         The graph2seq model consists the following components: 1) node embedding 2) graph embedding 3) decoding.
         Since the full pipeline will consist all parameters, so we will add prefix to the original parameters
@@ -28,7 +28,7 @@ class Graph2Seq(Graph2XBase):
         >>> "It is just a how-to-use example."
         >>> from graph4nlp.pytorch.modules.config import get_basic_args
         >>> opt = get_basic_args(graph_construction_name="node_emb", graph_embedding_name="gat", decoder_name="stdrnn")
-        >>> graph2seq = Graph2Seq.from_args(opt=opt, vocab_model=vocab_model, device=torch.device("cuda:0"))
+        >>> graph2seq = GraphGMP2Seq.from_args(opt=opt, vocab_model=vocab_model, device=torch.device("cuda:0"))
         >>> graph_list = [GraphData() for _ in range(2)]
         >>> tgt_seq = torch.Tensor([[1, 2, 3], [4, 5, 6]])
         >>> seq_out, _, _ = graph2seq(graph_list=graph_list, tgt_seq=tgt_seq)
@@ -41,102 +41,135 @@ class Graph2Seq(Graph2XBase):
         The graph type. Excepted in ["dependency", "constituency", "node_emb", "node_emb_refined"].
     gnn: str
         The graph neural network's name. Expected in ["gcn", "gat", "graphsage", "ggnn"]
+    device: torch.device
+        The device.
     """
     def __init__(self, vocab_model, emb_input_size, emb_hidden_size, embedding_style,
                  graph_type, gnn_direction_option, gnn_input_size, gnn_hidden_size, gnn_output_size,
-                 gnn, gnn_num_layers, dec_hidden_size, share_vocab=False,
+                 gnn, gnn_num_layers, dec_hidden_size,
                  # dropout
                  gnn_feat_drop=0.0, gnn_attn_drop=0.0,
                  emb_fix_word_emb=False, emb_fix_bert_emb=False, emb_word_dropout=0.0, emb_rnn_dropout=0.0,
                  dec_max_decoder_step=50,
-                 dec_use_copy=False, dec_use_coverage=False,
+                 dec_use_copy=False, dec_use_coverage=False, coverage_strategy="sep_sum",
                  dec_graph_pooling_strategy=None, dec_rnn_type="lstm", dec_tgt_emb_as_output_layer=False, dec_teacher_forcing_rate=1.0,
                  dec_attention_type="uniform", dec_fuse_strategy="average", dec_node_type_num=None,
-                 dec_dropout=0.0,
+                 dec_dropout=0.0, device=None,
                  **kwargs):
-        super(Graph2Seq, self).__init__(vocab_model=vocab_model, emb_input_size=emb_input_size, emb_hidden_size=emb_hidden_size,
-                                        graph_type=graph_type, gnn_direction_option=gnn_direction_option,
-                                        gnn=gnn, gnn_num_layers=gnn_num_layers, embedding_style=embedding_style,
-                                        gnn_feats_dropout=gnn_feat_drop,
-                                        gnn_attn_dropout=gnn_attn_drop,
-                                        emb_rnn_dropout=emb_rnn_dropout, emb_fix_word_emb=emb_fix_word_emb,
-                                        emb_fix_bert_emb=emb_fix_bert_emb,
-                                        emb_word_dropout=emb_word_dropout,
-                                        gnn_hidden_size=gnn_hidden_size, gnn_input_size=gnn_input_size,
-                                        gnn_output_size=gnn_output_size,
-                                        **kwargs)
+        super(GraphGMP2Seq, self).__init__( vocab_model=vocab_model, emb_input_size=emb_input_size, emb_hidden_size=emb_hidden_size,
+                                            graph_type=graph_type, gnn_direction_option=gnn_direction_option,
+                                            gnn=gnn, gnn_num_layers=gnn_num_layers, embedding_style=embedding_style,
+                                            device=device, gnn_feats_dropout=gnn_feat_drop,
+                                            gnn_attn_dropout=gnn_attn_drop,
+                                            emb_rnn_dropout=emb_rnn_dropout, emb_fix_word_emb=emb_fix_word_emb,
+                                            emb_fix_bert_emb=emb_fix_bert_emb,
+                                            emb_word_dropout=emb_word_dropout,
+                                            gnn_hidden_size=gnn_hidden_size, gnn_input_size=gnn_input_size,
+                                            gnn_output_size=gnn_output_size,
+                                            **kwargs)
 
         self.use_copy = dec_use_copy
         self.use_coverage = dec_use_coverage
         self.dec_rnn_type = dec_rnn_type
-        self.share_vocab = share_vocab
+
+        self.gmp_encoder = GMPEncoder(gnn_input_size, gnn_hidden_size//2, gnn_output_size, self.word_emb, bigtr=True)
 
         self._build_decoder(rnn_type=dec_rnn_type, decoder_length=dec_max_decoder_step, vocab_model=vocab_model,
-                            rnn_input_size=emb_hidden_size, share_vocab=share_vocab,
+                            word_emb=self.word_emb, rnn_input_size=emb_hidden_size,
                             input_size=2 * gnn_hidden_size if gnn_direction_option == 'bi_sep' else gnn_hidden_size,
                             hidden_size=dec_hidden_size, graph_pooling_strategy=dec_graph_pooling_strategy,
-                            use_copy=dec_use_copy, use_coverage=dec_use_coverage,
+                            use_copy=dec_use_copy, use_coverage=dec_use_coverage, coverage_strategy=coverage_strategy,
                             tgt_emb_as_output_layer=dec_tgt_emb_as_output_layer,
                             attention_type=dec_attention_type, node_type_num=dec_node_type_num,
                             fuse_strategy=dec_fuse_strategy, teacher_forcing_rate=dec_teacher_forcing_rate,
-                            fix_word_emb=emb_fix_word_emb,
                             rnn_dropout=dec_dropout)
 
     def _build_decoder(self, decoder_length, input_size, rnn_input_size, hidden_size, graph_pooling_strategy,
-                       vocab_model, fix_word_emb=False, share_vocab=False,
-                       use_copy=False, use_coverage=False, tgt_emb_as_output_layer=False, teacher_forcing_rate=1.0,
+                       vocab_model, word_emb,
+                       use_copy=False, use_coverage=False, coverage_strategy="sum", tgt_emb_as_output_layer=False, teacher_forcing_rate=1.0,
                        rnn_type="lstm", attention_type="uniform", node_type_num=None, fuse_strategy="average",
                        rnn_dropout=0.2):
-        if share_vocab and self.enc_word_emb is not None:
-            self.dec_word_emb = self.enc_word_emb
-        else:
-            self.dec_word_emb = WordEmbedding(vocab_model.out_word_vocab.embeddings.shape[0],
-                                              vocab_model.out_word_vocab.embeddings.shape[1],
-                                              pretrained_word_emb=vocab_model.out_word_vocab.embeddings,
-                                              fix_emb=fix_word_emb)
 
-        self.seq_decoder = StdRNNDecoder(rnn_type=rnn_type, max_decoder_step=decoder_length,
-                                         input_size=input_size,
-                                         hidden_size=hidden_size, graph_pooling_strategy=graph_pooling_strategy,
-                                         word_emb=self.dec_word_emb, vocab=vocab_model.out_word_vocab,
-                                         attention_type=attention_type, fuse_strategy=fuse_strategy,
-                                         node_type_num=node_type_num,
-                                         rnn_emb_input_size=rnn_input_size, use_coverage=use_coverage,
-                                         use_copy=use_copy,
-                                         tgt_emb_as_output_layer=tgt_emb_as_output_layer, dropout=rnn_dropout)
+        self.seq_decoder =  GCNGMPRNNDecoder(rnn_type=rnn_type, max_decoder_step=decoder_length,
+                                             input_size=input_size,
+                                             hidden_size=hidden_size, graph_pooling_strategy=graph_pooling_strategy,
+                                             word_emb=word_emb, vocab=vocab_model.out_word_vocab,
+                                             attention_type=attention_type, fuse_strategy=fuse_strategy,
+                                             node_type_num=node_type_num,
+                                             rnn_emb_input_size=rnn_input_size, use_coverage=use_coverage,
+                                             coverage_strategy=coverage_strategy,
+                                             use_copy=use_copy,
+                                             tgt_emb_as_output_layer=tgt_emb_as_output_layer, dropout=rnn_dropout)
         self.teacher_forcing_rate = teacher_forcing_rate
 
-    def encoder_decoder(self, batch_graph, oov_dict=None, tgt_seq=None):
+    def encoder_decoder(self, batch_graph, old_graph_list, gmp_seqs, gmp_jumps,
+                        oov_dict=None, tgt_seq=None):
         # run GNN
         batch_graph = self.gnn_encoder(batch_graph)
-        batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
+        # run GMP
+        gmp_outputs, gmp_encoder_feature, (gmp_h_max, gmp_c_max), gmp_masks = self.gmp_encoder(gmp_seqs, gmp_jumps)
+        # gmp_level_embs = torch.cat([gmp_h_max[0], gmp_h_max[1]], dim=-1).squeeze()
+
+        graph_list_decoder = from_batch(batch_graph)
+
+        for g, gmp_emb, gmp_seq, gmp_mask in zip(graph_list_decoder, gmp_outputs, gmp_seqs, gmp_masks):
+            g.graph_attributes['gmp_emb'] = gmp_emb
+            g.graph_attributes['gmp_seq'] = gmp_seq[gmp_seq.nonzero()]
+            g.graph_attributes['gmp_mask'] = gmp_mask
+
+        if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
+            for g, g_ori in zip(graph_list_decoder, old_graph_list):
+                g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
         # down-task
-        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(batch_graph, tgt_seq=tgt_seq, teacher_forcing_rate=self.teacher_forcing_rate,
-                                                                    oov_dict=oov_dict)
+        prob, enc_attn_weights, coverage_vectors = self.seq_decoder(graph_list_decoder,
+                                                                    tgt_seq=tgt_seq,
+                                                                    teacher_forcing_rate=self.teacher_forcing_rate,
+                                                                    oov_dict=oov_dict
+                                                                    )
         return prob, enc_attn_weights, coverage_vectors
 
-    def encoder_decoder_beam_search(self, batch_graph, beam_size, topk=1, oov_dict=None):
+    def encoder_decoder_beam_search(self, batch_graph, old_graph_list, gmp_seqs, gmp_jumps, beam_size, topk=1, oov_dict=None):
         generator = DecoderStrategy(beam_size=beam_size, vocab=self.seq_decoder.vocab, rnn_type=self.dec_rnn_type,
                                     decoder=self.seq_decoder, use_copy=self.use_copy,
                                     use_coverage=self.use_coverage)
-        batch_graph = self.graph_topology(batch_graph)
+
         batch_graph = self.gnn_encoder(batch_graph)
-        batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
-        beam_results = generator.generate(graph_list=batch_graph, oov_dict=oov_dict, topk=topk)
+        gmp_outputs, gmp_encoder_feature, (gmp_h_max, gmp_c_max), gmp_masks = self.gmp_encoder(gmp_seqs, gmp_jumps)
+        graph_list_decoder = from_batch(batch_graph)
+
+        for g, gmp_emb, gmp_seq, gmp_mask in zip(graph_list_decoder, gmp_outputs, gmp_seqs, gmp_masks):
+            g.graph_attributes['gmp_emb'] = gmp_emb
+            g.graph_attributes['gmp_seq'] = gmp_seq[gmp_seq.nonzero()]
+            g.graph_attributes['gmp_mask'] = gmp_mask
+
+        # batch_graph = self.gnn_encoder(batch_graph)
+        # batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
+        # graph_list_decoder = from_batch(batch_graph)
+        # if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
+        #     for g, g_ori in zip(graph_list_decoder, old_graph_list):
+        #         g.node_features['token_id_oov'] = g_ori.node_features['token_id_oov']
+
+
+        beam_results = generator.generate(graph_list=graph_list_decoder, oov_dict=oov_dict, topk=topk)
+        # beam_results = generator._beam_search(gmp_outputs, src_seq=gmp_seq, oov_dict=oov_dict, topk=topk, beam_size=beam_size)
         return beam_results
 
-    def forward(self, batch_graph, tgt_seq=None, oov_dict=None):
-        batch_graph = self.graph_topology(batch_graph)
-        return self.encoder_decoder(batch_graph=batch_graph, oov_dict=oov_dict, tgt_seq=tgt_seq)
+    def forward(self, graph_list, tgt_seq=None, oov_dict=None):
+        batch_graph = self.graph_topology(graph_list)
+        # if torch.isnan(batch_graph.node_features['node_feat'].max()).item():
+        #     a = 0
+        #     batch_graph = self.graph_topology(graph_list)
+        return self.encoder_decoder(batch_graph=batch_graph, old_graph_list=graph_list,
+                                    oov_dict=oov_dict, tgt_seq=tgt_seq)
 
-    def translate(self, batch_graph, beam_size, topk=1, oov_dict=None):
+    def translate(self, graph_list, beam_size, topk=1, oov_dict=None):
         """
             Decoding with the support of beam_search.
             Specifically, when ``beam_size`` is 1, it is equal to greedy search.
         Parameters
         ----------
-        batch_graph: list[GraphData]
+        graph_list: list[GraphData]
             The graph input
         beam_size: int
             The beam width. When it is 1, the output is equal to greedy search's output.
@@ -152,11 +185,12 @@ class Graph2Seq(Graph2XBase):
             The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes.
         """
 
-        batch_graph = self.graph_topology(batch_graph)
-        return self.encoder_decoder_beam_search(batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict)
+        batch_graph = self.graph_topology(graph_list)
+        return self.encoder_decoder_beam_search(batch_graph=batch_graph, old_graph_list=graph_list, beam_size=beam_size,
+                                                topk=topk, oov_dict=oov_dict)
 
     @classmethod
-    def from_args(cls, opt, vocab_model):
+    def from_args(cls, opt, vocab_model, device):
         """
             The function for building ``Graph2Seq`` model.
         Parameters
@@ -165,6 +199,8 @@ class Graph2Seq(Graph2XBase):
             The configuration dict. It should has the same hierarchy and keys as the template.
         vocab_model: VocabModel
             The vocabulary.
+        device: torch.device
+            The device.
 
         Returns
         -------
@@ -177,9 +213,8 @@ class Graph2Seq(Graph2XBase):
         args = (copy.deepcopy(emb_args))
         args.update(gnn_args)
         args.update(dec_args)
-        args["share_vocab"] = opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
 
-        return cls(vocab_model=vocab_model, **args)
+        return cls(vocab_model=vocab_model, device=device, **args)
 
     @staticmethod
     def _get_decoder_params(opt):

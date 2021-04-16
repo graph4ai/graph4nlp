@@ -11,7 +11,7 @@ graph_construction_args:
   graph_construction_share:
     graph_type: 'dependency'
     root_dir: 'examples/pytorch/summarization/cnn'
-    topology_subdir: 'DependencyGraph0'
+    topology_subdir: 'DependencyGraph'
     thread_number: 4
     port: 9000
     timeout: 15000

@@ -23,10 +23,7 @@ from ...modules.utils.generic_utils import *
 from ...modules.graph_embedding.gcn import GCN
 from ...data.data import GraphData
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-
-import warnings
-warnings.filterwarnings("ignore")
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def accuracy(logits, labels):
@@ -41,44 +38,6 @@ def evaluate(model, g, labels, mask):
         logits = logits[mask]
         labels = labels[mask]
         return accuracy(logits, labels)
-
-# import torch_geometric.transforms as T
-# from torch_geometric.nn import GCNConv, SAGEConv
-
-# class GCN(torch.nn.Module):
-#     def __init__(self, num_layers, in_channels, hidden_channels, out_channels,
-#                  dropout):
-#         super(GCN, self).__init__()
-#
-#         self.convs = torch.nn.ModuleList()
-#         self.convs.append(GCNConv(in_channels, hidden_channels, cached=True))
-#         self.bns = torch.nn.ModuleList()
-#         self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
-#         for _ in range(num_layers - 2):
-#             self.convs.append(
-#                 GCNConv(hidden_channels, hidden_channels, cached=True))
-#             self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
-#         self.convs.append(GCNConv(hidden_channels, out_channels, cached=True))
-#
-#         self.dropout = dropout
-#
-#     def reset_parameters(self):
-#         for conv in self.convs:
-#             conv.reset_parameters()
-#         for bn in self.bns:
-#             bn.reset_parameters()
-#
-#     def forward(self, graph):
-#         x = graph.node_features['node_feat']
-#         adj_t = graph.graph_attributes['adj_t']
-#         for i, conv in enumerate(self.convs[:-1]):
-#             x = conv(x, adj_t)
-#             x = self.bns[i](x)
-#             x = F.relu(x)
-#             x = F.dropout(x, p=self.dropout, training=self.training)
-#         x = self.convs[-1](x, adj_t)
-#         return x.log_softmax(dim=-1)
-
 
 class GNNClassifier(nn.Module):
     def __init__(self,
@@ -118,7 +77,6 @@ class GNNClassifier(nn.Module):
         if self.direction_option == 'bi_sep':
             logits = self.fc(F.elu(logits))
 
-        # return logits.log_softmax(dim=-1)
         return logits
 
 def prepare_dgl_graph_data(args):
@@ -189,8 +147,6 @@ def prepare_ogbn_graph_data(args):
     # no duplicate self loop will be added for nodes already having self loops
     new_g = dgl.transform.add_self_loop(g)
 
-    adj = torch.stack(g.edges())
-
     num_feats = features.shape[1]
     n_classes = labels.max().item() + 1
     n_edges = new_g.number_of_edges()
@@ -213,8 +169,7 @@ def prepare_ogbn_graph_data(args):
             'labels': labels,
             'num_feats': num_feats,
             'n_classes': n_classes,
-            'n_edges': n_edges,
-            'adj': adj}
+            'n_edges': n_edges}
 
     return data
 
@@ -232,7 +187,6 @@ def main(args, seed):
                              data['val_mask'], data['test_mask'], data['labels'], \
                              data['num_feats'], data['n_classes'], data['n_edges']
 
-    adj = data['adj']
 
     # Configure
     np.random.seed(seed)
@@ -252,8 +206,6 @@ def main(args, seed):
     val_mask = val_mask.to(device)
     test_mask = test_mask.to(device)
 
-    adj = adj.to(device)
-
     dgl_graph = dgl_graph.to(device)
 
     dgl_graph.ndata['node_feat'] = features
@@ -265,7 +217,6 @@ def main(args, seed):
     g.edge_features['edge_weight'] = torch.Tensor([1] * g.get_edge_num()).float().view(-1, 1).to(device)
     g.edge_features['reverse_edge_weight'] = torch.Tensor([1] * g.get_edge_num()).float().view(-1, 1).to(
         device)
-    g.graph_attributes['adj_t'] = adj
     g = g.to(device)
 
     # create model
@@ -278,12 +229,6 @@ def main(args, seed):
                           activation=F.elu,
                           use_edge_weight=False)
 
-    # model = GCN(args.num_layers,
-    #             num_feats,
-    #             args.num_hidden,
-    #             n_classes,
-    #             args.feat_drop)
-
 
     print(model)
     model.to(device)
@@ -292,11 +237,10 @@ def main(args, seed):
         stopper = EarlyStopping('{}.{}'.format(args.save_model_path, seed), patience=args.patience)
 
     loss_fcn = torch.nn.CrossEntropyLoss()
-    # loss_fcn = torch.nn.NLLLoss()
 
     # use optimizer
     optimizer = torch.optim.Adam(
-        model.parameters(), lr=args.lr)
+        model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
     # initialize graph
     dur = []
@@ -400,15 +344,3 @@ if __name__ == '__main__':
         grid_search_main(config)
     else:
         multi_run(config)
-
-"""
-fairseq-preprocess \
-  --source-lang "source" \
-  --target-lang "target" \
-  --trainpref "${TASK}/train.bpe" \
-  --validpref "${TASK}/val.bpe" \
-  --destdir "${TASK}-bin/" \
-  --workers 60 \
-  --srcdict dict.txt \
-  --tgtdict dict.txt;
-"""

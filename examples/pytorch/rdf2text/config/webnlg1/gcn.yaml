@@ -55,7 +55,7 @@ graph_embedding_args:
     bias: true
     activation: "relu"
     allow_zero_in_degree: false
-    use_edge_weight: false
+    use_edge_weight: true
 
 #  graph_embedding_private:
 #    heads: [2, 2, 1]
