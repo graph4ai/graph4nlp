@@ -9,10 +9,7 @@ import numpy as np
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from .dataset import CNNDataset
-from .model_g2s import Graph2seq
 from graph4nlp.pytorch.modules.graph_construction import *
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
