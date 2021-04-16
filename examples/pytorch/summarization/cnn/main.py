@@ -299,8 +299,8 @@ class ModelHandler:
                 else:
                     oov_dict = None
                     ref_dict = self.vocab.out_word_vocab
-
-                prob = self.model.g2s.encoder_decoder_beam_search(data['graph_data'],
+                batch_graph = self.model.g2s.graph_topology(data['graph_data'])
+                prob = self.model.g2s.encoder_decoder_beam_search(batch_graph,
                                                                   self.config['beam_size'],
                                                                   topk=1,
                                                                   oov_dict=oov_dict)
