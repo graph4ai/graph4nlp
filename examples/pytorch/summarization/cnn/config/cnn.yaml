@@ -35,8 +35,3 @@ beam_size: 15
 
 gpu: -1
 no_cuda: false
-
-# fairseq-preprocess --source-lang "input" --target-lang "output" --trainpref $TEXT/train --validpref $TEXT/val --testpref $TEXT/test --destdir data-bin/cnn_pre
-
-#"""
-#CUDA_VISIBLE_DEVICES=2 fairseq-train data-bin/cnn_pre --optimizer adam --lr 0.005 --lr-shrink 0.5 --max-tokens 12000 --arch lstm_wiseman_iwslt_de_en --save-dir checkpoints/lstm"""

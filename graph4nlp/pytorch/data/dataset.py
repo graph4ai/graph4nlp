@@ -873,6 +873,9 @@ class TextToTreeDataset(Dataset):
 
         self.src_vocab_model = src_vocab_model
         self.tgt_vocab_model = tgt_vocab_model
+        if self.share_vocab:
+            self.share_vocab_model = src_vocab_model
+
         return self.src_vocab_model
 
     def vectorization(self, data_items):
@@ -894,9 +897,18 @@ class TextToTreeDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TreeDataItem]):
-        graph_data = [deepcopy(item.graph) for item in data_list]
+        graph_data = [item.graph for item in data_list]
+        graph_data = to_batch(graph_data)
+
         output_tree_list = [deepcopy(item.output_tree) for item in data_list]
-        return [graph_data, output_tree_list]
+        original_sentence_list = [deepcopy(item.output_text) for item in data_list]
+
+        return {
+            "graph_data": graph_data,
+            "dec_tree_batch": output_tree_list,
+            "original_dec_tree_batch": original_sentence_list
+        }
+
 
 
 class KGDataItem(DataItem):
