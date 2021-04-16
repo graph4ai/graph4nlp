@@ -17,7 +17,6 @@ import torch.nn as nn
 
 from torch.utils.data import DataLoader
 import torch.optim as optim
-# from .config_g2s import get_args
 from .utils import get_log, wordid2str
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
 from graph4nlp.pytorch.data.data import from_batch, GraphData
