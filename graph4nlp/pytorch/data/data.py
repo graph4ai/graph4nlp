@@ -9,10 +9,9 @@ import warnings
 from collections import namedtuple
 
 import dgl
-import numpy as np
 import scipy.sparse
 import torch
-from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
+from torch.nn.utils.rnn import pad_sequence
 
 from .utils import SizeMismatchException, EdgeNotFoundException
 from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list
@@ -211,7 +210,7 @@ class GraphData(object):
 
             assert isinstance(value, torch.Tensor), "`{}' is not a tensor. Node features are expected to be tensor."
 
-            value_on_device = value.to(self.device)
+            value_on_device = value
             if key not in self._node_features or self._node_features[key] is None:
                 self._node_features[key] = value_on_device
             else:
@@ -503,6 +502,8 @@ class GraphData(object):
     def to_dgl(self) -> dgl.DGLGraph:
         """
         Convert to dgl.DGLGraph
+        Note that there will be some information loss when calling this funciton, e.g. the batch-related information
+        will not be copied to DGLGraph since it is only intended for computation.
 
         Returns
         -------
@@ -580,12 +581,47 @@ class GraphData(object):
             ret[u][v] = 1
         return ret
 
-    def scipy_sparse_adj(self):
-        row = np.array(self._edge_indices[0])
-        col = np.array(self._edge_indices[1])
-        data = np.ones(self.get_edge_num())
-        matrix = scipy.sparse.coo_matrix((data, (row, col)), shape=(self.get_node_num(), self.get_node_num()))
-        return matrix
+    def sparse_adj(self, batch_view=False):
+        """
+        Return the scipy.sparse.coo_matrix form of the adjacency matrix
+        Parameters
+        ----------
+        batch_view: bool
+            Whether to return the split view of the adjacency matrix. Return a list of COO matrix if True
+
+        Returns
+        -------
+        torch.sparse_coo_tensor or list of torch.sparse_coo_tensor
+        """
+        row = torch.tensor(self._edge_indices[0]).to(self.device)
+        col = torch.tensor(self._edge_indices[1]).to(self.device)
+        data = torch.ones(self.get_edge_num()).to(self.device)
+        if not batch_view:
+            indices = torch.stack([row, col])
+            matrix = torch.sparse_coo_tensor(indices=indices, values=data,
+                                             size=(self.get_node_num(), self.get_node_num()))
+            return matrix
+        else:
+            if self._is_batch is not True:
+                raise Exception("Cannot enable batch view of COO adjacency matrix on a non-batch graph.")
+            matrices = []
+            cum_num_edges = 0
+            cum_num_nodes = 0
+            for i in range(self.batch_size):
+                num_edges = self._batch_num_edges[i]
+                num_nodes = self._batch_num_nodes[i]
+                # Slicing the matrix one by one
+                cur_row = row[cum_num_edges:cum_num_edges + num_edges]
+                cur_col = col[cum_num_edges:cum_num_edges + num_edges]
+                cur_data = data[cum_num_nodes:cum_num_nodes + num_nodes]
+                cur_row -= cum_num_nodes
+                cur_col -= cum_num_nodes
+                indices = torch.stack([cur_row, cur_col])
+                cur_matrix = torch.sparse_coo_tensor(indices=indices, values=cur_data, size=(num_nodes, num_nodes))
+                matrices.append(cur_matrix)
+                cum_num_edges += num_edges
+                cum_num_nodes += num_nodes
+            return matrices
 
     def from_graphdata(self, src):
         """Build a clone from a source GraphData"""
@@ -734,6 +770,43 @@ class GraphData(object):
                                                  split_size_or_sections=self._batch_num_edges)
         return edge_features
 
+    def split_features(self, input_tensor: torch.Tensor, type='node') -> torch.Tensor:
+        """
+        Convert a tensor from [N, *] to [B, N_max, *] with zero padding according to the batch information stored in
+        the graph.
+        Parameters
+        ----------
+        input_tensor: torch.Tensor
+        The original tensor to be split.
+        type: str
+        'node' or 'edge'. Indicates the source of batch information.
+        Returns
+        -------
+        torch.Tensor
+        The split tensor.
+        """
+        input_tensor = input_tensor.to(self.device)
+        assert self._is_batch, "Cannot invoke `batch_split` method on a non-batch graph."
+        if type == 'node':
+            info_src = self._batch_num_nodes
+        elif type == 'edge':
+            info_src = self._batch_num_edges
+        else:
+            raise NotImplementedError("Currently only 'node' and 'edge' is accepted in GraphData.split_features().")
+        num_instance = 0
+        for number in info_src:
+            num_instance += number
+        assert num_instance == input_tensor.shape[0], "Number of instances " \
+                                                      "doesn't match: The graph " \
+                                                      "has {} instances while the input " \
+                                                      "contains {}".format(num_instance, input_tensor.shape[0])
+        n_max = max(info_src)
+        output = torch.zeros(size=(self.batch_size, n_max, *input_tensor.shape[1:])).to(self.device)
+        split_input = torch.split(tensor=input_tensor, split_size_or_sections=info_src)
+        for i in range(self.batch_size):
+            output[i, :info_src[i]] = split_input[i]
+        return output
+
 
 def from_dgl(g: dgl.DGLGraph) -> GraphData:
     """
@@ -778,7 +851,9 @@ def to_batch(graphs: list = None) -> GraphData:
     big_graph._is_batch = True
     big_graph.device = graphs[0].device
 
-    total_num_nodes = sum([g.get_node_num() for g in graphs])
+    total_num_nodes = 0
+    for g in graphs:
+        total_num_nodes += g.get_node_num()
 
     # Step 1: Add nodes
     big_graph.add_nodes(total_num_nodes)
@@ -846,10 +921,10 @@ def to_batch(graphs: list = None) -> GraphData:
 
     # Step 7: Batch information preparation
     big_graph.batch_size = len(graphs)
-    # big_graph.batch = sum([[i] * graphs[i].get_node_num() for i in range(len(graphs))], start=[])
-    big_graph.batch = []
-    for tmp in [[i] * graphs[i].get_node_num() for i in range(len(graphs))]:
-        big_graph.batch.extend(tmp)
+    batch_numbers = []
+    for i in range(len(graphs)):
+        batch_numbers.extend([i] * graphs[i].get_node_num())
+    big_graph.batch = batch_numbers
     big_graph._batch_num_nodes = [g.get_node_num() for g in graphs]
     big_graph._batch_num_edges = [g.get_edge_num() for g in graphs]
 

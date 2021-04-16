@@ -47,7 +47,7 @@ random.shuffle(examples)
 # train_30 = examples[:30]
 # train_3k = examples[:3000]
 train_1w = examples[:10000]
-# train_3w = examples[:30000]
+train_3w = examples[:30000]
 # train_9w = examples[:90000]
 val = examples[-6000:-3000]
 test = examples[-3000:]

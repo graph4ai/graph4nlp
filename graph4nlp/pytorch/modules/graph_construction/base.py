@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 from .embedding_construction import EmbeddingConstruction
 from ..utils.constants import INF
-from ..utils.generic_utils import normalize_sparse_adj, sparse_mx_to_torch_sparse_tensor, to_cuda
+from ..utils.generic_utils import normalize_sparse_adj, sparse_mx_to_torch_sparse_tensor
 from ..utils.constants import VERY_SMALL_NUMBER
 
 
@@ -33,8 +33,6 @@ class GraphConstructionBase(nn.Module):
         Dropout ratio for word embedding, default: ``None``.
     rnn_dropout : float, optional
         Dropout ratio for RNN embedding, default: ``None``.
-    device : torch.device, optional
-        Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
     def __init__(self,
                 word_vocab,
@@ -43,8 +41,7 @@ class GraphConstructionBase(nn.Module):
                 fix_word_emb=True,
                 fix_bert_emb=True,
                 word_dropout=None,
-                rnn_dropout=None,
-                device=None):
+                rnn_dropout=None):
         super(GraphConstructionBase, self).__init__()
         self.embedding_layer = EmbeddingConstruction(word_vocab,
                                         embedding_styles['single_token_item'],
@@ -56,8 +53,7 @@ class GraphConstructionBase(nn.Module):
                                         bert_model_name=embedding_styles.get('bert_model_name', 'bert-base-uncased'),
                                         bert_lower_case=embedding_styles.get('bert_lower_case', True),
                                         word_dropout=word_dropout,
-                                        rnn_dropout=rnn_dropout,
-                                        device=device)
+                                        rnn_dropout=rnn_dropout)
 
     def forward(self, raw_text_data, **kwargs):
         """Compute graph topology and initial node/edge embeddings.
@@ -130,20 +126,17 @@ class StaticGraphConstructionBase(GraphConstructionBase):
         Dropout ratio for word embedding, default: ``None``.
     rnn_dropout : float, optional
         Dropout ratio for RNN embedding, default: ``None``.
-    device : torch.device, optional
-        Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
 
     def __init__(self, word_vocab, embedding_styles, hidden_size,
-                 fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
+                 fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None):
         super(StaticGraphConstructionBase, self).__init__(word_vocab,
                                                            embedding_styles,
                                                            hidden_size,
                                                            fix_word_emb=fix_word_emb,
                                                            fix_bert_emb=fix_bert_emb,
                                                            word_dropout=word_dropout,
-                                                           rnn_dropout=rnn_dropout,
-                                                           device=device)
+                                                           rnn_dropout=rnn_dropout)
 
     def add_vocab(self, **kwargs):
         raise NotImplementedError()
@@ -217,8 +210,6 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         Dropout ratio for word embedding, default: ``None``.
     rnn_dropout : float, optional
         Dropout ratio for RNN embedding, default: ``None``.
-    device : torch.device, optional
-        Specify computation device (e.g., CPU), default: ``None`` for using CPU.
     """
     def __init__(self,
                 word_vocab,
@@ -235,8 +226,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                 fix_word_emb=False,
                 fix_bert_emb=False,
                 word_dropout=None,
-                rnn_dropout=None,
-                device=None):
+                rnn_dropout=None):
         super(DynamicGraphConstructionBase, self).__init__(
                                                     word_vocab,
                                                     embedding_styles,
@@ -244,11 +234,9 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                                                     fix_word_emb=fix_word_emb,
                                                     fix_bert_emb=fix_bert_emb,
                                                     word_dropout=word_dropout,
-                                                    rnn_dropout=rnn_dropout,
-                                                    device=device)
+                                                    rnn_dropout=rnn_dropout)
         assert top_k_neigh is None or epsilon_neigh is None, \
             'top_k_neigh and epsilon_neigh cannot be activated at the same time!'
-        self.device = device
         self.top_k_neigh = top_k_neigh
         self.epsilon_neigh = epsilon_neigh
         self.sim_metric_type = sim_metric_type
@@ -323,20 +311,20 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         """
         raise NotImplementedError()
 
-    def embedding(self, feat, **kwargs):
-        """Compute initial node/edge embeddings.
+    def embedding(self, batch_graph):
+        """Compute initial node embeddings.
 
         Parameters
         ----------
-        **kwargs
-            Extra parameters.
+        graph : GraphData
+            The input graph data.
 
-        Raises
-        ------
-        NotImplementedError
-            NotImplementedError.
+        Returns
+        -------
+        torch.Tensor
+            The initial node embeddings.
         """
-        raise NotImplementedError()
+        return self.embedding_layer(batch_graph)
 
     def compute_similarity_metric(self, node_emb, node_mask=None):
         """Compute similarity metric.
@@ -432,18 +420,16 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         """
         graph_reg = 0
         if not self.smoothness_ratio in (0, None):
-            L = torch.diagflat(torch.sum(adj, -1)) - adj
-            graph_reg += self.smoothness_ratio / int(np.prod(adj.shape))\
-                    * torch.trace(torch.mm(node_feat.transpose(-1, -2), torch.mm(L, node_feat)))
+            for i in range(adj.shape[0]):
+                L = torch.diagflat(torch.sum(adj[i], -1)) - adj[i]
+                graph_reg += self.smoothness_ratio * torch.trace(torch.mm(node_feat[i].transpose(-1, -2), torch.mm(L, node_feat[i]))) / int(np.prod(adj.shape))
 
         if not self.connectivity_ratio in (0, None):
-            ones_vec = to_cuda(torch.ones(adj.size(-1)), self.device)
-            graph_reg += -self.connectivity_ratio / adj.shape[-1]\
-                    * torch.mm(ones_vec.unsqueeze(0), torch.log(torch.mm(adj, ones_vec.unsqueeze(-1)) + VERY_SMALL_NUMBER)).squeeze()
+            ones_vec = torch.ones(adj.shape[:-1]).to(adj.device)
+            graph_reg += -self.connectivity_ratio * torch.matmul(ones_vec.unsqueeze(1), torch.log(torch.matmul(adj, ones_vec.unsqueeze(-1)) + VERY_SMALL_NUMBER)).sum() / adj.shape[0] / adj.shape[-1]
 
         if not self.sparsity_ratio in (0, None):
-            graph_reg += self.sparsity_ratio / int(np.prod(adj.shape))\
-                    * torch.sum(torch.pow(adj, 2))
+            graph_reg += self.sparsity_ratio * torch.sum(torch.pow(adj, 2)) / int(np.prod(adj.shape))
 
         return graph_reg
 
@@ -464,7 +450,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         """
         top_k_neigh = min(top_k_neigh, attention.size(-1))
         knn_val, knn_ind = torch.topk(attention, top_k_neigh, dim=-1)
-        weighted_adj = to_cuda((self.mask_off_val * torch.ones_like(attention)).scatter_(-1, knn_ind, knn_val), self.device)
+        weighted_adj = (self.mask_off_val * torch.ones_like(attention)).scatter_(-1, knn_ind, knn_val).to(attention.device)
         weighted_adj[weighted_adj <= 0] = 0
         return weighted_adj
 
@@ -532,7 +518,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             node_mask.append(sparse.coo_matrix(np.ones((graph_node_num, graph_node_num))))
 
         node_mask = sparse.block_diag(node_mask)
-        node_mask = to_cuda(sparse_mx_to_torch_sparse_tensor(node_mask).to_dense(), self.device)
+        node_mask = sparse_mx_to_torch_sparse_tensor(node_mask).to_dense().to(num_nodes.device)
 
         return node_mask
 
@@ -549,8 +535,8 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         torch.Tensor
             The symmetric normalized Laplacian matrix.
         """
-        adj = graph.scipy_sparse_adj()
+        adj = graph.scipy_sparse_adj(batch_view=True)
         adj = normalize_sparse_adj(adj)
-        adj = to_cuda(sparse_mx_to_torch_sparse_tensor(adj), self.device)
+        adj = sparse_mx_to_torch_sparse_tensor(adj).to(graph.device)
 
         return adj

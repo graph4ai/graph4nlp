@@ -1,6 +1,6 @@
 # Data
 dataset: 'squad-split2'
-pre_word_emb_file: '/home/shiina/data/.vector_cache/glove.6B.300d.txt' # path to the pretrained word embedding file
+pre_word_emb_file: '/Users/hugo/Documents/Work/Research/Resources/glove-vectors/glove.840B.300d.txt' # path to the pretrained word embedding file
 out_dir: 'out/squad_split2/qg_ckpt_dep_ggnn'
 
 # Preprocessing
@@ -31,7 +31,7 @@ num_workers: 10 # number of data loader workers
 
 
 # Beam search
-beam_size: 1
+beam_size: 5
 
 gpu: -1
 no_cuda: false

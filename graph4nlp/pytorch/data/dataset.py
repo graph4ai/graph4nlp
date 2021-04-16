@@ -557,7 +557,7 @@ class Dataset(torch.utils.data.Dataset):
                                                                edge_strategy=edge_strategy,
                                                                verbase=False,
                                                                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
-                        
+
                         item.graph = graph
                     except Exception as msg:
                         pop_idxs.append(idx)
@@ -644,14 +644,15 @@ class Dataset(torch.utils.data.Dataset):
         os.makedirs(self.processed_dir, exist_ok=True)
 
         self.read_raw_data()
+        
+        self.train = self.build_topology(self.train)
 
-        self.train = self.build_topology(self.train[:2])
-        self.test = self.build_topology(self.test[:2])
+        self.test = self.build_topology(self.test)
         if 'val' in self.__dict__:
-            self.val = self.build_topology(self.val[:2])
-
+            self.val = self.build_topology(self.val)
+        
         self.build_vocab()
-
+   
         self.vectorization(self.train)
         self.vectorization(self.test)
         if 'val' in self.__dict__:
@@ -769,20 +770,21 @@ class Text2TextDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
-        graph_data = [deepcopy(item.graph) for item in data_list]
+        graph_list = [item.graph for item in data_list]
+        graph_data = to_batch(graph_list)
 
         output_numpy = [deepcopy(item.output_np) for item in data_list]
         output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
 
-        from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
-        max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
-        if max_num_tokens_a_node>1:
-            for x in data_list:
-                x.graph.node_features['token_id'] = torch.from_numpy(
-                    pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
-                                x.graph.node_features['token_id'].size()[0],
-                                max_num_tokens_a_node)).long()
+        # from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
+        # max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
+        # if max_num_tokens_a_node>1:
+        #     for x in data_list:
+        #         x.graph.node_features['token_id'] = torch.from_numpy(
+        #             pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
+        #                         x.graph.node_features['token_id'].size()[0],
+        #                         max_num_tokens_a_node)).long()
 
         tgt_seq = torch.from_numpy(output_pad).long()
         # return [graph_data, tgt_seq, output_str]
@@ -871,6 +873,9 @@ class TextToTreeDataset(Dataset):
 
         self.src_vocab_model = src_vocab_model
         self.tgt_vocab_model = tgt_vocab_model
+        if self.share_vocab:
+            self.share_vocab_model = src_vocab_model
+
         return self.src_vocab_model
 
     def vectorization(self, data_items):
@@ -892,9 +897,18 @@ class TextToTreeDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TreeDataItem]):
-        graph_data = [deepcopy(item.graph) for item in data_list]
+        graph_data = [item.graph for item in data_list]
+        graph_data = to_batch(graph_data)
+
         output_tree_list = [deepcopy(item.output_tree) for item in data_list]
-        return [graph_data, output_tree_list]
+        original_sentence_list = [deepcopy(item.output_text) for item in data_list]
+
+        return {
+            "graph_data": graph_data,
+            "dec_tree_batch": output_tree_list,
+            "original_dec_tree_batch": original_sentence_list
+        }
+
 
 
 class KGDataItem(DataItem):
@@ -1362,12 +1376,16 @@ class Text2LabelDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2LabelDataItem]):
-        graph_data = [deepcopy(item.graph) for item in data_list]
+        graph_list = [item.graph for item in data_list]
+        graph_data = to_batch(graph_list)
 
         tgt = [deepcopy(item.output) for item in data_list]
         tgt_tensor = torch.LongTensor(tgt)
 
-        return [graph_data, tgt_tensor]
+        return {
+            "graph_data": graph_data,
+            "tgt_tensor": tgt_tensor
+        }
 
 
 class DoubleText2TextDataset(Dataset):
@@ -1591,12 +1609,9 @@ class SequenceLabelingDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [SequenceLabelingDataItem]):
-        tgt_tag = []
-        graph_data = []
-        for item in data_list:
-            # if len(item.graph.node_attributes)== len(item.output_id):
-            graph_data.append(deepcopy(item.graph))
-            tgt_tag.append(deepcopy(item.output_id))
+        graph_list= [item.graph for item in data_list]
+        graph_data=to_batch(graph_list)
+        tgt_tag = [deepcopy(item.output_id) for item in data_list]
 
         # tgt_tags = torch.cat(tgt_tag, dim=0)
         #return [graph_data, tgt_tag]

@@ -22,18 +22,16 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
     """
 
     def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, fix_bert_emb=True, word_dropout=None,
-                 rnn_dropout=None, device=None):
+                 rnn_dropout=None):
         super(DependencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                embedding_styles=embedding_style,
                                                                hidden_size=hidden_size,
                                                                fix_word_emb=fix_word_emb,
                                                                fix_bert_emb=fix_bert_emb,
                                                                word_dropout=word_dropout,
-                                                               rnn_dropout=rnn_dropout,
-                                                               device=device)
+                                                               rnn_dropout=rnn_dropout)
         self.vocab = vocab
         self.verbase = 1
-        self.device = self.embedding_layer.device
 
     def add_vocab(self, g):
         """

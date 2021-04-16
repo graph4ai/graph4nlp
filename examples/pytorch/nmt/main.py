@@ -4,7 +4,7 @@ from random import shuffle
 import resource
 
 from torch.functional import split
-# rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
+rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 # resource.setrlimit(resource.RLIMIT_NOFILE, (409600, rlimit[1]))
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
@@ -123,7 +123,7 @@ class NMT:
                                   "graph_type"],
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
                               dynamic_init_topology_aux_args=None)
-        
+
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True,
                                            num_workers=8,
@@ -191,23 +191,23 @@ class NMT:
         loss_collect = []
         dataloader = self.train_dataloader
         step_all_train = len(dataloader)
-        
+
         for step, data in enumerate(dataloader):
             graph, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             tgt = tgt.to(self.device)
             graph = graph.to(self.device)
             oov_dict = None
-            
-            # if self.use_copy:
-            #     oov_dict, tgt = prepare_ext_vocab(graph_list, self.vocab, gt_str=gt_str, device=self.device)
-            # print(graph.fetch_batching_tensor("token_id").squeeze(-1))
             prob, enc_attn_weights, coverage_vectors = self.model(graph, tgt, oov_dict=oov_dict)
             loss = self.loss(logits=prob, label=tgt, enc_attn_weights=enc_attn_weights,
                              coverage_vectors=coverage_vectors)
 
+            # add graph regularization loss if available
+            if graph.graph_attributes.get('graph_reg', None) is not None:
+                loss = loss + graph.graph_attributes['graph_reg']
+
             loss_collect.append(loss.item())
             self.global_steps += 1
-            
+
             if step % self.opt["loss_display_step"] == 0 and step != 0:
                 self.logger.info("Epoch {}: [{} / {}] loss: {:.3f}".format(epoch, step, step_all_train,
                                                                            np.mean(loss_collect)))
@@ -215,8 +215,8 @@ class NMT:
             self.optimizer.zero_grad()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
-            self.scheduler.step()
             self.optimizer.step()
+            self.scheduler.step()
             self.writer.add_scalar("train/loss", scalar_value=loss.item(), global_step=self.global_steps)
             self.writer.add_scalar("train/lr", scalar_value=self.scheduler.get_lr()[0], global_step=self.global_steps)
 

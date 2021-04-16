@@ -9,7 +9,7 @@ import stanfordcorenlp
 import warnings
 from multiprocessing import Pool
 import numpy as np
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size, pad_2d_vals
 
 from multiprocessing import Process
 import multiprocessing
@@ -69,8 +69,8 @@ class CNNDataset(Text2TextDataset):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
         # return {'train': 'train_300.json', 'val': "train_30.json", 'test': 'train_30.json'}
         # return {'train': 'train_1w.json', 'val': "val.json", 'test': 'test.json'}
-        # return {'train': 'train_3w.json', 'val': "val.json", 'test': 'test.json'}
-        return {'train': 'val.json', 'val': "val.json", 'test': 'test.json'}
+        return {'train': 'train_3w.json', 'val': "val.json", 'test': 'test.json'}
+        # return {'train': 'val.json', 'val': "val.json", 'test': 'test.json'}
 
     @property
     def processed_file_names(self):
@@ -128,3 +128,28 @@ class CNNDataset(Text2TextDataset):
                                               share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
+
+    @staticmethod
+    def collate_fn(data_list: [Text2TextDataItem]):
+        graph_data = [item.graph for item in data_list]
+        max_node_len = 0
+        for graph_item in graph_data:
+            max_node_len = max(max_node_len, graph_item.node_features['token_id'].size()[1])
+        for graph_item in graph_data:
+            token_id_numpy = graph_item.node_features['token_id'].numpy()
+            token_id_pad = pad_2d_vals(token_id_numpy, token_id_numpy.shape[0], max_node_len)
+            graph_item.node_features['token_id'] = torch.from_numpy(token_id_pad).long()
+
+        from graph4nlp.pytorch.data.data import to_batch
+        big_graph = to_batch(graph_data)
+
+        output_numpy = [item.output_np for item in data_list]
+        output_str = [item.output_text.lower().strip() for item in data_list]
+        output_pad = pad_2d_vals_no_size(output_numpy)
+        tgt_seq = torch.from_numpy(output_pad).long()
+
+        return {
+            "graph_data": big_graph,
+            "tgt_seq": tgt_seq,
+            "output_str": output_str
+        }

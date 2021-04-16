@@ -35,7 +35,7 @@ class BeamSearchNode(object):
 
 
 class Hypothesis(object):
-    def __init__(self, tokens, log_probs, dec_state, num_non_words, enc_attn_weights, use_coverage, states_for_tree = None):
+    def __init__(self, tokens, log_probs, dec_state, input_feed, num_non_words, enc_attn_weights, use_coverage, states_for_tree = None):
         self.tokens = tokens
         self.states_for_tree = states_for_tree # to record decoder hidden states to be sent to descendant decoding process.
         self.log_probs = log_probs
@@ -43,6 +43,7 @@ class Hypothesis(object):
         self.num_non_words = num_non_words
         self.enc_attn_weights = enc_attn_weights
         self.use_coverage = use_coverage
+        self.input_feed = input_feed
         if not self.use_coverage:
             self.enc_attn_weights = []
 
@@ -56,7 +57,7 @@ class Hypothesis(object):
     def avg_log_prob(self):
         return sum(self.log_probs) / len(self.log_probs)
 
-    def create_next(self, token, log_prob, dec_state, non_word, add_enc_attn_weights):
+    def create_next(self, token, log_prob, dec_state, input_feed, non_word, add_enc_attn_weights):
         if self.use_coverage:
             assert len(add_enc_attn_weights.shape) == 3
             assert add_enc_attn_weights.shape[0] == 1
@@ -66,10 +67,10 @@ class Hypothesis(object):
         else:
             enc_attn_weights_processed = []
         return Hypothesis(tokens=self.tokens + [token], log_probs=self.log_probs + [log_prob],
-                          dec_state=dec_state,
+                          dec_state=dec_state, input_feed=input_feed,
                           num_non_words=self.num_non_words + 1 if non_word else self.num_non_words,
                           enc_attn_weights=enc_attn_weights_processed, use_coverage=self.use_coverage,
-                          states_for_tree=self.states_for_tree + [dec_state])
+                          states_for_tree=self.states_for_tree + [dec_state] if self.states_for_tree is not None else None)
 
 
 
@@ -85,7 +86,7 @@ class DecoderStrategy(StrategyBase):
         self.use_coverage = use_coverage
         self.max_decoder_step = max_decoder_step
 
-    def generate(self, graph_list: list, oov_dict=None, topk=1):
+    def generate(self, graph_list, oov_dict=None, topk=1):
         """
             Generate sequences using beam search.
         Parameters
@@ -119,9 +120,13 @@ class DecoderStrategy(StrategyBase):
 
         decoder_state = self.decoder.get_decoder_init_state(rnn_type=self.rnn_type, batch_size=batch_size,
                                                             content=graph_level_embedding)
+                                                     
+        input_feed = torch.zeros(batch_size, self.decoder.input_feed_size).to(graph_node_embedding.device)
+
 
         batch_results = []
         for batch_idx in range(batch_size):
+            
             if self.rnn_type == "lstm":
                 single_decoder_state = (
                     decoder_state[0][:, batch_idx, :].unsqueeze(1), decoder_state[1][:, batch_idx, :].unsqueeze(1))
@@ -132,14 +137,16 @@ class DecoderStrategy(StrategyBase):
                                           .format(self.rnn_type))
 
             single_graph_node_embedding = graph_node_embedding[batch_idx, :, :].unsqueeze(0).expand(beam_size, -1, -1).contiguous()
-            single_graph_node_mask = graph_node_mask[batch_idx, :].unsqueeze(0).expand(beam_size, -1, -1).contiguous() if graph_node_mask is not None else None
+            
+            single_graph_node_mask = graph_node_mask[batch_idx, :].unsqueeze(0).expand(beam_size, -1).contiguous() if graph_node_mask is not None else None
             single_rnn_node_embedding = rnn_node_embedding[batch_idx, :, :].unsqueeze(
                 0).expand(beam_size, -1, -1).contiguous() if rnn_node_embedding is not None else None
+            single_input_feed = input_feed[batch_idx, :].unsqueeze(0)
 
             step = 0
             results, backup_results = [], []
 
-            hypos = [Hypothesis([self.vocab.SOS], [], single_decoder_state, 1, [], use_coverage=self.use_coverage)]
+            hypos = [Hypothesis(tokens=[self.vocab.SOS], log_probs=[], dec_state=single_decoder_state, input_feed=single_input_feed, num_non_words=1, enc_attn_weights=[], use_coverage=self.use_coverage)]
 
             while len(hypos) > 0 and step <= self.max_decoder_step:
                 n_hypos = len(hypos)
@@ -147,7 +154,7 @@ class DecoderStrategy(StrategyBase):
                     hypos.extend(deepcopy(hypos[-1]) for _ in range(beam_size - n_hypos)) # check deep copy
 
                 decoder_input = torch.tensor([h.tokens[-1] for h in hypos]).to(graph_node_embedding.device)
-
+                input_feed_beam = torch.cat([h.input_feed for h in hypos], dim=0)
                 if self.rnn_type == "lstm":
                     single_decoder_state = (
                         torch.cat([h.dec_state[0] for h in hypos], 1), torch.cat([h.dec_state[1] for h in hypos], 1))
@@ -164,23 +171,41 @@ class DecoderStrategy(StrategyBase):
                 if step > 0  and self.use_coverage:
                     for ii in range(step):
                         coverage_input.append(torch.cat([h.enc_attn_weights[ii] for h in hypos], dim=1))
+                assert decoder_input.shape[0] == beam_size
+                
+                # define inputs
+                decoder_input_pad = decoder_input
+                input_feed_beam_pad = input_feed_beam
+                single_decoder_state_pad = single_decoder_state
+                single_graph_node_mask_pad = single_graph_node_mask
+                single_graph_node_embedding_pad = single_graph_node_embedding
+                single_rnn_node_embedding_pad = single_rnn_node_embedding
 
-                decoder_output, single_decoder_state, dec_attn_scores, _ = \
-                    self.decoder.decode_step(decoder_input=decoder_input, rnn_state=single_decoder_state,
-                                             dec_input_mask=single_graph_node_mask,
-                                             encoder_out=single_graph_node_embedding, rnn_emb=single_rnn_node_embedding,
+
+                decoder_output, input_feed_ret, single_decoder_state, dec_attn_scores, _ = \
+                    self.decoder.decode_step(decoder_input=decoder_input_pad, input_feed=input_feed_beam_pad, rnn_state=single_decoder_state_pad,
+                                             dec_input_mask=single_graph_node_mask_pad,
+                                             encoder_out=single_graph_node_embedding_pad, rnn_emb=single_rnn_node_embedding_pad,
                                              enc_attn_weights_average=coverage_input,
-                                             src_seq=src_seq[batch_idx, :].unsqueeze(0) if self.use_copy else None,
+                                             src_seq=src_seq[batch_idx, :].unsqueeze(0).expand(decoder_input_pad.shape[0], -1) if self.use_copy else None,
                                              oov_dict=oov_dict)
+                decoder_output = decoder_output[:beam_size]
+                input_feed_ret = input_feed_ret[:beam_size]
+                single_decoder_state = (
+                    single_decoder_state[0][:, :beam_size, :],
+                    single_decoder_state[1][:, :beam_size, :]
+                )
+                dec_attn_scores = dec_attn_scores[:beam_size]
+ 
                 decoder_output = torch.log(decoder_output + 1e-31)
                 top_v, top_i = decoder_output.data.topk(beam_size)
-                # print(top_v.shape, decoder_output.shape, dec_attn_scores.shape, "-----")
 
                 new_hypos = []
                 for in_idx in range(n_hypos):
                     for out_idx in range(beam_size):
                         new_tok = top_i[in_idx][out_idx].item()
                         new_prob = top_v[in_idx][out_idx].item()
+                        new_input_feed = input_feed_ret[in_idx, :].unsqueeze(0)
                         new_enc_attn_weights = dec_attn_scores[in_idx, :].unsqueeze(0).unsqueeze(0)
 
                         non_word = new_tok == self.vocab.EOS  # only SOS & EOS don't count
@@ -195,7 +220,7 @@ class DecoderStrategy(StrategyBase):
                             raise NotImplementedError("RNN Type {} is not implemented, expected in ``lstm`` or ``gru``"
                                                       .format(self.rnn_type))
 
-                        new_hypo = hypos[in_idx].create_next(token=new_tok, log_prob=new_prob,
+                        new_hypo = hypos[in_idx].create_next(token=new_tok, log_prob=new_prob, input_feed=new_input_feed,
                                                              dec_state=tmp_decoder_state, non_word=non_word,
                                                              add_enc_attn_weights=new_enc_attn_weights)
                         new_hypos.append(new_hypo)
@@ -259,9 +284,10 @@ class DecoderStrategy(StrategyBase):
 
             step = 0
             results, backup_results = [], []
-    
+        # def __init__(self, tokens, log_probs, dec_state, input_feed, num_non_words, enc_attn_weights, use_coverage, states_for_tree = None):
+
             # start_id = self.vocab.get_symbol_idx(self.vocab.start_token)
-            hypos = [Hypothesis([decoder_initial_input], [], decoder_hidden, 1, [], use_coverage=self.use_coverage, states_for_tree=[decoder_hidden])]
+            hypos = [Hypothesis(tokens=[decoder_initial_input], log_probs=[], dec_state=decoder_hidden, input_feed=None, num_non_words=1, enc_attn_weights=[], use_coverage=self.use_coverage, states_for_tree=[decoder_hidden])]
     
             while len(hypos) > 0 and step <= self.max_decoder_step:
                 n_hypos = len(hypos)
@@ -299,7 +325,7 @@ class DecoderStrategy(StrategyBase):
                                             decoder_hidden[1][in_idx, :].unsqueeze(0))
 
                         new_hypo = hypos[in_idx].create_next(token=new_tok, log_prob=new_prob,
-                                                             dec_state=tmp_decoder_state, non_word=non_word,
+                                                             dec_state=tmp_decoder_state, input_feed=None, non_word=non_word,
                                                              add_enc_attn_weights=new_enc_attn_weights)
                         new_hypos.append(new_hypo)
 

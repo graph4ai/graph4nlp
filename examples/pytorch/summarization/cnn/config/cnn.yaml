@@ -1,6 +1,7 @@
 # Data
 dataset: 'cnn'
-pre_word_emb_file: '../glove/glove.6B.300d.txt' # path to the pretrained word embedding file
+pre_word_emb_file: null # path to the pretrained word embedding file
+#pre_word_emb_file: '../glove/glove.6B.300d.txt' # path to the pretrained word embedding file
 
 # Preprocessing
 top_word_vocab: 70000
@@ -21,7 +22,7 @@ seed: 1234
 batch_size: 50 # batch size
 epochs: 100 # number of maximal training epochs
 grad_clipping: 10
-early_stop_metric: 'BLEU_4'
+early_stop_metric: 'ROUGE'
 patience: 10
 lr: 0.0005 # learning rate
 lr_patience: 2
@@ -30,10 +31,7 @@ num_workers: 0 # number of data loader workers
 
 
 # Beam search
-beam_size: 1
+beam_size: 3
 
 gpu: -1
 no_cuda: false
-
-# /home/wzh/miniconda3/bin:/home/wzh/miniconda3/envs/ghn_dgl/bin:/home/wzh/bin:/home/wzh/.local/bin:/home/wzh/miniconda3/condabin:/usr/local/cuda-10.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:$JAVA_HOME/bin:/snap/bin:/usr/jdk1.8.0_121/bin:/usr/jdk1.8.0_121/jre/bin:/usr/local/apache-maven-3.3.9/bin
-# /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:
