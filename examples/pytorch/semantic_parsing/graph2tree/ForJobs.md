@@ -46,3 +46,6 @@
 | SAGE | bi_fuse | bi_sep | undirected |  
 | ---- | ---- | ---- | ---- |
 | Gynamic_node_emb_refined | 87.9 | 92.9 | 90.0 |  
+
+
+

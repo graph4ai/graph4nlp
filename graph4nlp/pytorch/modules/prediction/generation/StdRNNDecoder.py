@@ -481,7 +481,10 @@ class StdRNNDecoder(RNNDecoderBase):
         # [s_g.node_features["node_emb"] for s_g in graph_list]
         rnn_node_emb = batch_data_dict["rnn_emb"]
 
-        graph_node_mask = (batch_data_dict["token_id"] != 0).squeeze(-1).float() - 1
+        if len(batch_data_dict["token_id"].shape) == 3:
+            graph_node_mask = (torch.sum(batch_data_dict["token_id"], dim=-1) != 0).squeeze(-1).float() - 1
+        else:
+            graph_node_mask = (batch_data_dict["token_id"] != 0).squeeze(-1).float() - 1
 
         if self.use_copy:
             src_seq_ret = graph.batch_node_features["token_id_oov"]
