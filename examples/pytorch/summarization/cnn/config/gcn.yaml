@@ -75,3 +75,4 @@ decoder_args:
 
 
 # screen -S gcn python -m examples.pytorch.summarization.cnn.main -g2s_config examples/pytorch/summarization/cnn/config/gcn.yaml -task_config examples/pytorch/summarization/cnn/config/cnn.yaml
+

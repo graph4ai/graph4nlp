@@ -6,21 +6,18 @@ import time
 import torch.backends.cudnn as cudnn
 import numpy as np
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from .dataset import CNNDataset
-from .model_g2s import Graph2seq
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-
 import torch.nn as nn
 
 from torch.utils.data import DataLoader
 import torch.optim as optim
-# from .config_g2s import get_args
 from .utils import get_log, wordid2str
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
 from graph4nlp.pytorch.data.data import from_batch, GraphData
@@ -45,7 +42,6 @@ def all_to_cuda(data, device=None):
                 data[k] = to_cuda(data[k], device)
 
     return data
-
 
 class SumModel(nn.Module):
     def __init__(self, vocab, config):
@@ -321,7 +317,6 @@ class ModelHandler:
                 pred_collect.extend(pred_str)
                 gt_collect.extend(data['output_str'])
 
-
             if write2file == True:
                 with open('{}/{}_bs{}_pred.txt'.format(self.config['out_dir'],
                                                        self.config['out_dir'].split('/')[-1],
@@ -416,6 +411,7 @@ def main(config):
     # greedy search
     # runner.stopper.load_checkpoint(runner.model)
     # test_scores = runner.evaluate(runner.test_dataloader, write2file=True, part='test')
+
     # beam search
     test_scores = runner.test()
 
