@@ -4,10 +4,10 @@ from random import shuffle
 import resource
 
 from torch.functional import split
-rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
-resource.setrlimit(resource.RLIMIT_NOFILE, (409600, rlimit[1]))
+# rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
+# resource.setrlimit(resource.RLIMIT_NOFILE, (409600, rlimit[1]))
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from examples.pytorch.nmt.dataset import IWSLT14Dataset

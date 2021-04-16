@@ -1,8 +1,6 @@
 # Data
-dataset: 'cnn'
-pre_word_emb_file: null # path to the pretrained word embedding file
-#pre_word_emb_file: '../glove/glove.6B.300d.txt' # path to the pretrained word embedding file
-
+dataset: 'webnlg2'
+pre_word_emb_file: '../glove/glove.6B.300d.txt' # path to the pretrained word embedding file
 
 # Preprocessing
 top_word_vocab: 70000
@@ -23,7 +21,7 @@ seed: 1234
 batch_size: 50 # batch size
 epochs: 100 # number of maximal training epochs
 grad_clipping: 10
-early_stop_metric: 'ROUGE'
+early_stop_metric: 'BLEU_4'
 patience: 10
 lr: 0.0005 # learning rate
 lr_patience: 2
@@ -32,7 +30,7 @@ num_workers: 0 # number of data loader workers
 
 
 # Beam search
-beam_size: 15
+beam_size: 1
 
 gpu: -1
 no_cuda: false

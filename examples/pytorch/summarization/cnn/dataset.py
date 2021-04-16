@@ -70,7 +70,6 @@ class CNNDataset(Text2TextDataset):
         # return {'train': 'train_300.json', 'val': "train_30.json", 'test': 'train_30.json'}
         # return {'train': 'train_1w.json', 'val': "val.json", 'test': 'test.json'}
         return {'train': 'train_3w.json', 'val': "val.json", 'test': 'test.json'}
-        # return {'train': 'val.json', 'val': "val.json", 'test': 'test.json'}
 
     @property
     def processed_file_names(self):

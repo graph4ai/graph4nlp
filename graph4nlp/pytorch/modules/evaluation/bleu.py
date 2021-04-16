@@ -35,9 +35,10 @@ class BLEU(EvaluationMetricBase):
         scores: list[list[float]]
             The specific results for each needed BLEU_n metric.
         """
-        ref_list = [list(map(str.strip, refs)) for refs in zip(ground_truth)]
+        # ref_list = [list(map(str.strip, refs)) for refs in zip(ground_truth)]
 
-        refs = {idx: strippedlines for (idx, strippedlines) in enumerate(ref_list)}
+        # refs = {idx: strippedlines for (idx, strippedlines) in enumerate(ref_list)}
+        refs = {idx: strippedlines for (idx, strippedlines) in enumerate(ground_truth)}
         hyps = {idx: [lines.strip()] for (idx, lines) in enumerate(predict)}
         assert len(refs) == len(hyps)
         score, scores = self.scorer.compute_score(refs, hyps)

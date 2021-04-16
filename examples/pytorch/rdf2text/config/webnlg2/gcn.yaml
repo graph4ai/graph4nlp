@@ -1,19 +1,19 @@
-graph_construction_name: "dependency"
+graph_construction_name: "triples"
 graph_embedding_name: "gcn"
 decoder_name: "stdrnn"
-#out_dir: "out/cnn/gcn_uni_l2_wornn_wocopy_ckpt"
-out_dir: "out/cnn/gcn_uni_l2_ckpt"
+#out_dir: "out/webnlg2/gcn_bifuse_l2_wornn_wocopy_glove_ckpt"
+out_dir: "out/webnlg2/gcn_bifuse_l2_wornn_wocopy_glove_cover_ckpt"
 model_type: 'gcn'
 
 vocab_lower_case: true
 
 graph_construction_args:
   graph_construction_share:
-    graph_type: 'dependency'
-    root_dir: 'examples/pytorch/summarization/cnn'
-    topology_subdir: 'DependencyGraph'
+    graph_type: 'triples'
+    root_dir: 'examples/pytorch/rdf2text/data/webnlg2'
+    topology_subdir: 'Triples_GMP1'
     thread_number: 4
-    port: 9000
+    port: 9001
     timeout: 15000
 
   graph_construction_private:
@@ -31,31 +31,29 @@ graph_construction_args:
     fix_word_emb: false
     embedding_style:
       single_token_item: true
-<<<<<<< HEAD
-=======
-#      emb_strategy: "w2v"
->>>>>>> develop_pilot
-      emb_strategy: "w2v_bilstm"
+      emb_strategy: "w2v"
+#      emb_strategy: "w2v_bilstm"
       num_rnn_layers: 1
       bert_model_name: null
       bert_lower_case: null
 
 graph_embedding_args:
   graph_embedding_share:
-    num_layers: 3
+    num_layers: 2
     input_size: 300
     hidden_size: 300
     output_size: 300
-    direction_option: "undirected"
+#    direction_option: "undirected"
+    direction_option: "bi_fuse"
     feat_drop: 0.2
 
   graph_embedding_private:
-    gcn_norm: 'both'
-    weight: true
-    bias: true
+    heads: [2, 2, 1]
+    attn_drop: 0.2
+    negative_slope: 0.2
+    residual: true
     activation: null
-    allow_zero_in_degree: false
-    use_edge_weight: false
+#    activation: "relu"
 
 decoder_args:
   rnn_decoder_share:
@@ -63,19 +61,17 @@ decoder_args:
     input_size: 300
     hidden_size: 512
     rnn_emb_input_size: 300
-    use_copy: true
+    use_copy: false
     use_coverage: true
-    graph_pooling_strategy: null
-    attention_type: "sep_diff_encoder_type"
+    graph_pooling_strategy: "mean"
+    attention_type: "uniform"
+#    attention_type: "sep_diff_encoder_type"
     fuse_strategy: "concatenate"
     dropout: 0.3
 
   rnn_decoder_private:
-    max_decoder_step: 100
+    max_decoder_step: 80
     node_type_num: null
     tgt_emb_as_output_layer: true
 
-
-
-# screen -S gcn python -m examples.pytorch.summarization.cnn.main -g2s_config examples/pytorch/summarization/cnn/config/gcn.yaml -task_config examples/pytorch/summarization/cnn/config/cnn.yaml
-
+# screen -S gcn_w2 python -m examples.pytorch.rdf2text.run_rdf2text -g2s_config examples/pytorch/rdf2text/config/webnlg2/gcn.yaml -task_config examples/pytorch/rdf2text/config/webnlg2/rdf2text.yaml

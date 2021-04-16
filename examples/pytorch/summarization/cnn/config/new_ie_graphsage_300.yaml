@@ -1,26 +1,19 @@
-graph_construction_name: "dependency"
-graph_embedding_name: "gcn"
+graph_construction_name: "ie"
+graph_embedding_name: "graphsage"
 decoder_name: "stdrnn"
-#out_dir: "out/cnn/gcn_uni_l2_wornn_wocopy_ckpt"
-out_dir: "out/cnn/gcn_uni_l2_ckpt"
-model_type: 'gcn'
-
-vocab_lower_case: true
 
 graph_construction_args:
   graph_construction_share:
-    graph_type: 'dependency'
-    root_dir: 'examples/pytorch/summarization/cnn'
-    topology_subdir: 'DependencyGraph'
-    thread_number: 4
-    port: 9000
-    timeout: 15000
+    graph_type: 'ie'
+    root_dir: "examples/pytorch/summarization/cnn"
+    topology_subdir: 'IEGraph_300'
+    thread_number: 40
+    port: 9010
+    timeout: 30000
 
   graph_construction_private:
-    edge_strategy: 'homogeneous'
-    merge_strategy: 'tailhead'
-    sequential_link: true
-    as_node: false
+    edge_strategy: 'as_node'
+    merge_strategy: null
 
   node_embedding:
     input_size: 300
@@ -31,10 +24,6 @@ graph_construction_args:
     fix_word_emb: false
     embedding_style:
       single_token_item: true
-<<<<<<< HEAD
-=======
-#      emb_strategy: "w2v"
->>>>>>> develop_pilot
       emb_strategy: "w2v_bilstm"
       num_rnn_layers: 1
       bert_model_name: null
@@ -42,7 +31,7 @@ graph_construction_args:
 
 graph_embedding_args:
   graph_embedding_share:
-    num_layers: 3
+    num_layers: 2
     input_size: 300
     hidden_size: 300
     output_size: 300
@@ -77,5 +66,4 @@ decoder_args:
 
 
 
-# screen -S gcn python -m examples.pytorch.summarization.cnn.main -g2s_config examples/pytorch/summarization/cnn/config/gcn.yaml -task_config examples/pytorch/summarization/cnn/config/cnn.yaml
 

@@ -61,8 +61,8 @@ test = examples[-3000:]
 with open('raw/train_1w.json', 'w+') as f:
     json.dump(train_1w, f, indent=1)
 
-with open('raw/train_3w.json', 'w+') as f:
-    json.dump(train_3w, f, indent=1)
+# with open('raw/train_3w.json', 'w+') as f:
+#     json.dump(train_3w, f, indent=1)
 
 # with open('raw/train_9w.json', 'w+') as f:
 #     json.dump(train_9w, f, indent=1)

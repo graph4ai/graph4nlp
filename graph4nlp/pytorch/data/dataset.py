@@ -644,7 +644,6 @@ class Dataset(torch.utils.data.Dataset):
         os.makedirs(self.processed_dir, exist_ok=True)
 
         self.read_raw_data()
-        
         self.train = self.build_topology(self.train)
 
         self.test = self.build_topology(self.test)

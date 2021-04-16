@@ -53,6 +53,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
     @classmethod
     def parsing(cls, all_sent_triples_list, edge_strategy):
         """
+
         Parameters
         ----------
         all_sent_triples_list: list
@@ -64,14 +65,14 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             parsed_results is an intermediate dict that contains all the information of
             the constructed IE graph for a piece of raw text input.
 
-            `parsed_results['graph_content']` is a list of dict.
+            ``parsed_results['graph_content']`` is a list of dict.
 
-            Each dict in `parsed_results['graph_content']` contains information about a
+            Each dict in ``parsed_results['graph_content']`` contains information about a
             triple (src_ent, rel, tgt_ent).
 
-            `parsed_results['graph_nodes']` contains all nodes in the KG graph.
+            ``parsed_results['graph_nodes']`` contains all nodes in the KG graph.
 
-            `parsed_results['node_num']` is the number of nodes in the KG graph.
+            ``parsed_results['node_num']`` is the number of nodes in the KG graph.
         """
 
         parsed_results = {}
@@ -299,62 +300,10 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
 
         return graph
 
-
-    def embedding(self, graph: GraphData):
-        node_attributes = graph.node_attributes
-        edge_attributes = graph.edge_attributes
-
-        # Build embedding(initial feature vector) for graph nodes.
-        # Each node may contains multiple tokens.
-        node_idxs_list = []
-        node_len_list = []
-        for node_id, node_dict in node_attributes.items():
-            node_word_idxs = []
-            for token in node_dict['token'].split():
-                node_word_idxs.append(self.vocab.getIndex(token))
-            node_idxs_list.append(node_word_idxs)
-            node_len_list.append(len(node_word_idxs))
-        max_size = max(node_len_list)
-        node_idxs_list = [x+[self.vocab.PAD]*(max_size-len(x)) for x in node_idxs_list]
-        node_idxs_tensor = torch.LongTensor(node_idxs_list)
-        # if self.embedding_layer.node_edge_emb_strategy == 'mean':
-        #     node_len_tensor = torch.LongTensor(node_len_list).view(-1, 1)
-        # else:
-        node_len_tensor = torch.LongTensor(node_len_list)
-        num_nodes = torch.LongTensor([len(node_len_list)])
-        node_feat = self.embedding_layer(node_idxs_tensor, node_len_tensor, num_nodes)
-        graph.node_features['node_feat'] = node_feat
-
-        if 'token' in edge_attributes[0].keys():
-            # If edge information is stored in `edge_attributes`,
-            # build embedding(initial feature vector) for graph edges.
-            # Each edge may contains multiple tokens.
-            edge_idxs_list = []
-            edge_len_list = []
-            for edge_id, edge_dict in edge_attributes.items():
-                edge_word_idxs = []
-                for token in edge_dict['token']:
-                    edge_word_idxs.append(self.vocab.getIndex(token))
-                edge_idxs_list.append(edge_word_idxs)
-                edge_len_list.append(len(edge_word_idxs))
-
-            max_size = max(edge_len_list)
-            edge_idxs_list = [x + [self.vocab.PAD] * (max_size - len(x)) for x in edge_idxs_list]
-            edge_idxs_tensor = torch.LongTensor(edge_idxs_list)
-            # if self.embedding_layer.node_edge_emb_strategy == 'mean':
-            #     edge_len_tensor = torch.LongTensor(edge_len_list).view(-1, 1)
-            # else:
-            edge_len_tensor = torch.LongTensor(edge_len_list)
-            num_edges = torch.LongTensor([len(edge_len_list)])
-            edge_feat = self.embedding_layer(edge_idxs_tensor, edge_len_tensor, num_edges)
-            graph.edge_features['edge_feat'] = edge_feat
-
-        return graph
-
-
     @classmethod
     def _construct_static_graph(cls, parsed_object, edge_strategy=None):
         """
+            Build IE based graph for the raa text input.
 
         Parameters
         ----------
@@ -384,7 +333,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         for triple_info in parsed_object["graph_content"]:
             if edge_strategy is None:
                 ret_graph.add_edge(triple_info["src"]['id'], triple_info['tgt']['id'])
-                # eid = ret_graph.get_edge_num() - 1
                 eids = ret_graph.edge_ids(triple_info["src"]['id'], triple_info['tgt']['id'])
                 for eid in eids:
                     ret_graph.edge_attributes[eid]['token'] = triple_info['edge_tokens']
@@ -404,8 +352,8 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
     @classmethod
     def _graph_connect(cls, triple_list, merge_strategy=None):
         """
-            This method will connect entities in the ``triple_list`` to ensure the graph
-            is connected.
+            This method will connect entities in the ``triple_list`` with a "GLOBAL_NODE"
+            when the merge_strategy is ``global`` to ensure the graph is connected.
 
         Parameters
         ----------
