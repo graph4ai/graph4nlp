@@ -98,3 +98,8 @@ TODO
 * Other datasets: Cora, Citeseer and Pubmed are all undirectional graph datasets, which might not be ideal to test Bidirectional GNN models.
 
 
+<!-- Undirected GAT:
+layer 2:  0.6815 -->
+
+
+

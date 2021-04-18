@@ -6,10 +6,11 @@ References
 DGL GAT example: https://github.com/dmlc/dgl/tree/master/examples/pytorch/gat
 """
 import os
+import time
 import argparse
 import numpy as np
 import networkx as nx
-import time
+from collections import namedtuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -19,8 +20,10 @@ from dgl import DGLGraph
 from dgl.data import register_data_args, load_data
 
 from .utils import EarlyStopping
+from ...modules.utils.generic_utils import *
 from ...modules.graph_embedding.gat import GAT
 from ...data.data import GraphData
+from graph4nlp.pytorch.modules.utils.logger import Logger
 
 
 def accuracy(logits, labels):
@@ -133,14 +136,16 @@ def prepare_ogbn_graph_data(args):
     features = torch.Tensor(g.ndata['feat'])
     labels = torch.LongTensor(labels).squeeze(-1)
 
+    if args.to_undirected:
+        inv_edge_index = (g.edges()[1], g.edges()[0])
+        g = dgl.add_edges(g, inv_edge_index[0], inv_edge_index[1])
+        print('convert the input graph to undirected graph')
+
+
     # add self loop
     # no duplicate self loop will be added for nodes already having self loops
     new_g = dgl.transform.add_self_loop(g)
 
-
-    # edge_index = data[0]['edge_index']
-    # adj = to_undirected(edge_index, num_nodes=data[0]['num_nodes'])
-    # assert adj.diagonal().sum() == 0 and adj.max() <= 1 and (adj != adj.transpose()).sum() == 0
 
     num_feats = features.shape[1]
     n_classes = labels.max().item() + 1
@@ -278,57 +283,131 @@ def main(args, seed):
 
     return acc
 
+def multi_run(config):
+    config['save_model_path'] = '{}_{}_{}_{}'.format(config['save_model_path'], config['dataset'], 'gcn', config['direction_option'])
+    print_config(config)
+    config = dict_to_namedtuple(config)
+
+    np.random.seed(config.random_seed)
+    scores = []
+    for _ in range(config.num_runs):
+        seed = np.random.randint(10000)
+        scores.append(main(config, seed))
+
+    print("\nTest Accuracy ({} runs): mean {:.4f}, std {:.4f}".format(config.num_runs, np.mean(scores), np.std(scores)))
+
+def grid_search_main(config):
+    print_config(config)
+    grid_search_hyperparams = []
+    for k, v in config.items():
+        if isinstance(v, list):
+            grid_search_hyperparams.append(k)
+
+
+    logger = Logger(config['save_model_path'], config=config, overwrite=True)
+
+    best_config = None
+    best_score = -1
+    configs = grid(config)
+    for cnf in configs:
+        print('\n')
+        for k in grid_search_hyperparams:
+            cnf['save_model_path'] += '_{}_{}'.format(k, cnf[k])
+        print(cnf['save_model_path'])
+        logger.write(cnf['save_model_path'])
+
+
+        score = main(dict_to_namedtuple(cnf), cnf['random_seed'])
+        if best_score < score:
+            best_score = score
+            best_config = cnf
+            print('Found a better configuration: {}'.format(best_score))
+            logger.write('Found a better configuration: {}'.format(best_score))
+
+    print('\nBest configuration:')
+    logger.write('\nBest configuration:')
+
+    for k in grid_search_hyperparams:
+        print('{}: {}'.format(k, best_config[k]))
+        logger.write('{}: {}'.format(k, best_config[k]))
+
+
+    print('Best test score: {}'.format(best_score))
+    logger.write('Best test score: {}'.format(best_score))
+    logger.close()
+
+def dict_to_namedtuple(data, typename='config'):
+    return namedtuple(typename, data.keys())(
+        *(dict_to_namedtuple(typename + '_' + k, v) if isinstance(v, dict) else v for k, v in data.items())
+    )
+
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-config', type=str, help='path to the config file')
+    parser.add_argument('--grid_search', action='store_true', help='flag: grid search')
+    cfg = vars(parser.parse_args())
 
-    parser = argparse.ArgumentParser(description='GAT')
-    register_data_args(parser)
-    parser.add_argument("--num-runs", type=int, default=5,
-                        help="number of runs")
-    parser.add_argument("--no-cuda", action="store_true", default=False,
-                        help="use CPU")
-    parser.add_argument("--gpu", type=int, default=-1,
-                        help="which GPU to use.")
-    parser.add_argument("--epochs", type=int, default=200,
-                        help="number of training epochs")
-    parser.add_argument("--direction-option", type=str, default='bi_sep',
-                        help="direction type (`'undirected'`, `'bi_fuse'`, `'bi_sep'`)")
-    parser.add_argument("--num-heads", type=int, default=8,
-                        help="number of hidden attention heads")
-    parser.add_argument("--num-out-heads", type=int, default=1,
-                        help="number of output attention heads")
-    parser.add_argument("--num-layers", type=int, default=2,
-                        help="number of hidden layers")
-    parser.add_argument("--num-hidden", type=int, default=8,
-                        help="number of hidden units")
-    parser.add_argument("--residual", action="store_true", default=False,
-                        help="use residual connection")
-    parser.add_argument("--in-drop", type=float, default=.6,
-                        help="input feature dropout")
-    parser.add_argument("--attn-drop", type=float, default=.6,
-                        help="attention dropout")
-    parser.add_argument("--lr", type=float, default=0.005,
-                        help="learning rate")
-    parser.add_argument('--weight-decay', type=float, default=5e-4,
-                        help="weight decay")
-    parser.add_argument('--negative-slope', type=float, default=0.2,
-                        help="the negative slope of leaky relu")
-    parser.add_argument('--early-stop', action='store_true', default=False,
-                        help="indicates whether to use early stop or not")
-    parser.add_argument("--patience", type=int, default=100,
-                        help="early stopping patience")
-    parser.add_argument('--fastmode', action="store_true", default=False,
-                        help="skip re-evaluate the validation set")
-    parser.add_argument('--save-model-path', type=str, default="checkpoint",
-                        help="path to the best saved model")
-    args = parser.parse_args()
-    args.save_model_path = '{}_{}_{}_{}'.format(args.save_model_path, args.dataset, 'gat', args.direction_option)
-    print(args)
+    config = get_config(cfg['config'])
+    if cfg['grid_search']:
+        grid_search_main(config)
+    else:
+        multi_run(config)
 
-    np.random.seed(123)
-    scores = []
-    for _ in range(args.num_runs):
-        seed = np.random.randint(10000)
-        scores.append(main(args, seed))
 
-    print("\nTest Accuracy ({} runs): mean {:.4f}, std {:.4f}".format(args.num_runs, np.mean(scores), np.std(scores)))
+
+# if __name__ == '__main__':
+
+#     parser = argparse.ArgumentParser(description='GAT')
+#     register_data_args(parser)
+#     parser.add_argument("--num-runs", type=int, default=5,
+#                         help="number of runs")
+#     parser.add_argument("--no-cuda", action="store_true", default=False,
+#                         help="use CPU")
+#     parser.add_argument("--gpu", type=int, default=-1,
+#                         help="which GPU to use.")
+#     parser.add_argument("--epochs", type=int, default=200,
+#                         help="number of training epochs")
+#     parser.add_argument("--to_undirected", action="store_true", default=False,
+#                         help="convert to undirected graph")
+#     parser.add_argument("--direction-option", type=str, default='bi_sep',
+#                         help="direction type (`'undirected'`, `'bi_fuse'`, `'bi_sep'`)")
+#     parser.add_argument("--num-heads", type=int, default=8,
+#                         help="number of hidden attention heads")
+#     parser.add_argument("--num-out-heads", type=int, default=1,
+#                         help="number of output attention heads")
+#     parser.add_argument("--num-layers", type=int, default=2,
+#                         help="number of hidden layers")
+#     parser.add_argument("--num-hidden", type=int, default=8,
+#                         help="number of hidden units")
+#     parser.add_argument("--residual", action="store_true", default=False,
+#                         help="use residual connection")
+#     parser.add_argument("--in-drop", type=float, default=.6,
+#                         help="input feature dropout")
+#     parser.add_argument("--attn-drop", type=float, default=.6,
+#                         help="attention dropout")
+#     parser.add_argument("--lr", type=float, default=0.005,
+#                         help="learning rate")
+#     parser.add_argument('--weight-decay', type=float, default=5e-4,
+#                         help="weight decay")
+#     parser.add_argument('--negative-slope', type=float, default=0.2,
+#                         help="the negative slope of leaky relu")
+#     parser.add_argument('--early-stop', action='store_true', default=False,
+#                         help="indicates whether to use early stop or not")
+#     parser.add_argument("--patience", type=int, default=100,
+#                         help="early stopping patience")
+#     parser.add_argument('--fastmode', action="store_true", default=False,
+#                         help="skip re-evaluate the validation set")
+#     parser.add_argument('--save-model-path', type=str, default="checkpoint",
+#                         help="path to the best saved model")
+#     args = parser.parse_args()
+#     args.save_model_path = '{}_{}_{}_{}'.format(args.save_model_path, args.dataset, 'gat', args.direction_option)
+#     print(args)
+
+#     np.random.seed(123)
+#     scores = []
+#     for _ in range(args.num_runs):
+#         seed = np.random.randint(10000)
+#         scores.append(main(args, seed))
+
+#     print("\nTest Accuracy ({} runs): mean {:.4f}, std {:.4f}".format(args.num_runs, np.mean(scores), np.std(scores)))
