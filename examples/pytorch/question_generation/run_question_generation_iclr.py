@@ -317,7 +317,7 @@ class ModelHandler:
             raise NotImplementedError("Define your topology builder.")
 
         dataset = SQuADDataset(root_dir=self.config['graph_construction_args']['graph_construction_share']['root_dir'],
-                              pretrained_word_emb_file=self.config['pre_word_emb_file'],
+                              pretrained_word_emb_name=self.config['pretrained_word_emb_name'],
                               merge_strategy=self.config['graph_construction_args']['graph_construction_private']['merge_strategy'],
                               edge_strategy=self.config['graph_construction_args']["graph_construction_private"]['edge_strategy'],
                               max_word_vocab_size=self.config['top_word_vocab'],

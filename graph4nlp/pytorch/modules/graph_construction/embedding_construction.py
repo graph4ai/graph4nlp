@@ -325,6 +325,10 @@ class WordEmbedding(nn.Module):
             print('[ Fix word embeddings ]')
             for param in self.word_emb_layer.parameters():
                 param.requires_grad = False
+    
+    @property
+    def weight(self):
+        return self.word_emb_layer.weight
 
     @property
     def embedding_dim(self):
