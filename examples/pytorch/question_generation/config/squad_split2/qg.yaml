@@ -1,6 +1,6 @@
 # Data
 dataset: 'squad-split2'
-pre_word_emb_file: '/Users/hugo/Documents/Work/Research/Resources/glove-vectors/glove.840B.300d.txt' # path to the pretrained word embedding file
+pretrained_word_emb_name: "840B"
 out_dir: 'out/squad_split2/qg_ckpt_dep_ggnn'
 
 # Preprocessing
