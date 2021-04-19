@@ -4,10 +4,8 @@
 *.pkl
 *.pth
 run_*.sh
-.vector_cache/
 # igore log files
 log.txt
-examples/pytorch/semantic_parsing/jobs/log/*
 # Byte-compiled / optimized / DLL files
 **/__pycache__/*
 *.py[cod]
@@ -17,6 +15,7 @@ examples/pytorch/semantic_parsing/jobs/log/*
 **/log/*
 **/save/*
 **/out/*
+**/.vector_cache/*
 
 # C extensions
 *.so
