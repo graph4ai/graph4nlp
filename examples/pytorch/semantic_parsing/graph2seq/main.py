@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
