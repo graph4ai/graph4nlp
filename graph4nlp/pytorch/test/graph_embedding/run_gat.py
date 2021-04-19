@@ -233,7 +233,10 @@ def main(args, seed):
     if args.early_stop:
         stopper = EarlyStopping('{}.{}'.format(args.save_model_path, seed), patience=args.patience)
 
-    loss_fcn = torch.nn.CrossEntropyLoss()
+    if args.use_log_softmax_nll:
+        loss_fcn = torch.nn.NLLLoss()
+    else:
+        loss_fcn = torch.nn.CrossEntropyLoss()
 
     # use optimizer
     optimizer = torch.optim.Adam(
@@ -247,6 +250,9 @@ def main(args, seed):
             t0 = time.time()
         # forward
         logits = model(g)
+        if args.use_log_softmax_nll:
+            logits = logits.log_softmax(dim=-1)
+
         loss = loss_fcn(logits[train_mask], labels[train_mask])
 
         optimizer.zero_grad()
@@ -262,14 +268,17 @@ def main(args, seed):
             val_acc = accuracy(logits[val_mask], labels[val_mask])
         else:
             val_acc = evaluate(model, g, labels, val_mask)
-            if args.early_stop:
-                if stopper.step(val_acc, model):
-                    break
+
+        val_loss = loss_fcn(logits[val_mask], labels[val_mask])
+
+        if args.early_stop:
+            if stopper.step(-val_loss, model):
+                break
 
         print("Epoch {:05d} | Time(s) {:.4f} | Loss {:.4f} | TrainAcc {:.4f} |"
-              " ValAcc {:.4f} | ETputs(KTEPS) {:.2f}".
+              " ValLoss {:.4f} | ValAcc {:.4f} | ETputs(KTEPS) {:.2f}".
               format(epoch, np.mean(dur), loss.item(), train_acc,
-                     val_acc, n_edges / np.mean(dur) / 1000))
+                     val_loss, val_acc, n_edges / np.mean(dur) / 1000))
 
     print()
     if args.early_stop:
@@ -286,8 +295,10 @@ def main(args, seed):
 def multi_run(config):
     config['save_model_path'] = '{}_{}_{}_{}'.format(config['save_model_path'], config['dataset'], 'gcn', config['direction_option'])
     print_config(config)
-    config = dict_to_namedtuple(config)
 
+    logger = Logger(config['save_model_path'], config=config, overwrite=True)
+
+    config = dict_to_namedtuple(config)
     np.random.seed(config.random_seed)
     scores = []
     for _ in range(config.num_runs):
@@ -295,6 +306,8 @@ def multi_run(config):
         scores.append(main(config, seed))
 
     print("\nTest Accuracy ({} runs): mean {:.4f}, std {:.4f}".format(config.num_runs, np.mean(scores), np.std(scores)))
+    logger.write("\nTest Accuracy ({} runs): mean {:.4f}, std {:.4f}".format(config.num_runs, np.mean(scores), np.std(scores)))
+    logger.close()
 
 def grid_search_main(config):
     print_config(config)
