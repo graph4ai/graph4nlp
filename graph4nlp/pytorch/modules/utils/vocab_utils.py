@@ -204,8 +204,7 @@ class VocabModel(object):
 
 
 class WordEmbModel(Vectors):
-    def __init__(self, pretrained_word_emb_name="840B", pretrained_word_emb_url=None, pretrained_word_emb_cache_dir=".vector_cache/",
-                        unk_init=torch.Tensor.random_):
+    def __init__(self, pretrained_word_emb_name="840B", pretrained_word_emb_url=None, pretrained_word_emb_cache_dir=".vector_cache/"):
         
         if pretrained_word_emb_name in GloVe.url.keys() and pretrained_word_emb_url is None:
             url = GloVe.url[pretrained_word_emb_name]
@@ -213,7 +212,7 @@ class WordEmbModel(Vectors):
         else:
             url = pretrained_word_emb_url
             name = pretrained_word_emb_name
-        super().__init__(name=name, cache=pretrained_word_emb_cache_dir, url=url, unk_init=unk_init)
+        super().__init__(name=name, cache=pretrained_word_emb_cache_dir, url=url)
 
     def __getitem__(self, token):
         if token in self.stoi:
@@ -221,7 +220,6 @@ class WordEmbModel(Vectors):
         else:
             return torch.Tensor(np.array(np.random.uniform(low=-0.08, high=0.08, size=(self.dim)),
                                                dtype=np.float)), False
-            return self.unk_init(torch.Tensor(self.dim)), False
 
     def get_vecs_by_tokens(self, tokens, lower_case_backup=False):
         """Look up embedding vectors of tokens.
@@ -360,56 +358,10 @@ class Vocab(object):
         word_list = list(self.word2index.keys())
 
         word_emb, hit, cnt = word_model.get_vecs_by_tokens(tokens=word_list, lower_case_backup=self.lower_case)
-
-        # for wd, idx in self.word2index.items():
-        #     emb = word_model.get_vecs_by_tokens()
-        # with open(file_path, 'rb') as f:
-        #     for line in f:
-        #         line = line.split()
-        #         word = line[0].decode('utf-8')
-        #         if self.lower_case:
-        #             word = word.lower()
-
-        #         idx = self.word2index.get(word, None)
-        #         if idx is None or idx in hit_words:
-        #             continue
-
-        #         vec = np.array(line[1:], dtype=dtype)
-        #         if self.embeddings is None:
-        #             n_dims = len(vec)
-        #             self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=(vocab_size, n_dims)),
-        #                                        dtype=dtype)
-        #             self.embeddings[self.PAD] = np.zeros(n_dims)
-        #         self.embeddings[idx] = vec
-        #         hit_words.add(idx)
+        
         print('Pretrained word embeddings hit ratio: {}'.format(hit / cnt))
         self.embeddings = word_emb.numpy()
-        self.embeddings[self.PAD] = np.zeros(300)
-
-    # def load_embeddings(self, file_path, scale=0.08, dtype=np.float32):
-    #     """Load pretrained word embeddings for initialization"""
-    #     hit_words = set()
-    #     vocab_size = len(self)
-    #     with open(file_path, 'rb') as f:
-    #         for line in f:
-    #             line = line.split()
-    #             word = line[0].decode('utf-8')
-    #             if self.lower_case:
-    #                 word = word.lower()
-
-    #             idx = self.word2index.get(word, None)
-    #             if idx is None or idx in hit_words:
-    #                 continue
-
-    #             vec = np.array(line[1:], dtype=dtype)
-    #             if self.embeddings is None:
-    #                 n_dims = len(vec)
-    #                 self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=(vocab_size, n_dims)),
-    #                                            dtype=dtype)
-    #                 self.embeddings[self.PAD] = np.zeros(n_dims)
-    #             self.embeddings[idx] = vec
-    #             hit_words.add(idx)
-    #     print('Pretrained word embeddings hit ratio: {}'.format(len(hit_words) / len(self.index2word)))
+        self.embeddings[self.PAD] = np.zeros(word_model.dim)
 
     def randomize_embeddings(self, n_dims, scale=0.08):
         """Use random word embeddings for initialization."""
