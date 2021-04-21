@@ -1,3 +1,5 @@
+import time
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -161,12 +163,24 @@ class FusedEmbeddingConstruction(EmbeddingConstructionBase):
             # passage encoding
             gd_list = from_batch(batch_gd)
             raw_tokens = [[gd.node_attributes[i]['token'] for i in range(gd.get_node_num())] for gd in gd_list]
+
+            print('profiling passage BERT encoding...')
+            t0 = time.time()
             ctx_bert = self.word_emb_layers['seq_bert'](raw_tokens)
+            print('total runtime of bert call: {}s'.format(time.time() - t0))
+            print('{} sequences, avg {} tokens per sequence\n'.format(len(raw_tokens), np.mean(list(map(len, raw_tokens)))))
+
             ctx_bert = dropout_fn(ctx_bert, self.bert_dropout, shared_axes=[-2], training=self.training)
             enc_input_cat.append(ctx_bert)
 
+
             # answer encoding
+            print('profiling answer BERT encoding...')
+            t0 = time.time()
             answer_bert = self.word_emb_layers['seq_bert'](data['input_text2'])
+            print('total runtime of bert call: {}s'.format(time.time() - t0))
+            print('{} sequences, avg {} tokens per sequence\n'.format(len(raw_tokens), np.mean(list(map(len, raw_tokens)))))
+
             answer_bert = dropout_fn(answer_bert, self.bert_dropout, shared_axes=[-2], training=self.training)
             answer_feat = torch.cat([answer_feat, answer_bert], -1)
 
