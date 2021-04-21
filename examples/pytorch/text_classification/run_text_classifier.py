@@ -36,7 +36,7 @@ class TextClassifier(nn.Module):
         self.config = config
         self.vocab = vocab
         embedding_style = {'single_token_item': True if config['graph_type'] != 'ie' else False,
-                            'emb_strategy': config.get('emb_strategy', 'w2v_bilstm'),
+                            'emb_strategy': config.get('emb_strategy', 'w2v_bert_bilstm'),
                             'num_rnn_layers': 1,
                             'bert_model_name': config.get('bert_model_name', 'bert-base-uncased'),
                             'bert_lower_case': True

@@ -1,3 +1,5 @@
+import time
+import numpy as np
 import torch
 from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
@@ -275,7 +277,13 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             if 'seq_bert' in self.word_emb_layers:
                 gd_list = from_batch(batch_gd)
                 raw_tokens = [[gd.node_attributes[i]['token'] for i in range(gd.get_node_num())] for gd in gd_list]
+
+                t0 = time.time()
                 bert_feat = self.word_emb_layers['seq_bert'](raw_tokens)
+                print('total runtime of bert call: {}s'.format(time.time() - t0))
+                print('{} sequences, avg {} tokens per sequence'.format(len(raw_tokens), np.mean(list(map(len, raw_tokens)))))
+
+
                 bert_feat = dropout_fn(bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
                 new_feat.append(bert_feat)
 
@@ -404,6 +412,7 @@ class BertEmbedding(nn.Module):
         torch.Tensor
             BERT embedding matrix.
         """
+        t0 = time.time()
         bert_features = []
         max_d_len = 0
         for text in raw_text_data:
@@ -422,17 +431,28 @@ class BertEmbedding(nn.Module):
         bert_xd = bert_xd.to(self.bert_model.device)
         bert_xd_mask = bert_xd_mask.to(self.bert_model.device)
 
+        t1 = time.time()
+        print('runtime of bert vectorization preprocessing: {}s'.format(t1 - t0))
+
         encoder_outputs = self.bert_model(bert_xd.view(-1, bert_xd.size(-1)),
                                         token_type_ids=None,
                                         attention_mask=bert_xd_mask.view(-1, bert_xd_mask.size(-1)),
                                         output_hidden_states=True,
                                         return_dict=True)
+
+        t2 = time.time()
+        print('runtime of core bert call: {}s'.format(t2 - t1))
+
         all_encoder_layers = encoder_outputs['hidden_states'][1:] # The first one is the input embedding
         all_encoder_layers = torch.stack([x.view(bert_xd.shape + (-1,)) for x in all_encoder_layers], 0)
         bert_xd_f = extract_bert_hidden_states(all_encoder_layers, max_d_len, bert_features, weighted_avg=True)
 
+        t3 = time.time()
+        print('runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): {}s'.format(t3 - t2))
+
         weights_bert_layers = torch.softmax(self.logits_bert_layers, dim=-1)
         bert_xd_f = torch.mm(weights_bert_layers, bert_xd_f.view(bert_xd_f.size(0), -1)).view(bert_xd_f.shape[1:])
+
 
         return bert_xd_f
 
