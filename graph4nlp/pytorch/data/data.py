@@ -573,13 +573,32 @@ class GraphData(object):
             self.add_edge(adj.row[i], adj.col[i])
         self.edge_features['edge_weight'] = torch.tensor(adj.data)
 
-    def adj_matrix(self):
-        ret = torch.zeros((self.get_node_num(), self.get_node_num()))
-        all_edges = self.edges()
-        for i in range(len(all_edges)):
-            u, v = all_edges[i]
-            ret[u][v] = 1
-        return ret
+    def adj_matrix(self, batch_view=False, post_processing_fn=None):
+        if batch_view is False:
+            ret = torch.zeros((self.get_node_num(), self.get_node_num())).to(self.device)
+            all_edges = self.edges()
+            for i in range(len(all_edges)):
+                u, v = all_edges[i]
+                ret[u][v] = 1
+            if post_processing_fn is not None:
+                ret = post_processing_fn(ret)
+            return ret
+        else:
+            assert self._is_batch, "Cannot enable batch view on a non-batch graph!"
+            max_num_nodes = max(self._batch_num_nodes)
+            ret = torch.zeros((self.batch_size, max_num_nodes, max_num_nodes)).to(self.device)
+            cum_num_nodes = 0
+            cum_num_edges = 0
+            all_edges = self.get_all_edges()
+            for i in range(self.batch_size):
+                edges = all_edges[cum_num_edges:cum_num_edges+self._batch_num_edges[i]]
+                for edge in edges:
+                    ret[i][edge[0] - cum_num_nodes, edge[1] - cum_num_nodes] = 1
+                if post_processing_fn is not None:
+                    ret[i] = post_processing_fn(ret[i])
+                cum_num_nodes += self._batch_num_nodes[i]
+                cum_num_edges += self._batch_num_edges[i]
+            return ret
 
     def sparse_adj(self, batch_view=False):
         """
