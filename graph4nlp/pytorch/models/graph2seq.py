@@ -88,12 +88,12 @@ class Graph2Seq(Graph2XBase):
                        rnn_type="lstm", attention_type="uniform", node_type_num=None, fuse_strategy="average",
                        rnn_dropout=0.2):
         if share_vocab and self.enc_word_emb is not None:
-            self.dec_word_emb = self.enc_word_emb
+            self.dec_word_emb = self.enc_word_emb.word_emb_layer
         else:
             self.dec_word_emb = WordEmbedding(vocab_model.out_word_vocab.embeddings.shape[0],
                                               vocab_model.out_word_vocab.embeddings.shape[1],
                                               pretrained_word_emb=vocab_model.out_word_vocab.embeddings,
-                                              fix_emb=fix_word_emb)
+                                              fix_emb=fix_word_emb).word_emb_layer
 
         self.seq_decoder = StdRNNDecoder(rnn_type=rnn_type, max_decoder_step=decoder_length,
                                          input_size=input_size,
@@ -120,6 +120,7 @@ class Graph2Seq(Graph2XBase):
         generator = DecoderStrategy(beam_size=beam_size, vocab=self.seq_decoder.vocab, rnn_type=self.dec_rnn_type,
                                     decoder=self.seq_decoder, use_copy=self.use_copy,
                                     use_coverage=self.use_coverage)
+
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
         beam_results = generator.generate(graph_list=batch_graph, oov_dict=oov_dict, topk=topk)

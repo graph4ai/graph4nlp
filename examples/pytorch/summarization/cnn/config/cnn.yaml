@@ -1,7 +1,7 @@
 # Data
-dataset: 'squad-split2'
-pretrained_word_emb_name: "840B"
-out_dir: 'out/squad_split2/qg_ckpt_dep_ggnn'
+dataset: 'cnn'
+pre_word_emb_file: null # path to the pretrained word embedding file
+#pre_word_emb_file: '../glove/glove.6B.300d.txt' # path to the pretrained word embedding file
 
 # Preprocessing
 top_word_vocab: 70000
@@ -19,19 +19,19 @@ coverage_loss_ratio: 0.3 # coverage loss ratio
 
 # Training
 seed: 1234
-batch_size: 80 # batch size
+batch_size: 50 # batch size
 epochs: 100 # number of maximal training epochs
 grad_clipping: 10
-early_stop_metric: 'BLEU_4'
-patience: 30
-lr: 0.001 # learning rate
-lr_patience: 3
-lr_reduce_factor: 0.7
-num_workers: 10 # number of data loader workers
+early_stop_metric: 'ROUGE'
+patience: 10
+lr: 0.0005 # learning rate
+lr_patience: 2
+lr_reduce_factor: 0.5
+num_workers: 0 # number of data loader workers
 
 
 # Beam search
-beam_size: 5
+beam_size: 3
 
 gpu: -1
 no_cuda: false

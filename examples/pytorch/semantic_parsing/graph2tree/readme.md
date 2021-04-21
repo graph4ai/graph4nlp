@@ -1,4 +1,4 @@
-# Results On Geo880
+# Results On Geo
 
 min_freq=6
 

@@ -4,7 +4,7 @@ from stanfordcorenlp import StanfordCoreNLP
 
 from graph4nlp.pytorch.data.data import GraphData, to_batch
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
-from .base import StaticGraphConstructionBase
+from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
 import dgl
 import networkx as nx
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
@@ -445,39 +445,43 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         else:
             raise NotImplementedError()
 
+    # def forward(self, batch_graphdata: list):
+    #     node_size = []
+    #     edge_size = []
+    #     num_nodes = []
+    #     # num_word_nodes = []  # number of nodes that are extracted from the raw text in each graph
+    #     num_edges = []
+    #     # num_word_edges = []  # number of edges that are extracted from the raw text in each graph
+    #
+    #     for g in batch_graphdata:
+    #         g.to(self.device)
+    #         g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
+    #         num_nodes.append(g.get_node_num())
+    #         # num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))
+    #         node_size.extend([1 for i in range(num_nodes[-1])])
+    #
+    #         if 'token' in g.edge_attributes[0].keys():
+    #             g.edge_features['token_id'] = g.edge_features['token_id'].to(self.device)
+    #             num_edges.append(g.get_edge_num())
+    #             edge_size.extend([1 for i in range(num_edges[-1])])
+    #             # num_word_edges.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 3]))
+    #
+    #     batch_gd = to_batch(batch_graphdata)
+    #     b_node = batch_gd.get_node_num()
+    #     assert b_node == sum(num_nodes), print(b_node, sum(num_nodes))
+    #     node_size = torch.Tensor(node_size).to(self.device).int()
+    #     num_nodes = torch.Tensor(num_nodes).to(self.device).int()
+    #     # num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
+    #     node_emb = self.embedding_layer(batch_gd, node_size, num_nodes)
+    #     batch_gd.node_features["node_feat"] = node_emb
+    #     if edge_size != [] and num_edges != []:
+    #         edge_size = torch.Tensor(edge_size).to(self.device).int()
+    #         num_edges = torch.Tensor(num_edges).to(self.device).int()
+    #         edge_emb = self.embedding_layer(batch_gd, edge_size, num_edges)
+    #         batch_gd.edge_features["edge_feat"] = edge_emb
+    #
+    #     return batch_gd
+
     def forward(self, batch_graphdata: list):
-        node_size = []
-        edge_size = []
-        num_nodes = []
-        # num_word_nodes = []  # number of nodes that are extracted from the raw text in each graph
-        num_edges = []
-        # num_word_edges = []  # number of edges that are extracted from the raw text in each graph
-
-        for g in batch_graphdata:
-            g.to(self.device)
-            g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
-            num_nodes.append(g.get_node_num())
-            # num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))
-            node_size.extend([1 for i in range(num_nodes[-1])])
-
-            if 'token' in g.edge_attributes[0].keys():
-                g.edge_features['token_id'] = g.edge_features['token_id'].to(self.device)
-                num_edges.append(g.get_edge_num())
-                edge_size.extend([1 for i in range(num_edges[-1])])
-                # num_word_edges.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 3]))
-
-        batch_gd = to_batch(batch_graphdata)
-        b_node = batch_gd.get_node_num()
-        assert b_node == sum(num_nodes), print(b_node, sum(num_nodes))
-        node_size = torch.Tensor(node_size).to(self.device).int()
-        num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        # num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(batch_gd, node_size, num_nodes)
-        batch_gd.node_features["node_feat"] = node_emb
-        if edge_size != [] and num_edges != []:
-            edge_size = torch.Tensor(edge_size).to(self.device).int()
-            num_edges = torch.Tensor(num_edges).to(self.device).int()
-            edge_emb = self.embedding_layer(batch_gd, edge_size, num_edges)
-            batch_gd.edge_features["edge_feat"] = edge_emb
-
-        return batch_gd
+        batch_graphdata = self.embedding_layer(batch_graphdata)
+        return batch_graphdata
