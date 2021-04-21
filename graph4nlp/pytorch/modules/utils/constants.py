@@ -7,7 +7,7 @@ Module to handle universal/general constants used across files.
 ################################################################################
 
 # GENERAL CONSTANTS:
-VERY_SMALL_NUMBER = 1e-10
+VERY_SMALL_NUMBER = 1e-31
 INF = 1e20
 
 
