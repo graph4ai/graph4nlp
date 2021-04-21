@@ -8,7 +8,7 @@ from .dependency_graph_construction import DependencyBasedGraphConstruction
 from .constituency_graph_construction import ConstituencyBasedGraphConstruction
 from .ie_graph_construction import IEBasedGraphConstruction
 from ..utils.generic_utils import normalize_adj, to_cuda
-from ..utils.constants import VERY_SMALL_NUMBER
+# from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
 from ...data.data import to_batch
 
@@ -87,8 +87,8 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
 
         if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
             assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
-            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
-            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-2, keepdim=True), min=VERY_SMALL_NUMBER)
+            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=torch.finfo(torch.float32).eps)
+            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-2, keepdim=True), min=torch.finfo(torch.float32).eps)
         elif self.sim_metric_type == 'cosine':
             raw_adj = (raw_adj > 0).float()
             adj = normalize_adj(raw_adj)
