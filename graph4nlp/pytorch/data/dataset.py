@@ -1576,7 +1576,9 @@ class SequenceLabelingDataset(Dataset):
                                        lower_case=self.lower_case,
                                        max_word_vocab_size=None,
                                        min_word_vocab_freq=1,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       pretrained_word_emb_name=self.pretrained_word_emb_name,
+                                       pretrained_word_emb_url=self.pretrained_word_emb_url,
+                                       pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
                                        word_emb_size=300,
                                        share_vocab=True)
         self.vocab_model = vocab_model
