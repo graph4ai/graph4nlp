@@ -2,7 +2,6 @@
 graph4nlp.datasets module contains various common datasets implemented based on graph4nlp.data.dataset.
 """
 
-from .cnn import CNNDataset
 from .geo import GeoDatasetForTree
 from .jobs import JobsDataset, JobsDatasetForTree
 from .kinship import KinshipDataset
