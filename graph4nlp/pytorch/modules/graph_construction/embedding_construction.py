@@ -11,6 +11,22 @@ from ..utils.bert_utils import *
 from ...data.data import from_batch
 
 
+
+def duplicate(token_lists, max_seq_len, num_seq):
+    cur_num_seq = len(token_lists)
+    # cur_max_seq_len = np.max(list(map(len, token_lists)))
+    token_lists[0] = token_lists[0][:max_seq_len]
+    token_lists[0] = token_lists[0] + max(max_seq_len - len(token_lists[0]), 0) * [token_lists[0][-1]]
+    for i in range(1, cur_num_seq):
+        token_lists[i] = token_lists[i][:max_seq_len]
+
+    token_lists = token_lists * (num_seq // cur_num_seq)
+    if len(token_lists) < num_seq:
+        token_lists = token_lists + token_lists[:num_seq - len(token_lists)]
+
+    return token_lists
+
+
 class EmbeddingConstructionBase(nn.Module):
     """
     Base class for (initial) graph embedding construction.
@@ -278,11 +294,14 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 gd_list = from_batch(batch_gd)
                 raw_tokens = [[gd.node_attributes[i]['token'] for i in range(gd.get_node_num())] for gd in gd_list]
 
+                # test-only: duplicate
+                raw_tokens = duplicate(raw_tokens, max_seq_len=400, num_seq=50)
+
                 t0 = time.time()
                 bert_feat = self.word_emb_layers['seq_bert'](raw_tokens)
                 print('total runtime of bert call: {}s'.format(time.time() - t0))
-                print('{} sequences, avg {} tokens per sequence'.format(len(raw_tokens), np.mean(list(map(len, raw_tokens)))))
-
+                print('{} sequences, max {} tokens per sequence'.format(len(raw_tokens), np.max(list(map(len, raw_tokens)))))
+                exit()
 
                 bert_feat = dropout_fn(bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
                 new_feat.append(bert_feat)
@@ -433,7 +452,7 @@ class BertEmbedding(nn.Module):
 
         t1 = time.time()
         print('runtime of bert vectorization preprocessing: {}s'.format(t1 - t0))
-
+        print('bert_xd shape: {}'.format(bert_xd.shape))
         encoder_outputs = self.bert_model(bert_xd.view(-1, bert_xd.size(-1)),
                                         token_type_ids=None,
                                         attention_mask=bert_xd_mask.view(-1, bert_xd_mask.size(-1)),
