@@ -674,15 +674,15 @@ class Dataset(torch.utils.data.Dataset):
         os.makedirs(self.processed_dir, exist_ok=True)
 
         self.read_raw_data()
-        
+
         self.train = self.build_topology(self.train)
 
         self.test = self.build_topology(self.test)
         if 'val' in self.__dict__:
             self.val = self.build_topology(self.val)
-        
+
         self.build_vocab()
-   
+
         self.vectorization(self.train)
         self.vectorization(self.test)
         if 'val' in self.__dict__:
@@ -1358,7 +1358,6 @@ class Text2LabelDataset(Dataset):
                                        lower_case=self.lower_case,
                                        max_word_vocab_size=self.max_word_vocab_size,
                                        min_word_vocab_freq=self.min_word_vocab_freq,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
                                        word_emb_size=self.word_emb_size,
                                        share_vocab=True)
         self.vocab_model = vocab_model

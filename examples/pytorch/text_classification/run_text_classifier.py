@@ -105,8 +105,7 @@ class TextClassifier(nn.Module):
                                     fix_word_emb=not config['no_fix_word_emb'],
                                     fix_bert_emb=not config.get('no_fix_bert_emb', False),
                                     word_dropout=config['word_dropout'],
-                                    rnn_dropout=config['rnn_dropout'],
-                                    device=config['device'])
+                                    rnn_dropout=config['rnn_dropout'])
             use_edge_weight = True
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(config['graph_type']))
@@ -299,6 +298,11 @@ class ModelHandler:
                 tgt = to_cuda(data['tgt_tensor'], self.config['device'])
                 data['graph_data'] = data['graph_data'].to(self.config['device'])
                 logits, loss = self.model(data['graph_data'], tgt, require_loss=True)
+
+                # add graph regularization loss if available
+                if data['graph_data'].graph_attributes.get('graph_reg', None) is not None:
+                    loss = loss + data['graph_data'].graph_attributes['graph_reg']
+
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
