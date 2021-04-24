@@ -240,7 +240,7 @@ class ModelHandler:
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
         dataset = TrecDataset(root_dir=self.config.get('root_dir', 'examples/pytorch/text_classification/data/trec'),
-                              pretrained_word_emb_file=self.config['pre_word_emb_file'],
+                              pretrained_word_emb_name=self.config.get('pretrained_word_emb_name', "840B"),
                               merge_strategy=merge_strategy,
                               seed=self.config['seed'],
                               thread_number=4,
