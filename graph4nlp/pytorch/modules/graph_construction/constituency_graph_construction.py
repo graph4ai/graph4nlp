@@ -298,7 +298,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             A customized graph data structure
         """
         _len_graph_ = len(graph_list)
-        # if only one sentence included, we need not to merge the graph.
+        # if only one sentence included, we do not need to merge the graph.
         if _len_graph_ > 1:
             merged_graph = GraphData()
             for index in range(_len_graph_):
