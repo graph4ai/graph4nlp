@@ -1,13 +1,4 @@
-import os
-import torch
-import json
-from nltk.tokenize import word_tokenize
-from graph4nlp.pytorch.data.dataset import KGCompletionDataset, KGDataItem
-from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
-from ..data.data import GraphData
-from ..modules.utils.vocab_utils import Vocab
-import numpy as np
+from graph4nlp.pytorch.data.dataset import KGCompletionDataset
 
 dataset_root = '../test/dataset/kinship'
 
@@ -22,6 +13,7 @@ class KinshipDataset(KGCompletionDataset):
 
     @property
     def processed_file_names(self) -> dict:
+        """At least 2 reserved keys should be fiiled: 'vocab' and 'data'."""
         return {'vocab': 'vocab.pt', 'data': 'data.pt', 'KG_graph': 'KG_graph.pt'}
 
     def download(self):
@@ -36,8 +28,5 @@ class KinshipDataset(KGCompletionDataset):
 
 
 if __name__ == '__main__':
-    kinshipdataset = KinshipDataset(root_dir='/Users/gaohanning/PycharmProjects/graph4nlp/examples/pytorch/kg_completion/kinship',
-                                    topology_builder=None,
+    kinshipdataset = KinshipDataset(root_dir='examples/pytorch/kg_completion/kinship',
                                     topology_subdir='e1rel_to_e2')
-
-    a = 0

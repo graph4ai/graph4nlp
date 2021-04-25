@@ -275,7 +275,13 @@ class Dataset(torch.utils.data.Dataset):
                  topology_subdir,
                  tokenizer=word_tokenize,
                  lower_case=True,
-                 pretrained_word_emb_file=None,
+                 pretrained_word_emb_name="840B",
+                 pretrained_word_emb_url=None,
+                 target_pretrained_word_emb_name=None,
+                 target_pretrained_word_emb_url=None,
+                 pretrained_word_emb_cache_dir=".vector_cache/",
+                 max_word_vocab_size=None,
+                 min_word_vocab_freq=1,
                  use_val_for_vocab=False,
                  seed=1234,
                  device='cpu',
@@ -297,8 +303,20 @@ class Dataset(torch.utils.data.Dataset):
             The word tokenizer.
         lower_case: bool, default=True
             Whether to use lower-case option.
-        pretrained_word_emb_file: str, default=None
-            The path of the pre-trained word embedding file.
+        pretrained_word_emb_name: str, optional, default="840B"
+            The name of pretrained word embedding in ``torchtext``.
+            If it is set ``None``, we will randomly set the initial word embedding values.
+        pretrained_word_emb_url: str optional, default: ``None``
+            The url for downloading pretrained word embedding.
+            Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+        target_pretrained_word_emb_name: str, optional, default=None
+            The name of pretrained word embedding in ``torchtext`` for target language.
+            If it is set ``None``, we will use ``pretrained_word_emb_name``.
+        target_pretrained_word_emb_url: str optional, default: ``None``
+            The url for downloading pretrained word embedding for target language.
+            Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+        pretrained_word_emb_cache_dir: str, optional, default: ``".vector_cache/"``
+            The path of directory saving the temporary word embedding file.
         use_val_for_vocab: bool, default=False
             Whether to add val split in the final split.
         seed: int, default=1234
@@ -326,7 +344,15 @@ class Dataset(torch.utils.data.Dataset):
         # Processing-specific attributes
         self.tokenizer = tokenizer
         self.lower_case = lower_case
-        self.pretrained_word_emb_file = pretrained_word_emb_file
+        self.pretrained_word_emb_name = pretrained_word_emb_name
+        self.pretrained_word_emb_url = pretrained_word_emb_url
+        self.target_pretrained_word_emb_name = target_pretrained_word_emb_name
+        self.target_pretrained_word_emb_url = target_pretrained_word_emb_url
+        self.pretrained_word_emb_cache_dir= pretrained_word_emb_cache_dir
+        self.max_word_vocab_size = max_word_vocab_size
+        self.min_word_vocab_freq = min_word_vocab_freq
+
+        # self.pretrained_word_emb_file = pretrained_word_emb_file
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         self.use_val_for_vocab = use_val_for_vocab
@@ -625,9 +651,13 @@ class Dataset(torch.utils.data.Dataset):
                                        tokenizer=self.tokenizer,
                                        lower_case=self.lower_case,
                                        max_word_vocab_size=self.max_word_vocab_size,
-                                       min_word_vocab_freq=self.min_word_vocab_size,
+                                       min_word_vocab_freq=self.min_word_vocab_freq,
                                        share_vocab=self.share_vocab,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       pretrained_word_emb_name=self.pretrained_word_emb_name,
+                                       pretrained_word_emb_url=self.pretrained_word_emb_url,
+                                       pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
+                                       target_pretrained_word_emb_name=self.target_pretrained_word_emb_name,
+                                       target_pretrained_word_emb_url=self.target_pretrained_word_emb_url,
                                        word_emb_size=self.word_emb_size)
         self.vocab_model = vocab_model
 
@@ -703,24 +733,6 @@ class Text2TextDataset(Dataset):
                                               share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
-
-    def build_vocab(self):
-        data_for_vocab = self.train
-        if self.use_val_for_vocab:
-            data_for_vocab = data_for_vocab + self.val
-
-        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
-                                       data_set=data_for_vocab,
-                                       tokenizer=self.tokenizer,
-                                       lower_case=self.lower_case,
-                                       max_word_vocab_size=None,
-                                       min_word_vocab_freq=1,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
-                                       word_emb_size=300,
-                                       share_vocab=self.share_vocab)
-        self.vocab_model = vocab_model
-
-        return self.vocab_model
 
     def vectorization(self, data_items):
         if self.topology_builder == IEBasedGraphConstruction:
@@ -1428,24 +1440,6 @@ class DoubleText2TextDataset(Dataset):
                                                     share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
-
-    def build_vocab(self):
-        data_for_vocab = self.train
-        if self.use_val_for_vocab:
-            data_for_vocab = data_for_vocab + self.val
-
-        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
-                                       data_set=data_for_vocab,
-                                       tokenizer=self.tokenizer,
-                                       lower_case=self.lower_case,
-                                       max_word_vocab_size=self.max_word_vocab_size,
-                                       min_word_vocab_freq=self.min_word_vocab_freq,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
-                                       word_emb_size=self.word_emb_size,
-                                       share_vocab=self.share_vocab)
-        self.vocab_model = vocab_model
-
-        return self.vocab_model
 
     def vectorization(self, data_items):
         if self.topology_builder == IEBasedGraphConstruction:

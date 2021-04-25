@@ -6,13 +6,10 @@ import time
 import torch.backends.cudnn as cudnn
 import numpy as np
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 from .dataset import CNNDataset
-from .model_g2s import Graph2seq
 from graph4nlp.pytorch.modules.graph_construction import *
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -20,7 +17,6 @@ import torch.nn as nn
 
 from torch.utils.data import DataLoader
 import torch.optim as optim
-# from .config_g2s import get_args
 from .utils import get_log, wordid2str
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
 from graph4nlp.pytorch.data.data import from_batch, GraphData
@@ -303,8 +299,8 @@ class ModelHandler:
                 else:
                     oov_dict = None
                     ref_dict = self.vocab.out_word_vocab
-
-                prob = self.model.g2s.encoder_decoder_beam_search(data['graph_data'],
+                batch_graph = self.model.g2s.graph_topology(data['graph_data'])
+                prob = self.model.g2s.encoder_decoder_beam_search(batch_graph,
                                                                   self.config['beam_size'],
                                                                   topk=1,
                                                                   oov_dict=oov_dict)

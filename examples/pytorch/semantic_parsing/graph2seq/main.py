@@ -1,6 +1,6 @@
 import os
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
@@ -88,7 +88,8 @@ class Jobs:
             raise NotImplementedError("Define your topology builder.")
 
         dataset = JobsDataset(root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
-                              pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
+                            #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
+                              pretrained_word_emb_name=self.opt["pretrained_word_emb_name"], pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
                               val_split_ratio=self.opt["val_split_ratio"],
                               merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
                                   "merge_strategy"],
