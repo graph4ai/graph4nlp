@@ -386,24 +386,24 @@ class Conll:
         print("starting build the dataset")
         
         if args.graph_type=='line_graph':
-          dataset = ConllDataset(root_dir="graph4nlp/pytorch/test/dataset/conll",
+          dataset = ConllDataset(root_dir="./graph4nlp/pytorch/test/dataset/conll",
                               topology_builder=LineBasedGraphConstruction,
                               graph_type='static',
-                              pretrained_word_emb_file=args.pre_word_emb_file,
+                              pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                               topology_subdir='LineGraph',
                               tag_types=self.tag_types)
         elif args.graph_type=='dependency_graph':
-          dataset = ConllDataset(root_dir="graph4nlp/pytorch/test/dataset/conll",
+          dataset = ConllDataset(root_dir="./graph4nlp/pytorch/test/dataset/conll",
                               topology_builder=DependencyBasedGraphConstruction_without_tokenizer,
                               graph_type='static',
-                              pretrained_word_emb_file=args.pre_word_emb_file,
+                              pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                               topology_subdir='DependencyGraph',
                               tag_types=self.tag_types) 
         elif args.graph_type=='node_emb':
-          dataset = ConllDataset(root_dir="graph4nlp/pytorch/test/dataset/conll",
+          dataset = ConllDataset(root_dir="./graph4nlp/pytorch/test/dataset/conll",
                               topology_builder=NodeEmbeddingBasedGraphConstruction,
                               graph_type='dynamic',
-                              pretrained_word_emb_file=args.pre_word_emb_file,
+                              pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                               topology_subdir='DynamicGraph_node_emb',
                               tag_types=self.tag_types,
                               merge_strategy=None,
@@ -421,10 +421,10 @@ class Conll:
             else:
                 # init_topology_builder
                 raise RuntimeError('Define your own init_topology_builder')  
-            dataset = ConllDataset(root_dir="graph4nlp/pytorch/test/dataset/conll",
+            dataset = ConllDataset(root_dir="./graph4nlp/pytorch/test/dataset/conll",
                               topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
                               graph_type='dynamic',
-                              pretrained_word_emb_file=args.pre_word_emb_file,
+                              pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                               topology_subdir='DynamicGraph_node_emb_refined',
                               tag_types=self.tag_types,
                               dynamic_graph_type=args.graph_type if args.graph_type in ('node_emb', 'node_emb_refined') else None,
@@ -528,7 +528,7 @@ class Conll:
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NER')
-    parser.add_argument("--gpu", type=int, default=-1,
+    parser.add_argument("--gpu", type=int, default=0,
                         help="which GPU to use.")
     parser.add_argument("--epochs", type=int, default=150,
                         help="number of training epochs")
@@ -570,7 +570,7 @@ if __name__ == "__main__":
                         help="graph_type:line_graph, dependency_graph, dynamic_graph")    
     parser.add_argument("--init_graph_type", type=str, default="line",
                         help="initial graph construction type ('line', 'dependency', 'constituency', 'ie')")      
-    parser.add_argument("--pre_word_emb_file", type=str, default= 'F:/xiaojie/stanford-corenlp-4.1.0/',
+    parser.add_argument("--pre_word_emb_file", type=str, default= None,
                         help="path of pretrained_word_emb_file")     
     parser.add_argument("--gl_num_heads", type=int, default=1,
                         help="num of heads for dynamic graph construction")  
