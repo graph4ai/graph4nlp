@@ -1,29 +1,45 @@
 import os
-
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-# os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 
-from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset
-from graph4nlp.pytorch.modules.graph_embedding.gat import GAT, GATLayer
+from graph4nlp.pytorch.modules.graph_embedding.gat import GATLayer
 from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGELayer
-from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN, GGNNLayer
+from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNNLayer
 from graph4nlp.pytorch.modules.graph_embedding.gcn import GCNLayer
-from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 from graph4nlp.pytorch.modules.prediction.classification.kg_completion.DistMult import DistMult
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
-import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
 import torch.optim as optim
-import dgl
 import numpy as np
-import copy
 import random
-
+import argparse
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import EmbeddingConstruction
 from graph4nlp.pytorch.modules.loss.kg_loss import *
+from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
+from graph4nlp.pytorch.modules.config import get_basic_args
+from graph4nlp.pytorch.modules.utils.logger import Logger
+import torch.backends.cudnn as cudnn
+import datetime
+import time
+from graph4nlp.pytorch.data.data import to_batch
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-task_config', '--task_config', required=True, type=str, help='path to the config file')
+    parser.add_argument('-model_config', '--model_config', required=True, type=str, help='path to the config file')
+    parser.add_argument('--grid_search', action='store_true', help='flag: grid search')
+    args = vars(parser.parse_args())
+
+    return args
+
+def print_config(config):
+    print('**************** MODEL CONFIGURATION ****************')
+    for key in sorted(config.keys()):
+        val = config[key]
+        keystr = '{}'.format(key) + (' ' * (24 - len(key)))
+        print('{} -->   {}'.format(keystr, val))
+    print('**************** MODEL CONFIGURATION ****************')
 
 
 class RankingAndHits(EvaluationMetricBase):
@@ -163,49 +179,55 @@ class RankingAndHits(EvaluationMetricBase):
         print('-' * 50)
         print('')
 
+
 class Graph2DistMult(nn.Module):
-    def __init__(self, args, vocab, device, num_entities, hidden_size=300, num_relations=None, direction_option='uni',
+    def __init__(self, config, vocab, device, num_entities, hidden_size=300, num_relations=None, direction_option='uni',
                  loss_name='BCELoss'):
         super(Graph2DistMult, self).__init__()
-        self.args = args
-        self.device = device
+        self.config = config
+        # self.config['device'] = device
         self.vocab = vocab
         self.num_entities = num_entities
 
         self.node_emb = nn.Embedding(num_entities, hidden_size)
 
-        embedding_style = {'single_token_item': False,
-                           'emb_strategy': 'w2v_bilstm',
-                           'num_rnn_layers': 1}
-
         self.embedding_layer = EmbeddingConstruction(self.vocab.in_word_vocab,
-                                                     embedding_style['single_token_item'],
-                                                     embedding_style['emb_strategy'],
-                                                     hidden_size=hidden_size,
-                                                     fix_word_emb=False,
-                                                     fix_bert_emb=False,
-                                                     device=self.device)
+                                                     self.config['graph_construction_args']['node_embedding']['embedding_style']['single_token_item'],
+                                                     self.config['graph_construction_args']['node_embedding']['embedding_style']['emb_strategy'],
+                                                     hidden_size=self.config['graph_construction_args']['node_embedding']['hidden_size'],
+                                                     fix_word_emb=self.config['graph_construction_args']['node_embedding']['fix_word_emb'],
+                                                     fix_bert_emb=self.config['graph_construction_args']['node_embedding']['fix_bert_emb'])
         self.direction_option = direction_option
         self.hidden_size = hidden_size
 
-        if args.gnn == 'ggnn':
-            self.num_layers = 2  # ggnn
+        if self.config['model_type'] == 'ggnn':
+            self.num_layers = self.config['graph_embedding_args']['graph_embedding_share']['num_layers']  # ggnn
             self.gnn_encoder = nn.ModuleList(
-                [GGNNLayer(hidden_size, hidden_size, direction_option, num_layers=1, n_etypes=1, bias=True)
+                [GGNNLayer(hidden_size,
+                           hidden_size,
+                           direction_option,
+                           num_layers=1,
+                           n_etypes=1,
+                           bias=True)
                  for i in range(self.num_layers)])
-        elif args.gnn == 'gat':
-            self.num_layers = 1  # gat uni/bi_fuse/bi_sep
+        elif self.config['model_type'] == 'gat':
+            self.num_layers = self.config['graph_embedding_args']['graph_embedding_share']['num_layers']   # gat uni/bi_fuse/bi_sep
             self.gnn_encoder = nn.ModuleList(
-                [GATLayer(hidden_size, hidden_size, num_heads=1, direction_option=direction_option)
+                [GATLayer(hidden_size,
+                          hidden_size,
+                          num_heads=self.config['graph_embedding_args']['graph_embedding_private']['num_heads'],
+                          direction_option=direction_option)
                  for i in range(self.num_layers)])
-        elif args.gnn == 'graphsage':
-            self.num_layers = 2  # graphsage
+        elif self.config['model_type'] == 'graphsage':
+            self.num_layers = self.config['graph_embedding_args']['graph_embedding_share']['num_layers'] # graphsage
             self.gnn_encoder = nn.ModuleList(
-                [GraphSAGELayer(hidden_size, hidden_size, aggregator_type='mean',
+                [GraphSAGELayer(hidden_size,
+                                hidden_size,
+                                aggregator_type=self.config['graph_embedding_args']['graph_embedding_private']['aggregator_type'],
                                 direction_option=direction_option)
                  for i in range(self.num_layers)])
-        elif args.gnn == 'gcn':
-            self.num_layers = 1  # gcn
+        elif self.config['model_type'] == 'gcn':
+            self.num_layers = self.config['graph_embedding_args']['graph_embedding_share']['num_layers'] # gcn
             self.gnn_encoder = nn.ModuleList(
                 [GCNLayer(hidden_size, hidden_size, direction_option=direction_option)
                  for i in range(self.num_layers)])
@@ -213,8 +235,10 @@ class Graph2DistMult(nn.Module):
         self.bn_list = nn.ModuleList([torch.nn.BatchNorm1d(hidden_size)
                                       for i in range(self.num_layers)])  # necessary for this task
 
-        self.distmult = DistMult(rel_emb_from_gnn=False, num_relations=num_relations,
-                                 embedding_dim=hidden_size, loss_name=loss_name)
+        self.distmult = DistMult(rel_emb_from_gnn=self.config['rel_emb_from_gnn'],
+                                 num_relations=num_relations,
+                                 embedding_dim=hidden_size,
+                                 loss_name=loss_name)
 
         self.loss_name = loss_name
         if loss_name == 'BCELoss':
@@ -245,19 +269,22 @@ class Graph2DistMult(nn.Module):
 
         max_size = max(node_len_list)
         graph_nodes_idx = [x + [self.vocab.in_word_vocab.PAD] * (max_size - len(x)) for x in graph_nodes_idx]
-        graph_nodes_idx = torch.tensor(graph_nodes_idx, dtype=torch.long).to(self.device)
-        node_len_tensor = torch.tensor(node_len_list, dtype=torch.long).to(self.device)
-        num_nodes = torch.tensor([len(node_len_list)], dtype=torch.long).to(self.device)
+        graph_nodes_idx = torch.Tensor(graph_nodes_idx).long().to(self.config['device'])
+        # node_len_tensor = torch.tensor(node_len_list, dtype=torch.long).to(self.config['device'])
+        # num_nodes = torch.tensor([len(node_len_list)], dtype=torch.long).to(self.config['device'])
         kg_graph.node_features['token_id'] = graph_nodes_idx
-        node_feat = self.embedding_layer(kg_graph, node_len_tensor, num_nodes)
-        return node_feat
+        # kg_graph.batch_node_features["node_feat"] =
+        # node_feat = self.embedding_layer(kg_graph, node_len_tensor, num_nodes)
+        kg_graph = to_batch([kg_graph])
+        kg_graph = self.embedding_layer(kg_graph)
+        return kg_graph
 
     def reset_parameters(self):
         nn.init.xavier_normal_(self.node_emb.weight.data)
 
     def forward(self, kg_graph, e1, rel, e2_multi=None, require_loss=True):
-        kg_graph = to_cuda(kg_graph, self.device)
-        kg_graph.node_features['node_feat'] = self.embedding(kg_graph)
+        kg_graph = to_cuda(kg_graph, self.config['device'])
+        kg_graph = self.embedding(kg_graph)
         list_e_r_pair_idx = list(zip(e1.squeeze().tolist(), rel.squeeze().tolist()))
 
         # run GNN
@@ -268,9 +295,9 @@ class Graph2DistMult(nn.Module):
         if self.direction_option == 'undirected':
             node_embs = kg_graph.node_features['node_feat']
             for i in range(self.num_layers):
-                if self.args.gnn == 'ggnn' or self.args.gnn == 'gcn' or self.args.gnn == 'graphsage':
+                if self.config['model_type'] == 'ggnn' or self.config['model_type'] == 'gcn' or self.config['model_type'] == 'graphsage':
                     node_embs = self.gnn_encoder[i](dgl_graph, node_embs)  # GGNN
-                elif self.args.gnn == 'gat':
+                elif self.config['model_type'] == 'gat':
                     node_embs = self.gnn_encoder[i](dgl_graph, node_embs).squeeze()  # GAT
                 node_embs = torch.dropout(torch.tanh(self.bn_list[i](node_embs)), 0.25, train=require_loss)
         else:
@@ -285,10 +312,10 @@ class Graph2DistMult(nn.Module):
             if self.direction_option == 'bi_sep':
                 for i in range(self.num_layers):
                     h = self.gnn_encoder[i](dgl_graph, (feat_in, feat_out))
-                    if self.args.gnn == 'ggnn' or self.args.gnn == 'graphsage' or self.args.gnn == 'gcn':
+                    if self.config['model_type'] == 'ggnn' or self.config['model_type'] == 'graphsage' or self.config['model_type'] == 'gcn':
                         feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0])), 0.25, train=require_loss)
                         feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1])), 0.25, train=require_loss)
-                    elif self.args.gnn == 'gat':
+                    elif self.config['model_type'] == 'gat':
                         feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0].squeeze())), 0.25,
                                                 train=require_loss)  # GAT
                         feat_out = torch.dropout(torch.tanh(self.bn_list[i](h[1].squeeze())), 0.25,
@@ -296,13 +323,14 @@ class Graph2DistMult(nn.Module):
                 node_embs = (feat_in + feat_out) / 2
             elif self.direction_option == 'bi_fuse':
                 for i in range(self.num_layers):
-                    if self.args.gnn == 'ggnn':
-                        h = self.gnn_encoder[i](dgl_graph, (feat_in, feat_in))  # GGNN
+                    if self.config['model_type'] == 'ggnn':
+                        etypes = torch.Tensor([0] * dgl_graph.number_of_edges()).long().to(feat_in.device)
+                        h = self.gnn_encoder[i](dgl_graph, (feat_in, feat_in), etypes)  # GGNN
                         feat_in = torch.dropout(torch.tanh(self.bn_list[i](h[0])), 0.25, train=require_loss)  # GGNN
-                    elif self.args.gnn == 'gat':
+                    elif self.config['model_type'] == 'gat':
                         h = self.gnn_encoder[i](dgl_graph, feat_in).squeeze()  # GAT
                         feat_in = torch.dropout(torch.tanh(self.bn_list[i](h)), 0.25, train=require_loss)  # GAT
-                    elif self.args.gnn == 'graphsage' or self.args.gnn == 'gcn':
+                    elif self.config['model_type'] == 'graphsage' or self.config['model_type'] == 'gcn':
                         h = self.gnn_encoder[i](dgl_graph, feat_in)  # GraphSage
                         feat_in = torch.dropout(torch.tanh(self.bn_list[i](h)), 0.25, train=require_loss)  # GraphSage
                 node_embs = feat_in
@@ -328,57 +356,65 @@ class Graph2DistMult(nn.Module):
             return kg_graph.graph_attributes['logits']
 
 
-class Kinship:
-    def __init__(self, device, args):
-        super(Kinship, self).__init__()
-        self.device = device
+class ModelHandler:
+    def __init__(self, config):
+        super(ModelHandler, self).__init__()
+        self.config = config
+        self.logger = Logger(config['out_dir'], config={k: v for k, v in config.items() if k != 'device'},
+                             overwrite=True)
+        self.logger.write(config['out_dir'])
         self._build_dataloader()
-        self._build_model(args)
+        self._build_model()
         self._build_optimizer()
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = KinshipDataset(root_dir='examples/pytorch/kg_completion/kinship',
-                                 topology_builder=None,
-                                 topology_subdir='e1rel_to_e2')
+        dataset = KinshipDataset(root_dir=self.config['graph_construction_args']['graph_construction_share']['root_dir'],
+                                 topology_subdir=self.config['graph_construction_args']['graph_construction_share']['topology_subdir'],
+                                 edge_strategy=self.config['graph_construction_args']['graph_construction_private']['edge_strategy'],
+                                 word_emb_size=self.config['word_emb_size'],
+                                 min_word_vocab_freq=self.config['min_word_freq'])
 
-        # TODO: When edge2node is True, num_entities != train_set.KG_graph.get_node_num()
         self.num_entities = dataset.KG_graph.graph_attributes['num_entities']
         self.num_relations = dataset.KG_graph.graph_attributes['num_relations']
         self.kg_graph = dataset.KG_graph
 
-        self.train_dataloader = DataLoader(dataset.train, batch_size=64, shuffle=True,
-                                           num_workers=1,
+        self.train_dataloader = DataLoader(dataset.train,
+                                           batch_size=self.config['batch_size'],
+                                           shuffle=True,
                                            collate_fn=dataset.collate_fn)
 
-        self.val_dataloader = DataLoader(dataset.val, batch_size=64, shuffle=True,
-                                         num_workers=1,
+        self.val_dataloader = DataLoader(dataset.val,
+                                         batch_size=self.config['batch_size'],
+                                         shuffle=True,
                                          collate_fn=dataset.collate_fn)
 
-        self.test_dataloader = DataLoader(dataset.test, batch_size=64, shuffle=True,
-                                          num_workers=1,
+        self.test_dataloader = DataLoader(dataset.test,
+                                          batch_size=self.config['batch_size'],
+                                          shuffle=False,
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
 
-    def _build_model(self, args):  # BCELoss SigmoidLoss
-        self.model = Graph2DistMult(args,
+    def _build_model(self):  # BCELoss SigmoidLoss
+        self.model = Graph2DistMult(self.config,
                                     self.vocab,
-                                    self.device,
+                                    self.config['device'],
                                     num_entities=self.num_entities,
                                     num_relations=self.num_relations,
-                                    loss_name=args.loss,
-                                    direction_option=args.direction_option).to(self.device)
+                                    loss_name=self.config['loss_name'],
+                                    direction_option=self.config['graph_embedding_args']['graph_embedding_share']['direction_option'])
+        self.model.to(self.config['device'])
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
-        self.optimizer = optim.Adam(parameters, lr=2e-3)
+        self.optimizer = optim.Adam(parameters, lr=self.config['lr'])
 
     def _build_evaluation(self):
         self.metrics = [RankingAndHits(
             model_path='best_graph2distmult_' + self.model.direction_option + '_' + self.model.loss_name)]
 
     def train(self):
-        for epoch in range(30):
+        for epoch in range(self.config['epochs']):
             self.model.train()
             loss_list = []
 
@@ -389,18 +425,18 @@ class Kinship:
                                                               data['e2'], data['rel_eval'], \
                                                               data['e1_multi'], data['e1_multi_tensor_idx']
 
-                e1 = torch.cat([e1, e2]).to(self.device)
-                rel = torch.cat([rel, rel_eval]).to(self.device)
-                e2_multi = torch.cat([e2_multi, e1_multi], dim=0).to(self.device)
+                e1 = torch.cat([e1, e2]).to(self.config['device'])
+                rel = torch.cat([rel, rel_eval]).to(self.config['device'])
+                e2_multi = torch.cat([e2_multi, e1_multi], dim=0).to(self.config['device'])
 
                 if random.randint(0, 1) == 0:
-                    e1 = torch.cat([e1]).to(self.device)
-                    rel = torch.cat([rel]).to(self.device)
-                    e2_multi = torch.cat([e2_multi], dim=0).to(self.device)
+                    e1 = torch.cat([e1]).to(self.config['device'])
+                    rel = torch.cat([rel]).to(self.config['device'])
+                    e2_multi = torch.cat([e2_multi], dim=0).to(self.config['device'])
                 else:
-                    e1 = torch.cat([e2]).to(self.device)
-                    rel = torch.cat([rel_eval]).to(self.device)
-                    e2_multi = torch.cat([e1_multi], dim=0).to(self.device)
+                    e1 = torch.cat([e2]).to(self.config['device'])
+                    rel = torch.cat([rel_eval]).to(self.config['device'])
+                    e2_multi = torch.cat([e1_multi], dim=0).to(self.config['device'])
 
                 _, loss = self.model(self.kg_graph, e1, rel, e2_multi, require_loss=True)
                 loss_list.append(loss.item())
@@ -423,7 +459,7 @@ class Kinship:
                                          self.val_dataloader,
                                          name='validation',
                                          kg_graph=self.kg_graph,
-                                         device=self.device)
+                                         device=self.config['device'])
 
         return self.metrics[0].best_mrr
 
@@ -435,28 +471,74 @@ class Kinship:
                                          self.test_dataloader,
                                          name='test',
                                          kg_graph=self.kg_graph,
-                                         device=self.device,
+                                         device=self.config['device'],
                                          save=False)
 
         return self.metrics[0].best_mrr
 
+def main(config):
+    # configure
+    np.random.seed(config['seed'])
+    torch.manual_seed(config['seed'])
+
+    if not config['no_cuda'] and torch.cuda.is_available():
+        print('[ Using CUDA ]')
+        config['device'] = torch.device('cuda' if config['gpu'] < 0 else 'cuda:%d' % config['gpu'])
+        cudnn.benchmark = True
+        torch.cuda.manual_seed(config['seed'])
+    else:
+        config['device'] = torch.device('cpu')
+
+    # ts = datetime.datetime.now().timestamp()
+    # config['out_dir'] += '_{}'.format(ts)
+    print('\n' + config['out_dir'])
+
+    runner = ModelHandler(config)
+    t0 = time.time()
+
+    val_score = runner.train()
+    # greedy search
+    # runner.stopper.load_checkpoint(runner.model)
+    # test_scores = runner.evaluate(runner.test_dataloader, write2file=True, part='test')
+    # beam search
+    test_scores = runner.test()
+
+    # print('Removed best saved model file to save disk space')
+    # os.remove(runner.stopper.save_model_path)
+    runtime = time.time() - t0
+    print('Total runtime: {:.2f}s'.format(time.time() - t0))
+    runner.logger.write('Total runtime: {:.2f}s\n'.format(runtime))
+    runner.logger.close()
+
+    return val_score, test_scores
+
 
 if __name__ == "__main__":
-    import argparse
+    cfg = get_args()
+    task_args = get_yaml_config(cfg['task_config'])
+    model_args = get_yaml_config(cfg['model_config'])
+    model_template = get_basic_args(graph_construction_name=model_args['graph_construction_name'],
+                                    graph_embedding_name=model_args['graph_embedding_name'],
+                                    decoder_name=model_args['decoder_name'])
+    update_values(to_args=model_template, from_args_list=[model_args, task_args])
+    print_config(model_template)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--gnn', type=str, default='gcn')
-    parser.add_argument('--direction_option', type=str, default='undirected')
-    parser.add_argument('--loss', type=str, default='SigmoidLoss')
-    args = parser.parse_args()
+    main(model_template)
 
-    if torch.cuda.is_available():
-        print('using cuda...')
-        device = torch.device('cuda:0')
-    else:
-        device = torch.device('cpu')
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--gnn', type=str, default='gcn')
+    # parser.add_argument('--direction_option', type=str, default='undirected')
+    # parser.add_argument('--loss', type=str, default='SigmoidLoss')
+    # args = parser.parse_args()
 
-    runner = Kinship(device, args)
-    max_score = runner.train()
-    max_score = runner.test()
-    print("Train finish, best MRR: {:.3f}".format(max_score))
+    # if torch.cuda.is_available():
+    #     print('using cuda...')
+    #     device = torch.device('cuda:0')
+    # else:
+    #     device = torch.device('cpu')
+    #
+    # runner = Kinship(device, args)
+    # max_score = runner.train()
+    # print("Train finish, best MRR: {:.3f}".format(max_score))
+    # max_test_score = runner.test()
+    # print("Test finish, best MRR: {:.3f}".format(max_test_score))

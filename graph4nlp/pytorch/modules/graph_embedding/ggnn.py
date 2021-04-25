@@ -431,7 +431,7 @@ class GGNNLayer(GNNLayerBase):
         torch.Tensor
         """
         if etypes is None:
-            etypes = torch.tensor([0] * graph.number_of_edges(), dtype=torch.long).to(node_feats.device)
+            etypes = torch.tensor([0] * graph.number_of_edges(), dtype=torch.long).to(graph.device)
         return self.model(graph, node_feats, etypes, edge_weight)
 
 

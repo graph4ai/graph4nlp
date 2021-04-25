@@ -25,7 +25,11 @@ class CNNDataset(Text2TextDataset):
                  topology_subdir,
                  tokenizer=word_tokenize,
                  lower_case=True,
-                 pretrained_word_emb_file=None,
+                 pretrained_word_emb_name='6B',
+                 pretrained_word_emb_url=None,
+                 target_pretrained_word_emb_name=None,
+                 target_pretrained_word_emb_url=None,
+                 pretrained_word_emb_cache_dir=".vector_cache/",
                  use_val_for_vocab=False,
                  seed=1234,
                  device='cpu',
@@ -47,7 +51,11 @@ class CNNDataset(Text2TextDataset):
                                          topology_subdir=topology_subdir,
                                          tokenizer=tokenizer,
                                          lower_case=lower_case,
-                                         pretrained_word_emb_file=pretrained_word_emb_file,
+                                         pretrained_word_emb_name=pretrained_word_emb_name,
+                                         pretrained_word_emb_url=pretrained_word_emb_url,
+                                         target_pretrained_word_emb_name=target_pretrained_word_emb_name,
+                                         target_pretrained_word_emb_url=target_pretrained_word_emb_url,
+                                         pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
                                          use_val_for_vocab=use_val_for_vocab,
                                          seed=seed,
                                          device=device,
@@ -67,8 +75,6 @@ class CNNDataset(Text2TextDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        # return {'train': 'train_300.json', 'val': "train_30.json", 'test': 'train_30.json'}
-        # return {'train': 'train_1w.json', 'val': "val.json", 'test': 'test.json'}
         return {'train': 'train_3w.json', 'val': "val.json", 'test': 'test.json'}
         # return {'train': 'val.json', 'val': "val.json", 'test': 'test.json'}
 
@@ -79,23 +85,6 @@ class CNNDataset(Text2TextDataset):
 
     def download(self):
         return
-
-    def build_vocab(self):
-        data_for_vocab = self.train
-        if self.use_val_for_vocab:
-            data_for_vocab = data_for_vocab + self.val
-
-        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
-                                       data_set=data_for_vocab,
-                                       tokenizer=self.tokenizer,
-                                       lower_case=self.lower_case,
-                                       max_word_vocab_size=None,
-                                       min_word_vocab_freq=3,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
-                                       word_emb_size=self.word_emb_size,
-                                       share_vocab=self.share_vocab)
-        self.vocab_model = vocab_model
-        return self.vocab_model
 
     def parse_file(self, file_path):
         """

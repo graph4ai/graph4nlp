@@ -135,7 +135,6 @@ class ModelHandler:
             raise NotImplementedError("Define your topology builder.")
 
         dataset = CNNDataset(root_dir=self.config['graph_construction_args']['graph_construction_share']['root_dir'],
-                             pretrained_word_emb_file=self.config['pre_word_emb_file'],
                              merge_strategy=self.config['graph_construction_args']['graph_construction_private'][
                                  'merge_strategy'],
                              edge_strategy=self.config['graph_construction_args']["graph_construction_private"][

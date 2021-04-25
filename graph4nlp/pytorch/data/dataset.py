@@ -981,11 +981,18 @@ class KGDataItem(DataItem):
 
 
 class KGCompletionDataset(Dataset):
-    def __init__(self, root_dir, topology_builder=None, topology_subdir=None, share_vocab=True,
-                 edge_strategy=None, **kwargs):
+    def __init__(self,
+                 root_dir,
+                 topology_builder=None,
+                 topology_subdir=None,
+                 share_vocab=True,
+                 edge_strategy=None,
+                 split_token=' ',
+                 **kwargs):
         self.data_item_type = KGDataItem
         self.share_vocab = share_vocab  # share vocab between entity and relation
         self.edge_strategy = edge_strategy
+        self.split_token = split_token
         super(KGCompletionDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
     def parse_file(self, file_path) -> list:
@@ -1046,19 +1053,28 @@ class KGCompletionDataset(Dataset):
         return data
 
     def build_vocab(self):
+        """
+        Build the vocabulary. If `self.use_val_for_vocab` is `True`, use both training set and validation set for building
+        the vocabulary. Otherwise only the training set is used.
+
+        """
         data_for_vocab = self.train
         if self.use_val_for_vocab:
-            data_for_vocab = data_for_vocab + self.val
+            data_for_vocab = self.val + data_for_vocab
 
-        vocab_model = VocabModel.build(
-            saved_vocab_file=os.path.join(self.processed_dir, self.processed_file_names['vocab']),
-            data_set=data_for_vocab,
-            tokenizer=self.tokenizer,
-            lower_case=self.lower_case,
-            max_word_vocab_size=None,
-            min_word_vocab_freq=1,
-            pretrained_word_emb_file=self.pretrained_word_emb_file,
-            word_emb_size=300)
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=self.max_word_vocab_size,
+                                       min_word_vocab_freq=self.min_word_vocab_freq,
+                                       share_vocab=self.share_vocab,
+                                       pretrained_word_emb_name=self.pretrained_word_emb_name,
+                                       pretrained_word_emb_url=self.pretrained_word_emb_url,
+                                       pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
+                                       target_pretrained_word_emb_name=self.target_pretrained_word_emb_name,
+                                       target_pretrained_word_emb_url=self.target_pretrained_word_emb_url,
+                                       word_emb_size=self.word_emb_size)
         self.vocab_model = vocab_model
 
         return self.vocab_model
