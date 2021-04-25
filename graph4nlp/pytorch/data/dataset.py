@@ -891,6 +891,7 @@ class TextToTreeDataset(Dataset):
         return self.src_vocab_model
 
     def vectorization(self, data_items):
+        """For tree decoder we also need the vectorize the tree output."""
         for item in data_items:
             graph: GraphData = item.graph
             token_matrix = []
@@ -909,6 +910,7 @@ class TextToTreeDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TreeDataItem]):
+        # remove the deepcopy
         graph_data = [item.graph for item in data_list]
         graph_data = to_batch(graph_data)
 
