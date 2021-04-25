@@ -19,9 +19,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
     Attributes
     ----------
-    attn : torch.nn.Module,
-        Attention unit used when copy mechanism is not used.
-
     attn_type : str,
         Describe which attention mechanism is used, can be ``uniform``, ``separate_on_encoder_type``, ``separate_on_node_type``.
 
@@ -40,8 +37,8 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     output_size : int,
         Size of output vocabulary size.
 
-    device : int,
-        Device where parameters and data are stored, (None implies device is cpu).
+    device : object,
+        Device where parameters and data are store, a torch.device object.
 
     teacher_force_ratio : float,
         The ratio of possibility to use teacher force training.
@@ -64,6 +61,15 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     num_layers : int, optional,
         Layer number of decoder rnn unit.
 
+    dropout_for_decoder: float,
+        Dropout ratio for decoder(include both the dropout for word embedding and the dropout for attention layer)
+    
+    tgt_vocab : object,
+        The vocab object used in decoder, including all the word<->id pairs appeared in the output sentences.
+    
+    graph_pooling_strategy : str,
+        The graph pooling strategy used to generate the graph embedding with node embeddings
+
     rnn_type: str, optional,
         The rnn unit is used, option=["lstm", "gru"], default="lstm".
 
@@ -72,9 +78,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
     max_dec_tree_depth : int, optional,
         In decoding, the tree depth lower limit.
-
-    tgt_vocab : 
-        The vocabulary manager class object.
     """
 
     def __init__(self, attn_type, embeddings, enc_hidden_size, dec_emb_size,
@@ -171,6 +174,9 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
         graph_edge_mask: torch.Tensor,
             graph edge type embedding
+
+        oov_dict: dict,
+            vocab dict used in copy mechanism to incorporate some new words which have never appeared in vocab for input sentences in training set.
         """
         tgt_batch_size = len(tgt_tree_batch)
 
@@ -281,11 +287,49 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         return loss
 
     def _filter_oov(self, tokens, vocab):
+        r"""The function used to mask some oov word in word embedding layer."""
         ret = tokens.clone()
         ret[tokens >= vocab.vocab_size] = vocab.get_symbol_idx(vocab.unk_token)
         return ret
 
-    def decode_step(self, tgt_batch_size, dec_single_input, dec_single_state, memory, parent_state, input_mask=None, memory_mask=None, memory_candidate=None, sibling_state=None, oov_dict=None, enc_batch=None):
+    def decode_step(self, tgt_batch_size, 
+                          dec_single_input, 
+                          dec_single_state, 
+                          memory, 
+                          parent_state, 
+                          input_mask=None, 
+                          memory_mask=None, 
+                          memory_candidate=None, 
+                          sibling_state=None, 
+                          oov_dict=None, 
+                          enc_batch=None):
+        """The decoding function in tree decoder.
+
+        Parameters
+        ----------
+        tgt_batch_size : int,
+            batch size.
+        dec_single_input : torch.Tensor,
+            word id matrix for decoder input: [B, N].
+        dec_single_state : torch.Tensor
+            the rnn decoding hidden state: [B, N, D].
+        memory : torch.Tensor
+            the encoder output node embedding.
+        parent_state : torch.Tensor
+            the parent embedding used in parent feeding mechanism.
+        input_mask : torch.Tensor, optional
+            input mask, by default None
+        memory_mask : torch.Tensor, optional
+            mask for encoder output, by default None
+        memory_candidate : torch.Tensor, optional
+            encoder output used for separate attention mechanism, by default None
+        sibling_state : torch.Tensor, optional
+            sibling state for sibling feeding mechanism, by default None
+        oov_dict : object, optional
+            out-of-vocabulary object for copy mechanism, by default None
+        enc_batch : torch.Tensor,
+            The input batch : (Batch_size * Source sentence word index tensor).
+        """
         dec_single_input = self._filter_oov(dec_single_input, self.tgt_vocab)
         rnn_state_c, rnn_state_h, dec_emb = self.rnn(
             dec_single_input, dec_single_state[0], dec_single_state[1], parent_state, sibling_state)
