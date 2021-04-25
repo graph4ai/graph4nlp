@@ -43,8 +43,13 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         Generate graph topology and embeddings.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size, fix_word_emb=True, fix_bert_emb=True, word_dropout=None,
-                 rnn_dropout=None):
+    def __init__(self, embedding_style, 
+                       vocab, 
+                       hidden_size, 
+                       fix_word_emb=True, 
+                       fix_bert_emb=True, 
+                       word_dropout=None,
+                       rnn_dropout=None):
         super(ConstituencyBasedGraphConstruction, self).__init__(word_vocab=vocab,
                                                                  embedding_styles=embedding_style,
                                                                  hidden_size=hidden_size,
@@ -55,7 +60,9 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         self.vocab = vocab
 
     @classmethod
-    def parsing(cls, raw_text_data, nlp_processor, processor_args):
+    def parsing(cls, raw_text_data, 
+                     nlp_processor, 
+                     processor_args):
         '''
         Parameters
         ----------
@@ -291,6 +298,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             A customized graph data structure
         """
         _len_graph_ = len(graph_list)
+        # if only one sentence included, we do not need to merge the graph.
         if _len_graph_ > 1:
             merged_graph = GraphData()
             for index in range(_len_graph_):
