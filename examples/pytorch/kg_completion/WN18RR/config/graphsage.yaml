@@ -1,14 +1,14 @@
 graph_construction_name: "kg"
 graph_embedding_name: "graphsage"
 decoder_name: "distmult"
-out_dir: "out/kgc/kinship/graphsage_uni_ckpt"
+out_dir: "out/kgc/wn18rr/graphsage_uni_ckpt"
 model_type: 'graphsage'
 
 vocab_lower_case: true
 
 graph_construction_args:
   graph_construction_share:
-    root_dir: 'examples/pytorch/kg_completion/kinship'
+    root_dir: 'examples/pytorch/kg_completion/WN18RR'
     topology_subdir: 'e1rel_to_e2'
 
   graph_construction_private:
