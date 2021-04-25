@@ -34,7 +34,7 @@ def extract_bert_hidden_states(all_encoder_layers, max_doc_len, features, weight
   if device is not None:
     out_features = out_features.to(device)
 
-  token_count = []
+  # token_count = []
   # Map BERT tokens to doc words
   for i, ex_feature in enumerate(features): # Example
     ex_token_count = defaultdict(int)
@@ -44,11 +44,14 @@ def extract_bert_hidden_states(all_encoder_layers, max_doc_len, features, weight
           doc_word_idx = chunk_feature.token_to_orig_map[k]
           out_features[:, i, doc_word_idx] += all_encoder_layers[:, i, j, k]
           ex_token_count[doc_word_idx] += 1
-    token_count.append(ex_token_count)
+    # token_count.append(ex_token_count)
 
-  for i, ex_token_count in enumerate(token_count):
     for doc_word_idx, count in ex_token_count.items():
       out_features[:, i, doc_word_idx] /= count
+
+  # for i, ex_token_count in enumerate(token_count):
+  #   for doc_word_idx, count in ex_token_count.items():
+  #     out_features[:, i, doc_word_idx] /= count
 
   # Average through all layers
   if not weighted_avg:

@@ -472,7 +472,6 @@ class BertEmbedding(nn.Module):
         weights_bert_layers = torch.softmax(self.logits_bert_layers, dim=-1)
         bert_xd_f = torch.mm(weights_bert_layers, bert_xd_f.view(bert_xd_f.size(0), -1)).view(bert_xd_f.shape[1:])
 
-
         return bert_xd_f
 
 
