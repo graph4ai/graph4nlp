@@ -15,11 +15,11 @@ def duplicate(token_lists, max_seq_len, num_seq):
     for i in range(1, cur_num_seq):
         token_lists[i] = token_lists[i][:max_seq_len]
 
-    token_lists = token_lists * (num_seq // cur_num_seq)
-    if len(token_lists) < num_seq:
-        token_lists = token_lists + token_lists[:num_seq - len(token_lists)]
+    new_token_lists = token_lists * (num_seq // cur_num_seq)
+    if len(new_token_lists) < num_seq:
+        new_token_lists = new_token_lists + token_lists[:num_seq - len(new_token_lists)]
 
-    return token_lists
+    return new_token_lists
 
 class FusedEmbeddingConstruction(EmbeddingConstructionBase):
     """Initial graph embedding construction class.
@@ -179,7 +179,7 @@ class FusedEmbeddingConstruction(EmbeddingConstructionBase):
             raw_tokens = [[gd.node_attributes[i]['token'] for i in range(gd.get_node_num())] for gd in gd_list]
 
             # test-only: duplicate raw tokens
-            raw_tokens = duplicate(raw_tokens, max_seq_len=400, num_seq=50)
+            raw_tokens = duplicate(raw_tokens, max_seq_len=600, num_seq=5)
 
 
             print('profiling passage BERT encoding...')
@@ -194,7 +194,7 @@ class FusedEmbeddingConstruction(EmbeddingConstructionBase):
 
             answer_raw_tokens = data['input_text2']
             # test-only: duplicate raw tokens
-            answer_raw_tokens = duplicate(answer_raw_tokens, max_seq_len=400, num_seq=50)
+            answer_raw_tokens = duplicate(answer_raw_tokens, max_seq_len=600, num_seq=5)
 
             # answer encoding
             print('profiling answer BERT encoding...')
