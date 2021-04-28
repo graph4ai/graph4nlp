@@ -855,10 +855,10 @@ class TextToTreeDataset(Dataset):
             data_for_vocab = data_for_vocab + self.val
 
         src_vocab_model = VocabForTree(lower_case=self.lower_case,
-                                       pretrained_embedding_fn=self.pretrained_word_emb_file,
+                                       pretrained_embedding_fn=self.pretrained_word_emb_name,
                                        embedding_dims=self.enc_emb_size)
         tgt_vocab_model = VocabForTree(lower_case=self.lower_case,
-                                       pretrained_embedding_fn=self.pretrained_word_emb_file,
+                                       pretrained_embedding_fn=self.pretrained_word_emb_name,
                                        embedding_dims=self.dec_emb_size)
 
         if self.share_vocab:
@@ -1682,7 +1682,8 @@ class CNNSeq2SeqDataset(Dataset):
                                        lower_case=self.lower_case,
                                        max_word_vocab_size=50000,
                                        min_word_vocab_freq=8,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_name,
+                                    #    pretrained_word_emb_file=self.pretrained_word_emb_file,
                                        word_emb_size=self.word_emb_size,
                                        share_vocab=self.share_vocab)
         self.vocab_model = vocab_model
