@@ -1682,7 +1682,8 @@ class CNNSeq2SeqDataset(Dataset):
                                        lower_case=self.lower_case,
                                        max_word_vocab_size=50000,
                                        min_word_vocab_freq=8,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       pretrained_word_emb_file=self.pretrained_word_emb_name,
+                                    #    pretrained_word_emb_file=self.pretrained_word_emb_file,
                                        word_emb_size=self.word_emb_size,
                                        share_vocab=self.share_vocab)
         self.vocab_model = vocab_model
