@@ -10,9 +10,19 @@ from dgl.utils import expand_as_pair
 
 class GCN(GNNBase):
     r"""Multi-layer Graph Convolutional Networks (GCN).
-    Support both `unidirectional GCN
+    Support both `Unidirectional GCN
     <https://arxiv.org/pdf/1609.02907>`__ and bidirectional versions
     including `GCN-BiSep` and `GCN-BiFuse`.
+
+    For the Unidirectional GCN,
+
+    .. math::
+      h_i^{(l+1)} = \sigma(b^{(l)} + \sum_{j\in\mathcal{N}(i)}\frac{1}{c_{ij}}h_j^{(l)}W^{(l)})
+
+    where :math:`\mathcal{N}(i)` is the set of neighbors of node :math:`i`,
+    :math:`c_{ij}` is the product of the square root of node degrees
+    (i.e.,  :math:`c_{ij} = \sqrt{|\mathcal{N}(i)|}\sqrt{|\mathcal{N}(j)|}`),
+    and :math:`\sigma` is an activation function.
 
     Parameters
     ----------

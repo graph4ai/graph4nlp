@@ -1,7 +1,6 @@
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-# os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset

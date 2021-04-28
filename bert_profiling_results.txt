@@ -1,0 +1,2621 @@
+**************** MODEL CONFIGURATION ****************
+batch_size               -->  10
+beam_size                -->  5
+coverage_loss_ratio      -->  0.3
+dataset                  -->  squad-split2
+decoder_args             -->  {'rnn_decoder_share': {'rnn_type': 'lstm', 'input_size': 300, 'hidden_size': 300, 'rnn_emb_input_size': 300, 'use_copy': True, 'use_coverage': True, 'graph_pooling_strategy': 'max', 'attention_type': 'sep_diff_encoder_type', 'fuse_strategy': 'concatenate', 'dropout': 0.3}, 'rnn_decoder_private': {'max_decoder_step': 41, 'node_type_num': None, 'tgt_emb_as_output_layer': True, 'teacher_forcing_rate': 0.8}}
+decoder_name             -->  stdrnn
+early_stop_metric        -->  BLEU_4
+enc_rnn_dropout          -->  0.3
+epochs                   -->  100
+gpu                      -->  -1
+grad_clipping            -->  10
+graph_construction_args  -->  {'graph_construction_share': {'graph_type': 'dependency', 'root_dir': 'examples/pytorch/question_generation/data/squad_split2', 'topology_subdir': 'DependencyGraph', 'lower_case': True, 'share_vocab': True, 'input_language': 'en', 'output_language': 'en', 'thread_number': 4, 'port': 9000, 'timeout': 15000}, 'graph_construction_private': {'edge_strategy': 'homogeneous', 'merge_strategy': 'tailhead', 'sequential_link': True, 'as_node': False, 'nlp_tools_args': {'name': 'stanfordcorenlp', 'tokenizer_args': {'whitespace': True}, 'normalize_parentheses': False, 'normalize_other_brackets': False, 'split_hyphenated': False, 'is_oneSentence': True, 'port': 9000, 'timeout': 15000}}, 'node_embedding': {'input_size': 300, 'hidden_size': 300, 'word_dropout': 0.2, 'rnn_dropout': 0.3, 'fix_bert_emb': False, 'fix_word_emb': True, 'embedding_style': {'single_token_item': True, 'emb_strategy': 'w2v_bert_bilstm', 'num_rnn_layers': 1, 'bert_model_name': 'bert-base-uncased', 'bert_lower_case': True}, 'bert_dropout': 0.4}}
+graph_construction_name  -->  dependency
+graph_embedding_args     -->  {'graph_embedding_share': {'num_layers': 3, 'input_size': 300, 'hidden_size': 300, 'output_size': 300, 'direction_option': 'undirected', 'feat_drop': 0.2}, 'graph_embedding_private': {'n_etypes': 1, 'bias': True, 'use_edge_weight': True}}
+graph_embedding_name     -->  ggnn
+lr                       -->  0.001
+lr_patience              -->  3
+lr_reduce_factor         -->  0.7
+min_word_freq            -->  1
+n_samples                -->  None
+no_cuda                  -->  False
+num_hidden               -->  300
+num_workers              -->  10
+out_dir                  -->  out/squad_split2/qg_ckpt_dep_ggnn
+patience                 -->  30
+pre_word_emb_file        -->  /Users/hugo/Documents/Work/Research/Resources/glove-vectors/glove.840B.300d.txt
+seed                     -->  1234
+share_vocab              -->  True
+top_word_vocab           -->  70000
+word_dropout             -->  0.4
+word_emb_size            -->  300
+**************** MODEL CONFIGURATION ****************
+[ Using CUDA ]
+
+out/squad_split2/qg_ckpt_dep_ggnn
+Loading pre-built vocab model stored in examples/pytorch/question_generation/data/squad_split2/processed/DependencyGraph/vocab.pt
+Train size: 86635, Val size: 8965, Test size: 8964
+[ Fix word embeddings ]
+[ Using pretrained BERT embeddings ]
+[ Finetune BERT layers ]
+[ Fix word embeddings ]
+[ Using pretrained BERT embeddings ]
+[ Finetune BERT layers ]
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004903316497802734s
+bert_xd shape: torch.Size([10, 1, 59])
+runtime of core bert call: 0.042223453521728516s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.19013690948486328s
+total runtime of bert call: 0.2379148006439209s
+10 sequences, avg 26.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.01384282112121582s
+bert_xd shape: torch.Size([10, 1, 15])
+runtime of core bert call: 0.06196284294128418s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.025735855102539062s
+total runtime of bert call: 0.10227227210998535s
+10 sequences, avg 26.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004918098449707031s
+bert_xd shape: torch.Size([10, 1, 46])
+runtime of core bert call: 0.021752357482910156s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1025090217590332s
+total runtime of bert call: 0.12970995903015137s
+10 sequences, avg 23.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.01685476303100586s
+bert_xd shape: torch.Size([10, 1, 34])
+runtime of core bert call: 0.08477163314819336s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.13549327850341797s
+total runtime of bert call: 0.23746085166931152s
+10 sequences, avg 23.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.006387233734130859s
+bert_xd shape: torch.Size([10, 1, 56])
+runtime of core bert call: 0.028433561325073242s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.08202552795410156s
+total runtime of bert call: 0.11750435829162598s
+10 sequences, avg 24.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0021343231201171875s
+bert_xd shape: torch.Size([10, 1, 16])
+runtime of core bert call: 0.03415203094482422s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.02016305923461914s
+total runtime of bert call: 0.05692791938781738s
+10 sequences, avg 24.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004921436309814453s
+bert_xd shape: torch.Size([10, 1, 86])
+runtime of core bert call: 0.018929719924926758s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.06107616424560547s
+total runtime of bert call: 0.08541202545166016s
+10 sequences, avg 37.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016865730285644531s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.01540684700012207s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.009063243865966797s
+total runtime of bert call: 0.026390790939331055s
+10 sequences, avg 37.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004616975784301758s
+bert_xd shape: torch.Size([10, 1, 191])
+runtime of core bert call: 0.04668760299682617s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07212996482849121s
+total runtime of bert call: 0.12401247024536133s
+10 sequences, avg 35.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.002306699752807617s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.017929792404174805s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.01804804801940918s
+total runtime of bert call: 0.03864288330078125s
+10 sequences, avg 35.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.021565914154052734s
+bert_xd shape: torch.Size([10, 1, 57])
+runtime of core bert call: 0.04063224792480469s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.15752100944519043s
+total runtime of bert call: 0.22020173072814941s
+10 sequences, avg 29.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.002095460891723633s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.04589509963989258s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.043273210525512695s
+total runtime of bert call: 0.09156370162963867s
+10 sequences, avg 29.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004755496978759766s
+bert_xd shape: torch.Size([10, 1, 77])
+runtime of core bert call: 0.015145540237426758s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.19900298118591309s
+total runtime of bert call: 0.2193293571472168s
+10 sequences, avg 31.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.009965181350708008s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.02775096893310547s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.058060407638549805s
+total runtime of bert call: 0.09609389305114746s
+10 sequences, avg 31.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.01889324188232422s
+bert_xd shape: torch.Size([10, 1, 126])
+runtime of core bert call: 0.02510380744934082s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.10575985908508301s
+total runtime of bert call: 0.15013813972473145s
+10 sequences, avg 29.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016052722930908203s
+bert_xd shape: torch.Size([10, 1, 12])
+runtime of core bert call: 0.15862774848937988s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.010113716125488281s
+total runtime of bert call: 0.1705632209777832s
+10 sequences, avg 29.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0047414302825927734s
+bert_xd shape: torch.Size([10, 1, 71])
+runtime of core bert call: 0.020618200302124023s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.057596683502197266s
+total runtime of bert call: 0.08349847793579102s
+10 sequences, avg 32.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0020322799682617188s
+bert_xd shape: torch.Size([10, 1, 35])
+runtime of core bert call: 0.017574548721313477s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.026508331298828125s
+total runtime of bert call: 0.04649972915649414s
+10 sequences, avg 32.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003885984420776367s
+bert_xd shape: torch.Size([10, 1, 65])
+runtime of core bert call: 0.01854562759399414s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04216194152832031s
+total runtime of bert call: 0.06507754325866699s
+10 sequences, avg 26.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018887519836425781s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.01593804359436035s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.008539676666259766s
+total runtime of bert call: 0.02866339683532715s
+10 sequences, avg 26.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0038149356842041016s
+bert_xd shape: torch.Size([10, 1, 87])
+runtime of core bert call: 0.021184206008911133s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.12946128845214844s
+total runtime of bert call: 0.15486407279968262s
+10 sequences, avg 31.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017991065979003906s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.030651092529296875s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.030837535858154297s
+total runtime of bert call: 0.07325005531311035s
+10 sequences, avg 31.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.002619504928588867s
+bert_xd shape: torch.Size([10, 1, 53])
+runtime of core bert call: 0.01405024528503418s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.046708106994628906s
+total runtime of bert call: 0.06438159942626953s
+10 sequences, avg 23.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0031974315643310547s
+bert_xd shape: torch.Size([10, 1, 19])
+runtime of core bert call: 0.023768186569213867s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.014379501342773438s
+total runtime of bert call: 0.0418088436126709s
+10 sequences, avg 23.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003117084503173828s
+bert_xd shape: torch.Size([10, 1, 74])
+runtime of core bert call: 0.014244556427001953s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.0490412712097168s
+total runtime of bert call: 0.06679844856262207s
+10 sequences, avg 33.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001659393310546875s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.014930248260498047s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.005557537078857422s
+total runtime of bert call: 0.02231311798095703s
+10 sequences, avg 33.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.00415802001953125s
+bert_xd shape: torch.Size([10, 1, 151])
+runtime of core bert call: 0.014590978622436523s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.16109848022460938s
+total runtime of bert call: 0.180769681930542s
+10 sequences, avg 46.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.002331256866455078s
+bert_xd shape: torch.Size([10, 1, 17])
+runtime of core bert call: 0.04664492607116699s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.042333364486694336s
+total runtime of bert call: 0.09173035621643066s
+10 sequences, avg 46.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003694295883178711s
+bert_xd shape: torch.Size([10, 1, 58])
+runtime of core bert call: 0.015938520431518555s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.10988497734069824s
+total runtime of bert call: 0.13024401664733887s
+10 sequences, avg 31.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.009381532669067383s
+bert_xd shape: torch.Size([10, 1, 22])
+runtime of core bert call: 0.03791618347167969s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.020657777786254883s
+total runtime of bert call: 0.06867170333862305s
+10 sequences, avg 31.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004114389419555664s
+bert_xd shape: torch.Size([10, 1, 89])
+runtime of core bert call: 0.014578104019165039s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.06471133232116699s
+total runtime of bert call: 0.08425569534301758s
+10 sequences, avg 42.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0023648738861083984s
+bert_xd shape: torch.Size([10, 1, 12])
+runtime of core bert call: 0.01570439338684082s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.006977558135986328s
+total runtime of bert call: 0.025429725646972656s
+10 sequences, avg 42.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003364086151123047s
+bert_xd shape: torch.Size([10, 1, 84])
+runtime of core bert call: 0.014982223510742188s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05336785316467285s
+total runtime of bert call: 0.0720667839050293s
+10 sequences, avg 30.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017313957214355469s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.015357255935668945s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.003543853759765625s
+total runtime of bert call: 0.02075815200805664s
+10 sequences, avg 30.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0036203861236572266s
+bert_xd shape: torch.Size([10, 1, 72])
+runtime of core bert call: 0.02910780906677246s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.24040508270263672s
+total runtime of bert call: 0.27350592613220215s
+10 sequences, avg 31.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015859603881835938s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.026298046112060547s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07310843467712402s
+total runtime of bert call: 0.1011207103729248s
+10 sequences, avg 31.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0029838085174560547s
+bert_xd shape: torch.Size([10, 1, 50])
+runtime of core bert call: 0.013587474822998047s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.051314592361450195s
+total runtime of bert call: 0.06843233108520508s
+10 sequences, avg 28.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.002000570297241211s
+bert_xd shape: torch.Size([10, 1, 8])
+runtime of core bert call: 0.017705678939819336s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.007464885711669922s
+total runtime of bert call: 0.027464628219604492s
+10 sequences, avg 28.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.002960205078125s
+bert_xd shape: torch.Size([10, 1, 70])
+runtime of core bert call: 0.013401508331298828s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04829096794128418s
+total runtime of bert call: 0.06511855125427246s
+10 sequences, avg 33.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017685890197753906s
+bert_xd shape: torch.Size([10, 1, 14])
+runtime of core bert call: 0.015102148056030273s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.007260560989379883s
+total runtime of bert call: 0.024400949478149414s
+10 sequences, avg 33.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0034809112548828125s
+bert_xd shape: torch.Size([10, 1, 76])
+runtime of core bert call: 0.02165842056274414s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.21949148178100586s
+total runtime of bert call: 0.24511957168579102s
+10 sequences, avg 27.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.00235748291015625s
+bert_xd shape: torch.Size([10, 1, 12])
+runtime of core bert call: 0.026205778121948242s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.01454782485961914s
+total runtime of bert call: 0.0432889461517334s
+10 sequences, avg 27.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.015863895416259766s
+bert_xd shape: torch.Size([10, 1, 71])
+runtime of core bert call: 0.023041486740112305s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1819307804107666s
+total runtime of bert call: 0.23340225219726562s
+10 sequences, avg 32.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001744985580444336s
+bert_xd shape: torch.Size([10, 1, 28])
+runtime of core bert call: 0.016788959503173828s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.0672755241394043s
+total runtime of bert call: 0.08611321449279785s
+10 sequences, avg 32.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004003047943115234s
+bert_xd shape: torch.Size([10, 1, 83])
+runtime of core bert call: 0.019498586654663086s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.12482881546020508s
+total runtime of bert call: 0.14873027801513672s
+10 sequences, avg 28.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.03798341751098633s
+bert_xd shape: torch.Size([10, 1, 18])
+runtime of core bert call: 0.02857351303100586s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03722572326660156s
+total runtime of bert call: 0.1042032241821289s
+10 sequences, avg 28.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003655672073364258s
+bert_xd shape: torch.Size([10, 1, 70])
+runtime of core bert call: 0.014249324798583984s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05746150016784668s
+total runtime of bert call: 0.07579684257507324s
+10 sequences, avg 35.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017728805541992188s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.015450716018676758s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.015229463577270508s
+total runtime of bert call: 0.03275322914123535s
+10 sequences, avg 35.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003651142120361328s
+bert_xd shape: torch.Size([10, 1, 50])
+runtime of core bert call: 0.023656368255615234s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.14346027374267578s
+total runtime of bert call: 0.17119193077087402s
+10 sequences, avg 26.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001913309097290039s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.05412483215332031s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.010102272033691406s
+total runtime of bert call: 0.06640362739562988s
+10 sequences, avg 26.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0028426647186279297s
+bert_xd shape: torch.Size([10, 1, 43])
+runtime of core bert call: 0.016530990600585938s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.29809093475341797s
+total runtime of bert call: 0.3178436756134033s
+10 sequences, avg 22.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015888214111328125s
+bert_xd shape: torch.Size([10, 1, 22])
+runtime of core bert call: 0.021265506744384766s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03982043266296387s
+total runtime of bert call: 0.06297039985656738s
+10 sequences, avg 22.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003612518310546875s
+bert_xd shape: torch.Size([10, 1, 94])
+runtime of core bert call: 0.017152786254882812s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05213141441345215s
+total runtime of bert call: 0.0733177661895752s
+10 sequences, avg 33.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017969608306884766s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.014151334762573242s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03455400466918945s
+total runtime of bert call: 0.0506899356842041s
+10 sequences, avg 33.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004094123840332031s
+bert_xd shape: torch.Size([10, 1, 78])
+runtime of core bert call: 0.01848435401916504s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04701805114746094s
+total runtime of bert call: 0.07035231590270996s
+10 sequences, avg 28.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019347667694091797s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.01638174057006836s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.01408076286315918s
+total runtime of bert call: 0.03289222717285156s
+10 sequences, avg 28.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0046384334564208984s
+bert_xd shape: torch.Size([10, 1, 161])
+runtime of core bert call: 0.0421140193939209s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.08932185173034668s
+total runtime of bert call: 0.13666129112243652s
+10 sequences, avg 25.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001865386962890625s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.016993999481201172s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.004497051239013672s
+total runtime of bert call: 0.023560285568237305s
+10 sequences, avg 25.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.00466465950012207s
+bert_xd shape: torch.Size([10, 1, 97])
+runtime of core bert call: 0.02264261245727539s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1615588665008545s
+total runtime of bert call: 0.18940401077270508s
+10 sequences, avg 38.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017995834350585938s
+bert_xd shape: torch.Size([10, 1, 19])
+runtime of core bert call: 0.041066646575927734s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.028459548950195312s
+total runtime of bert call: 0.07153892517089844s
+10 sequences, avg 38.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.030234098434448242s
+bert_xd shape: torch.Size([10, 1, 98])
+runtime of core bert call: 0.03576374053955078s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.19789981842041016s
+total runtime of bert call: 0.26427268981933594s
+10 sequences, avg 33.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.014025211334228516s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.05661725997924805s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03881239891052246s
+total runtime of bert call: 0.10958600044250488s
+10 sequences, avg 33.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0032112598419189453s
+bert_xd shape: torch.Size([10, 1, 72])
+runtime of core bert call: 0.017488479614257812s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.049900054931640625s
+total runtime of bert call: 0.07111978530883789s
+10 sequences, avg 25.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019266605377197266s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.01510477066040039s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.006491899490356445s
+total runtime of bert call: 0.023664236068725586s
+10 sequences, avg 25.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004962444305419922s
+bert_xd shape: torch.Size([10, 1, 60])
+runtime of core bert call: 0.020488262176513672s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.06830501556396484s
+total runtime of bert call: 0.0948328971862793s
+10 sequences, avg 32.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.00278472900390625s
+bert_xd shape: torch.Size([10, 1, 15])
+runtime of core bert call: 0.018920183181762695s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.01114201545715332s
+total runtime of bert call: 0.03356361389160156s
+10 sequences, avg 32.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004093647003173828s
+bert_xd shape: torch.Size([10, 1, 86])
+runtime of core bert call: 0.014019489288330078s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.12187623977661133s
+total runtime of bert call: 0.14061832427978516s
+10 sequences, avg 40.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017790794372558594s
+bert_xd shape: torch.Size([10, 1, 6])
+runtime of core bert call: 0.02298879623413086s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.01578807830810547s
+total runtime of bert call: 0.04076409339904785s
+10 sequences, avg 40.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003263235092163086s
+bert_xd shape: torch.Size([10, 1, 59])
+runtime of core bert call: 0.01430821418762207s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1323258876800537s
+total runtime of bert call: 0.15040278434753418s
+10 sequences, avg 34.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018720626831054688s
+bert_xd shape: torch.Size([10, 1, 15])
+runtime of core bert call: 0.05425715446472168s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.020825862884521484s
+total runtime of bert call: 0.07914233207702637s
+10 sequences, avg 34.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003351449966430664s
+bert_xd shape: torch.Size([10, 1, 54])
+runtime of core bert call: 0.014887332916259766s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03550863265991211s
+total runtime of bert call: 0.05411815643310547s
+10 sequences, avg 28.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0014414787292480469s
+bert_xd shape: torch.Size([10, 1, 8])
+runtime of core bert call: 0.012731790542602539s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.003765106201171875s
+total runtime of bert call: 0.01804971694946289s
+10 sequences, avg 28.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.00391077995300293s
+bert_xd shape: torch.Size([10, 1, 67])
+runtime of core bert call: 0.022205591201782227s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1120915412902832s
+total runtime of bert call: 0.13860750198364258s
+10 sequences, avg 34.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017936229705810547s
+bert_xd shape: torch.Size([10, 1, 29])
+runtime of core bert call: 0.09795045852661133s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07818341255187988s
+total runtime of bert call: 0.17828011512756348s
+10 sequences, avg 34.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0030965805053710938s
+bert_xd shape: torch.Size([10, 1, 74])
+runtime of core bert call: 0.013482093811035156s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04871654510498047s
+total runtime of bert call: 0.06567907333374023s
+10 sequences, avg 34.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016455650329589844s
+bert_xd shape: torch.Size([10, 1, 18])
+runtime of core bert call: 0.01503300666809082s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.010277748107910156s
+total runtime of bert call: 0.027115821838378906s
+10 sequences, avg 34.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0036563873291015625s
+bert_xd shape: torch.Size([10, 1, 60])
+runtime of core bert call: 0.017823457717895508s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.039403438568115234s
+total runtime of bert call: 0.06131291389465332s
+10 sequences, avg 25.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016677379608154297s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.04063820838928223s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.023201942443847656s
+total runtime of bert call: 0.0659337043762207s
+10 sequences, avg 25.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0041272640228271484s
+bert_xd shape: torch.Size([10, 1, 113])
+runtime of core bert call: 0.021991729736328125s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.22915029525756836s
+total runtime of bert call: 0.25713586807250977s
+10 sequences, avg 42.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001743316650390625s
+bert_xd shape: torch.Size([10, 1, 17])
+runtime of core bert call: 0.026355504989624023s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07111978530883789s
+total runtime of bert call: 0.09953069686889648s
+10 sequences, avg 42.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0042226314544677734s
+bert_xd shape: torch.Size([10, 1, 57])
+runtime of core bert call: 0.01762557029724121s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04423236846923828s
+total runtime of bert call: 0.06643390655517578s
+10 sequences, avg 29.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015854835510253906s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.01489877700805664s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.005263090133666992s
+total runtime of bert call: 0.02187824249267578s
+10 sequences, avg 29.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0033555030822753906s
+bert_xd shape: torch.Size([10, 1, 67])
+runtime of core bert call: 0.04005742073059082s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.21785879135131836s
+total runtime of bert call: 0.26174259185791016s
+10 sequences, avg 29.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017547607421875s
+bert_xd shape: torch.Size([10, 1, 20])
+runtime of core bert call: 0.020772457122802734s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07111859321594238s
+total runtime of bert call: 0.09393763542175293s
+10 sequences, avg 29.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003698587417602539s
+bert_xd shape: torch.Size([10, 1, 60])
+runtime of core bert call: 0.034024953842163086s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.21067571640014648s
+total runtime of bert call: 0.2749030590057373s
+10 sequences, avg 31.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001650094985961914s
+bert_xd shape: torch.Size([10, 1, 16])
+runtime of core bert call: 0.027759313583374023s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05809497833251953s
+total runtime of bert call: 0.0878150463104248s
+10 sequences, avg 31.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0032711029052734375s
+bert_xd shape: torch.Size([10, 1, 62])
+runtime of core bert call: 0.015498876571655273s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.09243035316467285s
+total runtime of bert call: 0.11166644096374512s
+10 sequences, avg 29.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018439292907714844s
+bert_xd shape: torch.Size([10, 1, 19])
+runtime of core bert call: 0.04477834701538086s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.023493528366088867s
+total runtime of bert call: 0.07044601440429688s
+10 sequences, avg 29.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004053354263305664s
+bert_xd shape: torch.Size([10, 1, 48])
+runtime of core bert call: 0.01820683479309082s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.11997079849243164s
+total runtime of bert call: 0.14270448684692383s
+10 sequences, avg 25.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0021016597747802734s
+bert_xd shape: torch.Size([10, 1, 14])
+runtime of core bert call: 0.038748741149902344s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.017552852630615234s
+total runtime of bert call: 0.05886650085449219s
+10 sequences, avg 25.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.006110668182373047s
+bert_xd shape: torch.Size([10, 1, 106])
+runtime of core bert call: 0.019773483276367188s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.08659648895263672s
+total runtime of bert call: 0.11292338371276855s
+10 sequences, avg 36.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015742778778076172s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.015712976455688477s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.010133028030395508s
+total runtime of bert call: 0.027679443359375s
+10 sequences, avg 36.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004544734954833984s
+bert_xd shape: torch.Size([10, 1, 80])
+runtime of core bert call: 0.015939712524414062s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.18143582344055176s
+total runtime of bert call: 0.2177109718322754s
+10 sequences, avg 32.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019228458404541016s
+bert_xd shape: torch.Size([10, 1, 16])
+runtime of core bert call: 0.016089200973510742s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.09226226806640625s
+total runtime of bert call: 0.11060404777526855s
+10 sequences, avg 32.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.00334930419921875s
+bert_xd shape: torch.Size([10, 1, 66])
+runtime of core bert call: 0.01696634292602539s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.2189011573791504s
+total runtime of bert call: 0.23976850509643555s
+10 sequences, avg 27.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001976490020751953s
+bert_xd shape: torch.Size([10, 1, 12])
+runtime of core bert call: 0.015392780303955078s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07445788383483887s
+total runtime of bert call: 0.09219908714294434s
+10 sequences, avg 27.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.006058454513549805s
+bert_xd shape: torch.Size([10, 1, 88])
+runtime of core bert call: 0.02290034294128418s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05827188491821289s
+total runtime of bert call: 0.0879812240600586s
+10 sequences, avg 31.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0021038055419921875s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.016974449157714844s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.016239166259765625s
+total runtime of bert call: 0.035646915435791016s
+10 sequences, avg 31.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004464864730834961s
+bert_xd shape: torch.Size([10, 1, 60])
+runtime of core bert call: 0.019203662872314453s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1670241355895996s
+total runtime of bert call: 0.19121289253234863s
+10 sequences, avg 31.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.00960993766784668s
+bert_xd shape: torch.Size([10, 1, 14])
+runtime of core bert call: 0.03575873374938965s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.00769495964050293s
+total runtime of bert call: 0.05337667465209961s
+10 sequences, avg 31.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004019737243652344s
+bert_xd shape: torch.Size([10, 1, 142])
+runtime of core bert call: 0.022745847702026367s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.14529681205749512s
+total runtime of bert call: 0.1724553108215332s
+10 sequences, avg 39.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016031265258789062s
+bert_xd shape: torch.Size([10, 1, 8])
+runtime of core bert call: 0.015497446060180664s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.018841028213500977s
+total runtime of bert call: 0.03610563278198242s
+10 sequences, avg 39.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0028967857360839844s
+bert_xd shape: torch.Size([10, 1, 49])
+runtime of core bert call: 0.016467809677124023s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.24543142318725586s
+total runtime of bert call: 0.2651386260986328s
+10 sequences, avg 25.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001466512680053711s
+bert_xd shape: torch.Size([10, 1, 8])
+runtime of core bert call: 0.014371395111083984s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03227829933166504s
+total runtime of bert call: 0.04827117919921875s
+10 sequences, avg 25.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004480123519897461s
+bert_xd shape: torch.Size([10, 1, 63])
+runtime of core bert call: 0.018678665161132812s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.184830904006958s
+total runtime of bert call: 0.2086794376373291s
+10 sequences, avg 33.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019152164459228516s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.037512779235839844s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.005872011184692383s
+total runtime of bert call: 0.04550433158874512s
+10 sequences, avg 33.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0046541690826416016s
+bert_xd shape: torch.Size([10, 1, 173])
+runtime of core bert call: 0.030321598052978516s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.2551596164703369s
+total runtime of bert call: 0.30305051803588867s
+10 sequences, avg 35.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0023720264434814453s
+bert_xd shape: torch.Size([10, 1, 21])
+runtime of core bert call: 0.018975257873535156s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04082083702087402s
+total runtime of bert call: 0.06249260902404785s
+10 sequences, avg 35.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003947734832763672s
+bert_xd shape: torch.Size([10, 1, 64])
+runtime of core bert call: 0.05753040313720703s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.19873309135437012s
+total runtime of bert call: 0.2606167793273926s
+10 sequences, avg 25.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016696453094482422s
+bert_xd shape: torch.Size([10, 1, 12])
+runtime of core bert call: 0.04575705528259277s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07145047187805176s
+total runtime of bert call: 0.11918449401855469s
+10 sequences, avg 25.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0049479007720947266s
+bert_xd shape: torch.Size([10, 1, 83])
+runtime of core bert call: 0.018947839736938477s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1607801914215088s
+total runtime of bert call: 0.18516755104064941s
+10 sequences, avg 35.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.027050256729125977s
+bert_xd shape: torch.Size([10, 1, 29])
+runtime of core bert call: 0.02571892738342285s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04912734031677246s
+total runtime of bert call: 0.10225987434387207s
+10 sequences, avg 35.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004453420639038086s
+bert_xd shape: torch.Size([10, 1, 67])
+runtime of core bert call: 0.018384695053100586s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05141091346740723s
+total runtime of bert call: 0.07468318939208984s
+10 sequences, avg 33.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018508434295654297s
+bert_xd shape: torch.Size([10, 1, 14])
+runtime of core bert call: 0.016504764556884766s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.013471603393554688s
+total runtime of bert call: 0.03214526176452637s
+10 sequences, avg 33.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.01801300048828125s
+bert_xd shape: torch.Size([10, 1, 179])
+runtime of core bert call: 0.03137612342834473s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.35168981552124023s
+total runtime of bert call: 0.40153980255126953s
+10 sequences, avg 41.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018570423126220703s
+bert_xd shape: torch.Size([10, 1, 6])
+runtime of core bert call: 0.07314705848693848s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.13631343841552734s
+total runtime of bert call: 0.21162676811218262s
+10 sequences, avg 41.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004216909408569336s
+bert_xd shape: torch.Size([10, 1, 53])
+runtime of core bert call: 0.018660545349121094s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.20410680770874023s
+total runtime of bert call: 0.2277061939239502s
+10 sequences, avg 28.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.002053499221801758s
+bert_xd shape: torch.Size([10, 1, 8])
+runtime of core bert call: 0.017176389694213867s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03670310974121094s
+total runtime of bert call: 0.05639290809631348s
+10 sequences, avg 28.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.010015726089477539s
+bert_xd shape: torch.Size([10, 1, 96])
+runtime of core bert call: 0.021268129348754883s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.13118767738342285s
+total runtime of bert call: 0.16285181045532227s
+10 sequences, avg 32.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016362667083740234s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.041005849838256836s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.009570598602294922s
+total runtime of bert call: 0.05233883857727051s
+10 sequences, avg 32.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0040836334228515625s
+bert_xd shape: torch.Size([10, 1, 77])
+runtime of core bert call: 0.04194164276123047s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.19605135917663574s
+total runtime of bert call: 0.24247312545776367s
+10 sequences, avg 32.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016982555389404297s
+bert_xd shape: torch.Size([10, 1, 18])
+runtime of core bert call: 0.023964405059814453s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.028774499893188477s
+total runtime of bert call: 0.054769039154052734s
+10 sequences, avg 32.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004098176956176758s
+bert_xd shape: torch.Size([10, 1, 77])
+runtime of core bert call: 0.02973318099975586s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.22301983833312988s
+total runtime of bert call: 0.25728940963745117s
+10 sequences, avg 31.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016820430755615234s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.028753042221069336s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.10145258903503418s
+total runtime of bert call: 0.13218116760253906s
+10 sequences, avg 31.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004137754440307617s
+bert_xd shape: torch.Size([10, 1, 104])
+runtime of core bert call: 0.07535123825073242s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.25742459297180176s
+total runtime of bert call: 0.3373246192932129s
+10 sequences, avg 45.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016429424285888672s
+bert_xd shape: torch.Size([10, 1, 22])
+runtime of core bert call: 0.03276515007019043s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.041307687759399414s
+total runtime of bert call: 0.07601618766784668s
+10 sequences, avg 45.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004932403564453125s
+bert_xd shape: torch.Size([10, 1, 94])
+runtime of core bert call: 0.01874542236328125s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.18678712844848633s
+total runtime of bert call: 0.21089482307434082s
+10 sequences, avg 35.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016279220581054688s
+bert_xd shape: torch.Size([10, 1, 14])
+runtime of core bert call: 0.015089035034179688s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03134727478027344s
+total runtime of bert call: 0.04834914207458496s
+10 sequences, avg 35.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003858804702758789s
+bert_xd shape: torch.Size([10, 1, 84])
+runtime of core bert call: 0.06273722648620605s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.18446779251098633s
+total runtime of bert call: 0.25147581100463867s
+10 sequences, avg 30.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015149116516113281s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.1020503044128418s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03436875343322754s
+total runtime of bert call: 0.14812397956848145s
+10 sequences, avg 30.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005213260650634766s
+bert_xd shape: torch.Size([10, 1, 61])
+runtime of core bert call: 0.02467203140258789s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.2440659999847412s
+total runtime of bert call: 0.2745053768157959s
+10 sequences, avg 29.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019893646240234375s
+bert_xd shape: torch.Size([10, 1, 12])
+runtime of core bert call: 0.04485774040222168s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.055024147033691406s
+total runtime of bert call: 0.1022653579711914s
+10 sequences, avg 29.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005383491516113281s
+bert_xd shape: torch.Size([10, 1, 121])
+runtime of core bert call: 0.02046942710876465s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.11362743377685547s
+total runtime of bert call: 0.14019012451171875s
+10 sequences, avg 32.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019690990447998047s
+bert_xd shape: torch.Size([10, 1, 8])
+runtime of core bert call: 0.03423953056335449s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.01782536506652832s
+total runtime of bert call: 0.05435323715209961s
+10 sequences, avg 32.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005043983459472656s
+bert_xd shape: torch.Size([10, 1, 54])
+runtime of core bert call: 0.02433180809020996s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.12967634201049805s
+total runtime of bert call: 0.15959596633911133s
+10 sequences, avg 26.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018644332885742188s
+bert_xd shape: torch.Size([10, 1, 15])
+runtime of core bert call: 0.034691810607910156s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.022711992263793945s
+total runtime of bert call: 0.05962967872619629s
+10 sequences, avg 26.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005879878997802734s
+bert_xd shape: torch.Size([10, 1, 85])
+runtime of core bert call: 0.019889116287231445s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.16929864883422852s
+total runtime of bert call: 0.19559097290039062s
+10 sequences, avg 36.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.008615255355834961s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.02863931655883789s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.02877974510192871s
+total runtime of bert call: 0.06648087501525879s
+10 sequences, avg 36.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004123210906982422s
+bert_xd shape: torch.Size([10, 1, 60])
+runtime of core bert call: 0.01847529411315918s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.18773722648620605s
+total runtime of bert call: 0.21086692810058594s
+10 sequences, avg 30.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019452571868896484s
+bert_xd shape: torch.Size([10, 1, 18])
+runtime of core bert call: 0.026512622833251953s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.028081893920898438s
+total runtime of bert call: 0.056882381439208984s
+10 sequences, avg 30.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004766941070556641s
+bert_xd shape: torch.Size([10, 1, 73])
+runtime of core bert call: 0.018027067184448242s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.11821722984313965s
+total runtime of bert call: 0.1414508819580078s
+10 sequences, avg 34.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0021750926971435547s
+bert_xd shape: torch.Size([10, 1, 19])
+runtime of core bert call: 0.027445554733276367s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.031023740768432617s
+total runtime of bert call: 0.0609745979309082s
+10 sequences, avg 34.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.022090911865234375s
+bert_xd shape: torch.Size([10, 1, 82])
+runtime of core bert call: 0.014763355255126953s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1392970085144043s
+total runtime of bert call: 0.17663979530334473s
+10 sequences, avg 39.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018038749694824219s
+bert_xd shape: torch.Size([10, 1, 15])
+runtime of core bert call: 0.015136957168579102s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.02053093910217285s
+total runtime of bert call: 0.03762221336364746s
+10 sequences, avg 39.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.009933233261108398s
+bert_xd shape: torch.Size([10, 1, 85])
+runtime of core bert call: 0.07439756393432617s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.21273040771484375s
+total runtime of bert call: 0.2974865436553955s
+10 sequences, avg 24.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018949508666992188s
+bert_xd shape: torch.Size([10, 1, 15])
+runtime of core bert call: 0.04450225830078125s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04976606369018555s
+total runtime of bert call: 0.09635472297668457s
+10 sequences, avg 24.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.010827064514160156s
+bert_xd shape: torch.Size([10, 1, 251])
+runtime of core bert call: 0.05603504180908203s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.35912108421325684s
+total runtime of bert call: 0.42640209197998047s
+10 sequences, avg 47.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015134811401367188s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.05709338188171387s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.044994354248046875s
+total runtime of bert call: 0.10390329360961914s
+10 sequences, avg 47.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003482818603515625s
+bert_xd shape: torch.Size([10, 1, 59])
+runtime of core bert call: 0.031548500061035156s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.22186517715454102s
+total runtime of bert call: 0.25730466842651367s
+10 sequences, avg 31.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017311573028564453s
+bert_xd shape: torch.Size([10, 1, 19])
+runtime of core bert call: 0.016496896743774414s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.024204254150390625s
+total runtime of bert call: 0.042756080627441406s
+10 sequences, avg 31.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003730297088623047s
+bert_xd shape: torch.Size([10, 1, 90])
+runtime of core bert call: 0.021516084671020508s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.2337031364440918s
+total runtime of bert call: 0.2593240737915039s
+10 sequences, avg 33.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001539468765258789s
+bert_xd shape: torch.Size([10, 1, 16])
+runtime of core bert call: 0.014226198196411133s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07578682899475098s
+total runtime of bert call: 0.0919041633605957s
+10 sequences, avg 33.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004703521728515625s
+bert_xd shape: torch.Size([10, 1, 119])
+runtime of core bert call: 0.020264148712158203s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05608654022216797s
+total runtime of bert call: 0.0815582275390625s
+10 sequences, avg 32.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0021054744720458984s
+bert_xd shape: torch.Size([10, 1, 28])
+runtime of core bert call: 0.01753687858581543s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.012292146682739258s
+total runtime of bert call: 0.032315731048583984s
+10 sequences, avg 32.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005528688430786133s
+bert_xd shape: torch.Size([10, 1, 90])
+runtime of core bert call: 0.023369789123535156s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.06688237190246582s
+total runtime of bert call: 0.09633326530456543s
+10 sequences, avg 35.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.002091646194458008s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.017367839813232422s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.014679908752441406s
+total runtime of bert call: 0.03448176383972168s
+10 sequences, avg 35.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005474567413330078s
+bert_xd shape: torch.Size([10, 1, 117])
+runtime of core bert call: 0.019710779190063477s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07134389877319336s
+total runtime of bert call: 0.09715509414672852s
+10 sequences, avg 34.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001961946487426758s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.017058134078979492s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.018383264541625977s
+total runtime of bert call: 0.0379030704498291s
+10 sequences, avg 34.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0045201778411865234s
+bert_xd shape: torch.Size([10, 1, 74])
+runtime of core bert call: 0.03761005401611328s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.2776143550872803s
+total runtime of bert call: 0.3202066421508789s
+10 sequences, avg 34.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0020236968994140625s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.08585000038146973s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.06119942665100098s
+total runtime of bert call: 0.14933443069458008s
+10 sequences, avg 34.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004164218902587891s
+bert_xd shape: torch.Size([10, 1, 73])
+runtime of core bert call: 0.06635832786560059s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.3402066230773926s
+total runtime of bert call: 0.4112250804901123s
+10 sequences, avg 41.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.020543575286865234s
+bert_xd shape: torch.Size([10, 1, 21])
+runtime of core bert call: 0.014700651168823242s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.11588430404663086s
+total runtime of bert call: 0.15148568153381348s
+10 sequences, avg 41.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005131959915161133s
+bert_xd shape: torch.Size([10, 1, 46])
+runtime of core bert call: 0.016980648040771484s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.11627531051635742s
+total runtime of bert call: 0.13884377479553223s
+10 sequences, avg 24.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016486644744873047s
+bert_xd shape: torch.Size([10, 1, 19])
+runtime of core bert call: 0.09972977638244629s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.06186056137084961s
+total runtime of bert call: 0.1635453701019287s
+10 sequences, avg 24.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004835844039916992s
+bert_xd shape: torch.Size([10, 1, 83])
+runtime of core bert call: 0.020182371139526367s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05576658248901367s
+total runtime of bert call: 0.08123207092285156s
+10 sequences, avg 32.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001836538314819336s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.13570809364318848s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07366013526916504s
+total runtime of bert call: 0.21152901649475098s
+10 sequences, avg 32.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004917144775390625s
+bert_xd shape: torch.Size([10, 1, 86])
+runtime of core bert call: 0.019108057022094727s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.10067057609558105s
+total runtime of bert call: 0.1251661777496338s
+10 sequences, avg 32.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018007755279541016s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.01621413230895996s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.011782169342041016s
+total runtime of bert call: 0.030152320861816406s
+10 sequences, avg 32.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0044023990631103516s
+bert_xd shape: torch.Size([10, 1, 95])
+runtime of core bert call: 0.015947580337524414s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.23774337768554688s
+total runtime of bert call: 0.2588670253753662s
+10 sequences, avg 42.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0022263526916503906s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.020551681518554688s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.051026105880737305s
+total runtime of bert call: 0.07416415214538574s
+10 sequences, avg 42.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003981113433837891s
+bert_xd shape: torch.Size([10, 1, 75])
+runtime of core bert call: 0.0537562370300293s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.26393890380859375s
+total runtime of bert call: 0.32210350036621094s
+10 sequences, avg 36.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016086101531982422s
+bert_xd shape: torch.Size([10, 1, 16])
+runtime of core bert call: 0.0397183895111084s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05040478706359863s
+total runtime of bert call: 0.09206056594848633s
+10 sequences, avg 36.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.015657663345336914s
+bert_xd shape: torch.Size([10, 1, 66])
+runtime of core bert call: 0.033290863037109375s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.13421249389648438s
+total runtime of bert call: 0.18351006507873535s
+10 sequences, avg 26.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.026009082794189453s
+bert_xd shape: torch.Size([10, 1, 12])
+runtime of core bert call: 0.09675741195678711s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.0678403377532959s
+total runtime of bert call: 0.19075345993041992s
+10 sequences, avg 26.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.007714271545410156s
+bert_xd shape: torch.Size([10, 1, 140])
+runtime of core bert call: 0.020018577575683594s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.08415961265563965s
+total runtime of bert call: 0.11256122589111328s
+10 sequences, avg 41.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019576549530029297s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.015097618103027344s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.009256839752197266s
+total runtime of bert call: 0.02656722068786621s
+10 sequences, avg 41.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005778789520263672s
+bert_xd shape: torch.Size([10, 1, 126])
+runtime of core bert call: 0.022739887237548828s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.15168523788452148s
+total runtime of bert call: 0.18136286735534668s
+10 sequences, avg 33.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.002162933349609375s
+bert_xd shape: torch.Size([10, 1, 19])
+runtime of core bert call: 0.019767284393310547s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.029359817504882812s
+total runtime of bert call: 0.05190682411193848s
+10 sequences, avg 33.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0037670135498046875s
+bert_xd shape: torch.Size([10, 1, 119])
+runtime of core bert call: 0.0171353816986084s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.0739588737487793s
+total runtime of bert call: 0.0952763557434082s
+10 sequences, avg 38.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0024013519287109375s
+bert_xd shape: torch.Size([10, 1, 28])
+runtime of core bert call: 0.01779007911682129s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.013237714767456055s
+total runtime of bert call: 0.033777713775634766s
+10 sequences, avg 38.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0038928985595703125s
+bert_xd shape: torch.Size([10, 1, 55])
+runtime of core bert call: 0.018890380859375s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.11903095245361328s
+total runtime of bert call: 0.14234352111816406s
+10 sequences, avg 22.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019922256469726562s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.04316854476928711s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.008232831954956055s
+total runtime of bert call: 0.05363774299621582s
+10 sequences, avg 22.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004347324371337891s
+bert_xd shape: torch.Size([10, 1, 51])
+runtime of core bert call: 0.026450395584106445s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.12044620513916016s
+total runtime of bert call: 0.15168237686157227s
+10 sequences, avg 30.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018439292907714844s
+bert_xd shape: torch.Size([10, 1, 28])
+runtime of core bert call: 0.041906118392944336s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.10631227493286133s
+total runtime of bert call: 0.15032029151916504s
+10 sequences, avg 30.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004916667938232422s
+bert_xd shape: torch.Size([10, 1, 97])
+runtime of core bert call: 0.020067453384399414s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.23041701316833496s
+total runtime of bert call: 0.25586748123168945s
+10 sequences, avg 31.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001651763916015625s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.03938579559326172s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.014618396759033203s
+total runtime of bert call: 0.05580449104309082s
+10 sequences, avg 31.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005144357681274414s
+bert_xd shape: torch.Size([10, 1, 89])
+runtime of core bert call: 0.018565893173217773s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.12870240211486816s
+total runtime of bert call: 0.1528780460357666s
+10 sequences, avg 43.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018148422241210938s
+bert_xd shape: torch.Size([10, 1, 15])
+runtime of core bert call: 0.01656341552734375s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.014173507690429688s
+total runtime of bert call: 0.03279304504394531s
+10 sequences, avg 43.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0047032833099365234s
+bert_xd shape: torch.Size([10, 1, 78])
+runtime of core bert call: 0.018837690353393555s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05582380294799805s
+total runtime of bert call: 0.08016514778137207s
+10 sequences, avg 34.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017516613006591797s
+bert_xd shape: torch.Size([10, 1, 6])
+runtime of core bert call: 0.01688218116760254s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.008161783218383789s
+total runtime of bert call: 0.027156352996826172s
+10 sequences, avg 34.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004519224166870117s
+bert_xd shape: torch.Size([10, 1, 79])
+runtime of core bert call: 0.019311904907226562s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.15055084228515625s
+total runtime of bert call: 0.17486906051635742s
+10 sequences, avg 30.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0038917064666748047s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.030936479568481445s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.010839223861694336s
+total runtime of bert call: 0.04582715034484863s
+10 sequences, avg 30.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.018297910690307617s
+bert_xd shape: torch.Size([10, 1, 107])
+runtime of core bert call: 0.058289289474487305s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.21595096588134766s
+total runtime of bert call: 0.2929520606994629s
+10 sequences, avg 35.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0014562606811523438s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.028198957443237305s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.011347532272338867s
+total runtime of bert call: 0.04120445251464844s
+10 sequences, avg 35.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.01616072654724121s
+bert_xd shape: torch.Size([10, 1, 85])
+runtime of core bert call: 0.0888221263885498s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.2616307735443115s
+total runtime of bert call: 0.3670389652252197s
+10 sequences, avg 34.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018982887268066406s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.02330636978149414s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.026941299438476562s
+total runtime of bert call: 0.05246996879577637s
+10 sequences, avg 34.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0042417049407958984s
+bert_xd shape: torch.Size([10, 1, 114])
+runtime of core bert call: 0.06679201126098633s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.273756742477417s
+total runtime of bert call: 0.3465557098388672s
+10 sequences, avg 41.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016324520111083984s
+bert_xd shape: torch.Size([10, 1, 17])
+runtime of core bert call: 0.08154439926147461s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.08426475524902344s
+total runtime of bert call: 0.16781401634216309s
+10 sequences, avg 41.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.05692720413208008s
+bert_xd shape: torch.Size([10, 1, 115])
+runtime of core bert call: 0.08146476745605469s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.26231837272644043s
+total runtime of bert call: 0.40116381645202637s
+10 sequences, avg 35.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018684864044189453s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.04098343849182129s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.08821582794189453s
+total runtime of bert call: 0.1313633918762207s
+10 sequences, avg 35.8 tokens per sequence
+
+Epoch: [1 / 100] | Step: 99 / 8664 | Time: 84.25s | Loss: 62.2522 | Val scores:
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.028586149215698242s
+bert_xd shape: torch.Size([10, 1, 90])
+runtime of core bert call: 0.06459236145019531s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.27718591690063477s
+total runtime of bert call: 0.37082886695861816s
+10 sequences, avg 38.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0022373199462890625s
+bert_xd shape: torch.Size([10, 1, 26])
+runtime of core bert call: 0.01690053939819336s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1255793571472168s
+total runtime of bert call: 0.14503860473632812s
+10 sequences, avg 38.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0036673545837402344s
+bert_xd shape: torch.Size([10, 1, 86])
+runtime of core bert call: 0.10055351257324219s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.30877256393432617s
+total runtime of bert call: 0.4135019779205322s
+10 sequences, avg 36.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.002053499221801758s
+bert_xd shape: torch.Size([10, 1, 21])
+runtime of core bert call: 0.05670309066772461s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.09071540832519531s
+total runtime of bert call: 0.14975619316101074s
+10 sequences, avg 36.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003548145294189453s
+bert_xd shape: torch.Size([10, 1, 47])
+runtime of core bert call: 0.0177767276763916s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.047820329666137695s
+total runtime of bert call: 0.06961846351623535s
+10 sequences, avg 25.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019829273223876953s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.05399513244628906s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.06369829177856445s
+total runtime of bert call: 0.11997342109680176s
+10 sequences, avg 25.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004331827163696289s
+bert_xd shape: torch.Size([10, 1, 89])
+runtime of core bert call: 0.018541812896728516s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.20860862731933594s
+total runtime of bert call: 0.2320575714111328s
+10 sequences, avg 29.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0021724700927734375s
+bert_xd shape: torch.Size([10, 1, 28])
+runtime of core bert call: 0.02072906494140625s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.06073617935180664s
+total runtime of bert call: 0.08399462699890137s
+10 sequences, avg 29.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004610300064086914s
+bert_xd shape: torch.Size([10, 1, 71])
+runtime of core bert call: 0.019817113876342773s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1431124210357666s
+total runtime of bert call: 0.16803503036499023s
+10 sequences, avg 31.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018208026885986328s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.04817080497741699s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.032919883728027344s
+total runtime of bert call: 0.08318042755126953s
+10 sequences, avg 31.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0044744014739990234s
+bert_xd shape: torch.Size([10, 1, 93])
+runtime of core bert call: 0.018117904663085938s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.23835301399230957s
+total runtime of bert call: 0.261383056640625s
+10 sequences, avg 33.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019762516021728516s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.019901037216186523s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03366565704345703s
+total runtime of bert call: 0.055760860443115234s
+10 sequences, avg 33.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0034189224243164062s
+bert_xd shape: torch.Size([10, 1, 101])
+runtime of core bert call: 0.015053987503051758s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.14148354530334473s
+total runtime of bert call: 0.16034889221191406s
+10 sequences, avg 30.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016002655029296875s
+bert_xd shape: torch.Size([10, 1, 17])
+runtime of core bert call: 0.034594058990478516s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03647184371948242s
+total runtime of bert call: 0.07289862632751465s
+10 sequences, avg 30.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005445957183837891s
+bert_xd shape: torch.Size([10, 1, 273])
+runtime of core bert call: 0.05235910415649414s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.30377697944641113s
+total runtime of bert call: 0.36830568313598633s
+10 sequences, avg 42.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001730203628540039s
+bert_xd shape: torch.Size([10, 1, 5])
+runtime of core bert call: 0.03903651237487793s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.010748863220214844s
+total runtime of bert call: 0.05166339874267578s
+10 sequences, avg 42.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0025632381439208984s
+bert_xd shape: torch.Size([10, 1, 63])
+runtime of core bert call: 0.013492822647094727s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.045746564865112305s
+total runtime of bert call: 0.06215715408325195s
+10 sequences, avg 25.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018019676208496094s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.016404151916503906s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.004342079162597656s
+total runtime of bert call: 0.02268671989440918s
+10 sequences, avg 25.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003060579299926758s
+bert_xd shape: torch.Size([10, 1, 55])
+runtime of core bert call: 0.0332491397857666s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.13379716873168945s
+total runtime of bert call: 0.17044830322265625s
+10 sequences, avg 27.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016355514526367188s
+bert_xd shape: torch.Size([10, 1, 19])
+runtime of core bert call: 0.06043267250061035s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.06251001358032227s
+total runtime of bert call: 0.12473940849304199s
+10 sequences, avg 27.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0026314258575439453s
+bert_xd shape: torch.Size([10, 1, 76])
+runtime of core bert call: 0.013595819473266602s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.039674997329711914s
+total runtime of bert call: 0.056366682052612305s
+10 sequences, avg 24.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018589496612548828s
+bert_xd shape: torch.Size([10, 1, 15])
+runtime of core bert call: 0.015059232711791992s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.006570100784301758s
+total runtime of bert call: 0.02362990379333496s
+10 sequences, avg 24.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003326892852783203s
+bert_xd shape: torch.Size([10, 1, 70])
+runtime of core bert call: 0.014664173126220703s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05186057090759277s
+total runtime of bert call: 0.07040572166442871s
+10 sequences, avg 33.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018947124481201172s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.015297889709472656s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.005830049514770508s
+total runtime of bert call: 0.023308992385864258s
+10 sequences, avg 33.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0028791427612304688s
+bert_xd shape: torch.Size([10, 1, 68])
+runtime of core bert call: 0.013381242752075195s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04555821418762207s
+total runtime of bert call: 0.06226015090942383s
+10 sequences, avg 33.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001682281494140625s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.01454305648803711s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.006338834762573242s
+total runtime of bert call: 0.022700071334838867s
+10 sequences, avg 33.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.009357690811157227s
+bert_xd shape: torch.Size([10, 1, 86])
+runtime of core bert call: 0.033251047134399414s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.08693671226501465s
+total runtime of bert call: 0.1299116611480713s
+10 sequences, avg 31.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.005902528762817383s
+bert_xd shape: torch.Size([10, 1, 14])
+runtime of core bert call: 0.02823805809020996s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07278656959533691s
+total runtime of bert call: 0.10707330703735352s
+10 sequences, avg 31.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003916025161743164s
+bert_xd shape: torch.Size([10, 1, 257])
+runtime of core bert call: 0.015384197235107422s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.20690321922302246s
+total runtime of bert call: 0.2266557216644287s
+10 sequences, avg 38.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017125606536865234s
+bert_xd shape: torch.Size([10, 1, 16])
+runtime of core bert call: 0.02269148826599121s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07741641998291016s
+total runtime of bert call: 0.10212159156799316s
+10 sequences, avg 38.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0029921531677246094s
+bert_xd shape: torch.Size([10, 1, 51])
+runtime of core bert call: 0.014037370681762695s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04176926612854004s
+total runtime of bert call: 0.059224843978881836s
+10 sequences, avg 27.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.01370859146118164s
+bert_xd shape: torch.Size([10, 1, 8])
+runtime of core bert call: 0.026827335357666016s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.008181333541870117s
+total runtime of bert call: 0.04885411262512207s
+10 sequences, avg 27.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0042705535888671875s
+bert_xd shape: torch.Size([10, 1, 86])
+runtime of core bert call: 0.09345746040344238s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1476752758026123s
+total runtime of bert call: 0.2458195686340332s
+10 sequences, avg 33.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017240047454833984s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.04594254493713379s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.023219585418701172s
+total runtime of bert call: 0.07102227210998535s
+10 sequences, avg 33.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003753662109375s
+bert_xd shape: torch.Size([10, 1, 91])
+runtime of core bert call: 0.03544139862060547s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.22276020050048828s
+total runtime of bert call: 0.2624199390411377s
+10 sequences, avg 31.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018994808197021484s
+bert_xd shape: torch.Size([10, 1, 15])
+runtime of core bert call: 0.042092323303222656s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05600142478942871s
+total runtime of bert call: 0.1294717788696289s
+10 sequences, avg 31.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005944967269897461s
+bert_xd shape: torch.Size([10, 1, 136])
+runtime of core bert call: 0.02537083625793457s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.12448310852050781s
+total runtime of bert call: 0.15630125999450684s
+10 sequences, avg 37.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.026291370391845703s
+bert_xd shape: torch.Size([10, 1, 12])
+runtime of core bert call: 0.06101799011230469s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.049096107482910156s
+total runtime of bert call: 0.13674259185791016s
+10 sequences, avg 37.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.016895532608032227s
+bert_xd shape: torch.Size([10, 1, 67])
+runtime of core bert call: 0.05317354202270508s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.17987346649169922s
+total runtime of bert call: 0.25051164627075195s
+10 sequences, avg 26.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0021457672119140625s
+bert_xd shape: torch.Size([10, 1, 14])
+runtime of core bert call: 0.04350852966308594s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.0416264533996582s
+total runtime of bert call: 0.08781242370605469s
+10 sequences, avg 26.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005174398422241211s
+bert_xd shape: torch.Size([10, 1, 83])
+runtime of core bert call: 0.02883744239807129s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.10440254211425781s
+total runtime of bert call: 0.13903403282165527s
+10 sequences, avg 28.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.009135246276855469s
+bert_xd shape: torch.Size([10, 1, 17])
+runtime of core bert call: 0.03992748260498047s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.014796018600463867s
+total runtime of bert call: 0.06431770324707031s
+10 sequences, avg 28.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004767179489135742s
+bert_xd shape: torch.Size([10, 1, 85])
+runtime of core bert call: 0.019063711166381836s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.12410736083984375s
+total runtime of bert call: 0.1530599594116211s
+10 sequences, avg 37.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0020847320556640625s
+bert_xd shape: torch.Size([10, 1, 12])
+runtime of core bert call: 0.024496078491210938s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.01511526107788086s
+total runtime of bert call: 0.04190182685852051s
+10 sequences, avg 37.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0034723281860351562s
+bert_xd shape: torch.Size([10, 1, 67])
+runtime of core bert call: 0.03940773010253906s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.15880632400512695s
+total runtime of bert call: 0.20205020904541016s
+10 sequences, avg 34.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.006853342056274414s
+bert_xd shape: torch.Size([10, 1, 28])
+runtime of core bert call: 0.030197858810424805s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.02347588539123535s
+total runtime of bert call: 0.060671329498291016s
+10 sequences, avg 34.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.01055598258972168s
+bert_xd shape: torch.Size([10, 1, 91])
+runtime of core bert call: 0.015707969665527344s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.2178661823272705s
+total runtime of bert call: 0.2445676326751709s
+10 sequences, avg 38.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016283988952636719s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.014102697372436523s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05856180191040039s
+total runtime of bert call: 0.07465028762817383s
+10 sequences, avg 38.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004465818405151367s
+bert_xd shape: torch.Size([10, 1, 107])
+runtime of core bert call: 0.04632759094238281s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.12510466575622559s
+total runtime of bert call: 0.17625164985656738s
+10 sequences, avg 33.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015153884887695312s
+bert_xd shape: torch.Size([10, 1, 8])
+runtime of core bert call: 0.014446020126342773s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.054912567138671875s
+total runtime of bert call: 0.07100749015808105s
+10 sequences, avg 33.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.02221059799194336s
+bert_xd shape: torch.Size([10, 1, 66])
+runtime of core bert call: 0.04059123992919922s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.27870917320251465s
+total runtime of bert call: 0.3419487476348877s
+10 sequences, avg 30.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015981197357177734s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.020693302154541016s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.028651952743530273s
+total runtime of bert call: 0.051259517669677734s
+10 sequences, avg 30.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004389762878417969s
+bert_xd shape: torch.Size([10, 1, 53])
+runtime of core bert call: 0.017445802688598633s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.050692081451416016s
+total runtime of bert call: 0.07301998138427734s
+10 sequences, avg 32.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017824172973632812s
+bert_xd shape: torch.Size([10, 1, 22])
+runtime of core bert call: 0.06040477752685547s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03238630294799805s
+total runtime of bert call: 0.09475469589233398s
+10 sequences, avg 32.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0050776004791259766s
+bert_xd shape: torch.Size([10, 1, 88])
+runtime of core bert call: 0.026207685470581055s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.09627175331115723s
+total runtime of bert call: 0.12824583053588867s
+10 sequences, avg 35.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.002424001693725586s
+bert_xd shape: torch.Size([10, 1, 23])
+runtime of core bert call: 0.022620201110839844s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.08733677864074707s
+total runtime of bert call: 0.11722064018249512s
+10 sequences, avg 35.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003304719924926758s
+bert_xd shape: torch.Size([10, 1, 71])
+runtime of core bert call: 0.014401674270629883s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05418729782104492s
+total runtime of bert call: 0.07237887382507324s
+10 sequences, avg 30.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017549991607666016s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.015270709991455078s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.010197162628173828s
+total runtime of bert call: 0.027762651443481445s
+10 sequences, avg 30.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0056705474853515625s
+bert_xd shape: torch.Size([10, 1, 49])
+runtime of core bert call: 0.021683216094970703s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.037352800369262695s
+total runtime of bert call: 0.06522727012634277s
+10 sequences, avg 23.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0020754337310791016s
+bert_xd shape: torch.Size([10, 1, 21])
+runtime of core bert call: 0.013869285583496094s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.008398771286010742s
+total runtime of bert call: 0.024545907974243164s
+10 sequences, avg 23.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0030808448791503906s
+bert_xd shape: torch.Size([10, 1, 55])
+runtime of core bert call: 0.013812541961669922s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.12106871604919434s
+total runtime of bert call: 0.13832640647888184s
+10 sequences, avg 31.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015828609466552734s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.026649951934814453s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.06225085258483887s
+total runtime of bert call: 0.09061908721923828s
+10 sequences, avg 31.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003992319107055664s
+bert_xd shape: torch.Size([10, 1, 89])
+runtime of core bert call: 0.016001462936401367s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.0636594295501709s
+total runtime of bert call: 0.0841515064239502s
+10 sequences, avg 37.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018570423126220703s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.02748584747314453s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.01732635498046875s
+total runtime of bert call: 0.04679751396179199s
+10 sequences, avg 37.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003286123275756836s
+bert_xd shape: torch.Size([10, 1, 76])
+runtime of core bert call: 0.013962745666503906s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04910135269165039s
+total runtime of bert call: 0.06749558448791504s
+10 sequences, avg 29.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.003056764602661133s
+bert_xd shape: torch.Size([10, 1, 36])
+runtime of core bert call: 0.019015073776245117s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.017378568649291992s
+total runtime of bert call: 0.0399622917175293s
+10 sequences, avg 29.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004481077194213867s
+bert_xd shape: torch.Size([10, 1, 51])
+runtime of core bert call: 0.01781487464904785s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.047205448150634766s
+total runtime of bert call: 0.0700836181640625s
+10 sequences, avg 27.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0020029544830322266s
+bert_xd shape: torch.Size([10, 1, 20])
+runtime of core bert call: 0.01576375961303711s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.01038813591003418s
+total runtime of bert call: 0.028511524200439453s
+10 sequences, avg 27.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.002858400344848633s
+bert_xd shape: torch.Size([10, 1, 77])
+runtime of core bert call: 0.013618230819702148s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.041779279708862305s
+total runtime of bert call: 0.05864858627319336s
+10 sequences, avg 27.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018296241760253906s
+bert_xd shape: torch.Size([10, 1, 24])
+runtime of core bert call: 0.015296220779418945s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.013566255569458008s
+total runtime of bert call: 0.030893325805664062s
+10 sequences, avg 27.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.016958236694335938s
+bert_xd shape: torch.Size([10, 1, 75])
+runtime of core bert call: 0.0344240665435791s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.21878552436828613s
+total runtime of bert call: 0.27063608169555664s
+10 sequences, avg 35.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017015933990478516s
+bert_xd shape: torch.Size([10, 1, 19])
+runtime of core bert call: 0.015460014343261719s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.052614450454711914s
+total runtime of bert call: 0.07008767127990723s
+10 sequences, avg 35.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0031523704528808594s
+bert_xd shape: torch.Size([10, 1, 65])
+runtime of core bert call: 0.01409769058227539s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.10547304153442383s
+total runtime of bert call: 0.12307357788085938s
+10 sequences, avg 36.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015861988067626953s
+bert_xd shape: torch.Size([10, 1, 18])
+runtime of core bert call: 0.023042917251586914s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.014047861099243164s
+total runtime of bert call: 0.038825035095214844s
+10 sequences, avg 36.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0034003257751464844s
+bert_xd shape: torch.Size([10, 1, 75])
+runtime of core bert call: 0.014199018478393555s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04831886291503906s
+total runtime of bert call: 0.06656670570373535s
+10 sequences, avg 28.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001970529556274414s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.01812434196472168s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.006943941116333008s
+total runtime of bert call: 0.027338266372680664s
+10 sequences, avg 28.4 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.023131132125854492s
+bert_xd shape: torch.Size([10, 1, 64])
+runtime of core bert call: 0.01667165756225586s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.15800809860229492s
+total runtime of bert call: 0.19829916954040527s
+10 sequences, avg 34.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016405582427978516s
+bert_xd shape: torch.Size([10, 1, 21])
+runtime of core bert call: 0.014621973037719727s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.005258321762084961s
+total runtime of bert call: 0.021672964096069336s
+10 sequences, avg 34.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0223085880279541s
+bert_xd shape: torch.Size([10, 1, 71])
+runtime of core bert call: 0.0456085205078125s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.14082121849060059s
+total runtime of bert call: 0.2091691493988037s
+10 sequences, avg 29.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016214847564697266s
+bert_xd shape: torch.Size([10, 1, 8])
+runtime of core bert call: 0.015336751937866211s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.057921409606933594s
+total runtime of bert call: 0.07516241073608398s
+10 sequences, avg 29.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004323482513427734s
+bert_xd shape: torch.Size([10, 1, 80])
+runtime of core bert call: 0.018085479736328125s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1671130657196045s
+total runtime of bert call: 0.19004154205322266s
+10 sequences, avg 32.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001867532730102539s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.02332162857055664s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.022165536880493164s
+total runtime of bert call: 0.047699928283691406s
+10 sequences, avg 32.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0050313472747802734s
+bert_xd shape: torch.Size([10, 1, 87])
+runtime of core bert call: 0.018246173858642578s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.13733267784118652s
+total runtime of bert call: 0.16107559204101562s
+10 sequences, avg 36.3 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017306804656982422s
+bert_xd shape: torch.Size([10, 1, 12])
+runtime of core bert call: 0.04935407638549805s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.012911796569824219s
+total runtime of bert call: 0.06426453590393066s
+10 sequences, avg 36.3 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004586458206176758s
+bert_xd shape: torch.Size([10, 1, 75])
+runtime of core bert call: 0.020585298538208008s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.15079045295715332s
+total runtime of bert call: 0.17646241188049316s
+10 sequences, avg 32.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015888214111328125s
+bert_xd shape: torch.Size([10, 1, 6])
+runtime of core bert call: 0.02843308448791504s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.012937784194946289s
+total runtime of bert call: 0.043349504470825195s
+10 sequences, avg 32.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004735708236694336s
+bert_xd shape: torch.Size([10, 1, 79])
+runtime of core bert call: 0.020348072052001953s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04643130302429199s
+total runtime of bert call: 0.0722348690032959s
+10 sequences, avg 30.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0016357898712158203s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.015237092971801758s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.011173725128173828s
+total runtime of bert call: 0.028343915939331055s
+10 sequences, avg 30.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004323720932006836s
+bert_xd shape: torch.Size([10, 1, 65])
+runtime of core bert call: 0.019536733627319336s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1482851505279541s
+total runtime of bert call: 0.18362903594970703s
+10 sequences, avg 28.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.004101276397705078s
+bert_xd shape: torch.Size([10, 1, 11])
+runtime of core bert call: 0.046949148178100586s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.0370786190032959s
+total runtime of bert call: 0.0884850025177002s
+10 sequences, avg 28.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.03231167793273926s
+bert_xd shape: torch.Size([10, 1, 173])
+runtime of core bert call: 0.03153562545776367s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.22942137718200684s
+total runtime of bert call: 0.29384493827819824s
+10 sequences, avg 38.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.007772922515869141s
+bert_xd shape: torch.Size([10, 1, 9])
+runtime of core bert call: 0.0716087818145752s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05406975746154785s
+total runtime of bert call: 0.13381195068359375s
+10 sequences, avg 38.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003475189208984375s
+bert_xd shape: torch.Size([10, 1, 72])
+runtime of core bert call: 0.02790069580078125s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.23515033721923828s
+total runtime of bert call: 0.26689910888671875s
+10 sequences, avg 31.1 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.001565694808959961s
+bert_xd shape: torch.Size([10, 1, 14])
+runtime of core bert call: 0.022853851318359375s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.07189702987670898s
+total runtime of bert call: 0.0966329574584961s
+10 sequences, avg 31.1 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.027673959732055664s
+bert_xd shape: torch.Size([10, 1, 55])
+runtime of core bert call: 0.05169320106506348s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.23003578186035156s
+total runtime of bert call: 0.30982327461242676s
+10 sequences, avg 27.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017518997192382812s
+bert_xd shape: torch.Size([10, 1, 8])
+runtime of core bert call: 0.03239321708679199s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1241600513458252s
+total runtime of bert call: 0.15860605239868164s
+10 sequences, avg 27.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.041227102279663086s
+bert_xd shape: torch.Size([10, 1, 87])
+runtime of core bert call: 0.07680225372314453s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.3972787857055664s
+total runtime of bert call: 0.5157413482666016s
+10 sequences, avg 27.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.020084142684936523s
+bert_xd shape: torch.Size([10, 1, 24])
+runtime of core bert call: 0.017327308654785156s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.15948486328125s
+total runtime of bert call: 0.19721007347106934s
+10 sequences, avg 27.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0032711029052734375s
+bert_xd shape: torch.Size([10, 1, 73])
+runtime of core bert call: 0.013907432556152344s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.1296377182006836s
+total runtime of bert call: 0.14722466468811035s
+10 sequences, avg 37.0 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0018131732940673828s
+bert_xd shape: torch.Size([10, 1, 14])
+runtime of core bert call: 0.016072988510131836s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.09581375122070312s
+total runtime of bert call: 0.11392831802368164s
+10 sequences, avg 37.0 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0041046142578125s
+bert_xd shape: torch.Size([10, 1, 55])
+runtime of core bert call: 0.01845693588256836s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.09778237342834473s
+total runtime of bert call: 0.13264822959899902s
+10 sequences, avg 29.5 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0019659996032714844s
+bert_xd shape: torch.Size([10, 1, 26])
+runtime of core bert call: 0.04673576354980469s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.013986825942993164s
+total runtime of bert call: 0.06305646896362305s
+10 sequences, avg 29.5 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.004064798355102539s
+bert_xd shape: torch.Size([10, 1, 74])
+runtime of core bert call: 0.01568126678466797s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.0781548023223877s
+total runtime of bert call: 0.09839963912963867s
+10 sequences, avg 43.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0020477771759033203s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.017186641693115234s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.004950046539306641s
+total runtime of bert call: 0.02454519271850586s
+10 sequences, avg 43.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003942966461181641s
+bert_xd shape: torch.Size([10, 1, 75])
+runtime of core bert call: 0.11139655113220215s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.2721390724182129s
+total runtime of bert call: 0.3880021572113037s
+10 sequences, avg 29.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.014341115951538086s
+bert_xd shape: torch.Size([10, 1, 23])
+runtime of core bert call: 0.01770949363708496s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05500936508178711s
+total runtime of bert call: 0.0874018669128418s
+10 sequences, avg 29.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.011046648025512695s
+bert_xd shape: torch.Size([10, 1, 142])
+runtime of core bert call: 0.032733917236328125s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.24185943603515625s
+total runtime of bert call: 0.286283016204834s
+10 sequences, avg 36.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0021622180938720703s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.04414796829223633s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.05236697196960449s
+total runtime of bert call: 0.13748860359191895s
+10 sequences, avg 36.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0039000511169433594s
+bert_xd shape: torch.Size([10, 1, 88])
+runtime of core bert call: 0.03579521179199219s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.33873534202575684s
+total runtime of bert call: 0.3790462017059326s
+10 sequences, avg 38.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.021353721618652344s
+bert_xd shape: torch.Size([10, 1, 13])
+runtime of core bert call: 0.05394935607910156s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.09752488136291504s
+total runtime of bert call: 0.17328977584838867s
+10 sequences, avg 38.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.0042455196380615234s
+bert_xd shape: torch.Size([10, 1, 49])
+runtime of core bert call: 0.016573190689086914s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.3864006996154785s
+total runtime of bert call: 0.45096635818481445s
+10 sequences, avg 25.7 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.002169370651245117s
+bert_xd shape: torch.Size([10, 1, 17])
+runtime of core bert call: 0.12385725975036621s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.012647628784179688s
+total runtime of bert call: 0.13892436027526855s
+10 sequences, avg 25.7 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.006234884262084961s
+bert_xd shape: torch.Size([10, 1, 173])
+runtime of core bert call: 0.021176815032958984s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.08527231216430664s
+total runtime of bert call: 0.11367559432983398s
+10 sequences, avg 36.8 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0020532608032226562s
+bert_xd shape: torch.Size([10, 1, 20])
+runtime of core bert call: 0.028069019317626953s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.019490480422973633s
+total runtime of bert call: 0.04997134208679199s
+10 sequences, avg 36.8 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.005190134048461914s
+bert_xd shape: torch.Size([10, 1, 74])
+runtime of core bert call: 0.02295827865600586s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.046144962310791016s
+total runtime of bert call: 0.07619237899780273s
+10 sequences, avg 25.2 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0024297237396240234s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.018093347549438477s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.015583992004394531s
+total runtime of bert call: 0.03654885292053223s
+10 sequences, avg 25.2 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.016130685806274414s
+bert_xd shape: torch.Size([10, 1, 78])
+runtime of core bert call: 0.015065431594848633s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.3081629276275635s
+total runtime of bert call: 0.3398005962371826s
+10 sequences, avg 37.6 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0015835762023925781s
+bert_xd shape: torch.Size([10, 1, 10])
+runtime of core bert call: 0.026470661163330078s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.03902292251586914s
+total runtime of bert call: 0.0672447681427002s
+10 sequences, avg 37.6 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.003804922103881836s
+bert_xd shape: torch.Size([10, 1, 96])
+runtime of core bert call: 0.03555464744567871s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.18549704551696777s
+total runtime of bert call: 0.2254030704498291s
+10 sequences, avg 31.9 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.00203704833984375s
+bert_xd shape: torch.Size([10, 1, 23])
+runtime of core bert call: 0.023205995559692383s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.0824277400970459s
+total runtime of bert call: 0.10808062553405762s
+10 sequences, avg 31.9 tokens per sequence
+
+profiling passage BERT encoding...
+runtime of bert vectorization preprocessing: 0.00441741943359375s
+bert_xd shape: torch.Size([10, 1, 63])
+runtime of core bert call: 0.01790452003479004s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.17621469497680664s
+total runtime of bert call: 0.19896531105041504s
+10 sequences, avg 24.4 tokens per sequence
+
+profiling answer BERT encoding...
+runtime of bert vectorization preprocessing: 0.0017228126525878906s
+bert_xd shape: torch.Size([10, 1, 7])
+runtime of core bert call: 0.11594080924987793s
+runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): 0.04899263381958008s
+total runtime of bert call: 0.166961669921875s
+10 sequences, avg 24.4 tokens per sequence
+
