@@ -103,7 +103,7 @@ class JobsDatasetForTree(TextToTreeDataset):
     def __init__(self, root_dir,
                  topology_builder, topology_subdir,
                 #  pretrained_word_emb_file=None,
-                 pretrained_word_emb_name=None,
+                 pretrained_word_emb_name='6B',
                  pretrained_word_emb_url=None,
                  pretrained_word_emb_cache_dir=None,
                  val_split_ratio=0,
