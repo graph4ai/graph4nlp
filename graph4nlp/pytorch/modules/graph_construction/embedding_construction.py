@@ -7,6 +7,7 @@ import dgl
 
 from ..utils.vocab_utils import Vocab
 from ..utils.generic_utils import to_cuda, dropout_fn, create_mask
+from ..utils.padding_utils import pad_4d_vals
 from ..utils.bert_utils import *
 from ...data.data import from_batch
 
@@ -295,7 +296,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 raw_tokens = [[gd.node_attributes[i]['token'] for i in range(gd.get_node_num())] for gd in gd_list]
 
                 # test-only: duplicate
-                raw_tokens = duplicate(raw_tokens, max_seq_len=400, num_seq=50)
+                raw_tokens = duplicate(raw_tokens, max_seq_len=800, num_seq=50)
 
                 t0 = time.time()
                 bert_feat = self.word_emb_layers['seq_bert'](raw_tokens)
@@ -352,7 +353,7 @@ class WordEmbedding(nn.Module):
             print('[ Fix word embeddings ]')
             for param in self.word_emb_layer.parameters():
                 param.requires_grad = False
-    
+
     @property
     def weight(self):
         return self.word_emb_layer.weight
@@ -446,10 +447,16 @@ class BertEmbedding(nn.Module):
         max_bert_d_len = max([len(bert_d.input_ids) for ex_bert_d in bert_features for bert_d in ex_bert_d])
         bert_xd = torch.LongTensor(len(raw_text_data), max_bert_d_num_chunks, max_bert_d_len).fill_(0)
         bert_xd_mask = torch.LongTensor(len(raw_text_data), max_bert_d_num_chunks, max_bert_d_len).fill_(0)
+        bert_token_to_orig_map = []
         for i, ex_bert_d in enumerate(bert_features): # Example level
+            ex_token_to_orig_map = []
             for j, bert_d in enumerate(ex_bert_d): # Chunk level
                 bert_xd[i, j, :len(bert_d.input_ids)].copy_(torch.LongTensor(bert_d.input_ids))
                 bert_xd_mask[i, j, :len(bert_d.input_mask)].copy_(torch.LongTensor(bert_d.input_mask))
+                ex_token_to_orig_map.append(bert_d.token_to_orig_map_matrix)
+            bert_token_to_orig_map.append(ex_token_to_orig_map)
+        bert_token_to_orig_map = pad_4d_vals(bert_token_to_orig_map, len(raw_text_data), max_bert_d_num_chunks, max_bert_d_len, max_d_len)
+        bert_token_to_orig_map = torch.Tensor(bert_token_to_orig_map).to(self.bert_model.device)
 
         bert_xd = bert_xd.to(self.bert_model.device)
         bert_xd_mask = bert_xd_mask.to(self.bert_model.device)
@@ -468,7 +475,7 @@ class BertEmbedding(nn.Module):
 
         all_encoder_layers = encoder_outputs['hidden_states'][1:] # The first one is the input embedding
         all_encoder_layers = torch.stack([x.view(bert_xd.shape + (-1,)) for x in all_encoder_layers], 0)
-        bert_xd_f = extract_bert_hidden_states(all_encoder_layers, max_d_len, bert_features, weighted_avg=True)
+        bert_xd_f = extract_bert_hidden_states(all_encoder_layers, max_d_len, bert_features, bert_token_to_orig_map, weighted_avg=True)
 
         t3 = time.time()
         print('runtime of extract_bert_hidden_states (i.e., mapping BERT subword embeddings to word embeddings, handling chunks): {}s'.format(t3 - t2))
