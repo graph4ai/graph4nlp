@@ -36,7 +36,7 @@ class TextClassifier(nn.Module):
         self.config = config
         self.vocab = vocab
         embedding_style = {'single_token_item': True if config['graph_type'] != 'ie' else False,
-                            'emb_strategy': config.get('emb_strategy', 'w2v_bert_bilstm'),
+                            'emb_strategy': config.get('emb_strategy', 'w2v_bilstm'),
                             'num_rnn_layers': 1,
                             'bert_model_name': config.get('bert_model_name', 'bert-base-uncased'),
                             'bert_lower_case': True
@@ -239,7 +239,7 @@ class ModelHandler:
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
         dataset = TrecDataset(root_dir=self.config.get('root_dir', 'examples/pytorch/text_classification/data/trec'),
-                              pretrained_word_emb_file=self.config['pre_word_emb_file'],
+                              pretrained_word_emb_name=self.config.get('pretrained_word_emb_name', "840B"),
                               merge_strategy=merge_strategy,
                               seed=self.config['seed'],
                               thread_number=4,

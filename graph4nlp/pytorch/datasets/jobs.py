@@ -102,7 +102,10 @@ class JobsDatasetForTree(TextToTreeDataset):
 
     def __init__(self, root_dir,
                  topology_builder, topology_subdir,
-                 pretrained_word_emb_file=None,
+                #  pretrained_word_emb_file=None,
+                 pretrained_word_emb_name='6B',
+                 pretrained_word_emb_url=None,
+                 pretrained_word_emb_cache_dir=None,
                  val_split_ratio=0,
                  graph_type='static',
                  merge_strategy="tailhead", edge_strategy=None,
@@ -146,7 +149,7 @@ class JobsDatasetForTree(TextToTreeDataset):
         super(JobsDatasetForTree, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy,
-                                          share_vocab=share_vocab, pretrained_word_emb_file=pretrained_word_emb_file,
+                                          share_vocab=share_vocab, pretrained_word_emb_name=pretrained_word_emb_name,
                                           val_split_ratio=val_split_ratio, seed=seed, word_emb_size=word_emb_size,
 
                                           dynamic_graph_type=dynamic_graph_type,

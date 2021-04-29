@@ -21,11 +21,32 @@ class KinshipDataset(KGCompletionDataset):
         #     'This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
         return
 
-    def __init__(self, root_dir, topology_builder=None, topology_subdir=None, edge_strategy=None, **kwargs):
+    def __init__(self,
+                 root_dir,
+                 topology_builder=None,
+                 topology_subdir=None,
+                 edge_strategy=None,
+                 pretrained_word_emb_name=None,
+                 pretrained_word_emb_url=None,
+                 target_pretrained_word_emb_name=None,
+                 target_pretrained_word_emb_url=None,
+                 pretrained_word_emb_cache_dir=".vector_cache/",
+                 word_emb_size=300,
+                 share_vocab=True,  # share vocab between entity and relation
+                 **kwargs):
         self.split_token = ' '
-        super(KinshipDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
-                                             topology_subdir=topology_subdir,edge_strategy=edge_strategy, **kwargs)
-
+        super(KinshipDataset, self).__init__(root_dir=root_dir,
+                                             word_emb_size=word_emb_size,
+                                             share_vocab=share_vocab,
+                                             topology_builder=topology_builder,
+                                             topology_subdir=topology_subdir,
+                                             edge_strategy=edge_strategy,
+                                             pretrained_word_emb_name=pretrained_word_emb_name,
+                                             pretrained_word_emb_url=pretrained_word_emb_url,
+                                             target_pretrained_word_emb_name=target_pretrained_word_emb_name,
+                                             target_pretrained_word_emb_url=target_pretrained_word_emb_url,
+                                             pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
+                                             **kwargs)
 
 if __name__ == '__main__':
     kinshipdataset = KinshipDataset(root_dir='examples/pytorch/kg_completion/kinship',

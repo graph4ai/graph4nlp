@@ -1,0 +1,30 @@
+# Data
+dataset: 'wn18rr'
+
+loss_name: 'BCELoss'
+
+rel_emb_from_gnn: false
+
+# Preprocessing
+#top_word_vocab: 70000
+share_vocab: True
+word_emb_size: 300
+min_word_freq: 1
+
+
+word_dropout: 0.4 # word embedding dropout
+enc_rnn_dropout: 0.3 # Encoder RNN dropout
+coverage_loss_ratio: 0.3 # coverage loss ratio
+
+
+# Training
+seed: 1234
+batch_size: 64 # batch size
+epochs: 50 # number of maximal training epochs
+#early_stop_metric: 'ROUGE'
+patience: 10
+lr: 0.002 # learning rate
+
+
+gpu: -1
+no_cuda: false

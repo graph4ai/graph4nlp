@@ -653,6 +653,9 @@ if __name__ == "__main__":
     main_arg_parser.add_argument(
         '-grad_clip', type=int, default=5, help='clip gradients at this value')
 
+    main_arg_parser.add_argument(
+        '-pretrain_fn', type=str, default="/home/lishucheng/projects/Tools-and-Resources/glove/glove.6B.300d.zip")
+
     args = main_arg_parser.parse_args()
 
     runner = Jobs(opt=args)
