@@ -75,6 +75,19 @@ class GraphData(object):
                 raise NotImplementedError
 
     def to(self, device):
+        """
+        Move the GraphData object to different devices(cpu, gpu, etc.). The usage of this method is similar to that of
+        torch.Tensor and dgl.DGLGraph
+
+        Parameters
+        ----------
+        device: str
+            The target device.
+
+        Returns
+        -------
+        self
+        """
         self.device = device
         for k, v in self._node_features.items():
             if isinstance(v, torch.Tensor):
@@ -88,7 +101,9 @@ class GraphData(object):
     @property
     def nodes(self) -> NodeView:
         """
-        Return a node view through which the user can access the features and attributes
+        Return a node view through which the user can access the features and attributes. A NodeView object provides a
+        high-level view of the underlying storage of the features and supports both query and modification to the original
+        storage.
 
         Returns
         -------
@@ -174,6 +189,14 @@ class GraphData(object):
         return ret
 
     def node_feature_names(self):
+        """
+        Get the names of node features.
+
+        Returns
+        -------
+        Union[str]:
+            The collection of feature names.
+        """
         return self._node_features.keys()
 
     def set_node_features(self, nodes: int or slice, new_data: dict) -> None:
@@ -424,6 +447,28 @@ class GraphData(object):
     @property
     def edge_features(self):
         return self.edges[:].features
+
+    def remove_all_edges(self):
+        """
+        Remove all the edges and the corresponding features and attributes in GraphData.
+
+        Examples
+        --------
+        >>> g = GraphData()
+        >>> g.add_nodes(10)
+        >>> g.add_edges(list(range(0, 9, 1)), list(range(1, 10, 1)))
+        >>> g.edge_features['random'] = torch.rand((9, 1024, 1024))     # Added some feature tensors to the edges
+        >>> g.remove_all_edges()    # Remove all edges and the corresponding data. The tensor memory is freed now.
+
+        Returns
+        -------
+        None
+        """
+
+        self._edge_indices = EdgeIndex(src=[], tgt=[])
+        self._nids_eid_mapping = nids_eid_mapping_factory()
+        self._edge_features = edge_feature_factory(res_init_edge_features)
+        self._edge_attributes = edge_attribute_factory()
 
     def get_edge_feature(self, edges: list):
         """
