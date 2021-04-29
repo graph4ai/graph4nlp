@@ -5,6 +5,14 @@ supports adding features which are in tensor form, and attributes which are of a
 nodes or edges. Batching operations is also supported by :py:class:`GraphData`.
 
 """
+import os
+"""
+Log level: 0 for verbose, 1 for warnings only, 2 for muted. Default is 0.
+"""
+log_level = os.environ.get("G4NLP_LOG_LEVEL")
+if log_level is None:
+    log_level = 0
+
 import warnings
 from collections import namedtuple
 
@@ -327,7 +335,8 @@ class GraphData(object):
         # Duplicate edge check. If the edge to be added already exists in the graph, then skip it.
         endpoint_tuple = (src, tgt)
         if endpoint_tuple in self._nids_eid_mapping.keys():
-            warnings.warn('Edge {} is already in the graph. Skipping this edge.'.format(endpoint_tuple), Warning)
+            if log_level < 2:
+                warnings.warn('Edge {} is already in the graph. Skipping this edge.'.format(endpoint_tuple), Warning)
             return
 
         # Append to the mapping list
@@ -375,7 +384,8 @@ class GraphData(object):
             # Duplicate edge check. If the edge to be added already exists in the graph, then skip it.
             endpoint_tuple = (src[i], tgt[i])
             if endpoint_tuple in self._nids_eid_mapping.keys():
-                warnings.warn('Edge {} is already in the graph. Skipping this edge.'.format(endpoint_tuple), Warning)
+                if log_level < 2:
+                    warnings.warn('Edge {} is already in the graph. Skipping this edge.'.format(endpoint_tuple), Warning)
                 duplicate_edge_indices.append(i)
                 continue
             self._nids_eid_mapping[endpoint_tuple] = current_num_edges + i
