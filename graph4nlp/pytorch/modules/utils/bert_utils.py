@@ -49,7 +49,7 @@ def extract_bert_hidden_states(all_encoder_layers, max_doc_len, features, bert_t
   #     out_features[:, i, doc_word_idx] /= count
 
   out_features = torch.matmul(bert_token_to_orig_map.unsqueeze(0).transpose(-1, -2), all_encoder_layers)
-  out_features = torch.sum(out_features, 2) / torch.sum(bert_token_to_orig_map, (1, 2)).unsqueeze(-1).unsqueeze(0)
+  out_features = torch.sum(out_features, 2) / torch.clamp(torch.sum(bert_token_to_orig_map, (1, 2)), min=1).unsqueeze(-1).unsqueeze(0)
 
   # Average through all layers
   if not weighted_avg:
