@@ -1457,9 +1457,11 @@ class DoubleText2TextDataset(Dataset):
         data = []
         with open(file_path, 'r') as f:
             for line in f:
+                if self.lower_case:
+                    line = line.lower().strip()
                 input, input2, output = line.split('\t')
-                data_item = DoubleText2TextDataItem(input_text=input.strip().lower(), input_text2=input2.strip().lower(),
-                                                    output_text=output.strip().lower(), tokenizer=self.tokenizer,
+                data_item = DoubleText2TextDataItem(input_text=input.strip(), input_text2=input2.strip(),
+                                                    output_text=output.strip(), tokenizer=self.tokenizer,
                                                     share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
