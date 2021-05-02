@@ -107,7 +107,6 @@ class NMT:
             raise NotImplementedError("Define your topology builder.")
 
         dataset = IWSLT14Dataset(root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
-                              pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
                               val_split_ratio=self.opt["val_split_ratio"],
                               merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
                                   "merge_strategy"],

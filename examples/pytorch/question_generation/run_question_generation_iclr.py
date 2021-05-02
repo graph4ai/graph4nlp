@@ -57,8 +57,7 @@ class QGModel(nn.Module):
                             self.vocab.in_word_vocab.embeddings.shape[0],
                             self.vocab.in_word_vocab.embeddings.shape[1],
                             pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
-                            fix_emb=config['graph_construction_args']['node_embedding']['fix_word_emb'],
-                            device=config['device']).word_emb_layer
+                            fix_emb=config['graph_construction_args']['node_embedding']['fix_word_emb']).word_emb_layer
         self.g2s.seq_decoder.tgt_emb = self.word_emb
 
         # answer_feat_size = self.vocab.in_word_vocab.embeddings.shape[1]

@@ -284,7 +284,6 @@ class Dataset(torch.utils.data.Dataset):
                  min_word_vocab_freq=1,
                  use_val_for_vocab=False,
                  seed=1234,
-                 device='cpu',
                  thread_number=4,
                  port=9000,
                  timeout=15000,
@@ -321,8 +320,6 @@ class Dataset(torch.utils.data.Dataset):
             Whether to add val split in the final split.
         seed: int, default=1234
             The seed for random function.
-        device: str, default='cpu'
-            The device of the current environment.
         thread_number: int, default=4
             The thread number for building initial graph. For most case, it may be the number of your CPU cores.
         port: int, default=9000
@@ -356,7 +353,6 @@ class Dataset(torch.utils.data.Dataset):
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         self.use_val_for_vocab = use_val_for_vocab
-        self.device = device
         for k, v in kwargs.items():
             setattr(self, k, v)
         self.__indices__ = None
@@ -631,8 +627,8 @@ class Dataset(torch.utils.data.Dataset):
         for i in range(thread_number):
             res = res_l[i].get()
             for data in res:
-                data.graph = data.graph.to(self.device)
-                data_items.append(data)
+                if data.graph is not None:
+                    data_items.append(data)
 
         return data_items
 
