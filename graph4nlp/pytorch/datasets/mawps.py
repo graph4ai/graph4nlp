@@ -41,7 +41,8 @@ class MawpsDatasetForTree(TextToTreeDataset):
                  enc_emb_size=300,
                  dec_emb_size=300,
                  device='cpu',
-                 min_freq=1):
+                 min_word_vocab_freq=1,
+                 max_word_vocab_size=100000):
         """
 
         Parameters
@@ -79,4 +80,4 @@ class MawpsDatasetForTree(TextToTreeDataset):
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
                                           enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size, device=device,
-                                          min_freq=min_freq)
+                                          min_word_vocab_freq=min_word_vocab_freq, max_word_vocab_size=max_word_vocab_size)
