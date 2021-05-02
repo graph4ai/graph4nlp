@@ -72,4 +72,5 @@ if __name__ == "__main__":
 
     metric = SummarizationRouge().calculate_scores(ground_truth=gt_collect, predict=pred_collect)
 
+# A Chinese tutorial for installing Rouge
 # https://blog.csdn.net/taoyafan/article/details/84069044

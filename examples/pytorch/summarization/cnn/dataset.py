@@ -1,21 +1,7 @@
 from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 import torch
-import os
 import json
-import stanfordcorenlp
-import warnings
-from multiprocessing import Pool
-import numpy as np
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size, pad_2d_vals
-
-from multiprocessing import Process
-import multiprocessing
-import tqdm
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel, Vocab
-from graph4nlp.pytorch.modules.utils import constants
 from nltk.tokenize import word_tokenize
 
 class CNNDataset(Text2TextDataset):
@@ -25,7 +11,7 @@ class CNNDataset(Text2TextDataset):
                  topology_subdir,
                  tokenizer=word_tokenize,
                  lower_case=True,
-                 pretrained_word_emb_name='6B',
+                 pretrained_word_emb_name='840B',
                  pretrained_word_emb_url=None,
                  target_pretrained_word_emb_name=None,
                  target_pretrained_word_emb_url=None,
