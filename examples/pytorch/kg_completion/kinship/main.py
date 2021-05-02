@@ -524,21 +524,3 @@ if __name__ == "__main__":
     print_config(model_template)
 
     main(model_template)
-
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--gnn', type=str, default='gcn')
-    # parser.add_argument('--direction_option', type=str, default='undirected')
-    # parser.add_argument('--loss', type=str, default='SigmoidLoss')
-    # args = parser.parse_args()
-
-    # if torch.cuda.is_available():
-    #     print('using cuda...')
-    #     device = torch.device('cuda:0')
-    # else:
-    #     device = torch.device('cpu')
-    #
-    # runner = Kinship(device, args)
-    # max_score = runner.train()
-    # print("Train finish, best MRR: {:.3f}".format(max_score))
-    # max_test_score = runner.test()
-    # print("Test finish, best MRR: {:.3f}".format(max_test_score))
