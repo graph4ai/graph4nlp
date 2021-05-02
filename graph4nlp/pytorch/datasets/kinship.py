@@ -1,7 +1,5 @@
 from graph4nlp.pytorch.data.dataset import KGCompletionDataset
 
-dataset_root = '../test/dataset/kinship'
-
 
 class KinshipDataset(KGCompletionDataset):
     @property
