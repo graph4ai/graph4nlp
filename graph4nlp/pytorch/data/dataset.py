@@ -808,10 +808,9 @@ class Text2TextDataset(Dataset):
 
 
 class TextToTreeDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, min_freq, share_vocab=True, **kwargs):
+    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
         self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
-        self.min_freq = min_freq
         super(TextToTreeDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
     def parse_file(self, file_path) -> list:
@@ -880,12 +879,12 @@ class TextToTreeDataset(Dataset):
                 all_words[1].update(extracted_tokens[1])
 
         if self.share_vocab:
-            print("min_freq_for_word", self.min_freq)
-            src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_freq, max_vocab_size=100000)
+            print(self.min_word_vocab_freq)
+            src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
             tgt_vocab_model = src_vocab_model
         else:
-            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=self.min_freq, max_vocab_size=100000)
-            tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=self.min_freq, max_vocab_size=100000)
+            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
+            tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
 
         self.src_vocab_model = src_vocab_model
         self.tgt_vocab_model = tgt_vocab_model
