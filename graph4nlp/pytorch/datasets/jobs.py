@@ -116,7 +116,6 @@ class JobsDatasetForTree(TextToTreeDataset):
                  dynamic_init_topology_aux_args=None,
                  enc_emb_size=300,
                  dec_emb_size=300,
-                 device='cpu',
                  min_word_vocab_freq=1,
                  tokenizer=tokenize_jobs,
                  max_word_vocab_size=100000):
@@ -156,7 +155,7 @@ class JobsDatasetForTree(TextToTreeDataset):
                                           dynamic_graph_type=dynamic_graph_type,
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-                                          enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size, device=device,
+                                          enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size,
                                           min_word_vocab_freq=min_word_vocab_freq,
                                           tokenizer=tokenizer,
                                           max_word_vocab_size=max_word_vocab_size)

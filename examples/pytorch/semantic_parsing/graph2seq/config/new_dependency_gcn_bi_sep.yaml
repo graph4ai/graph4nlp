@@ -7,6 +7,7 @@ graph_construction_args:
     graph_type: 'dependency'
     root_dir: "graph4nlp/pytorch/test/dataset/jobs"
     topology_subdir: 'DependencyGraph'
+    share_vocab: true
     thread_number: 4
     port: 9000
     timeout: 15000

@@ -2,11 +2,10 @@ graph_construction_share:
   graph_type: 'dependency'
   root_dir: null
   topology_subdir: 'DependencyGraph'
-  lower_case: true
   share_vocab: true
-  input_language: "en"
-  output_language: "en"
   thread_number: 4
+  port: 9000
+  timeout: 15000
 
 graph_construction_private:
   edge_strategy: 'homogeneous'
