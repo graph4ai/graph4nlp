@@ -25,9 +25,7 @@ init_adj_alpha: null # alpha ratio for combining initial graph adjacency matrix
 word_dropout: 0.4 # word embedding dropout
 rnn_dropout: 0.1 # RNN dropout
 no_fix_word_emb: false # Not fix pretrained word embeddings (default: false)
-node_edge_emb_strategy: 'mean' # node edge embedding strategy for graph embedding construction ('mean', 'lstm', 'gru', 'bilstm' and 'bigru')
-seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph embedding construction ('none', 'lstm', 'gru', 'bilstm' and 'bigru')
-
+emb_strategy: 'w2v_bilstm'
 
 # GNN
 gnn: 'gat'

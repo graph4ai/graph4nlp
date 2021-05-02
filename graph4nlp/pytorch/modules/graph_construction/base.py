@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 from .embedding_construction import EmbeddingConstruction
 from ..utils.constants import INF
-from ..utils.generic_utils import normalize_sparse_adj, sparse_mx_to_torch_sparse_tensor
+from ..utils.generic_utils import normalize_adj, sparse_mx_to_torch_sparse_tensor
 from ..utils.constants import VERY_SMALL_NUMBER
 
 
@@ -535,8 +535,6 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         torch.Tensor
             The symmetric normalized Laplacian matrix.
         """
-        adj = graph.scipy_sparse_adj(batch_view=True)
-        adj = normalize_sparse_adj(adj)
-        adj = sparse_mx_to_torch_sparse_tensor(adj).to(graph.device)
+        norm_init_adj = graph.adj_matrix(batch_view=True, post_processing_fn=normalize_adj)
 
-        return adj
+        return norm_init_adj

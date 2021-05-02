@@ -68,7 +68,7 @@ class KGLoss(KGLossBase):
     `Loss Functions in Knowledge Graph Embedding Models <https://alammehwish.github.io/dl4kg-eswc/papers
     /paper%201.pdf>`__
 
-    Pointwise Loss Function
+    **Pointwise Loss Function**
 
     `MSELoss <https://pytorch.org/docs/master/generated/torch.nn.MSELoss.html>`__
     Creates a criterion that measures the mean squared error (squared L2 norm)
@@ -86,7 +86,7 @@ class KGLoss(KGLossBase):
         \text{loss}(x, y) = \sum_i \frac{\log(1 + \exp(-y[i]*x[i]))}{\text{x.nelement}()}
 
 
-    Pairwise Loss Function
+    **Pairwise Loss Function**
 
     `SoftplusLoss <https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SoftplusLoss.py>`__
     refers to the paper `OpenKE: An Open Toolkit for Knowledge Embedding <https://www.aclweb.org/anthology/D18-2024.pdf>`__
@@ -94,7 +94,7 @@ class KGLoss(KGLossBase):
     `SigmoidLoss <https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SigmoidLoss.py>`__
     refers to the paper `OpenKE: An Open Toolkit for Knowledge Embedding <https://www.aclweb.org/anthology/D18-2024.pdf>`__
 
-    Multi-Class Loss Function
+    **Multi-Class Loss Function**
 
     `Binary Cross Entropy Loss <https://pytorch.org/docs/master/generated/torch.nn.BCELoss.html>`__
     Creates a criterion that measures the Binary Cross Entropy between the target and the output. Note that the targets

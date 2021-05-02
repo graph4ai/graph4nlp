@@ -11,6 +11,7 @@ class KinshipDataset(KGCompletionDataset):
 
     @property
     def processed_file_names(self) -> dict:
+        """At least 2 reserved keys should be fiiled: 'vocab' and 'data'."""
         return {'vocab': 'vocab.pt', 'data': 'data.pt', 'KG_graph': 'KG_graph.pt'}
 
     def download(self):
@@ -45,4 +46,6 @@ class KinshipDataset(KGCompletionDataset):
                                              pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
                                              **kwargs)
 
-
+if __name__ == '__main__':
+    kinshipdataset = KinshipDataset(root_dir='examples/pytorch/kg_completion/kinship',
+                                    topology_subdir='e1rel_to_e2')

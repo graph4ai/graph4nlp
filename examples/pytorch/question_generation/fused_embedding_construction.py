@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -166,7 +167,8 @@ class FusedEmbeddingConstruction(EmbeddingConstructionBase):
             enc_input_cat.append(ctx_bert)
 
             # answer encoding
-            answer_bert = self.word_emb_layers['seq_bert'](data['input_text2'])
+            answer_raw_tokens = data['input_text2']
+            answer_bert = self.word_emb_layers['seq_bert'](answer_raw_tokens)
             answer_bert = dropout_fn(answer_bert, self.bert_dropout, shared_axes=[-2], training=self.training)
             answer_feat = torch.cat([answer_feat, answer_bert], -1)
 

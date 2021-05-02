@@ -19,7 +19,7 @@ coverage_loss_ratio: 0.3 # coverage loss ratio
 
 # Training
 seed: 1234
-batch_size: 80 # batch size
+batch_size: 10 # batch size
 epochs: 100 # number of maximal training epochs
 grad_clipping: 10
 early_stop_metric: 'BLEU_4'

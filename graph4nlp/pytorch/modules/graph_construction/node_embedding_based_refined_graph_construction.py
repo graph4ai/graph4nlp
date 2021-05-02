@@ -11,6 +11,7 @@ from ..utils.generic_utils import normalize_adj, to_cuda
 # from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
 from ...data.data import to_batch
+from ..utils.vocab_utils import Vocab
 
 
 class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
