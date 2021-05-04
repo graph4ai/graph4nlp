@@ -2,7 +2,7 @@ KG Completion Test
 ============
 
 ```bash
-python -m examples.pytorch.kg_completion.kinship.main
+python -m examples.pytorch.kg_completion.kinship.main -model_config examples/pytorch/kg_completion/kinship/config/gcn.yaml -task_config examples/pytorch/kg_completion/kinship/config/kinship.yaml
 ```
 
 

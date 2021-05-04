@@ -59,11 +59,18 @@ def read_file(path):
     return ret
 
 if __name__ == "__main__":
-    path = 'save_g2s_3w_copy_dep/'
-    gt_file = "save_g2s_3w_copy_dep/cnn_tgt_output.txt"
-    pred_file = "save_g2s_3w_copy_dep/cnn_pred_output.txt"
+    # path = 'out/cnn/gcn_bi_fuse_l2_ckpt/'
+    # gt_file = "out/cnn/gcn_bi_fuse_l2_ckpt/gcn_bi_fuse_l2_ckpt_bs15_gt.txt"
+    # pred_file = "out/cnn/gcn_bi_fuse_l2_ckpt/gcn_bi_fuse_l2_ckpt_bs15_pred.txt"
+
+    path = 'examples/pytorch/summarization/cnn/text_cnn/'
+    gt_file = "examples/pytorch/summarization/cnn/text_cnn/test.output"
+    pred_file = "examples/pytorch/summarization/cnn/text_cnn/test_pred.txt"
     gt_collect = read_file(gt_file)
     pred_collect = read_file(pred_file)
     assert len(gt_collect) == len(pred_collect)
 
     metric = SummarizationRouge().calculate_scores(ground_truth=gt_collect, predict=pred_collect)
+
+# A Chinese tutorial for installing Rouge
+# https://blog.csdn.net/taoyafan/article/details/84069044

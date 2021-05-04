@@ -19,9 +19,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
     Attributes
     ----------
-    attn : torch.nn.Module,
-        Attention unit used when copy mechanism is not used.
-
     attn_type : str,
         Describe which attention mechanism is used, can be ``uniform``, ``separate_on_encoder_type``, ``separate_on_node_type``.
 
@@ -40,8 +37,8 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     output_size : int,
         Size of output vocabulary size.
 
-    device : int,
-        Device where parameters and data are stored, (None implies device is cpu).
+    device : object,
+        Device where parameters and data are store, a torch.device object.
 
     teacher_force_ratio : float,
         The ratio of possibility to use teacher force training.
@@ -64,6 +61,15 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     num_layers : int, optional,
         Layer number of decoder rnn unit.
 
+    dropout_for_decoder: float,
+        Dropout ratio for decoder(include both the dropout for word embedding and the dropout for attention layer)
+    
+    tgt_vocab : object,
+        The vocab object used in decoder, including all the word<->id pairs appeared in the output sentences.
+    
+    graph_pooling_strategy : str,
+        The graph pooling strategy used to generate the graph embedding with node embeddings
+
     rnn_type: str, optional,
         The rnn unit is used, option=["lstm", "gru"], default="lstm".
 
@@ -72,9 +78,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
     max_dec_tree_depth : int, optional,
         In decoding, the tree depth lower limit.
-
-    tgt_vocab : 
-        The vocabulary manager class object.
     """
 
     def __init__(self, attn_type, embeddings, enc_hidden_size, dec_emb_size,
@@ -171,6 +174,9 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
         graph_edge_mask: torch.Tensor,
             graph edge type embedding
+
+        oov_dict: dict,
+            vocab dict used in copy mechanism to incorporate some new words which have never appeared in vocab for input sentences in training set.
         """
         tgt_batch_size = len(tgt_tree_batch)
 
@@ -281,11 +287,49 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         return loss
 
     def _filter_oov(self, tokens, vocab):
+        r"""The function used to mask some oov word in word embedding layer."""
         ret = tokens.clone()
         ret[tokens >= vocab.vocab_size] = vocab.get_symbol_idx(vocab.unk_token)
         return ret
 
-    def decode_step(self, tgt_batch_size, dec_single_input, dec_single_state, memory, parent_state, input_mask=None, memory_mask=None, memory_candidate=None, sibling_state=None, oov_dict=None, enc_batch=None):
+    def decode_step(self, tgt_batch_size, 
+                          dec_single_input, 
+                          dec_single_state, 
+                          memory, 
+                          parent_state, 
+                          input_mask=None, 
+                          memory_mask=None, 
+                          memory_candidate=None, 
+                          sibling_state=None, 
+                          oov_dict=None, 
+                          enc_batch=None):
+        """The decoding function in tree decoder.
+
+        Parameters
+        ----------
+        tgt_batch_size : int,
+            batch size.
+        dec_single_input : torch.Tensor,
+            word id matrix for decoder input: [B, N].
+        dec_single_state : torch.Tensor
+            the rnn decoding hidden state: [B, N, D].
+        memory : torch.Tensor
+            the encoder output node embedding.
+        parent_state : torch.Tensor
+            the parent embedding used in parent feeding mechanism.
+        input_mask : torch.Tensor, optional
+            input mask, by default None
+        memory_mask : torch.Tensor, optional
+            mask for encoder output, by default None
+        memory_candidate : torch.Tensor, optional
+            encoder output used for separate attention mechanism, by default None
+        sibling_state : torch.Tensor, optional
+            sibling state for sibling feeding mechanism, by default None
+        oov_dict : object, optional
+            out-of-vocabulary object for copy mechanism, by default None
+        enc_batch : torch.Tensor,
+            The input batch : (Batch_size * Source sentence word index tensor).
+        """
         dec_single_input = self._filter_oov(dec_single_input, self.tgt_vocab)
         rnn_state_c, rnn_state_h, dec_emb = self.rnn(
             dec_single_input, dec_single_state[0], dec_single_state[1], parent_state, sibling_state)
@@ -316,7 +360,9 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             gen_output = torch.softmax(decoder_output, dim=-1)
 
             ret = prob_gen * gen_output
-            output[:, :self.tgt_vocab.vocab_size] = ret
+            need_pad_length = len(oov_dict) - len(self.tgt_vocab)
+            output = torch.cat((ret, ret.new_zeros((tgt_batch_size, need_pad_length))), dim=1)
+            # output[:, :self.tgt_vocab.vocab_size] = ret
 
             ptr_output = attn_scores
             output.scatter_add_(1, enc_batch, prob_ptr * ptr_output)
@@ -339,9 +385,12 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                   max_dec_tree_depth,
                   use_beam_search=True,
                   beam_size=4,
-                  oov_dict=None,
-                  beam_search_version=1):
+                  oov_dict=None):
+                #   beam_search_version=1):
         # initialize the rnn state to all zeros
+        # from graph4nlp.pytorch.data.data import to_batch
+        # input_graph_list = to_batch(input_graph_list)
+        input_graph_list.batch_node_features["token_id"] = input_graph_list.batch_node_features["token_id"].to(device)
         prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
         prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
 
@@ -349,12 +398,12 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         batch_graph = model.encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
-        batch_graph_decoder_input = from_batch(batch_graph)
-        if use_copy and "token_id_oov" not in batch_graph.node_features.keys():
-            for g, g_ in zip(batch_graph_decoder_input, input_graph_list):
-                g.node_features['token_id_oov'] = g_.node_features['token_id_oov']
+        # batch_graph_decoder_input = from_batch(batch_graph)
+        # if use_copy and "token_id_oov" not in batch_graph.node_features.keys():
+        #     for g, g_ in zip(batch_graph_decoder_input, input_graph_list):
+        #         g.node_features['token_id_oov'] = g_.node_features['token_id_oov']
 
-        params = model.decoder._extract_params(batch_graph_decoder_input)
+        params = model.decoder._extract_params(batch_graph)
         graph_node_embedding = params['graph_node_embedding']
         if model.decoder.graph_pooling_strategy == "max":
             graph_level_embedding = torch.max(graph_node_embedding, 1)[0]
@@ -493,68 +542,23 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         -------
         params: dict
         """
-        graph_node_emb = [s_g.node_features["node_emb"] for s_g in graph_list]
-        rnn_node_emb = [s_g.node_features["rnn_emb"] for s_g in graph_list]
+        batch_data_dict = graph_list.batch_node_features
+        graph_node_emb = batch_data_dict["node_emb"]
+        
+        # [s_g.node_features["node_emb"] for s_g in graph_list]
+        rnn_node_emb = batch_data_dict["rnn_emb"]
 
-        def pad_tensor(x, dim, pad_size):
-            if len(x.shape) == 2:
-                assert (0 <= dim <= 1)
-                assert pad_size >= 0
-                dim1, dim2 = x.shape
-                pad = torch.zeros(pad_size, dim2) if dim == 0 else torch.zeros(
-                    dim1, pad_size)
-                pad = pad.to(x.device)
-                return torch.cat((x, pad), dim=dim)
+        graph_node_mask = (batch_data_dict["token_id"] != 0).squeeze(-1).float() - 1
 
         if self.use_copy:
-            src_seq_list = [s_g.node_features["token_id_oov"].view(
-                1, -1) for s_g in graph_list]
-            max_src_seq_len = max([seq.shape[1] for seq in src_seq_list])
-            src_seq_collect = []
-            for seq in src_seq_list:
-                if seq.shape[1] < max_src_seq_len:
-                    seq = pad_tensor(seq, 1, max_src_seq_len - seq.shape[1])
-                src_seq_collect.append(seq)
-            src_seq_ret = torch.cat(src_seq_collect, dim=0)
+            src_seq_ret = graph_list.batch_node_features["token_id_oov"]
         else:
             src_seq_ret = None
 
-        batch_size = len(graph_list)
-        max_node_num = max([emb.shape[0] for emb in graph_node_emb])
-
-        graph_node_emb_ret = []
-        for emb in graph_node_emb:
-            if emb.shape[0] < max_node_num:
-                emb = pad_tensor(emb, 0, max_node_num - emb.shape[0])
-            graph_node_emb_ret.append(emb.unsqueeze(0))
-        graph_node_emb_ret = torch.cat(graph_node_emb_ret, dim=0)
-
-        graph_node_mask = torch.zeros(batch_size, max_node_num).fill_(-1)
-
-        for i, s_g in enumerate(graph_list):
-            node_num = s_g.get_node_num()
-            for j in range(node_num):
-                node_type = s_g.node_attributes[j].get('type')
-                if node_type is not None:
-                    graph_node_mask[i][j] = node_type
-        graph_node_mask_ret = graph_node_mask.to(graph_node_emb_ret.device)
-
-        rnn_node_emb_ret = None
-        if self.attention_type == "sep_diff_encoder_type":
-            max_rnn_num = max([rnn_emb.shape[0] for rnn_emb in rnn_node_emb])
-            rnn_node_emb_ret = []
-            assert max_rnn_num == max_node_num
-            for rnn_emb in rnn_node_emb:
-                if rnn_emb.shape[0] < max_rnn_num:
-                    rnn_emb = pad_tensor(
-                        rnn_emb, 0, max_rnn_num - rnn_emb.shape[0])
-                rnn_node_emb_ret.append(rnn_emb.unsqueeze(0))
-            rnn_node_emb_ret = torch.cat(rnn_node_emb_ret, dim=0)
-
         return {
-            "graph_node_embedding": graph_node_emb_ret,
-            "graph_node_mask": graph_node_mask_ret,
-            "rnn_node_embedding": rnn_node_emb_ret,
+            "graph_node_embedding": graph_node_emb,
+            "graph_node_mask": graph_node_mask,
+            "rnn_node_embedding": rnn_node_emb,
             "graph_level_embedding": None,
             "graph_edge_embedding": None,
             "graph_edge_mask": None,

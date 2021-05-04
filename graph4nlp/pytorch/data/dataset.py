@@ -275,10 +275,15 @@ class Dataset(torch.utils.data.Dataset):
                  topology_subdir,
                  tokenizer=word_tokenize,
                  lower_case=True,
-                 pretrained_word_emb_file=None,
+                 pretrained_word_emb_name="840B",
+                 pretrained_word_emb_url=None,
+                 target_pretrained_word_emb_name=None,
+                 target_pretrained_word_emb_url=None,
+                 pretrained_word_emb_cache_dir=".vector_cache/",
+                 max_word_vocab_size=None,
+                 min_word_vocab_freq=1,
                  use_val_for_vocab=False,
                  seed=1234,
-                 device='cpu',
                  thread_number=4,
                  port=9000,
                  timeout=15000,
@@ -297,14 +302,24 @@ class Dataset(torch.utils.data.Dataset):
             The word tokenizer.
         lower_case: bool, default=True
             Whether to use lower-case option.
-        pretrained_word_emb_file: str, default=None
-            The path of the pre-trained word embedding file.
+        pretrained_word_emb_name: str, optional, default="840B"
+            The name of pretrained word embedding in ``torchtext``.
+            If it is set ``None``, we will randomly set the initial word embedding values.
+        pretrained_word_emb_url: str optional, default: ``None``
+            The url for downloading pretrained word embedding.
+            Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+        target_pretrained_word_emb_name: str, optional, default=None
+            The name of pretrained word embedding in ``torchtext`` for target language.
+            If it is set ``None``, we will use ``pretrained_word_emb_name``.
+        target_pretrained_word_emb_url: str optional, default: ``None``
+            The url for downloading pretrained word embedding for target language.
+            Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+        pretrained_word_emb_cache_dir: str, optional, default: ``".vector_cache/"``
+            The path of directory saving the temporary word embedding file.
         use_val_for_vocab: bool, default=False
             Whether to add val split in the final split.
         seed: int, default=1234
             The seed for random function.
-        device: str, default='cpu'
-            The device of the current environment.
         thread_number: int, default=4
             The thread number for building initial graph. For most case, it may be the number of your CPU cores.
         port: int, default=9000
@@ -326,11 +341,18 @@ class Dataset(torch.utils.data.Dataset):
         # Processing-specific attributes
         self.tokenizer = tokenizer
         self.lower_case = lower_case
-        self.pretrained_word_emb_file = pretrained_word_emb_file
+        self.pretrained_word_emb_name = pretrained_word_emb_name
+        self.pretrained_word_emb_url = pretrained_word_emb_url
+        self.target_pretrained_word_emb_name = target_pretrained_word_emb_name
+        self.target_pretrained_word_emb_url = target_pretrained_word_emb_url
+        self.pretrained_word_emb_cache_dir= pretrained_word_emb_cache_dir
+        self.max_word_vocab_size = max_word_vocab_size
+        self.min_word_vocab_freq = min_word_vocab_freq
+
+        # self.pretrained_word_emb_file = pretrained_word_emb_file
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         self.use_val_for_vocab = use_val_for_vocab
-        self.device = device
         for k, v in kwargs.items():
             setattr(self, k, v)
         self.__indices__ = None
@@ -605,8 +627,8 @@ class Dataset(torch.utils.data.Dataset):
         for i in range(thread_number):
             res = res_l[i].get()
             for data in res:
-                data.graph = data.graph.to(self.device)
-                data_items.append(data)
+                if data.graph is not None:
+                    data_items.append(data)
 
         return data_items
 
@@ -625,9 +647,13 @@ class Dataset(torch.utils.data.Dataset):
                                        tokenizer=self.tokenizer,
                                        lower_case=self.lower_case,
                                        max_word_vocab_size=self.max_word_vocab_size,
-                                       min_word_vocab_freq=self.min_word_vocab_size,
+                                       min_word_vocab_freq=self.min_word_vocab_freq,
                                        share_vocab=self.share_vocab,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       pretrained_word_emb_name=self.pretrained_word_emb_name,
+                                       pretrained_word_emb_url=self.pretrained_word_emb_url,
+                                       pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
+                                       target_pretrained_word_emb_name=self.target_pretrained_word_emb_name,
+                                       target_pretrained_word_emb_url=self.target_pretrained_word_emb_url,
                                        word_emb_size=self.word_emb_size)
         self.vocab_model = vocab_model
 
@@ -646,6 +672,7 @@ class Dataset(torch.utils.data.Dataset):
         self.read_raw_data()
 
         self.train = self.build_topology(self.train)
+
         self.test = self.build_topology(self.test)
         if 'val' in self.__dict__:
             self.val = self.build_topology(self.val)
@@ -702,24 +729,6 @@ class Text2TextDataset(Dataset):
                                               share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
-
-    def build_vocab(self):
-        data_for_vocab = self.train
-        if self.use_val_for_vocab:
-            data_for_vocab = data_for_vocab + self.val
-
-        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
-                                       data_set=data_for_vocab,
-                                       tokenizer=self.tokenizer,
-                                       lower_case=self.lower_case,
-                                       max_word_vocab_size=None,
-                                       min_word_vocab_freq=1,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
-                                       word_emb_size=300,
-                                       share_vocab=self.share_vocab)
-        self.vocab_model = vocab_model
-
-        return self.vocab_model
 
     def vectorization(self, data_items):
         if self.topology_builder == IEBasedGraphConstruction:
@@ -795,10 +804,9 @@ class Text2TextDataset(Dataset):
 
 
 class TextToTreeDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, min_freq, share_vocab=True, **kwargs):
+    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
         self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
-        self.min_freq = min_freq
         super(TextToTreeDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
     def parse_file(self, file_path) -> list:
@@ -842,10 +850,14 @@ class TextToTreeDataset(Dataset):
             data_for_vocab = data_for_vocab + self.val
 
         src_vocab_model = VocabForTree(lower_case=self.lower_case,
-                                       pretrained_embedding_fn=self.pretrained_word_emb_file,
+                                       pretrained_word_emb_name=self.pretrained_word_emb_name,
+                                       pretrained_word_emb_url=self.pretrained_word_emb_url,
+                                       pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
                                        embedding_dims=self.enc_emb_size)
         tgt_vocab_model = VocabForTree(lower_case=self.lower_case,
-                                       pretrained_embedding_fn=self.pretrained_word_emb_file,
+                                       pretrained_word_emb_name=self.pretrained_word_emb_name,
+                                       pretrained_word_emb_url=self.pretrained_word_emb_url,
+                                       pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
                                        embedding_dims=self.dec_emb_size)
 
         if self.share_vocab:
@@ -863,18 +875,22 @@ class TextToTreeDataset(Dataset):
                 all_words[1].update(extracted_tokens[1])
 
         if self.share_vocab:
-            print("min_freq_for_word", self.min_freq)
-            src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_freq, max_vocab_size=100000)
+            print(self.min_word_vocab_freq)
+            src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
             tgt_vocab_model = src_vocab_model
         else:
-            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=self.min_freq, max_vocab_size=100000)
-            tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=self.min_freq, max_vocab_size=100000)
+            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
+            tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
 
         self.src_vocab_model = src_vocab_model
         self.tgt_vocab_model = tgt_vocab_model
+        if self.share_vocab:
+            self.share_vocab_model = src_vocab_model
+
         return self.src_vocab_model
 
     def vectorization(self, data_items):
+        """For tree decoder we also need the vectorize the tree output."""
         for item in data_items:
             graph: GraphData = item.graph
             token_matrix = []
@@ -893,9 +909,19 @@ class TextToTreeDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [Text2TreeDataItem]):
-        graph_data = [deepcopy(item.graph) for item in data_list]
+        # remove the deepcopy
+        graph_data = [item.graph for item in data_list]
+        graph_data = to_batch(graph_data)
+
         output_tree_list = [deepcopy(item.output_tree) for item in data_list]
-        return [graph_data, output_tree_list]
+        original_sentence_list = [deepcopy(item.output_text) for item in data_list]
+
+        return {
+            "graph_data": graph_data,
+            "dec_tree_batch": output_tree_list,
+            "original_dec_tree_batch": original_sentence_list
+        }
+
 
 
 class KGDataItem(DataItem):
@@ -956,11 +982,18 @@ class KGDataItem(DataItem):
 
 
 class KGCompletionDataset(Dataset):
-    def __init__(self, root_dir, topology_builder=None, topology_subdir=None, share_vocab=True,
-                 edge_strategy=None, **kwargs):
+    def __init__(self,
+                 root_dir,
+                 topology_builder=None,
+                 topology_subdir=None,
+                 share_vocab=True,
+                 edge_strategy=None,
+                 split_token=' ',
+                 **kwargs):
         self.data_item_type = KGDataItem
         self.share_vocab = share_vocab  # share vocab between entity and relation
         self.edge_strategy = edge_strategy
+        self.split_token = split_token
         super(KGCompletionDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
 
     def parse_file(self, file_path) -> list:
@@ -1021,19 +1054,28 @@ class KGCompletionDataset(Dataset):
         return data
 
     def build_vocab(self):
+        """
+        Build the vocabulary. If `self.use_val_for_vocab` is `True`, use both training set and validation set for building
+        the vocabulary. Otherwise only the training set is used.
+
+        """
         data_for_vocab = self.train
         if self.use_val_for_vocab:
-            data_for_vocab = data_for_vocab + self.val
+            data_for_vocab = self.val + data_for_vocab
 
-        vocab_model = VocabModel.build(
-            saved_vocab_file=os.path.join(self.processed_dir, self.processed_file_names['vocab']),
-            data_set=data_for_vocab,
-            tokenizer=self.tokenizer,
-            lower_case=self.lower_case,
-            max_word_vocab_size=None,
-            min_word_vocab_freq=1,
-            pretrained_word_emb_file=self.pretrained_word_emb_file,
-            word_emb_size=300)
+        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+                                       data_set=data_for_vocab,
+                                       tokenizer=self.tokenizer,
+                                       lower_case=self.lower_case,
+                                       max_word_vocab_size=self.max_word_vocab_size,
+                                       min_word_vocab_freq=self.min_word_vocab_freq,
+                                       share_vocab=self.share_vocab,
+                                       pretrained_word_emb_name=self.pretrained_word_emb_name,
+                                       pretrained_word_emb_url=self.pretrained_word_emb_url,
+                                       pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
+                                       target_pretrained_word_emb_name=self.target_pretrained_word_emb_name,
+                                       target_pretrained_word_emb_url=self.target_pretrained_word_emb_url,
+                                       word_emb_size=self.word_emb_size)
         self.vocab_model = vocab_model
 
         return self.vocab_model
@@ -1333,7 +1375,9 @@ class Text2LabelDataset(Dataset):
                                        lower_case=self.lower_case,
                                        max_word_vocab_size=self.max_word_vocab_size,
                                        min_word_vocab_freq=self.min_word_vocab_freq,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       pretrained_word_emb_name=self.pretrained_word_emb_name,
+                                       pretrained_word_emb_url=self.pretrained_word_emb_url,
+                                       pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
                                        word_emb_size=self.word_emb_size,
                                        share_vocab=True)
         self.vocab_model = vocab_model
@@ -1409,30 +1453,14 @@ class DoubleText2TextDataset(Dataset):
         data = []
         with open(file_path, 'r') as f:
             for line in f:
+                if self.lower_case:
+                    line = line.lower().strip()
                 input, input2, output = line.split('\t')
-                data_item = DoubleText2TextDataItem(input_text=input.strip().lower(), input_text2=input2.strip().lower(),
-                                                    output_text=output.strip().lower(), tokenizer=self.tokenizer,
+                data_item = DoubleText2TextDataItem(input_text=input.strip(), input_text2=input2.strip(),
+                                                    output_text=output.strip(), tokenizer=self.tokenizer,
                                                     share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
-
-    def build_vocab(self):
-        data_for_vocab = self.train
-        if self.use_val_for_vocab:
-            data_for_vocab = data_for_vocab + self.val
-
-        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
-                                       data_set=data_for_vocab,
-                                       tokenizer=self.tokenizer,
-                                       lower_case=self.lower_case,
-                                       max_word_vocab_size=self.max_word_vocab_size,
-                                       min_word_vocab_freq=self.min_word_vocab_freq,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
-                                       word_emb_size=self.word_emb_size,
-                                       share_vocab=self.share_vocab)
-        self.vocab_model = vocab_model
-
-        return self.vocab_model
 
     def vectorization(self, data_items):
         if self.topology_builder == IEBasedGraphConstruction:
@@ -1569,7 +1597,9 @@ class SequenceLabelingDataset(Dataset):
                                        lower_case=self.lower_case,
                                        max_word_vocab_size=None,
                                        min_word_vocab_freq=1,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
+                                       pretrained_word_emb_name=self.pretrained_word_emb_name,
+                                       pretrained_word_emb_url=self.pretrained_word_emb_url,
+                                       pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
                                        word_emb_size=300,
                                        share_vocab=True)
         self.vocab_model = vocab_model
@@ -1596,166 +1626,11 @@ class SequenceLabelingDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [SequenceLabelingDataItem]):
-        tgt_tag = []
-        graph_data = []
-        for item in data_list:
-            # if len(item.graph.node_attributes)== len(item.output_id):
-            graph_data.append(deepcopy(item.graph))
-            tgt_tag.append(deepcopy(item.output_id))
+        graph_list= [item.graph for item in data_list]
+        graph_data=to_batch(graph_list)
+        tgt_tag = [deepcopy(item.output_id) for item in data_list]
 
         # tgt_tags = torch.cat(tgt_tag, dim=0)
         #return [graph_data, tgt_tag]
         return {"graph_data": graph_data,
             "tgt_tag": tgt_tag}
-
-
-class CNNSeq2SeqDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir,
-                 share_vocab=True, word_emb_size=300,
-                 dynamic_graph_type=None,
-                 dynamic_init_topology_builder=None,
-                 dynamic_init_topology_aux_args=None
-                 ):
-        self.data_item_type = Text2TextDataItem_seq2seq
-        self.share_vocab = share_vocab
-        self.tokenizer = None
-        super(CNNSeq2SeqDataset, self).__init__(root=root_dir,
-                                                tokenizer=self.tokenizer,
-                                                topology_builder=topology_builder,
-                                                topology_subdir=topology_subdir,
-                                                 share_vocab=share_vocab, word_emb_size=word_emb_size,
-                                                 dynamic_graph_type=dynamic_graph_type,
-                                                 dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                                 dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
-
-
-    @property
-    def raw_file_names(self):
-        """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        return {'train': 'train_3.json', 'val': "val_3.json", 'test': 'test_3.json'}
-        # return {'train': 'train-0.json', 'val': "val-0.json", 'test': 'test-0.json'}
-        # return {'train': 'train.json', 'val': "val.json", 'test': 'test.json'}
-
-    @property
-    def processed_file_names(self):
-        """At least 3 reserved keys should be fiiled: 'vocab', 'data' and 'split_ids'."""
-        return {'vocab': 'vocab.pt', 'data': 'data.pt'}
-
-    def download(self):
-        # raise NotImplementedError("It shouldn't be called now")
-        return
-
-    def build_vocab(self):
-        data_for_vocab = self.train
-        if self.use_val_for_vocab:
-            data_for_vocab = data_for_vocab + self.val
-
-        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
-                                       data_set=data_for_vocab,
-                                       tokenizer=self.tokenizer,
-                                       lower_case=self.lower_case,
-                                       max_word_vocab_size=50000,
-                                       min_word_vocab_freq=8,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
-                                       word_emb_size=self.word_emb_size,
-                                       share_vocab=self.share_vocab)
-        self.vocab_model = vocab_model
-
-        return self.vocab_model
-
-    def _process(self):
-        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
-            if 'val_split_ratio' in self.__dict__:
-                UserWarning(
-                    "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
-                    "already been split.")
-            return
-
-        os.makedirs(self.processed_dir, exist_ok=True)
-
-        self.read_raw_data()
-
-        self.build_vocab()
-
-        self.vectorization(self.train)
-        self.vectorization(self.test)
-        if 'val' in self.__dict__:
-            self.vectorization(self.val)
-
-        data_to_save = {'train': self.train, 'test': self.test}
-        if 'val' in self.__dict__:
-            data_to_save['val'] = self.val
-        torch.save(data_to_save, self.processed_file_paths['data'])
-
-    def parse_file(self, file_path):
-        """
-        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
-        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
-        For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
-        record of data. The input and output is separated by a tab(\t).
-        Examples
-        --------
-        input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
-        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
-        Parameters
-        ----------
-        file_path: str
-            The path of the input file.
-        Returns
-        -------
-        list
-            The indices of data items in the file w.r.t. the whole dataset.
-        """
-        data = []
-        with open(file_path, 'r') as f:
-            examples = json.load(f)
-            for example_dict in examples:
-                input = ' '.join(' '.join(example_dict['article']).split()[:500])
-                output = ' '.join(' '.join(['<t> '+sent[0]+' . </t>' for sent in example_dict['highlight']]).split()[:99])
-                if input=='' or output=='':
-                    continue
-                data_item = Text2TextDataItem_seq2seq(input_text=input,
-                                                      output_text=output,
-                                                      tokenizer=self.tokenizer,
-                                                      share_vocab=self.share_vocab)
-                data.append(data_item)
-        return data
-
-    def vectorization(self, data_items):
-        for item in data_items:
-            src = item.input_text
-            src_token_id = self.vocab_model.in_word_vocab.to_index_sequence(src)
-            src_token_id.append(self.vocab_model.in_word_vocab.EOS)
-            src_token_id = np.array(src_token_id)
-            item.input_np = src_token_id
-
-            tgt = item.output_text
-            tgt_token_id = self.vocab_model.out_word_vocab.to_index_sequence(tgt)
-            tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
-            tgt_token_id = np.array(tgt_token_id)
-            item.output_np = tgt_token_id
-
-    @staticmethod
-    def collate_fn(data_list: [Text2TextDataItem_seq2seq]):
-        input_numpy = [deepcopy(item.input_np) for item in data_list]
-        src_len = [item.input_np.shape[0] for item in data_list]
-        input_pad = pad_2d_vals_no_size(input_numpy)
-
-        src_seq = torch.from_numpy(input_pad).long()
-        src_len = torch.LongTensor(src_len)
-
-        output_numpy = [deepcopy(item.output_np) for item in data_list]
-        output_pad = pad_2d_vals_no_size(output_numpy)
-
-        tgt_seq = torch.from_numpy(output_pad).long()
-
-        src_str = [deepcopy(item.input_text) for item in data_list]
-        tgt_str = [deepcopy(item.output_text) for item in data_list]
-
-        sorted_x_len, indx = torch.sort(src_len, 0, descending=True)
-        src_seq = src_seq[indx]
-        tgt_seq = tgt_seq[indx]
-        src_str = np.array(src_str)[indx]
-        tgt_str = np.array(tgt_str)[indx]
-
-        return [src_seq, sorted_x_len, tgt_seq, src_str, tgt_str]

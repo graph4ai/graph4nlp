@@ -12,14 +12,14 @@ def convert_adj_to_graph(graph, adj, reverse_adj, mask_off_val):
     from copy import deepcopy
     batch_nodes_tensor = torch.Tensor([0] + graph._batch_num_nodes).to(slides.device)
     batch_prefix = batch_nodes_tensor.view(-1, 1).expand(-1, batch_nodes_tensor.shape[0])
-    
+
     batch_prefix = batch_prefix.triu().long().sum(0)
 
-    
+
     # for i in range(1, len(graph._batch_num_nodes)):
     #     cnt = batch_nodes[-1] + graph._batch_num_nodes[i-1]
     #     batch_nodes.append(cnt)
-    
+
     # pre_num = [batch_nodes[i] for i in slides[:, 0]]
 
 
@@ -27,6 +27,7 @@ def convert_adj_to_graph(graph, adj, reverse_adj, mask_off_val):
     tgt = slides[:, 2] + batch_prefix.index_select(dim=0, index=slides[:, 0])
 
     graph_data = graph
+    graph_data.remove_all_edges() # remove all existing edges
     graph_data.add_edges(src.detach().cpu().numpy().tolist(), tgt.detach().cpu().numpy().tolist())
 
     value = adj[slides[:, 0], slides[:, 1], slides[:, 2]]
@@ -47,11 +48,11 @@ def convert_adj_to_graph(graph, adj, reverse_adj, mask_off_val):
 #     # from copy import deepcopy
 #     # batch_nodes = [0]
 
-    
+
 #     # for i in range(1, len(graph._batch_num_nodes)):
 #     #     cnt = batch_nodes[-1] + graph._batch_num_nodes[i-1]
 #     #     batch_nodes.append(cnt)
-    
+
 #     # # pre_num = [batch_nodes[i] for i in slides[:, 0]]
 
 

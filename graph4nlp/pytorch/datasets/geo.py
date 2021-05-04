@@ -29,7 +29,8 @@ class GeoDatasetForTree(TextToTreeDataset):
 
     def __init__(self, root_dir,
                  topology_builder, topology_subdir,
-                 pretrained_word_emb_file=None,
+                #  pretrained_word_emb_file=None,
+                 pretrained_word_emb_name='6B',
                  val_split_ratio=0,
                  graph_type='static',
                  merge_strategy="tailhead", edge_strategy=None,
@@ -40,9 +41,9 @@ class GeoDatasetForTree(TextToTreeDataset):
                  dynamic_init_topology_aux_args=None,
                  enc_emb_size=300,
                  dec_emb_size=300,
-                 device='cpu',
-                 min_freq=1,
-                 tokenizer=tokenize_geo):
+                 min_word_vocab_freq=1,
+                 tokenizer=tokenize_geo,
+                 max_word_vocab_size=100000):
         """
 
         Parameters
@@ -73,13 +74,14 @@ class GeoDatasetForTree(TextToTreeDataset):
         super(GeoDatasetForTree, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy,
-                                          share_vocab=share_vocab, pretrained_word_emb_file=pretrained_word_emb_file,
+                                          share_vocab=share_vocab, pretrained_word_emb_name=pretrained_word_emb_name,
                                           val_split_ratio=val_split_ratio, seed=seed, word_emb_size=word_emb_size,
 
                                           dynamic_graph_type=dynamic_graph_type,
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-                                          enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size, device=device,
-                                          min_freq=min_freq,
-                                          tokenizer=tokenizer)
+                                          enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size,
+                                          min_word_vocab_freq=min_word_vocab_freq,
+                                          tokenizer=tokenizer,
+                                          max_word_vocab_size=max_word_vocab_size)
 

@@ -75,7 +75,8 @@ class GCN(GNNBase):
                  bias=True,
                  activation=None,
                  allow_zero_in_degree=False,
-                 use_edge_weight=False):
+                 use_edge_weight=False,
+                 residual=True):
         super(GCN, self).__init__()
         self.num_layers = num_layers
         self.direction_option = direction_option
@@ -96,7 +97,8 @@ class GCN(GNNBase):
                                             weight=weight,
                                             bias=bias,
                                             activation=activation,
-                                            allow_zero_in_degree=allow_zero_in_degree))
+                                            allow_zero_in_degree=allow_zero_in_degree,
+                                            residual=residual))
 
         # hidden layers
         for l in range(1, self.num_layers - 1):
@@ -109,7 +111,8 @@ class GCN(GNNBase):
                                             weight=weight,
                                             bias=bias,
                                             activation=activation,
-                                            allow_zero_in_degree=allow_zero_in_degree))
+                                            allow_zero_in_degree=allow_zero_in_degree,
+                                            residual=residual))
         # output projection
         self.gcn_layers.append(GCNLayer(hidden_size[-1] if self.num_layers > 1 else input_size,
                                         output_size,
@@ -119,7 +122,8 @@ class GCN(GNNBase):
                                         weight=weight,
                                         bias=bias,
                                         activation=activation,
-                                        allow_zero_in_degree=allow_zero_in_degree))
+                                        allow_zero_in_degree=allow_zero_in_degree,
+                                        residual=residual))
 
     def forward(self, graph):
         r"""Compute multi-layer graph convolutional networks.
@@ -227,7 +231,8 @@ class GCNLayer(GNNLayerBase):
                  weight=True,
                  bias=True,
                  activation=None,
-                 allow_zero_in_degree=False):
+                 allow_zero_in_degree=False,
+                 residual=True):
         super(GCNLayer, self).__init__()
         if direction_option == 'undirected':
             self.model = UndirectedGCNLayerConv( input_size,
@@ -237,7 +242,8 @@ class GCNLayer(GNNLayerBase):
                                                  weight=weight,
                                                  bias=bias,
                                                  activation=activation,
-                                                 allow_zero_in_degree=allow_zero_in_degree)
+                                                 allow_zero_in_degree=allow_zero_in_degree,
+                                                 residual=residual)
         elif direction_option == 'bi_sep':
             self.model = BiSepGCNLayerConv(  input_size,
                                              output_size,
@@ -246,7 +252,8 @@ class GCNLayer(GNNLayerBase):
                                              weight=weight,
                                              bias=bias,
                                              activation=activation,
-                                             allow_zero_in_degree=allow_zero_in_degree)
+                                             allow_zero_in_degree=allow_zero_in_degree,
+                                             residual=residual)
         elif direction_option == 'bi_fuse':
             self.model = BiFuseGCNLayerConv( input_size,
                                              output_size,
@@ -255,7 +262,8 @@ class GCNLayer(GNNLayerBase):
                                              weight=weight,
                                              bias=bias,
                                              activation=activation,
-                                             allow_zero_in_degree=allow_zero_in_degree)
+                                             allow_zero_in_degree=allow_zero_in_degree,
+                                             residual=residual)
         else:
             raise RuntimeError('Unknown `direction_option` value: {}'.format(direction_option))
 
@@ -341,7 +349,8 @@ class UndirectedGCNLayerConv(GNNLayerBase):
                  weight=True,
                  bias=True,
                  activation=None,
-                 allow_zero_in_degree=False):
+                 allow_zero_in_degree=False,
+                 residual=True):
         super(UndirectedGCNLayerConv, self).__init__()
         if gcn_norm not in ('none', 'both', 'right'):
             raise RuntimeError('Invalid gcn_norm value. Must be either "none", "both" or "right".'
@@ -363,6 +372,15 @@ class UndirectedGCNLayerConv(GNNLayerBase):
             self.register_parameter('bias', None)
 
         self.reset_parameters()
+
+        if residual:
+            if self._input_size != output_size:
+                self.res_fc = nn.Linear(
+                    self._input_size, output_size, bias=True)
+            else:
+                self.res_fc = nn.Identity()
+        else:
+            self.register_buffer('res_fc', None)
 
         self._activation = activation
 
@@ -430,6 +448,7 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         assert reverse_edge_weight is None
         graph = graph.local_var()
 
+        feat_origin = feat
         feat = self._feat_drop(feat)
 
         if self._gcn_norm == 'both':
@@ -487,6 +506,11 @@ class UndirectedGCNLayerConv(GNNLayerBase):
         if self.bias is not None:
             rst = rst + self.bias
 
+        if self.res_fc is not None:
+            h_dst = feat_origin
+            resval = self.res_fc(h_dst).view(h_dst.shape[0], self._output_size)
+            rst = rst + resval
+
         if self._activation is not None:
             rst = self._activation(rst)
 
@@ -503,7 +527,6 @@ class UndirectedGCNLayerConv(GNNLayerBase):
             summary += ', activation={_activation}'
         return summary.format(**self.__dict__)
 
-import torch.nn.functional as F
 
 class BiFuseGCNLayerConv(GNNLayerBase):
     r"""Bidirection version GCN layer from paper `GCN <https://arxiv.org/abs/1609.02907>`__.
@@ -552,7 +575,8 @@ class BiFuseGCNLayerConv(GNNLayerBase):
                  weight=True,
                  bias=True,
                  activation=None,
-                 allow_zero_in_degree=False):
+                 allow_zero_in_degree=False,
+                 residual=True):
         super(BiFuseGCNLayerConv, self).__init__()
         if gcn_norm not in ('none', 'both', 'right'):
             raise RuntimeError('Invalid gcn_norm value. Must be either "none", "both" or "right".'
@@ -583,12 +607,14 @@ class BiFuseGCNLayerConv(GNNLayerBase):
 
         self.fuse_linear = nn.Linear(4 * output_size, output_size, bias=True)
 
-
-        if self._input_size != output_size:
-            self.res_fc = nn.Linear(
-                self._input_size, output_size, bias=True)
+        if residual:
+            if self._input_size != output_size:
+                self.res_fc = nn.Linear(
+                    self._input_size, output_size, bias=True)
+            else:
+                self.res_fc = nn.Identity()
         else:
-            self.res_fc = nn.Identity()
+            self.register_buffer('res_fc', None)
 
 
     def reset_parameters(self):
@@ -782,10 +808,10 @@ class BiFuseGCNLayerConv(GNNLayerBase):
         fuse_gate_vector = torch.sigmoid(self.fuse_linear(fuse_vector))
         rst = fuse_gate_vector * rst_fw + (1 - fuse_gate_vector) * rst_bw
 
-
-        h_dst = feat
-        resval = self.res_fc(h_dst).view(h_dst.shape[0], self._output_size)
-        rst = rst + resval
+        if self.res_fc is not None:
+            h_dst = feat
+            resval = self.res_fc(h_dst).view(h_dst.shape[0], self._output_size)
+            rst = rst + resval
 
         if self._activation is not None:
             rst = self._activation(rst)
@@ -809,7 +835,8 @@ class BiSepGCNLayerConv(GNNLayerBase):
                  weight=True,
                  bias=True,
                  activation=None,
-                 allow_zero_in_degree=False):
+                 allow_zero_in_degree=False,
+                 residual=True):
         super(BiSepGCNLayerConv, self).__init__()
         if gcn_norm not in ('none', 'both', 'right'):
             raise RuntimeError('Invalid gcn_norm value. Must be either "none", "both" or "right".'
@@ -834,6 +861,18 @@ class BiSepGCNLayerConv(GNNLayerBase):
             self.register_parameter('bias_fw', None)
             self.register_parameter('bias_bw', None)
 
+        if residual:
+            if self._input_size != output_size:
+                self.res_fc_fw = nn.Linear(
+                    self._input_size, output_size, bias=True)
+                self.res_fc_bw = nn.Linear(
+                    self._input_size, output_size, bias=True)
+            else:
+                self.res_fc_fw = self.res_fc_bw = nn.Identity()
+        else:
+            self.register_buffer('res_fc_fw', None)
+            self.register_buffer('res_fc_bw', None)
+
         self.reset_parameters()
 
         self._activation = activation
@@ -848,6 +887,12 @@ class BiSepGCNLayerConv(GNNLayerBase):
         if self.bias_fw is not None:
             init.zeros_(self.bias_fw)
             init.zeros_(self.bias_bw)
+
+        if isinstance(self.res_fc_fw, nn.Linear):
+            nn.init.xavier_normal_(self.res_fc_fw.weight)
+
+        if isinstance(self.res_fc_bw, nn.Linear):
+            nn.init.xavier_normal_(self.res_fc_bw.weight)
 
     def set_allow_zero_in_degree(self, set_value):
         r"""
@@ -960,6 +1005,13 @@ class BiSepGCNLayerConv(GNNLayerBase):
             if self.bias_fw is not None:
                 rst_fw = rst_fw + self.bias_fw
 
+            # residual
+            if self.res_fc_fw is not None:
+                h_dst_fw = feat[0]
+                resval_fw = self.res_fc_fw(h_dst_fw).view(h_dst_fw.shape[0], self._output_size)
+                # .view(h_dst.shape[0], self._output_size)
+                rst_fw = rst_fw + resval_fw
+
             if self._activation is not None:
                 rst_fw = self._activation(rst_fw)
 
@@ -1022,6 +1074,12 @@ class BiSepGCNLayerConv(GNNLayerBase):
 
             if self.bias_bw is not None:
                 rst_bw = rst_bw + self.bias_bw
+
+            # residual
+            if self.res_fc_bw is not None:
+                h_dst_bw = feat[1]
+                resval_bw = self.res_fc_bw(h_dst_bw).view(h_dst_bw.shape[0], self._output_size)
+                rst_bw = rst_bw + resval_bw
 
             if self._activation is not None:
                 rst_bw = self._activation(rst_bw)

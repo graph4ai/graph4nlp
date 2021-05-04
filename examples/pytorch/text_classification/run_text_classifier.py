@@ -1,4 +1,5 @@
 import os
+# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import time
 import datetime
 import argparse
@@ -104,8 +105,7 @@ class TextClassifier(nn.Module):
                                     fix_word_emb=not config['no_fix_word_emb'],
                                     fix_bert_emb=not config.get('no_fix_bert_emb', False),
                                     word_dropout=config['word_dropout'],
-                                    rnn_dropout=config['rnn_dropout'],
-                                    device=config['device'])
+                                    rnn_dropout=config['rnn_dropout'])
             use_edge_weight = True
         else:
             raise RuntimeError('Unknown graph_type: {}'.format(config['graph_type']))
@@ -239,10 +239,9 @@ class ModelHandler:
             topology_subdir += '_{}'.format(self.config['init_graph_type'])
 
         dataset = TrecDataset(root_dir=self.config.get('root_dir', 'examples/pytorch/text_classification/data/trec'),
-                              pretrained_word_emb_file=self.config['pre_word_emb_file'],
+                              pretrained_word_emb_name=self.config.get('pretrained_word_emb_name', "840B"),
                               merge_strategy=merge_strategy,
                               seed=self.config['seed'],
-                              device=config['device'],
                               thread_number=4,
                               port=9000,
                               timeout=15000,
@@ -297,7 +296,13 @@ class ModelHandler:
             t0 = time.time()
             for i, data in enumerate(self.train_dataloader):
                 tgt = to_cuda(data['tgt_tensor'], self.config['device'])
+                data['graph_data'] = data['graph_data'].to(self.config['device'])
                 logits, loss = self.model(data['graph_data'], tgt, require_loss=True)
+
+                # add graph regularization loss if available
+                if data['graph_data'].graph_attributes.get('graph_reg', None) is not None:
+                    loss = loss + data['graph_data'].graph_attributes['graph_reg']
+
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
@@ -326,6 +331,7 @@ class ModelHandler:
             gt_collect = []
             for i, data in enumerate(dataloader):
                 tgt = to_cuda(data['tgt_tensor'], self.config['device'])
+                data['graph_data'] = data['graph_data'].to(self.config["device"])
                 logits = self.model(data['graph_data'], require_loss=False)
                 pred_collect.append(logits)
                 gt_collect.append(tgt)

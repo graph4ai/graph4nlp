@@ -1,21 +1,7 @@
 from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 import torch
-import os
 import json
-import stanfordcorenlp
-import warnings
-from multiprocessing import Pool
-import numpy as np
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
-
-from multiprocessing import Process
-import multiprocessing
-import tqdm
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel, Vocab
-from graph4nlp.pytorch.modules.utils import constants
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size, pad_2d_vals
 from nltk.tokenize import word_tokenize
 
 class CNNDataset(Text2TextDataset):
@@ -25,10 +11,13 @@ class CNNDataset(Text2TextDataset):
                  topology_subdir,
                  tokenizer=word_tokenize,
                  lower_case=True,
-                 pretrained_word_emb_file=None,
+                 pretrained_word_emb_name='840B',
+                 pretrained_word_emb_url=None,
+                 target_pretrained_word_emb_name=None,
+                 target_pretrained_word_emb_url=None,
+                 pretrained_word_emb_cache_dir=".vector_cache/",
                  use_val_for_vocab=False,
                  seed=1234,
-                 device='cpu',
                  thread_number=4,
                  port=9000,
                  timeout=15000,
@@ -39,17 +28,21 @@ class CNNDataset(Text2TextDataset):
                  word_emb_size=300,
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
-                 dynamic_init_topology_aux_args=None
+                 dynamic_init_topology_aux_args=None,
+                 **kwargs
                  ):
         super(CNNDataset, self).__init__(root_dir=root_dir,
                                          topology_builder=topology_builder,
                                          topology_subdir=topology_subdir,
                                          tokenizer=tokenizer,
                                          lower_case=lower_case,
-                                         pretrained_word_emb_file=pretrained_word_emb_file,
+                                         pretrained_word_emb_name=pretrained_word_emb_name,
+                                         pretrained_word_emb_url=pretrained_word_emb_url,
+                                         target_pretrained_word_emb_name=target_pretrained_word_emb_name,
+                                         target_pretrained_word_emb_url=target_pretrained_word_emb_url,
+                                         pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
                                          use_val_for_vocab=use_val_for_vocab,
                                          seed=seed,
-                                         device=device,
                                          thread_number=thread_number,
                                          port=port,
                                          timeout=timeout,
@@ -60,14 +53,14 @@ class CNNDataset(Text2TextDataset):
                                          word_emb_size=word_emb_size,
                                          dynamic_graph_type=dynamic_graph_type,
                                          dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                         dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+                                         dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+                                         **kwargs)
 
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        # return {'train': 'train_300.json', 'val': "train_30.json", 'test': 'train_30.json'}
-        # return {'train': 'train_1w.json', 'val': "val.json", 'test': 'test.json'}
         return {'train': 'train_3w.json', 'val': "val.json", 'test': 'test.json'}
+        # return {'train': 'val.json', 'val': "val.json", 'test': 'test.json'}
 
     @property
     def processed_file_names(self):
@@ -76,23 +69,6 @@ class CNNDataset(Text2TextDataset):
 
     def download(self):
         return
-
-    def build_vocab(self):
-        data_for_vocab = self.train
-        if self.use_val_for_vocab:
-            data_for_vocab = data_for_vocab + self.val
-
-        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
-                                       data_set=data_for_vocab,
-                                       tokenizer=self.tokenizer,
-                                       lower_case=self.lower_case,
-                                       max_word_vocab_size=None,
-                                       min_word_vocab_freq=3,
-                                       pretrained_word_emb_file=self.pretrained_word_emb_file,
-                                       word_emb_size=self.word_emb_size,
-                                       share_vocab=self.share_vocab)
-        self.vocab_model = vocab_model
-        return self.vocab_model
 
     def parse_file(self, file_path):
         """
@@ -125,3 +101,28 @@ class CNNDataset(Text2TextDataset):
                                               share_vocab=self.share_vocab)
                 data.append(data_item)
         return data
+
+    @staticmethod
+    def collate_fn(data_list: [Text2TextDataItem]):
+        graph_data = [item.graph for item in data_list]
+        max_node_len = 0
+        for graph_item in graph_data:
+            max_node_len = max(max_node_len, graph_item.node_features['token_id'].size()[1])
+        for graph_item in graph_data:
+            token_id_numpy = graph_item.node_features['token_id'].numpy()
+            token_id_pad = pad_2d_vals(token_id_numpy, token_id_numpy.shape[0], max_node_len)
+            graph_item.node_features['token_id'] = torch.from_numpy(token_id_pad).long()
+
+        from graph4nlp.pytorch.data.data import to_batch
+        big_graph = to_batch(graph_data)
+
+        output_numpy = [item.output_np for item in data_list]
+        output_str = [item.output_text.lower().strip() for item in data_list]
+        output_pad = pad_2d_vals_no_size(output_numpy)
+        tgt_seq = torch.from_numpy(output_pad).long()
+
+        return {
+            "graph_data": big_graph,
+            "tgt_seq": tgt_seq,
+            "output_str": output_str
+        }

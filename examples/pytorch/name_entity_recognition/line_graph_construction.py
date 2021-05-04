@@ -29,11 +29,10 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
                                                                rnn_dropout=rnn_dropout,                                                               
                                                                hidden_size=hidden_size,                                                               
                                                                fix_word_emb=fix_word_emb,
-                                                               fix_bert_emb=fix_word_emb,
-                                                               device=device)
+                                                               fix_bert_emb=fix_word_emb)
         self.vocab = vocab
         self.verbase = 1
-        self.device = self.embedding_layer.device
+
 
     def add_vocab(self, g):
         """
@@ -363,26 +362,8 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
         return g
 
     def forward(self, batch_graphdata: list):
-        node_size = []
-        num_nodes = []
-        num_word_nodes = [] # number of nodes that are extracted from the raw text in each graph
-
-        for g in batch_graphdata:
-            g.node_features['token_id'] = g.node_features['token_id'].to(self.device)
-            num_nodes.append(g.get_node_num())
-            num_word_nodes.append(len([1 for i in range(len(g.node_attributes)) if g.node_attributes[i]['type'] == 0]))
-            node_size.extend([1 for i in range(num_nodes[-1])])
-
-        batch_gd = to_batch(batch_graphdata)
-        b_node = batch_gd.get_node_num()
-        assert b_node == sum(num_nodes), print(b_node, sum(num_nodes))
-        node_size = torch.Tensor(node_size).to(self.device).int()
-        num_nodes = torch.Tensor(num_nodes).to(self.device).int()
-        num_word_nodes = torch.Tensor(num_word_nodes).to(self.device).int()
-        node_emb = self.embedding_layer(batch_gd, node_size, num_nodes, num_word_items=num_word_nodes)
-        batch_gd.node_features["node_feat"] = node_emb
-
-        return batch_gd
+        batch_graphdata = self.embedding_layer(batch_graphdata)
+        return batch_graphdata
 
     def embedding(self, node_attributes, edge_attributes):
         node_emb, edge_emb = self.embedding_layer(

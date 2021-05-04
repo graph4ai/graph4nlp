@@ -1,7 +1,7 @@
 # Data
 dataset: 'trec'
 val_split_ratio: 0.2 # validation set split ratio (default: 0.2)
-pre_word_emb_file: '/home/cheny39/Research/Resource/glove-vectors/glove.840B.300d.txt' # path to the pretrained word embedding file
+pretrained_word_emb_name: '840B'
 out_dir: 'out/trec/graphsage_bi_fuse_node_emb_ckpt'
 
 
@@ -41,9 +41,7 @@ rnn_dropout: # 0.1 # RNN dropout
       # - 0.2
       # - 0.3
 no_fix_word_emb: false # Not fix pretrained word embeddings (default: false)
-node_edge_emb_strategy: 'mean' # node edge embedding strategy for graph embedding construction ('mean', 'lstm', 'gru', 'bilstm' and 'bigru')
-seq_info_encode_strategy: 'bilstm' # sequence info encoding strategy for graph embedding construction ('none', 'lstm', 'gru', 'bilstm' and 'bigru')
-
+emb_strategy: 'w2v_bilstm'
 
 # GNN
 gnn: #
@@ -92,7 +90,7 @@ lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers
 
 
-gpu: 1
+gpu: 0
 no_cuda: false
 
 # gl_epsilon 0.5, 0.7, 0.8, gl_num_heads 1: 0.928

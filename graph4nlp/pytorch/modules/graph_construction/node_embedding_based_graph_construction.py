@@ -5,9 +5,10 @@ from torch import nn
 from ...data.data import GraphData
 from .base import DynamicGraphConstructionBase
 from ..utils.generic_utils import normalize_adj, to_cuda
-from ..utils.constants import VERY_SMALL_NUMBER
+# from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
 from ...data.data import to_batch
+from ..utils.vocab_utils import Vocab
 
 
 class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
@@ -37,38 +38,43 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
 
         Parameters
         ----------
-        batch_graphdata : list of GraphData
-            The input graph data list.
+        batch_graphdata : GraphData
+            The input graph data.
 
         Returns
         -------
         GraphData
             The constructed batched graph.
         """
-        
-
         batch_graphdata = self.embedding(batch_graphdata)
-
-        
-
         batch_graphdata = self.topology(batch_graphdata)
-
 
         return batch_graphdata
 
     def topology(self, graph):
-        node_emb = graph.batch_node_features["node_feat"]
-        node_mask = (graph.batch_node_features["token_id"] != 0)
+        """Compute graph topology.
 
+        Parameters
+        ----------
+        graph : GraphData
+            The input graph data.
+
+        Returns
+        -------
+        GraphData
+            The constructed graph.
+        """
+        node_emb = graph.batch_node_features["node_feat"]
+        node_mask = (graph.batch_node_features["token_id"] != Vocab.PAD)
 
         raw_adj = self.compute_similarity_metric(node_emb, node_mask)
         raw_adj = self.sparsify_graph(raw_adj)
-        # graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
+        graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
 
         if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
             assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
-            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=VERY_SMALL_NUMBER)
-            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-2, keepdim=True), min=VERY_SMALL_NUMBER)
+            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=torch.finfo(torch.float32).eps)
+            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-2, keepdim=True), min=torch.finfo(torch.float32).eps)
         elif self.sim_metric_type == 'cosine':
             raw_adj = (raw_adj > 0).float()
             adj = normalize_adj(raw_adj)
@@ -78,30 +84,9 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             reverse_adj = torch.softmax(raw_adj, dim=-2)
 
         graph = convert_adj_to_graph(graph, adj, reverse_adj, 0)
-        # graph_data.graph_attributes['graph_reg'] = graph_reg
+        graph.graph_attributes['graph_reg'] = graph_reg
 
         return graph
-
-
-    def embedding(self, batch_graph):
-        """Compute initial node embeddings.
-
-        Parameters
-        ----------
-        node_word_idx : torch.LongTensor
-            The input word index node features.
-        node_size : torch.LongTensor
-            Indicate the length of word sequences for nodes.
-        num_nodes : torch.LongTensor
-            Indicate the number of nodes.
-
-        Returns
-        -------
-        torch.Tensor
-            The initial node embeddings.
-        """
-        return self.embedding_layer(batch_graph)
-
 
     @classmethod
     def init_topology(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize):

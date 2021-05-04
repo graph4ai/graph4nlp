@@ -1,5 +1,4 @@
 import pytest
-import torch
 import torch.nn as nn
 
 from ...data.data import GraphData, from_batch, to_batch, from_dgl
@@ -199,6 +198,58 @@ def test_edge_features():
     assert init_loss > loss
 
 
+def test_scipy_sparse_adj():
+    g_list = []
+    batched_edges = []
+    graph_edges_list = []
+    for i in range(5):
+        g = GraphData()
+        g.add_nodes(10)
+        for j in range(10):
+            g.add_edge(src=j, tgt=(j + 1) % 10)
+            batched_edges.append((i * 10 + j, i * 10 + ((j + 1) % 10)))
+        g.node_features['idx'] = torch.ones(10) * i
+        g.edge_features['idx'] = torch.ones(10) * i
+        graph_edges_list.append(g.get_all_edges())
+        g_list.append(g)
+
+    # Test to_batch
+    batch = to_batch(g_list)
+
+    adj = batch.sparse_adj(batch_view=True)
+    print(adj)
+
+
+def test_batch_split_features():
+    g_list = []
+    batched_edges = []
+    graph_edges_list = []
+    for i in range(5):
+        g = GraphData()
+        g.add_nodes(10)
+        for j in range(10):
+            g.add_edge(src=j, tgt=(j + 1) % 10)
+            batched_edges.append((i * 10 + j, i * 10 + ((j + 1) % 10)))
+        g.node_features['idx'] = torch.ones(10) * i
+        g.edge_features['idx'] = torch.ones(10) * i
+        graph_edges_list.append(g.get_all_edges())
+        g_list.append(g)
+    g = GraphData()
+    g.add_nodes(11)
+    for j in range(11):
+        g.add_edge(src=j, tgt=(j + 1) % 11)
+    g.node_features['idx'] = torch.ones(11) * 5
+    g.edge_features['idx'] = torch.ones(11) * 5
+    graph_edges_list.append(g.get_all_edges())
+    g_list.append(g)
+
+    # Test to_batch
+    batch = to_batch(g_list)
+    init_feature = torch.rand(size=(61, 100))
+    split_f = batch.split_features(init_feature, 'node')
+    print(split_f)
+
+
 def test_conversion_dgl():
     g = GraphData()
     g.add_nodes(10)
@@ -364,6 +415,66 @@ def test_batch_node_features():
 import matplotlib.pyplot as plt
 import time
 
+import gc
+
+import torch
+
+
+## MEM utils ##
+def mem_report():
+    '''Report the memory usage of the tensor.storage in pytorch
+    Both on CPUs and GPUs are reported'''
+
+    def _mem_report(tensors, mem_type):
+        '''Print the selected tensors of type
+        There are two major storage types in our major concern:
+            - GPU: tensors transferred to CUDA devices
+            - CPU: tensors remaining on the system memory (usually unimportant)
+        Args:
+            - tensors: the tensors of specified type
+            - mem_type: 'CPU' or 'GPU' in current implementation '''
+        print('Storage on %s' % (mem_type))
+        print('-' * LEN)
+        total_numel = 0
+        total_mem = 0
+        visited_data = []
+        for tensor in tensors:
+            if tensor.is_sparse:
+                continue
+            # a data_ptr indicates a memory block allocated
+            data_ptr = tensor.storage().data_ptr()
+            if data_ptr in visited_data:
+                continue
+            visited_data.append(data_ptr)
+
+            numel = tensor.storage().size()
+            total_numel += numel
+            element_size = tensor.storage().element_size()
+            mem = numel * element_size / 1024 / 1024  # 32bit=4Byte, MByte
+            total_mem += mem
+            element_type = type(tensor).__name__
+            size = tuple(tensor.size())
+
+            print('%s\t\t%s\t\t%.2f' % (
+                element_type,
+                size,
+                mem))
+        print('-' * LEN)
+        print('Total Tensors: %d \tUsed Memory Space: %.2f MBytes' % (total_numel, total_mem))
+        print('-' * LEN)
+
+    LEN = 65
+    print('=' * LEN)
+    objects = gc.get_objects()
+    print('%s\t%s\t\t\t%s' % ('Element type', 'Size', 'Used MEM(MBytes)'))
+    tensors = [obj for obj in objects if torch.is_tensor(obj)]
+    cuda_tensors = [t for t in tensors if t.is_cuda]
+    host_tensors = [t for t in tensors if not t.is_cuda]
+    _mem_report(cuda_tensors, 'GPU')
+    _mem_report(host_tensors, 'CPU')
+    print('=' * LEN)
+
+
 def test_batch_feat_perf():
     batch_size_list = [5, 10, 20, 40, 60, 100, 150, 200, 400, 600, 800, 1000]
     times = []
@@ -380,11 +491,13 @@ def test_batch_feat_perf():
     plt.title("Time vs batch size")
     plt.show()
 
+
 def test_batch_feat_perf_nnodes():
     batch_size_list = [5, 10, 20, 40, 60, 100, 150, 200, 400, 600, 800, 1000]
     times = []
     for bs in batch_size_list:
-        edge_features, edge_features_2, graphs, node_features, node_features_2 = generate_sequential_graphs(num_nodes=bs)
+        edge_features, edge_features_2, graphs, node_features, node_features_2 = generate_sequential_graphs(
+            num_nodes=bs)
         batch = to_batch(graphs)
         new_batch_edge_features = torch.stack(edge_features_2).unsqueeze(-1)
         start = time.time()
@@ -395,3 +508,13 @@ def test_batch_feat_perf_nnodes():
     plt.plot(batch_size_list, times)
     plt.title("Time vs #node")
     plt.show()
+
+
+def test_remove_edges():
+    g = GraphData()
+    g.add_nodes(10)
+    g.add_edges(list(range(0, 9, 1)), list(range(1, 10, 1)))
+    g.edge_features['random'] = torch.rand((9, 1024, 1024))
+    mem_report()
+    g.remove_all_edges()
+    mem_report()

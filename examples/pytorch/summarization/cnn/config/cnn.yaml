@@ -1,0 +1,35 @@
+# Data
+dataset: 'cnn'
+
+# Preprocessing
+top_word_vocab: 70000
+share_vocab: True
+word_emb_size: 300
+min_word_freq: 1
+num_hidden: 300 # number of hidden units
+n_samples: null
+
+
+word_dropout: 0.4 # word embedding dropout
+enc_rnn_dropout: 0.3 # Encoder RNN dropout
+coverage_loss_ratio: 0.3 # coverage loss ratio
+
+
+# Training
+seed: 1234
+batch_size: 50 # batch size
+epochs: 100 # number of maximal training epochs
+grad_clipping: 10
+early_stop_metric: 'ROUGE'
+patience: 10
+lr: 0.0005 # learning rate
+lr_patience: 2
+lr_reduce_factor: 0.5
+num_workers: 0 # number of data loader workers
+
+
+# Beam search
+beam_size: 3
+
+gpu: -1
+no_cuda: false

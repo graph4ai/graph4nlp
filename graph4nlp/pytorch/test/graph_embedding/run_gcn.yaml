@@ -1,0 +1,26 @@
+random_seed: 1234
+dataset: 'ogbn-arxiv'
+num_runs: 5
+no_cuda: False
+gpu: -1
+epochs: 400
+to_undirected: True # convert the input graph to undirected graph
+#    - False
+#    - True
+direction_option: 'bi_fuse' # direction type (`'undirected'`, `'bi_fuse'`, `'bi_sep'`)
+#    - 'bi_fuse'
+#    - 'undirected'
+#    - 'bi_sep'
+num_layers: 3 # number of hidden layers
+num_hidden: 256 # number of hidden units
+feat_drop: 0.5 # input feature dropout
+#    - 0. # grid search
+#    - 0.1
+#    - 0.2
+#    - 0.3
+lr: 0.01
+weight_decay: 5.e-4
+early_stop: False
+patience: 100 # early stopping patience
+fastmode: False # skip re-evaluate the validation set
+save_model_path: 'checkpoint' # path to the best saved model

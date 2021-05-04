@@ -46,6 +46,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
+
 class Graph2Tree(nn.Module):
     def __init__(self, src_vocab,
                  tgt_vocab,
@@ -74,9 +75,6 @@ class Graph2Tree(nn.Module):
         self.use_copy = use_copy
         self.use_edge_weight = False
 
-        # embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
-        #                    'seq_info_encode_strategy': "bilstm"}
-
         embedding_style = {'single_token_item': True,
                            'emb_strategy': "w2v_bilstm",
                            'num_rnn_layers': 1
@@ -85,49 +83,51 @@ class Graph2Tree(nn.Module):
         if graph_construction_type == "DependencyGraph":
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                    vocab=self.src_vocab,
-                                                                   hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=dropout_for_word_embedding, device=device,
+                                                                   hidden_size=enc_hidden_size, 
+                                                                   word_dropout=dropout_for_word_embedding, 
+                                                                   rnn_dropout=dropout_for_word_embedding, 
                                                                    fix_word_emb=False)
         elif graph_construction_type == "ConstituencyGraph":
             self.graph_topology = ConstituencyBasedGraphConstruction(embedding_style=embedding_style,
                                                                      vocab=self.src_vocab,
-                                                                     hidden_size=enc_hidden_size, word_dropout=dropout_for_word_embedding, rnn_dropout=dropout_for_word_embedding, device=device,
+                                                                     hidden_size=enc_hidden_size,
+                                                                     word_dropout=dropout_for_word_embedding,
+                                                                     rnn_dropout=dropout_for_word_embedding,
                                                                      fix_word_emb=False)
         elif graph_construction_type == "DynamicGraph_node_emb":
-            self.graph_topology = NodeEmbeddingBasedGraphConstruction(
-                self.src_vocab,
-                embedding_style,
-                sim_metric_type='weighted_cosine',
-                num_heads=1,
-                top_k_neigh=None,
-                epsilon_neigh=0.5,
-                smoothness_ratio=0.1,
-                connectivity_ratio=0.05,
-                sparsity_ratio=0.1,
-                input_size=enc_hidden_size,
-                hidden_size=enc_hidden_size,
-                fix_word_emb=False,
-                word_dropout=dropout_for_word_embedding,
-                rnn_dropout=dropout_for_word_embedding,
-                device=device)
+            self.graph_topology = NodeEmbeddingBasedGraphConstruction(self.src_vocab,
+                                                                      embedding_style,
+                                                                      sim_metric_type='weighted_cosine',
+                                                                      num_heads=1,
+                                                                      top_k_neigh=None,
+                                                                      epsilon_neigh=0.5,
+                                                                      smoothness_ratio=0.1,
+                                                                      connectivity_ratio=0.05,
+                                                                      sparsity_ratio=0.1,
+                                                                      input_size=enc_hidden_size,
+                                                                      hidden_size=enc_hidden_size,
+                                                                      fix_word_emb=False,
+                                                                      word_dropout=dropout_for_word_embedding,
+                                                                      rnn_dropout=dropout_for_word_embedding
+                                                                      )
             self.use_edge_weight = True
         elif graph_construction_type == "DynamicGraph_node_emb_refined":
-            self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
-                self.src_vocab,
-                embedding_style,
-                0.1,
-                sim_metric_type="weighted_cosine",
-                num_heads=1,
-                top_k_neigh=None,
-                epsilon_neigh=0.5,
-                smoothness_ratio=0.1,
-                connectivity_ratio=0.05,
-                sparsity_ratio=0.1,
-                input_size=enc_hidden_size,
-                hidden_size=enc_hidden_size,
-                fix_word_emb=False,
-                word_dropout=dropout_for_word_embedding,
-                rnn_dropout=dropout_for_word_embedding,
-                device=device)
+            self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(self.src_vocab,
+                                                                             embedding_style,
+                                                                             0.2,
+                                                                             sim_metric_type="weighted_cosine",
+                                                                             num_heads=1,
+                                                                             top_k_neigh=None,
+                                                                             epsilon_neigh=0.5,
+                                                                             smoothness_ratio=0.1,
+                                                                             connectivity_ratio=0.05,
+                                                                             sparsity_ratio=0.1,
+                                                                             input_size=enc_hidden_size,
+                                                                             hidden_size=enc_hidden_size,
+                                                                             fix_word_emb=False,
+                                                                             word_dropout=dropout_for_word_embedding,
+                                                                             rnn_dropout=dropout_for_word_embedding,
+                                                                             device=device)
             self.use_edge_weight = True
         else:
             raise NotImplementedError()
@@ -183,18 +183,13 @@ class Graph2Tree(nn.Module):
                                       max_dec_tree_depth=max_dec_tree_depth,
                                       tgt_vocab=self.tgt_vocab)
 
-    def forward(self, graph_list, tgt_tree_batch, oov_dict=None):
-        batch_graph = self.graph_topology(graph_list)
+    def forward(self, batch_graph, tgt_tree_batch, oov_dict=None):
+        batch_graph.batch_node_features["token_id"] = batch_graph.batch_node_features["token_id"].to(self.device)
+        batch_graph = self.graph_topology(batch_graph)
         batch_graph = self.encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
-        batch_graph_list_decoder_input = from_batch(batch_graph)
-        if self.use_copy and "token_id_oov" not in batch_graph.node_features.keys():
-            for g, g_ in zip(batch_graph_list_decoder_input, graph_list):
-                g.node_features['token_id_oov'] = g_.node_features['token_id_oov']
-
-        loss = self.decoder(g=batch_graph_list_decoder_input,
-                            tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
+        loss = self.decoder(g=batch_graph, tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
         return loss
 
     def init(self, init_weight):
@@ -258,17 +253,26 @@ class MathQA:
         elif self.opt.graph_construction_type == "ConstituencyGraph":
             dataset = MathQADatasetForTree(root_dir=self.data_dir,
                                          topology_builder=ConstituencyBasedGraphConstruction,
-                                         topology_subdir='ConstituencyGraph', share_vocab=use_share_vocab,
-                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, min_freq=self.opt.min_freq)
+                                         topology_subdir='ConstituencyGraph', 
+                                         share_vocab=use_share_vocab,
+                                         enc_emb_size=self.opt.enc_emb_size, 
+                                         dec_emb_size=self.opt.tgt_emb_size,
+                                         device=self.device, 
+                                         min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
-            dataset = MathQADatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
+            dataset = MathQADatasetForTree(root_dir=self.data_dir, 
+                                         seed=self.opt.seed, 
+                                         word_emb_size=self.opt.enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedGraphConstruction,
-                                         topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
-                                         dynamic_graph_type='node_emb', share_vocab=use_share_vocab,
-                                         enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, min_freq=self.opt.min_freq)
+                                         topology_subdir='DynamicGraph_node_emb', 
+                                         graph_type='dynamic',
+                                         dynamic_graph_type='node_emb', 
+                                         share_vocab=use_share_vocab,
+                                         enc_emb_size=self.opt.enc_emb_size, 
+                                         dec_emb_size=self.opt.tgt_emb_size,
+                                         device=self.device, 
+                                         min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
             if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
@@ -307,7 +311,7 @@ class MathQA:
         # print(self.tgt_vocab.symbol2idx)
         if use_share_vocab:
             self.share_vocab = self.train_data_loader.share_vocab
-        print(len(self.share_vocab.symbol2idx))
+        # print(self.share_vocab.symbol2idx)
         print("---Loading data done---\n")
 
     def _build_model(self):
@@ -362,28 +366,24 @@ class MathQA:
         loss_to_print = 0
         for i in range(self.train_data_loader.num_batch):
             self.optimizer.zero_grad()
-            input_dict = self.train_data_loader.random_batch()
-
-            batch_graph_list = input_dict['encoder_graph_batch']
-            batch_tree_list = input_dict['decoder_tree_batch']
-            batch_original_tree_list = input_dict['decoder_output_text_batch']
-
-            oov_dict = self.prepare_ext_vocab(
-                batch_graph_list, self.src_vocab) if self.use_copy else None
+            batch_graph_list, _, batch_tree_list, batch_original_tree_list = self.train_data_loader.random_batch()
+            # print(batch_graph_list.device)
+            # oov_dict = self.prepare_ext_vocab(
+            #     batch_graph_list, self.src_vocab) if self.use_copy else None
 
 
-            if self.use_copy and self.revectorization:
-                batch_tree_list_refined = []
-                for item in batch_original_tree_list:
-                    tgt_list = oov_dict.get_symbol_idx_for_list(item.strip().split())
-                    tgt_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), oov_dict)
-                    batch_tree_list_refined.append(tgt_tree)
+            # if self.use_copy and self.revectorization:
+            #     batch_tree_list_refined = []
+            #     for item in batch_original_tree_list:
+            #         tgt_list = oov_dict.get_symbol_idx_for_list(item.strip().split())
+            #         tgt_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), oov_dict)
+            #         batch_tree_list_refined.append(tgt_tree)
             # for index in range(len(batch_tree_list_refined)):
             #     print("---------------------------------------")
             #     print(batch_tree_list[index])
             #     print(batch_tree_list_refined[index])
             # loss = self.model(batch_graph_list, batch_tree_list, oov_dict=oov_dict)
-            loss = self.model(batch_graph_list, batch_tree_list_refined if self.use_copy else batch_tree_list, oov_dict=oov_dict)
+            loss = self.model(batch_graph_list, batch_tree_list if self.use_copy else batch_tree_list, oov_dict=None)
             loss.backward()
             torch.nn.utils.clip_grad_value_(
                 self.model.parameters(), self.opt.grad_clip)
@@ -393,17 +393,20 @@ class MathQA:
 
 
     def train(self, do_test=True):
+        from time import time
         best_acc = -1
         best_model = None
 
         print("-------------\nStarting training.")
         for epoch in range(1, self.opt.max_epochs+1):
             self.model.train()
+            start_time_mark = time()
             loss_to_print = self.train_epoch(epoch)
+            end_time_mark  =time()
             # self.scheduler.step()
-            print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
+            print("epochs = {}, train_loss = {:.3f}, time used = {} mins".format(epoch, loss_to_print, (end_time_mark-start_time_mark)/60))
             # print(self.scheduler.get_lr())
-            if epoch > 30 and epoch % 15 == 0:
+            if epoch > 5 and epoch % 5 == 0:
                 # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
                 # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
                 eval_acc = self.eval(self.model, self.dev_data_loader)
@@ -419,6 +422,7 @@ class MathQA:
 
         max_dec_seq_length = self.opt.max_dec_seq_length
         max_dec_tree_depth = self.opt.max_dec_tree_depth_for_test
+        
         use_copy = data_lr.use_copy
         enc_emb_size = model.src_vocab.embedding_dims
         tgt_emb_size = model.tgt_vocab.embedding_dims
@@ -462,7 +466,10 @@ class MathQA:
                                                 device,
                                                 max_dec_seq_length,
                                                 max_dec_tree_depth,
-                                                oov_dict=oov_dict)
+                                                oov_dict=oov_dict,
+                                                use_beam_search=False,
+                                                beam_size=self.opt.beam_size)
+                                                # beam_search_version=self.opt.beam_search_version)
             
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
@@ -481,13 +488,13 @@ class MathQA:
             cand_str = convert_to_string(
                 candidate, eval_vocab)
 
-            # for c in candidate:
-            #     if c >= self.test_data_loader.tgt_vocab.vocab_size:
-            #         print("====================")
-            #         print(oov_dict.symbol2idx)
-            #         print(cand_str)
-            #         print(ref_str)
-            #         print("====================")
+            for c in candidate:
+                if c >= self.test_data_loader.tgt_vocab.vocab_size:
+                    print("====================")
+                    print(oov_dict.symbol2idx)
+                    print(cand_str)
+                    print(ref_str)
+                    print("====================")
             # print(cand_str)
             # print(ref_str)
 
@@ -548,9 +555,9 @@ if __name__ == "__main__":
     main_arg_parser = argparse.ArgumentParser(description="parser")
 
     main_arg_parser.add_argument(
-        '-gpuid', type=int, default=0, help='which gpu to use. -1 = use CPU')
+        '-gpuid', type=int, default=1, help='which gpu to use. -1 = use CPU')
     main_arg_parser.add_argument(
-        '-seed', type=int, default=123, help='torch manual random number generator seed')
+        '-seed', type=int, default=1234, help='torch manual random number generator seed')
     main_arg_parser.add_argument(
         '-use_copy', type=int, default=0, help='whether use copy mechanism')
 
@@ -568,7 +575,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
     main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
-    # DynamicGraph_node_emb_refined, DynamicGraph_node_emb
+    # DynamicGraph_node_emb_refined, DynamicGraph_node_emb, ConstituencyGraph
     main_arg_parser.add_argument(
         '-graph_construction_type', type=str, default="DynamicGraph_node_emb")
 
@@ -576,7 +583,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument(
         '-dynamic_init_graph_type', type=str, default="constituency")
 
-    main_arg_parser.add_argument('-batch_size', type=int, default=32)
+    main_arg_parser.add_argument('-batch_size', type=int, default=64)
 
     main_arg_parser.add_argument(
         '-dropout_for_word_embedding', type=float, default=0.1)
@@ -590,6 +597,9 @@ if __name__ == "__main__":
     main_arg_parser.add_argument(
         '-direction_option', type=str, default="undirected")
 
+    main_arg_parser.add_argument(
+        '-beam_size', type=int, default=2)
+
     main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=400)
     main_arg_parser.add_argument(
         '-max_dec_tree_depth_for_train', type=int, default=40)
@@ -602,10 +612,10 @@ if __name__ == "__main__":
     main_arg_parser.add_argument(
         '-init_weight', type=float, default=0.08, help='initailization weight')
     main_arg_parser.add_argument(
-        '-learning_rate', type=float, default=5e-4, help='learning rate')
+        '-learning_rate', type=float, default=1e-3, help='learning rate')
     main_arg_parser.add_argument('-weight_decay', type=float, default=0)
 
-    main_arg_parser.add_argument('-max_epochs', type=int, default=300,
+    main_arg_parser.add_argument('-max_epochs', type=int, default=200,
                                  help='number of full passes through the training data')
     main_arg_parser.add_argument('-min_freq', type=int, default=1,
                                  help='minimum frequency for vocabulary')
