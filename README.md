@@ -1,5 +1,6 @@
 # Graph4NLP
 Graph4NLP is the library for the easy use of Graph Neural Networks for NLP
+Curerntly, our graph4nlp version is v0.3. 
 
 ## Installation
 Users can install Graph4NLP using pip:
