@@ -1,0 +1,23 @@
+random_seed: 1234
+dataset: 'ogbn-arxiv'
+num_runs: 5
+no_cuda: False
+gpu: -1
+epochs: 400
+to_undirected: False # convert the input graph to undirected graph
+direction_option: 'bi_sep' # direction type (`'undirected'`, `'bi_fuse'`, `'bi_sep'`)
+num_layers: 3 # 3! number of hidden layers
+num_heads: 8 # 8!
+num_out_heads: 2 # 2!
+residual: False # False!
+num_hidden: 16 # 16! number of hidden units
+in_drop: 0.1 # 0.1!
+attn_drop: 0.1 # 0.1!
+lr: 0.01 # 0.01!
+weight_decay: 5.e-4
+negative_slope: 0.5 # 0.5!
+early_stop: False
+patience: 100 # early stopping patience
+fastmode: False # skip re-evaluate the validation set
+save_model_path: 'bi_sep_gat_arxiv_no_early_stop' # path to the best saved model
+use_log_softmax_nll: False
