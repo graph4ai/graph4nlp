@@ -19,13 +19,11 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``word_emb_type`` : Specify pretrained word embedding types
-            including "w2v" and/or "bert".
-        - ``node_edge_emb_strategy`` : Specify node/edge embedding
-            strategies including "mean", "lstm", "gru", "bilstm" and "bigru".
-        - ``seq_info_encode_strategy`` : Specify strategies of encoding
-            sequential information in raw text data including "none",
-            "lstm", "gru", "bilstm" and "bigru".
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``emb_strategy`` : specify the embedding construction strategy.
+        - ``num_rnn_layers``: specify the number of RNN layers.
+        - ``bert_model_name``: specify the BERT model name.
+        - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
     """
     def __init__(self, word_vocab, embedding_styles, **kwargs):
         super(NodeEmbeddingBasedGraphConstruction, self).__init__(
