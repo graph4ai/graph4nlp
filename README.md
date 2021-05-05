@@ -75,7 +75,7 @@ pip install graph4nlp-cu101   # CUDA 10.1 Version
 pip install graph4nlp-cu102   # CUDA 10.2 Version
 pip install graph4nlp-cu110   # CUDA 11.0 Version
 ```
-
+<!-- 
 ## Distributing this package
 Currently releasing via PyPI is supported. An automated build and distributing shell script is `./build_and_upload_to_pypi.sh`.
 You can directly run this script after proper configuration, which will be elaborated below.
@@ -135,7 +135,7 @@ For example inside your `~/.pypirc` it will be
 username = <your username>
 password = <your password>
 ```
-For details please refer to PyPI.
+For details please refer to PyPI. -->
 
 ### Putting them all together
 Above is the decomposition of what's inside `build_and_upload_to_pypi.sh`.
