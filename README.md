@@ -58,7 +58,7 @@ print(seq_out.shape)
 
 ## Overview
 <p align="center">
-<img src="./imgs/graph4nlp_flow.png" width="1000" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_flow_v1.png" width="1000" class="center" alt="logo"/>
     <br/>
 </p>
 
@@ -137,14 +137,13 @@ password = <your password>
 ```
 For details please refer to PyPI. -->
 
-### Putting them all together
+<!-- ### Putting them all together
 Above is the decomposition of what's inside `build_and_upload_to_pypi.sh`.
-You can just run this script to save your time for building and releasing the package.
+You can just run this script to save your time for building and releasing the package. -->
 
 ## More resources
 
 [Docs]() | [Graph4nlp survey]() | [Related paper list]() | [Workshops]()
-
 ## Citation
 
 If you found this code useful, please consider citing the following paper:
