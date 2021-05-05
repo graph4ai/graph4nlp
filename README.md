@@ -58,7 +58,7 @@ print(seq_out.shape)
 
 ## Overview
 <p align="center">
-<img src="./imgs/graph4nlp_flow_v1.png" width="1000" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_flow_v2.png" width="1000" class="center" alt="logo"/>
     <br/>
 </p>
 
