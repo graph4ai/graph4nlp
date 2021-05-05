@@ -235,12 +235,9 @@ class NMT:
             graph, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
             # tgt = tgt.to(self.device)
             graph = graph.to(self.device)
-            if self.use_copy:
-                oov_dict = prepare_ext_vocab(graph_list=graph_list, vocab=self.vocab, device=self.device)
-                ref_dict = oov_dict
-            else:
-                oov_dict = None
-                ref_dict = self.vocab.out_word_vocab
+
+            oov_dict = None
+            ref_dict = self.vocab.out_word_vocab
 
             prob, _, _ = self.model(graph, oov_dict=oov_dict)
             pred = prob.argmax(dim=-1)
@@ -264,15 +261,12 @@ class NMT:
         gt_collect = []
         dataloader = self.test_dataloader
         for data in dataloader:
-            graph_list, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
-            if self.use_copy:
-                oov_dict = prepare_ext_vocab(graph_list=graph_list, vocab=self.vocab, device=self.device)
-                ref_dict = oov_dict
-            else:
-                oov_dict = None
-                ref_dict = self.vocab.out_word_vocab
+            batch_graph, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
 
-            pred = self.model.translate(graph_list=graph_list, oov_dict=oov_dict, beam_size=3, topk=1)
+            oov_dict = None
+            ref_dict = self.vocab.out_word_vocab
+
+            pred = self.model.translate(batch_graph=batch_graph, oov_dict=oov_dict, beam_size=3, topk=1)
 
             pred_ids = pred[:, 0, :]  # we just use the top-1
 

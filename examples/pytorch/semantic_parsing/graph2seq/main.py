@@ -117,7 +117,6 @@ class Jobs:
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-
         self.model = get_model(self.opt, vocab_model=self.vocab).to(self.device)
 
     def _build_optimizer(self):
