@@ -42,6 +42,8 @@
 
 ***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (see [here](http://saizhuo.wang/g4nlp/index.html) for tutorial). Here is a example of how to use the [*Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering, semantic parsing, and various other nlp tasks that can be abstracted as graph to sequence problem and show superior performance). 
 
+If you want to further improve model performance, we also provide pre-trained models, including [GloVE](https://nlp.stanford.edu/pubs/glove.pdf), [BERT](https://arxiv.org/abs/1810.04805), etc.
+
 We also offer many other effective models such as graph classification models, graph to tree models, etc. If you are interested in related research problems, welcome to use our library and refer to our [graph4nlp survey](to_be_add).
 
 ```python
