@@ -56,15 +56,6 @@ python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=pubmed --gpu=
 ```
 
 #### ogbn-arxiv
-<!-- ```bash
-python -m graph4nlp.pytorch.test.graph_construction.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option uni 
-```
-```bash
-python -m graph4nlp.pytorch.test.graph_construction.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option bi_sep 
-```
-```bash
-python -m graph4nlp.pytorch.test.graph_construction.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop  --epochs 1000 --num-hidden 128 --direction-option bi_fuse
-``` -->
 
 ```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option uni
@@ -75,6 +66,7 @@ python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --
 ```bash
 python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option bi_fuse
 ```
+
 Results
 -------
 
@@ -95,5 +87,9 @@ TODO
 
 * Fine-tune hyper-parameters for GAT-BiSep and GAT-BiFuse.
 * Other datasets: Cora, Citeseer and Pubmed are all undirectional graph datasets, which might not be ideal to test Bidirectional GNN models.
+
+
+
+
 
 
