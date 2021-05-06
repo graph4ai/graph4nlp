@@ -75,6 +75,26 @@ class Hypothesis(object):
 
 
 class DecoderStrategy(StrategyBase):
+    """
+        The strategy for sequence decoding. Support beam seach only temporally.
+    Parameters
+    ----------
+    beam_size: int
+        The beam size for beam search.
+    batch_graph: GraphData
+        The input graph
+    decoder: DecoderBase
+        The decoder instance.
+    rnn_type: str, option=["lstm", "gru"]
+        The type of RNN. 
+    use_copy: bool, default=False
+        Whether use ``copy`` mechanism. See pointer network. Note that you must use attention first.
+    use_coverage: bool, default=False
+        Whether use ``coverage`` mechanism. Note that you must use attention first.
+    max_decoder_step: int, default=50
+        The maximal decoding step.
+
+    """
     def __init__(self, beam_size, vocab, decoder: DecoderBase, rnn_type, use_copy=False, use_coverage=False,
                  max_decoder_step=50):
         super(DecoderStrategy, self).__init__()
@@ -86,20 +106,21 @@ class DecoderStrategy(StrategyBase):
         self.use_coverage = use_coverage
         self.max_decoder_step = max_decoder_step
 
-    def generate(self, graph_list, oov_dict=None, topk=1):
+    def generate(self, batch_graph, oov_dict=None, topk=1):
         """
             Generate sequences using beam search.
         Parameters
         ----------
-        graph_list: list[GraphData]
-        oov_dict: Vocab
+        batch_graph: GraphData
+        oov_dict: VocabModel, default=None
+            The vocabulary for copy mechanism.
         topk: int, default=1
 
         Returns
         -------
         prediction: list
         """
-        params = self.decoder.extract_params(graph_list)
+        params = self.decoder.extract_params(batch_graph)
         params['tgt_seq'] = None
         params['beam_size'] = self.beam_size
         params['topk'] = topk
@@ -226,7 +247,7 @@ class DecoderStrategy(StrategyBase):
                         new_hypos.append(new_hypo)
 
                 # Block sequences with repeated ngrams
-                # block_ngram_repeats(new_hypos, block_ngram_repeat)
+                # block_ngram_repeats(new_hypos, block_ngram_repeat) we will implement it in the future
 
                 # process the new hypotheses
                 new_hypos = sorted(new_hypos, key=lambda h: -h.avg_log_prob)[:beam_size]
@@ -284,9 +305,6 @@ class DecoderStrategy(StrategyBase):
 
             step = 0
             results, backup_results = [], []
-        # def __init__(self, tokens, log_probs, dec_state, input_feed, num_non_words, enc_attn_weights, use_coverage, states_for_tree = None):
-
-            # start_id = self.vocab.get_symbol_idx(self.vocab.start_token)
             hypos = [Hypothesis(tokens=[decoder_initial_input], log_probs=[], dec_state=decoder_hidden, input_feed=None, num_non_words=1, enc_attn_weights=[], use_coverage=self.use_coverage, states_for_tree=[decoder_hidden])]
     
             while len(hypos) > 0 and step <= self.max_decoder_step:
@@ -295,12 +313,6 @@ class DecoderStrategy(StrategyBase):
                     hypos.extend(hypos[-1] for _ in range(self.beam_size - n_hypos)) # check deep copy
                 decoder_input = torch.tensor([h.tokens[-1] for h in hypos]).to(graph_node_embedding.device)
                 decoder_hidden = (torch.cat([h.dec_state[0] for h in hypos], 0), torch.cat([h.dec_state[1] for h in hypos], 0))
-                
-                # print("input_word: ", decoder_input)
-                # print("dec_single_state: ", decoder_hidden[0].size())
-                # print("enc_outputs: ", single_graph_node_embedding.size())
-                # print("parent_h: ", single_parent_state.size())
-                # print("enc_batch: ", enc_batch.size())
 
                 prediction, decoder_hidden, dec_attn_scores = self.decoder.decode_step(tgt_batch_size=self.beam_size, 
                                                         dec_single_input=decoder_input,
@@ -376,7 +388,6 @@ class DecoderStrategy(StrategyBase):
                                                      logProb=0,
                                                      length=-1))
 
-        # print(self.vocab.get_idx_symbol_for_list(ret[0][0]))
         return output_results
 
 
