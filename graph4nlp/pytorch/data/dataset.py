@@ -1544,6 +1544,7 @@ class SequenceLabelingDataset(Dataset):
         base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
         For SequenceLabelingDataset, the format of the input file should contain lines of tokens, each line representing one
         record of token at first column and its tag at the last column.
+       
         Examples
         --------
         "EU       I-ORG "
@@ -1597,6 +1598,7 @@ class SequenceLabelingDataset(Dataset):
         return self.vocab_model
 
     def vectorization(self, data_items):
+        
         for item in data_items:
             graph: GraphData = item.graph
             token_matrix = []
@@ -1616,11 +1618,10 @@ class SequenceLabelingDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [SequenceLabelingDataItem]):
+        
         graph_list= [item.graph for item in data_list]
         graph_data=to_batch(graph_list)
         tgt_tag = [deepcopy(item.output_id) for item in data_list]
 
-        # tgt_tags = torch.cat(tgt_tag, dim=0)
-        #return [graph_data, tgt_tag]
         return {"graph_data": graph_data,
             "tgt_tag": tgt_tag}

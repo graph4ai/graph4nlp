@@ -8,6 +8,7 @@ class CrossEntropyLoss(GeneralLossBase):
     """
        The cross-entropy with ``mask`` support.
        Technically, it is a wrapper of ``nn.NLLLoss``.
+    
     Parameters
     ----------
     vocab: Vocab
@@ -22,6 +23,7 @@ class CrossEntropyLoss(GeneralLossBase):
     def forward(self, logits, label):
         """
             The loss calculation.
+        
         Parameters
         ----------
         logits: torch.Tensor
