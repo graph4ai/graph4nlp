@@ -31,8 +31,6 @@ def get_args():
     parser.add_argument("--batch_size", type=int, default=512, help="the size of one mini-batch")
     parser.add_argument("--share-vocab", type=bool, default=False, help="whether to share vocab")
     parser.add_argument("--val_split_ratio", type=float, default=0, help="")
-    parser.add_argument("--pretrained_word_emb_file", type=str,
-                        default=None, help="")
 
     parser.add_argument("--beam-size", type=int, default=4, help="the beam size of beam search")
 

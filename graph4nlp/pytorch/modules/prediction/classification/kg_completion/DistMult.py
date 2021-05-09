@@ -82,7 +82,6 @@ class DistMult(KGCompletionBase):
                 rel_emb = input_graph.edge_features['edge_emb']
             else:
                 assert self.rel_emb_from_gnn == False
-                # TODO: rel_emb = input_graph.edge_features['edge_feat']
                 rel_emb = None
 
         if 'list_e_r_pair_idx' in input_graph.graph_attributes.keys():

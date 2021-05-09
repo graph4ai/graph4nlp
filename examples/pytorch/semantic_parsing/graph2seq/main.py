@@ -2,7 +2,7 @@ import os
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
-# os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
+# os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import \
@@ -117,7 +117,6 @@ class Jobs:
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-
         self.model = get_model(self.opt, vocab_model=self.vocab).to(self.device)
 
     def _build_optimizer(self):

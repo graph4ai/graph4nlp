@@ -12,24 +12,13 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
     r"""
     Gated Graph Convolution layer from paper `Gated Graph Sequence
     Neural Networks <https://arxiv.org/pdf/1511.05493.pdf>`__.
+
     .. math::
        h_{i}^{0} & = [ x_i \| \mathbf{0} ]
        a_{i}^{t} & = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
        h_{i}^{t+1} & = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
-    Attributes
-    ----------
-    input_size: int
-        Input feature size.
-    output_size: int
-        Output feature size.
-    num_layers: int
-        Number of GGNN layers. Default: 1.
-    n_etypes: int
-        Number of edge types. Default: 1.
-    bias: bool
-        If True, adds a learnable bias to the output. Default: True.
 
-    Attributes
+    Parameters
     ----------
     input_size: int
         Input feature size.

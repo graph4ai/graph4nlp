@@ -17,11 +17,8 @@ import torch.nn as nn
 
 from torch.utils.data import DataLoader
 import torch.optim as optim
-from .utils import get_log, wordid2str
+from .utils import wordid2str
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
-from graph4nlp.pytorch.data.data import from_batch, GraphData
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
-from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
 from graph4nlp.pytorch.modules.config import get_basic_args
@@ -434,9 +431,3 @@ if __name__ == "__main__":
     update_values(to_args=g2s_template, from_args_list=[g2s_args, task_args])
     print_config(g2s_template)
     main(g2s_template)
-
-    # runner = CNN(opt)
-    # max_score = runner.train()
-    # print("Train finish, best val score: {:.3f}".format(max_score))
-    # runner.load_checkpoint('best.pth')
-    # runner.evaluate(split="test", test_mode=True)

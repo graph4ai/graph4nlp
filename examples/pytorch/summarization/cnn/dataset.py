@@ -1,21 +1,7 @@
 from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 import torch
-import os
 import json
-import stanfordcorenlp
-import warnings
-from multiprocessing import Pool
-import numpy as np
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size, pad_2d_vals
-
-from multiprocessing import Process
-import multiprocessing
-import tqdm
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel, Vocab
-from graph4nlp.pytorch.modules.utils import constants
 from nltk.tokenize import word_tokenize
 
 class CNNDataset(Text2TextDataset):
@@ -25,14 +11,13 @@ class CNNDataset(Text2TextDataset):
                  topology_subdir,
                  tokenizer=word_tokenize,
                  lower_case=True,
-                 pretrained_word_emb_name='6B',
+                 pretrained_word_emb_name='840B',
                  pretrained_word_emb_url=None,
                  target_pretrained_word_emb_name=None,
                  target_pretrained_word_emb_url=None,
                  pretrained_word_emb_cache_dir=".vector_cache/",
                  use_val_for_vocab=False,
                  seed=1234,
-                 device='cpu',
                  thread_number=4,
                  port=9000,
                  timeout=15000,
@@ -58,7 +43,6 @@ class CNNDataset(Text2TextDataset):
                                          pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
                                          use_val_for_vocab=use_val_for_vocab,
                                          seed=seed,
-                                         device=device,
                                          thread_number=thread_number,
                                          port=port,
                                          timeout=timeout,

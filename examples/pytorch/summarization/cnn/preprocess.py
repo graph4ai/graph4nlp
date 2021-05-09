@@ -6,8 +6,6 @@ random.seed(10)
 
 def process_stories(root_dir):
     stories = os.listdir(root_dir)
-    # random.shuffle(stories)
-    # stories = stories[:50000]
     examples = []
     cnt_words = []
     for i, f_name in enumerate(stories):

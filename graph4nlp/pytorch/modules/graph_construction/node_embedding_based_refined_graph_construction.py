@@ -11,6 +11,7 @@ from ..utils.generic_utils import normalize_adj, to_cuda
 # from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
 from ...data.data import to_batch
+from ..utils.vocab_utils import Vocab
 
 
 class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
@@ -21,13 +22,11 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``word_emb_type`` : Specify pretrained word embedding types
-            including "w2v" and/or "bert".
-        - ``node_edge_emb_strategy`` : Specify node/edge embedding
-            strategies including "mean", "lstm", "gru", "bilstm" and "bigru".
-        - ``seq_info_encode_strategy`` : Specify strategies of encoding
-            sequential information in raw text data including "none",
-            "lstm", "gru", "bilstm" and "bigru".
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``emb_strategy`` : specify the embedding construction strategy.
+        - ``num_rnn_layers``: specify the number of RNN layers.
+        - ``bert_model_name``: specify the BERT model name.
+        - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
     alpha_fusion : float
         Specify the fusion value for combining initial and learned adjacency matrices.
     """

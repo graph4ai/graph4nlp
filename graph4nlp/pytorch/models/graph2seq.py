@@ -29,9 +29,9 @@ class Graph2Seq(Graph2XBase):
         >>> from graph4nlp.pytorch.modules.config import get_basic_args
         >>> opt = get_basic_args(graph_construction_name="node_emb", graph_embedding_name="gat", decoder_name="stdrnn")
         >>> graph2seq = Graph2Seq.from_args(opt=opt, vocab_model=vocab_model, device=torch.device("cuda:0"))
-        >>> graph_list = [GraphData() for _ in range(2)]
+        >>> batch_graph = [GraphData() for _ in range(2)]
         >>> tgt_seq = torch.Tensor([[1, 2, 3], [4, 5, 6]])
-        >>> seq_out, _, _ = graph2seq(graph_list=graph_list, tgt_seq=tgt_seq)
+        >>> seq_out, _, _ = graph2seq(batch_graph=batch_graph, tgt_seq=tgt_seq)
         >>> print(seq_out.shape) # [2, 6, 5] (assume the vocabulary size is 5 and max_decoder_step is 6)
     Parameters
     ----------
@@ -123,10 +123,33 @@ class Graph2Seq(Graph2XBase):
 
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
-        beam_results = generator.generate(graph_list=batch_graph, oov_dict=oov_dict, topk=topk)
+        beam_results = generator.generate(batch_graph=batch_graph, oov_dict=oov_dict, topk=topk)
         return beam_results
 
     def forward(self, batch_graph, tgt_seq=None, oov_dict=None):
+        """
+            The forward function of Graph2Seq model.
+        Parameters
+        ----------
+        batch_graph: GraphData
+            The graph input
+        tgt_seq: torch.Tensor
+            The target sequence
+        oov_dict: VocabModel, default=None
+            The vocabulary for copy mechanism.
+
+        Returns
+        -------
+        logits: torch.Tensor
+            shape=[B, tgt_len, vocab_size]
+            The probability for predicted target sequence. It is processed by softmax function.
+        enc_attn_weights_average: torch.Tensor
+            It is used for calculating coverage loss.
+            The averaged attention scores.
+        coverage_vectors: torch.Tensor
+            It is used for calculating coverage loss.
+            The coverage vector.
+        """
         batch_graph = self.graph_topology(batch_graph)
         return self.encoder_decoder(batch_graph=batch_graph, oov_dict=oov_dict, tgt_seq=tgt_seq)
 
@@ -136,7 +159,7 @@ class Graph2Seq(Graph2XBase):
             Specifically, when ``beam_size`` is 1, it is equal to greedy search.
         Parameters
         ----------
-        batch_graph: list[GraphData]
+        batch_graph: GraphData
             The graph input
         beam_size: int
             The beam width. When it is 1, the output is equal to greedy search's output.

@@ -1,12 +1,13 @@
 graph_construction_name: "dependency"
-graph_embedding_name: "gat"
+graph_embedding_name: "gcn"
 decoder_name: "stdrnn"
 
 graph_construction_args:
   graph_construction_share:
     graph_type: 'dependency'
-    root_dir: 'examples/pytorch/question_generation/data/squad_split2'
+    root_dir: "graph4nlp/pytorch/test/dataset/jobs"
     topology_subdir: 'DependencyGraph'
+    share_vocab: true
     thread_number: 4
     port: 9000
     timeout: 15000
@@ -37,15 +38,16 @@ graph_embedding_args:
     input_size: 300
     hidden_size: 300
     output_size: 300
-    direction_option: "undirected"
+    direction_option: "bi_sep"
     feat_drop: 0.2
 
   graph_embedding_private:
-    heads: [2, 2, 1]
-    attn_drop: 0.2
-    negative_slope: 0.2
-    residual: true
-    activation: "relu"
+    gcn_norm: 'both'
+    weight: true
+    bias: true
+    activation: null
+    allow_zero_in_degree: false
+    use_edge_weight: false
 
 decoder_args:
   rnn_decoder_share:
@@ -53,8 +55,8 @@ decoder_args:
     input_size: 300
     hidden_size: 512
     rnn_emb_input_size: 300
-    use_copy: true
-    use_coverage: true
+    use_copy: false
+    use_coverage: false
     graph_pooling_strategy: null
     attention_type: "sep_diff_encoder_type"
     fuse_strategy: "concatenate"

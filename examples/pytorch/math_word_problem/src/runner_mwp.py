@@ -252,7 +252,7 @@ class Mawps:
                                          topology_builder=DependencyBasedGraphConstruction,
                                          topology_subdir='DependencyGraph', edge_strategy='as_node',
                                          share_vocab=use_share_vocab, enc_emb_size=self.opt.enc_emb_size,
-                                         dec_emb_size=self.opt.tgt_emb_size, device=self.device,
+                                         dec_emb_size=self.opt.tgt_emb_size,
                                          min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "ConstituencyGraph":
@@ -260,7 +260,7 @@ class Mawps:
                                          topology_builder=ConstituencyBasedGraphConstruction,
                                          topology_subdir='ConstituencyGraph', share_vocab=use_share_vocab,
                                          enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, min_freq=self.opt.min_freq)
+                                         min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
             dataset = MawpsDatasetForTree(root_dir=self.data_dir, seed=self.opt.seed, word_emb_size=self.opt.enc_emb_size,
@@ -268,7 +268,7 @@ class Mawps:
                                          topology_subdir='DynamicGraph_node_emb', graph_type='dynamic',
                                          dynamic_graph_type='node_emb', share_vocab=use_share_vocab,
                                          enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, min_freq=self.opt.min_freq)
+                                         min_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
             if self.opt.dynamic_init_graph_type is None or self.opt.dynamic_init_graph_type == 'line':
@@ -286,7 +286,7 @@ class Mawps:
                                          topology_subdir='DynamicGraph_node_emb_refined', graph_type='dynamic',
                                          dynamic_graph_type='node_emb_refined', share_vocab=use_share_vocab,
                                          enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         dynamic_init_topology_builder=dynamic_init_topology_builder, device=self.device,
+                                         dynamic_init_topology_builder=dynamic_init_topology_builder,
                                          min_freq=self.opt.min_freq)
         else:
             raise NotImplementedError

@@ -13,7 +13,7 @@ class ComplEx(KGCompletionBase):
     Parameters
     ----------
     input_dropout: float
-        Dropout for node_emb and rel_emb. Default: 0.0
+        Dropout for node_emb and rel_emb. Default: `0.0`
 
     rel_emb_from_gnn: bool
         If `rel_emb` is computed from GNN, rel_emb_from_gnn is set to `True`.
