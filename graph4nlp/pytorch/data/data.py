@@ -662,11 +662,21 @@ class GraphData(object):
 
     def adj_matrix(self, batch_view=False, post_processing_fn=None):
         """
-        A pytorch tensor representing the dense binary adjacency matrix of this graph
+        Returns the adjacency matrix of the graph. Returns a 2D tensor if it is a single graph and a 3D tensor if it
+        is a batched graph, with the matrices padded with 0 (B x N x N)
+
+        Parameters
+        ----------
+        batch_view: bool
+            Whether to return a batched view of the adjacency matrix(3D, True) or not (2D).
+        post_processing_fn: function
+            A callback function which takes a binary adjacency matrix (2D) and do some post-processing on it.
+            The return of this function should also be N x N
+
         Returns
         -------
         torch.Tensor:
-            The dense adjacency matrix.
+            The adjacency matrix (N x N if batch_view=False and B x N x N if batch_view=True).
         """
         if batch_view is False:
             ret = torch.zeros((self.get_node_num(), self.get_node_num())).to(self.device)
