@@ -278,15 +278,6 @@ class GraphData(object):
         list
             The node attribute dictionary.
         """
-        # if isinstance(nodes, slice):
-        #     node_idx = slice_to_list(nodes, self.get_node_num())
-        # else:
-        #     node_idx = [nodes]
-        #
-        # ret = {}
-        # for idx in node_idx:
-        #     ret[idx] = self._node_attributes[idx]
-        # return ret
         return self._node_attributes[nodes]
 
     # Edge views and operations
@@ -456,6 +447,13 @@ class GraphData(object):
     # Edge feature operations
     @property
     def edge_features(self):
+        """
+        Get all the edge features in a dictionary.
+        Returns
+        -------
+        dict:
+            Edge features with the keys being the feature names and values be the corresponding tensors.
+        """
         return self.edges[:].features
 
     def remove_all_edges(self):
@@ -551,6 +549,13 @@ class GraphData(object):
     # Edge attribute operations
     @property
     def edge_attributes(self):
+        """
+        Get the edge attributes in a list.
+        Returns
+        -------
+        list:
+            A list of dictionaries. Each dictionary represents all the attributes on the corresponding edge.
+        """
         return self._edge_attributes
 
     # Conversion utility functions
@@ -602,8 +607,21 @@ class GraphData(object):
         self.add_edges(src_list, tgt_list)
         for k, v in dgl_g.edata.items():
             self.edge_features[k] = v
+        return self
 
     def from_dense_adj(self, adj: torch.Tensor):
+        """
+        Construct a graph from a dense (2-D NxN) adjacency matrix with the edge weights represented by the value of
+        the matrix entries
+        Parameters
+        ----------
+        adj: torch.Tensor
+            The tensor representing the adjacency matrix.
+
+        Returns
+        -------
+        self
+        """
         assert adj.dim() == 2, 'Adjancency matrix is not 2-dimensional.'
         assert adj.shape[0] == adj.shape[1], 'Adjancecy is not a square.'
 
@@ -617,8 +635,21 @@ class GraphData(object):
                     edge_weight.append(adj[i][j])
         edge_weight = torch.stack(edge_weight, dim=0)
         self.edge_features['edge_weight'] = edge_weight
+        return self
 
     def from_scipy_sparse_matrix(self, adj: scipy.sparse.coo_matrix):
+        """
+        Construct a graph from a sparse adjacency matrix with the edge weights represented by the value of
+        the matrix entries
+        Parameters
+        ----------
+        adj: scipy.sparse.coo_matrix
+            The object representing the sparse adjacency matrix.
+
+        Returns
+        -------
+        self
+        """
         assert adj.shape[0] == adj.shape[1], 'Got an adjancecy matrix which is not a square.'
 
         num_nodes = adj.shape[0]
@@ -627,8 +658,16 @@ class GraphData(object):
         for i in range(adj.row.shape[0]):
             self.add_edge(adj.row[i], adj.col[i])
         self.edge_features['edge_weight'] = torch.tensor(adj.data)
+        return self
 
     def adj_matrix(self):
+        """
+        A pytorch tensor representing the dense binary adjacency matrix of this graph
+        Returns
+        -------
+        torch.Tensor:
+            The dense adjacency matrix.
+        """
         ret = torch.zeros((self.get_node_num(), self.get_node_num()))
         all_edges = self.edges()
         for i in range(len(all_edges)):
@@ -705,6 +744,17 @@ class GraphData(object):
         self.to(src.device)
 
     def copy_batch_info(self, batch):
+        """
+        Copy all the information related to the batching.
+        Parameters
+        ----------
+        batch:
+            The source batch from which the information comes.
+
+        Returns
+        -------
+        None
+        """
         self._is_batch = True
         self.batch = batch.batch
         self.device = batch.device
