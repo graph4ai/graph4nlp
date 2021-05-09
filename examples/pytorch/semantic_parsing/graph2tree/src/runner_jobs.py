@@ -182,7 +182,7 @@ class Graph2Tree(nn.Module):
                                       tgt_vocab=self.tgt_vocab)
 
     def forward(self, batch_graph, tgt_tree_batch, oov_dict=None):
-        batch_graph.batch_node_features["token_id"] = batch_graph.batch_node_features["token_id"].to(self.device)
+        # batch_graph.batch_node_features["token_id"] = batch_graph.batch_node_features["token_id"].to(self.device)
         batch_graph = self.graph_topology(batch_graph)
         batch_graph = self.encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
@@ -245,7 +245,7 @@ class Jobs:
                                          topology_builder=DependencyBasedGraphConstruction,
                                          topology_subdir='DependencyGraph', edge_strategy='as_node',
                                          share_vocab=use_share_vocab, enc_emb_size=self.opt.enc_emb_size,
-                                         dec_emb_size=self.opt.tgt_emb_size, device=self.device,
+                                         dec_emb_size=self.opt.tgt_emb_size,
                                          min_word_vocab_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "ConstituencyGraph":
@@ -255,7 +255,6 @@ class Jobs:
                                          share_vocab=use_share_vocab,
                                          enc_emb_size=self.opt.enc_emb_size, 
                                          dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, 
                                          min_word_vocab_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
@@ -269,7 +268,6 @@ class Jobs:
                                          share_vocab=use_share_vocab,
                                          enc_emb_size=self.opt.enc_emb_size, 
                                          dec_emb_size=self.opt.tgt_emb_size,
-                                         device=self.device, 
                                          min_word_vocab_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb_refined":
@@ -288,7 +286,7 @@ class Jobs:
                                          topology_subdir='DynamicGraph_node_emb_refined', graph_type='dynamic',
                                          dynamic_graph_type='node_emb_refined', share_vocab=use_share_vocab,
                                          enc_emb_size=self.opt.enc_emb_size, dec_emb_size=self.opt.tgt_emb_size,
-                                         dynamic_init_topology_builder=dynamic_init_topology_builder, device=self.device,
+                                         dynamic_init_topology_builder=dynamic_init_topology_builder,
                                          min_word_vocab_freq=self.opt.min_freq)
         else:
             raise NotImplementedError
@@ -366,6 +364,7 @@ class Jobs:
         num_batch = len(self.train_data_loader)
         for step, data in enumerate(self.train_data_loader):
             batch_graph_list, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
+            batch_graph_list = batch_graph_list.to(self.device)
             self.optimizer.zero_grad()
             # print(batch_graph_list.node_attributes)
             # print(batch_tree_list[0])
