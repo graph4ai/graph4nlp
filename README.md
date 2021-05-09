@@ -3,6 +3,8 @@
     <br/>
 </p>
 
+[pypi-image]: https://badge.fury.io/py/graph4nlp.svg
+[pypi-url]: https://pypi.org/project/graph4nlp
 
 [license-image]:https://img.shields.io/badge/License-Apache%202.0-blue.svg
 [license-url]:https://github.com/hugochan/IDGL/blob/master/LICENSE
@@ -25,6 +27,7 @@
 ### for repo
 
 ![Last Commit](https://img.shields.io/github/last-commit/hugochan/IDGL)
+[![pypi][pypi-image]][pypi-url]
 [![Contributors][contributor-image]][contributor-url]
 [![Contributing][contributing-image]][contributing-url]
 [![License][license-image]][license-url]
@@ -47,15 +50,28 @@ If you want to further improve model performance, we also provide interfaces of 
 We also offer many other effective models such as graph classification models, graph to tree models, etc. If you are interested in related research problems, welcome to use our library and refer to our [graph4nlp survey](to_be_add).
 
 ```python
+from graph4nlp.pytorch.datasets.jobs import JobsDataset
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.config import get_basic_args
+from graph4nlp.pytorch.models.graph2seq import Graph2Seq
+from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
 
-opt = get_basic_args(graph_construction_name="node_emb", graph_embedding_name="gat", decoder_name="stdrnn")
-graph2seq = Graph2Seq.from_args(opt=opt, vocab_model=vocab_model, device=torch.device("cuda:0"))
 
-graph_list = [GraphData() for _ in range(2)]
-tgt_seq = torch.Tensor([[1, 2, 3], [4, 5, 6]])
-seq_out, _, _ = graph2seq(graph_list=graph_list, tgt_seq=tgt_seq)
-print(seq_out.shape) 
+# build dataset
+jobs_dataset = JobsDataset(root_dir='graph4nlp/pytorch/test/dataset/jobs', topology_builder=DependencyBasedGraphConstruction,
+                               topology_subdir='DependencyGraph') # You should run stanfordcorenlp at background
+vocab_model = jobs_dataset.vocab_model
+
+# build model
+user_args = get_yaml_config("examples/pytorch/semantic_parsing/graph2seq/config/dependency_gcn_bi_sep_demo.yaml")
+args = get_basic_args(graph_construction_name="node_emb", graph_embedding_name="gat", decoder_name="stdrnn")
+update_values(to_args=args, from_args_list=[user_args])
+graph2seq = Graph2Seq.from_args(args, vocab_model)
+
+# calculation
+batch_data = JobsDataset.collate_fn(jobs_dataset.train[0:12])
+
+scores = graph2seq(batch_data["graph_data"], batch_data["tgt_seq"]) # [Batch_size, seq_len, Vocab_size]
 ```
 
 ## Overview
