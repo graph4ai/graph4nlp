@@ -435,6 +435,7 @@ class Jobs:
         data_loader = self.test_data_loader
         for data in data_loader:
             input_graph_list, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
+            input_graph_list = input_graph_list.to(device)
         # for i in range(len(data)):
         #     x = data[i]
 
