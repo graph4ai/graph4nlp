@@ -111,6 +111,7 @@ class Geo:
         self.tgt_vocab = dataset.tgt_vocab_model
         if self.use_share_vocab:
             self.share_vocab = dataset.share_vocab_model
+            print(self.share_vocab.symbol2idx)
 
     def _build_model(self):
         '''For encoder-decoder'''
