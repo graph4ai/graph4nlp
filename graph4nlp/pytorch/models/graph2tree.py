@@ -42,7 +42,6 @@ class Graph2Tree(nn.Module):
         self.use_copy = use_copy
         self.input_size = self.src_vocab.vocab_size
         self.output_size = self.tgt_vocab.vocab_size
-        print(self.output_size)
         self.criterion = criterion
 
 
