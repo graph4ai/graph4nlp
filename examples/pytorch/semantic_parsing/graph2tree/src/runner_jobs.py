@@ -290,12 +290,12 @@ if __name__ == "__main__":
 
     args = main_arg_parser.parse_args()
     import json
-    # with open("./jobs_config", "w") as f:
-    #     config_jobs = json.loads(,indent=4)
     with open("./jobs_config", "w") as f:
-        jsObj = json.dumps(vars(args), indent=4)
+        jsObj = json.dumps(vars(args))
         f.write(jsObj)
-
+    with open("./jobs_config", "r") as f:
+        config_jobs = json.loads(f.readline().split())
+    print(config_jobs)
     runner = Jobs(opt=args)
     best_acc = runner.train()
 
