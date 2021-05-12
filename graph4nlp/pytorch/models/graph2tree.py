@@ -33,7 +33,8 @@ class Graph2Tree(nn.Module):
                  gat_head,
                  sage_aggr,
                  attn_type,
-                 use_sibling):
+                 use_sibling,
+                 use_share_vocab):
         super(Graph2Tree, self).__init__()
 
         self.src_vocab = src_vocab
@@ -43,7 +44,7 @@ class Graph2Tree(nn.Module):
         self.input_size = self.src_vocab.vocab_size
         self.output_size = self.tgt_vocab.vocab_size
         self.criterion = criterion
-
+        self.use_share_vocab = use_share_vocab
 
         if graph_construction_type == "DependencyGraph":
             self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
@@ -122,7 +123,7 @@ class Graph2Tree(nn.Module):
             raise NotImplementedError()
 
         self.decoder = StdTreeDecoder(attn_type=attn_type,
-                                      embeddings=self.word_emb,
+                                      embeddings=self.word_emb if self.use_share_vocab else self.tgt_vocab.embeddings,
                                       enc_hidden_size=enc_hidden_size,
                                       dec_emb_size=self.tgt_vocab.embedding_dims,
                                       dec_hidden_size=dec_hidden_size,
@@ -171,4 +172,4 @@ class Graph2Tree(nn.Module):
                     device=device, criterion=criterion, teacher_force_ratio=opt.teacher_force_ratio, max_dec_seq_length=opt.max_dec_seq_length, 
                     max_dec_tree_depth=opt.max_dec_tree_depth, embedding_style=embedding_style, K=opt.K, 
                     gat_head=[int(i) for i in opt.gat_head.split(',')], sage_aggr=opt.sage_aggr, 
-                    attn_type=opt.attn_type, use_sibling=opt.use_sibling)
+                    attn_type=opt.attn_type, use_sibling=opt.use_sibling, use_share_vocab=opt.use_share_vocab)

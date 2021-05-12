@@ -249,7 +249,6 @@ class Vocab():
 
         word_emb, hit, cnt = word_model.get_vecs_by_tokens(tokens=word_list, lower_case_backup=self.lower_case)
         
-        print('Pretrained word embeddings hit ratio: {}'.format(hit / cnt))
         self.embeddings = word_emb.numpy()
         self.embeddings[self.get_symbol_idx(self.unk_token)] = np.zeros(word_model.dim)
 

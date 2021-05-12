@@ -514,8 +514,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         """
         # if not self.use_copy:
 
-        rnn = TreeDecodingUnit(input_size, emb_size,
-                               hidden_size, dropout_input, use_sibling, share_embedding=None)
+        rnn = TreeDecodingUnit(input_size, emb_size, hidden_size, dropout_input, use_sibling, self.embeddings)
 
         return rnn
 
@@ -568,17 +567,11 @@ def create_mask(x, N, device=None):
 
 
 class TreeDecodingUnit(nn.Module):
-    def __init__(self, input_size, emb_size, hidden_size, dropout_input, use_sibling, share_embedding=None):
+    def __init__(self, input_size, emb_size, hidden_size, dropout_input, use_sibling, dec_embeddings):
         super(TreeDecodingUnit, self).__init__()
         self.hidden_size = hidden_size
         self.emb_size = emb_size
-        self.share_embedding = (share_embedding != None)
-        
-        if self.share_embedding:
-            self.embedding = share_embedding
-        else:
-            self.embedding = nn.Embedding(
-                input_size, self.emb_size, padding_idx=0)
+        self.embedding = dec_embeddings
         self.dropout = nn.Dropout(dropout_input)
 
         self.lstm = nn.LSTMCell(

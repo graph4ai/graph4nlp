@@ -38,7 +38,7 @@ class Jobs:
             self.device = torch.device("cuda:{}".format(opt.gpuid))
 
         self.use_copy = True if opt.use_copy == 1 else False
-        self.use_share_vocab = True
+        self.use_share_vocab = opt.use_share_vocab
         self.data_dir = opt.data_dir
 
         self._build_dataloader()
@@ -367,6 +367,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-sage_aggr', type=str, default="lstm")
     main_arg_parser.add_argument('-attn_type', type=str, default="uniform")
     main_arg_parser.add_argument('-use_sibling', type=int, default=0)
+    main_arg_parser.add_argument('-use_share_vocab', type=int, default=1)
     main_arg_parser.add_argument('-K', type=int, default=1)
 
     main_arg_parser.add_argument('-enc_emb_size', type=int, default=300)
