@@ -289,14 +289,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-grad_clip', type=int, default=5, help='clip gradients at this value')
 
     args = main_arg_parser.parse_args()
-    import json
-    with open("./jobs_config", "w") as f:
-        jsObj = json.dumps(vars(args))
-        f.write(jsObj)
-    with open("./jobs_config", "r") as f:
-        lines = f.readlines()
-        config_jobs = json.loads(lines[0].strip())
-    print(config_jobs)
+
     runner = Jobs(opt=args)
     best_acc = runner.train()
 
