@@ -254,14 +254,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                     input_word = pred.argmax(1)
                 else:
                     input_word = dec_batch[cur_index][:, i]
-                # input_word = self._filter_oov(input_word, self.tgt_vocab)
-                
-                # print("tgt_batch_size: ", tgt_batch_size)
-                # print("input_word: ", input_word)
-                # print("dec_single_state: ", dec_state[cur_index][i][1].size())
-                # print("enc_outputs: ", enc_outputs.size())
-                # print("parent_h: ", parent_h.size())
-                # print("enc_batch: ", enc_batch.size())
                 pred, rnn_state_iter, attn_scores = self.decode_step(tgt_batch_size=tgt_batch_size,
                                                                      dec_single_input=input_word,
                                                                      dec_single_state=(
@@ -380,10 +372,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                   use_beam_search=True,
                   beam_size=4,
                   oov_dict=None):
-                #   beam_search_version=1):
-        # initialize the rnn state to all zeros
-        # from graph4nlp.pytorch.data.data import to_batch
-        # input_graph_list = to_batch(input_graph_list)
         input_graph_list.batch_node_features["token_id"] = input_graph_list.batch_node_features["token_id"].to(device)
         prev_c = torch.zeros((1, dec_hidden_size), requires_grad=False)
         prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
@@ -392,29 +380,17 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         batch_graph = model.encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
-        # batch_graph_decoder_input = from_batch(batch_graph)
-        # if use_copy and "token_id_oov" not in batch_graph.node_features.keys():
-        #     for g, g_ in zip(batch_graph_decoder_input, input_graph_list):
-        #         g.node_features['token_id_oov'] = g_.node_features['token_id_oov']
-
         params = model.decoder._extract_params(batch_graph)
         graph_node_embedding = params['graph_node_embedding']
         if model.decoder.graph_pooling_strategy == "max":
             graph_level_embedding = torch.max(graph_node_embedding, 1)[0]
-        # rnn_node_embedding = torch.zeros_like(graph_node_embedding, requires_grad=False)
-        # rnn_node_embedding = to_cuda(rnn_node_embedding, device)
         rnn_node_embedding = params['rnn_node_embedding']
         graph_node_mask = params['graph_node_mask']
         enc_w_list = params['enc_batch']
 
-        # assert(use_copy == False or graph_node_embedding.size() == enc_outputs.size())
-        # assert(graph_level_embedding.size() == prev_c.size())
-
         enc_outputs = graph_node_embedding
         prev_c = graph_level_embedding
         prev_h = graph_level_embedding
-
-        # print(form_manager.get_idx_symbol_for_list(enc_w_list[0]))
 
         # decode
         queue_decode = []
@@ -446,9 +422,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                     [form_manager.get_symbol_idx('(')], dtype=torch.long)
 
             prev_word = to_cuda(prev_word, device)
-
             i_child = 1
-
             if not use_beam_search:
                 while True:
                     prediction, (curr_c, curr_h), _ = model.decoder.decode_step(tgt_batch_size=1,
@@ -461,8 +435,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                     s = (curr_c, curr_h)
                     prev_word = torch.log(prediction + 1e-31)
                     prev_word = prev_word.argmax(1)
-                    # _, _prev_word = prediction.max(1)
-                    # prev_word = _prev_word
 
                     if int(prev_word[0]) == form_manager.get_symbol_idx(form_manager.end_token) or t.num_children >= max_dec_seq_length:
                         break
@@ -488,7 +460,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                                                                                           oov_dict=oov_dict,
                                                                                           enc_batch=enc_w_list)
                 generated_sentence = decoded_results[0][0]
-                # print(" ".join(form_manager.get_idx_symbol_for_list([int(node_i.wordid.item()) for node_i in generated_sentence])))
                 for node_i in generated_sentence:
                     if int(node_i.wordid.item()) == form_manager.get_symbol_idx(form_manager.non_terminal_token):
                         queue_decode.append({"s": (node_i.h[0].clone(), node_i.h[1].clone(
@@ -502,7 +473,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                         i_child = i_child + 1
 
             head = head + 1
-        # refine the root tree (TODO, what is this doing?)
         for i in range(len(queue_decode)-1, 0, -1):
             cur = queue_decode[i]
             queue_decode[cur["parent"] -
@@ -512,8 +482,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     def _build_rnn(self, rnn_type, input_size, emb_size, hidden_size, dropout_input, use_sibling, device):
         """_build_rnn : how the rnn unit should be build.
         """
-        # if not self.use_copy:
-
         rnn = TreeDecodingUnit(input_size, emb_size, hidden_size, dropout_input, use_sibling, self.embeddings)
 
         return rnn
