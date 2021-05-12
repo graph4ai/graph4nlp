@@ -146,7 +146,6 @@ class Jobs:
         return oov_dict
 
     def train_epoch(self, epoch):
-        from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
         loss_to_print = 0
         num_batch = len(self.train_data_loader)
         for step, data in enumerate(self.train_data_loader):
