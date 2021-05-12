@@ -1,5 +1,11 @@
 from graph4nlp.pytorch.modules.utils.tree_utils import Tree
 
+def convert_to_string(idx_list, form_manager):
+    w_list = []
+    for i in range(len(idx_list)):
+        w_list.append(form_manager.get_idx_symbol(int(idx_list[i])))
+    return " ".join(w_list)
+
 def is_all_same(c1, c2, form_manager):
     all_same = True
     if len(c1) == len(c2):
