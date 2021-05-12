@@ -13,6 +13,7 @@ import torch.nn.init as init
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
+from graph4nlp.pytorch.data.data import to_batch
 from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_embedding import *
@@ -126,7 +127,6 @@ class Jobs:
                                           self.criterion)
         self.model.init(self.opt.init_weight)
         self.model.to(self.device)
-        print(self.model)
 
     def _build_optimizer(self):
         optim_state = {"learningRate": self.opt.learning_rate, "weight_decay": self.opt.weight_decay}
@@ -147,14 +147,13 @@ class Jobs:
     def train_epoch(self, epoch):
         from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
         loss_to_print = 0
-        # for i in range(self.train_data_loader.num_batch):
         num_batch = len(self.train_data_loader)
         for step, data in enumerate(self.train_data_loader):
-            batch_graph_list, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
-            batch_graph_list = batch_graph_list.to(self.device)
+            batch_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
+            batch_graph = batch_graph.to(self.device)
             self.optimizer.zero_grad()
             oov_dict = self.prepare_ext_vocab(
-                batch_graph_list, self.src_vocab) if self.use_copy else None
+                batch_graph, self.src_vocab) if self.use_copy else None
 
             if self.use_copy:
                 batch_tree_list_refined = []
@@ -162,7 +161,7 @@ class Jobs:
                     tgt_list = oov_dict.get_symbol_idx_for_list(item.strip().split())
                     tgt_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), oov_dict)
                     batch_tree_list_refined.append(tgt_tree)
-            loss = self.model(batch_graph_list, batch_tree_list_refined if self.use_copy else batch_tree_list, oov_dict=oov_dict)
+            loss = self.model(batch_graph, batch_tree_list_refined if self.use_copy else batch_tree_list, oov_dict=oov_dict)
             loss.backward()
             torch.nn.utils.clip_grad_value_(
                 self.model.parameters(), self.opt.grad_clip)
@@ -177,12 +176,8 @@ class Jobs:
         for epoch in range(1, self.opt.max_epochs+1):
             self.model.train()
             loss_to_print = self.train_epoch(epoch)
-            # self.scheduler.step()
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
-            # print(self.scheduler.get_lr())
             if epoch > 2 and epoch % 5 == 0:
-                # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
-                # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
                 test_acc = self.eval((self.model))
                 if test_acc > best_acc:
                     best_acc = test_acc
@@ -190,62 +185,37 @@ class Jobs:
         return best_acc
 
     def eval(self, model):
-        from graph4nlp.pytorch.data.data import to_batch
-        device = model.device
-
-        max_dec_seq_length = self.opt.max_dec_seq_length
-        max_dec_tree_depth = self.opt.max_dec_tree_depth
-        
-        use_copy = self.use_copy
-        enc_emb_size = model.src_vocab.embedding_dims
-        tgt_emb_size = model.tgt_vocab.embedding_dims
-
-        enc_hidden_size = model.decoder.enc_hidden_size
-        dec_hidden_size = model.decoder.hidden_size
-
+        from .evaluation import convert_to_string, compute_tree_accuracy
         model.eval()
-
         reference_list = []
         candidate_list = []
+        for data in self.test_data_loader:
+            eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
+            eval_input_graph = eval_input_graph.to(model.device)
+            oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
 
-        data_loader = self.test_data_loader
-        for data in data_loader:
-            input_graph_list, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
-            input_graph_list = input_graph_list.to(device)
-        # for i in range(len(data)):
-        #     x = data[i]
-
-        #     # get input graph list
-        #     input_graph_list = to_batch([x[0]])
-            # if use_copy:
-            oov_dict = self.prepare_ext_vocab(
-                input_graph_list, self.src_vocab)
-
-            # get indexed tgt sequence
             if self.use_copy:
                 assert len(batch_original_tree_list) == 1
                 reference = oov_dict.get_symbol_idx_for_list(batch_original_tree_list[0].split())
-                # reference = Tree.convert_to_tree(tmp_list, 0, len(tmp_list), oov_dict)
                 eval_vocab = oov_dict
             else:
                 assert len(batch_original_tree_list) == 1
                 reference = model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
                 eval_vocab = self.tgt_vocab
 
-            candidate = model.decoder.translate(use_copy,
-                                                enc_hidden_size,
-                                                dec_hidden_size,
+            candidate = model.decoder.translate(model.use_copy,
+                                                model.decoder.enc_hidden_size,
+                                                model.decoder.hidden_size,
                                                 model,
-                                                input_graph_list,
+                                                eval_input_graph,
                                                 self.src_vocab,
                                                 self.tgt_vocab,
-                                                device,
-                                                max_dec_seq_length,
-                                                max_dec_tree_depth,
+                                                model.device,
+                                                self.opt.max_dec_seq_length,
+                                                self.opt.max_dec_tree_depth,
                                                 oov_dict=oov_dict,
                                                 use_beam_search=True,
                                                 beam_size=self.opt.beam_size)
-                                                # beam_search_version=self.opt.beam_search_version)
             
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
@@ -264,95 +234,12 @@ class Jobs:
             cand_str = convert_to_string(
                 candidate, eval_vocab)
 
-            for c in candidate:
-                if c >= self.tgt_vocab.vocab_size:
-                    print("====================")
-                    print(oov_dict.symbol2idx)
-                    print(cand_str)
-                    print(ref_str)
-                    print("====================")
-            # print(cand_str)
-            # print(ref_str)
-
             reference_list.append(reference)
             candidate_list.append(candidate)
-            # print(cand_str)
-
         test_acc = compute_tree_accuracy(
             candidate_list, reference_list, eval_vocab)
         print("TEST ACCURACY = {:.3f}\n".format(test_acc))
         return test_acc
-
-
-def convert_to_string(idx_list, form_manager):
-    w_list = []
-    for i in range(len(idx_list)):
-        w_list.append(form_manager.get_idx_symbol(int(idx_list[i])))
-    return " ".join(w_list)
-
-
-def get_split_comma(input_str):
-    input_str = input_str.replace(",", " , ")
-    input_list = [item.strip() for item in input_str.split()]
-    ref_char = "$"
-    for index in range(len(input_list)):
-        if input_list[index] == ',':
-            if input_list[:index].count('(') == input_list[:index].count(')'):
-                if input_list[index+1:].count('(') == input_list[index+1:].count(')'):
-                    if input_list[index] == ref_char:
-                        raise RuntimeError
-                    else:
-                        input_list[index] = ref_char
-    new_str = " ".join(input_list).split('$')
-    result_set = set()
-    for str_ in new_str:
-        result_set.add(str_.strip())
-    return result_set
-
-
-def is_all_same(c1, c2, form_manager):
-    all_same = True
-    if len(c1) == len(c2):
-        all_same = True
-        for j in range(len(c1)):
-            if c1[j] != c2[j]:
-                all_same = False
-                break
-        if all_same:
-            return True
-    if len(c1) != len(c2) or all_same == False:
-        d1 = " ".join([form_manager.get_idx_symbol(x) for x in c1])
-        d2 = " ".join([form_manager.get_idx_symbol(x) for x in c2])
-        if get_split_comma(d1) == get_split_comma(d2):
-            return True
-        return False
-    raise NotImplementedError("you should not arrive here!")
-
-def compute_accuracy(candidate_list, reference_list, form_manager):
-    if len(candidate_list) != len(reference_list):
-        print("candidate list has length {}, reference list has length {}\n".format(
-            len(candidate_list), len(reference_list)))
-
-    len_min = min(len(candidate_list), len(reference_list))
-    c = 0
-    for i in range(len_min):
-        if is_all_same(candidate_list[i], reference_list[i], form_manager):
-            c = c+1
-        else:
-            pass
-
-    return c/float(len_min)
-
-
-def compute_tree_accuracy(candidate_list_, reference_list_, form_manager):
-    candidate_list = []
-    for i in range(len(candidate_list_)):
-        candidate_list.append(candidate_list_[i])
-    reference_list = []
-    for i in range(len(reference_list_)):
-        reference_list.append(reference_list_[i])
-    return compute_accuracy(candidate_list, reference_list, form_manager)
-
 
 if __name__ == "__main__":
     start = time.time()
@@ -402,6 +289,7 @@ if __name__ == "__main__":
     main_arg_parser.add_argument('-grad_clip', type=int, default=5, help='clip gradients at this value')
 
     args = main_arg_parser.parse_args()
+    print(args)
 
     runner = Jobs(opt=args)
     best_acc = runner.train()
