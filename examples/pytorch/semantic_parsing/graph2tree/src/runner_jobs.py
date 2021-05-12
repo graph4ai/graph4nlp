@@ -14,12 +14,13 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
-
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_embedding import *
-
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from graph4nlp.pytorch.modules.utils.tree_utils import Tree
+
+import warnings
+warnings.filterwarnings('ignore')
 
 
 class Jobs:
@@ -193,7 +194,7 @@ class Jobs:
         device = model.device
 
         max_dec_seq_length = self.opt.max_dec_seq_length
-        max_dec_tree_depth = self.opt.max_dec_tree_depth_for_test
+        max_dec_tree_depth = self.opt.max_dec_tree_depth
         
         use_copy = self.use_copy
         enc_emb_size = model.src_vocab.embedding_dims
