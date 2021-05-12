@@ -150,7 +150,7 @@ class JobsDatasetForTree(TextToTreeDataset):
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy,
                                           share_vocab=share_vocab, pretrained_word_emb_name=pretrained_word_emb_name,
-                                          val_split_ratio=val_split_ratio, seed=seed, word_emb_size=word_emb_size,
+                                          val_split_ratio=val_split_ratio, word_emb_size=word_emb_size,
 
                                           dynamic_graph_type=dynamic_graph_type,
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
