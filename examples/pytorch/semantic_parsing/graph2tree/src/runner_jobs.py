@@ -117,6 +117,7 @@ class Jobs:
                            'num_rnn_layers': 1
                            }
         self.criterion = nn.NLLLoss(size_average=False)
+        print(self.tgt_vocab.vocab_size)
         self.model = Graph2Tree.from_args(self.opt, 
                                           self.src_vocab, 
                                           self.tgt_vocab, 
