@@ -47,3 +47,4 @@ def get_args():
     main_arg_parser.add_argument('-grad_clip', type=int, default=5, help='clip gradients at this value')
 
     args = main_arg_parser.parse_args()
+    return args
