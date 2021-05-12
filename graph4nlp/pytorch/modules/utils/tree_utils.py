@@ -266,3 +266,8 @@ class Vocab():
 
     def __len__(self):
         return self.vocab_size
+
+def to_cuda(x, device=None):
+    if device:
+        x = x.to(device)
+    return x
