@@ -40,6 +40,8 @@ class Graph2Tree(nn.Module):
         self.tgt_vocab = tgt_vocab
         self.device = device
         self.use_copy = use_copy
+        self.input_size = self.src_vocab.vocab_size, 
+        self.output_size=self.tgt_vocab.vocab_size, 
 
 
         if graph_construction_type == "DependencyGraph":
@@ -123,7 +125,7 @@ class Graph2Tree(nn.Module):
                                       enc_hidden_size=enc_hidden_size,
                                       dec_emb_size=self.tgt_vocab.embedding_dims,
                                       dec_hidden_size=dec_hidden_size,
-                                      output_size=self.tgt_vocab.vocab_size,
+                                      output_size=self.output_size,
                                       device=device,
                                       teacher_force_ratio=teacher_force_ratio,
                                       use_sibling=use_sibling,
@@ -163,9 +165,8 @@ class Graph2Tree(nn.Module):
                     direction_option=opt.direction_option, graph_construction_type=opt.graph_construction_type,
                     enc_hidden_size=opt.enc_hidden_size, dec_hidden_size=opt.dec_hidden_size, 
                     dropout_for_word_embedding=opt.dropout_for_word_embedding, dropout_for_encoder_feature=opt.dropout_for_encoder,
-                    dropout_for_encoder_attn=opt.dropout_for_encoder, dropout_for_decoder=opt.dropout_for_decoder,
-                    input_size=src_vocab.vocab_size, output_size=tgt_vocab.vocab_size, device=device, criterion=criterion, 
-                    teacher_force_ratio=opt.teacher_force_ratio, max_dec_seq_length=opt.max_dec_seq_length, 
+                    dropout_for_encoder_attn=opt.dropout_for_encoder, dropout_for_decoder=opt.dropout_for_decoder, 
+                    device=device, criterion=criterion, teacher_force_ratio=opt.teacher_force_ratio, max_dec_seq_length=opt.max_dec_seq_length, 
                     max_dec_tree_depth=opt.max_dec_tree_depth, embedding_style=embedding_style, K=opt.K, 
                     gat_head=[int(i) for i in opt.gat_head.split(',')], sage_aggr=opt.sage_aggr, 
                     attn_type=opt.attn_type, use_sibling=opt.use_sibling)
