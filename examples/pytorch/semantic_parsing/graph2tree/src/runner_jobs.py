@@ -294,7 +294,8 @@ if __name__ == "__main__":
         jsObj = json.dumps(vars(args))
         f.write(jsObj)
     with open("./jobs_config", "r") as f:
-        config_jobs = json.loads(f.readline().split())
+        lines = f.readlines()
+        config_jobs = json.loads(lines[0].strip())
     print(config_jobs)
     runner = Jobs(opt=args)
     best_acc = runner.train()
