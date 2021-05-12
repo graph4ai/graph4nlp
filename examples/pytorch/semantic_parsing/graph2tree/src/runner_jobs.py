@@ -155,7 +155,7 @@ class Jobs:
             oov_dict = self.prepare_ext_vocab(
                 batch_graph_list, self.src_vocab) if self.use_copy else None
 
-            if self.use_copy and self.revectorization:
+            if self.use_copy:
                 batch_tree_list_refined = []
                 for item in batch_original_tree_list:
                     tgt_list = oov_dict.get_symbol_idx_for_list(item.strip().split())
@@ -221,7 +221,7 @@ class Jobs:
                 input_graph_list, self.src_vocab)
 
             # get indexed tgt sequence
-            if self.use_copy and self.revectorization:
+            if self.use_copy:
                 assert len(batch_original_tree_list) == 1
                 reference = oov_dict.get_symbol_idx_for_list(batch_original_tree_list[0].split())
                 # reference = Tree.convert_to_tree(tmp_list, 0, len(tmp_list), oov_dict)

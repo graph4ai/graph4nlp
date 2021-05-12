@@ -125,7 +125,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         if self.use_copy:
             ptr_size = self.embeddings.embedding_dim
             ptr_size += 4*self.rnn_size
-            print(ptr_size)
             self.ptr = nn.Linear(ptr_size, 1)
 
         self.rnn = self._build_rnn(rnn_type=rnn_type, input_size=output_size, emb_size=dec_emb_size,
