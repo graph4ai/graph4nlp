@@ -118,7 +118,8 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             self.linear_att = nn.Linear(3*dec_hidden_size, dec_hidden_size)
         else:
             self.linear_att = nn.Linear(2*dec_hidden_size, dec_hidden_size)
-        print(dec_hidden_size, output_size)
+        print(dec_hidden_size)
+        print(output_size)
         self.linear_out = nn.Linear(dec_hidden_size, output_size)
         self.dropout_attn = nn.Dropout(dropout_for_decoder)
         self.logsoftmax = nn.LogSoftmax(dim=1)
