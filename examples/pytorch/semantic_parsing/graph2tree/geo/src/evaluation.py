@@ -1,28 +1,4 @@
-def convert_to_string(idx_list, form_manager):
-    w_list = []
-    for i in range(len(idx_list)):
-        w_list.append(form_manager.get_idx_symbol(int(idx_list[i])))
-    return " ".join(w_list)
-
-
-def get_split_comma(input_str):
-    input_str = input_str.replace(",", " , ")
-    input_list = [item.strip() for item in input_str.split()]
-    ref_char = "$"
-    for index in range(len(input_list)):
-        if input_list[index] == ',':
-            if input_list[:index].count('(') == input_list[:index].count(')'):
-                if input_list[index+1:].count('(') == input_list[index+1:].count(')'):
-                    if input_list[index] == ref_char:
-                        raise RuntimeError
-                    else:
-                        input_list[index] = ref_char
-    new_str = " ".join(input_list).split('$')
-    result_set = set()
-    for str_ in new_str:
-        result_set.add(str_.strip())
-    return result_set
-
+from graph4nlp.pytorch.modules.utils.tree_utils import Tree
 
 def is_all_same(c1, c2, form_manager):
     all_same = True
@@ -35,11 +11,20 @@ def is_all_same(c1, c2, form_manager):
         if all_same:
             return True
     if len(c1) != len(c2) or all_same == False:
-        d1 = " ".join([form_manager.get_idx_symbol(x) for x in c1])
-        d2 = " ".join([form_manager.get_idx_symbol(x) for x in c2])
-        if get_split_comma(d1) == get_split_comma(d2):
-            return True
-        return False
+        n1 = Tree.norm_tree(Tree.deduplicate_tree(c1, form_manager), form_manager)
+        n2 = Tree.norm_tree(Tree.deduplicate_tree(c2, form_manager), form_manager)
+        if len(n1) == len(n2):
+            all_same = True
+            for j in range(len(n1)):
+                if n1[j] != n2[j]:
+                    all_same = False
+                    break
+        else:
+            return False
+        if all_same:
+            print(" ".join(form_manager.get_idx_symbol_for_list(c1)))
+            print(" ".join(form_manager.get_idx_symbol_for_list(c2)))
+        return all_same
     raise NotImplementedError("you should not arrive here!")
 
 def compute_accuracy(candidate_list, reference_list, form_manager):
@@ -66,3 +51,4 @@ def compute_tree_accuracy(candidate_list_, reference_list_, form_manager):
     for i in range(len(reference_list_)):
         reference_list.append(reference_list_[i])
     return compute_accuracy(candidate_list, reference_list, form_manager)
+

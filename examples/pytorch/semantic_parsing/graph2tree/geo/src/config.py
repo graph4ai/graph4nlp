@@ -3,10 +3,10 @@ import argparse
 def get_args():
     main_arg_parser = argparse.ArgumentParser(description="parser")
 
-    main_arg_parser.add_argument('-gpuid', type=int, default=1, help='which gpu to use. -1 = use CPU')
+    main_arg_parser.add_argument('-gpuid', type=int, default=3, help='which gpu to use. -1 = use CPU')
     main_arg_parser.add_argument('-seed', type=int, default=1234, help='torch manual random number generator seed')
     main_arg_parser.add_argument('-use_copy', type=int, default=1, help='whether use copy mechanism')
-    main_arg_parser.add_argument('-data_dir', type=str, default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data/', help='data path')
+    main_arg_parser.add_argument('-data_dir', type=str, default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/geo/geo_data/', help='data path')
 
     main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")
     main_arg_parser.add_argument('-gat_head', type=str, default="1")
@@ -35,8 +35,8 @@ def get_args():
     main_arg_parser.add_argument('-direction_option', type=str, default="undirected")
     main_arg_parser.add_argument('-beam_size', type=int, default=2)
 
-    main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=50)
-    main_arg_parser.add_argument('-max_dec_tree_depth', type=int, default=50)
+    main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=100)
+    main_arg_parser.add_argument('-max_dec_tree_depth', type=int, default=30)
 
     main_arg_parser.add_argument('-teacher_force_ratio', type=float, default=1.0)
     main_arg_parser.add_argument('-init_weight', type=float, default=0.08, help='initailization weight')
@@ -47,4 +47,3 @@ def get_args():
     main_arg_parser.add_argument('-grad_clip', type=int, default=5, help='clip gradients at this value')
 
     args = main_arg_parser.parse_args()
-    return args

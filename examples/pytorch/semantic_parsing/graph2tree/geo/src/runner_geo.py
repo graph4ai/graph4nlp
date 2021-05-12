@@ -175,70 +175,46 @@ class Geo:
         for epoch in range(1, self.opt.max_epochs+1):
             self.model.train()
             loss_to_print = self.train_epoch(epoch)
-            # self.scheduler.step()
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
-            # print(self.scheduler.get_lr())
-            if epoch > 20 and epoch % 2 == 0:
-                # torch.save(checkpoint, "{}/g2t".format(self.checkpoint_dir) + str(i))
-                # pickle.dump(checkpoint, open("{}/g2t".format(self.checkpoint_dir) + str(i), "wb"))
+            if epoch > 2 and epoch % 5 == 0:
                 test_acc = self.eval((self.model))
                 if test_acc > best_acc:
                     best_acc = test_acc
         print("Best Acc: {:.3f}\n".format(best_acc))
+        return best_acc
 
     def eval(self, model):
-        device = model.device
-
-        max_dec_seq_length = self.opt.max_dec_seq_length
-        max_dec_tree_depth = self.opt.max_dec_tree_depth_for_test
-        
-        use_copy = self.test_data_loader.use_copy
-        enc_emb_size = model.src_vocab.embedding_dims
-        tgt_emb_size = model.tgt_vocab.embedding_dims
-
-        enc_hidden_size = model.decoder.enc_hidden_size
-        dec_hidden_size = model.decoder.hidden_size
-
+        from .evaluation import convert_to_string, compute_tree_accuracy
         model.eval()
-
         reference_list = []
         candidate_list = []
+        for data in self.test_data_loader:
+            eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
+            eval_input_graph = eval_input_graph.to(model.device)
+            oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
 
-        data = self.test_data_loader.data
-
-        for i in range(len(data)):
-            x = data[i]
-
-            # get input graph list
-            input_graph_list = [x[0]]
-            # if use_copy:
-            oov_dict = self.prepare_ext_vocab(
-                input_graph_list, self.test_data_loader.src_vocab)
-
-            # get indexed tgt sequence
-            if self.use_copy and self.revectorization:
-                reference = oov_dict.get_symbol_idx_for_list(x[1].split())
-                # reference = Tree.convert_to_tree(tmp_list, 0, len(tmp_list), oov_dict)
+            if self.use_copy:
+                assert len(batch_original_tree_list) == 1
+                reference = oov_dict.get_symbol_idx_for_list(batch_original_tree_list[0].split())
                 eval_vocab = oov_dict
-
             else:
-                reference = model.tgt_vocab.get_symbol_idx_for_list(x[1].split())
-                eval_vocab = self.test_data_loader.tgt_vocab
+                assert len(batch_original_tree_list) == 1
+                reference = model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
+                eval_vocab = self.tgt_vocab
 
-            candidate = model.decoder.translate(use_copy,
-                                                enc_hidden_size,
-                                                dec_hidden_size,
+            candidate = model.decoder.translate(model.use_copy,
+                                                model.decoder.enc_hidden_size,
+                                                model.decoder.hidden_size,
                                                 model,
-                                                input_graph_list,
-                                                self.test_data_loader.src_vocab,
-                                                self.test_data_loader.tgt_vocab,
-                                                device,
-                                                max_dec_seq_length,
-                                                max_dec_tree_depth,
+                                                eval_input_graph,
+                                                self.src_vocab,
+                                                self.tgt_vocab,
+                                                model.device,
+                                                self.opt.max_dec_seq_length,
+                                                self.opt.max_dec_tree_depth,
                                                 oov_dict=oov_dict,
                                                 use_beam_search=True,
-                                                beam_size=self.opt.beam_size,
-                                                beam_search_version=self.opt.beam_search_version)
+                                                beam_size=self.opt.beam_size)
             
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
@@ -257,169 +233,18 @@ class Geo:
             cand_str = convert_to_string(
                 candidate, eval_vocab)
 
-            for c in candidate:
-                if c >= self.test_data_loader.tgt_vocab.vocab_size:
-                    print("====================")
-                    print(oov_dict.symbol2idx)
-                    print(cand_str)
-                    print(ref_str)
-                    print("====================")
-            # if cand_str.strip() != ref_str.strip():
-            #     print(cand_str)
-            #     print(ref_str)
-
             reference_list.append(reference)
             candidate_list.append(candidate)
-            # print(cand_str)
-
         test_acc = compute_tree_accuracy(
             candidate_list, reference_list, eval_vocab)
         print("TEST ACCURACY = {:.3f}\n".format(test_acc))
         return test_acc
 
-
-def convert_to_string(idx_list, form_manager):
-    w_list = []
-    for i in range(len(idx_list)):
-        w_list.append(form_manager.get_idx_symbol(int(idx_list[i])))
-    return " ".join(w_list)
-
-def is_all_same(c1, c2, form_manager):
-    all_same = True
-    if len(c1) == len(c2):
-        all_same = True
-        for j in range(len(c1)):
-            if c1[j] != c2[j]:
-                all_same = False
-                break
-        if all_same:
-            return True
-    if len(c1) != len(c2) or all_same == False:
-        n1 = Tree.norm_tree(Tree.deduplicate_tree(c1, form_manager), form_manager)
-        n2 = Tree.norm_tree(Tree.deduplicate_tree(c2, form_manager), form_manager)
-        # if np.array_equal(np.array(Tree.norm_tree(c2, form_manager)), np.array(n2)) == False:
-        #     print(form_manager.get_idx_symbol_for_list(c2))
-        #     print(form_manager.get_idx_symbol_for_list(n2))
-        #     print("=================")
-        if len(n1) == len(n2):
-            all_same = True
-            for j in range(len(n1)):
-                if n1[j] != n2[j]:
-                    all_same = False
-                    break
-        else:
-            return False
-        if all_same:
-            print(" ".join(form_manager.get_idx_symbol_for_list(c1)))
-            print(" ".join(form_manager.get_idx_symbol_for_list(c2)))
-        return all_same
-    raise NotImplementedError("you should not arrive here!")
-
-def compute_accuracy(candidate_list, reference_list, form_manager):
-    if len(candidate_list) != len(reference_list):
-        print("candidate list has length {}, reference list has length {}\n".format(
-            len(candidate_list), len(reference_list)))
-
-    len_min = min(len(candidate_list), len(reference_list))
-    c = 0
-    for i in range(len_min):
-        if is_all_same(candidate_list[i], reference_list[i], form_manager):
-            c = c+1
-        else:
-            pass
-
-    return c/float(len_min)
-
-
-def compute_tree_accuracy(candidate_list_, reference_list_, form_manager):
-    candidate_list = []
-    for i in range(len(candidate_list_)):
-        candidate_list.append(candidate_list_[i])
-    reference_list = []
-    for i in range(len(reference_list_)):
-        reference_list.append(reference_list_[i])
-    return compute_accuracy(candidate_list, reference_list, form_manager)
-
-
 if __name__ == "__main__":
+    from .config import get_args
     start = time.time()
-    main_arg_parser = argparse.ArgumentParser(description="parser")
-
-    main_arg_parser.add_argument(
-        '-gpuid', type=int, default=3, help='which gpu to use. -1 = use CPU')
-    main_arg_parser.add_argument(
-        '-seed', type=int, default=1234, help='torch manual random number generator seed')
-    main_arg_parser.add_argument(
-        '-use_copy', type=int, default=1, help='whether use copy mechanism')
-
-    main_arg_parser.add_argument('-data_dir', type=str,
-                                 default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/data/geo', help='data path')
-    main_arg_parser.add_argument('-checkpoint_dir', type=str,
-                                 default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/checkpoint_dir_geo', help='output directory where checkpoints get written')
-
-    main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")
-    main_arg_parser.add_argument('-rnn_type', type=str, default="lstm")
-
-    main_arg_parser.add_argument('-enc_emb_size', type=int, default=300)
-    main_arg_parser.add_argument('-tgt_emb_size', type=int, default=300)
-
-    main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
-    main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
-
-    # DynamicGraph_node_emb_refined, DynamicGraph_node_emb, ConstituencyGraph
-    main_arg_parser.add_argument(
-        '-graph_construction_type', type=str, default="DynamicGraph_node_emb")
-
-    # "None, line, dependency, constituency"
-    main_arg_parser.add_argument(
-        '-dynamic_init_graph_type', type=str, default="constituency")
-
-    main_arg_parser.add_argument('-batch_size', type=int, default=20)
-
-    main_arg_parser.add_argument(
-        '-dropout_for_word_embedding', type=float, default=0.3)
-
-    main_arg_parser.add_argument(
-        '-dropout_for_encoder', type=float, default=0.1)
-
-    main_arg_parser.add_argument(
-        '-dropout_for_decoder', type=float, default=0.1)
-
-    main_arg_parser.add_argument(
-        '-direction_option', type=str, default="undirected")
-
-    main_arg_parser.add_argument(
-        '-beam_size', type=int, default=3)
-
-    main_arg_parser.add_argument(
-        '-beam_search_version', type=int, default=2)
-
-    main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=100)
-    main_arg_parser.add_argument(
-        '-max_dec_tree_depth_for_train', type=int, default=30)
-    main_arg_parser.add_argument(
-        '-max_dec_tree_depth_for_test', type=int, default=30)
-
-    main_arg_parser.add_argument(
-        '-teacher_force_ratio', type=float, default=1.0)
-
-    main_arg_parser.add_argument(
-        '-init_weight', type=float, default=0.08, help='initailization weight')
-    main_arg_parser.add_argument(
-        '-learning_rate', type=float, default=1e-3, help='learning rate')
-    main_arg_parser.add_argument('-weight_decay', type=float, default=0)
-
-    main_arg_parser.add_argument('-max_epochs', type=int, default=150,
-                                 help='number of full passes through the training data')
-    main_arg_parser.add_argument('-min_freq', type=int, default=1,
-                                 help='minimum frequency for vocabulary')
-    main_arg_parser.add_argument(
-        '-grad_clip', type=int, default=5, help='clip gradients at this value')
-
-    args = main_arg_parser.parse_args()
-
-    runner = Geo(opt=args)
-    max_score = runner.train()
+    runner = Geo(opt=get_args())
+    best_acc = runner.train()
 
     end = time.time()
     print("total time: {} minutes\n".format((end - start)/60))
