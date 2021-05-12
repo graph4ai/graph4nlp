@@ -40,8 +40,9 @@ class Graph2Tree(nn.Module):
         self.tgt_vocab = tgt_vocab
         self.device = device
         self.use_copy = use_copy
-        self.input_size = self.src_vocab.vocab_size, 
-        self.output_size=self.tgt_vocab.vocab_size, 
+        self.input_size = self.src_vocab.vocab_size,
+        self.output_size=self.tgt_vocab.vocab_size,
+        self.criterion = criterion
 
 
         if graph_construction_type == "DependencyGraph":
@@ -127,6 +128,7 @@ class Graph2Tree(nn.Module):
                                       dec_hidden_size=dec_hidden_size,
                                       output_size=self.output_size,
                                       device=device,
+                                      criterion=self.criterion,
                                       teacher_force_ratio=teacher_force_ratio,
                                       use_sibling=use_sibling,
                                       use_copy=self.use_copy,
