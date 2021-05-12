@@ -83,7 +83,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     def __init__(self, attn_type, embeddings, enc_hidden_size, dec_emb_size,
                  dec_hidden_size, output_size, device, criterion, teacher_force_ratio,
                  use_sibling=True, use_attention=True, use_copy=False,
-                 use_coverage=False, fuse_strategy="average", num_layers=1,
+                 fuse_strategy="average", num_layers=1,
                  dropout_for_decoder=0.1, rnn_type="lstm", max_dec_seq_length=512,
                  max_dec_tree_depth=256, tgt_vocab=None, graph_pooling_strategy="max"):
 
