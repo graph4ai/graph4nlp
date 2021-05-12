@@ -101,6 +101,10 @@ class Graph2Tree(nn.Module):
             raise NotImplementedError()
 
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
+        if self.use_share_vocab == 0:
+            self.tgt_word_embedding = nn.Embedding(self.tgt_vocab.vocab_size, dec_hidden_size, 
+                                                padding_idx=self.tgt_vocab.get_symbol_idx(self.pad_token),
+                                                _weight=torch.from_numpy(self.tgt_vocab.embeddings).float())
 
         if gnn_type == "GAT":
             self.encoder = GAT(K, enc_hidden_size, enc_hidden_size, enc_hidden_size, gat_head,
@@ -123,7 +127,7 @@ class Graph2Tree(nn.Module):
             raise NotImplementedError()
 
         self.decoder = StdTreeDecoder(attn_type=attn_type,
-                                      embeddings=self.word_emb if self.use_share_vocab else self.tgt_vocab.embeddings,
+                                      embeddings=self.word_emb if self.use_share_vocab else self.tgt_word_embedding,
                                       enc_hidden_size=enc_hidden_size,
                                       dec_emb_size=self.tgt_vocab.embedding_dims,
                                       dec_hidden_size=dec_hidden_size,
