@@ -103,7 +103,7 @@ class Graph2Tree(nn.Module):
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
         if self.use_share_vocab == 0:
             self.tgt_word_embedding = nn.Embedding(self.tgt_vocab.vocab_size, dec_hidden_size, 
-                                                padding_idx=self.tgt_vocab.get_symbol_idx(self.pad_token),
+                                                padding_idx=self.tgt_vocab.get_symbol_idx(self.tgt_vocab.pad_token),
                                                 _weight=torch.from_numpy(self.tgt_vocab.embeddings).float())
 
         if gnn_type == "GAT":
