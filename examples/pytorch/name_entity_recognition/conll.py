@@ -17,7 +17,7 @@ from graph4nlp.pytorch.modules.utils.tree_utils import Tree
 
 import json
 from graph4nlp.pytorch.data.dataset import SequenceLabelingDataset
-dataset_root = '../test/dataset/conll/'
+dataset_root = './conll/'
 from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
@@ -210,7 +210,4 @@ class ConllDataset(SequenceLabelingDataset):
             raise NotImplementedError('Currently only static and dynamic are supported!')
         return data_items            
 
-# if __name__ == '__main__':
-#     ConllDataset(root_dir='../test/dataset/conll/', topology_builder=DependencyBasedGraphConstruction,
-#                 topology_subdir='DependencyGraph',tag_types=['I-MISC', 'O', 'B-MISC', 'I-LOC', 'I-PER', 'I-ORG'])
 

@@ -104,37 +104,7 @@ def get_tokens(g_list):
         tokens.append(sent_token)    
     return tokens   
 
-# class CRFLayer(nn.Module):
-#     def __init__(self, num_tags):
-#         super(CRFLayer, self).__init__()  
-#         self.model=CRF(num_tags, batch_first=True)
-        
-#     def forward(self,batch_graph,tgt_tags): 
-#         #prepare emission_score
-#         sent_graph_list=from_batch(batch_graph)
-#         emb_list=[]
-#         #sent_len=[]
-#         for g in sent_graph_list:
-#             emb_list.append(g.node_features['logits'])
-#             #sent_len.append(g.node_features['logits'].size()[0]) 
-#         emission_padded=pad_sequence(emb_list,batch_first=True)
-        
-#         #mask=torch.zeros(emission_padded.size(0),emission_padded.size(1))
-#         #for i in range(len(sent_len)):
-#         #    mask[i,:sent_len[i]]=1
-            
-#         #prepare tags
-#         tag_padded=pad_sequence(tgt_tags,batch_first=True,padding_value=-1)#batch*seq_len
-        
-#         #prepare the mask
-#         mask=(tag_padded>-1)
-            
-#         loss=-self.model(emission_padded, tag_padded,mask)
-#         pred_tags=self.model.decode(emission_padded,mask)
-#         pred_tags_=[torch.tensor(pred) for pred in pred_tags]
-        
-#         return loss,pred_tags_
-      
+
         
         
 
@@ -154,32 +124,7 @@ class SentenceBiLSTMCRF(nn.Module):
         self.logsoftmax = nn.LogSoftmax(dim=1)
         self.nll_loss = nn.NLLLoss()
     def forward(self,batch_graph,tgt_tags):
-        #text_graph to sentence_graph
-#        sent_graph_list=[]
-#        for g in text_graph_list:
-#            nodes=g.node_attributes
-#            sent_g={}
-#            for node_idx,node_attribute in nodes.items():
-#               node_feature=g.get_node_features(node_idx)
-#               sentence_id=node_attribute['sentence_id']
-#               if sentence_id in sent_g.keys():               
-#                  sent_g[sentence_id].add_nodes(1)
-#                  node_id=len(sent_g[sentence_id].node_attributes)
-#                  sent_g[sentence_id].node_attributes[node_id-1]=node_attribute
-#                  sent_g[sentence_id].node_features['node_emb'][node_id-1]=node_feature
-#               else:
-#                  sent_g[sentence_id]=GraphData()
-#                  sent_g[sentence_id].add_nodes(1) 
-#                  sent_g[sentence_id].node_attributes[0]=node_attribute 
-#                  sent_g[sentence_id].node_features['node_emb'][node_id-1]=node_feature                  
-#            sent_graph_list.extend(list(sent_g.values()))  #each graph is a  sentence
-            
 
-        #if self.use_rnn is False:
-        #    batch_emb=batch_graph.node_features['node_emb']
-
-       # else:
-            #go through the bilstm function:
         batch_graph= self.prediction(batch_graph)  
         batch_emb=batch_graph.node_features['logits']
             
@@ -190,10 +135,6 @@ class SentenceBiLSTMCRF(nn.Module):
         loss=self.nll_loss(self.logsoftmax(logits),tgt)
         pred_tags=logits2tag(logits)
         
-        # else:
-        #    #go through CRF
-        #    loss,pred_tags=self.crf(batch_graph,tgt_tags)
-        #    pred_tags=torch.cat(pred_tags).view(-1)
          
         return loss, pred_tags
          
@@ -386,21 +327,21 @@ class Conll:
         print("starting build the dataset")
         
         if args.graph_type=='line_graph':
-          dataset = ConllDataset(root_dir="./graph4nlp/pytorch/test/dataset/conll",
+          dataset = ConllDataset(root_dir="./conll",
                               topology_builder=LineBasedGraphConstruction,
                               graph_type='static',
                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                               topology_subdir='LineGraph',
                               tag_types=self.tag_types)
         elif args.graph_type=='dependency_graph':
-          dataset = ConllDataset(root_dir="./graph4nlp/pytorch/test/dataset/conll",
+          dataset = ConllDataset(root_dir="./conll",
                               topology_builder=DependencyBasedGraphConstruction_without_tokenizer,
                               graph_type='static',
                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                               topology_subdir='DependencyGraph',
                               tag_types=self.tag_types) 
         elif args.graph_type=='node_emb':
-          dataset = ConllDataset(root_dir="./graph4nlp/pytorch/test/dataset/conll",
+          dataset = ConllDataset(root_dir="./conll",
                               topology_builder=NodeEmbeddingBasedGraphConstruction,
                               graph_type='dynamic',
                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,
@@ -421,7 +362,7 @@ class Conll:
             else:
                 # init_topology_builder
                 raise RuntimeError('Define your own init_topology_builder')  
-            dataset = ConllDataset(root_dir="./graph4nlp/pytorch/test/dataset/conll",
+            dataset = ConllDataset(root_dir="./conll",
                               topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
                               graph_type='dynamic',
                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,
@@ -468,7 +409,8 @@ class Conll:
             for data in self.train_dataloader:
                 graph, tgt = data["graph_data"], data["tgt_tag"]
                 tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
-                pred_tags, loss = self.model(graph.to(self.device), tgt_l, require_loss=True)
+                graph = graph.to(self.device) 
+                pred_tags, loss = self.model(graph, tgt_l, require_loss=True)
                 pred_collect.extend(pred_tags)   #pred: list of batch_sentence pred tensor         
                 gt_collect.extend(tgt)  #tgt:list of sentence token tensor                
                 #num_tokens=len(torch.cat(pred_tags).view(-1))
@@ -494,8 +436,9 @@ class Conll:
         with torch.no_grad():
             for data in self.val_dataloader:
                 graph, tgt = data["graph_data"], data["tgt_tag"]
+                graph = graph.to(self.device)
                 tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
-                pred,loss= self.model(graph.to(self.device), tgt_l, require_loss=True)
+                pred,loss= self.model(graph, tgt_l, require_loss=True)
                 pred_collect.extend(pred)   #pred: list of batch_sentence pred tensor         
                 gt_collect.extend(tgt)  #tgt:list of sentence token tensor
                 tokens_collect.extend(get_tokens(from_batch(graph)))  
@@ -516,8 +459,9 @@ class Conll:
         with torch.no_grad():       
             for data in self.test_dataloader:
                 graph, tgt = data["graph_data"], data["tgt_tag"]
+                graph = graph.to(self.device) 
                 tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
-                pred,loss = self.model(graph.to(self.device), tgt_l,require_loss=True)
+                pred,loss = self.model(graph, tgt_l,require_loss=True)
                 #pred = logits2tag(g)
                 pred_collect.extend(pred)
                 tgt_collect.extend(tgt)             
@@ -528,7 +472,7 @@ class Conll:
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NER')
-    parser.add_argument("--gpu", type=int, default=0,
+    parser.add_argument("--gpu", type=int, default=-1,
                         help="which GPU to use.")
     parser.add_argument("--epochs", type=int, default=150,
                         help="number of training epochs")
@@ -608,45 +552,5 @@ if __name__ == "__main__":
     endtime = datetime.datetime.now()
     print((endtime - starttime).seconds)   
     
-#    best_score=-1
-#    param_grid={
-#        'lr':[0.001],
-#          'batch_size':[100],
-#          'weight_decay':[5e-4],
-#           'hidden_size':[400]}
-#    ax_evals=50
-#    hist_param=[]
-#    hist_score=[]
-#    for i in range(ax_evals):
-#        random.seed(i)    
-#        random_params={k:random.sample(v,1)[0] for k,v in param_grid.items()}
-#        args.lr=random_params['lr']
-#        args.dropout=random_params['dropout']
-#        args.batch_size=random_params['batch_size']
-#        args.weight_decay=random_params['weight_decay']
-#        args.init_hidden_size=random_params['hidden_size']
-#        # preprocess()
-#        runner = Conll()
-#        max_score,max_idx=runner.train()
-#        print("Train finish, best score: {:.3f}".format(max_score))
-#        print(max_idx)
-#        score=runner.test()
-#        hist_score.append(score)
-#        hist_param.append(random_params)
-    # gnn_type=['gcn']#,
-    # graph_type=['line_graph'] #node_emb
-    # direction=['bi_fuse']#,
-    # score_l=[]
-    # for graph in graph_type:
-    #   for gnn in gnn_type:        
-    #         for direct in direction:
-    #             args.gnn_type=gnn
-    #             args.graph_type=graph
-    #             args.direction_option=direct
-    #             runner = Conll()
-    #             #max_score,max_idx=runner.train()
-    #             #print("Train finish, best score: {:.3f}".format(max_score))
-    #             #print(max_idx)
-    #             score=runner.test()
-    #             score_l.append(score)
+
 

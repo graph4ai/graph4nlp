@@ -36,8 +36,6 @@ from .fused_embedding_construction import FusedEmbeddingConstruction
 import multiprocessing
 import torch.multiprocessing
 import math
-# torch.multiprocessing.set_sharing_strategy('file_system')
-# multiprocessing.set_start_method("spawn", force=True)
 
 
 class QGModel(nn.Module):
@@ -59,29 +57,6 @@ class QGModel(nn.Module):
                             pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
                             fix_emb=config['graph_construction_args']['node_embedding']['fix_word_emb']).word_emb_layer
         self.g2s.seq_decoder.tgt_emb = self.word_emb
-
-        # answer_feat_size = self.vocab.in_word_vocab.embeddings.shape[1]
-        # if 'node_edge_bert' in self.g2s.graph_topology.embedding_layer.word_emb_layers:
-        #     self.bert_encoder = self.g2s.graph_topology.embedding_layer.word_emb_layers['node_edge_bert']
-        #     answer_feat_size += self.bert_encoder.bert_model.config.hidden_size
-        # elif 'seq_bert' in self.g2s.graph_topology.embedding_layer.word_emb_layers:
-        #     self.bert_encoder = self.g2s.graph_topology.embedding_layer.word_emb_layers['seq_bert']
-        #     answer_feat_size += self.bert_encoder.bert_model.config.hidden_size
-        # else:
-        #     self.bert_encoder = None
-
-
-        # self.ans_rnn_encoder = RNNEmbedding(
-        #                             answer_feat_size,
-        #                             config['num_hidden'],
-        #                             bidirectional=True,
-        #                             num_layers=1,
-        #                             rnn_type='lstm',
-        #                             dropout=config['enc_rnn_dropout'])
-
-        # soft-alignment between context and answer
-        # self.ctx2ans_attn = Context2AnswerAttention(config['num_hidden'], config['num_hidden'])
-        # self.fuse_ctx_ans = nn.Linear(2 * config['num_hidden'], config['num_hidden'], bias=True)
 
         self.loss_calc = Graph2SeqLoss(ignore_index=self.vocab.out_word_vocab.PAD,
                                   use_coverage=self.use_coverage, coverage_weight=config['coverage_loss_ratio'])
@@ -107,68 +82,8 @@ class QGModel(nn.Module):
         # graph embedding construction
         batch_gd = self.g2s.graph_topology.embedding_layer(data)
 
-        # # answer alignment
-        # answer_feat = self.word_emb(data['input_tensor2'])
-        # answer_feat = dropout_fn(answer_feat, self.config['word_dropout'], shared_axes=[-2], training=self.training)
-
-        # if self.bert_encoder is not None:
-        #     answer_bert_feat = self.bert_encoder(data['input_text2'])
-        #     answer_feat = torch.cat([answer_feat, answer_bert_feat], -1)
-
-        # answer_feat = self.ans_rnn_encoder(answer_feat, data['input_length2'])[0]
-        # node_feats = batch_gd.batch_node_features["node_feat"]
-        # mask_text = (batch_gd.batch_node_features["token_id"] != 0).squeeze(2)
-
-        # ans_mask = (data["input_tensor2"] != 0)
-
-        # new_node_feat = self.answer_alignment(node_feats, answer_feat, mask_text, ans_mask)
-
-
-
-        # batch_gd.batch_node_features["node_feat"] = new_node_feat
-
         return batch_gd
 
-
-
-    # def encode_init_node_feature(self, data):
-
-    #     # graph embedding construction
-    #     batch_gd = self.g2s.graph_topology(data['graph_data'])
-
-    #     # answer alignment
-    #     answer_feat = self.word_emb(data['input_tensor2'])
-    #     answer_feat = dropout_fn(answer_feat, self.config['word_dropout'], shared_axes=[-2], training=self.training)
-
-    #     if self.bert_encoder is not None:
-    #         answer_bert_feat = self.bert_encoder(data['input_text2'])
-    #         answer_feat = torch.cat([answer_feat, answer_bert_feat], -1)
-
-    #     answer_feat = self.ans_rnn_encoder(answer_feat, data['input_length2'])[0]
-    #     node_feats = batch_gd.batch_node_features["node_feat"]
-    #     mask_text = (batch_gd.batch_node_features["token_id"] != 0).squeeze(2)
-
-    #     ans_mask = (data["input_tensor2"] != 0)
-
-    #     new_node_feat = self.answer_alignment(node_feats, answer_feat, mask_text, ans_mask)
-
-    #     # lens = mask_text.float().sum(-1).int()
-    #     # ret_feat = []
-    #     # for i in range(lens.shape[0]):
-    #     #     tmp_feat = new_node_feat[i][:lens[i]]
-    #     #     # if len(tmp_feat) < num_items[i].item():
-    #     #     #     prev_feat = new_feat[i, lens[i]: num_items[i]]
-    #     #     #     if prev_feat.shape[-1] != tmp_feat.shape[-1]:
-    #     #     #         prev_feat = self.linear_transform(prev_feat)
-
-    #     #     #     tmp_feat = torch.cat([tmp_feat, prev_feat], 0)
-    #     #     ret_feat.append(tmp_feat)
-
-    #     # ret_feat = torch.cat(ret_feat, 0)
-
-    #     batch_gd.batch_node_features["node_feat"] = new_node_feat
-
-    #     return batch_gd
 
     def forward(self, data, oov_dict=None, require_loss=True):
         batch_gd = self.encode_init_node_feature(data)
@@ -187,90 +102,6 @@ class QGModel(nn.Module):
             return prob, loss * min_length / 2
         else:
             return prob
-
-    # def answer_alignment(self, node_feat, answer_feat, mask_node, mask_ans):
-
-    #     ctx_aware_ans_feat = self.ctx2ans_attn(node_feat, answer_feat, mask_node, mask_ans)
-    #     new_node_feat = self.fuse_ctx_ans(torch.cat([node_feat, ctx_aware_ans_feat], -1))
-
-    #     return new_node_feat
-
-# class Context2AnswerAttention(nn.Module):
-#     def __init__(self, dim, hidden_size):
-#         super(Context2AnswerAttention, self).__init__()
-#         self.linear_content = nn.Linear(dim, hidden_size, bias=True)
-#         self.linear_ques = nn.Linear(dim, hidden_size, bias=True)
-#         self.prj = nn.Linear(hidden_size, 1)
-#         self.dropout = nn.Dropout(0.2)
-
-#     def forward(self, context, answers, mask_content=None, mask_answers=None):
-#         """
-#         Parameters
-#         :context, (B, L, dim)
-#         :answers, (B, N, dim)
-#         :mask, (L, N)
-
-#         Returns
-#         :ques_emb, (L, dim)
-#         """
-#         ans_old = answers
-
-#         context_fc = self.linear_content(context)
-#         questions_fc = self.linear_ques(answers)
-
-#         sim = context_fc.unsqueeze(2) + questions_fc.unsqueeze(1)
-#         sim = self.dropout(sim)
-#         sim = self.prj(F.tanh(sim)).squeeze(3)
-
-
-#         if mask_answers is not None:
-#             attention = sim.masked_fill(~mask_answers.unsqueeze(1).bool(), -Constants.INF)
-
-
-#         prob = torch.softmax(attention, dim=-1)
-#         # shape: (B, L, dim)
-#         emb = torch.matmul(prob, ans_old)
-
-#         # if mask_content is not None:
-#         #     emb = emb.masked_fill(~mask_content.unsqueeze(2).bool(), 0)
-
-#         return emb
-
-
-# class Context2AnswerAttention(nn.Module):
-#     def __init__(self, dim, hidden_size):
-#         super(Context2AnswerAttention, self).__init__()
-#         self.linear_sim = nn.Linear(dim, hidden_size, bias=False)
-
-#     def forward(self, context, answers, mask_content=None, mask_answers=None):
-#         """
-#         Parameters
-#         :context, (B, L, dim)
-#         :answers, (B, N, dim)
-#         :mask, (L, N)
-
-#         Returns
-#         :ques_emb, (L, dim)
-#         """
-#         ans_old = answers
-#         context_fc = torch.relu(self.linear_sim(context))
-#         questions_fc = torch.relu(self.linear_sim(answers))
-
-#         # shape: (B, L, N)
-#         attention = torch.matmul(context_fc, questions_fc.transpose(-1, -2))
-
-#         if mask_answers is not None:
-#             attention = attention.masked_fill(~mask_answers.unsqueeze(1).bool(), -Constants.INF)
-
-
-#         prob = torch.softmax(attention, dim=-1)
-#         # shape: (B, L, dim)
-#         emb = torch.matmul(prob, ans_old)
-
-#         # if mask_content is not None:
-#         #     emb = emb.masked_fill(~mask_content.unsqueeze(2).bool(), 0)
-
-#         return emb
 
 
 class ModelHandler:

@@ -8,17 +8,15 @@ import torch
 # as the embedding for the word.
 # Take *weighted* average of the word embeddings through all layers.
 
-def extract_bert_hidden_states(all_encoder_layers, max_doc_len, features, bert_token_to_orig_map, weighted_avg=False):
+def extract_bert_hidden_states(all_encoder_layers, bert_token_to_orig_map, weighted_avg=False):
   """Extract BERT hidden states.
 
   Parameters
   ----------
   all_encoder_layers : torch.Tensor
       All layer outputs of the BERT encoder.
-  max_doc_len : torch.Tensor
-      The maximal document lenght tensor.
-  features : torch.Tensor
-      The feature tensor.
+  bert_token_to_orig_map : torch.Tensor
+      The mapping between BERT wordpiece tokens to original tokens.
   weighted_avg : boolean
     Specify whether to compute the weighted average (with leranable weight vector) or average of
     the embeddings of all hidden layers, default: ``False``.
@@ -30,24 +28,6 @@ def extract_bert_hidden_states(all_encoder_layers, max_doc_len, features, bert_t
   """
   # assert all_encoder_layers.requires_grad == False
   num_layers, batch_size, num_chunk, max_token_len, bert_dim = all_encoder_layers.shape
-  # out_features = torch.Tensor(num_layers, batch_size, max_doc_len, bert_dim).fill_(0)
-  # device = all_encoder_layers.get_device() if all_encoder_layers.is_cuda else None
-  # if device is not None:
-  #   out_features = out_features.to(device)
-
-  # Map BERT tokens to doc words
-  # for i, ex_feature in enumerate(features): # Example
-  #   ex_token_count = defaultdict(int)
-  #   for j, chunk_feature in enumerate(ex_feature): # Chunk
-  #     for k in chunk_feature.token_is_max_context: # Token
-  #       if chunk_feature.token_is_max_context[k]:
-  #         doc_word_idx = chunk_feature.token_to_orig_map[k]
-  #         out_features[:, i, doc_word_idx] += all_encoder_layers[:, i, j, k]
-  #         ex_token_count[doc_word_idx] += 1
-
-  #   for doc_word_idx, count in ex_token_count.items():
-  #     out_features[:, i, doc_word_idx] /= count
-
   out_features = torch.matmul(bert_token_to_orig_map.unsqueeze(0).transpose(-1, -2), all_encoder_layers)
   out_features = torch.sum(out_features, 2) / torch.clamp(torch.sum(bert_token_to_orig_map, (1, 2)), min=1).unsqueeze(-1).unsqueeze(0)
 
@@ -98,7 +78,7 @@ def convert_text_to_bert_features(text, bert_tokenizer, max_seq_length, doc_stri
     tokens = []
     token_to_orig_map = {}
     token_to_orig_map_matrix = []
-    token_is_max_context = {}
+    # token_is_max_context = {}
     segment_ids = []
     tokens.append("[CLS]")
     segment_ids.append(0)
@@ -109,7 +89,7 @@ def convert_text_to_bert_features(text, bert_tokenizer, max_seq_length, doc_stri
 
       is_max_context = _check_is_max_context(doc_spans, doc_span_index,
                                              split_token_index)
-      token_is_max_context[len(tokens)] = is_max_context
+      # token_is_max_context[len(tokens)] = is_max_context
       tmp_vec = np.zeros(len(text))
       if is_max_context:
         tmp_vec[tok_to_orig_index[split_token_index]] = 1
@@ -130,7 +110,7 @@ def convert_text_to_bert_features(text, bert_tokenizer, max_seq_length, doc_stri
     tokens=tokens,
     token_to_orig_map=token_to_orig_map,
     token_to_orig_map_matrix=token_to_orig_map_matrix,
-    token_is_max_context=token_is_max_context,
+    # token_is_max_context=token_is_max_context,
     input_ids=input_ids,
     input_mask=input_mask,
     segment_ids=segment_ids)
@@ -181,7 +161,7 @@ class BertInputFeatures(object):
                  tokens,
                  token_to_orig_map,
                  token_to_orig_map_matrix,
-                 token_is_max_context,
+                 # token_is_max_context,
                  input_ids,
                  input_mask,
                  segment_ids):
@@ -189,7 +169,7 @@ class BertInputFeatures(object):
         self.tokens = tokens
         self.token_to_orig_map = token_to_orig_map
         self.token_to_orig_map_matrix = token_to_orig_map_matrix
-        self.token_is_max_context = token_is_max_context
+        # self.token_is_max_context = token_is_max_context
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
