@@ -14,7 +14,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.data.data import to_batch
-from graph4nlp.pytorch.datasets.geo import GeoDatasetForTree
+from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_embedding import *
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
@@ -24,9 +24,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-class Geo:
+class Mawps:
     def __init__(self, opt=None):
-        super(Geo, self).__init__()
+        super(Mawps, self).__init__()
         self.opt = opt
 
         seed = opt.seed
@@ -49,7 +49,7 @@ class Geo:
 
     def _build_dataloader(self):
         if self.opt.graph_construction_type == "DependencyGraph":
-            dataset = GeoDatasetForTree(root_dir=self.data_dir,
+            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
                                          topology_builder=DependencyBasedGraphConstruction,
                                          topology_subdir='DependencyGraph', 
                                          edge_strategy='as_node',
@@ -59,7 +59,7 @@ class Geo:
                                          min_word_vocab_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "ConstituencyGraph":
-            dataset = GeoDatasetForTree(root_dir=self.data_dir,
+            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
                                          topology_builder=ConstituencyBasedGraphConstruction,
                                          topology_subdir='ConstituencyGraph', 
                                          share_vocab=self.use_share_vocab,
@@ -68,7 +68,7 @@ class Geo:
                                          min_word_vocab_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
-            dataset = GeoDatasetForTree(root_dir=self.data_dir, 
+            dataset = MawpsDatasetForTree(root_dir=self.data_dir, 
                                          word_emb_size=self.opt.enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedGraphConstruction,
                                          topology_subdir='DynamicGraph_node_emb', 
@@ -89,7 +89,7 @@ class Geo:
             else:
                 raise RuntimeError(
                     'Define your own dynamic_init_topology_builder')
-            dataset = GeoDatasetForTree(root_dir=self.data_dir,
+            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
                                          word_emb_size=self.opt.enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
                                          topology_subdir='DynamicGraph_node_emb_refined', 
@@ -244,7 +244,7 @@ class Geo:
 if __name__ == "__main__":
     from .config import get_args
     start = time.time()
-    runner = Geo(opt=get_args())
+    runner = Mawps(opt=get_args())
     best_acc = runner.train()
 
     end = time.time()
