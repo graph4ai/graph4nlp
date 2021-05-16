@@ -14,7 +14,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.data.data import to_batch
-from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
+from graph4nlp.pytorch.datasets.mathqa import MathQADatasetForTree
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_embedding import *
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
@@ -24,9 +24,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-class Jobs:
+class MathQA:
     def __init__(self, opt=None):
-        super(Jobs, self).__init__()
+        super(MathQA, self).__init__()
         self.opt = opt
 
         seed = opt.seed
@@ -49,7 +49,7 @@ class Jobs:
 
     def _build_dataloader(self):
         if self.opt.graph_construction_type == "DependencyGraph":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
+            dataset = MathQADatasetForTree(root_dir=self.data_dir,
                                          topology_builder=DependencyBasedGraphConstruction,
                                          topology_subdir='DependencyGraph', 
                                          edge_strategy='as_node',
@@ -59,7 +59,7 @@ class Jobs:
                                          min_word_vocab_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "ConstituencyGraph":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
+            dataset = MathQADatasetForTree(root_dir=self.data_dir,
                                          topology_builder=ConstituencyBasedGraphConstruction,
                                          topology_subdir='ConstituencyGraph', 
                                          share_vocab=self.use_share_vocab,
@@ -68,7 +68,7 @@ class Jobs:
                                          min_word_vocab_freq=self.opt.min_freq)
 
         elif self.opt.graph_construction_type == "DynamicGraph_node_emb":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir, 
+            dataset = MathQADatasetForTree(root_dir=self.data_dir, 
                                          word_emb_size=self.opt.enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedGraphConstruction,
                                          topology_subdir='DynamicGraph_node_emb', 
@@ -89,7 +89,7 @@ class Jobs:
             else:
                 raise RuntimeError(
                     'Define your own dynamic_init_topology_builder')
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
+            dataset = MathQADatasetForTree(root_dir=self.data_dir,
                                          word_emb_size=self.opt.enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
                                          topology_subdir='DynamicGraph_node_emb_refined', 
@@ -244,7 +244,7 @@ class Jobs:
 if __name__ == "__main__":
     from .config import get_args
     start = time.time()
-    runner = Jobs(opt=get_args())
+    runner = MathQA(opt=get_args())
     best_acc = runner.train()
 
     end = time.time()
