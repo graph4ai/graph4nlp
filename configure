@@ -1,0 +1,6 @@
+read -p 'Please specify your CUDA version("cpu" for no CUDA): ' CUDA_version
+
+echo $CUDA_version > config
+
+echo 'Configuration completed.'
+echo 'Run `pip install .` to install graph4nlp in your environment.'
