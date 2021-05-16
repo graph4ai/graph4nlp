@@ -6,7 +6,7 @@ def get_args():
     main_arg_parser.add_argument('-gpuid', type=int, default=3, help='which gpu to use. -1 = use CPU')
     main_arg_parser.add_argument('-seed', type=int, default=1234, help='torch manual random number generator seed')
     main_arg_parser.add_argument('-use_copy', type=int, default=0, help='whether use copy mechanism')
-    main_arg_parser.add_argument('-data_dir', type=str, default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/semantic_parsing/graph2tree/mawps/mawps_data/', help='data path')
+    main_arg_parser.add_argument('-data_dir', type=str, default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/math_word_problem/mawps/mawps_data/', help='data path')
 
     main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")
     main_arg_parser.add_argument('-gat_head', type=str, default="1")
