@@ -253,7 +253,8 @@ class NMT:
         self.writer.add_scalar(split + "/BLEU@3", score[0][2] * 100, global_step=epoch)
         self.writer.add_scalar(split + "/BLEU@4", score[0][3] * 100, global_step=epoch)
         return score[0][-1]
-
+    
+    @torch.no_grad()
     def translate(self):
         self.model.eval()
 
@@ -265,6 +266,7 @@ class NMT:
 
             oov_dict = None
             ref_dict = self.vocab.out_word_vocab
+            batch_graph = batch_graph.to(self.device)
 
             pred = self.model.translate(batch_graph=batch_graph, oov_dict=oov_dict, beam_size=3, topk=1)
 
@@ -275,12 +277,17 @@ class NMT:
             pred_collect.extend(pred_str)
             gt_collect.extend(gt_str)
 
-        score = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
-        self.logger.info("Evaluation accuracy in `{}` split: {:.3f}".format("test", score))
+        score = self.metrics["BLEU"].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
+        self.logger.info("Evaluation results in `{}` split: BLEU-1:{:.4f}\tBLEU-2:{:.4f}\tBLEU-3:{:.4f}\tBLEU-4:{:.4f}".format("test", score[0][0], score[0][1], score[0][2], score[0][3]))
+        self.writer.add_scalar("test" + "/BLEU@1", score[0][0] * 100, global_step=0)
+        self.writer.add_scalar("test" + "/BLEU@2", score[0][1] * 100, global_step=0)
+        self.writer.add_scalar("test" + "/BLEU@3", score[0][2] * 100, global_step=0)
+        self.writer.add_scalar("test" + "/BLEU@4", score[0][3] * 100, global_step=0)
         return score
 
     def load_checkpoint(self, checkpoint_name):
-        checkpoint_path = os.path.join(self.opt["checkpoint_save_path"], checkpoint_name)
+        path_dir = os.path.join(self.opt["checkpoint_save_path"], self.opt["name"])
+        checkpoint_path = os.path.join(path_dir, checkpoint_name)
         self.model.load_state_dict(torch.load(checkpoint_path))
 
     def save_checkpoint(self, checkpoint_name):
@@ -294,10 +301,10 @@ class NMT:
 if __name__ == "__main__":
     opt = get_args()
     runner = NMT(opt)
-    runner.logger.info("------ Running Training ----------")
-    runner.logger.info("\tRunner name: {}".format(opt["name"]))
-    save_config(opt, os.path.join(opt["checkpoint_save_path"], opt["name"]))
-    max_score = runner.train()
-    runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
+    # runner.logger.info("------ Running Training ----------")
+    # runner.logger.info("\tRunner name: {}".format(opt["name"]))
+    # save_config(opt, os.path.join(opt["checkpoint_save_path"], opt["name"]))
+    # max_score = runner.train()
+    # runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
     runner.load_checkpoint("best.pth")
-    runner.evaluate(epoch=0, split="test")
+    runner.translate()
