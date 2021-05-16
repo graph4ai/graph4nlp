@@ -14,6 +14,13 @@ from setuptools import setup, find_packages
 #         return '-cu{}'.format(version_number.replace('.', ''))
 #         # install_requirement.append('dgl-cuda{} >= 0.4'.format(version_number))
 
+cuda_versions = {
+    '1': '9.2',
+    '2': '10.1',
+    '3': '10.2',
+    '4': '11.0',
+    '5': 'cpu'
+}
 
 if __name__ == '__main__':
 
@@ -29,7 +36,7 @@ if __name__ == '__main__':
     except:
         raise FileNotFoundError('config file not found. Please run ./configure first.')
 
-    cuda_version = version
+    cuda_version = cuda_versions[version]
 
     if cuda_version == 'none':
         cuda_version = ''
@@ -40,7 +47,7 @@ if __name__ == '__main__':
 
     install_requirement = ['torch >= 1.6.0', 'pythonds', 'nltk >= 3.5', 'stanfordcorenlp', 'scipy >= 1.5.2',
                            'scikit-learn >= 0.23.2', 'networkx >= 2.5', 'dgl{} >= 0.4'.format(cuda_version),
-                           'ogb']
+                           'ogb', 'torchtext']
     setup(
         name='graph4nlp{}'.format(cuda_version),
         version='0.2a02',
