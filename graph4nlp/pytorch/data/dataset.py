@@ -865,7 +865,6 @@ class TextToTreeDataset(Dataset):
                 all_words[1].update(extracted_tokens[1])
 
         if self.share_vocab:
-            print(self.min_word_vocab_freq)
             src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
             tgt_vocab_model = src_vocab_model
         else:
