@@ -50,8 +50,11 @@
 ***Graph4NLP*** is an easy-to-use library for R&D at the intersection of **Graph Deep Learning** and
 **Natural Language Processing**. It provides both **full implementations** of state-of-the-art models for data scientists and also **flexible interfaces** to build custom models for researchers and developers with whole-pipeline support. Built upon highly-optimized runtime libraries including [DGL](https://github.com/dmlc/dgl) , ***Graph4NLP*** is both high running effieciency and great extensibility. The architecture of ***Graph4NLP*** is shown in the following figure, where boxes with dashed lines represents the features under development.
 
-<img src="docs/arch.png" alt="architecture" width="600" class="center" />
-
+<p align="center">
+    <img src="docs/arch.png" alt="architecture" width="600" />
+    <br>
+    <b>Figure</b>: Graph4NLP Overall Architecture
+</p>
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
 **20/05/2021:** The **v1.0.0 release**. Try it out!
 
