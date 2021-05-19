@@ -166,7 +166,7 @@ python setup.py install
 | -------- | ---------- | ------------------------------------------------------------ |
 | v1.0.0   | 2021-05-20 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
-## More resources
+## New to Deep Learning on Graphs for NLP?
 
 If you are new to using graph deep learning methods for natural language processing tasks, you can refer to our survey paper which provides an overview of this research direction. If you want detailed reference to  our library, please refer to our docs.
 
