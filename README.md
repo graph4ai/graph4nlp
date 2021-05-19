@@ -52,8 +52,7 @@
 
 <img src="docs/arch.png" alt="architecture" style="zoom:25%;" />
 
-## <img src="https://camo.githubusercontent.com/1e8f96f03822691f20318ad1eecc6c229736752cbc41cbb3ebf8f834b29e40ee/687474703a2f2f646174612e64676c2e61692f61737365742f696d6167652f6e65772e706e67" alt="img" style="zoom:8%;" />Graph4NLP News
-
+## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
 **20/05/2021:** The **v1.0.0 release**. Try it out!
 
 ## Quick tour
