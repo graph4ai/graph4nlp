@@ -11,12 +11,14 @@ import warnings
 class GraphSAGE(GNNBase):
     r"""Multi-layered `GraphSAGE Network <https://arxiv.org/pdf/1706.02216.pdf>`__
     Support both unidirectional (i.e., regular) and bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
+    
     .. math::
         h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
         \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
         h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
         (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
         h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
+        
     Parameters
     ----------
     num_layers: int
@@ -106,12 +108,14 @@ class GraphSAGE(GNNBase):
 
     def forward(self, graph):
         r"""Compute GraphSAGE layer.
+        
         Parameters
         ----------
         graph : GraphData
             The graph with node feature stored in the feature field named as
             "node_feat".
             The node features are used for message passing.
+        
         Returns
         -------
         graph : GraphData
@@ -147,12 +151,14 @@ class GraphSAGE(GNNBase):
 class GraphSAGELayer(GNNLayerBase):
     r"""A unified wrapper for `GraphSAGE Network <https://arxiv.org/pdf/1706.02216.pdf>`__
     Support both unidirectional (i.e., regular) and bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
+    
     .. math::
         h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
         \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
         h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
         (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
         h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
+    
     Parameters
     ----------
     input_size : int, or pair of ints
@@ -220,12 +226,14 @@ class GraphSAGELayer(GNNLayerBase):
 class UndirectedGraphSAGELayerConv(GNNLayerBase):
     r"""GraphSAGE layer from paper `Inductive Representation Learning on
     Large Graphs <https://arxiv.org/pdf/1706.02216.pdf>`__.
+    
     .. math::
         h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
         \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
         h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
         (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
         h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
+    
     Parameters
     ----------
     input_size : int, or pair of ints
@@ -301,6 +309,7 @@ class UndirectedGraphSAGELayerConv(GNNLayerBase):
 
     def forward(self, graph, feat, edge_weight=None,reverse_edge_weight=None):
         r"""Compute GraphSAGE layer.
+        
         Parameters
         ----------
         graph : DGLGraph
@@ -385,12 +394,14 @@ class UndirectedGraphSAGELayerConv(GNNLayerBase):
 class BiSepGraphSAGELayerConv(GNNLayerBase):
     r"""Bidirection version GraphSAGE layer from paper `Inductive Representation Learning on
     Large Graphs <https://arxiv.org/pdf/1706.02216.pdf>`__.
+    
     .. math::
         h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
         \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
         h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
         (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
         h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
+   
     Parameters
     ----------
     input_size : int, or pair of ints
@@ -550,8 +561,9 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
        return h_neigh,h_self
 
     def forward(self,graph,feat,edge_weight=None,reverse_edge_weight=None):
-        r"""
+        r"""      
         Compute node embeddings from both directions in bidirection seperated GraphSAGE
+        
         Parameters
         ----------
         graph : DGLGraph
@@ -564,6 +576,7 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
             :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
         edge_weighht: torch.tensor
                Only needed when consider the edge weights in message passing.
+       
         Returns
         -------
         The output feature of shape :math:`(N, D_{out})` where :math:`D_{out}`
@@ -610,12 +623,14 @@ class BiSepGraphSAGELayerConv(GNNLayerBase):
 class BiFuseGraphSAGELayerConv(GNNLayerBase):
     r"""Bidirection version GraphSAGE layer from paper `Inductive Representation Learning on
     Large Graphs <https://arxiv.org/pdf/1706.02216.pdf>`__.
+    
     .. math::
         h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
         \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
         h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
         (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
         h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
+    
     Parameters
     ----------
     input_size : int, or pair of ints
@@ -713,6 +728,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
     def forward(self,graph,feat,edge_weight=None, reverse_edge_weight=None):
         r"""
         Compute node embeddings from both directions in bidirection seperated GraphSAGE
+        
         Parameters
         ----------
         graph : DGLGraph
@@ -725,6 +741,7 @@ class BiFuseGraphSAGELayerConv(GNNLayerBase):
             :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
         edge_weighht: torch.tensor
                Only needed when consider the edge weights in message passing.
+        
         Returns
         -------
         The output feature of shape :math:`(N, D_{out})` where :math:`D_{out}`

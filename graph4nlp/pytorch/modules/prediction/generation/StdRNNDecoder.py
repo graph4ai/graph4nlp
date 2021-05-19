@@ -457,28 +457,53 @@ class StdRNNDecoder(RNNDecoderBase):
         ret[tokens >= self.vocab_size] = self.vocab.UNK
         return ret
 
-    def forward(self, g, tgt_seq=None, oov_dict=None, teacher_forcing_rate=1.0):
-        params = self.extract_params(g)
+    def forward(self, batch_graph, tgt_seq=None, oov_dict=None, teacher_forcing_rate=1.0):
+        """
+            The forward function of ``StdRNNDecoder``
+        Parameters
+        ----------
+        batch_graph: GraphData
+            The graph input
+        tgt_seq: torch.Tensor
+            shape=[B, T]
+            The target sequence's index.
+        oov_dict: VocabModel, default=None
+            The vocabulary for copy mechanism.
+        teacher_forcing_rate: float, default=1.0
+            The teacher forcing rate.
+
+        Returns
+        -------
+        logits: torch.Tensor
+            shape=[B, tgt_len, vocab_size]
+            The probability for predicted target sequence. It is processed by softmax function.
+        enc_attn_weights_average: torch.Tensor
+            It is used for calculating coverage loss.
+            The averaged attention scores.
+        coverage_vectors: torch.Tensor
+            It is used for calculating coverage loss.
+            The coverage vector.
+        """
+        params = self.extract_params(batch_graph)
         params['tgt_seq'] = tgt_seq
         params['teacher_forcing_rate'] = teacher_forcing_rate
         params["oov_dict"] = oov_dict
         return self._run_forward_pass(**params)
 
-    def extract_params(self, graph):
+    def extract_params(self, batch_graph):
         """
-
+            Extract parameters from ``batch_graph`` for _run_forward_pass() function.
         Parameters
         ----------
-        g: GraphData
+        batch_graph: GraphData
 
         Returns
         -------
         params: dict
         """
-        batch_data_dict = graph.batch_node_features
+        batch_data_dict = batch_graph.batch_node_features
         graph_node_emb = batch_data_dict["node_emb"]
 
-        # [s_g.node_features["node_emb"] for s_g in graph_list]
         rnn_node_emb = batch_data_dict["rnn_emb"]
 
         if len(batch_data_dict["token_id"].shape) == 3:
@@ -487,7 +512,7 @@ class StdRNNDecoder(RNNDecoderBase):
             graph_node_mask = (batch_data_dict["token_id"] != 0).squeeze(-1).float() - 1
 
         if self.use_copy:
-            src_seq_ret = graph.batch_node_features["token_id_oov"]
+            src_seq_ret = batch_graph.batch_node_features["token_id_oov"]
         else:
             src_seq_ret = None
 

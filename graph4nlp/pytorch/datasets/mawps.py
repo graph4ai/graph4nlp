@@ -10,6 +10,9 @@ from ..modules.graph_construction.dependency_graph_construction import Dependenc
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 
 
+def tokenize_mawps(str_input):
+    return str_input.strip().split()
+
 class MawpsDatasetForTree(TextToTreeDataset):
     @property
     def raw_file_names(self):
@@ -30,10 +33,12 @@ class MawpsDatasetForTree(TextToTreeDataset):
                  topology_builder, topology_subdir,
                 #  pretrained_word_emb_file=None,
                  pretrained_word_emb_name='6B',
+                 pretrained_word_emb_url=None,
+                 pretrained_word_emb_cache_dir=None,
                  val_split_ratio=0,
                  graph_type='static',
-                 merge_strategy="tailhead", edge_strategy=None,
-                 seed=None,
+                 merge_strategy="tailhead", 
+                 edge_strategy=None,
                  word_emb_size=300, share_vocab=True,
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
@@ -41,6 +46,7 @@ class MawpsDatasetForTree(TextToTreeDataset):
                  enc_emb_size=300,
                  dec_emb_size=300,
                  min_word_vocab_freq=1,
+                 tokenizer=tokenize_mawps,
                  max_word_vocab_size=100000):
         """
 
@@ -73,10 +79,12 @@ class MawpsDatasetForTree(TextToTreeDataset):
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy,
                                           share_vocab=share_vocab, pretrained_word_emb_name=pretrained_word_emb_name,
-                                          val_split_ratio=val_split_ratio, seed=seed, word_emb_size=word_emb_size,
+                                          val_split_ratio=val_split_ratio, word_emb_size=word_emb_size,
 
                                           dynamic_graph_type=dynamic_graph_type,
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
                                           enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size,
-                                          min_word_vocab_freq=min_word_vocab_freq, max_word_vocab_size=max_word_vocab_size)
+                                          min_word_vocab_freq=min_word_vocab_freq,
+                                          tokenizer=tokenizer,
+                                          max_word_vocab_size=max_word_vocab_size)

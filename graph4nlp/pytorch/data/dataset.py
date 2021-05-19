@@ -785,17 +785,7 @@ class Text2TextDataset(Dataset):
         output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
         output_pad = pad_2d_vals_no_size(output_numpy)
 
-        # from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
-        # max_num_tokens_a_node = max([x.graph.node_features['token_id'].size()[1] for x in data_list])
-        # if max_num_tokens_a_node>1:
-        #     for x in data_list:
-        #         x.graph.node_features['token_id'] = torch.from_numpy(
-        #             pad_2d_vals(x.graph.node_features['token_id'].cpu().numpy(),
-        #                         x.graph.node_features['token_id'].size()[0],
-        #                         max_num_tokens_a_node)).long()
-
         tgt_seq = torch.from_numpy(output_pad).long()
-        # return [graph_data, tgt_seq, output_str]
         return {
             "graph_data": graph_data,
             "tgt_seq": tgt_seq,
@@ -875,7 +865,6 @@ class TextToTreeDataset(Dataset):
                 all_words[1].update(extracted_tokens[1])
 
         if self.share_vocab:
-            print(self.min_word_vocab_freq)
             src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
             tgt_vocab_model = src_vocab_model
         else:
@@ -1554,6 +1543,7 @@ class SequenceLabelingDataset(Dataset):
         base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
         For SequenceLabelingDataset, the format of the input file should contain lines of tokens, each line representing one
         record of token at first column and its tag at the last column.
+       
         Examples
         --------
         "EU       I-ORG "
@@ -1607,6 +1597,7 @@ class SequenceLabelingDataset(Dataset):
         return self.vocab_model
 
     def vectorization(self, data_items):
+        
         for item in data_items:
             graph: GraphData = item.graph
             token_matrix = []
@@ -1626,11 +1617,10 @@ class SequenceLabelingDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [SequenceLabelingDataItem]):
+        
         graph_list= [item.graph for item in data_list]
         graph_data=to_batch(graph_list)
         tgt_tag = [deepcopy(item.output_id) for item in data_list]
 
-        # tgt_tags = torch.cat(tgt_tag, dim=0)
-        #return [graph_data, tgt_tag]
         return {"graph_data": graph_data,
             "tgt_tag": tgt_tag}

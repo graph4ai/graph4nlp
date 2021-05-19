@@ -31,10 +31,12 @@ class GeoDatasetForTree(TextToTreeDataset):
                  topology_builder, topology_subdir,
                 #  pretrained_word_emb_file=None,
                  pretrained_word_emb_name='6B',
+                 pretrained_word_emb_url=None,
+                 pretrained_word_emb_cache_dir=None,
                  val_split_ratio=0,
                  graph_type='static',
-                 merge_strategy="tailhead", edge_strategy=None,
-                 seed=None,
+                 merge_strategy="tailhead", 
+                 edge_strategy=None,
                  word_emb_size=300, share_vocab=True,
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
@@ -75,7 +77,7 @@ class GeoDatasetForTree(TextToTreeDataset):
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy,
                                           share_vocab=share_vocab, pretrained_word_emb_name=pretrained_word_emb_name,
-                                          val_split_ratio=val_split_ratio, seed=seed, word_emb_size=word_emb_size,
+                                          val_split_ratio=val_split_ratio, word_emb_size=word_emb_size,
 
                                           dynamic_graph_type=dynamic_graph_type,
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
@@ -84,4 +86,3 @@ class GeoDatasetForTree(TextToTreeDataset):
                                           min_word_vocab_freq=min_word_vocab_freq,
                                           tokenizer=tokenizer,
                                           max_word_vocab_size=max_word_vocab_size)
-

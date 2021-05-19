@@ -443,7 +443,7 @@ class BertEmbedding(nn.Module):
 
         all_encoder_layers = encoder_outputs['hidden_states'][1:] # The first one is the input embedding
         all_encoder_layers = torch.stack([x.view(bert_xd.shape + (-1,)) for x in all_encoder_layers], 0)
-        bert_xd_f = extract_bert_hidden_states(all_encoder_layers, max_d_len, bert_features, bert_token_to_orig_map, weighted_avg=True)
+        bert_xd_f = extract_bert_hidden_states(all_encoder_layers, bert_token_to_orig_map, weighted_avg=True)
 
         weights_bert_layers = torch.softmax(self.logits_bert_layers, dim=-1)
         bert_xd_f = torch.mm(weights_bert_layers, bert_xd_f.view(bert_xd_f.size(0), -1)).view(bert_xd_f.shape[1:])
