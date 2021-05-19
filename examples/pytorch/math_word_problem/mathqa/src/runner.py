@@ -107,6 +107,8 @@ class MathQA:
                                            collate_fn=dataset.collate_fn)
         self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=1,
                                           collate_fn=dataset.collate_fn)
+        self.valid_data_loader = DataLoader(dataset.val, batch_size=1, shuffle=False, num_workers=1,
+                                          collate_fn=dataset.collate_fn)
         self.src_vocab = dataset.src_vocab_model
         self.tgt_vocab = dataset.tgt_vocab_model
         if self.use_share_vocab:
@@ -170,7 +172,7 @@ class MathQA:
         return loss_to_print/num_batch
 
     def train(self):
-        best_acc = -1
+        best_acc = (-1, -1)
 
         print("-------------\nStarting training.")
         for epoch in range(1, self.opt.max_epochs+1):
@@ -178,18 +180,20 @@ class MathQA:
             loss_to_print = self.train_epoch(epoch)
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
             if epoch > 2 and epoch % 5 == 0:
-                test_acc = self.eval((self.model))
-                if test_acc > best_acc:
-                    best_acc = test_acc
-        print("Best Acc: {:.3f}\n".format(best_acc))
+                test_acc = self.eval(self.model, mode="test")
+                val_acc = self.eval(self.model, mode="val")
+                if val_acc > best_acc[1]:
+                    best_acc = (test_acc, val_acc)
+        print("Best Acc: {:.3f}\n".format(best_acc[0]))
         return best_acc
 
-    def eval(self, model):
+    def eval(self, model, mode="val"):
         from .evaluation import convert_to_string, compute_tree_accuracy
         model.eval()
         reference_list = []
         candidate_list = []
-        for data in self.test_data_loader:
+        data_loader = self.test_data_loader if mode == "test" else self.valid_data_loader
+        for data in data_loader:
             eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
             eval_input_graph = eval_input_graph.to(model.device)
             oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
