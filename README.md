@@ -55,6 +55,7 @@
     <br>
     <b>Figure</b>: Graph4NLP Overall Architecture
 </p>
+
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
 **20/05/2021:** The **v1.0.0 release**. Try it out!
 
