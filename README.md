@@ -102,13 +102,29 @@ scores = graph2seq(batch_data["graph_data"], batch_data["tgt_seq"])  # [Batch_si
 
 Our Graph4NLP compputing flow is shown as below....
 <p align="center">
-<img src="./imgs/graph4nlp_flow_v2.png" width="1000" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_flow_v4.png" width="1000" class="center" alt="logo"/>
     <br/>
 </p>
 
 ## Graph4NLP Models and Applications
 
-Graph2Seq, Seq2Seq, Graph2Tree
+### Graph4NLP models
+
+[Graph2Seq](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2seq.py), [Graph2Tree](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2tree.py): two general end-to-end neural encoder-decoder models that map an input graph to a sequence of tokens or a tree structure.
+
+### Graph4LP applications
+
+We provide a comprehensive collection of graph4nlp-related applications, together with detailed examples as follows:
+
+- [Text classification](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/text_classification)
+- [Semantic parsing](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/semantic_parsing)
+- [Neural machine translation](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/nmt)
+- [summarization](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/summarization)
+- [KG completion](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/kg_completion)
+- [Math word problem](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/math_word_problem)
+- [Name entity recognition](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/name_entity_recognition)
+- [Question generation](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/question_generation)
+
 
 ## Performance
 
