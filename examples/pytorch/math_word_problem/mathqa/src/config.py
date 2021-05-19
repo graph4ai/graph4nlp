@@ -23,7 +23,7 @@ def get_args():
     main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
 
     # DynamicGraph_node_emb_refined, DynamicGraph_node_emb, ConstituencyGraph
-    main_arg_parser.add_argument('-graph_construction_type', type=str, default="ConstituencyGraph")
+    main_arg_parser.add_argument('-graph_construction_type', type=str, default="DynamicGraph_node_emb")
 
     # "None, line, dependency, constituency"
     main_arg_parser.add_argument('-dynamic_init_graph_type', type=str, default="constituency")
