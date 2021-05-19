@@ -51,7 +51,7 @@
 **Natural Language Processing**. It provides both **full implementations** of state-of-the-art models for data scientists and also **flexible interfaces** to build custom models for researchers and developers with whole-pipeline support. Built upon highly-optimized runtime libraries including [DGL](https://github.com/dmlc/dgl) , ***Graph4NLP*** is both high running effieciency and great extensibility. The architecture of ***Graph4NLP*** is shown in the following figure, where boxes with dashed lines represents the features under development.
 
 <p align="center">
-    <img src="docs/arch.png" alt="architecture" width="600" />
+    <img src="docs/arch.png" alt="architecture" width="700" />
     <br>
     <b>Figure</b>: Graph4NLP Overall Architecture
 </p>
