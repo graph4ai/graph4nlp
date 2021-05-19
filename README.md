@@ -106,6 +106,17 @@ scores = graph2seq(batch_data["graph_data"], batch_data["tgt_seq"])  # [Batch_si
 
 Graph2Seq, Seq2Seq, Graph2Tree
 
+## Performance
+
+| Task                       |              Dataset             |   GNN    Model      | Graph construction                           | Evaluation         |          Performance          |
+|----------------------------|:--------------------------------:|:-------------------:|----------------------------------------------|--------------------|:-----------------------------:|
+| Text classification        | TRECT<br> CAirline<br> CNSST<br> |           GAT       | Dependency                                   |        Accuracy    | 0.948<br> 0.769<br> 0.538<br> |
+| Semantic Parsing           |               JOBS               |           SAGE      | Constituency                                 | Execution accuracy |             0.936             |
+| Machine translation        |              IWSLT14             |           GCN       | Dynamic                                      | BLEU-4             |             0.3212            |
+| Summarization              |             CNN(30k)             |           GCN       | Dependency                                   | ROUGE-1            |              26.4             |
+| Knowledge graph completion | Kinship                          |           GGNN      | IE                                           | MRR                | 57.7                          |
+| Math word problem          | MAWPS  <br> MATHQA               | SAGE                | Dynamic                                      | Solution accuracy <br> Exact match  | 76.4<br>  61.07  |
+
 ## Installation
 
 Currently, users can install Graph4NLP via **pip** or **source code**. Graph4NLP supports the following OSes:
