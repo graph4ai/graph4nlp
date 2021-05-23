@@ -62,8 +62,7 @@
 ## Quick tour
 
 ***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (
-see [here](http://saizhuo.wang/g4nlp/index.html) for tutorial). Here is a example of how to use the [*
-Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering,
+see [here](http://saizhuo.wang/g4nlp/index.html) for tutorial). Here is a example of how to use the [*Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering,
 semantic parsing, and various other nlp tasks that can be abstracted as graph to sequence problem and show superior
 performance).
 
