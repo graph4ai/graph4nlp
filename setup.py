@@ -47,10 +47,10 @@ if __name__ == '__main__':
 
     install_requirement = ['torch >= 1.8.1', 'pythonds', 'nltk >= 3.5', 'stanfordcorenlp', 'scipy >= 1.5.2',
                            'scikit-learn >= 0.23.2', 'networkx >= 2.5', 'dgl{} >= 0.4'.format(cuda_version),
-                           'ogb', 'torchtext']
+                           'ogb', 'torchtext', 'tqdm >= 4.29.0', 'pyyaml']
     setup(
         name='graph4nlp{}'.format(cuda_version),
-        version='0.2a02',
+        version='0.2a3',
         description='A DGL and PyTorch based graph deep learning library for natural language processing',
         author='Graph4NLP Team',
         license='MIT',
@@ -58,3 +58,6 @@ if __name__ == '__main__':
         "examples.*", "examples", "graph4nlp.pytorch.test.*", "graph4nlp.pytorch.test")),
         install_requires=install_requirement,
     )
+    print("Graph4NLP Python library installation finished. Please manually check Stanford CoreNLP"
+          "(https://stanfordnlp.github.io/CoreNLP/) is installed and "
+          "running in your environment.")
