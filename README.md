@@ -57,7 +57,7 @@
 </p>
 
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
-**20/05/2021:** The **v1.0.0 release**. Try it out!
+**20/05/2021:** The **v0.3.0 release**. Try it out!
 
 ## Quick tour
 
@@ -152,7 +152,7 @@ python setup.py install
 
 | Releases | Date       | Features                                                     |
 | -------- | ---------- | ------------------------------------------------------------ |
-| v1.0.0   | 2021-05-20 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
+| v0.3.0   | 2021-05-20 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
 ## More resources
 
