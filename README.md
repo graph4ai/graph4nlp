@@ -62,8 +62,7 @@
 ## Quick tour
 
 ***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (
-see [here](http://saizhuo.wang/g4nlp/index.html) for tutorial). Here is a example of how to use the [*
-Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering,
+see [here](http://saizhuo.wang/g4nlp/index.html) for tutorial). Here is a example of how to use the [*Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering,
 semantic parsing, and various other nlp tasks that can be abstracted as graph to sequence problem and show superior
 performance).
 
@@ -102,7 +101,7 @@ scores = graph2seq(batch_data["graph_data"], batch_data["tgt_seq"])  # [Batch_si
 
 Our Graph4NLP compputing flow is shown as below....
 <p align="center">
-<img src="./imgs/graph4nlp_flow_v4.png" width="1000" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_flow_v5.png" width="1000" class="center" alt="logo"/>
     <br/>
 </p>
 
