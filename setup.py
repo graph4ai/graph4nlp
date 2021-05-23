@@ -54,6 +54,7 @@ if __name__ == '__main__':
         description='A DGL and PyTorch based graph deep learning library for natural language processing',
         author='Graph4NLP Team',
         license='MIT',
+        include_package_data=True,
         packages=find_packages('.', exclude=(
         "examples.*", "examples", "graph4nlp.pytorch.test.*", "graph4nlp.pytorch.test")),
         install_requires=install_requirement,
