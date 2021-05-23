@@ -101,7 +101,7 @@ scores = graph2seq(batch_data["graph_data"], batch_data["tgt_seq"])  # [Batch_si
 
 Our Graph4NLP compputing flow is shown as below....
 <p align="center">
-<img src="./imgs/graph4nlp_flow_v6.png" width="1000" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_flow_v7.png" width="1000" class="center" alt="logo"/>
     <br/>
 </p>
 
