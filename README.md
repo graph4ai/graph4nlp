@@ -48,10 +48,10 @@
 # Graph4NLP
 
 ***Graph4NLP*** is an easy-to-use library for R&D at the intersection of **Graph Deep Learning** and
-**Natural Language Processing**. It provides both **full implementations** of state-of-the-art models for data scientists and also **flexible interfaces** to build custom models for researchers and developers with whole-pipeline support. Built upon highly-optimized runtime libraries including [DGL](https://github.com/dmlc/dgl) , ***Graph4NLP*** is both high running effieciency and great extensibility. The architecture of ***Graph4NLP*** is shown in the following figure, where boxes with dashed lines represents the features under development.
+**Natural Language Processing**. It provides both **full implementations** of state-of-the-art models for data scientists and also **flexible interfaces** to build custom models for researchers and developers with whole-pipeline support. Built upon highly-optimized runtime libraries including [DGL](https://github.com/dmlc/dgl) , ***Graph4NLP*** is both high running effieciency and great extensibility. The architecture of ***Graph4NLP*** is shown in the following figure, where boxes with dashed lines represents the features under development. Graph4NLP consists of four different layers: 1) ...
 
 <p align="center">
-    <img src="docs/arch.png" alt="architecture" width="600" />
+    <img src="docs/arch.png" alt="architecture" width="700" />
     <br>
     <b>Figure</b>: Graph4NLP Overall Architecture
 </p>
@@ -100,14 +100,42 @@ scores = graph2seq(batch_data["graph_data"], batch_data["tgt_seq"])  # [Batch_si
 
 ## Overview
 
+Our Graph4NLP compputing flow is shown as below....
 <p align="center">
-<img src="./imgs/graph4nlp_flow_v2.png" width="1000" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_flow_v4.png" width="1000" class="center" alt="logo"/>
     <br/>
 </p>
 
 ## Graph4NLP Models and Applications
 
-Graph2Seq, Seq2Seq, Graph2Tree
+### Graph4NLP models
+
+[Graph2Seq](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2seq.py), [Graph2Tree](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2tree.py): two general end-to-end neural encoder-decoder models that map an input graph to a sequence of tokens or a tree structure.
+
+### Graph4LP applications
+
+We provide a comprehensive collection of graph4nlp-related applications, together with detailed examples as follows:
+
+- [Text classification](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/text_classification)
+- [Semantic parsing](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/semantic_parsing)
+- [Neural machine translation](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/nmt)
+- [summarization](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/summarization)
+- [KG completion](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/kg_completion)
+- [Math word problem](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/math_word_problem)
+- [Name entity recognition](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/name_entity_recognition)
+- [Question generation](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/question_generation)
+
+
+## Performance
+
+| Task                       |              Dataset             |   GNN    Model      | Graph construction                           | Evaluation         |          Performance          |
+|----------------------------|:--------------------------------:|:-------------------:|----------------------------------------------|--------------------|:-----------------------------:|
+| Text classification        | TRECT<br> CAirline<br> CNSST<br> |           GAT       | Dependency                                   |        Accuracy    | 0.948<br> 0.769<br> 0.538<br> |
+| Semantic Parsing           |               JOBS               |           SAGE      | Constituency                                 | Execution accuracy |             0.936             |
+| Machine translation        |              IWSLT14             |           GCN       | Dynamic                                      | BLEU-4             |             0.3212            |
+| Summarization              |             CNN(30k)             |           GCN       | Dependency                                   | ROUGE-1            |              26.4             |
+| Knowledge graph completion | Kinship                          |           GGNN      | IE                                           | MRR                | 57.7                          |
+| Math word problem          | MAWPS  <br> MATHQA               | SAGE                | Dynamic                                      | Solution accuracy <br> Exact match  | 76.4<br>  61.07  |
 
 ## Installation
 
@@ -154,7 +182,7 @@ python setup.py install
 | -------- | ---------- | ------------------------------------------------------------ |
 | v0.3.0   | 2021-05-20 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
-## More resources
+## New to Deep Learning on Graphs for NLP?
 
 If you are new to using graph deep learning methods for natural language processing tasks, you can refer to our survey paper which provides an overview of this research direction. If you want detailed reference to  our library, please refer to our docs.
 
