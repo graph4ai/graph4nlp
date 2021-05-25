@@ -99,9 +99,9 @@ scores = graph2seq(batch_data["graph_data"], batch_data["tgt_seq"])  # [Batch_si
 
 ## Overview
 
-Our Graph4NLP compputing flow is shown as below....
+Our Graph4NLP computing flow is shown as below....
 <p align="center">
-<img src="./imgs/graph4nlp_flow_v5.png" width="1000" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_flow_v7.png" width="1000" class="center" alt="logo"/>
     <br/>
 </p>
 
@@ -109,7 +109,8 @@ Our Graph4NLP compputing flow is shown as below....
 
 ### Graph4NLP models
 
-[Graph2Seq](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2seq.py), [Graph2Tree](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2tree.py): two general end-to-end neural encoder-decoder models that map an input graph to a sequence of tokens or a tree structure.
+- [Graph2Seq](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2seq.py): a general end-to-end neural encoder-decoder model that maps an input graph to a sequence of tokens.  
+- [Graph2Tree](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2tree.py): a general end-to-end neural encoder-decoder model that maps an input graph to a tree structure.
 
 ### Graph4LP applications
 
