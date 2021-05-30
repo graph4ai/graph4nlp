@@ -26,7 +26,9 @@ def get_graph_embedding_args(graph_embedding_name):
     """
     if graph_embedding_name in str2yaml.keys():
         yaml_name = str2yaml[graph_embedding_name]
-        path = os.path.join("graph4nlp/pytorch/modules/config/graph_embedding", yaml_name)
+        import site
+        package_path = site.getsitepackages()[0]
+        path = os.path.join(package_path, "graph4nlp/pytorch/modules/config/graph_embedding", yaml_name)
         config = get_yaml_config(path)
         return config
     else:
