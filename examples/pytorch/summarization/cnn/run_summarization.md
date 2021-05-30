@@ -8,3 +8,7 @@ How to run
 ```python
 python -m examples.pytorch.summarization.cnn.main -g2s_config examples/pytorch/summarization/cnn/config/gcn_bifuse.yaml -task_config examples/pytorch/summarization/cnn/config/cnn.yaml
 ```
+
+|  Dataset |    Model   | Graph Construction   | Evaluation | Performance |
+| -------- | ---------- | ------------ | ------ |------ |
+| CNN (30k)|  GCN bi-fuse  |     Dependency     |  ROUGE-1  | 26.4|
