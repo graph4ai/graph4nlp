@@ -12,7 +12,7 @@ If you run the task for the first time, run with:
 python -m examples.pytorch.kg_completion.kinship.main --data kinship --model ggnn_distmult --preprocess
 python -m examples.pytorch.kg_completion.WN18RR.main --data WN18RR --model gcn_distmult --lr 0.005 --preprocess
 ```
-Else:
+Then run:
 ```bash
 python -m examples.pytorch.kg_completion.kinship.main --data kinship --model ggnn_distmult
 python -m examples.pytorch.kg_completion.WN18RR.main --data WN18RR --model gcn_distmult --lr 0.005
@@ -22,35 +22,27 @@ python -m examples.pytorch.kg_completion.WN18RR.main --data WN18RR --model gcn_d
 Results on kinship
 ------------------
 
-Use BCELoss+GGNN(2L):
+Use BCELoss+GGNNDistmult:
 
 | Metrics  |    uni     |    bi_fuse   | bi_sep |
 | -------- | ---------- | ------------ | ------ |
-| Hits @1  |    43.1    |     44.1     |  30.8  |
-| Hits @10 |    87.6    |     88.5     |  83.4  |
-|   MRR    |    56.9    |     58.3     |  45.7  |
+| Hits @1  |    40.4    |     39.4     |  38.2  |
+| Hits @10 |    88.3    |     88.8     |  88.9  |
+|   MRR    |    54.9    |     54.8     |  53.4  |
 
-Use BCELoss+GraphSage(2L):
-
-| Metrics  |    uni     |    bi_fuse   | bi_sep |
-| -------- | ---------- | ------------ | ------ |
-| Hits @1  |    41.7    |     43.7     |  43.7  |
-| Hits @10 |    89.7    |     89.2     |  88.5  |
-|   MRR    |    56.3    |     57.7     |  57.7  |
-
-Use BCELoss+GAT(1L):
+Use BCELoss+GCNDistmult:
 
 | Metrics  |    uni     |    bi_fuse   | bi_sep |
 | -------- | ---------- | ------------ | ------ |
-| Hits @1  |    36.4    |     31.3     |  31.8  |
-| Hits @10 |    85.9    |     84.8     |  85.0  |
-|   MRR    |    50.8    |     47.0     |  47.7  |
+| Hits @1  |    39.5    |     42.9     |  39.9  |
+| Hits @10 |    88.5    |     89.2     |  88.6  |
+|   MRR    |    54.5    |     56.6     |  54.6  |
 
 
-Use BCELoss+GCN(1L):
+Use BCELoss+GCNComplex:
 
 | Metrics  |    uni     |    bi_fuse   | bi_sep |
 | -------- | ---------- | ------------ | ------ |
-| Hits @1  |    34.5    |     31.8     |  19.5  |
-| Hits @10 |    84.9    |     85.3     |  76.3  |
-|   MRR    |    49.6    |     47.9     |  36.7  |
+| Hits @1  |    71.2    |     72.1     |  73.3  |
+| Hits @10 |    96.8    |     96.2     |  97.9  |
+|   MRR    |    80.7    |     81.6     |  82.4  |

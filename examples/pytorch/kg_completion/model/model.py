@@ -177,8 +177,8 @@ class GCNDistMult(torch.nn.Module):
 
         self.direction_option = args.direction_option
         self.distmult = DistMult(args.input_drop, loss_name='BCELoss')
-        # self.loss = torch.nn.BCELoss()
-        self.loss = KGLoss('SigmoidLoss')
+        self.loss = torch.nn.BCELoss()
+        # self.loss = KGLoss('SigmoidLoss')
 
     def init(self):
         xavier_normal_(self.emb_e.weight.data)

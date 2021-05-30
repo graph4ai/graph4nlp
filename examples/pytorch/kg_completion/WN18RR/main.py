@@ -113,6 +113,7 @@ def main(args, model_path):
             KG_graph.edge_attributes[eid]['token'] = rel
 
         torch.save(KG_graph, 'examples/pytorch/kg_completion/{}/processed/KG_graph.pt'.format(args.data))
+        return
 
 
     if args.model is None:
@@ -168,6 +169,8 @@ def main(args, model_path):
     print(params)
     print(np.sum(params))
 
+    best_mrr = 0
+
     opt = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.l2)
     for epoch in range(args.epochs):
         model.train()
@@ -186,17 +189,19 @@ def main(args, model_path):
 
             train_batcher.state.loss = loss.cpu()
 
-
-        print('saving to {0}'.format(model_path))
-        torch.save(model.state_dict(), model_path)
-
         model.eval()
         with torch.no_grad():
             if epoch % 2 == 0 and epoch > 0:
-                ranking_and_hits(model, dev_rank_batcher, vocab, 'dev_evaluation', kg_graph=KG_graph)
+                dev_mrr = ranking_and_hits(model, dev_rank_batcher, vocab, 'dev_evaluation', kg_graph=KG_graph)
+                if dev_mrr > best_mrr:
+                    best_mrr = dev_mrr
+                    print('saving best model to {0}'.format(model_path))
+                    torch.save(model.state_dict(), model_path)
             if epoch % 2 == 0:
                 if epoch > 0:
                     ranking_and_hits(model, test_rank_batcher, vocab, 'test_evaluation', kg_graph=KG_graph)
+
+
 
 
 if __name__ == '__main__':
