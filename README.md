@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./imgs/logo_graph4nlp.png" width="500" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_logo.png" width="800" class="center" alt="logo"/>
     <br/>
 </p>
 
@@ -101,7 +101,7 @@ scores = graph2seq(batch_data["graph_data"], batch_data["tgt_seq"])  # [Batch_si
 
 Our Graph4NLP computing flow is shown as below....
 <p align="center">
-<img src="./imgs/graph4nlp_flow_v7.png" width="1000" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_flow.png" width="1000" class="center" alt="logo"/>
     <br/>
 </p>
 
