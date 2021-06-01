@@ -10,7 +10,7 @@ rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
-from examples.pytorch.nmt.dataset import IWSLT14Dataset
+from dataset import IWSLT14Dataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import \
     ConstituencyBasedGraphConstruction
@@ -26,9 +26,9 @@ import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
 
-from .args import get_args
-from .utils import get_log, wordid2str, WarmupCosineSchedule, save_config
-from .build_model import get_model
+from args import get_args
+from utils import get_log, wordid2str, WarmupCosineSchedule, save_config
+from build_model import get_model
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.evaluation import BLEU
