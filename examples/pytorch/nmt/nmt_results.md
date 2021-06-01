@@ -1,6 +1,6 @@
 ## run script
 ``` bash
-CUDA_VISIBLE_DEVICES=6 python -m examples.pytorch.nmt.main --name test
+CUDA_VISIBLE_DEVICES=6 python examples/pytorch/nmt/main.py --name test
 ```
 
 NMT Results

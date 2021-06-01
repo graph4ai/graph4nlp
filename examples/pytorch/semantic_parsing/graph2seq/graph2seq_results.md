@@ -6,15 +6,6 @@ Graph2Seq results
 - GAT-BiFuse paper link: [https://arxiv.org/abs/1908.04942](https://arxiv.org/abs/1908.04942)
 
 
-Dependencies
-------------
-- torch v1.0: the autograd support for sparse mm is only available in v1.0.
-- requests
-- sklearn
-
-```bash
-pip install torch==1.1.0 requests dgl
-```
 
 How to run
 ----------
@@ -22,7 +13,7 @@ How to run
 Run with following:
 
 ```python
-python -m examples.pytorch.semantic_parsing.graph2seq.main --dataset_yaml examples/pytorch/semantic_parsing/graph2seq/config/new_dependency_gcn_undirected.yaml
+python examples/pytorch/semantic_parsing/graph2seq/main.py --dataset_yaml examples/pytorch/semantic_parsing/graph2seq/config/new_dependency_gcn_undirected.yaml
 ```
 
 Results
