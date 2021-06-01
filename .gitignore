@@ -1,8 +1,5 @@
 # IDE
 .idea
-*.pt
-*.pkl
-*.pth
 run_*.sh
 # igore log files
 log.txt
@@ -10,11 +7,11 @@ log.txt
 **/__pycache__/*
 *.py[cod]
 *$py.class
-**/data/*
+# **/data/*
 **/out/*
 **/log/*
 **/save/*
-**/out/*
+**/processed/*
 **/.vector_cache/*
 
 # C extensions
