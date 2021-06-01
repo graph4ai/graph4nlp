@@ -4,15 +4,6 @@ Question generation results
 - Paper link: [https://arxiv.org/abs/1908.04942](https://arxiv.org/abs/1908.04942)
 
 
-Dependencies
-------------
-
-Install the required python packages:
-
-```bash
-pip install -r examples/pytorch/question_generation/requirements.txt
-```
-
 
 How to run
 ----------
@@ -28,16 +19,8 @@ How to run
 
 
 #### Run the model:
-
 ```python
- python -m examples.pytorch.question_generation.run_question_generation   -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
-```
-
-
-#### Run the model with grid search:
-
-```python
- python examples/pytorch/question_generation/run_question_generation.py   -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml --grid_search
+ python examples/pytorch/question_generation/run_question_generation_iclr.py   -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
 ```
 
 Note: 
