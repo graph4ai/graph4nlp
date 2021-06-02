@@ -1,6 +1,20 @@
-## run script
+
+How to run
+----------
+
+#### Start the StanfordCoreNLP server for data preprocessing:
+
+1) Download StanfordCoreNLP `https://stanfordnlp.github.io/CoreNLP/`
+2) Go to the root folder and start the server:
+
+```java
+    java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
+```
+
+
+#### run script
 ``` bash
-CUDA_VISIBLE_DEVICES=6 python examples/pytorch/nmt/main.py --name test
+python examples/pytorch/nmt/main.py --name test
 ```
 
 NMT Results

@@ -10,7 +10,16 @@ Graph2Seq results
 How to run
 ----------
 
-Run with following:
+#### Start the StanfordCoreNLP server for data preprocessing:
+
+1) Download StanfordCoreNLP `https://stanfordnlp.github.io/CoreNLP/`
+2) Go to the root folder and start the server:
+
+```java
+    java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
+```
+
+#### Run with following:
 
 ```python
 python examples/pytorch/semantic_parsing/graph2seq/main.py --dataset_yaml examples/pytorch/semantic_parsing/graph2seq/config/new_dependency_gcn_undirected.yaml
@@ -100,10 +109,4 @@ Dynamic Refine(dep initial 0.2)
 | Jobs     |       93.6(93.6)       |     93.6(93.6)      |      93.6(93.6)     |
 
 
-TODO
--------
-
-- early stopping, loading best model, pretrianed glove vectors, hyper-param tuning, ggnn/graphsage, seq_info_encode_strategy (check node ordering)
-
-- 2e-3
 
