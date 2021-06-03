@@ -1,18 +1,7 @@
+import platform
+
 from setuptools import setup, find_packages
-
-
-# def get_cuda_version():
-#     import os
-#     nvsmi = os.popen('nvidia-smi')
-#     gpu_info_str = nvsmi.read()
-#     if gpu_info_str == '':
-#         return ''
-#     else:
-#         cuda_version_prompt = 'CUDA Version: '
-#         version_number_start = gpu_info_str.find(cuda_version_prompt) + len(cuda_version_prompt)
-#         version_number = gpu_info_str[version_number_start:].split(' ')[0]
-#         return '-cu{}'.format(version_number.replace('.', ''))
-#         # install_requirement.append('dgl-cuda{} >= 0.4'.format(version_number))
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 cuda_versions = {
     '1': '9.2',
@@ -22,14 +11,21 @@ cuda_versions = {
     '5': 'cpu'
 }
 
-if __name__ == '__main__':
 
-    # import argparse
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--cuda_version', type=str, default='cpu')
-    # args, unknown = parser.parse_known_args()
-    # args = vars(args)
-    # cuda_version = args.get('cuda_version')
+class MyBdistWheel(_bdist_wheel):
+    def finalize_options(self):
+        _bdist_wheel.finalize_options(self)
+        self.root_is_pure = False
+
+
+if __name__ == '__main__':
+    os_tag = {
+        'Windows': 'win_amd64',
+        'Darwin': 'macosx_x86_64',
+        'Linux': 'manylinux1_x86_64'
+    }
+
+    # Parse config
     try:
         with open('config', 'r') as f:
             version = f.readlines()[0].strip()
@@ -45,16 +41,26 @@ if __name__ == '__main__':
     else:
         cuda_version = ''
 
-    install_requirement = ['torch >= 1.8.1', 'pythonds', 'nltk >= 3.5', 'stanfordcorenlp', 'scipy >= 1.5.2',
+    install_requirement = ['pythonds', 'nltk >= 3.5', 'stanfordcorenlp', 'scipy >= 1.5.2',
                            'scikit-learn >= 0.23.2', 'networkx >= 2.5', 'dgl{} >= 0.4'.format(cuda_version),
-                           'ogb', 'torchtext']
+                           'ogb', 'torchtext', 'tqdm >= 4.29.0', 'pyyaml']
+    pytorch_requirement = 'torch >= 1.6.0' if platform.system() != 'Windows' else 'torch >= 1.8.1'
+    print("System: {}. PyTorch Requirement = {}".format(platform.system(), pytorch_requirement))
+
+    install_requirement.append(pytorch_requirement)
+
     setup(
         name='graph4nlp{}'.format(cuda_version),
-        version='0.2a02',
+        version='0.2a4',
         description='A DGL and PyTorch based graph deep learning library for natural language processing',
         author='Graph4NLP Team',
         license='MIT',
+        include_package_data=True,
         packages=find_packages('.', exclude=(
-        "examples.*", "examples", "graph4nlp.pytorch.test.*", "graph4nlp.pytorch.test")),
+            "examples.*", "examples", "graph4nlp.pytorch.test.*", "graph4nlp.pytorch.test")),
         install_requires=install_requirement,
+        platforms=os_tag[platform.system()]
     )
+    print("Graph4NLP Python library installation finished. Please manually check Stanford CoreNLP"
+          "(https://stanfordnlp.github.io/CoreNLP/) is installed and "
+          "running in your environment.")

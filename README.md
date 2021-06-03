@@ -57,7 +57,7 @@
 </p>
 
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
-**20/05/2021:** The **v1.0.0 release**. Try it out!
+**20/05/2021:** The **v0.3.0 release**. Try it out!
 
 ## Quick tour
 
@@ -135,7 +135,7 @@ We provide a comprehensive collection of graph4nlp-related applications, togethe
 | Question generation        |               SQuAD             |           GGNN       | Dependency                                      | BLEU-4             |             0.15175	            |
 | Machine translation        |              IWSLT14             |           GCN       | Dynamic                                      | BLEU-4             |             0.3212            |
 | Summarization              |             CNN(30k)             |           GCN       | Dependency                                   | ROUGE-1            |              26.4             |
-| Knowledge graph completion | Kinship                          |           GGNN      | IE                                           | MRR                | 57.7                          |
+| Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.4                          |
 | Math word problem          | MAWPS  <br> MATHQA               | SAGE                | Dynamic                                      | Solution accuracy <br> Exact match  | 76.4<br>  61.07  |
 
 ## Installation
@@ -181,7 +181,7 @@ python setup.py install
 
 | Releases | Date       | Features                                                     |
 | -------- | ---------- | ------------------------------------------------------------ |
-| v1.0.0   | 2021-05-20 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
+| v0.3.0   | 2021-05-20 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
 ## New to Deep Learning on Graphs for NLP?
 
