@@ -6,23 +6,23 @@ Graph2Seq results
 - GAT-BiFuse paper link: [https://arxiv.org/abs/1908.04942](https://arxiv.org/abs/1908.04942)
 
 
-Dependencies
-------------
-- torch v1.0: the autograd support for sparse mm is only available in v1.0.
-- requests
-- sklearn
-
-```bash
-pip install torch==1.1.0 requests dgl
-```
 
 How to run
 ----------
 
-Run with following:
+#### Start the StanfordCoreNLP server for data preprocessing:
+
+1) Download StanfordCoreNLP `https://stanfordnlp.github.io/CoreNLP/`
+2) Go to the root folder and start the server:
+
+```java
+    java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
+```
+
+#### Run with following:
 
 ```python
-python -m examples.pytorch.semantic_parsing.graph2seq.main --dataset_yaml examples/pytorch/semantic_parsing/graph2seq/config/new_dependency_ggnn_undirected.yaml
+python examples/pytorch/semantic_parsing/graph2seq/main.py --dataset_yaml examples/pytorch/semantic_parsing/graph2seq/config/new_dependency_gcn_undirected.yaml
 ```
 
 Results
@@ -109,10 +109,4 @@ Dynamic Refine(dep initial 0.2)
 | Jobs     |       93.6(93.6)       |     93.6(93.6)      |      93.6(93.6)     |
 
 
-TODO
--------
-
-- early stopping, loading best model, pretrianed glove vectors, hyper-param tuning, ggnn/graphsage, seq_info_encode_strategy (check node ordering)
-
-- 2e-3
 
