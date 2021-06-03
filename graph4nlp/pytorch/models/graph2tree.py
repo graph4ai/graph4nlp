@@ -85,17 +85,6 @@ class Graph2Tree(Graph2XBase):
                             init.xavier_uniform_(param, gain=1.0)
                     else:
                         init.uniform_(param, -init_weight, init_weight)
-    @classmethod
-    def from_args(cls, opt, src_vocab, tgt_vocab, device, embedding_style, criterion):
-        return cls(src_vocab=src_vocab, tgt_vocab=tgt_vocab, use_copy=opt.use_copy, gnn_type=opt.gnn_type, 
-                    direction_option=opt.direction_option, graph_construction_type=opt.graph_construction_type,
-                    enc_hidden_size=opt.enc_hidden_size, dec_hidden_size=opt.dec_hidden_size, 
-                    dropout_for_word_embedding=opt.dropout_for_word_embedding, dropout_for_encoder_feature=opt.dropout_for_encoder,
-                    dropout_for_encoder_attn=opt.dropout_for_encoder, dropout_for_decoder=opt.dropout_for_decoder, 
-                    device=device, criterion=criterion, teacher_force_ratio=opt.teacher_force_ratio, max_dec_seq_length=opt.max_dec_seq_length, 
-                    max_dec_tree_depth=opt.max_dec_tree_depth, embedding_style=embedding_style, K=opt.K, 
-                    gat_head=[int(i) for i in opt.gat_head.split(',')], sage_aggr=opt.sage_aggr, 
-                    attn_type=opt.attn_type, use_sibling=opt.use_sibling, use_share_vocab=opt.use_share_vocab)
 
     @classmethod
     def from_args(cls, opt, vocab_model, device=None):
