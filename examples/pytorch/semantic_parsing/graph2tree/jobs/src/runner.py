@@ -50,7 +50,7 @@ class Jobs:
     def _build_dataloader(self):
         graph_type = self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
         enc_emb_size = self.opt["graph_construction_args"]["node_embedding"]["input_size"]
-        tgt_emb_size = self.opt["graph_construction_args"]["decoder_args"]["rnn_decoder_share"]["input_size"]
+        tgt_emb_size = self.opt["decoder_args"]["rnn_decoder_share"]["input_size"]
         topology_subdir = self.opt["graph_construction_args"]["graph_construction_share"]["topology_subdir"]
         if graph_type == "dependency":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
