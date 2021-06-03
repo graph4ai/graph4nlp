@@ -2,6 +2,7 @@ from ....utils.config_utils import get_yaml_config
 import os
 
 str2yaml = {"stdrnn": "stdrnndecoder.yaml", "stdtree": "stdtreedecoder.yaml"}
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def get_decoder_args(deocder_name):
@@ -26,9 +27,7 @@ def get_decoder_args(deocder_name):
     """
     if deocder_name in str2yaml.keys():
         yaml_name = str2yaml[deocder_name]
-        import site
-        package_path = site.getsitepackages()[0]
-        path = os.path.join(package_path, "graph4nlp/pytorch/modules/config/prediction/generation", yaml_name)
+        path = os.path.join(dir_path, yaml_name)
         config = get_yaml_config(path)
         return config
     else:

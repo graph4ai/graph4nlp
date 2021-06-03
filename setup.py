@@ -1,4 +1,5 @@
 import platform
+import os
 
 from setuptools import setup, find_packages
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
@@ -8,7 +9,8 @@ cuda_versions = {
     '2': '10.1',
     '3': '10.2',
     '4': '11.0',
-    '5': 'cpu'
+    '5': '11.1',
+    '6': 'cpu'
 }
 
 
@@ -33,6 +35,10 @@ if __name__ == '__main__':
         raise FileNotFoundError('config file not found. Please run ./configure first.')
 
     cuda_version = cuda_versions[version]
+
+    if cuda_version == '11.1':
+        os.system("pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html")
+        # os.wait()
 
     if cuda_version == 'none':
         cuda_version = ''
