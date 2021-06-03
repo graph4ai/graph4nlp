@@ -6,7 +6,7 @@ from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_yaml", type=str,
-                        default="examples/pytorch/semantic_parsing/graph2tree/config/new_dynamic_graphsage_undirected.yaml")
+                        default="examples/pytorch/semantic_parsing/graph2tree/jobs/config/new_dynamic_graphsage_undirected.yaml")
 
     parser.add_argument('--learning-rate', type=float, default=1e-3)
     parser.add_argument('--gpuid', type=int, default=1, help='which gpu to use. -1 = use CPU')
