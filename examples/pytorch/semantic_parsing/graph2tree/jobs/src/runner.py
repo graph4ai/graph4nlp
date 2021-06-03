@@ -39,7 +39,7 @@ class Jobs:
         else:
             self.device = torch.device("cuda:{}".format(opt.gpuid))
 
-        self.use_copy = True if opt.use_copy == 1 else False
+        self.use_copy = self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"]
         self.use_share_vocab = opt.use_share_vocab
         self.data_dir = opt.data_dir
 
@@ -243,8 +243,9 @@ class Jobs:
 
 if __name__ == "__main__":
     from .config import get_args
-    import json
-    print(json.dumps(get_args(), indent=4))
+    # import json
+    # print(json.dumps(get_args(), indent=4))
+    print(get_args()["decoder_args"]["rnn_decoder_share"]["use_copy"])
     # start = time.time()
     # runner = Jobs(opt=)
     # best_acc = runner.train()
