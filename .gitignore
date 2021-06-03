@@ -12,6 +12,7 @@ log.txt
 **/log/*
 **/save/*
 **/processed/*
+**/co03/*
 **/.vector_cache/*
 
 # C extensions
