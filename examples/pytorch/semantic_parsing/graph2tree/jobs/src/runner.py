@@ -61,7 +61,10 @@ class Jobs:
                                          share_vocab=self.use_share_vocab, 
                                          enc_emb_size=enc_emb_size,
                                          dec_emb_size=tgt_emb_size,
-                                         min_word_vocab_freq=self.opt["min_freq"])
+                                         min_word_vocab_freq=self.opt["min_freq"],
+                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
+                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
+                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
 
         elif graph_type == "constituency":
             dataset = JobsDatasetForTree(root_dir=self.data_dir,
@@ -72,8 +75,11 @@ class Jobs:
                                          share_vocab=self.use_share_vocab, 
                                          enc_emb_size=enc_emb_size,
                                          dec_emb_size=tgt_emb_size,
-                                         min_word_vocab_freq=self.opt["min_freq"])
-
+                                         min_word_vocab_freq=self.opt["min_freq"],
+                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
+                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
+                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
+                                         
         elif graph_type == "node_emb":
             dataset = JobsDatasetForTree(root_dir=self.data_dir, 
                                          word_emb_size=enc_emb_size,
@@ -85,8 +91,10 @@ class Jobs:
                                          share_vocab=self.use_share_vocab, 
                                          enc_emb_size=enc_emb_size,
                                          dec_emb_size=tgt_emb_size,
-                                         min_word_vocab_freq=self.opt["min_freq"])
-
+                                         min_word_vocab_freq=self.opt["min_freq"],
+                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
+                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
+                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
     
         elif graph_type == "node_emb_refined":
             dynamic_init_graph_type = self.opt["graph_construction_args"]["graph_construction_private"]["dynamic_init_graph_type"]
@@ -109,7 +117,10 @@ class Jobs:
                                          enc_emb_size=enc_emb_size, 
                                          dec_emb_size=tgt_emb_size,
                                          dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                         min_word_vocab_freq=self.opt["min_freq"])
+                                         min_word_vocab_freq=self.opt["min_freq"],
+                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
+                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
+                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])                                         
         else:
             raise NotImplementedError
 
