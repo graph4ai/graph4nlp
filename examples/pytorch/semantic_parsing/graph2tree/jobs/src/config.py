@@ -16,7 +16,6 @@ def get_args():
     parser.add_argument('--max-epochs', type=int, default=200,help='number of full passes through the training data')
     parser.add_argument('--min-freq', type=int, default=1,help='minimum frequency for vocabulary')
     parser.add_argument('--grad-clip', type=int, default=5, help='clip gradients at this value')
-    parser.add_argument('--teacher-force-ratio', type=float, default=1.0)
 
     # dataset config
     parser.add_argument("--batch-size", type=int, default=24, help="the size of one mini-batch")

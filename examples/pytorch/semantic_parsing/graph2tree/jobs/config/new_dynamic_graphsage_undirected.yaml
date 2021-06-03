@@ -66,6 +66,7 @@ decoder_args:
     attention_type: "uniform"
     fuse_strategy: "concatenate"
     dropout: 0.1
+    teacher_forcing_rate: 1.0
 
   rnn_decoder_private:
     max_decoder_step: 50
