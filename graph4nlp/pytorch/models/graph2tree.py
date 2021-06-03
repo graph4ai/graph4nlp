@@ -63,14 +63,14 @@ class Graph2Tree(Graph2XBase):
 
     def forward(self, batch_graph, tgt_tree_batch, oov_dict=None):
         batch_graph = self.graph_topology(batch_graph)
-        batch_graph = self.encoder(batch_graph)
+        batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
         loss = self.decoder(g=batch_graph, tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
         return loss
 
     def init(self, init_weight):
-        self.encoder.to(self.device)
+        self.gnn_encoder.to(self.device)
         self.decoder.to(self.device)
 
         for name, param in self.named_parameters():
