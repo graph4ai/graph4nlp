@@ -243,9 +243,10 @@ class Jobs:
 
 if __name__ == "__main__":
     from .config import get_args
-    start = time.time()
-    runner = Jobs(opt=get_args())
-    best_acc = runner.train()
+    print(get_args())
+    # start = time.time()
+    # runner = Jobs(opt=)
+    # best_acc = runner.train()
 
-    end = time.time()
-    print("total time: {} minutes\n".format((end - start)/60))
+    # end = time.time()
+    # print("total time: {} minutes\n".format((end - start)/60))
