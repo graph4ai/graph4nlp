@@ -5,7 +5,7 @@ decoder_name: "stdtree"
 graph_construction_args:
   graph_construction_share:
     graph_type: 'node_emb'
-    root_dir: "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data"
+    root_dir: "examples/pytorch/semantic_parsing/graph2tree/geo/geo_data"
     topology_subdir: 'NodeEmbGraph'
     thread_number: 4
     port: 9000
@@ -70,6 +70,6 @@ decoder_args:
     teacher_forcing_rate: 1.0
 
   rnn_decoder_private:
-    max_decoder_step: 50
-    max_tree_depth: 50
+    max_decoder_step: 100
+    max_tree_depth: 30
     use_sibling: false

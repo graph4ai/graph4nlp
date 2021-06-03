@@ -1,50 +1,40 @@
 import argparse
 
+from graph4nlp.pytorch.modules.config import get_basic_args
+from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
+
 def get_args():
-    main_arg_parser = argparse.ArgumentParser(description="parser")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset_yaml", type=str,
+                        default="examples/pytorch/math_word_problem/mawps/config/new_dynamic_graphsage_undirected.yaml")
 
-    main_arg_parser.add_argument('-gpuid', type=int, default=3, help='which gpu to use. -1 = use CPU')
-    main_arg_parser.add_argument('-seed', type=int, default=1234, help='torch manual random number generator seed')
-    main_arg_parser.add_argument('-use_copy', type=int, default=0, help='whether use copy mechanism')
-    main_arg_parser.add_argument('-data_dir', type=str, default='/home/lishucheng/Graph4AI/graph4nlp/examples/pytorch/math_word_problem/mawps/mawps_data/', help='data path')
+    parser.add_argument('--learning-rate', type=float, default=1e-3)
+    parser.add_argument('--gpuid', type=int, default=1, help='which gpu to use. -1 = use CPU')
+    parser.add_argument('--seed', type=int, default=123, help='torch manual random number generator seed')
+    parser.add_argument('--init-weight', type=float, default=0.08, help='initailization weight')
+    parser.add_argument('--weight-decay', type=float, default=0)
+    parser.add_argument('--max-epochs', type=int, default=200,help='number of full passes through the training data')
+    parser.add_argument('--min-freq', type=int, default=1,help='minimum frequency for vocabulary')
+    parser.add_argument('--grad-clip', type=int, default=5, help='clip gradients at this value')
 
-    main_arg_parser.add_argument('-gnn_type', type=str, default="SAGE")
-    main_arg_parser.add_argument('-gat_head', type=str, default="1")
-    main_arg_parser.add_argument('-sage_aggr', type=str, default="lstm")
-    main_arg_parser.add_argument('-attn_type', type=str, default="uniform")
-    main_arg_parser.add_argument('-use_sibling', type=int, default=0)
-    main_arg_parser.add_argument('-use_share_vocab', type=int, default=1)
-    main_arg_parser.add_argument('-K', type=int, default=1)
+    # dataset config
+    parser.add_argument("--batch-size", type=int, default=20, help="the size of one mini-batch")
+    parser.add_argument("--share-vocab", type=bool, default=True, help="whether to share vocab")
 
-    main_arg_parser.add_argument('-enc_emb_size', type=int, default=300)
-    main_arg_parser.add_argument('-tgt_emb_size', type=int, default=300)
+    parser.add_argument("--pretrained_word_emb_name", type=str,
+                        default='6B', help="")
+    parser.add_argument("--pretrained_word_emb_url", type=str,
+                        default=None, help="")
+    parser.add_argument("--pretrained_word_emb_cache_dir", type=str,
+                        default=".vector_cache", help="")
+    
+    parser.add_argument("--beam-size", type=int, default=4, help="the beam size of beam search")
 
-    main_arg_parser.add_argument('-enc_hidden_size', type=int, default=300)
-    main_arg_parser.add_argument('-dec_hidden_size', type=int, default=300)
+    cfg = parser.parse_args()
 
-    # DynamicGraph_node_emb_refined, DynamicGraph_node_emb, ConstituencyGraph
-    main_arg_parser.add_argument('-graph_construction_type', type=str, default="ConstituencyGraph")
-
-    # "None, line, dependency, constituency"
-    main_arg_parser.add_argument('-dynamic_init_graph_type', type=str, default="constituency")
-    main_arg_parser.add_argument('-batch_size', type=int, default=20)
-    main_arg_parser.add_argument('-dropout_for_word_embedding', type=float, default=0.1)
-    main_arg_parser.add_argument('-dropout_for_encoder', type=float, default=0)
-    main_arg_parser.add_argument('-dropout_for_decoder', type=float, default=0.3)
-
-    main_arg_parser.add_argument('-direction_option', type=str, default="undirected")
-    main_arg_parser.add_argument('-beam_size', type=int, default=2)
-
-    main_arg_parser.add_argument('-max_dec_seq_length', type=int, default=35)
-    main_arg_parser.add_argument('-max_dec_tree_depth', type=int, default=8)
-
-    main_arg_parser.add_argument('-teacher_force_ratio', type=float, default=1.0)
-    main_arg_parser.add_argument('-init_weight', type=float, default=0.08, help='initailization weight')
-    main_arg_parser.add_argument('-learning_rate', type=float, default=1e-3, help='learning rate')
-    main_arg_parser.add_argument('-weight_decay', type=float, default=0)
-    main_arg_parser.add_argument('-max_epochs', type=int, default=200,help='number of full passes through the training data')
-    main_arg_parser.add_argument('-min_freq', type=int, default=1,help='minimum frequency for vocabulary')
-    main_arg_parser.add_argument('-grad_clip', type=int, default=5, help='clip gradients at this value')
-
-    args = main_arg_parser.parse_args()
-    return args
+    our_args = get_yaml_config(cfg.dataset_yaml)
+    template = get_basic_args(graph_construction_name=our_args["graph_construction_name"],
+                              graph_embedding_name=our_args["graph_embedding_name"],
+                              decoder_name=our_args["decoder_name"])
+    update_values(to_args=template, from_args_list=[our_args, vars(cfg)])
+    return template

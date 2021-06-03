@@ -10,6 +10,26 @@ from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import Std
 
 
 class Graph2Tree(Graph2XBase):
+    """
+        Graph2Tree is a general end-to-end neural encoder-decoder model that maps an input graph to a tree structure. 
+        The graph2tree model consists the following components: 1) node embedding 2) graph embedding 3) decoding.
+        Since the full pipeline will consist all parameters, so we will add prefix to the original parameters
+         in each component as follows (except the listed four parameters):
+            1) emb_ + parameter_name (eg: ``emb_input_size``)
+            2) gnn_ + parameter_name (eg: ``gnn_direction_option``)
+            3) dec_ + parameter_name (eg: ``dec_max_decoder_step``)
+        Considering neatness, we will only present the four hyper-parameters which don't meet regulations.
+    Parameters
+    ----------
+    vocab_model: VocabModel
+        The vocabulary.
+    graph_type: str
+        The graph type. Excepted in ["dependency", "constituency", "node_emb", "node_emb_refined"].
+    gnn: str
+        The graph neural network's name. Expected in ["gcn", "gat", "graphsage", "ggnn"]
+    embedding_style: dict
+        The options used in the embedding module.
+    """
     def __init__(self, vocab_model, device, embedding_style, graph_type, 
                  # embedding
                  emb_input_size, emb_hidden_size, emb_word_dropout, emb_rnn_dropout, emb_fix_word_emb, emb_fix_bert_emb, 

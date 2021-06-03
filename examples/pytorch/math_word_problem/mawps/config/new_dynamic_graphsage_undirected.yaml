@@ -5,7 +5,7 @@ decoder_name: "stdtree"
 graph_construction_args:
   graph_construction_share:
     graph_type: 'node_emb'
-    root_dir: "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data"
+    root_dir: "examples/pytorch/math_word_problem/mawps/mawps_data"
     topology_subdir: 'NodeEmbGraph'
     thread_number: 4
     port: 9000
@@ -66,10 +66,10 @@ decoder_args:
     graph_pooling_strategy: null
     attention_type: "uniform"
     fuse_strategy: "concatenate"
-    dropout: 0.1
+    dropout: 0.3
     teacher_forcing_rate: 1.0
 
   rnn_decoder_private:
-    max_decoder_step: 50
-    max_tree_depth: 50
+    max_decoder_step: 35
+    max_tree_depth: 8
     use_sibling: false
