@@ -243,7 +243,8 @@ class Jobs:
 
 if __name__ == "__main__":
     from .config import get_args
-    print(get_args())
+    import json
+    print(json.dumps(get_args(), indent=4))
     # start = time.time()
     # runner = Jobs(opt=)
     # best_acc = runner.train()
