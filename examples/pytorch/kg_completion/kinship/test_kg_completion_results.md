@@ -1,7 +1,7 @@
 Installation 
 ===========
 + Download the default English model used by **spaCy**, which is installed in the previous step ```python -m spacy download en_core_web_sm```
-+ Run the preprocessing script for WN18RR, FB15k-237, and Kinship: ```sh preprocess.sh```
++ Run the preprocessing script for WN18RR and Kinship: ```sh preprocess.sh```
 + You can now run the model
 
 KG Completion Test
