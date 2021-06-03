@@ -6,8 +6,12 @@ How to run
 + Run with following:
 
 ```python
-python -m examples.pytorch.summarization.cnn.main -g2s_config examples/pytorch/summarization/cnn/config/gcn_bifuse.yaml -task_config examples/pytorch/summarization/cnn/config/cnn.yaml
+python examples/pytorch/summarization/cnn/main.py -g2s_config examples/pytorch/summarization/cnn/config/XYZ.yaml -task_config examples/pytorch/summarization/cnn/config/cnn.yaml
 ```
+
+Note: 
+1) `XYZ.yaml` should be replaced by the exact g2s config file such as `gcn_bifuse.yaml`.
+2) You can find the output files in the `out/cnn/` folder. 
 
 |  Dataset |    Model   | Graph Construction   | Evaluation | Performance |
 | -------- | ---------- | ------------ | ------ |------ |
