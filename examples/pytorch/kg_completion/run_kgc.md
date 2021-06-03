@@ -16,23 +16,39 @@ How to run
 
 If you run the task for the first time, run with:
 ```bash
-python examples/pytorch/kg_completion/kinship/main.py --data kinship --model ggnn_distmult --preprocess
-python -m examples.pytorch.kg_completion.WN18RR.main --data WN18RR --model gcn_distmult --lr 0.005 --preprocess
+python examples/pytorch/kg_completion/kinship_main.py --data kinship --model ggnn_distmult --preprocess
+python examples/pytorch/kg_completion/WN18RR_main.py --data WN18RR --model gcn_distmult --lr 0.005 --preprocess
 ```
 Then run:
 ```bash
-python -m examples.pytorch.kg_completion.kinship.main --data kinship --model ggnn_distmult
-python -m examples.pytorch.kg_completion.WN18RR.main --data WN18RR --model gcn_distmult --lr 0.005
+python examples/pytorch/kg_completion/kinship_main.py --data kinship --model ggnn_distmult
+python examples/pytorch/kg_completion/WN18RR_main.py --data WN18RR --model gcn_distmult --lr 0.005
 ```
 
+Results on kinship
+------------------
 
-Note: 
-1) `XYZ.yaml` should be replaced by the exact g2s config file such as `new_dependency_ggnn.yaml`.
-2) You can find the output files in the `out/squad_split2/` folder. 
-<!-- 3) You can save your time by downloading the preprocessed data for dependency graph from [here](https://drive.google.com/drive/folders/1UPrlBvzXXgmUqx41CzO6ULrA3E1v24P9?usp=sharing), and moving the `squad_split2` folder to `examples/pytorch/question_generation/data/`. -->
+Use BCELoss+GGNNDistmult:
+
+| Metrics  |    uni     |    bi_fuse   | bi_sep |
+| -------- | ---------- | ------------ | ------ |
+| Hits @1  |    40.4    |     39.4     |  38.2  |
+| Hits @10 |    88.3    |     88.8     |  88.9  |
+|   MRR    |    54.9    |     54.8     |  53.4  |
+
+Use BCELoss+GCNDistmult:
+
+| Metrics  |    uni     |    bi_fuse   | bi_sep |
+| -------- | ---------- | ------------ | ------ |
+| Hits @1  |    39.5    |     42.9     |  39.9  |
+| Hits @10 |    88.5    |     89.2     |  88.6  |
+|   MRR    |    54.5    |     56.6     |  54.6  |
 
 
-SQuAD-split2 Dependency + GGNN results:
-|     Method        | BLEU_1 | BLEU_2 | BLEU_3 | BLEU_4 | METEOR | ROUGE |
-| ----------------- | ------ | ------ | ------ | ------ | ------ | ----- |
-| Dependency + GGNN | 0.43297|0.28016 |0.20205 |0.15175 | 0.18994|0.43401|
+Use BCELoss+GCNComplex:
+
+| Metrics  |    uni     |    bi_fuse   | bi_sep |
+| -------- | ---------- | ------------ | ------ |
+| Hits @1  |    71.2    |     72.1     |  73.3  |
+| Hits @10 |    96.8    |     96.2     |  97.9  |
+|   MRR    |    80.7    |     81.6     |  82.4  |
