@@ -1,23 +1,29 @@
 Installation 
 ===========
-+ Download the default English model used by **spaCy**, which is installed in the previous step ```python -m spacy download en_core_web_sm```
-+ Run the preprocessing script for WN18RR, FB15k-237, and Kinship: ```sh preprocess.sh```
++ Download the default English model used by **spaCy**, which is installed in the previous step 
+```bash
+pip install spacy
+python -m spacy download en_core_web_sm
+```
++ Run the preprocessing script for WN18RR and Kinship: ```sh preprocess.sh```
 + You can now run the model
 
-KG Completion Test
-============
+How to run
+----------
+
+
+#### Run the model:
 
 If you run the task for the first time, run with:
 ```bash
-python -m examples.pytorch.kg_completion.kinship.main --data kinship --model ggnn_distmult --preprocess
-python -m examples.pytorch.kg_completion.WN18RR.main --data WN18RR --model gcn_distmult --lr 0.005 --preprocess
+python examples/pytorch/kg_completion/kinship_main.py --data kinship --model ggnn_distmult --preprocess
+python examples/pytorch/kg_completion/WN18RR_main.py --data WN18RR --model gcn_distmult --lr 0.005 --preprocess
 ```
 Then run:
 ```bash
-python -m examples.pytorch.kg_completion.kinship.main --data kinship --model ggnn_distmult
-python -m examples.pytorch.kg_completion.WN18RR.main --data WN18RR --model gcn_distmult --lr 0.005
+python examples/pytorch/kg_completion/kinship_main.py --data kinship --model ggnn_distmult
+python examples/pytorch/kg_completion/WN18RR_main.py --data WN18RR --model gcn_distmult --lr 0.005
 ```
-
 
 Results on kinship
 ------------------

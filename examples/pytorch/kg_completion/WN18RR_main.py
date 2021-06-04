@@ -10,8 +10,8 @@ import math
 from os.path import join
 import torch.backends.cudnn as cudnn
 
-from examples.pytorch.kg_completion.evaluation import ranking_and_hits
-from examples.pytorch.kg_completion.model.model import ConvE, Distmult, Complex, GGNNDistMult, GCNDistMult, GCNComplex
+from evaluation import ranking_and_hits
+from model import ConvE, Distmult, Complex, GGNNDistMult, GCNDistMult, GCNComplex
 
 from spodernet.preprocessing.pipeline import DatasetStreamer
 from spodernet.preprocessing.processors import JsonLoaderProcessors, Tokenizer, AddToVocab, SaveLengthsToState, StreamToHDF5, SaveMaxLengthsToState, CustomTokenizer
