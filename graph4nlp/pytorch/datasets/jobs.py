@@ -37,7 +37,7 @@ class JobsDataset(Text2TextDataset):
                  merge_strategy="tailhead", edge_strategy=None,
                  seed=None,
                  word_emb_size=300, share_vocab=True, lower_case=True,
-                 nlp_tools_args={}, thread_number=1,
+                 thread_number=1, port=9000,
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
                  dynamic_init_topology_aux_args=None):
@@ -74,7 +74,7 @@ class JobsDataset(Text2TextDataset):
                                           share_vocab=share_vocab, lower_case=lower_case,
                                           pretrained_word_emb_name=pretrained_word_emb_name, pretrained_word_emb_url=pretrained_word_emb_url, pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
                                           val_split_ratio=val_split_ratio, seed=seed, word_emb_size=word_emb_size,
-                                          nlp_tools_args=nlp_tools_args, thread_number=thread_number,
+                                          thread_number=thread_number, port=port,
                                           dynamic_graph_type=dynamic_graph_type,
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
                                           dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
