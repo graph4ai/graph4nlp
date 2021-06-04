@@ -46,7 +46,7 @@ if __name__ == '__main__':
     else:
         cuda_version = ''
 
-    install_requirement = ['torch', 'pythonds', 'nltk >= 3.5', 'stanfordcorenlp', 'scipy >= 1.5.2',
+    install_requirement = ['pythonds', 'nltk >= 3.5', 'stanfordcorenlp', 'scipy >= 1.5.2',
                            'scikit-learn >= 0.23.2', 'networkx >= 2.5', 'dgl{} >= 0.4'.format(cuda_version),
                            'ogb', 'torchtext', 'tqdm >= 4.29.0', 'pyyaml']
     # pytorch_requirement = 'torch >= 1.6.0' if platform.system() != 'Windows' else 'torch >= 1.8.1'
@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     setup(
         name='graph4nlp{}'.format(cuda_version),
-        version='0.2a8',
+        version='0.2a10',
         description='A DGL and PyTorch based graph deep learning library for natural language processing',
         author='Graph4NLP Team',
         license='Apache 2.0',
