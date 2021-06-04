@@ -61,7 +61,7 @@ if __name__ == '__main__':
         version='0.2a7',
         description='A DGL and PyTorch based graph deep learning library for natural language processing',
         author='Graph4NLP Team',
-        license='MIT',
+        license='Apache 2.0',
         include_package_data=True,
         packages=find_packages('.', exclude=(
             "examples.*", "examples", "graph4nlp.pytorch.test.*", "graph4nlp.pytorch.test")),
