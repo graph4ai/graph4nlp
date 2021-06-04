@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
     setup(
         name='graph4nlp{}'.format(cuda_version),
-        version='0.2a4',
+        version='0.2a5',
         description='A DGL and PyTorch based graph deep learning library for natural language processing',
         author='Graph4NLP Team',
         license='MIT',
