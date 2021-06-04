@@ -146,7 +146,7 @@ Currently, users can install Graph4NLP via **pip** or **source code**. Graph4NLP
 - macOS (only CPU version)
 - Windows 10 
 
-### Installation via binaries
+### Installation via pip (binaries)
 We provide pip wheels for all major OS/PyTorch/CUDA combinations. Note that we highly recommend `Windows` users refer to `Installation via source code` due to compatibility.
 
 #### Ensure that at least PyTorch (>=1.6.0) is installed:
@@ -165,7 +165,7 @@ $ python -c "import torch; print(torch.version.cuda)"
 ```bash
 pip install graph4nlp${CUDA}
 ```
-where `${CUDA}` should be replaced by the specific CUDA version (`none`, `-cu92`, `-cu101`, `-cu102`, `-cu110`). The following table shows the concrete command lines. For CUDA 11.1 users, please refer to `Installation via source code`.
+where `${CUDA}` should be replaced by the specific CUDA version (`none` (CPU version), `"-cu92"`, `"-cu101"`, `"-cu102"`, `"-cu110"`). The following table shows the concrete command lines. For CUDA 11.1 users, please refer to `Installation via source code`.
 
 
 | Platform  | Command                       |
