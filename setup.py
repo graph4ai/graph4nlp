@@ -53,6 +53,8 @@ if __name__ == '__main__':
     print("System: {}. PyTorch Requirement = {}".format(platform.system(), pytorch_requirement))
 
     install_requirement.append(pytorch_requirement)
+    if cuda_version in ['-cu101', '-cu92']:
+        install_requirement.append('torch <= 1.7.0')
 
     setup(
         name='graph4nlp{}'.format(cuda_version),
