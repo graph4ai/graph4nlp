@@ -51,10 +51,10 @@ if __name__ == '__main__':
                            'ogb', 'torchtext', 'tqdm >= 4.29.0', 'pyyaml']
     pytorch_requirement = 'torch >= 1.6.0' if platform.system() != 'Windows' else 'torch >= 1.8.1'
     print("System: {}. PyTorch Requirement = {}".format(platform.system(), pytorch_requirement))
-
-    install_requirement.append(pytorch_requirement)
     if cuda_version in ['-cu101', '-cu92']:
-        install_requirement.append('torch <= 1.7.0')
+        pytorch_requirement += ', <=1.7.0'
+    install_requirement.append(pytorch_requirement)
+
 
     setup(
         name='graph4nlp{}'.format(cuda_version),
