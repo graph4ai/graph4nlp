@@ -144,7 +144,7 @@ Currently, users can install Graph4NLP via **pip** or **source code**. Graph4NLP
 
 - Linux-based systems (tested on Ubuntu 18.04 and later)
 - macOS (only CPU version)
-- Windows 10 
+- Windows 10 (only support pytorch >= 1.8)
 
 ### Installation via pip (binaries)
 We provide pip wheels for all major OS/PyTorch/CUDA combinations. Note that we highly recommend `Windows` users refer to `Installation via source code` due to compatibility.
