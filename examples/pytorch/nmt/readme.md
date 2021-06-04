@@ -1,3 +1,11 @@
+Requirements
+---------
+```bash
+    pip install tensorboard
+```
+
+
+
 
 How to run
 ----------
