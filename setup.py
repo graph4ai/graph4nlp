@@ -38,7 +38,6 @@ if __name__ == '__main__':
 
     if cuda_version == '11.1':
         os.system("pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html")
-        # os.wait()
 
     if cuda_version == 'none':
         cuda_version = ''

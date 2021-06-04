@@ -147,6 +147,8 @@ Currently, users can install Graph4NLP via **pip** or **source code**. Graph4NLP
 - Windows 10 
 
 ### Installation via pip
+For installation via pip, currently we only support CUDA versions up to 11.0. For CUDA 11.1, please use the source code
+to install(see the next part).
 
 | Platform  | Command                       |
 | --------- | ----------------------------- |
