@@ -55,6 +55,10 @@ class Jobs:
         self.device = device
 
     def _build_logger(self, log_file):
+        import os
+        log_folder = os.path.split(log_file)[0]
+        if not os.path.exists(log_file):
+            os.makedirs(log_folder)
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
@@ -86,7 +90,7 @@ class Jobs:
                 raise RuntimeError('Define your own dynamic_init_topology_builder')
         else:
             raise NotImplementedError("Define your topology builder.")
-
+            
         dataset = JobsDataset(root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
                               #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
                               pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
@@ -105,10 +109,10 @@ class Jobs:
                               topology_builder=topology_builder,
                               topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
                                   "topology_subdir"],
-                              nlp_tools_args=self.opt["graph_construction_args"]["graph_construction_private"][
-                                  "nlp_tools_args"],
                               thread_number=self.opt["graph_construction_args"]["graph_construction_share"][
                                   "thread_number"],
+                              port=self.opt["graph_construction_args"]["graph_construction_share"][
+                                  "port"],
                               dynamic_graph_type=self.opt["graph_construction_args"]["graph_construction_share"][
                                   "graph_type"],
                               dynamic_init_topology_builder=dynamic_init_topology_builder,

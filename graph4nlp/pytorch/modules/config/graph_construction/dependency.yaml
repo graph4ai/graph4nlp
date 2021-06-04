@@ -12,16 +12,16 @@ graph_construction_private:
   merge_strategy: 'tailhead'
   sequential_link: true
   as_node: false
-  nlp_tools_args: # we use stanford corenlp as default nlp tools, please refer to ``https://stanfordnlp.github.io/CoreNLP/tokenize.html``
-    name: "stanfordcorenlp"
-    tokenizer_args:
-      whitespace: true # If set to true, separates words only when whitespace is encountered.
-    normalize_parentheses: false # Whether to map round parentheses to -LRB-, -RRB-, as in the Penn Treebank
-    normalize_other_brackets: false # Whether to map other common bracket characters to -LCB-, -LRB-, -RCB-, -RRB-, roughly as in the Penn Treebank
-    split_hyphenated: false # Whether or not to tokenize hyphenated words as several tokens (“school” “-“ “aged”, “frog” “-“ “lipped”)
-    is_oneSentence: true # Whether to regard the inputs as one sentence
-    port: 9000
-    timeout: 15000
+  # nlp_tools_args: # we use stanford corenlp as default nlp tools, please refer to ``https://stanfordnlp.github.io/CoreNLP/tokenize.html``
+  #   name: "stanfordcorenlp"
+  #   tokenizer_args:
+  #     whitespace: true # If set to true, separates words only when whitespace is encountered.
+  #   normalize_parentheses: false # Whether to map round parentheses to -LRB-, -RRB-, as in the Penn Treebank
+  #   normalize_other_brackets: false # Whether to map other common bracket characters to -LCB-, -LRB-, -RCB-, -RRB-, roughly as in the Penn Treebank
+  #   split_hyphenated: false # Whether or not to tokenize hyphenated words as several tokens (“school” “-“ “aged”, “frog” “-“ “lipped”)
+  #   is_oneSentence: true # Whether to regard the inputs as one sentence
+  #   port: 9000
+  #   timeout: 15000
 
 
 node_embedding:
