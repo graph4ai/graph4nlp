@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
+
 import json
 import os
 import time
