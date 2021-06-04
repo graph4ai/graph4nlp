@@ -46,7 +46,7 @@ if __name__ == '__main__':
     else:
         cuda_version = ''
 
-    install_requirement = ['torch >= 1.6.0', 'pythonds', 'nltk >= 3.5', 'stanfordcorenlp', 'scipy >= 1.5.2',
+    install_requirement = ['torch', 'pythonds', 'nltk >= 3.5', 'stanfordcorenlp', 'scipy >= 1.5.2',
                            'scikit-learn >= 0.23.2', 'networkx >= 2.5', 'dgl{} >= 0.4'.format(cuda_version),
                            'ogb', 'torchtext', 'tqdm >= 4.29.0', 'pyyaml']
     # pytorch_requirement = 'torch >= 1.6.0' if platform.system() != 'Windows' else 'torch >= 1.8.1'
