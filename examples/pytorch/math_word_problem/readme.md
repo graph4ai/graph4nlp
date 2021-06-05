@@ -1,49 +1,24 @@
-# Results for math word problem
+# Graph2Tree for math word problem (MWP) (take the MAWPS dataset as example)
 
-## Results on MATHQA
+## Setup
 
-### constituency-mathqa
+### Start the StanfordCoreNLP server for data preprocessing
 
-| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
-| ---- | ---- | ---- | ---- |  
-| GraphSage | 50.0 | - | - |
+1) Download StanfordCoreNLP `https://stanfordnlp.github.io/CoreNLP/`
+2) Go to the root folder and start the server:
 
-### dynamic on node emb-mathqa
+```java
+    java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
+```
 
-| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
-| ---- | ---- | ---- | ---- |  
-| GraphSage | 64.08 | 60.23 | 61.37 |
+### Run with following
 
-## Results on Mawps
+```python
+python examples/pytorch/math_word_problem/mawps/src/runner.py
+```
 
-### constituency-mawps
+## Results (Solution accuracy for MAWPS)
 
-| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
-| ---- | ---- | ---- | ---- |  
-| GraphSage | 76.4 | - | - |  
-| GAT | 75.2 | 76.8 | 76.8 |  
-| GCN | 75.6 | 76.4 | 76.0 |  
-
-### dependency-mawps
-
-| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
-| ---- | ---- | ---- | ---- |  
-| GraphSage | 76.4 | 74.8 | 76.8 |  
-| GAT | 75.6 | 76.4 | 75.2 |  
-| GCN | 76.0 | 76.0 | 76.8 |  
-
-### dynamic on node emb-mawps
-
-| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
-| ---- | ---- | ---- | ---- |  
-| GraphSage | 78.4 | 78.0 | 77.2 |  
-| GAT | 77.2 | 75.2 | 75.6 |  
-| GCN | 75.6 | 76.8 | 76.4 |  
-
-### dynamic on node emb refined (constituency as initial graph)
-
-| Methods\fuse_strategy | undirected | bi_sep | bi_fuse |  
-| ---- | ---- | ---- | ---- |  
-| GraphSage | 76.8 | 77.6 | 77.2 |  
-| GAT | 76.4 | 76.0 | 75.6 |  
-| GCN | 77.2 | 75.6 | 76.4 |  
+| SAGE |undirected |  
+| ---- | ---- |  
+| Dynamic_node_emb | 76.4 |  

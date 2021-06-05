@@ -377,7 +377,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         prev_h = torch.zeros((1, dec_hidden_size), requires_grad=False)
 
         batch_graph = model.graph_topology(input_graph_list)
-        batch_graph = model.encoder(batch_graph)
+        batch_graph = model.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
 
         params = model.decoder._extract_params(batch_graph)
