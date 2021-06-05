@@ -132,7 +132,8 @@ class TextClassifier(nn.Module):
                         attn_drop=config['gat_attn_dropout'],
                         negative_slope=config['gat_negative_slope'],
                         residual=config['gat_residual'],
-                        activation=F.elu)
+                        activation=F.elu,
+                           allow_zero_in_degree=True)
         elif config['gnn'] == 'graphsage':
             self.gnn = GraphSAGE(config['gnn_num_layers'],
                         config['num_hidden'],
