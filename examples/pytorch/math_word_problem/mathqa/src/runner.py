@@ -257,7 +257,7 @@ class MathQA:
         return test_acc
 
 if __name__ == "__main__":
-    from .config import get_args
+    from config import get_args
     start = time.time()
     runner = MathQA(opt=get_args())
     best_acc = runner.train()

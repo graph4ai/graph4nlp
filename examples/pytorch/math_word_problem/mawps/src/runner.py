@@ -257,7 +257,7 @@ class Mawps:
         return test_acc
 
 if __name__ == "__main__":
-    from .config import get_args
+    from config import get_args
     start = time.time()
     runner = Mawps(opt=get_args())
     best_acc = runner.train()
