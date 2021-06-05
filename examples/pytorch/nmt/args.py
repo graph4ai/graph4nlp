@@ -28,7 +28,7 @@ def get_args():
     parser.add_argument("--seed", type=int, default=1236, help="")
 
     # dataset config
-    parser.add_argument("--batch_size", type=int, default=512, help="the size of one mini-batch")
+    parser.add_argument("--batch_size", type=int, default=256, help="the size of one mini-batch")
     parser.add_argument("--share-vocab", type=bool, default=False, help="whether to share vocab")
     parser.add_argument("--val_split_ratio", type=float, default=0, help="")
 

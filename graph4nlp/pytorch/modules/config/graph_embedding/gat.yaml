@@ -12,3 +12,4 @@ graph_embedding_private:
   negative_slope: 0.2
   residual: false
   activation: null
+  allow_zero_in_degree: false
