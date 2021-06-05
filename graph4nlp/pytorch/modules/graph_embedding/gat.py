@@ -234,6 +234,10 @@ class GATLayer(GNNLayerBase):
                 activation=None,
                 allow_zero_in_degree=False):
         super(GATLayer, self).__init__()
+        if num_heads >  1 and residual:
+            residual = False
+            import warnings
+            warnings.warn("The residual option must be False when num_heads > 1")
         if direction_option == 'undirected':
             self.model = UndirectedGATLayerConv(input_size,
                                         output_size,
