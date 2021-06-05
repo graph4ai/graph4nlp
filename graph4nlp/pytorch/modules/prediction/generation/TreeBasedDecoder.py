@@ -194,6 +194,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
         rnn_node_embedding = torch.zeros_like(
             graph_node_embedding, requires_grad=False)
+        print(graph_node_embedding.device)
         rnn_node_embedding = to_cuda(rnn_node_embedding, self.device)
 
         cur_index = 1
