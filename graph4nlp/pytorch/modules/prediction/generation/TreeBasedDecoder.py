@@ -37,9 +37,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     output_size : int,
         Size of output vocabulary size.
 
-    device : object,
-        Device where parameters and data are store, a torch.device object.
-
     teacher_force_ratio : float,
         The ratio of possibility to use teacher force training.
 
@@ -78,7 +75,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     """
 
     def __init__(self, attn_type, embeddings, enc_hidden_size, dec_emb_size,
-                #  dec_hidden_size, output_size, device, criterion, teacher_force_ratio,
                  dec_hidden_size, output_size, criterion, teacher_force_ratio,
                  use_sibling=True, use_attention=True, use_copy=False,
                  fuse_strategy="average", num_layers=1,
@@ -91,7 +87,6 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                                              attention_type="uniform",
                                              fuse_strategy="average")
         self.num_layers = num_layers
-        # self.device = device
         self.criterion = criterion
         self.rnn_size = dec_hidden_size
         self.enc_hidden_size = enc_hidden_size
@@ -176,6 +171,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         tgt_batch_size = len(tgt_tree_batch)
 
         enc_outputs = graph_node_embedding
+        device = graph_node_embedding.device
 
         if graph_level_embedding == None:
             if self.graph_pooling_strategy == "max":
@@ -193,15 +189,13 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             graph_cell_state, graph_hidden_state = graph_level_embedding
 
         rnn_node_embedding = torch.zeros_like(
-            graph_node_embedding, requires_grad=False)
-        print(rnn_node_embedding.device)
-        rnn_node_embedding = to_cuda(rnn_node_embedding, self.device)
+            graph_node_embedding, requires_grad=False).to(device)
 
         cur_index = 1
         loss = 0
 
         dec_batch, queue_tree, max_index = get_dec_batch(
-            tgt_tree_batch, tgt_batch_size, self.device, self.tgt_vocab)
+            tgt_tree_batch, tgt_batch_size, device, self.tgt_vocab)
 
         dec_state = {}
         for i in range(self.max_dec_tree_depth + 1):
@@ -214,13 +208,10 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                 break
             for j in range(1, 3):
                 dec_state[cur_index][0][j] = torch.zeros(
-                    (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False, device=self.device)
-                dec_state[cur_index][0][j] = to_cuda(
-                    dec_state[cur_index][0][j], self.device)
+                    (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False).to(device)
 
             sibling_state = torch.zeros(
-                (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False)
-            sibling_state = to_cuda(sibling_state, self.device)
+                (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False).to(device)
 
             # with torch.no_grad():
             if cur_index == 1:
@@ -318,6 +309,8 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         enc_batch : torch.Tensor,
             The input batch : (Batch_size * Source sentence word index tensor).
         """
+        device = memory.device
+
         dec_single_input = self._filter_oov(dec_single_input, self.tgt_vocab)
         rnn_state_c, rnn_state_h, dec_emb = self.rnn(
             dec_single_input, dec_single_state[0], dec_single_state[1], parent_state, sibling_state)
@@ -339,7 +332,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         if self.use_copy:
             assert enc_batch is not None
             assert oov_dict is not None
-            output = torch.zeros(tgt_batch_size, oov_dict.vocab_size).to(self.device)
+            output = torch.zeros(tgt_batch_size, oov_dict.vocab_size).to(device)
             attn_ptr = torch.cat(attn_collect, dim=-1)
 
             pgen_collect = [dec_emb, torch.cat((rnn_state_c, rnn_state_h), -1), attn_ptr]
@@ -405,8 +398,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             t = queue_decode[head-1]["t"]
 
             sibling_state = torch.zeros(
-                (1, dec_hidden_size), dtype=torch.float, requires_grad=False)
-            sibling_state = to_cuda(sibling_state, device)
+                (1, dec_hidden_size), dtype=torch.float, requires_grad=False).to(device)
 
             flag_sibling = False
             for q_index in range(len(queue_decode)):
