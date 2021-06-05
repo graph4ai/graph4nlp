@@ -1,5 +1,4 @@
 import os
-
 import numpy as np
 import torch
 import torch.optim as optim
@@ -96,7 +95,7 @@ class Jobs:
                               pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
                               pretrained_word_emb_url=self.opt["pretrained_word_emb_url"],
                               pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
-                              val_split_ratio=self.opt["val_split_ratio"],
+                            #   val_split_ratio=self.opt["val_split_ratio"],
                               merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
                                   "merge_strategy"],
                               edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][

@@ -6,8 +6,7 @@ out_dir: 'out/trec/graphsage_bi_fuse_constituency_ckpt'
 
 
 # Graph construction
-graph_type: #'constituency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
-  - 'constituency'
+graph_type: 'constituency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
 
 # Dynamic graph construction
 init_graph_type: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
@@ -29,10 +28,8 @@ no_fix_word_emb: false # Not fix pretrained word embeddings (default: false)
 emb_strategy: 'w2v_bilstm'
 
 # GNN
-gnn: # 'graphsage'
-  - 'graphsage'
-gnn_direction_option: #'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
-  - 'bi_fuse'
+gnn: 'graphsage'
+gnn_direction_option: 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
 gnn_num_layers: 1 # number of GNN layers
 num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
