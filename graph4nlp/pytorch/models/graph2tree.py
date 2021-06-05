@@ -30,7 +30,7 @@ class Graph2Tree(Graph2XBase):
     embedding_style: dict
         The options used in the embedding module.
     """
-    def __init__(self, vocab_model, device, embedding_style, graph_type, 
+    def __init__(self, vocab_model, embedding_style, graph_type, 
                  # embedding
                  emb_input_size, emb_hidden_size, emb_word_dropout, emb_rnn_dropout, emb_fix_word_emb, emb_fix_bert_emb, 
                  # gnn
@@ -54,7 +54,6 @@ class Graph2Tree(Graph2XBase):
                                         **kwargs)
 
         self.src_vocab, self.tgt_vocab = vocab_model.in_word_vocab, vocab_model.out_word_vocab
-        self.device = device
         self.use_copy = dec_use_copy
         self.input_size = self.src_vocab.vocab_size
         self.output_size = self.tgt_vocab.vocab_size
@@ -71,7 +70,6 @@ class Graph2Tree(Graph2XBase):
                                       dec_emb_size=self.tgt_vocab.embedding_dims,
                                       dec_hidden_size=dec_hidden_size,
                                       output_size=self.output_size,
-                                      device=self.device,
                                       criterion=self.criterion,
                                       teacher_force_ratio=dec_teacher_forcing_rate,
                                       use_sibling=dec_use_sibling,
@@ -90,9 +88,6 @@ class Graph2Tree(Graph2XBase):
         return loss
 
     def init(self, init_weight):
-        self.gnn_encoder.to(self.device)
-        self.decoder.to(self.device)
-
         for name, param in self.named_parameters():
             if param.requires_grad:
                 if ("word_embedding" in name) or ("word_emb_layer" in name) or ("bert_embedding" in name):
@@ -107,7 +102,7 @@ class Graph2Tree(Graph2XBase):
                         init.uniform_(param, -init_weight, init_weight)
 
     @classmethod
-    def from_args(cls, opt, vocab_model, device=None):
+    def from_args(cls, opt, vocab_model):
         """
             The function for building ``Graph2Tree`` model.
         Parameters
@@ -130,7 +125,7 @@ class Graph2Tree(Graph2XBase):
         args.update(dec_args)
         args["share_vocab"] = opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
 
-        return cls(vocab_model=vocab_model, device=device, **args)
+        return cls(vocab_model=vocab_model, **args)
 
     @staticmethod
     def _get_decoder_params(opt):
