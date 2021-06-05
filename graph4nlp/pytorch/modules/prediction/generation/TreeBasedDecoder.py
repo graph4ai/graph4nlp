@@ -129,7 +129,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             self.ptr = nn.Linear(ptr_size, 1)
 
         self.rnn = self._build_rnn(rnn_type=rnn_type, input_size=output_size, emb_size=dec_emb_size,
-                                   hidden_size=dec_hidden_size, dropout_input=dropout_for_decoder, use_sibling=use_sibling, device=self.device)
+                                   hidden_size=dec_hidden_size, dropout_input=dropout_for_decoder, use_sibling=use_sibling)
 
     def _run_forward_pass(self, 
                           graph_node_embedding, 
@@ -480,7 +480,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                          1]["t"].children[cur["child_index"]-1] = cur["t"]
         return queue_decode[0]["t"].to_list(form_manager)
 
-    def _build_rnn(self, rnn_type, input_size, emb_size, hidden_size, dropout_input, use_sibling, device):
+    def _build_rnn(self, rnn_type, input_size, emb_size, hidden_size, dropout_input, use_sibling):
         """_build_rnn : how the rnn unit should be build.
         """
         rnn = TreeDecodingUnit(input_size, emb_size, hidden_size, dropout_input, use_sibling, self.embeddings)
