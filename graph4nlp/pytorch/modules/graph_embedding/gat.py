@@ -10,6 +10,7 @@ from dgl.utils import expand_as_pair
 from .base import GNNLayerBase, GNNBase
 from ...data.data import GraphData
 from ..utils.generic_utils import Identity
+from dgl.base import DGLError
 
 
 class GAT(GNNBase):
@@ -60,6 +61,12 @@ class GAT(GNNBase):
     activation : callable activation function/layer or None, optional.
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
+    allow_zero_in_degree : bool, optional
+        If there are 0-in-degree nodes in the graph, output for those nodes will be invalid
+        since no message will be passed to those nodes. This is harmful for some applications
+        causing silent performance regression. This module will raise a DGLError if it detects
+        0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
+        and let the users handle it by themselves. Defaults: ``False``.
     """
     def __init__(self,
                 num_layers,
@@ -72,7 +79,8 @@ class GAT(GNNBase):
                 attn_drop=0.,
                 negative_slope=0.2,
                 residual=False,
-                activation=None):
+                activation=None,
+                allow_zero_in_degree=False):
         super(GAT, self).__init__()
         self.num_layers = num_layers
         self.direction_option = direction_option
@@ -94,7 +102,8 @@ class GAT(GNNBase):
                                             attn_drop=attn_drop,
                                             negative_slope=negative_slope,
                                             residual=residual,
-                                            activation=activation))
+                                            activation=activation,
+                                            allow_zero_in_degree=allow_zero_in_degree))
 
         # hidden layers
         for l in range(1, self.num_layers - 1):
@@ -107,7 +116,8 @@ class GAT(GNNBase):
                                             attn_drop=attn_drop,
                                             negative_slope=negative_slope,
                                             residual=residual,
-                                            activation=activation))
+                                            activation=activation,
+                                            allow_zero_in_degree=allow_zero_in_degree))
         # output projection
         self.gat_layers.append(GATLayer(hidden_size[-1] * heads[-2] if self.num_layers > 1 else input_size,
                                         output_size,
@@ -117,7 +127,8 @@ class GAT(GNNBase):
                                         attn_drop=attn_drop,
                                         negative_slope=negative_slope,
                                         residual=residual,
-                                        activation=None))
+                                        activation=None,
+                                        allow_zero_in_degree=allow_zero_in_degree))
 
     def forward(self, graph):
         r"""Compute multi-layer graph attention network.
@@ -204,6 +215,12 @@ class GATLayer(GNNLayerBase):
     activation : callable activation function/layer or None, optional.
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
+    allow_zero_in_degree: bool, optional
+        If there are 0-in-degree nodes in the graph, output for those nodes will be invalid
+        since no message will be passed to those nodes. This is harmful for some applications
+        causing silent performance regression. This module will raise a DGLError if it detects
+        0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
+        and let the users handle it by themselves. Defaults: ``False``.
     """
     def __init__(self,
                 input_size,
@@ -214,7 +231,8 @@ class GATLayer(GNNLayerBase):
                 attn_drop=0.,
                 negative_slope=0.2,
                 residual=False,
-                activation=None):
+                activation=None,
+                allow_zero_in_degree=False):
         super(GATLayer, self).__init__()
         if direction_option == 'undirected':
             self.model = UndirectedGATLayerConv(input_size,
@@ -224,7 +242,8 @@ class GATLayer(GNNLayerBase):
                                         attn_drop=attn_drop,
                                         negative_slope=negative_slope,
                                         residual=residual,
-                                        activation=activation)
+                                        activation=activation, 
+                                        allow_zero_in_degree=allow_zero_in_degree)
         elif direction_option == 'bi_sep':
             self.model = BiSepGATLayerConv(input_size,
                                         output_size,
@@ -233,7 +252,8 @@ class GATLayer(GNNLayerBase):
                                         attn_drop=attn_drop,
                                         negative_slope=negative_slope,
                                         residual=residual,
-                                        activation=activation)
+                                        activation=activation,
+                                        allow_zero_in_degree=allow_zero_in_degree)
         elif direction_option == 'bi_fuse':
             self.model = BiFuseGATLayerConv(input_size,
                                             output_size,
@@ -242,7 +262,8 @@ class GATLayer(GNNLayerBase):
                                             attn_drop=attn_drop,
                                             negative_slope=negative_slope,
                                             residual=residual,
-                                            activation=activation)
+                                            activation=activation,
+                                            allow_zero_in_degree=allow_zero_in_degree)
         else:
             raise RuntimeError('Unknown `direction_option` value: {}'.format(direction_option))
 
@@ -304,6 +325,12 @@ class UndirectedGATLayerConv(GNNLayerBase):
     activation : callable activation function/layer or None, optional.
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
+    allow_zero_in_degree: bool, optional
+        If there are 0-in-degree nodes in the graph, output for those nodes will be invalid
+        since no message will be passed to those nodes. This is harmful for some applications
+        causing silent performance regression. This module will raise a DGLError if it detects
+        0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
+        and let the users handle it by themselves. Defaults: ``False``.
     """
     def __init__(self,
                 input_size,
@@ -313,10 +340,12 @@ class UndirectedGATLayerConv(GNNLayerBase):
                 attn_drop=0.,
                 negative_slope=0.2,
                 residual=False,
-                activation=None):
+                activation=None,
+                allow_zero_in_degree=False):
         super(UndirectedGATLayerConv, self).__init__()
-        self.model = GATConv(input_size, output_size, num_heads, feat_drop,
-                            attn_drop, negative_slope, residual, activation)
+        self.model = GATConv(in_feats=input_size, out_feats=output_size, num_heads=num_heads, 
+                            feat_drop=feat_drop, attn_drop=attn_drop, 
+                            negative_slope=negative_slope, residual=residual, activation=activation, allow_zero_in_degree=allow_zero_in_degree)
 
     def forward(self, graph, feat):
         r"""Compute graph attention network layer.
@@ -379,6 +408,12 @@ class BiFuseGATLayerConv(GNNLayerBase):
     activation : callable activation function/layer or None, optional.
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
+    allow_zero_in_degree : bool, optional
+        If there are 0-in-degree nodes in the graph, output for those nodes will be invalid
+        since no message will be passed to those nodes. This is harmful for some applications
+        causing silent performance regression. This module will raise a DGLError if it detects
+        0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
+        and let the users handle it by themselves. Defaults: ``False``.
     """
     def __init__(self,
                 input_size,
@@ -388,11 +423,13 @@ class BiFuseGATLayerConv(GNNLayerBase):
                 attn_drop=0.,
                 negative_slope=0.2,
                 residual=False,
-                activation=None):
+                activation=None,
+                allow_zero_in_degree=False):
         super(BiFuseGATLayerConv, self).__init__()
         self._num_heads = num_heads
         self._in_src_feats, self._in_dst_feats = expand_as_pair(input_size)
         self._out_feats = output_size
+        self._allow_zero_in_degree = allow_zero_in_degree
         if isinstance(input_size, tuple):
             self.fc_src_fw = nn.Linear(
                 self._in_src_feats, output_size * num_heads, bias=False)
@@ -469,6 +506,20 @@ class BiFuseGATLayerConv(GNNLayerBase):
             The output feature of shape :math:`(N, H, D_{out})` where :math:`H`
             is the number of heads, and :math:`D_{out}` is size of output feature.
         """
+        with graph.local_scope():
+            if not self._allow_zero_in_degree:
+                if (graph.in_degrees() == 0).any():
+                    raise DGLError('There are 0-in-degree nodes in the graph, '
+                                   'output for those nodes will be invalid. '
+                                   'This is harmful for some applications, '
+                                   'causing silent performance regression. '
+                                   'Adding self-loop on the input graph by '
+                                   'calling `g = dgl.add_self_loop(g)` will resolve '
+                                   'the issue. Setting ``allow_zero_in_degree`` '
+                                   'to be `True` when constructing this module will '
+                                   'suppress the check and let the code run.')
+
+
         feat_fw = feat_bw = feat
 
         if isinstance(feat_fw, tuple):
@@ -599,6 +650,12 @@ class BiSepGATLayerConv(GNNLayerBase):
     activation : callable activation function/layer or None, optional.
         If not None, applies an activation function to the updated node features.
         Default: ``None``.
+    allow_zero_in_degree : bool, optional
+        If there are 0-in-degree nodes in the graph, output for those nodes will be invalid
+        since no message will be passed to those nodes. This is harmful for some applications
+        causing silent performance regression. This module will raise a DGLError if it detects
+        0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
+        and let the users handle it by themselves. Defaults: ``False``.
     """
     def __init__(self,
                 input_size,
@@ -608,11 +665,13 @@ class BiSepGATLayerConv(GNNLayerBase):
                 attn_drop=0.,
                 negative_slope=0.2,
                 residual=False,
-                activation=None):
+                activation=None,
+                allow_zero_in_degree=False):
         super(BiSepGATLayerConv, self).__init__()
         self._num_heads = num_heads
         self._in_src_feats, self._in_dst_feats = expand_as_pair(input_size)
         self._out_feats = output_size
+        self._allow_zero_in_degree = allow_zero_in_degree
         if isinstance(input_size, tuple):
             self.fc_src_fw = nn.Linear(
                 self._in_src_feats, output_size * num_heads, bias=False)
@@ -708,6 +767,19 @@ class BiSepGATLayerConv(GNNLayerBase):
             Each output feature of shape :math:`(N, H, D_{out})` where :math:`H`
             is the number of heads, and :math:`D_{out}` is size of output feature.
         """
+        with graph.local_scope():
+            if not self._allow_zero_in_degree:
+                if (graph.in_degrees() == 0).any():
+                    raise DGLError('There are 0-in-degree nodes in the graph, '
+                                   'output for those nodes will be invalid. '
+                                   'This is harmful for some applications, '
+                                   'causing silent performance regression. '
+                                   'Adding self-loop on the input graph by '
+                                   'calling `g = dgl.add_self_loop(g)` will resolve '
+                                   'the issue. Setting ``allow_zero_in_degree`` '
+                                   'to be `True` when constructing this module will '
+                                   'suppress the check and let the code run.')
+
         feat_fw, feat_bw = feat
 
         if isinstance(feat_fw, tuple):
