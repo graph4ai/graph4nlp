@@ -47,8 +47,8 @@
 
 # Graph4NLP
 
-***Graph4NLP*** is an easy-to-use library for R&D at the intersection of **Graph Deep Learning** and
-**Natural Language Processing**. It provides both **full implementations** of state-of-the-art models for data scientists and also **flexible interfaces** to build custom models for researchers and developers with whole-pipeline support. Built upon highly-optimized runtime libraries including [DGL](https://github.com/dmlc/dgl) , ***Graph4NLP*** is both high running effieciency and great extensibility. The architecture of ***Graph4NLP*** is shown in the following figure, where boxes with dashed lines represents the features under development. Graph4NLP consists of four different layers: 1) ...
+***Graph4NLP*** is an easy-to-use library for R&D at the intersection of **Deep Learning on Graphs** and
+**Natural Language Processing** (i.e., DLG4NLP). It provides both **full implementations** of state-of-the-art models for data scientists and also **flexible interfaces** to build customized models for researchers and developers with whole-pipeline support. Built upon highly-optimized runtime libraries including [DGL](https://github.com/dmlc/dgl) , ***Graph4NLP*** has both high running efficiency and great extensibility. The architecture of ***Graph4NLP*** is shown in the following figure, where boxes with dashed lines represents the features under development. Graph4NLP consists of four different layers: 1) Data Layer, 2) Module Layer, 3) Model Layer, and 4) Application Layer.
 
 <p align="center">
     <img src="docs/arch.png" alt="architecture" width="700" />
@@ -61,16 +61,13 @@
 
 ## Quick tour
 
-***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (
-see [here](http://saizhuo.wang/g4nlp/index.html) for tutorial). Here is a example of how to use the [*Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering,
-semantic parsing, and various other nlp tasks that can be abstracted as graph to sequence problem and show superior
+***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (check out [Graph4NLP Documentation](http://saizhuo.wang/g4nlp/index.html)). Here is an example of how to use the [*Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering,
+semantic parsing, and various other NLP tasks that can be abstracted as graph-to-sequence problem and has shown superior
 performance).
 
-If you want to further improve model performance, we also provide interfaces of pre-trained models,
-including [GloVe](https://nlp.stanford.edu/pubs/glove.pdf), [BERT](https://arxiv.org/abs/1810.04805), etc.
-
-We also offer many other effective models such as graph classification models, graph to tree models, etc. If you are
-interested in related research problems, welcome to use our library and refer to our [graph4nlp survey](to_be_add).
+<!-- If you want to further improve model performance, we also support pre-trained models including [BERT](https://arxiv.org/abs/1810.04805), etc.
+ -->
+We also offer other high-level model APIs such as graph-to-tree models. If you are interested in DLG4NLP related research problems, you are very welcome to use our library and refer to our [graph4nlp survey](to_be_add).
 
 ```python
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
@@ -99,7 +96,7 @@ scores = graph2seq(batch_data["graph_data"], batch_data["tgt_seq"])  # [Batch_si
 
 ## Overview
 
-Our Graph4NLP computing flow is shown as below....
+Our Graph4NLP computing flow is shown as below.
 <p align="center">
 <img src="./imgs/graph4nlp_flow.png" width="1000" class="center" alt="logo"/>
     <br/>
@@ -114,7 +111,7 @@ Our Graph4NLP computing flow is shown as below....
 
 ### Graph4LP applications
 
-We provide a comprehensive collection of graph4nlp-related applications, together with detailed examples as follows:
+We provide a comprehensive collection of NLP applications, together with detailed examples as follows:
 
 - [Text classification](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/text_classification): to give the sentence or document an appropriate label.
 - [Semantic parsing](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/semantic_parsing): to translate natural language into a machine-interpretable formal meaning representation.
@@ -219,7 +216,7 @@ python setup.py install
 
 ## New to Deep Learning on Graphs for NLP?
 
-If you are new to using graph deep learning methods for natural language processing tasks, you can refer to our survey paper which provides an overview of this research direction. If you want detailed reference to  our library, please refer to our docs.
+If you want to learn more on applying Deep Learning on Graphs techniques to NLP tasks, you can refer to our survey paper which provides an overview of this existing research direction. If you want detailed reference to our library, please refer to our docs.
 
 [Docs]() | [Graph4nlp survey]() | [Related paper list]() | [Workshops]()
 
@@ -233,9 +230,9 @@ We expect all contributions discussed in the issue tracker and going through PRs
 
 ## Citation
 
-If you found this code useful, please consider citing the following paper:
+If you found this code useful, please consider citing the following paper (please stay tuned!).
 
-Yu Chen, Lingfei Wu and Mohammed J. Zaki. **"Iterative Deep Graph Learning for Graph Neural Networks: Better and Robust
+<!-- Yu Chen, Lingfei Wu and Mohammed J. Zaki. **"Iterative Deep Graph Learning for Graph Neural Networks: Better and Robust
 Node Embeddings."** In *Proceedings of the 34th Conference on Neural Information Processing Systems (NeurIPS 2020), Dec
 6-12, 2020.*
 
@@ -245,7 +242,7 @@ Node Embeddings."** In *Proceedings of the 34th Conference on Neural Information
       journal={Advances in Neural Information Processing Systems},
       volume={33},
       year={2020}
-    }
+    } -->
 
 ## Team
 Graph4AI Team. Lingfei Wu, Yu Chen, Kai Shen, Hanning Gao, Xiaojie Guo, Shucheng Li, Saizhuo Wang
