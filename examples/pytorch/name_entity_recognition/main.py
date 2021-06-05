@@ -327,21 +327,21 @@ class Conll:
         print("starting build the dataset")
         
         if args.graph_type=='line_graph':
-          dataset = ConllDataset(root_dir="./conll",
+          dataset = ConllDataset(root_dir="examples/pytorch/name_entity_recognition/conll",
                               topology_builder=LineBasedGraphConstruction,
                               graph_type='static',
                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                               topology_subdir='LineGraph',
                               tag_types=self.tag_types)
         elif args.graph_type=='dependency_graph':
-          dataset = ConllDataset(root_dir="./conll",
+          dataset = ConllDataset(root_dir="examples/pytorch/name_entity_recognition/conll",
                               topology_builder=DependencyBasedGraphConstruction_without_tokenizer,
                               graph_type='static',
                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                               topology_subdir='DependencyGraph',
                               tag_types=self.tag_types) 
         elif args.graph_type=='node_emb':
-          dataset = ConllDataset(root_dir="./conll",
+          dataset = ConllDataset(root_dir="examples/pytorch/name_entity_recognition/conll",
                               topology_builder=NodeEmbeddingBasedGraphConstruction,
                               graph_type='dynamic',
                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,
@@ -362,7 +362,7 @@ class Conll:
             else:
                 # init_topology_builder
                 raise RuntimeError('Define your own init_topology_builder')  
-            dataset = ConllDataset(root_dir="./conll",
+            dataset = ConllDataset(root_dir="examples/pytorch/name_entity_recognition/conll",
                               topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
                               graph_type='dynamic',
                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,

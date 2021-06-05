@@ -119,7 +119,7 @@ class Graph2Seq(Graph2XBase):
     def encoder_decoder_beam_search(self, batch_graph, beam_size, topk=1, oov_dict=None):
         generator = DecoderStrategy(beam_size=beam_size, vocab=self.seq_decoder.vocab, rnn_type=self.dec_rnn_type,
                                     decoder=self.seq_decoder, use_copy=self.use_copy,
-                                    use_coverage=self.use_coverage)
+                                    use_coverage=self.use_coverage, max_decoder_step=self.seq_decoder.max_decoder_step)
 
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']

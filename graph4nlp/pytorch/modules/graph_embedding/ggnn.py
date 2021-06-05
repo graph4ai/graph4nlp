@@ -89,7 +89,7 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
         for _ in range(self._num_layers):
             graph.ndata['h'] = feat
             for i in range(self._n_etypes):
-                eids = (etypes == i).nonzero().view(-1)
+                eids = (etypes == i).nonzero(as_tuple=False).view(-1)
                 if len(eids) > 0:
                     if edge_weight is None:
                         graph.apply_edges(
@@ -199,7 +199,7 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
         graph_in = graph_in.local_var()
         graph_in.ndata['h'] = feat_in
         for i in range(self._n_etypes):
-            eids = (etypes == i).nonzero().view(-1)
+            eids = (etypes == i).nonzero(as_tuple=False).view(-1)
             if len(eids) > 0:
                 if edge_weight is None:
                     graph_in.apply_edges(
@@ -220,7 +220,7 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
         graph_out = graph_out.local_var()
         graph_out.ndata['h'] = feat_out
         for i in range(self._n_etypes):
-            eids = (etypes == i).nonzero().view(-1)
+            eids = (etypes == i).nonzero(as_tuple=False).view(-1)
             if len(eids) > 0:
                 if edge_weight is None:
                     graph_out.apply_edges(
@@ -332,7 +332,7 @@ class BiSepGGNNLayerConv(GNNLayerBase):
         graph_in = graph_in.local_var()
         graph_in.ndata['h'] = feat_in
         for i in range(self._n_etypes):
-            eids = (etypes == i).nonzero().view(-1)
+            eids = (etypes == i).nonzero(as_tuple=False).view(-1)
             if len(eids) > 0:
                 if edge_weight is None:
                     graph_in.apply_edges(
@@ -353,7 +353,7 @@ class BiSepGGNNLayerConv(GNNLayerBase):
         graph_out = graph_out.local_var()
         graph_out.ndata['h'] = feat_out
         for i in range(self._n_etypes):
-            eids = (etypes == i).nonzero().view(-1)
+            eids = (etypes == i).nonzero(as_tuple=False).view(-1)
             if len(eids) > 0:
                 if type(edge_weight) == type(None):
                     graph_out.apply_edges(

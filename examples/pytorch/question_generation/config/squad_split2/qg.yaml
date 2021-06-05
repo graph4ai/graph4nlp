@@ -1,6 +1,7 @@
 # Data
 dataset: 'squad-split2'
 pretrained_word_emb_name: "840B"
+pretrained_word_emb_cache_dir: ".vector_cache"
 out_dir: 'out/squad_split2/qg_ckpt_dep_ggnn'
 
 # Preprocessing

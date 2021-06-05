@@ -8,7 +8,7 @@ import numpy as np
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-from .dataset import CNNDataset
+from dataset import CNNDataset
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -17,7 +17,7 @@ import torch.nn as nn
 
 from torch.utils.data import DataLoader
 import torch.optim as optim
-from .utils import wordid2str
+from utils import wordid2str
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
