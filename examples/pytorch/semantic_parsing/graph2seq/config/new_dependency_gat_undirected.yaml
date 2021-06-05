@@ -44,9 +44,10 @@ graph_embedding_args:
     heads: [2, 2, 1]
     attn_drop: 0.2
     negative_slope: 0.2
-    residual: true
+    residual: false
     activation: "relu"
-
+    allow_zero_in_degree: true
+    
 decoder_args:
   rnn_decoder_share:
     rnn_type: "lstm"
