@@ -1,3 +1,4 @@
+config
 # IDE
 .idea
 run_*.sh
