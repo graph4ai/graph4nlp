@@ -572,7 +572,7 @@ class GraphData(object):
         """
         u, v = self._edge_indices.src, self._edge_indices.tgt
         num_nodes = self.get_node_num()
-        dgl_g = dgl.graph(u, v, num_nodes=num_nodes).to(self.device)
+        dgl_g = dgl.graph(data=(u, v), num_nodes=num_nodes).to(self.device)
         # Add nodes and their features
         for key, value in self._node_features.items():
             if value is not None:
