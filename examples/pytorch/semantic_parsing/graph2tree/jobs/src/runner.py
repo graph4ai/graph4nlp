@@ -256,6 +256,8 @@ if __name__ == "__main__":
     from .config import get_args
     start = time.time()
     runner = Jobs(opt=get_args())
+    import json
+    print(json.dumps(Jobs.opt, indent=4))
     best_acc = runner.train()
 
     end = time.time()
