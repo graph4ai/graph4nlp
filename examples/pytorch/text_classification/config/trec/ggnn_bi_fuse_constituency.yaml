@@ -35,7 +35,6 @@ num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
 max_pool_linear_proj: false # use linear projectioni for max pooling
 gnn_dropout: 0.3 # 0.3 # GNN input feature dropout
-
 # GAT
 gat_attn_dropout: null # GAT attention dropout
 gat_negative_slope: null # the negative slope of leaky relu

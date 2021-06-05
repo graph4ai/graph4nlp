@@ -1,5 +1,5 @@
 import os
-# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 import time
 import datetime
 import argparse
@@ -117,8 +117,8 @@ class TextClassifier(nn.Module):
                             self.vocab.in_word_vocab.embeddings.shape[0],
                             self.vocab.in_word_vocab.embeddings.shape[1],
                             pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
-                            fix_emb=not config['no_fix_word_emb'],
-                            device=config['device']).word_emb_layer
+                            fix_emb=not config['no_fix_word_emb']
+            ).word_emb_layer
 
         if config['gnn'] == 'gat':
             heads = [config['gat_num_heads']] * (config['gnn_num_layers'] - 1) + [config['gat_num_out_heads']]
@@ -372,8 +372,8 @@ def main(config):
     else:
         config['device'] = torch.device('cpu')
 
-    ts = datetime.datetime.now().timestamp()
-    config['out_dir'] += '_{}'.format(ts)
+    # ts = datetime.datetime.now().timestamp()
+    # config['out_dir'] += '_{}'.format(ts)
     print('\n' + config['out_dir'])
 
     runner = ModelHandler(config)
@@ -467,11 +467,3 @@ if __name__ == '__main__':
         grid_search_main(config)
     else:
         main(config)
-
-# screen -S ghn_code3  python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_undirected_constituency.yaml
-# screen -S ghn_code1  python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/graphsage_undirected_node_emb.yaml
-# screen -S ghn_code1  python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_undirected_constituency.yaml
-# screen -S ghn_code3 python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_dependency.yaml
-# screen -S ghn_code1 python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_undirected_dependency.yaml --grid_search
-# screen -S ghn_code1 python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CAirline/gat_bi_sep_dependency.yaml --grid_search
-# screen -S ghn_code1 python -m  examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/CNSST/gat_bi_sep_dependency.yaml --grid_search
