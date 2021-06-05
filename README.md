@@ -167,6 +167,9 @@ pip install graph4nlp${CUDA}
 ```
 where `${CUDA}` should be replaced by the specific CUDA version (`none` (CPU version), `"-cu92"`, `"-cu101"`, `"-cu102"`, `"-cu110"`). The following table shows the concrete command lines. For CUDA 11.1 users, please refer to `Installation via source code`.
 
+### Installation via pip
+For installation via pip, currently we only support CUDA versions up to 11.0. For CUDA 11.1, please use the source code
+to install(see the next part).
 
 | Platform  | Command                       |
 | --------- | ----------------------------- |

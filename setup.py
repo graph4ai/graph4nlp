@@ -37,8 +37,10 @@ if __name__ == '__main__':
     cuda_version = cuda_versions[version]
 
     if cuda_version == '11.1':
-        os.system("pip3 install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html")
-        # os.wait()
+        os.system("pip install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html")
+
+    # if platform.system() == 'Windows':
+    #     os.system('pip install torch==1.8.1+cu102 -f https://download.pytorch.org/whl/torch_stable.html')
 
     if cuda_version == 'none':
         cuda_version = ''
@@ -49,18 +51,18 @@ if __name__ == '__main__':
 
     install_requirement = ['pythonds', 'nltk >= 3.5', 'stanfordcorenlp', 'scipy >= 1.5.2',
                            'scikit-learn >= 0.23.2', 'networkx >= 2.5', 'dgl{} >= 0.4'.format(cuda_version),
-                           'ogb', 'torchtext', 'tqdm >= 4.29.0', 'pyyaml']
-    pytorch_requirement = 'torch >= 1.6.0' if platform.system() != 'Windows' else 'torch >= 1.8.1'
-    print("System: {}. PyTorch Requirement = {}".format(platform.system(), pytorch_requirement))
-
+                           'ogb', 'torchtext', 'tqdm >= 4.29.0', 'pyyaml', 'transformers']
+    pytorch_requirement = 'torch >= 1.6.0' if platform.system() != 'Windows' else 'torch == 1.8.0'
+    torchtext_requirement = 'torchtext >= 0.7.0' if platform.system() != 'Windows' else 'torchtext == 0.9.0'
     install_requirement.append(pytorch_requirement)
+    install_requirement.append(torchtext_requirement)
 
     setup(
         name='graph4nlp{}'.format(cuda_version),
-        version='0.2a4',
+        version='0.2a11',
         description='A DGL and PyTorch based graph deep learning library for natural language processing',
         author='Graph4NLP Team',
-        license='MIT',
+        license='Apache 2.0',
         include_package_data=True,
         packages=find_packages('.', exclude=(
             "examples.*", "examples", "graph4nlp.pytorch.test.*", "graph4nlp.pytorch.test")),
