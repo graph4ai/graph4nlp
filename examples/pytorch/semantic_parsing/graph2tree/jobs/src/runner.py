@@ -136,7 +136,7 @@ class Jobs:
 
     def _build_model(self):
         '''For encoder-decoder'''
-        self.model = Graph2Tree.from_args(self.opt, vocab_model=self.vocab_model, device=self.device)
+        self.model = Graph2Tree.from_args(self.opt, vocab_model=self.vocab_model)
         self.model.init(self.opt["init_weight"])
         self.model.to(self.device)
 

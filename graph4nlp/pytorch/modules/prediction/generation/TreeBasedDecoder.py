@@ -78,7 +78,8 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     """
 
     def __init__(self, attn_type, embeddings, enc_hidden_size, dec_emb_size,
-                 dec_hidden_size, output_size, device, criterion, teacher_force_ratio,
+                #  dec_hidden_size, output_size, device, criterion, teacher_force_ratio,
+                 dec_hidden_size, output_size, criterion, teacher_force_ratio,
                  use_sibling=True, use_attention=True, use_copy=False,
                  fuse_strategy="average", num_layers=1,
                  dropout_for_decoder=0.1, rnn_type="lstm", max_dec_seq_length=512,
@@ -90,7 +91,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                                              attention_type="uniform",
                                              fuse_strategy="average")
         self.num_layers = num_layers
-        self.device = device
+        # self.device = device
         self.criterion = criterion
         self.rnn_size = dec_hidden_size
         self.enc_hidden_size = enc_hidden_size
@@ -128,7 +129,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             self.ptr = nn.Linear(ptr_size, 1)
 
         self.rnn = self._build_rnn(rnn_type=rnn_type, input_size=output_size, emb_size=dec_emb_size,
-                                   hidden_size=dec_hidden_size, dropout_input=dropout_for_decoder, use_sibling=use_sibling, device=device)
+                                   hidden_size=dec_hidden_size, dropout_input=dropout_for_decoder, use_sibling=use_sibling, device=self.device)
 
     def _run_forward_pass(self, 
                           graph_node_embedding, 
