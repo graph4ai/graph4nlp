@@ -1,10 +1,8 @@
 # Data
 dataset: 'CAirline'
-root_dir: '/raid/ghn/graph4nlp/examples/pytorch/text_classification/data/CAirline'
-#val_split_ratio: 0.2 # validation set split ratio (default: 0.2)
+root_dir: 'examples/pytorch/text_classification/data/CAirline'
 pre_word_emb_file: '/raid/ghn/glove/glove.6B.300d.txt' # path to the pretrained word embedding file
-#out_dir: 'examples/pytorch/text_classification/out/CAirline/ggnn_bi_sep_constituency_ckpt'
-out_dir: '/raid/ghn/graph4nlp/examples/pytorch/text_classification/out/CAirline/ggnn_bi_sep_constituency_ckpt'
+out_dir: 'examples/pytorch/text_classification/out/CAirline/ggnn_bi_sep_constituency_ckpt'
 
 emb_strategy: 'bert_bilstm'
 # Graph construction
@@ -83,5 +81,5 @@ lr_reduce_factor: 0.5
 num_workers: 8 # number of data loader workers
 
 
-gpu: 2
+gpu: -1
 no_cuda: false

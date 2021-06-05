@@ -6,8 +6,7 @@ out_dir: 'out/trec/ggnn_bi_fuse_dependency_ckpt'
 
 
 # Graph construction
-graph_type: # 'dependency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
-      - 'dependency'
+graph_type: 'dependency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
 
 # Dynamic graph construction
 init_graph_type: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
@@ -29,10 +28,8 @@ no_fix_word_emb: false # Not fix pretrained word embeddings (default: false)
 emb_strategy: 'w2v_bilstm'
 
 # GNN
-gnn: #
-      - 'ggnn'
-gnn_direction_option: # 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
-      - 'bi_fuse'
+gnn:  'ggnn'
+gnn_direction_option: 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
 gnn_num_layers: 1 # 1 # number of GNN layers
 num_hidden: 300 # number of hidden units
 graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
