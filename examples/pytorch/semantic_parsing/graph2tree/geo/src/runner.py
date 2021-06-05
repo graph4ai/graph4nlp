@@ -81,7 +81,7 @@ class Geo:
                                          pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
                                          
         elif graph_type == "node_emb":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir, 
+            dataset = GeoDatasetForTree(root_dir=self.data_dir, 
                                          word_emb_size=enc_emb_size,
                                          topology_builder=NodeEmbeddingBasedGraphConstruction,
                                          topology_subdir=topology_subdir, 
