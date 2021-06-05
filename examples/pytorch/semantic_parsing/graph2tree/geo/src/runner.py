@@ -136,7 +136,7 @@ class Geo:
 
     def _build_model(self):
         '''For encoder-decoder'''
-        self.model = Graph2Tree.from_args(self.opt, vocab_model=self.vocab_model, device=self.device)
+        self.model = Graph2Tree.from_args(self.opt, vocab_model=self.vocab_model)
         self.model.init(self.opt["init_weight"])
         self.model.to(self.device)
 
@@ -202,7 +202,7 @@ class Geo:
         candidate_list = []
         for data in self.test_data_loader:
             eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
-            eval_input_graph = eval_input_graph.to(model.device)
+            eval_input_graph = eval_input_graph.to(self.device)
             oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
 
             if self.use_copy:
@@ -221,7 +221,7 @@ class Geo:
                                                 eval_input_graph,
                                                 self.src_vocab,
                                                 self.tgt_vocab,
-                                                model.device,
+                                                self.device,
                                                 self.opt["decoder_args"]["rnn_decoder_private"]["max_decoder_step"],
                                                 self.opt["decoder_args"]["rnn_decoder_private"]["max_tree_depth"],
                                                 oov_dict=oov_dict,
