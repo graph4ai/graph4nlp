@@ -217,7 +217,7 @@ python setup.py install
 If you want to learn more on applying Deep Learning on Graphs techniques to NLP tasks, you can refer to our survey paper which provides an overview of this existing research direction. If you want detailed reference to our library, please refer to our docs.
 
 <!-- [Docs]() | [Graph4nlp survey]() | [Related paper list]() | [Workshops]() -->
-[Docs](http://saizhuo.wang/g4nlp/index.html) | [Graph4nlp survey]() | [Graph4NLP Tutorials](https://www.aclweb.org/anthology/2021.naacl-tutorials.3.pdf) | [Graph4NLP Literature Lists](https://github.com/graph4ai/graph4nlp_literature ) | [Workshops]()
+[Docs](http://saizhuo.wang/g4nlp/index.html) | [Graph4nlp survey]() | [Graph4NLP Tutorials](https://www.aclweb.org/anthology/2021.naacl-tutorials.3.pdf) | [Graph4NLP Literature Lists](https://github.com/graph4ai/graph4nlp_literature ) | [Workshops](https://deep-learning-graphs.bitbucket.io/dlg-kdd21/index.html)
 
 ## Contributing
 
