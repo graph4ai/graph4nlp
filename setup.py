@@ -36,8 +36,8 @@ if __name__ == '__main__':
 
     cuda_version = cuda_versions[version]
 
-    if cuda_version == '11.1':
-        os.system("pip install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html")
+    # if cuda_version == '11.1':
+    #     os.system("pip install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html")
 
     # if platform.system() == 'Windows':
     #     os.system('pip install torch==1.8.1+cu102 -f https://download.pytorch.org/whl/torch_stable.html')
