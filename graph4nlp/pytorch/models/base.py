@@ -113,7 +113,7 @@ class Graph2XBase(nn.Module):
         self.enc_word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'] if 'w2v' in self.graph_topology.embedding_layer.word_emb_layers else None
 
     def _build_gnn_encoder(self, gnn, num_layers, input_size, hidden_size, output_size, direction_option, feats_dropout,
-                           gnn_heads=None, gnn_use_residual=True, gnn_attn_dropout=0.0, gnn_activation=F.relu,  # gat
+                           gnn_heads=None, gnn_residual=True, gnn_attn_dropout=0.0, gnn_activation=F.relu,  # gat
                            gnn_bias=True, gnn_allow_zero_in_degree=True, gnn_norm='both', gnn_weight=True,
                            gnn_use_edge_weight=False, gnn_gcn_norm='both',  # gcn
                            gnn_n_etypes=1,  # ggnn
@@ -123,7 +123,7 @@ class Graph2XBase(nn.Module):
             self.gnn_encoder = GAT(num_layers, input_size, hidden_size, output_size, gnn_heads,
                                    direction_option=direction_option,
                                    feat_drop=feats_dropout, attn_drop=gnn_attn_dropout, activation=gnn_activation,
-                                   residual=gnn_use_residual)
+                                   residual=gnn_residual, allow_zero_in_degree=gnn_allow_zero_in_degree)
         elif gnn == "ggnn":
             self.gnn_encoder = GGNN(num_layers, input_size, hidden_size, output_size, direction_option=direction_option,
                                     use_edge_weight=gnn_use_edge_weight, feat_drop=feats_dropout, n_etypes=gnn_n_etypes)

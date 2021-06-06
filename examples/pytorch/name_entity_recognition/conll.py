@@ -17,7 +17,6 @@ from graph4nlp.pytorch.modules.utils.tree_utils import Tree
 
 import json
 from graph4nlp.pytorch.data.dataset import SequenceLabelingDataset
-dataset_root = './conll/'
 from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
@@ -33,7 +32,8 @@ class ConllDataset(SequenceLabelingDataset):
     @property
     def processed_file_names(self):
         """At least 3 reserved keys should be fiiled: 'vocab', 'data' and 'split_ids'."""
-        return {'vocab': 'vocab.pt', 'data': 'data.pt', 'split_ids': 'split_ids.pt'}
+        # return {'vocab': 'vocab.pt', 'data': 'data.pt', 'split_ids': 'split_ids.pt'}
+        return {'vocab': 'vocab.pt', 'data': 'data.pt'}
 
     #def download(self):
     #    raise NotImplementedError(

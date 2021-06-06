@@ -5,7 +5,7 @@ decoder_name: "stdrnn"
 graph_construction_args:
   graph_construction_share:
     graph_type: 'dependency'
-    root_dir: "graph4nlp/pytorch/test/dataset/jobs"
+    root_dir: "examples/pytorch/semantic_parsing/graph2seq/jobs"
     topology_subdir: 'DependencyGraph'
     share_vocab: true
     thread_number: 4
@@ -17,16 +17,6 @@ graph_construction_args:
     merge_strategy: 'tailhead'
     sequential_link: true
     as_node: false
-    nlp_tools_args: # we use stanford corenlp as default nlp tools, please refer to ``https://stanfordnlp.github.io/CoreNLP/tokenize.html``
-      name: "stanfordcorenlp"
-      tokenizer_args:
-        whitespace: true # If set to true, separates words only when whitespace is encountered.
-      normalize_parentheses: false # Whether to map round parentheses to -LRB-, -RRB-, as in the Penn Treebank
-      normalize_other_brackets: false # Whether to map other common bracket characters to -LCB-, -LRB-, -RCB-, -RRB-, roughly as in the Penn Treebank
-      split_hyphenated: false # Whether or not to tokenize hyphenated words as several tokens (“school” “-“ “aged”, “frog” “-“ “lipped”)
-      is_oneSentence: true # Whether to regard the inputs as one sentence
-      port: 9000
-      timeout: 15000
 
   node_embedding:
     input_size: 300

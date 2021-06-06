@@ -1,28 +1,27 @@
 import os
+import numpy as np
+import torch
+import torch.optim as optim
+from torch.utils.data import DataLoader
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = "4"
-
+from args import get_args
+from build_model import get_model
+from evaluation import ExpressionAccuracy
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import \
     ConstituencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import \
     NodeEmbeddingBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import \
     NodeEmbeddingBasedRefinedGraphConstruction
-
-import numpy as np
-import torch
-from torch.utils.data import DataLoader
-import torch.optim as optim
-
-from .args import get_args
-from .evaluation import ExpressionAccuracy
-from .utils import get_log, wordid2str
-from .build_model import get_model
-from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+from utils import get_log, wordid2str
+
+
+# os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 
 class Jobs:
@@ -55,6 +54,10 @@ class Jobs:
         self.device = device
 
     def _build_logger(self, log_file):
+        import os
+        log_folder = os.path.split(log_file)[0]
+        if not os.path.exists(log_file):
+            os.makedirs(log_folder)
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
@@ -86,24 +89,29 @@ class Jobs:
                 raise RuntimeError('Define your own dynamic_init_topology_builder')
         else:
             raise NotImplementedError("Define your topology builder.")
-
+            
         dataset = JobsDataset(root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
-                            #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
-                              pretrained_word_emb_name=self.opt["pretrained_word_emb_name"], pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
-                              val_split_ratio=self.opt["val_split_ratio"],
+                              #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
+                              pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
+                              pretrained_word_emb_url=self.opt["pretrained_word_emb_url"],
+                              pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
+                            #   val_split_ratio=self.opt["val_split_ratio"],
                               merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
                                   "merge_strategy"],
                               edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
                                   "edge_strategy"],
                               seed=self.opt["seed"],
-                              word_emb_size=self.opt["word_emb_size"], share_vocab=self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"],
+                              word_emb_size=self.opt["word_emb_size"],
+                              share_vocab=self.opt["graph_construction_args"]["graph_construction_share"][
+                                  "share_vocab"],
                               graph_type=graph_type,
                               topology_builder=topology_builder,
                               topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
                                   "topology_subdir"],
-                              nlp_tools_args=self.opt["graph_construction_args"]["graph_construction_private"]["nlp_tools_args"],
                               thread_number=self.opt["graph_construction_args"]["graph_construction_share"][
                                   "thread_number"],
+                              port=self.opt["graph_construction_args"]["graph_construction_share"][
+                                  "port"],
                               dynamic_graph_type=self.opt["graph_construction_args"]["graph_construction_share"][
                                   "graph_type"],
                               dynamic_init_topology_builder=dynamic_init_topology_builder,

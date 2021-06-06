@@ -5,7 +5,7 @@ decoder_name: "stdrnn"
 graph_construction_args:
   graph_construction_share:
     graph_type: 'dependency'
-    root_dir: "graph4nlp/pytorch/test/dataset/jobs"
+    root_dir: "examples/pytorch/semantic_parsing/graph2seq/jobs"
     topology_subdir: 'DependencyGraph'
     thread_number: 4
     port: 9000
@@ -44,9 +44,10 @@ graph_embedding_args:
     heads: [2, 2, 1]
     attn_drop: 0.2
     negative_slope: 0.2
-    residual: true
+    residual: false
     activation: "relu"
-
+    allow_zero_in_degree: true
+    
 decoder_args:
   rnn_decoder_share:
     rnn_type: "lstm"

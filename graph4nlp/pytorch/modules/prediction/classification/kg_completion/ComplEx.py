@@ -15,41 +15,23 @@ class ComplEx(KGCompletionBase):
     input_dropout: float
         Dropout for node_emb and rel_emb. Default: `0.0`
 
-    rel_emb_from_gnn: bool
-        If `rel_emb` is computed from GNN, rel_emb_from_gnn is set to `True`.
-        Else, rel_emb is initialized as nn.Embedding randomly. Default: `True`.
-
-    num_relations: int
-        Number of relations. `num_relations` is needed if rel_emb_from_gnn==True.
-        Default: `None`.
-
-    embedding_dim: int
-        Dimension of the rel_emb. `embedding_dim` is needed if rel_emb_from_gnn==True.
-        Default: `0`.
-
-    edge2node: bool
-        The edges or relations in KG are converted to nodes. Default: `False`.
-
     loss_name: str
         The loss type selected fot the KG completion task. Default: `'BCELoss'`
     """
 
     def __init__(self,
                  input_dropout=0.0,
-                 rel_emb_from_gnn=True,
-                 num_relations=None,
-                 embedding_dim=None,
-                 edge2node=False,
                  loss_name='BCELoss'):
         super(ComplEx, self).__init__()
-        self.rel_emb_from_gnn = rel_emb_from_gnn
-        self.edge2node = edge2node
         self.loss_name = loss_name
-        self.classifier = ComplExLayer(input_dropout, rel_emb_from_gnn,
-                                       num_relations, embedding_dim, loss_name)
+        self.classifier = ComplExLayer(input_dropout, loss_name)
 
 
-    def forward(self, input_graph: GraphData):
+    def forward(self, input_graph: GraphData,
+                e1_embedded_real, rel_embedded_real,
+                e1_embedded_img, rel_embedded_img,
+                all_node_emb_real, all_node_emb_img,
+                multi_label=None):
         r"""
         Forward functions to compute the logits tensor for kg completion.
 
@@ -57,8 +39,45 @@ class ComplEx(KGCompletionBase):
         ----------
 
         input graph : GraphData
-                     The tensors stored in the node feature field named "node_emb" and
-                     "rel_emb" in the input_graph are used for knowledge graph completion.
+            The tensors stored in the node feature field named "node_emb" and
+            "rel_emb" in the input_graph are used for knowledge graph completion.
+
+        e1_embedded_real : tensor [B, H]
+            The selected entity_1 real embeddings of a batch.
+            B: batch size
+            H: length of the node embeddings (entity embeddings)
+
+        rel_embedded_real : tensor [B, H]
+            The selected relation real embeddings of a batch.
+            B: batch size
+            H: length of the edge embeddings (relation embeddings)
+
+        e1_embedded_img : tensor [B, H]
+            The selected entity_1 img embeddings of a batch.
+            B: batch size
+            H: length of the node embeddings (entity embeddings)
+
+        rel_embedded_img : tensor [B, H]
+            The selected relation img embeddings of a batch.
+            B: batch size
+            H: length of the edge embeddings (relation embeddings)
+
+        all_node_emb_real :  torch.nn.modules.sparse.Embedding [N, H]
+            All node real embeddings.
+            N: number of nodes in the whole KG graph
+            H: length of the node real embeddings (entity embeddings)
+
+        all_node_emb_img :  torch.nn.modules.sparse.Embedding [N, H]
+            All node img embeddings.
+            N: number of nodes in the whole KG graph
+            H: length of the node img embeddings (entity embeddings)
+
+        multi_label: tensor [B, N]
+            multi_label is a binary matrix. Each element can be equal to 1 for true label
+            and 0 for false label (or 1 for true label, -1 for false label).
+            multi_label[i] represents a multi-label of a given head-rel pair.
+            B is the batch size.
+            N: number of nodes in the whole KG graph.
 
         Returns
         ---------
@@ -69,50 +88,21 @@ class ComplEx(KGCompletionBase):
                       logit tensor shape is: [num_class]
         """
 
-        node_emb_real = input_graph.node_features['node_emb_real']
-        node_emb_img = input_graph.node_features['node_emb_img']
-        if self.loss_name in ['SoftplusLoss', 'SigmoidLoss']:
-            multi_label = input_graph.graph_attributes['multi_binary_label']  # [B, N]
-        else:
-            multi_label = None
-
-        if self.edge2node:
-            rel_emb_real = node_emb_real
-            rel_emb_img = node_emb_img
-        else:
-            if 'rel_emb_real' in input_graph.edge_features.keys() and \
-                    'rel_emb_img' in input_graph.edge_features.keys():
-                rel_emb_real = input_graph.edge_features['rel_emb_real']
-                rel_emb_img = input_graph.edge_features['rel_emb_img']
-            else:
-                assert self.rel_emb_from_gnn == False
-                rel_emb_real = None
-                rel_emb_img = None
-
-        if 'list_e_r_pair_idx' in input_graph.graph_attributes.keys():
-            list_e_r_pair_idx = input_graph.graph_attributes['list_e_r_pair_idx']
-            list_e_e_pair_idx = None
-        elif 'list_e_e_pair_idx' in input_graph.graph_attributes.keys():
-            list_e_e_pair_idx = input_graph.graph_attributes['list_e_e_pair_idx']
-            list_e_r_pair_idx = None
-        else:
-            raise RuntimeError("'list_e_r_pair_idx' or 'list_e_e_pair_idx' should be given.")
-
         if multi_label is None:
-            input_graph.graph_attributes['logits'] = self.classifier(node_emb_real,
-                                                                  node_emb_img,
-                                                                  rel_emb_real,
-                                                                  rel_emb_img,
-                                                                  list_e_r_pair_idx,
-                                                                  list_e_e_pair_idx)
+            input_graph.graph_attributes['logits'] = self.classifier(e1_embedded_real,
+                                                                     e1_embedded_img,
+                                                                     rel_embedded_real,
+                                                                     rel_embedded_img,
+                                                                     all_node_emb_real,
+                                                                     all_node_emb_img)
         else:
             input_graph.graph_attributes['logits'], input_graph.graph_attributes['p_score'], \
-            input_graph.graph_attributes['n_score'] = self.classifier(node_emb_real,
-                                                                   node_emb_img,
-                                                                   rel_emb_real,
-                                                                   rel_emb_img,
-                                                                   list_e_r_pair_idx,
-                                                                   list_e_e_pair_idx,
-                                                                   multi_label)
+            input_graph.graph_attributes['n_score'] = self.classifier(e1_embedded_real,
+                                                                      e1_embedded_img,
+                                                                      rel_embedded_real,
+                                                                      rel_embedded_img,
+                                                                      all_node_emb_real,
+                                                                      all_node_emb_img,
+                                                                      multi_label)
 
         return input_graph

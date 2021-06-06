@@ -5,7 +5,7 @@ decoder_name: "stdrnn"
 graph_construction_args:
   graph_construction_share:
     graph_type: 'constituency'
-    root_dir: "graph4nlp/pytorch/test/dataset/jobs"
+    root_dir: "examples/pytorch/semantic_parsing/graph2seq/jobs"
     topology_subdir: 'ConstituencyGraph'
     thread_number: 4
     port: 9000
@@ -46,6 +46,7 @@ graph_embedding_args:
     negative_slope: 0.2
     residual: true
     activation: "relu"
+    allow_zero_in_degree: true
 
 decoder_args:
   rnn_decoder_share:

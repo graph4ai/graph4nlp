@@ -570,14 +570,14 @@ class GraphData(object):
         g: dgl.DGLGraph
             The converted dgl.DGLGraph
         """
-        dgl_g = dgl.DGLGraph().to(self.device)
+        u, v = self._edge_indices.src, self._edge_indices.tgt
+        num_nodes = self.get_node_num()
+        dgl_g = dgl.graph(data=(u, v), num_nodes=num_nodes).to(self.device)
         # Add nodes and their features
-        dgl_g.add_nodes(num=self.get_node_num())
         for key, value in self._node_features.items():
             if value is not None:
                 dgl_g.ndata[key] = value
         # Add edges and their features
-        dgl_g.add_edges(u=self._edge_indices.src, v=self._edge_indices.tgt)
         for key, value in self._edge_features.items():
             if value is not None:
                 dgl_g.edata[key] = value

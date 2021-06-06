@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./imgs/logo_graph4nlp.png" width="500" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_logo.png" width="800" class="center" alt="logo"/>
     <br/>
 </p>
 
@@ -47,28 +47,27 @@
 
 # Graph4NLP
 
-***Graph4NLP*** is an easy-to-use library for R&D at the intersection of **Graph Deep Learning** and
-**Natural Language Processing**. It provides both **full implementations** of state-of-the-art models for data scientists and also **flexible interfaces** to build custom models for researchers and developers with whole-pipeline support. Built upon highly-optimized runtime libraries including [DGL](https://github.com/dmlc/dgl) , ***Graph4NLP*** is both high running effieciency and great extensibility. The architecture of ***Graph4NLP*** is shown in the following figure, where boxes with dashed lines represents the features under development.
+***Graph4NLP*** is an easy-to-use library for R&D at the intersection of **Deep Learning on Graphs** and
+**Natural Language Processing** (i.e., DLG4NLP). It provides both **full implementations** of state-of-the-art models for data scientists and also **flexible interfaces** to build customized models for researchers and developers with whole-pipeline support. Built upon highly-optimized runtime libraries including [DGL](https://github.com/dmlc/dgl) , ***Graph4NLP*** has both high running efficiency and great extensibility. The architecture of ***Graph4NLP*** is shown in the following figure, where boxes with dashed lines represents the features under development. Graph4NLP consists of four different layers: 1) Data Layer, 2) Module Layer, 3) Model Layer, and 4) Application Layer.
 
-<img src="docs/arch.png" alt="architecture" style="zoom:25%;" />
+<p align="center">
+    <img src="docs/arch.png" alt="architecture" width="700" />
+    <br>
+    <b>Figure</b>: Graph4NLP Overall Architecture
+</p>
 
-## <img src="https://camo.githubusercontent.com/1e8f96f03822691f20318ad1eecc6c229736752cbc41cbb3ebf8f834b29e40ee/687474703a2f2f646174612e64676c2e61692f61737365742f696d6167652f6e65772e706e67" alt="img" style="zoom:8%;" />Graph4NLP News
-
-**20/05/2021:** The **v1.0.0 release**. Try it out!
+## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
+**06/05/2021:** The **v0.4.0 release**. Try it out!
 
 ## Quick tour
 
-***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (
-see [here](http://saizhuo.wang/g4nlp/index.html) for tutorial). Here is a example of how to use the [*
-Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering,
-semantic parsing, and various other nlp tasks that can be abstracted as graph to sequence problem and show superior
+***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (check out [Graph4NLP Documentation](http://saizhuo.wang/g4nlp/index.html)). Here is an example of how to use the [*Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering,
+semantic parsing, and various other NLP tasks that can be abstracted as graph-to-sequence problem and has shown superior
 performance).
 
-If you want to further improve model performance, we also provide interfaces of pre-trained models,
-including [GloVe](https://nlp.stanford.edu/pubs/glove.pdf), [BERT](https://arxiv.org/abs/1810.04805), etc.
-
-We also offer many other effective models such as graph classification models, graph to tree models, etc. If you are
-interested in related research problems, welcome to use our library and refer to our [graph4nlp survey](to_be_add).
+<!-- If you want to further improve model performance, we also support pre-trained models including [BERT](https://arxiv.org/abs/1810.04805), etc.
+ -->
+We also offer other high-level model APIs such as graph-to-tree models. If you are interested in DLG4NLP related research problems, you are very welcome to use our library and refer to our [graph4nlp survey](to_be_add).
 
 ```python
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
@@ -97,14 +96,44 @@ scores = graph2seq(batch_data["graph_data"], batch_data["tgt_seq"])  # [Batch_si
 
 ## Overview
 
+Our Graph4NLP computing flow is shown as below.
 <p align="center">
-<img src="./imgs/graph4nlp_flow_v2.png" width="1000" class="center" alt="logo"/>
+<img src="./imgs/graph4nlp_flow.png" width="1000" class="center" alt="logo"/>
     <br/>
 </p>
 
 ## Graph4NLP Models and Applications
 
-Graph2Seq, Seq2Seq, Graph2Tree
+### Graph4NLP models
+
+- [Graph2Seq](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2seq.py): a general end-to-end neural encoder-decoder model that maps an input graph to a sequence of tokens.  
+- [Graph2Tree](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2tree.py): a general end-to-end neural encoder-decoder model that maps an input graph to a tree structure.
+
+### Graph4LP applications
+
+We provide a comprehensive collection of NLP applications, together with detailed examples as follows:
+
+- [Text classification](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/text_classification): to give the sentence or document an appropriate label.
+- [Semantic parsing](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/semantic_parsing): to translate natural language into a machine-interpretable formal meaning representation.
+- [Neural machine translation](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/nmt): to translate a sentence in a source language to a different target language.
+- [summarization](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/summarization): to generate a shorter version of input texts which could preserve major meaning.
+- [KG completion](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/kg_completion): to predict missing relations between two existing entities in konwledge graphs.
+- [Math word problem solving](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/math_word_problem): to automatically solve mathematical exercises that provide background information about a problem in easy-to-understand language.
+- [Name entity recognition](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/name_entity_recognition): to tag entities in input texts with their corresponding type.
+- [Question generation](https://github.com/graph4ai/graph4nlp/tree/master/examples/pytorch/question_generation): to generate an valid and fluent question based on the given passage and target answer (optional).
+
+
+## Performance
+
+| Task                       |              Dataset             |   GNN    Model      | Graph construction                           | Evaluation         |          Performance          |
+|----------------------------|:--------------------------------:|:-------------------:|----------------------------------------------|--------------------|:-----------------------------:|
+| Text classification        | TRECT<br> CAirline<br> CNSST<br> |           GAT       | Dependency                                   |        Accuracy    | 0.948<br> 0.769<br> 0.538<br> |
+| Semantic Parsing           |               JOBS               |           SAGE      | Constituency                                 | Execution accuracy |             0.936             |
+| Question generation        |               SQuAD             |           GGNN       | Dependency                                      | BLEU-4             |             0.15175	            |
+| Machine translation        |              IWSLT14             |           GCN       | Dynamic                                      | BLEU-4             |             0.3212            |
+| Summarization              |             CNN(30k)             |           GCN       | Dependency                                   | ROUGE-1            |              26.4             |
+| Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.4                          |
+| Math word problem          | MAWPS  <br> MATHQA               | SAGE                | Dynamic                                      | Solution accuracy <br> Exact match  | 76.4<br>  61.07  |
 
 ## Installation
 
@@ -112,13 +141,36 @@ Currently, users can install Graph4NLP via **pip** or **source code**. Graph4NLP
 
 - Linux-based systems (tested on Ubuntu 18.04 and later)
 - macOS (only CPU version)
-- Windows 10 
+- Windows 10 (only support pytorch >= 1.8)
+
+### Installation via pip (binaries)
+We provide pip wheels for all major OS/PyTorch/CUDA combinations. Note that we highly recommend `Windows` users refer to `Installation via source code` due to compatibility.
+
+#### Ensure that at least PyTorch (>=1.6.0) is installed:
+Note that `>=1.6.0` is ok.
+``` bash
+$ python -c "import torch; print(torch.__version__)"
+>>> 1.6.0
+```
+#### Find the CUDA version PyTorch was installed with (for GPU users):
+```bash
+$ python -c "import torch; print(torch.version.cuda)"
+>>> 10.2
+```
+
+#### Install the relevant packages:
+```bash
+pip install graph4nlp${CUDA}
+```
+where `${CUDA}` should be replaced by the specific CUDA version (`none` (CPU version), `"-cu92"`, `"-cu101"`, `"-cu102"`, `"-cu110"`). The following table shows the concrete command lines. For CUDA 11.1 users, please refer to `Installation via source code`.
 
 ### Installation via pip
+For installation via pip, currently we only support CUDA versions up to 11.0. For CUDA 11.1, please use the source code
+to install(see the next part).
 
 | Platform  | Command                       |
 | --------- | ----------------------------- |
-| CPU       | `pip install graph4nlp`       |
+| CPU       | `pip install graph4nlp`   |
 | CUDA 9.2  | `pip install graph4nlp-cu92`  |
 | CUDA 10.1 | `pip install graph4nlp-cu101` |
 | CUDA 10.2 | `pip install graph4nlp-cu102` |
@@ -126,20 +178,31 @@ Currently, users can install Graph4NLP via **pip** or **source code**. Graph4NLP
 
 ### Installation via source code
 
-The source code of Graph4NLP can be retrieved from GitHub:
-
+#### Ensure that at least PyTorch (>=1.6.0) is installed:
+Note that `>=1.6.0` is ok.
+``` bash
+$ python -c "import torch; print(torch.__version__)"
+>>> 1.6.0
+```
+#### Find the CUDA version PyTorch was installed with (for GPU users):
+```bash
+$ python -c "import torch; print(torch.version.cuda)"
+>>> 10.2
+```
+#### Download the source code of `Graph4NLP` from Github:
 ```bash
 git clone https://github.com/graph4ai/graph4nlp.git
 cd graph4nlp
 ```
-
+#### Configure the CUDA version
 Then run `./configure` (or `./configure.bat`  if you are using Windows 10) to config your installation. The configuration program will ask you to specify your CUDA version. If you do not have a GPU, please type 'cpu'.
-
 ```bash
 ./configure
 ```
 
-Finally, use pip to install the package:
+#### Install the relevant packages:
+
+Finally, install the package:
 
 ```shell
 python setup.py install
@@ -149,11 +212,11 @@ python setup.py install
 
 | Releases | Date       | Features                                                     |
 | -------- | ---------- | ------------------------------------------------------------ |
-| v1.0.0   | 2021-05-20 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
+| v0.4.0   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
-## More resources
+## New to Deep Learning on Graphs for NLP?
 
-If you are new to using graph deep learning methods for natural language processing tasks, you can refer to our survey paper which provides an overview of this research direction. If you want detailed reference to  our library, please refer to our docs.
+If you want to learn more on applying Deep Learning on Graphs techniques to NLP tasks, you can refer to our survey paper which provides an overview of this existing research direction. If you want detailed reference to our library, please refer to our docs.
 
 [Docs]() | [Graph4nlp survey]() | [Related paper list]() | [Workshops]()
 
@@ -167,9 +230,9 @@ We expect all contributions discussed in the issue tracker and going through PRs
 
 ## Citation
 
-If you found this code useful, please consider citing the following paper:
+If you found this code useful, please consider citing the following paper (please stay tuned!).
 
-Yu Chen, Lingfei Wu and Mohammed J. Zaki. **"Iterative Deep Graph Learning for Graph Neural Networks: Better and Robust
+<!-- Yu Chen, Lingfei Wu and Mohammed J. Zaki. **"Iterative Deep Graph Learning for Graph Neural Networks: Better and Robust
 Node Embeddings."** In *Proceedings of the 34th Conference on Neural Information Processing Systems (NeurIPS 2020), Dec
 6-12, 2020.*
 
@@ -179,10 +242,10 @@ Node Embeddings."** In *Proceedings of the 34th Conference on Neural Information
       journal={Advances in Neural Information Processing Systems},
       volume={33},
       year={2020}
-    }
+    } -->
 
 ## Team
-Graph4AI Team. Lingfei Wu, Yu Chen, Kai Shen, Hanning Gao, Xiaojie Guo, Shucheng Li, Saizhuo Wang
+Graph4AI Team. Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang
 
 ## License
 Graph4NLP uses Apache License 2.0.

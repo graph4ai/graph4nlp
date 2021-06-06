@@ -1,8 +1,6 @@
+config
 # IDE
 .idea
-*.pt
-*.pkl
-*.pth
 run_*.sh
 # igore log files
 log.txt
@@ -10,11 +8,12 @@ log.txt
 **/__pycache__/*
 *.py[cod]
 *$py.class
-**/data/*
+# **/data/*
 **/out/*
 **/log/*
 **/save/*
-**/out/*
+**/processed/*
+**/co03/*
 **/.vector_cache/*
 
 # C extensions
@@ -142,4 +141,3 @@ cscope.*
 
 # asv
 .asv
-dataset

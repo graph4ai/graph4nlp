@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
+
 import json
 import os
 import time
@@ -32,7 +35,7 @@ from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
-from .fused_embedding_construction import FusedEmbeddingConstruction
+from fused_embedding_construction import FusedEmbeddingConstruction
 import multiprocessing
 import torch.multiprocessing
 import math

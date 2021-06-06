@@ -384,7 +384,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         for triple_info in parsed_object["graph_content"]:
             if edge_strategy is None:
                 ret_graph.add_edge(triple_info["src"]['id'], triple_info['tgt']['id'])
-                # eid = ret_graph.get_edge_num() - 1
                 eids = ret_graph.edge_ids(triple_info["src"]['id'], triple_info['tgt']['id'])
                 for eid in eids:
                     ret_graph.edge_attributes[eid]['token'] = triple_info['edge_tokens']
