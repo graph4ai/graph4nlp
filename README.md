@@ -156,23 +156,38 @@ $ python -c "import torch; print(torch.version.cuda)"
 >>> 10.2
 ```
 
-#### Install the relevant packages:
+#### Install the relevant dependencies:
+`torchtext` is needed since Graph4NLP relies on it to implement embeddings:
+```shell
+pip install torchtext
+```
+
+#### Install Graph4NLP
 ```bash
 pip install graph4nlp${CUDA}
 ```
 where `${CUDA}` should be replaced by the specific CUDA version (`none` (CPU version), `"-cu92"`, `"-cu101"`, `"-cu102"`, `"-cu110"`). The following table shows the concrete command lines. For CUDA 11.1 users, please refer to `Installation via source code`.
 
-### Installation via pip
-For installation via pip, currently we only support CUDA versions up to 11.0. For CUDA 11.1, please use the source code
-to install(see the next part).
 
-| Platform  | Command                       |
-| --------- | ----------------------------- |
-| CPU       | `pip install graph4nlp`   |
-| CUDA 9.2  | `pip install graph4nlp-cu92`  |
-| CUDA 10.1 | `pip install graph4nlp-cu101` |
-| CUDA 10.2 | `pip install graph4nlp-cu102` |
-| CUDA 11.0 | `pip install graph4nlp-cu110` |
+[comment]: <> (#### Install Graph4NLP)
+
+[comment]: <> (For installation via pip, currently we only support CUDA versions up to 11.0. For CUDA 11.1, please use the source code)
+
+[comment]: <> (to install&#40;see the next part&#41;.)
+
+[comment]: <> (| Platform  | Command                       |)
+
+[comment]: <> (| --------- | ----------------------------- |)
+
+[comment]: <> (| CPU       | `pip install graph4nlp`   |)
+
+[comment]: <> (| CUDA 9.2  | `pip install graph4nlp-cu92`  |)
+
+[comment]: <> (| CUDA 10.1 | `pip install graph4nlp-cu101` |)
+
+[comment]: <> (| CUDA 10.2 | `pip install graph4nlp-cu102` |)
+
+[comment]: <> (| CUDA 11.0 | `pip install graph4nlp-cu110` |)
 
 ### Installation via source code
 
@@ -187,6 +202,13 @@ $ python -c "import torch; print(torch.__version__)"
 $ python -c "import torch; print(torch.version.cuda)"
 >>> 10.2
 ```
+
+#### Install relevant dependencies:
+`torchtext` is needed since Graph4NLP relies on it to implement embeddings:
+```shell
+pip install torchtext
+```
+
 #### Download the source code of `Graph4NLP` from Github:
 ```bash
 git clone https://github.com/graph4ai/graph4nlp.git
