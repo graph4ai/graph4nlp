@@ -9,41 +9,39 @@
 
 [license-image]:https://img.shields.io/badge/License-Apache%202.0-blue.svg
 
-[license-url]:https://github.com/hugochan/IDGL/blob/master/LICENSE
+[license-url]:https://github.com/graph4ai/graph4nlp/blob/master/LICENSE
 
-[contributor-image]:https://img.shields.io/github/contributors/hugochan/IDGL
+[contributor-image]:https://img.shields.io/github/contributors/graph4ai/graph4nlp
 
-[contributor-url]:https://github.com/hugochan/IDGL/contributors
+[contributor-url]:https://github.com/graph4ai/graph4nlp/contributors
 
 [contributing-image]:https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat
 
 [contributing-url]:to_be_add
 
-[issues-image]:https://img.shields.io/github/issues/hugochan/IDGL
+[issues-image]:https://img.shields.io/github/issues/graph4ai/graph4nlp
 
-[issues-url]:https://github.com/hugochan/IDGL/issues
+[issues-url]:https://github.com/graph4ai/graph4nlp/issues
 
-[forks-image]:https://img.shields.io/github/forks/hugochan/IDGL?style=social
+[forks-image]:https://img.shields.io/github/forks/graph4ai/graph4nlp?style=social
 
-[forks-url]:https://github.com/hugochan/IDGL/fork
+[forks-url]:https://github.com/graph4ai/graph4nlp/fork
 
-[stars-image]:https://img.shields.io/github/stars/hugochan/IDGL?style=social
+<!-- [stars-image]:https://img.shields.io/github/stars/graph4ai/graph4nlp?style=social
 
-[stars-url]:https://github.com/hugochan/IDGL/star
+[stars-url]:https://github.com/graph4ai/graph4nlp/stars -->
 
-### for repo
-
-![Last Commit](https://img.shields.io/github/last-commit/hugochan/IDGL)
+![Last Commit](https://img.shields.io/github/last-commit/graph4ai/graph4nlp)
 [![pypi][pypi-image]][pypi-url]
 [![Contributors][contributor-image]][contributor-url]
 [![Contributing][contributing-image]][contributing-url]
 [![License][license-image]][license-url]
 [![Issues][issues-image]][issues-url]
 
-### for docs
+<!-- ### for docs
 
 [![Fork][forks-image]][forks-url]
-[![Star][stars-image]][stars-url]
+[![Star][stars-image]][stars-url] -->
 
 # Graph4NLP
 
@@ -218,7 +216,8 @@ python setup.py install
 
 If you want to learn more on applying Deep Learning on Graphs techniques to NLP tasks, you can refer to our survey paper which provides an overview of this existing research direction. If you want detailed reference to our library, please refer to our docs.
 
-[Docs]() | [Graph4nlp survey]() | [Related paper list]() | [Workshops]()
+<!-- [Docs]() | [Graph4nlp survey]() | [Related paper list]() | [Workshops]() -->
+[Docs](http://saizhuo.wang/g4nlp/index.html) | [Graph4nlp survey]() | [Graph4NLP Tutorials](https://www.aclweb.org/anthology/2021.naacl-tutorials.3.pdf) | [Graph4NLP Literature Lists](https://github.com/graph4ai/graph4nlp_literature ) | [Workshops]()
 
 ## Contributing
 
