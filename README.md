@@ -55,7 +55,7 @@
 </p>
 
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
-**06/05/2021:** The **v0.4.0 release**. Try it out!
+**06/05/2021:** The **v0.4.1 release**. Try it out!
 
 ## Quick tour
 
@@ -170,26 +170,13 @@ pip install graph4nlp${CUDA}
 ```
 where `${CUDA}` should be replaced by the specific CUDA version (`none` (CPU version), `"-cu92"`, `"-cu101"`, `"-cu102"`, `"-cu110"`). The following table shows the concrete command lines. For CUDA 11.1 users, please refer to `Installation via source code`.
 
-
-[comment]: <> (#### Install Graph4NLP)
-
-[comment]: <> (For installation via pip, currently we only support CUDA versions up to 11.0. For CUDA 11.1, please use the source code)
-
-[comment]: <> (to install&#40;see the next part&#41;.)
-
-[comment]: <> (| Platform  | Command                       |)
-
-[comment]: <> (| --------- | ----------------------------- |)
-
-[comment]: <> (| CPU       | `pip install graph4nlp`   |)
-
-[comment]: <> (| CUDA 9.2  | `pip install graph4nlp-cu92`  |)
-
-[comment]: <> (| CUDA 10.1 | `pip install graph4nlp-cu101` |)
-
-[comment]: <> (| CUDA 10.2 | `pip install graph4nlp-cu102` |)
-
-[comment]: <> (| CUDA 11.0 | `pip install graph4nlp-cu110` |)
+| Platform  | Command                       |
+| --------- | ----------------------------- |
+| CPU       | `pip install graph4nlp`   |
+| CUDA 9.2  | `pip install graph4nlp-cu92`  |
+| CUDA 10.1 | `pip install graph4nlp-cu101` |
+| CUDA 10.2 | `pip install graph4nlp-cu102` |
+| CUDA 11.0 | `pip install graph4nlp-cu110` |
 
 ### Installation via source code
 
@@ -235,7 +222,7 @@ python setup.py install
 
 | Releases | Date       | Features                                                     |
 | -------- | ---------- | ------------------------------------------------------------ |
-| v0.4.0   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
+| v0.4.1   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
 ## New to Deep Learning on Graphs for NLP?
 
