@@ -158,7 +158,7 @@ $ python -c "import torch; print(torch.version.cuda)"
 
 #### Install the relevant dependencies:
 `torchtext` is needed since Graph4NLP relies on it to implement embeddings.
-Please pay attention to the PyTorch requirements before install `torchtext` with the following script! For detailed version matching please refer [here](https://pypi.org/project/torchtext/)
+Please pay attention to the PyTorch requirements before install `torchtext` with the following script! For detailed version matching please refer [here](https://pypi.org/project/torchtext/).
 ``` bash
 pip install torchtext # >=0.7.0
 ```
@@ -207,7 +207,7 @@ $ python -c "import torch; print(torch.version.cuda)"
 
 #### Install the relevant dependencies:
 `torchtext` is needed since Graph4NLP relies on it to implement embeddings.
-Please pay attention to the PyTorch requirements before install `torchtext` with the following script! For detailed version matching please refer [here](https://pypi.org/project/torchtext/)
+Please pay attention to the PyTorch requirements before install `torchtext` with the following script! For detailed version matching please refer [here](https://pypi.org/project/torchtext/).
 ``` bash
 pip install torchtext # >=0.7.0
 ```
