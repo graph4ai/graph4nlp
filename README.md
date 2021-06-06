@@ -57,7 +57,7 @@
 </p>
 
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
-**20/05/2021:** The **v0.3.0 release**. Try it out!
+**06/05/2021:** The **v0.3.0 release**. Try it out!
 
 ## Quick tour
 
@@ -212,7 +212,7 @@ python setup.py install
 
 | Releases | Date       | Features                                                     |
 | -------- | ---------- | ------------------------------------------------------------ |
-| v0.3.0   | 2021-05-20 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
+| v0.3.0   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
 ## New to Deep Learning on Graphs for NLP?
 
@@ -245,7 +245,7 @@ Node Embeddings."** In *Proceedings of the 34th Conference on Neural Information
     } -->
 
 ## Team
-Graph4AI Team. Lingfei Wu, Yu Chen, Kai Shen, Hanning Gao, Xiaojie Guo, Shucheng Li, Saizhuo Wang
+Graph4AI Team. Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang
 
 ## License
 Graph4NLP uses Apache License 2.0.
