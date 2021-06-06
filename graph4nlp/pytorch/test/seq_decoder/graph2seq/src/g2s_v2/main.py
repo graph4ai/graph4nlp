@@ -80,7 +80,7 @@ def grid_search_main(config):
 ################################################################################
 def get_config(config_path="config.yml"):
     with open(config_path, "r") as setting:
-        config = yaml.load(setting)
+        config = yaml.safe_load(setting)
     return config
 
 def get_args():

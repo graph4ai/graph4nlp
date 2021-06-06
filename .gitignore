@@ -1,4 +1,3 @@
-config
 # IDE
 .idea
 run_*.sh
@@ -141,3 +140,6 @@ cscope.*
 
 # asv
 .asv
+
+# config file
+/config

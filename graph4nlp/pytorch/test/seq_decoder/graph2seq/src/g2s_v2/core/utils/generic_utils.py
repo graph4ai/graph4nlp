@@ -46,5 +46,5 @@ def create_mask(x, N, device=None):
 
 def get_config(config_path="config.yml"):
     with open(config_path, "r") as setting:
-        config = yaml.load(setting)
+        config = yaml.safe_load(setting)
     return config

@@ -29,5 +29,5 @@ def update_values_api(dict_from, dict_to):
 
 def get_yaml_config(config_path="config.yml"):
     with open(config_path, "r") as setting:
-        config = yaml.load(setting)
+        config = yaml.safe_load(setting)
     return config

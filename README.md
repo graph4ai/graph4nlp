@@ -55,7 +55,7 @@
 </p>
 
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
-**06/05/2021:** The **v0.4.0 release**. Try it out!
+**06/05/2021:** The **v0.4.1 release**. Try it out!
 
 ## Quick tour
 
@@ -156,15 +156,19 @@ $ python -c "import torch; print(torch.version.cuda)"
 >>> 10.2
 ```
 
-#### Install the relevant packages:
+#### Install the relevant dependencies:
+`torchtext` is needed since Graph4NLP relies on it to implement embeddings.
+Please pay attention to the PyTorch requirements before installing `torchtext` with the following script! For detailed version matching please refer [here](https://pypi.org/project/torchtext/).
+``` bash
+pip install torchtext # >=0.7.0
+```
+
+
+#### Install Graph4NLP
 ```bash
 pip install graph4nlp${CUDA}
 ```
 where `${CUDA}` should be replaced by the specific CUDA version (`none` (CPU version), `"-cu92"`, `"-cu101"`, `"-cu102"`, `"-cu110"`). The following table shows the concrete command lines. For CUDA 11.1 users, please refer to `Installation via source code`.
-
-### Installation via pip
-For installation via pip, currently we only support CUDA versions up to 11.0. For CUDA 11.1, please use the source code
-to install(see the next part).
 
 | Platform  | Command                       |
 | --------- | ----------------------------- |
@@ -187,6 +191,14 @@ $ python -c "import torch; print(torch.__version__)"
 $ python -c "import torch; print(torch.version.cuda)"
 >>> 10.2
 ```
+
+#### Install the relevant dependencies:
+`torchtext` is needed since Graph4NLP relies on it to implement embeddings.
+Please pay attention to the PyTorch requirements before installing `torchtext` with the following script! For detailed version matching please refer [here](https://pypi.org/project/torchtext/).
+``` bash
+pip install torchtext # >=0.7.0
+```
+
 #### Download the source code of `Graph4NLP` from Github:
 ```bash
 git clone https://github.com/graph4ai/graph4nlp.git
@@ -210,7 +222,7 @@ python setup.py install
 
 | Releases | Date       | Features                                                     |
 | -------- | ---------- | ------------------------------------------------------------ |
-| v0.4.0   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
+| v0.4.1   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
 ## New to Deep Learning on Graphs for NLP?
 
