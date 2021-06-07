@@ -22,7 +22,7 @@ def get_args():
     parser.add_argument("--share-vocab", type=bool, default=True, help="whether to share vocab")
 
     parser.add_argument("--pretrained_word_emb_name", type=str,
-                        default='6B', help="")
+                        default='None', help="")
     parser.add_argument("--pretrained_word_emb_url", type=str,
                         default=None, help="")
     parser.add_argument("--pretrained_word_emb_cache_dir", type=str,
