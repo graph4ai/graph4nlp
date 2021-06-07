@@ -188,7 +188,7 @@ class Jobs:
             self.model.train()
             loss_to_print = self.train_epoch(epoch)
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
-            if epoch > 2 and epoch % 5 == 0:
+            if epoch > 2 and epoch % 2 == 0:
                 test_acc = self.eval((self.model))
                 if test_acc > best_acc:
                     best_acc = test_acc
