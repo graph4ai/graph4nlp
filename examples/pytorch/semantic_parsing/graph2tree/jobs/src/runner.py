@@ -160,7 +160,7 @@ class Jobs:
     def train_epoch(self, epoch):
         loss_to_print = 0
         num_batch = len(self.train_data_loader)
-        for step, data in tqdm(self.train_data_loader, desc=f'Epoch {epoch:02d}'):
+        for step, data in tqdm(enumerate(self.train_data_loader, desc=f'Epoch {epoch:02d}')):
             batch_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
             batch_graph = batch_graph.to(self.device)
             self.optimizer.zero_grad()
