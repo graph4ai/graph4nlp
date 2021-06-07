@@ -107,7 +107,7 @@ Our Graph4NLP computing flow is shown as below.
 - [Graph2Seq](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2seq.py): a general end-to-end neural encoder-decoder model that maps an input graph to a sequence of tokens.  
 - [Graph2Tree](https://github.com/graph4ai/graph4nlp/blob/master/graph4nlp/pytorch/models/graph2tree.py): a general end-to-end neural encoder-decoder model that maps an input graph to a tree structure.
 
-### Graph4LP applications
+### Graph4NLP applications
 
 We provide a comprehensive collection of NLP applications, together with detailed examples as follows:
 
