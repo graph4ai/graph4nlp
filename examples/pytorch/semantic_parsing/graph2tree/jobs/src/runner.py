@@ -179,7 +179,7 @@ class Jobs:
                 self.model.parameters(), self.opt["grad_clip"])
             self.optimizer.step()
             loss_to_print += loss
-        print("Loss = {:.3f}\n-------------".format(loss_to_print/num_batch))
+        print("-------------\nLoss = {:.3f}".format(loss_to_print/num_batch))
 
     def train(self):
         print("-------------\nStarting training.")
