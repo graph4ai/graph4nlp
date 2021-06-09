@@ -214,8 +214,7 @@ class Vocab():
                 self.add_symbol(word_)
             if self.vocab_size > max_vocab_size:
                 break
-        print(self.pretrained_word_emb_name)
-        if self.pretrained_word_emb_name is None:
+        if self.pretrained_word_emb_name == 'None':
             self.randomize_embeddings(self.embedding_dims)
         else:
             # print("loadding pretrained embedding file in {}".format(self.pretrained_embedding_fn))
