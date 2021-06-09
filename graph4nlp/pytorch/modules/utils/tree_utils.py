@@ -200,7 +200,6 @@ class Vocab():
                     self.add_symbol(l_list[0])
                 if self.vocab_size > max_vocab_size:
                     break
-        print(self.pretrained_word_emb_name)
         if self.pretrained_word_emb_name is None:
             self.randomize_embeddings(self.embedding_dims)
         else:
@@ -215,6 +214,7 @@ class Vocab():
                 self.add_symbol(word_)
             if self.vocab_size > max_vocab_size:
                 break
+        print(self.pretrained_word_emb_name)
         if self.pretrained_word_emb_name is None:
             self.randomize_embeddings(self.embedding_dims)
         else:
