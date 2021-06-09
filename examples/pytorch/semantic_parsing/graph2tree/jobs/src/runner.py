@@ -186,7 +186,7 @@ class Jobs:
         for epoch in range(1, self.opt["max_epochs"]+1):
             self.model.train()
             self.train_epoch(epoch)
-            if epoch > 10 and epoch % 4 == 0:
+            if epoch > 80 and epoch % 4 == 0:
                 self.eval((self.model))
 
     def eval(self, model):
