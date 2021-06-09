@@ -38,7 +38,6 @@ def is_all_same(c1, c2, form_manager):
         d1 = " ".join([form_manager.get_idx_symbol(x) for x in c1])
         d2 = " ".join([form_manager.get_idx_symbol(x) for x in c2])
         if get_split_comma(d1) == get_split_comma(d2):
-            print(d1, d2)
             return True
         return False
     raise NotImplementedError("you should not arrive here!")
