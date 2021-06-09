@@ -250,7 +250,7 @@ class Vocab():
         word_emb, hit, cnt = word_model.get_vecs_by_tokens(tokens=word_list, lower_case_backup=self.lower_case)
         
         self.embeddings = word_emb.numpy()
-        self.embeddings[self.get_symbol_idx(self.unk_token)] = np.zeros(word_model.dim)
+        self.embeddings[self.get_symbol_idx(self.pad_token)] = np.zeros(word_model.dim)
 
     def randomize_embeddings(self, n_dims, scale=0.08):
         """Use random word embeddings for initialization."""
