@@ -54,7 +54,7 @@ graph_embedding_args:
     bias: true
     norm: "batch_norm"
     activation: "relu"
-    use_edge_weight: true
+    use_edge_weight: false
 
 decoder_args:
   rnn_decoder_share:
