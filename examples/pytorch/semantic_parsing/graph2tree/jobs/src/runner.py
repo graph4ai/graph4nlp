@@ -245,10 +245,10 @@ class Jobs:
 
             reference_list.append(reference)
             candidate_list.append(candidate)
-        test_acc = compute_tree_accuracy(
+        eval_acc = compute_tree_accuracy(
             candidate_list, reference_list, eval_vocab)
-        print(f"Accuracy: {test_acc:.4f}")
-        return test_acc
+        print(f"Accuracy: {eval_acc:.4f}")
+        return eval_acc
 
 if __name__ == "__main__":
     from config import get_args
