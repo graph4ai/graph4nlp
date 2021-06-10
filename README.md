@@ -23,13 +23,13 @@
 
 [issues-url]:https://github.com/graph4ai/graph4nlp/issues
 
-[forks-image]:https://img.shields.io/github/forks/graph4ai/graph4nlp?style=social
+[forks-image]:https://img.shields.io/github/forks/graph4ai/graph4nlp
 
 [forks-url]:https://github.com/graph4ai/graph4nlp/fork
 
-<!-- [stars-image]:https://img.shields.io/github/stars/graph4ai/graph4nlp?style=social
+[stars-image]:https://img.shields.io/github/stars/graph4ai/graph4nlp
 
-[stars-url]:https://github.com/graph4ai/graph4nlp/stars -->
+[stars-url]:https://github.com/graph4ai/graph4nlp/stars
 
 ![Last Commit](https://img.shields.io/github/last-commit/graph4ai/graph4nlp)
 [![pypi][pypi-image]][pypi-url]
@@ -37,11 +37,8 @@
 [![Contributing][contributing-image]][contributing-url]
 [![License][license-image]][license-url]
 [![Issues][issues-image]][issues-url]
-
-<!-- ### for docs
-
 [![Fork][forks-image]][forks-url]
-[![Star][stars-image]][stars-url] -->
+[![Star][stars-image]][stars-url]
 
 # Graph4NLP
 
