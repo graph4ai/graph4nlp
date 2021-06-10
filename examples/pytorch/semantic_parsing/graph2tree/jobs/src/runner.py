@@ -138,9 +138,7 @@ class Jobs:
     def _build_model(self):
         '''For encoder-decoder'''
         self.model = Graph2Tree.from_args(self.opt, vocab_model=self.vocab_model)
-        for name, param in self.model.named_parameters():
-            print(name)
-        # self.model.init(self.opt["init_weight"])
+        self.model.init(self.opt["init_weight"])
         self.model.to(self.device)
 
     def _build_optimizer(self):
@@ -177,8 +175,8 @@ class Jobs:
                     batch_tree_list_refined.append(tgt_tree)
             loss = self.model(batch_graph, batch_tree_list_refined if self.use_copy else batch_tree_list, oov_dict=oov_dict)
             loss.backward()
-            torch.nn.utils.clip_grad_value_(
-                self.model.parameters(), self.opt["grad_clip"])
+            # torch.nn.utils.clip_grad_value_(
+            #     self.model.parameters(), self.opt["grad_clip"])
             self.optimizer.step()
             loss_to_print += loss
         print("-------------\nLoss = {:.3f}".format(loss_to_print/num_batch))
