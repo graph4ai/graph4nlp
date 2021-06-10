@@ -247,7 +247,7 @@ class Jobs:
             candidate_list.append(candidate)
         eval_acc = compute_tree_accuracy(
             candidate_list, reference_list, eval_vocab)
-        print(f"Accuracy: {eval_acc:.4f}")
+        print(f"Accuracy: {eval_acc:.4f}\n")
         return eval_acc
 
 if __name__ == "__main__":

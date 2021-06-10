@@ -190,9 +190,9 @@ class Geo:
             loss_to_print = self.train_epoch(epoch)
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
             if epoch > 2 and epoch % 5 == 0:
-                test_acc = self.eval((self.model))
-                if test_acc > best_acc:
-                    best_acc = test_acc
+                val_acc = self.eval((self.model))
+                if val_acc > best_acc:
+                    best_acc = val_acc
         print("Best Acc: {:.3f}\n".format(best_acc))
         return best_acc
 
@@ -250,7 +250,7 @@ class Geo:
             candidate_list.append(candidate)
         eval_acc = compute_tree_accuracy(
             candidate_list, reference_list, eval_vocab)
-        print("TEST ACCURACY = {:.3f}\n".format(eval_acc))
+        print("Accuracy: {:.3f}\n".format(eval_acc))
         return eval_acc
 
 if __name__ == "__main__":
