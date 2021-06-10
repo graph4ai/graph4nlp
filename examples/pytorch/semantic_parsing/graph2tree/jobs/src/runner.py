@@ -175,19 +175,23 @@ class Jobs:
                     batch_tree_list_refined.append(tgt_tree)
             loss = self.model(batch_graph, batch_tree_list_refined if self.use_copy else batch_tree_list, oov_dict=oov_dict)
             loss.backward()
-            # torch.nn.utils.clip_grad_value_(
-            #     self.model.parameters(), self.opt["grad_clip"])
+            torch.nn.utils.clip_grad_value_(
+                self.model.parameters(), self.opt["grad_clip"])
             self.optimizer.step()
             loss_to_print += loss
         print("-------------\nLoss = {:.3f}".format(loss_to_print/num_batch))
 
     def train(self):
         print("-------------\nStarting training.")
+        best_acc = 0.0
         for epoch in range(1, self.opt["max_epochs"]+1):
             self.model.train()
             self.train_epoch(epoch)
-            if epoch > 20 and epoch % 4 == 0:
-                self.eval((self.model))
+            if epoch >= 40:
+                val_acc = self.eval((self.model))
+                if val_acc > best_acc:
+                    best_acc = val_acc
+        print(f"Best Accuracy: {val_acc:.4f}")
 
     def eval(self, model):
         from evaluation import convert_to_string, compute_tree_accuracy
@@ -243,7 +247,8 @@ class Jobs:
             candidate_list.append(candidate)
         test_acc = compute_tree_accuracy(
             candidate_list, reference_list, eval_vocab)
-        print("TEST ACCURACY = {:.4f}\n".format(test_acc))
+        print(f"Accuracy: {test_acc:.4f}")
+        return test_acc
 
 if __name__ == "__main__":
     from config import get_args
