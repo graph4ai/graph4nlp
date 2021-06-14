@@ -199,7 +199,8 @@ class Jobs:
         reference_list = []
         candidate_list = []
         for data in tqdm(self.test_data_loader, desc="Eval: "):
-            print(data['original_dec_tree_batch'][0])
+            if (data['original_dec_tree_batch'][0] == "<TBD>"):
+                continue
             eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
             eval_input_graph = eval_input_graph.to(self.device)
             oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
