@@ -191,9 +191,11 @@ class Jobs:
                 val_acc = self.eval((self.model))
                 if val_acc > best_acc:
                     best_acc = val_acc
-            if epoch == self.opt["max_epochs"]:
-                self.make_inference(self.model) # replace the model with the best model you saved.
         print(f"Best Accuracy: {val_acc:.4f}")
+        print("="*20 + "making inference" + "="*20)
+        self.make_inference(self.model) # replace the model with the best model you saved.
+        print("="*20 + "making inference" + "="*20)
+
 
     def eval(self, model):
         from evaluation import convert_to_string, compute_tree_accuracy
