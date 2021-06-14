@@ -138,3 +138,13 @@ there must be some job out there for a languageid0 titleid0 that think in platfo
 what are the job for titleid0 in locid0 that has salari num_salary that use languageid0 and not relat with areaid0	job ( ANS ) , title ( ANS , titleid0 ) , loc ( ANS , locid0 ) , salary_greater_than ( ANS , num_salary , year ) , language ( ANS , languageid0 ) , \+ area ( ANS , areaid0 )
 id like to see the job in locid0 for a languageid0 titleid0 make at least num_salary a year invlov areaid0	job ( ANS ) , loc ( ANS , locid0 ) , language ( ANS , languageid0 ) , title ( ANS , titleid0 ) , salary_greater_than ( ANS , num_salary , year ) , area ( ANS , areaid0 )
 show job that are not in locid0 pay less than num_salary requir knowledg of languageid0 languageid1 and languageid2 and desir a degid0	job ( ANS ) , \+ loc ( ANS , locid0 ) , salary_less_than ( ANS , num_salary , year ) , language ( ANS , languageid0 ) , language ( ANS , languageid1 ) , language ( ANS , languageid2 ) , des_deg ( ANS , degid0 )
+show the job use languageid0	<TBD>
+give me job in locid0	<TBD>
+what job do you have	<TBD>
+tell me job on platformid0	<TBD>
+tell me job in locid0	<TBD>
+tell me job requir degid0	<TBD>
+show the job on platformid0	<TBD>
+show me job in locid0	<TBD>
+list the job in locid0	<TBD>
+tell me the job in locid0	<TBD>
