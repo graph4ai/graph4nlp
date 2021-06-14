@@ -247,14 +247,14 @@ If you found this code useful, please consider citing the following papers.
 
 - [1] Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Jian Pei, and Bo Long. [**"Graph Neural Networks for Natural Language Processing: A Survey"**](https://arxiv.org/abs/2106.06090).
 - [2] [**NeurIPS 2020**] Yu Chen, Lingfei Wu and Mohammed J Zaki, [**"Iterative Deep Graph Learning for Graph Neural Networks: Better and  Robust Node Embeddings"**](https://arxiv.org/abs/2006.13009).
-- [3] [ICLR 2020] Yu Chen, Lingfei Wu and Mohammed J. Zaki, [**"Reinforcement Learning Based Graph-to-Sequence Model for Natural Question Generation"**](https://arxiv.org/abs/1908.04942).
+- [3] [**ICLR 2020**] Yu Chen, Lingfei Wu and Mohammed J. Zaki, [**"Reinforcement Learning Based Graph-to-Sequence Model for Natural Question Generation"**](https://arxiv.org/abs/1908.04942).
 - [4] Kun Xu, Lingfei Wu, Zhiguo Wang, Yansong Feng, Michael Witbrock and Vadim Sheinin, [**"Graph2Seq: Graph to Sequence Learning with Attention-based Neural Networks"**](https://arxiv.org/abs/1804.00823).
-- [5] [EMNLP 2020] Shucheng Li, Lingfei Wu, Shiwei Feng, Fangli Xu, Fengyuan Xu and Sheng Zhong, [**"Graph-to-Tree Neural Networks for Learning Structured Input-Output Translation with Applications to Semantic Parsing and Math Word Problem"**](https://www.aclweb.org/anthology/2020.acl-main.362.pdf).
-- [6] [ACL 2020] Luyang Huang, Lingfei Wu and Lu Wang, [**"Knowledge Graph-Augmented Abstractive Summarization with Semantic-Driven Cloze Reward"**](https://arxiv.org/abs/2005.01159).
-- [7] [EMNLP 2018] Lingfei Wu, Ian E.H. Yen, Kun Xu, Fangli Xu, Avinash Balakrishnan, Pin-Yu Chen, Pradeep Ravikumar and Michael J. Witbrock, [**"Word Mover's Embedding: From Word2Vec to Document Embedding"**](https://arxiv.org/abs/1811.01713)
-- [8][IJCAI 2020] Yu Chen, Lingfei Wu and Mohammed J Zaki, [**"GraphFlow: Exploiting Conversation Flow with Graph Neural Networks for Conversational Machine Comprehension"**](https://www.ijcai.org/Proceedings/2020/171).
-- [9] [IJCAI 2020] Kai Shen, Lingfei Wu, Fangli Xu, Siliang Tang, Jun Xiao and Yueting Zhuang, [**"Hierarchical Attention Based Spatial-Temporal Graph-to-Sequence Learning for Grounded Video Description"**](https://www.ijcai.org/Proceedings/2020/171).
-- [10] [IJCAI 2020] Hanning Gao, Lingfei Wu, Po Hu and Fangli Xu, [**"RDF-to-Text Generation with Graph-augmented Structural Neural Encoders"**](https://www.ijcai.org/Proceedings/2020/419).
+- [5] [**EMNLP 2020**] Shucheng Li, Lingfei Wu, Shiwei Feng, Fangli Xu, Fengyuan Xu and Sheng Zhong, [**"Graph-to-Tree Neural Networks for Learning Structured Input-Output Translation with Applications to Semantic Parsing and Math Word Problem"**](https://www.aclweb.org/anthology/2020.acl-main.362.pdf).
+- [6] [**ACL 2020**] Luyang Huang, Lingfei Wu and Lu Wang, [**"Knowledge Graph-Augmented Abstractive Summarization with Semantic-Driven Cloze Reward"**](https://arxiv.org/abs/2005.01159).
+- [7] [**EMNLP 2018**] Lingfei Wu, Ian E.H. Yen, Kun Xu, Fangli Xu, Avinash Balakrishnan, Pin-Yu Chen, Pradeep Ravikumar and Michael J. Witbrock, [**"Word Mover's Embedding: From Word2Vec to Document Embedding"**](https://arxiv.org/abs/1811.01713)
+- [8][**IJCAI 2020**] Yu Chen, Lingfei Wu and Mohammed J Zaki, [**"GraphFlow: Exploiting Conversation Flow with Graph Neural Networks for Conversational Machine Comprehension"**](https://www.ijcai.org/Proceedings/2020/171).
+- [9] [**IJCAI 2020**] Kai Shen, Lingfei Wu, Fangli Xu, Siliang Tang, Jun Xiao and Yueting Zhuang, [**"Hierarchical Attention Based Spatial-Temporal Graph-to-Sequence Learning for Grounded Video Description"**](https://www.ijcai.org/Proceedings/2020/171).
+- [10] [**IJCAI 2020**] Hanning Gao, Lingfei Wu, Po Hu and Fangli Xu, [**"RDF-to-Text Generation with Graph-augmented Structural Neural Encoders"**](https://www.ijcai.org/Proceedings/2020/419).
 
 ```
 @article{wu2021graph,
@@ -311,11 +311,19 @@ If you found this code useful, please consider citing the following papers.
     pages = {5094--5107}
 }
 
-@article{chen2020toward,
-  title={Toward Subgraph Guided Knowledge Graph Question Generation with Graph Neural Networks},
-  author={Chen, Yu and Wu, Lingfei and Zaki, Mohammed J},
-  journal={arXiv preprint arXiv:2004.06015},
-  year={2020}
+@inproceedings{wu-etal-2018-word,
+    title = {Word Mover{'}s Embedding: From {W}ord2{V}ec to Document Embedding},
+    author = {Wu, Lingfei  and
+      Yen, Ian En-Hsu  and
+      Xu, Kun  and
+      Xu, Fangli  and
+      Balakrishnan, Avinash  and
+      Chen, Pin-Yu  and
+      Ravikumar, Pradeep  and
+      Witbrock, Michael J.},
+    booktitle = {Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing},
+    pages = {4524--4534},
+    year = {2018},
 }
 
 @inproceedings{chen2020graphflow,
