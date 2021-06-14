@@ -245,13 +245,21 @@ We expect all contributions discussed in the issue tracker and going through PRs
 
 If you found this code useful, please consider citing the following papers.
 
-Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Jian Pei, and Bo Long. [**"Graph Neural Networks for Natural Language Processing: A Survey"**](https://arxiv.org/abs/2106.06090).
+[1] Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Jian Pei, and Bo Long. [**"Graph Neural Networks for Natural Language Processing: A Survey"**](https://arxiv.org/abs/2106.06090)
+[2] Kun Xu, Lingfei Wu, Zhiguo Wang, Yansong Feng, Michael Witbrock and Vadim Sheinin, [**"Graph2Seq: Graph to Sequence Learning with Attention-based Neural Networks"**](https://arxiv.org/abs/1804.00823)
 ```
 @article{wu2021graph,
   title={Graph Neural Networks for Natural Language Processing: A Survey},
   author={Lingfei Wu and Yu Chen and Kai Shen and Xiaojie Guo and Hanning Gao and Shucheng Li and Jian Pei and Bo Long},
   journal={arXiv preprint arXiv:2106.06090},
   year={2021}
+}
+
+@article{xu2018graph2seq,
+  title={Graph2seq: Graph to sequence learning with attention-based neural networks},
+  author={Xu, Kun and Wu, Lingfei and Wang, Zhiguo and Feng, Yansong and Witbrock, Michael and Sheinin, Vadim},
+  journal={arXiv preprint arXiv:1804.00823},
+  year={2018}
 }
 ```
 
