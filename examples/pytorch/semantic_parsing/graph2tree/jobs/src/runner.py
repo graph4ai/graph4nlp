@@ -258,7 +258,7 @@ class Jobs:
     def make_inference(self, model):
         from evaluation import convert_to_string
         model.eval()
-        for data in tqdm(self.test_data_loader, desc="Eval: "):
+        for data in self.test_data_loader:
             if data['original_dec_tree_batch'][0] != "<TBD>":
                 continue
             eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
