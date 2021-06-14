@@ -62,7 +62,7 @@ performance).
 
 <!-- If you want to further improve model performance, we also support pre-trained models including [BERT](https://arxiv.org/abs/1810.04805), etc.
  -->
-We also offer other high-level model APIs such as graph-to-tree models. If you are interested in DLG4NLP related research problems, you are very welcome to use our library and refer to our [graph4nlp survey](to_be_add).
+We also offer other high-level model APIs such as graph-to-tree models. If you are interested in DLG4NLP related research problems, you are very welcome to use our library and refer to our [graph4nlp survey](http://arxiv.org/abs/2106.06090).
 
 ```python
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
@@ -227,7 +227,7 @@ If you want to learn more on applying Deep Learning on Graphs techniques to NLP 
 
 <!-- [Docs]() | [Graph4nlp survey]() | [Related paper list]() | [Workshops]() -->
 - Documentation: [Docs](http://saizhuo.wang/g4nlp/index.html)  
-- Graph4NLP Survey: [Graph4nlp survey]()  
+- Graph4NLP Survey: [Graph4nlp survey](http://arxiv.org/abs/2106.06090)  
 - Graph4NLP Tutorials: [Graph4NLP-NAACL'21](https://www.aclweb.org/anthology/2021.naacl-tutorials.3.pdf)(Slides: [google drive](https://drive.google.com/file/d/1_7cPySt9Pzfd6MaqNihD4FkKI0qzf-s4/view?usp=sharing), [baidu netdisk](https://pan.baidu.com/s/1QeWedhMgIBjBpK0EcgXYvQ)(drs1))  
 - Graph4NLP Literature Review: [Literature Lists](https://github.com/graph4ai/graph4nlp_literature )  
 - Graph4NLP Workshops : [Workshops](https://deep-learning-graphs.bitbucket.io/dlg-kdd21/index.html)  
