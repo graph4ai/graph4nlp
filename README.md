@@ -246,7 +246,16 @@ We expect all contributions discussed in the issue tracker and going through PRs
 If you found this code useful, please consider citing the following papers.
 
 - [1] Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Jian Pei, and Bo Long. [**"Graph Neural Networks for Natural Language Processing: A Survey"**](https://arxiv.org/abs/2106.06090)
-- [2] Kun Xu, Lingfei Wu, Zhiguo Wang, Yansong Feng, Michael Witbrock and Vadim Sheinin, [**"Graph2Seq: Graph to Sequence Learning with Attention-based Neural Networks"**](https://arxiv.org/abs/1804.00823)
+- [2] [NeurIPS 2020] Yu Chen, Lingfei Wu and Mohammed J Zaki, [**"Iterative Deep Graph Learning for Graph Neural Networks: Better and  Robust Node Embeddings"**](https://arxiv.org/abs/2006.13009)
+- [3] [ICLR 2020] Yu Chen, Lingfei Wu and Mohammed J. Zaki, [**"Reinforcement Learning Based Graph-to-Sequence Model for Natural Question Generation"**](https://arxiv.org/abs/1908.04942)
+- [4] Kun Xu, Lingfei Wu, Zhiguo Wang, Yansong Feng, Michael Witbrock and Vadim Sheinin, [**"Graph2Seq: Graph to Sequence Learning with Attention-based Neural Networks"**](https://arxiv.org/abs/1804.00823)
+- [5] [EMNLP 2020 Findings] Shucheng Li, Lingfei Wu, Shiwei Feng, Fangli Xu, Fengyuan Xu and Sheng Zhong, [**"Graph-to-Tree Neural Networks for Learning Structured Input-Output Translation with Applications to Semantic Parsing and Math Word Problem"**](https://www.aclweb.org/anthology/2020.acl-main.362.pdf)
+- [6] [ACL 2020] Luyang Huang, Lingfei Wu and Lu Wang, [**"Knowledge Graph-Augmented Abstractive Summarization with Semantic-Driven Cloze Reward"**](https://arxiv.org/abs/2005.01159)
+- [7] Yu Chen, Lingfei Wu and Mohammed J Zaki, [**"Toward Subgraph Guided Knowledge Graph Question Generation with Graph Neural Networks"**](https://arxiv.org/abs/2004.06015)
+- [8][IJCAI 2020] Yu Chen, Lingfei Wu and Mohammed J Zaki, [**"GraphFlow: Exploiting Conversation Flow with Graph Neural Networks for Conversational Machine Comprehension"**](https://www.ijcai.org/Proceedings/2020/171)
+- [9] [IJCAI 2020] Kai Shen, Lingfei Wu, Fangli Xu, Siliang Tang, Jun Xiao and Yueting Zhuang, [**"Hierarchical Attention Based Spatial-Temporal Graph-to-Sequence Learning for Grounded Video Description"**](https://www.ijcai.org/Proceedings/2020/171)
+- [10] [IJCAI 2020] Hanning Gao, Lingfei Wu, Po Hu and Fangli Xu, [**"RDF-to-Text Generation with Graph-augmented Structural Neural Encoders"**](https://www.ijcai.org/Proceedings/2020/419)
+
 ```
 @article{wu2021graph,
   title={Graph Neural Networks for Natural Language Processing: A Survey},
@@ -255,12 +264,94 @@ If you found this code useful, please consider citing the following papers.
   year={2021}
 }
 
+@inproceedings{chen2020iterative,
+  title={Iterative Deep Graph Learning for Graph Neural Networks: Better and Robust Node Embeddings},
+  author={Chen, Yu and Wu, Lingfei and Zaki, Mohammed J},
+  booktitle={Proceedings of the 34th Conference on Neural Information Processing Systems},
+  month={Dec. 6-12,},
+  year={2020}
+}
+
+@inproceedings{chen2020reinforcement,
+  author    = {Chen, Yu and Wu, Lingfei and Zaki, Mohammed J.},
+  title     = {Reinforcement Learning Based Graph-to-Sequence Model for Natural Question Generation},
+  booktitle = {Proceedings of the 8th International Conference on Learning Representations},
+  month = {Apr. 26-30,},
+  year      = {2020}
+}
+
 @article{xu2018graph2seq,
   title={Graph2seq: Graph to sequence learning with attention-based neural networks},
   author={Xu, Kun and Wu, Lingfei and Wang, Zhiguo and Feng, Yansong and Witbrock, Michael and Sheinin, Vadim},
   journal={arXiv preprint arXiv:1804.00823},
   year={2018}
 }
+
+@inproceedings{li-etal-2020-graph-tree,
+    title = {Graph-to-Tree Neural Networks for Learning Structured Input-Output Translation with Applications to Semantic Parsing and Math Word Problem},
+    author = {Li, Shucheng  and
+      Wu, Lingfei  and
+      Feng, Shiwei  and
+      Xu, Fangli  and
+      Xu, Fengyuan  and
+      Zhong, Sheng},
+    booktitle = {Findings of the Association for Computational Linguistics: EMNLP 2020},
+    month = {Nov},
+    year = {2020}
+}
+
+@inproceedings{huang-etal-2020-knowledge,
+    title = {Knowledge Graph-Augmented Abstractive Summarization with Semantic-Driven Cloze Reward},
+    author = {Huang, Luyang  and
+      Wu, Lingfei  and
+      Wang, Lu},
+    booktitle = {Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics},
+    month = {Jul},
+    year = {2020},
+    pages = {5094--5107}
+}
+
+@article{chen2020toward,
+  title={Toward Subgraph Guided Knowledge Graph Question Generation with Graph Neural Networks},
+  author={Chen, Yu and Wu, Lingfei and Zaki, Mohammed J},
+  journal={arXiv preprint arXiv:2004.06015},
+  year={2020}
+}
+
+@inproceedings{chen2020graphflow,
+  author    = {Yu Chen and
+               Lingfei Wu and
+               Mohammed J. Zaki},  
+title     = {GraphFlow: Exploiting Conversation Flow with Graph Neural Networks
+               for Conversational Machine Comprehension},
+  booktitle = {Proceedings of the Twenty-Ninth International Joint Conference on
+               Artificial Intelligence, {IJCAI} 2020},
+  publisher = {International Joint Conferences on Artificial Intelligence Organization},
+  pages     = {1230--1236},
+  year      = {2020}
+} 
+  
+@inproceedings{shen2020hierarchical,
+  title={Hierarchical Attention Based Spatial-Temporal Graph-to-Sequence Learning for Grounded Video Description},
+  author={Shen, Kai and Wu, Lingfei and Xu, Fangli and Tang, Siliang and Xiao, Jun and Zhuang, Yueting},
+  booktitle = {Proceedings of the Twenty-Ninth International Joint Conference on
+               Artificial Intelligence, {IJCAI} 2020},
+  publisher = {International Joint Conferences on Artificial Intelligence Organization},
+  pages     = {941--947},
+  year      = {2020}
+}  
+
+@inproceedings{ijcai2020-419,
+  title     = {RDF-to-Text Generation with Graph-augmented Structural Neural Encoders},
+  author    = {Gao, Hanning and Wu, Lingfei and Hu, Po and Xu, Fangli},
+  booktitle = {Proceedings of the Twenty-Ninth International Joint Conference on
+               Artificial Intelligence, {IJCAI-20}},
+  publisher = {International Joint Conferences on Artificial Intelligence Organization},
+  pages     = {3030--3036},
+  year      = {2020}
+}
+
+
 ```
 
 
