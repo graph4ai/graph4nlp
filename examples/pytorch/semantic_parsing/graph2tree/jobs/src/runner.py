@@ -290,7 +290,7 @@ class Jobs:
             
             candidate = [int(c) for c in candidate]
             print(" ".join(x['token'] for x in eval_input_graph.node_attributes))
-            print(model.tgt_vocab.get_idx_symbol_for_list(candidate))
+            print(" ".join(model.tgt_vocab.get_idx_symbol_for_list(candidate)) + '\n')
             
 
 if __name__ == "__main__":
