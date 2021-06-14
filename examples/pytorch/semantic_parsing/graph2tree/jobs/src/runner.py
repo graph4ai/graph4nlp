@@ -289,6 +289,7 @@ class Jobs:
                                                 beam_size=self.opt["beam_size"])
             
             candidate = [int(c) for c in candidate]
+            print(candidate)
             print(model.tgt_vocab.get_idx_symbol_for_list(candidate))
             
 
