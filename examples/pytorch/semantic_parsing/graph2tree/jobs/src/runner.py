@@ -187,7 +187,7 @@ class Jobs:
         for epoch in range(1, self.opt["max_epochs"]+1):
             self.model.train()
             self.train_epoch(epoch)
-            if epoch >= 50:
+            if epoch >= 10:
                 val_acc = self.eval((self.model))
                 if val_acc > best_acc:
                     best_acc = val_acc
@@ -199,7 +199,7 @@ class Jobs:
         reference_list = []
         candidate_list = []
         for data in tqdm(self.test_data_loader, desc="Eval: "):
-            print(data['dec_tree_batch'])
+            print(data['original_dec_tree_batch'][0])
             eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
             eval_input_graph = eval_input_graph.to(self.device)
             oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
