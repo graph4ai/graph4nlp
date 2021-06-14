@@ -187,7 +187,7 @@ class Jobs:
         for epoch in range(1, self.opt["max_epochs"]+1):
             self.model.train()
             self.train_epoch(epoch)
-            if epoch >= 10:
+            if epoch >= 5:
                 val_acc = self.eval((self.model))
                 if val_acc > best_acc:
                     best_acc = val_acc
@@ -289,6 +289,7 @@ class Jobs:
                                                 beam_size=self.opt["beam_size"])
             
             candidate = [int(c) for c in candidate]
+            print(eval_input_graph.node_attributes)
             print(candidate)
             print(model.tgt_vocab.get_idx_symbol_for_list(candidate))
             
