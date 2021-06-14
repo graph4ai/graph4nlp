@@ -243,19 +243,19 @@ We expect all contributions discussed in the issue tracker and going through PRs
 
 ## Citation
 
-If you found this code useful, please consider citing the following paper (please stay tuned!).
+If you found this code useful, please consider citing the following paper.
 
-<!-- Yu Chen, Lingfei Wu and Mohammed J. Zaki. **"Iterative Deep Graph Learning for Graph Neural Networks: Better and Robust
-Node Embeddings."** In *Proceedings of the 34th Conference on Neural Information Processing Systems (NeurIPS 2020), Dec
-6-12, 2020.*
+Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Jian Pei, Bo Long. **"Graph Neural Networks for Natural Language Processing: A Survey"**.
 
-    @article{chen2020iterative,
-      title={Iterative Deep Graph Learning for Graph Neural Networks: Better and Robust Node Embeddings},
-      author={Chen, Yu and Wu, Lingfei and Zaki, Mohammed},
-      journal={Advances in Neural Information Processing Systems},
-      volume={33},
-      year={2020}
-    } -->
+@misc{wu2021graph,
+      title={Graph Neural Networks for Natural Language Processing: A Survey}, 
+      author={Lingfei Wu and Yu Chen and Kai Shen and Xiaojie Guo and Hanning Gao and Shucheng Li and Jian Pei and Bo Long},
+      year={2021},
+      eprint={2106.06090},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+
 
 ## Team
 Graph4AI Team. Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang
