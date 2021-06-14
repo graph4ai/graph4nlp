@@ -245,7 +245,7 @@ We expect all contributions discussed in the issue tracker and going through PRs
 
 If you found this code useful, please consider citing the following papers.
 
-Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Jian Pei, and Bo Long. **"Graph Neural Networks for Natural Language Processing: A Survey"**.
+Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Jian Pei, and Bo Long. [**"Graph Neural Networks for Natural Language Processing: A Survey"**](https://arxiv.org/abs/2106.06090).
 ```
 @article{wu2021graph,
   title={Graph Neural Networks for Natural Language Processing: A Survey},
