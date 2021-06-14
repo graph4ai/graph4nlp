@@ -202,7 +202,7 @@ class Jobs:
         reference_list = []
         candidate_list = []
         for data in tqdm(self.test_data_loader, desc="Eval: "):
-            if data['original_dec_tree_batch'][0] == "<TBD>":
+            if "<TBD>" in data['original_dec_tree_batch'][0]:
                 break
             eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
             eval_input_graph = eval_input_graph.to(self.device)
@@ -259,7 +259,7 @@ class Jobs:
         from evaluation import convert_to_string
         model.eval()
         for data in self.test_data_loader:
-            if data['original_dec_tree_batch'][0] != "<TBD>":
+            if "<TBD>" not in data['original_dec_tree_batch'][0]:
                 continue
             eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
             eval_input_graph = eval_input_graph.to(self.device)
@@ -289,8 +289,7 @@ class Jobs:
                                                 beam_size=self.opt["beam_size"])
             
             candidate = [int(c) for c in candidate]
-            print(eval_input_graph.node_attributes)
-            print(candidate)
+            print(" ".join(x['token'] for x in eval_input_graph.node_attributes))
             print(model.tgt_vocab.get_idx_symbol_for_list(candidate))
             
 
