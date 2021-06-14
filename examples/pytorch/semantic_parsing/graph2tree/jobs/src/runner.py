@@ -194,7 +194,6 @@ class Jobs:
         print(f"Best Accuracy: {val_acc:.4f}")
         print("="*20 + "making inference" + "="*20)
         self.make_inference(self.model) # replace the model with the best model you saved.
-        print("="*20 + "making inference" + "="*20)
 
 
     def eval(self, model):
