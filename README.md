@@ -364,12 +364,12 @@ title     = {GraphFlow: Exploiting Conversation Flow with Graph Neural Networks
 
 
 ## Team
-Graph4AI Team: Lingfei Wu (creator and leader), Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang and Xiao Liu. We are passionate in developing useful open-source libraries which aim to promote the easy use of various Deep Learning on Graphs techniques for Natural Language Processing. Our team consists of research scientists, applied data scientists, and graduate students from a variety of groups, including JD.COM Sillicon Valley Research Center (Lingfei Wu, Xiaojie Guo), JD.COM and Zhejiang University (Kai Shen), Facebook AI (Yu Chen), Central China Normal University (Hanning Gao), Nanjing University (Shucheng Li), HKUST (Saizhuo Wang).
+Graph4AI Team: Lingfei Wu(https://sites.google.com/a/email.wm.edu/teddy-lfwu/home) (creator and leader), Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang and Xiao Liu. We are passionate in developing useful open-source libraries which aim to promote the easy use of various Deep Learning on Graphs techniques for Natural Language Processing. Our team consists of research scientists, applied data scientists, and graduate students from a variety of groups, including JD.COM Sillicon Valley Research Center (Lingfei Wu, Xiaojie Guo), JD.COM and Zhejiang University (Kai Shen), Facebook AI (Yu Chen), Central China Normal University (Hanning Gao), Nanjing University (Shucheng Li), HKUST (Saizhuo Wang).
 
 ## Contact
 If you have any technical questions, please submit new issues.
 
-If you have any other questions, please contact us: Lingfei Wu [**[lwu@email.wm.edu]**] and Xiaojie Guo [**[xiaojie.guo@jd.com]**].
+If you have any other questions, please contact us: Lingfei Wu **[lwu@email.wm.edu]** and Xiaojie Guo **[xiaojie.guo@jd.com]**.
 
 ## License
 Graph4NLP uses Apache License 2.0.
