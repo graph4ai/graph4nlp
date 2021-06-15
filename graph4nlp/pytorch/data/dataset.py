@@ -939,7 +939,7 @@ class Text2LabelDataset(Dataset):
             The indices of data items in the file w.r.t. the whole dataset.
         """
         data = []
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding="cp437", errors='ignore') as f:
             for line in f:
                 input, output = line.split('\t')
                 data_item = Text2LabelDataItem(input_text=input.strip(), output_label=output.strip(),
