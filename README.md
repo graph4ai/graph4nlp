@@ -62,7 +62,7 @@ performance).
 
 <!-- If you want to further improve model performance, we also support pre-trained models including [BERT](https://arxiv.org/abs/1810.04805), etc.
  -->
-We also offer other high-level model APIs such as graph-to-tree models. If you are interested in DLG4NLP related research problems, you are very welcome to use our library and refer to our [graph4nlp survey](to_be_add).
+We also offer other high-level model APIs such as graph-to-tree models. If you are interested in DLG4NLP related research problems, you are very welcome to use our library and refer to our [graph4nlp survey](http://arxiv.org/abs/2106.06090).
 
 ```python
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
@@ -227,7 +227,7 @@ If you want to learn more on applying Deep Learning on Graphs techniques to NLP 
 
 <!-- [Docs]() | [Graph4nlp survey]() | [Related paper list]() | [Workshops]() -->
 - Documentation: [Docs](http://saizhuo.wang/g4nlp/index.html)  
-- Graph4NLP Survey: [Graph4nlp survey]()  
+- Graph4NLP Survey: [Graph4nlp survey](http://arxiv.org/abs/2106.06090)  
 - Graph4NLP Tutorials: [Graph4NLP-NAACL'21](https://www.aclweb.org/anthology/2021.naacl-tutorials.3.pdf)(Slides: [google drive](https://drive.google.com/file/d/1_7cPySt9Pzfd6MaqNihD4FkKI0qzf-s4/view?usp=sharing), [baidu netdisk](https://pan.baidu.com/s/1QeWedhMgIBjBpK0EcgXYvQ)(drs1))  
 - Graph4NLP Literature Review: [Literature Lists](https://github.com/graph4ai/graph4nlp_literature )  
 - Graph4NLP Workshops : [Workshops](https://deep-learning-graphs.bitbucket.io/dlg-kdd21/index.html)  
@@ -243,22 +243,133 @@ We expect all contributions discussed in the issue tracker and going through PRs
 
 ## Citation
 
-If you found this code useful, please consider citing the following paper (please stay tuned!).
+If you found this code useful, please consider citing the following papers.
 
-<!-- Yu Chen, Lingfei Wu and Mohammed J. Zaki. **"Iterative Deep Graph Learning for Graph Neural Networks: Better and Robust
-Node Embeddings."** In *Proceedings of the 34th Conference on Neural Information Processing Systems (NeurIPS 2020), Dec
-6-12, 2020.*
+- [1] Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Jian Pei, and Bo Long. [**"Graph Neural Networks for Natural Language Processing: A Survey"**](https://arxiv.org/abs/2106.06090).
+- [2] [**NeurIPS 2020**] Yu Chen, Lingfei Wu and Mohammed J Zaki, [**"Iterative Deep Graph Learning for Graph Neural Networks: Better and  Robust Node Embeddings"**](https://arxiv.org/abs/2006.13009).
+- [3] [**ICLR 2020**] Yu Chen, Lingfei Wu and Mohammed J. Zaki, [**"Reinforcement Learning Based Graph-to-Sequence Model for Natural Question Generation"**](https://arxiv.org/abs/1908.04942).
+- [4] Kun Xu, Lingfei Wu, Zhiguo Wang, Yansong Feng, Michael Witbrock and Vadim Sheinin, [**"Graph2Seq: Graph to Sequence Learning with Attention-based Neural Networks"**](https://arxiv.org/abs/1804.00823).
+- [5] [**EMNLP 2020**] Shucheng Li, Lingfei Wu, Shiwei Feng, Fangli Xu, Fengyuan Xu and Sheng Zhong, [**"Graph-to-Tree Neural Networks for Learning Structured Input-Output Translation with Applications to Semantic Parsing and Math Word Problem"**](https://www.aclweb.org/anthology/2020.acl-main.362.pdf).
+- [6] [**ACL 2020**] Luyang Huang, Lingfei Wu and Lu Wang, [**"Knowledge Graph-Augmented Abstractive Summarization with Semantic-Driven Cloze Reward"**](https://arxiv.org/abs/2005.01159).
+- [7] [**EMNLP 2018**] Lingfei Wu, Ian E.H. Yen, Kun Xu, Fangli Xu, Avinash Balakrishnan, Pin-Yu Chen, Pradeep Ravikumar and Michael J. Witbrock, [**"Word Mover's Embedding: From Word2Vec to Document Embedding"**](https://arxiv.org/abs/1811.01713).
+- [8][**IJCAI 2020**] Yu Chen, Lingfei Wu and Mohammed J Zaki, [**"GraphFlow: Exploiting Conversation Flow with Graph Neural Networks for Conversational Machine Comprehension"**](https://www.ijcai.org/Proceedings/2020/171).
+- [9] [**IJCAI 2020**] Kai Shen, Lingfei Wu, Fangli Xu, Siliang Tang, Jun Xiao and Yueting Zhuang, [**"Hierarchical Attention Based Spatial-Temporal Graph-to-Sequence Learning for Grounded Video Description"**](https://www.ijcai.org/Proceedings/2020/171).
+- [10] [**IJCAI 2020**] Hanning Gao, Lingfei Wu, Po Hu and Fangli Xu, [**"RDF-to-Text Generation with Graph-augmented Structural Neural Encoders"**](https://www.ijcai.org/Proceedings/2020/419).
 
-    @article{chen2020iterative,
-      title={Iterative Deep Graph Learning for Graph Neural Networks: Better and Robust Node Embeddings},
-      author={Chen, Yu and Wu, Lingfei and Zaki, Mohammed},
-      journal={Advances in Neural Information Processing Systems},
-      volume={33},
-      year={2020}
-    } -->
+```
+@article{wu2021graph,
+  title={Graph Neural Networks for Natural Language Processing: A Survey},
+  author={Lingfei Wu and Yu Chen and Kai Shen and Xiaojie Guo and Hanning Gao and Shucheng Li and Jian Pei and Bo Long},
+  journal={arXiv preprint arXiv:2106.06090},
+  year={2021}
+}
+
+@inproceedings{chen2020iterative,
+  title={Iterative Deep Graph Learning for Graph Neural Networks: Better and Robust Node Embeddings},
+  author={Chen, Yu and Wu, Lingfei and Zaki, Mohammed J},
+  booktitle={Proceedings of the 34th Conference on Neural Information Processing Systems},
+  month={Dec. 6-12,},
+  year={2020}
+}
+
+@inproceedings{chen2020reinforcement,
+  author    = {Chen, Yu and Wu, Lingfei and Zaki, Mohammed J.},
+  title     = {Reinforcement Learning Based Graph-to-Sequence Model for Natural Question Generation},
+  booktitle = {Proceedings of the 8th International Conference on Learning Representations},
+  month = {Apr. 26-30,},
+  year      = {2020}
+}
+
+@article{xu2018graph2seq,
+  title={Graph2seq: Graph to sequence learning with attention-based neural networks},
+  author={Xu, Kun and Wu, Lingfei and Wang, Zhiguo and Feng, Yansong and Witbrock, Michael and Sheinin, Vadim},
+  journal={arXiv preprint arXiv:1804.00823},
+  year={2018}
+}
+
+@inproceedings{li-etal-2020-graph-tree,
+    title = {Graph-to-Tree Neural Networks for Learning Structured Input-Output Translation with Applications to Semantic Parsing and Math Word Problem},
+    author = {Li, Shucheng  and
+      Wu, Lingfei  and
+      Feng, Shiwei  and
+      Xu, Fangli  and
+      Xu, Fengyuan  and
+      Zhong, Sheng},
+    booktitle = {Findings of the Association for Computational Linguistics: EMNLP 2020},
+    month = {Nov},
+    year = {2020}
+}
+
+@inproceedings{huang-etal-2020-knowledge,
+    title = {Knowledge Graph-Augmented Abstractive Summarization with Semantic-Driven Cloze Reward},
+    author = {Huang, Luyang  and
+      Wu, Lingfei  and
+      Wang, Lu},
+    booktitle = {Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics},
+    month = {Jul},
+    year = {2020},
+    pages = {5094--5107}
+}
+
+@inproceedings{wu-etal-2018-word,
+    title = {Word Mover{'}s Embedding: From {W}ord2{V}ec to Document Embedding},
+    author = {Wu, Lingfei  and
+      Yen, Ian En-Hsu  and
+      Xu, Kun  and
+      Xu, Fangli  and
+      Balakrishnan, Avinash  and
+      Chen, Pin-Yu  and
+      Ravikumar, Pradeep  and
+      Witbrock, Michael J.},
+    booktitle = {Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing},
+    pages = {4524--4534},
+    year = {2018},
+}
+
+@inproceedings{chen2020graphflow,
+  author    = {Yu Chen and
+               Lingfei Wu and
+               Mohammed J. Zaki},  
+title     = {GraphFlow: Exploiting Conversation Flow with Graph Neural Networks
+               for Conversational Machine Comprehension},
+  booktitle = {Proceedings of the Twenty-Ninth International Joint Conference on
+               Artificial Intelligence, {IJCAI} 2020},
+  publisher = {International Joint Conferences on Artificial Intelligence Organization},
+  pages     = {1230--1236},
+  year      = {2020}
+} 
+  
+@inproceedings{shen2020hierarchical,
+  title={Hierarchical Attention Based Spatial-Temporal Graph-to-Sequence Learning for Grounded Video Description},
+  author={Shen, Kai and Wu, Lingfei and Xu, Fangli and Tang, Siliang and Xiao, Jun and Zhuang, Yueting},
+  booktitle = {Proceedings of the Twenty-Ninth International Joint Conference on
+               Artificial Intelligence, {IJCAI} 2020},
+  publisher = {International Joint Conferences on Artificial Intelligence Organization},
+  pages     = {941--947},
+  year      = {2020}
+}  
+
+@inproceedings{ijcai2020-419,
+  title     = {RDF-to-Text Generation with Graph-augmented Structural Neural Encoders},
+  author    = {Gao, Hanning and Wu, Lingfei and Hu, Po and Xu, Fangli},
+  booktitle = {Proceedings of the Twenty-Ninth International Joint Conference on
+               Artificial Intelligence, {IJCAI-20}},
+  publisher = {International Joint Conferences on Artificial Intelligence Organization},
+  pages     = {3030--3036},
+  year      = {2020}
+}
+
+
+```
+
 
 ## Team
-Graph4AI Team. Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang
+Graph4AI Team: [**Lingfei Wu**](https://sites.google.com/a/email.wm.edu/teddy-lfwu/home) (team leader), Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang and Xiao Liu. We are passionate in developing useful open-source libraries which aim to promote the easy use of various Deep Learning on Graphs techniques for Natural Language Processing. Our team consists of research scientists, applied data scientists, and graduate students from a variety of groups, including JD.COM Sillicon Valley Research Center (Lingfei Wu, Xiaojie Guo), JD.COM and Zhejiang University (Kai Shen), Facebook AI (Yu Chen), Tongji University (Hanning Gao), Nanjing University (Shucheng Li), HKUST (Saizhuo Wang).
+
+## Contact
+If you have any technical questions, please submit new issues.
+
+If you have any other questions, please contact us: [**Lingfei Wu**](https://sites.google.com/a/email.wm.edu/teddy-lfwu/home) **[lwu@email.wm.edu]** and Xiaojie Guo **[xiaojie.guo@jd.com]**.
 
 ## License
 Graph4NLP uses Apache License 2.0.
