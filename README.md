@@ -368,7 +368,7 @@ Graph4AI Team: [**Lingfei Wu**](https://sites.google.com/a/email.wm.edu/teddy-lf
 
 ## Contact
 If you have any technical questions, please submit new issues.
-
+ 
 If you have any other questions, please contact us: [**Lingfei Wu**](https://sites.google.com/a/email.wm.edu/teddy-lfwu/home) **[lwu@email.wm.edu]** and Xiaojie Guo **[xiaojie.guo@jd.com]**.
 
 ## License
