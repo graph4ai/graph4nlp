@@ -200,7 +200,7 @@ class Vocab():
                     self.add_symbol(l_list[0])
                 if self.vocab_size > max_vocab_size:
                     break
-        if self.pretrained_word_emb_name is None:
+        if self.pretrained_word_emb_name == 'None' or self.pretrained_word_emb_name is None:
             self.randomize_embeddings(self.embedding_dims)
         else:
             # print("loadding pretrained embedding file in {}".format(self.pretrained_embedding_fn))
@@ -214,7 +214,7 @@ class Vocab():
                 self.add_symbol(word_)
             if self.vocab_size > max_vocab_size:
                 break
-        if self.pretrained_word_emb_name is None:
+        if self.pretrained_word_emb_name == 'None' or self.pretrained_word_emb_name is None:
             self.randomize_embeddings(self.embedding_dims)
         else:
             # print("loadding pretrained embedding file in {}".format(self.pretrained_embedding_fn))
@@ -250,7 +250,7 @@ class Vocab():
         word_emb, hit, cnt = word_model.get_vecs_by_tokens(tokens=word_list, lower_case_backup=self.lower_case)
         
         self.embeddings = word_emb.numpy()
-        self.embeddings[self.get_symbol_idx(self.unk_token)] = np.zeros(word_model.dim)
+        self.embeddings[self.get_symbol_idx(self.pad_token)] = np.zeros(word_model.dim)
 
     def randomize_embeddings(self, n_dims, scale=0.08):
         """Use random word embeddings for initialization."""
