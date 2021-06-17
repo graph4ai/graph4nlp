@@ -12,6 +12,7 @@ import torch.nn.functional as F
 import torch.nn.init as init
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 from graph4nlp.pytorch.data.data import to_batch
 from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
@@ -161,7 +162,7 @@ class Mawps:
     def train_epoch(self, epoch):
         loss_to_print = 0
         num_batch = len(self.train_data_loader)
-        for step, data in enumerate(self.train_data_loader):
+        for step, data in tqdm(enumerate(self.train_data_loader), desc=f'Epoch {epoch:02d}', total=len(self.train_data_loader)):
             batch_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
             batch_graph = batch_graph.to(self.device)
             self.optimizer.zero_grad()
@@ -190,7 +191,7 @@ class Mawps:
             self.model.train()
             loss_to_print = self.train_epoch(epoch)
             print("epochs = {}, train_loss = {:.3f}".format(epoch, loss_to_print))
-            if epoch > 2 and epoch % 5 == 0:
+            if epoch > 2 and epoch % 1 == 0:
                 test_acc = self.eval(self.model, mode="test")
                 val_acc = self.eval(self.model, mode="val")
                 if val_acc > best_acc[1]:
@@ -251,10 +252,10 @@ class Mawps:
 
             reference_list.append(reference)
             candidate_list.append(candidate)
-        test_acc = compute_tree_accuracy(
+        eval_acc = compute_tree_accuracy(
             candidate_list, reference_list, eval_vocab)
-        print("TEST ACCURACY = {:.3f}\n".format(test_acc))
-        return test_acc
+        print("{} accuracy = {:.3f}\n".format(mode, eval_acc))
+        return eval_acc
 
 if __name__ == "__main__":
     from config import get_args

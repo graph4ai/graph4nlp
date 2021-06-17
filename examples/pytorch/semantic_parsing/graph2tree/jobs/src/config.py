@@ -10,7 +10,7 @@ def get_args():
 
     parser.add_argument('--learning-rate', type=float, default=1e-3)
     parser.add_argument('--gpuid', type=int, default=1, help='which gpu to use. -1 = use CPU')
-    parser.add_argument('--seed', type=int, default=123, help='torch manual random number generator seed')
+    parser.add_argument('--seed', type=int, default=1237, help='torch manual random number generator seed')
     parser.add_argument('--init-weight', type=float, default=0.08, help='initailization weight')
     parser.add_argument('--weight-decay', type=float, default=0)
     parser.add_argument('--max-epochs', type=int, default=200,help='number of full passes through the training data')
@@ -22,7 +22,7 @@ def get_args():
     parser.add_argument("--share-vocab", type=bool, default=True, help="whether to share vocab")
 
     parser.add_argument("--pretrained_word_emb_name", type=str,
-                        default='6B', help="")
+                        default=None, help="")
     parser.add_argument("--pretrained_word_emb_url", type=str,
                         default=None, help="")
     parser.add_argument("--pretrained_word_emb_cache_dir", type=str,

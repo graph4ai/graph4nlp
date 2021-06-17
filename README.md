@@ -251,7 +251,7 @@ If you found this code useful, please consider citing the following papers.
 - [4] Kun Xu, Lingfei Wu, Zhiguo Wang, Yansong Feng, Michael Witbrock and Vadim Sheinin, [**"Graph2Seq: Graph to Sequence Learning with Attention-based Neural Networks"**](https://arxiv.org/abs/1804.00823).
 - [5] [**EMNLP 2020**] Shucheng Li, Lingfei Wu, Shiwei Feng, Fangli Xu, Fengyuan Xu and Sheng Zhong, [**"Graph-to-Tree Neural Networks for Learning Structured Input-Output Translation with Applications to Semantic Parsing and Math Word Problem"**](https://www.aclweb.org/anthology/2020.acl-main.362.pdf).
 - [6] [**ACL 2020**] Luyang Huang, Lingfei Wu and Lu Wang, [**"Knowledge Graph-Augmented Abstractive Summarization with Semantic-Driven Cloze Reward"**](https://arxiv.org/abs/2005.01159).
-- [7] [**EMNLP 2018**] Lingfei Wu, Ian E.H. Yen, Kun Xu, Fangli Xu, Avinash Balakrishnan, Pin-Yu Chen, Pradeep Ravikumar and Michael J. Witbrock, [**"Word Mover's Embedding: From Word2Vec to Document Embedding"**](https://arxiv.org/abs/1811.01713)
+- [7] [**EMNLP 2018**] Lingfei Wu, Ian E.H. Yen, Kun Xu, Fangli Xu, Avinash Balakrishnan, Pin-Yu Chen, Pradeep Ravikumar and Michael J. Witbrock, [**"Word Mover's Embedding: From Word2Vec to Document Embedding"**](https://arxiv.org/abs/1811.01713).
 - [8][**IJCAI 2020**] Yu Chen, Lingfei Wu and Mohammed J Zaki, [**"GraphFlow: Exploiting Conversation Flow with Graph Neural Networks for Conversational Machine Comprehension"**](https://www.ijcai.org/Proceedings/2020/171).
 - [9] [**IJCAI 2020**] Kai Shen, Lingfei Wu, Fangli Xu, Siliang Tang, Jun Xiao and Yueting Zhuang, [**"Hierarchical Attention Based Spatial-Temporal Graph-to-Sequence Learning for Grounded Video Description"**](https://www.ijcai.org/Proceedings/2020/171).
 - [10] [**IJCAI 2020**] Hanning Gao, Lingfei Wu, Po Hu and Fangli Xu, [**"RDF-to-Text Generation with Graph-augmented Structural Neural Encoders"**](https://www.ijcai.org/Proceedings/2020/419).
@@ -364,7 +364,12 @@ title     = {GraphFlow: Exploiting Conversation Flow with Graph Neural Networks
 
 
 ## Team
-Graph4AI Team. Lingfei Wu, Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang
+Graph4AI Team: [**Lingfei Wu**](https://sites.google.com/a/email.wm.edu/teddy-lfwu/home) (team leader), Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang and Xiao Liu. We are passionate in developing useful open-source libraries which aim to promote the easy use of various Deep Learning on Graphs techniques for Natural Language Processing. Our team consists of research scientists, applied data scientists, and graduate students from a variety of groups, including JD.COM Sillicon Valley Research Center (Lingfei Wu, Xiaojie Guo), JD.COM and Zhejiang University (Kai Shen), Facebook AI (Yu Chen), Tongji University (Hanning Gao), Nanjing University (Shucheng Li), HKUST (Saizhuo Wang).
+
+## Contact
+If you have any technical questions, please submit new issues.
+
+If you have any other questions, please contact us: [**Lingfei Wu**](https://sites.google.com/a/email.wm.edu/teddy-lfwu/home) **[lwu@email.wm.edu]** and Xiaojie Guo **[xiaojie.guo@jd.com]**.
 
 ## License
 Graph4NLP uses Apache License 2.0.
