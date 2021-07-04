@@ -287,6 +287,7 @@ class Dataset(torch.utils.data.Dataset):
                  thread_number=4,
                  port=9000,
                  timeout=15000,
+                 reuse_data=True,
                  **kwargs):
         """
 
@@ -368,9 +369,10 @@ class Dataset(torch.utils.data.Dataset):
         self.test = data['test']
         if 'val' in data.keys():
             self.val = data['val']
-
+        
         vocab = torch.load(self.processed_file_paths['vocab'])
         self.vocab_model = vocab
+
 
     @property
     def raw_dir(self) -> str:
@@ -689,6 +691,7 @@ class Dataset(torch.utils.data.Dataset):
 
         vocab_to_save = self.vocab_model
         torch.save(vocab_to_save, self.processed_file_paths['vocab'])
+
 
 class Text2TextDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
