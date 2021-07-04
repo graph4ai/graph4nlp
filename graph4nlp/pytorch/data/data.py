@@ -6,9 +6,6 @@ nodes or edges. Batching operations is also supported by :py:class:`GraphData`.
 
 """
 import os
-
-from torch._C import Size
-from torch.functional import Tensor
 """
 Log level: 0 for verbose, 1 for warnings only, 2 for muted. Default is 0.
 """
@@ -178,7 +175,7 @@ class GraphData(object):
 
         return self.nodes[:].features
 
-    def get_node_features(self, nodes: Union[int, slice]) -> Dict[Any, torch.Tensor]:
+    def get_node_features(self, nodes: Union[int, slice]) -> Dict[str, torch.Tensor]:
         """
         Get the node feature dictionary of the `nodes`
 
@@ -872,7 +869,7 @@ class GraphData(object):
         ----------
         key : str
             The name of the feature.
-        value : Tensor
+        value : torch.Tensor
             The values to be written, in the shape of (B, N, D)
         """
         individual_features = [value[i, :self._batch_num_nodes[i]] for i in range(len(self._batch_num_nodes))]
