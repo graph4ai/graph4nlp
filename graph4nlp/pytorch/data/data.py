@@ -236,7 +236,7 @@ class GraphData(object):
         # Modification
         for key, value in new_data.items():
             # Node-shape check
-            if value.shape[0] != self.get_node_num():
+            if not (value.shape[0] == self.get_node_num()):
                 raise SizeMismatchException("The shape feature '{}' does not match the number of nodes in the graph. Got a {} tensor but have {} nodes.".format(key, value.shape, self.get_node_num()))
             # assert value.shape[0] == self.get_node_num(), \
             #     "The shape feature '{}' does not match the number of nodes in the graph. Got a {} tensor but have {} nodes.".format(
@@ -438,7 +438,7 @@ class GraphData(object):
         eid_list = []
         try:
             for src_idx, tgt_idx in zip(src, tgt):
-                if not isinstance(src_idx, int) or not isinstance(tgt_idx, int):
+                if not (isinstance(src_idx, int) or isinstance(tgt_idx, int)):
                     raise TypeError("'src' and 'tgt' should be (int, int), ('{}', '{}') received.".format(type(src_idx), type(tgt_idx)))
                 eid_list.append(self._nids_eid_mapping[(src_idx, tgt_idx)])
         except KeyError:
@@ -471,7 +471,7 @@ class GraphData(object):
         """
         return self.edges[:].features
 
-    def remove_all_edges(self) -> None:
+    def remove_all_edges(self):
         """
         Remove all the edges and the corresponding features and attributes in GraphData.
 
@@ -777,7 +777,7 @@ class GraphData(object):
                 cum_num_nodes += num_nodes
             return matrices
 
-    def from_graphdata(self, src: Any) -> None:
+    def from_graphdata(self, src: Any):
         """Build a clone from a source GraphData"""
 
         # Add nodes and edges
@@ -861,7 +861,7 @@ class GraphData(object):
                 raise Exception("Node feature {} doesn't exist!".format(item))
             return pad_sequence(self.split_node_features[item], batch_first=True)
 
-    def _set_batch_node_features(self, key: str, value: torch.Tensor) -> None:
+    def _set_batch_node_features(self, key: str, value: torch.Tensor):
         """
         Set node features in batch view.
 

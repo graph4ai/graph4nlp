@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Any, List, Tuple, Union
 import torch
 
 
@@ -14,13 +14,17 @@ class EdgeNotFoundException(Exception):
     pass
 
 
-def int_to_list(x: Union[int, list]):
-    assert isinstance(x, list) or isinstance(x, int)
+def int_to_list(x: Union[int, List[Any]]):
+    if not (isinstance(x, list) or isinstance(x, int)):
+        raise TypeError('Input x should be int or list. Got {} instead.'.format(type(x)))
+    # assert isinstance(x, list) or isinstance(x, int)
     return x if isinstance(x, list) else [x]
 
 
-def check_and_expand(x: list, y: list) -> Tuple[list, list]:
-    assert isinstance(x, list) and isinstance(y, list)
+def check_and_expand(x: list, y: list) -> Tuple[List[Any], List[Any]]:
+    if not (isinstance(x, list) and isinstance(y, list)):
+        raise TypeError('Input x and y should be lists. Got {} and {} instead.'.format(type(x), type(y)))
+    # assert isinstance(x, list) and isinstance(y, list)
     max_len = max(len(x), len(y))
     if len(x) == len(y):
         return x, y
@@ -35,7 +39,7 @@ def check_and_expand(x: list, y: list) -> Tuple[list, list]:
             'The two lists {} and {} cannot be automatically broadcasted to the same length.'.format(x, y))
 
 
-def slice_to_list(sl: slice, max_len: int) -> list:
+def slice_to_list(sl: slice, max_len: int) -> List[int]:
     """
     Turn a slice object into a list
 
@@ -85,7 +89,7 @@ def entail_zero_padding(old_tensor: torch.Tensor, num_rows: int) -> torch.Tensor
         return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:])).to(dtype=old_tensor.dtype, device=old_tensor.device)), dim=0)
 
 
-def reverse_index(l: list, v):
+def reverse_index(l: List[Any], v: Any):
     """
     Find the index of the last occurrence of an element in a list.
 
@@ -107,5 +111,5 @@ def reverse_index(l: list, v):
         If the element is not found in the list.
     """
     if v not in l:
-        raise ValueError
+        raise ValueError('Given value v not found in the list')
     return len(l) - l[::-1].index(v) - 1
