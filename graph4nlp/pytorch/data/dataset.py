@@ -344,7 +344,7 @@ class Dataset(torch.utils.data.Dataset):
         
         # inference
         self.for_inference = for_inference
-        print(self.for_inference)
+        print("dataset is for inference: ", self.for_inference)
 
         # Processing-specific attributes
         self.tokenizer = tokenizer
