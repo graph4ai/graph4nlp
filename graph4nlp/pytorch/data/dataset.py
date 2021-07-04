@@ -288,6 +288,7 @@ class Dataset(torch.utils.data.Dataset):
                  port=9000,
                  timeout=15000,
                  reuse_data=True,
+                 for_inference=True,
                  **kwargs):
         """
 
@@ -340,6 +341,9 @@ class Dataset(torch.utils.data.Dataset):
         self.thread_number = thread_number
         self.port = port
         self.timeout = timeout
+        
+        # inference
+        self.for_inference = for_inference
 
         # Processing-specific attributes
         self.tokenizer = tokenizer
@@ -353,6 +357,7 @@ class Dataset(torch.utils.data.Dataset):
         self.min_word_vocab_freq = min_word_vocab_freq
 
         # self.pretrained_word_emb_file = pretrained_word_emb_file
+        self.reuse_data = reuse_data
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         self.use_val_for_vocab = use_val_for_vocab
@@ -363,10 +368,10 @@ class Dataset(torch.utils.data.Dataset):
         if 'download' in self.__class__.__dict__.keys():
             self._download()
 
-        self._process(reuse_data)
+        self._process()
 
         # After initialization, load the preprocessed files.
-        if reuse_data:
+        if self.reuse_data:
             data = torch.load(self.processed_file_paths['data'])
             self.train = data['train']
             self.test = data['test']
@@ -661,8 +666,8 @@ class Dataset(torch.utils.data.Dataset):
 
         return self.vocab_model
 
-    def _process(self, reuse_data):
-        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]) and reuse_data:
+    def _process(self):
+        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]) and self.reuse_data:
             if 'val_split_ratio' in self.__dict__:
                 UserWarning(
                     "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
