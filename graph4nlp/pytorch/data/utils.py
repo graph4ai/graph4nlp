@@ -1,3 +1,4 @@
+from typing import Tuple, Union
 import torch
 
 
@@ -13,12 +14,12 @@ class EdgeNotFoundException(Exception):
     pass
 
 
-def int_to_list(x: int or list):
+def int_to_list(x: Union[int, list]):
     assert isinstance(x, list) or isinstance(x, int)
     return x if isinstance(x, list) else [x]
 
 
-def check_and_expand(x: list, y: list) -> (list, list):
+def check_and_expand(x: list, y: list) -> Tuple[list, list]:
     assert isinstance(x, list) and isinstance(y, list)
     max_len = max(len(x), len(y))
     if len(x) == len(y):
@@ -34,7 +35,7 @@ def check_and_expand(x: list, y: list) -> (list, list):
             'The two lists {} and {} cannot be automatically broadcasted to the same length.'.format(x, y))
 
 
-def slice_to_list(sl, max_len) -> list:
+def slice_to_list(sl: slice, max_len: int) -> list:
     """
     Turn a slice object into a list
 
@@ -74,15 +75,14 @@ def slice_to_list(sl, max_len) -> list:
     return list(range(start, stop, step))
 
 
-def entail_zero_padding(old_tensor: torch.Tensor, num_rows: int):
+def entail_zero_padding(old_tensor: torch.Tensor, num_rows: int) -> torch.Tensor:
     if old_tensor is None:
         return None
 
     if len(old_tensor.shape) == 1:
         return torch.cat((old_tensor, torch.zeros(num_rows).to(dtype=old_tensor.dtype, device=old_tensor.device)))
     else:
-        return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:])).to(dtype=old_tensor.dtype,
-                                                                                device=old_tensor.device)), dim=0)
+        return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:])).to(dtype=old_tensor.dtype, device=old_tensor.device)), dim=0)
 
 
 def reverse_index(l: list, v):

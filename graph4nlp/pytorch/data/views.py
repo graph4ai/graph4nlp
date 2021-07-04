@@ -1,5 +1,6 @@
 # Views implementations used in GraphData
 from collections import namedtuple
+from typing import List, Union, Any
 
 from .utils import slice_to_list
 
@@ -12,10 +13,10 @@ class NodeView(object):
     View for graph nodes at at high level.
     """
 
-    def __init__(self, graph):
+    def __init__(self, graph: Any):
         self._graph = graph
 
-    def __getitem__(self, node_idx: int or slice) -> NodeRepr:
+    def __getitem__(self, node_idx: Union[int, slice]) -> NodeRepr:
         """
         Get a number of nodes and their corresponding data.
 
@@ -31,14 +32,20 @@ class NodeView(object):
         """
         # consistency check
         # 1. type check
-        assert isinstance(node_idx, int) or isinstance(node_idx, slice), "Only int and slice are supported currently."
+        if not(isinstance(node_idx, int) or isinstance(node_idx, slice)):
+            raise TypeError("Only int and slice are supported currently.")
+        # assert isinstance(node_idx, int) or isinstance(node_idx, slice), "Only int and slice are supported currently."
         # 2. boundary check
         if isinstance(node_idx, slice):
             node_idx_list = slice_to_list(node_idx, self._graph.get_node_num())
             for idx in node_idx_list:
-                assert idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(idx)
+                if not (idx < self._graph.get_node_num()):
+                    raise ValueError('Node {} does not exist in the graph.'.format(idx))
+                # assert idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(idx)
         else:
-            assert node_idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(node_idx)
+            if not (node_idx < self._graph.get_node_num()):
+                raise ValueError('Node {} does not exist in the graph.'.format(node_idx))
+            # assert node_idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(node_idx)
 
         return NodeRepr(features=NodeFeatView(self._graph, node_idx), attributes=NodeAttrView(self._graph, node_idx))
 
@@ -54,14 +61,14 @@ class NodeFeatView(object):
     View for node features which are all tensors.
     """
 
-    def __init__(self, graph, nodes: slice or int):
+    def __init__(self, graph, nodes: Union[int, slice]):
         self._graph = graph
         self._nodes = nodes
 
-    def __getitem__(self, feature_name):
+    def __getitem__(self, feature_name: Any) -> Any:
         return self._graph.get_node_features(self._nodes)[feature_name]
 
-    def __setitem__(self, feature_name, feature_value):
+    def __setitem__(self, feature_name: Any, feature_value: Any) -> None:
         return self._graph.set_node_features(self._nodes, {feature_name: feature_value})
 
     def __repr__(self):
@@ -76,11 +83,11 @@ class NodeAttrView(object):
     View for node attributes which are arbitrary objects.
     """
 
-    def __init__(self, graph, nodes):
+    def __init__(self, graph, nodes: Union[int, slice]):
         self._graph = graph
         self._nodes = nodes
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Any) -> Any:
         total_attrs = self._graph.get_node_attrs(self._nodes)
         filtered_attrs = dict()
         for k, v in total_attrs.items():
@@ -115,14 +122,14 @@ class EdgeView(object):
 
 
 class EdgeFeatView(object):
-    def __init__(self, graph, edges):
+    def __init__(self, graph, edges: List[Any]):
         self._graph = graph
         self._edges = edges
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Any):
         return self._graph.get_edge_feature(self._edges)[item]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Any, value: Any):
         self._graph.set_edge_feature(self._edges, {key: value})
 
     def keys(self):
@@ -133,10 +140,10 @@ class BatchNodeFeatView(object):
     def __init__(self, graph):
         self._graph = graph
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Any):
         return self._graph._get_batch_node_features(item)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Any, value: Any):
         return self._graph._set_batch_node_features(key, value)
 
     def __repr__(self):
@@ -147,10 +154,10 @@ class BatchEdgeFeatView(object):
     def __init__(self, graph):
         self._graph = graph
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Any):
         return self._graph._get_batch_edge_features(item)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Any, value: Any):
         return self._graph._set_batch_edge_features(key, value)
 
     def __repr__(self):
