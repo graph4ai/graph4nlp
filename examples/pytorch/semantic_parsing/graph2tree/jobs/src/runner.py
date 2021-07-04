@@ -43,6 +43,7 @@ class Jobs:
         self.use_copy = self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"]
         self.use_share_vocab = self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
+        self.inference_data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["inference_root_dir"]
 
         self._build_dataloader()
         self._build_model()
@@ -53,51 +54,20 @@ class Jobs:
         enc_emb_size = self.opt["graph_construction_args"]["node_embedding"]["input_size"]
         tgt_emb_size = self.opt["decoder_args"]["rnn_decoder_share"]["input_size"]
         topology_subdir = self.opt["graph_construction_args"]["graph_construction_share"]["topology_subdir"]
-        if graph_type == "dependency":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
-                                         topology_builder=DependencyBasedGraphConstruction,
-                                         topology_subdir=topology_subdir, 
-                                         edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
-                                         graph_type='static',
-                                         share_vocab=self.use_share_vocab, 
-                                         enc_emb_size=enc_emb_size,
-                                         dec_emb_size=tgt_emb_size,
-                                         min_word_vocab_freq=self.opt["min_freq"],
-                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
-                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
+        dynamic_init_topology_builder = None
 
+        if graph_type == "dependency":
+            my_topology_builder = DependencyBasedGraphConstruction
+            my_graph_type = 'static'
         elif graph_type == "constituency":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
-                                         topology_builder=ConstituencyBasedGraphConstruction,
-                                         topology_subdir=topology_subdir, 
-                                         edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
-                                         graph_type='static',
-                                         share_vocab=self.use_share_vocab, 
-                                         enc_emb_size=enc_emb_size,
-                                         dec_emb_size=tgt_emb_size,
-                                         min_word_vocab_freq=self.opt["min_freq"],
-                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
-                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
-                                         
+            my_topology_builder = DependencyBasedGraphConstruction
+            my_graph_type = 'static'
         elif graph_type == "node_emb":
-            dataset = JobsDatasetForTree(root_dir=self.data_dir, 
-                                         word_emb_size=enc_emb_size,
-                                         topology_builder=NodeEmbeddingBasedGraphConstruction,
-                                         topology_subdir=topology_subdir, 
-                                         graph_type='dynamic',
-                                         dynamic_graph_type=graph_type, 
-                                         edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
-                                         share_vocab=self.use_share_vocab, 
-                                         enc_emb_size=enc_emb_size,
-                                         dec_emb_size=tgt_emb_size,
-                                         min_word_vocab_freq=self.opt["min_freq"],
-                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
-                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
-    
+            my_topology_builder = NodeEmbeddingBasedGraphConstruction
+            my_graph_type = 'dynamic'
         elif graph_type == "node_emb_refined":
+            my_topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            my_graph_type = 'dynamic'
             dynamic_init_graph_type = self.opt["graph_construction_args"]["graph_construction_private"]["dynamic_init_graph_type"]
             if dynamic_init_graph_type is None or dynamic_init_graph_type == 'line':
                 dynamic_init_topology_builder = None
@@ -108,22 +78,24 @@ class Jobs:
             else:
                 # dynamic_init_topology_builder
                 raise RuntimeError('Define your own dynamic_init_topology_builder')
-            dataset = JobsDatasetForTree(root_dir=self.data_dir,
-                                         word_emb_size=enc_emb_size,
-                                         topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
-                                         topology_subdir=topology_subdir,
-                                         graph_type='dynamic',
-                                         dynamic_graph_type=graph_type,
-                                         share_vocab=self.use_share_vocab,
-                                         enc_emb_size=enc_emb_size, 
-                                         dec_emb_size=tgt_emb_size,
-                                         dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                         min_word_vocab_freq=self.opt["min_freq"],
-                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
-                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])                                         
         else:
             raise NotImplementedError
+
+        dataset = JobsDatasetForTree(root_dir=self.data_dir,
+                                     word_emb_size=enc_emb_size,
+                                     topology_builder=my_topology_builder,
+                                     topology_subdir=topology_subdir, 
+                                     edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
+                                     graph_type=my_graph_type,
+                                     dynamic_graph_type=graph_type, 
+                                     share_vocab=self.use_share_vocab, 
+                                     enc_emb_size=enc_emb_size,
+                                     dec_emb_size=tgt_emb_size,
+                                     dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                     min_word_vocab_freq=self.opt["min_freq"],
+                                     pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
+                                     pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
+                                     pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
 
         self.train_data_loader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
