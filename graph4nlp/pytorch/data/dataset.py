@@ -288,7 +288,7 @@ class Dataset(torch.utils.data.Dataset):
                  port=9000,
                  timeout=15000,
                  reuse_data=True,
-                 for_inference=True,
+                 for_inference=False,
                  **kwargs):
         """
 
