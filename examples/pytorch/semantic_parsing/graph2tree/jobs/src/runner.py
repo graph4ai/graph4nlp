@@ -190,6 +190,8 @@ class Jobs:
                 if val_acc > best_acc:
                     best_acc = val_acc
         print(f"Best Accuracy: {val_acc:.4f}")
+        print("="*20 + "making inference" + "="*20)
+        self.infer(self.model) # replace the model with the best model you saved.
 
     def eval(self, model):
         from evaluation import convert_to_string, compute_tree_accuracy
@@ -247,6 +249,41 @@ class Jobs:
             candidate_list, reference_list, eval_vocab)
         print(f"Accuracy: {eval_acc:.4f}\n")
         return eval_acc
+
+
+    def infer(self, model):
+        model.eval()
+        for data in self.inference_data_loader:
+            eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
+            eval_input_graph = eval_input_graph.to(self.device)
+            oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
+
+            if self.use_copy:
+                assert len(batch_original_tree_list) == 1
+                reference = oov_dict.get_symbol_idx_for_list(batch_original_tree_list[0].split())
+                eval_vocab = oov_dict
+            else:
+                assert len(batch_original_tree_list) == 1
+                reference = model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
+                eval_vocab = self.tgt_vocab
+
+            candidate = model.decoder.translate(model.use_copy,
+                                                model.decoder.enc_hidden_size,
+                                                model.decoder.hidden_size,
+                                                model,
+                                                eval_input_graph,
+                                                self.src_vocab,
+                                                self.tgt_vocab,
+                                                self.device,
+                                                self.opt["decoder_args"]["rnn_decoder_private"]["max_decoder_step"],
+                                                self.opt["decoder_args"]["rnn_decoder_private"]["max_tree_depth"],
+                                                oov_dict=oov_dict,
+                                                use_beam_search=True,
+                                                beam_size=self.opt["beam_size"])
+
+            candidate = [int(c) for c in candidate]
+            print(" ".join(x['token'] for x in eval_input_graph.node_attributes))
+            print(" ".join(model.tgt_vocab.get_idx_symbol_for_list(candidate)) + '\n')
 
 if __name__ == "__main__":
     from config import get_args
