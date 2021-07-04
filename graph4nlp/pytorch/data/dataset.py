@@ -327,6 +327,8 @@ class Dataset(torch.utils.data.Dataset):
             The port for stanfordcorenlp.
         timeout: int, default=15000
             The timeout for stanfordcorenlp.
+        reuse_data: bool, default=True
+            If all processed files are saved and ``reuse_data`` is true, we reuse these processed files and do not run the ``_process`` function.
         kwargs
         """
         super(Dataset, self).__init__()
