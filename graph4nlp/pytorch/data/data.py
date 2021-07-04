@@ -135,7 +135,7 @@ class GraphData(object):
         """
         return len(self._node_attributes)
 
-    def add_nodes(self, node_num: int) -> None:
+    def add_nodes(self, node_num: int):
         """
         Add a number of nodes to the graph.
 
@@ -200,7 +200,7 @@ class GraphData(object):
                 ret[key] = self._node_features[key][nodes]
         return ret
 
-    def node_feature_names(self) -> KeysView[str]:
+    def node_feature_names(self) -> List[str]:
         """
         Get the names of node features.
 
@@ -209,7 +209,7 @@ class GraphData(object):
         List[str]
             The collection of feature names.
         """
-        return self._node_features.keys()
+        return list(self._node_features.keys())
 
     def set_node_features(self, nodes: Union[int, slice], new_data: Dict[str, torch.Tensor]) -> None:
         """
@@ -309,7 +309,7 @@ class GraphData(object):
         """
         return len(self._edge_indices.src)
 
-    def add_edge(self, src: int, tgt: int) -> None:
+    def add_edge(self, src: int, tgt: int):
         """
         Add one edge to the graph.
 
@@ -359,7 +359,7 @@ class GraphData(object):
         ----------
         src : int or list
             Source node indices
-        tgt  : int or list
+        tgt : int or list
             Target node indices
 
         Raises
@@ -448,7 +448,7 @@ class GraphData(object):
             raise EdgeNotFoundException('Edge {} does not exist!'.format((src, tgt)))
         return eid_list
 
-    def get_all_edges(self) -> List[Tuple[Any, Any]]:
+    def get_all_edges(self) -> List[Tuple[int, int]]:
         """
         Get all the edges in the graph
 
@@ -464,7 +464,7 @@ class GraphData(object):
 
     # Edge feature operations
     @property
-    def edge_features(self) -> Dict[Any, torch.Tensor]:
+    def edge_features(self) -> Dict[str, torch.Tensor]:
         """
         Get all the edge features in a dictionary.
         Returns
@@ -496,13 +496,13 @@ class GraphData(object):
         self._edge_features = edge_feature_factory(res_init_edge_features)
         self._edge_attributes = edge_attribute_factory()
 
-    def get_edge_feature(self, edges: List[Any]) -> Dict[str, Any]:
+    def get_edge_feature(self, edges: List[Any]) -> Dict[str, torch.Tensor]:
         """
         Get the feature of the given edges.
 
         Parameters
         ----------
-        edges: list
+        edges : list
             Edge indices
 
         Returns
@@ -522,15 +522,15 @@ class GraphData(object):
         """Get all the names of edge features"""
         return self._edge_features.keys()
 
-    def set_edge_feature(self, edges: Union[int, slice, List[Any]], new_data: dict):
+    def set_edge_feature(self, edges: Union[int, slice, List[int]], new_data: Dict[str, torch.Tensor]):
         """
         Set edge feature
 
         Parameters
         ----------
-        edges: int or list or slice
+        edges : int or list or slice
             Edge indices
-        new_data: dict
+        new_data : dict
             New data
 
         Raises
@@ -572,7 +572,7 @@ class GraphData(object):
 
     # Edge attribute operations
     @property
-    def edge_attributes(self):
+    def edge_attributes(self) -> List[Dict[str, torch.Tensor]]:
         """
         Get the edge attributes in a list.
         Returns
@@ -591,7 +591,7 @@ class GraphData(object):
 
         Returns
         -------
-        g: dgl.DGLGraph
+        g : dgl.DGLGraph
             The converted dgl.DGLGraph
         """
         u, v = self._edge_indices.src, self._edge_indices.tgt
@@ -613,7 +613,7 @@ class GraphData(object):
 
         Parameters
         ----------
-        dgl_g: dgl.DGLGraph
+        dgl_g : dgl.DGLGraph
             The source graph
         """
         if not (self.get_edge_num() == 0 and self.get_node_num() == 0):
@@ -641,7 +641,7 @@ class GraphData(object):
         the matrix entries
         Parameters
         ----------
-        adj: torch.Tensor
+        adj : torch.Tensor
             The tensor representing the adjacency matrix.
 
         Returns
@@ -673,7 +673,7 @@ class GraphData(object):
         the matrix entries
         Parameters
         ----------
-        adj: scipy.sparse.coo_matrix
+        adj : scipy.sparse.coo_matrix
             The object representing the sparse adjacency matrix.
 
         Returns
@@ -699,9 +699,9 @@ class GraphData(object):
 
         Parameters
         ----------
-        batch_view: bool
+        batch_view : bool
             Whether to return a batched view of the adjacency matrix(3D, True) or not (2D).
-        post_processing_fn: function
+        post_processing_fn : function
             A callback function which takes a binary adjacency matrix (2D) and do some post-processing on it.
             The return of this function should also be N x N
 
@@ -738,12 +738,12 @@ class GraphData(object):
                 cum_num_edges += self._batch_num_edges[i]
             return ret
 
-    def sparse_adj(self, batch_view=False) -> Union[Any, List[Any]]:
+    def sparse_adj(self, batch_view: bool=False) -> Union[torch.Tensor, List[torch.Tensor]]:
         """
         Return the scipy.sparse.coo_matrix form of the adjacency matrix
         Parameters
         ----------
-        batch_view: bool
+        batch_view : bool
             Whether to return the split view of the adjacency matrix. Return a list of COO matrix if True
 
         Returns
@@ -806,7 +806,7 @@ class GraphData(object):
         # Move data to the device of the source graph
         self.to(src.device)
 
-    def copy_batch_info(self, batch):
+    def copy_batch_info(self, batch: Any) -> None:
         """
         Copy all the information related to the batching.
         Parameters
@@ -842,12 +842,12 @@ class GraphData(object):
 
         Parameters
         -------
-        item: str
+        item : str
             The name of the features. If None then return a dictionary of all the features.
 
         Returns
         -------
-        dict or tensor:
+        dict or torch.Tensor
             A dictionary containing the node feature names and the corresponding batch-view tensors, or just the
             specified tensor.
         """
@@ -870,9 +870,9 @@ class GraphData(object):
 
         Parameters
         ----------
-        key: str
+        key : str
             The name of the feature.
-        value: Tensor
+        value : Tensor
             The values to be written, in the shape of (B, N, D)
         """
         individual_features = [value[i, :self._batch_num_nodes[i]] for i in range(len(self._batch_num_nodes))]
@@ -895,7 +895,7 @@ class GraphData(object):
 
         Returns
         -------
-        dict or tensor:
+        dict or torch.Tensor
             A dictionary containing the edge feature names and the corresponding batch-view tensors.
         """
         if not self._is_batch:
@@ -938,15 +938,15 @@ class GraphData(object):
                                                  split_size_or_sections=self._batch_num_edges)
         return edge_features
 
-    def split_features(self, input_tensor: torch.Tensor, type='node') -> torch.Tensor:
+    def split_features(self, input_tensor: torch.Tensor, type: str='node') -> torch.Tensor:
         """
         Convert a tensor from [N, *] to [B, N_max, *] with zero padding according to the batch information stored in
         the graph.
         Parameters
         ----------
-        input_tensor: torch.Tensor
+        input_tensor : torch.Tensor
         The original tensor to be split.
-        type: str
+        type : str
         'node' or 'edge'. Indicates the source of batch information.
         Returns
         -------
@@ -989,7 +989,7 @@ def from_dgl(g: dgl.DGLGraph) -> GraphData:
 
     Parameters
     ----------
-    g: dgl.DGLGraph
+    g : dgl.DGLGraph
         The source graph in DGLGraph format.
 
     Returns
@@ -1008,7 +1008,7 @@ def to_batch(graphs: List[GraphData]=None) -> GraphData:
 
     Parameters
     ----------
-    graphs: list of GraphData
+    graphs : list of GraphData
         The list of GraphData to be batched
 
     Returns
@@ -1116,7 +1116,7 @@ def from_batch(batch: GraphData) -> List[GraphData]:
 
     Parameters
     ----------
-    batch: GraphData
+    batch : GraphData
         The source batch to be split.
 
     Returns
