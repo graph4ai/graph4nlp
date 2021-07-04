@@ -20,6 +20,7 @@ def get_args():
     # dataset config
     parser.add_argument("--batch-size", type=int, default=20, help="the size of one mini-batch")
     parser.add_argument("--share-vocab", type=bool, default=True, help="whether to share vocab")
+    parser.add_argument("--make-inference", type=int, default=1, help="make inference or not")
 
     parser.add_argument("--pretrained_word_emb_name", type=str,
                         default=None, help="")

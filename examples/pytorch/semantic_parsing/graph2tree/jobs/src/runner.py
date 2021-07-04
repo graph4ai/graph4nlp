@@ -42,8 +42,11 @@ class Jobs:
 
         self.use_copy = self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"]
         self.use_share_vocab = self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
+        print("use share vocab or not: ", self.use_share_vocab)
+        self.make_inference = self.opt["make_inference"]
+        print("make inference or not: ", self.make_inference)
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
-        self.inference_data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["inference_root_dir"]
+        self.inference_data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["inference_root_dir"] if self.make_inference else None
 
         self._build_dataloader()
         self._build_model()
@@ -96,11 +99,32 @@ class Jobs:
                                      pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
                                      pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
                                      pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
+        print("Preprocess inference dataset...")
+        inference_dataset = JobsDatasetForTree(root_dir=self.data_dir,
+                                     word_emb_size=enc_emb_size,
+                                     topology_builder=my_topology_builder,
+                                     topology_subdir=topology_subdir, 
+                                     edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
+                                     graph_type=my_graph_type,
+                                     dynamic_graph_type=graph_type, 
+                                     share_vocab=self.use_share_vocab, 
+                                     enc_emb_size=enc_emb_size,
+                                     dec_emb_size=tgt_emb_size,
+                                     dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                     min_word_vocab_freq=self.opt["min_freq"],
+                                     pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
+                                     pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
+                                     pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
+                                     for_inference=self.make_inference)
+        print("Done...")
 
         self.train_data_loader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
         self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=1,
                                           collate_fn=dataset.collate_fn)
+        self.inference_data_loader = DataLoader(inference_dataset.test, batch_size=1, shuffle=False, num_workers=1,
+                                          collate_fn=inference_dataset.collate_fn)
+
         self.vocab_model = dataset.vocab_model
         self.src_vocab = self.vocab_model.in_word_vocab
         self.tgt_vocab = self.vocab_model.out_word_vocab
