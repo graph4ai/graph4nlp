@@ -43,8 +43,8 @@ class Jobs:
         self.use_copy = self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"]
         self.use_share_vocab = self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
         print("use share vocab or not: ", self.use_share_vocab)
-        self.make_inference = self.opt["make_inference"]
-        print("make inference or not: ", self.make_inference==1)
+        self.make_inference = self.opt["make_inference"]==1
+        print("make inference or not: ", self.make_inference)
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
         self.inference_data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["inference_root_dir"] if self.make_inference else None
 
