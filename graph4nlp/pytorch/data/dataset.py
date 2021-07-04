@@ -361,18 +361,18 @@ class Dataset(torch.utils.data.Dataset):
         if 'download' in self.__class__.__dict__.keys():
             self._download()
 
-        self._process()
+        self._process(reuse_data)
 
         # After initialization, load the preprocessed files.
-        data = torch.load(self.processed_file_paths['data'])
-        self.train = data['train']
-        self.test = data['test']
-        if 'val' in data.keys():
-            self.val = data['val']
-        
-        vocab = torch.load(self.processed_file_paths['vocab'])
-        self.vocab_model = vocab
+        if reuse_data:
+            data = torch.load(self.processed_file_paths['data'])
+            self.train = data['train']
+            self.test = data['test']
+            if 'val' in data.keys():
+                self.val = data['val']
 
+            vocab = torch.load(self.processed_file_paths['vocab'])
+            self.vocab_model = vocab
 
     @property
     def raw_dir(self) -> str:
@@ -659,8 +659,8 @@ class Dataset(torch.utils.data.Dataset):
 
         return self.vocab_model
 
-    def _process(self):
-        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
+    def _process(self, reuse_data):
+        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]) and reuse_data:
             if 'val_split_ratio' in self.__dict__:
                 UserWarning(
                     "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
