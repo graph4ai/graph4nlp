@@ -14,4 +14,4 @@ Graph Neural Networks (GNNs) encode graph-level features.
    :caption: Hello
 
    gnn/gat
-   Gun/graphsage
+   gnn/graphsage
