@@ -1,6 +1,6 @@
 .. _guide-link_prediction:
 
-link_prediction:
+Link_prediction:
 ===================
 
 Link prediction is a downstream task that are normally observed in the GNN-based NLP tasks, such as relation extract and amr parsing. The process is about classify the label of each edge or predict whether there is an edge between a pair of nodes based on the node embeddings that learnt from the GNNs modules.
@@ -26,6 +26,8 @@ This function is based on the feedforward layer. To predict the edge between a p
             nn.ReLU())
 
 After successfully define the ConcatFeedForwardNNLayer, we can apply this function to get the prediction results (logins tensor) of specific pair of nodes based on the node embedding, as shown in the below example.
+
+.. code-block:: python
 
     logits = layer(node_emb, #node embedding in format of tensor
              edge_idx, # a list of index of nodes that needs classification;Example: [(1,2),(1,0),(2,9)])
@@ -66,6 +68,8 @@ This function is also based on the feedforward layer. To predict the edge betwee
             nn.ReLU())
 
 After successfully define the ElementSumLayer, we can apply this function to get the prediction results (logins tensor) of specific pair of nodes based on the node embedding, as shown in the below example.
+
+.. code-block:: python
 
     logits = layer(node_emb, #node embedding in format of tensor
              edge_idx, # a list of index of nodes that needs classification;Example: [(1,2),(1,0),(2,9)])
@@ -108,6 +112,8 @@ This function is also based on the feedforward layer and designed for a multi-la
             nn.ReLU())
 
 After successfully define the StackedElementProdLayer, we can apply this function to get the prediction results (logins tensor) of specific pair of nodes based on the node embedding, as shown in the below example.
+
+.. code-block:: python
 
     logits = layer(node_emb_list, #node embedding in format of tensor
              edge_idx, # a list of index of nodes that needs classification;Example: [(1,2),(1,0),(2,9)])
