@@ -81,41 +81,31 @@ class Jobs:
                 raise RuntimeError('Define your own dynamic_init_topology_builder')
         else:
             raise NotImplementedError
+        
+        para_dic =  {'root_dir': self.data_dir,
+                    'word_emb_size': enc_emb_size,
+                    'topology_builder': my_topology_builder,
+                    'topology_subdir': topology_subdir, 
+                    'edge_strategy': self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
+                    'graph_type': my_graph_type,
+                    'dynamic_graph_type': graph_type, 
+                    'share_vocab': self.use_share_vocab, 
+                    'enc_emb_size': enc_emb_size,
+                    'dec_emb_size': tgt_emb_size,
+                    'dynamic_init_topology_builder': dynamic_init_topology_builder,
+                    'min_word_vocab_freq': self.opt["min_freq"],
+                    'pretrained_word_emb_name': self.opt["pretrained_word_emb_name"],
+                    'pretrained_word_emb_url': self.opt["pretrained_word_emb_url"], 
+                    'pretrained_word_emb_cache_dir': self.opt["pretrained_word_emb_cache_dir"]
+                    }
 
-        dataset = JobsDatasetForTree(root_dir=self.data_dir,
-                                     word_emb_size=enc_emb_size,
-                                     topology_builder=my_topology_builder,
-                                     topology_subdir=topology_subdir, 
-                                     edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
-                                     graph_type=my_graph_type,
-                                     dynamic_graph_type=graph_type, 
-                                     share_vocab=self.use_share_vocab, 
-                                     enc_emb_size=enc_emb_size,
-                                     dec_emb_size=tgt_emb_size,
-                                     dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                     min_word_vocab_freq=self.opt["min_freq"],
-                                     pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                                     pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
-                                     pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
-        print("Preprocess inference dataset...")
-        inference_dataset = JobsDatasetForTree(root_dir=self.inference_data_dir,
-                                     word_emb_size=enc_emb_size,
-                                     topology_builder=my_topology_builder,
-                                     topology_subdir=topology_subdir, 
-                                     edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
-                                     graph_type=my_graph_type,
-                                     dynamic_graph_type=graph_type, 
-                                     share_vocab=self.use_share_vocab, 
-                                     enc_emb_size=enc_emb_size,
-                                     dec_emb_size=tgt_emb_size,
-                                     dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                     min_word_vocab_freq=self.opt["min_freq"],
-                                     pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                                     pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
-                                     pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
-                                     for_inference=self.make_inference,
-                                     train_root=self.data_dir)
-        print("Done...")
+        dataset = JobsDatasetForTree(**para_dic)
+
+        # for inference
+        para_dic['root_dir'] = self.inference_data_dir
+        para_dic['for_inference'] = self.make_inference
+        para_dic['train_root'] = self.data_dir
+        inference_dataset = JobsDatasetForTree(**para_dic)
 
         self.train_data_loader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True, num_workers=1,
                                            collate_fn=dataset.collate_fn)
