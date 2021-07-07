@@ -18,7 +18,7 @@ from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
-from ..modules.utils.tree_utils import Tree
+from ..modules.utils.tree_utils import Tree, VocabForAll
 from ..modules.utils.tree_utils import Vocab as VocabForTree
 from ..modules.utils.vocab_utils import VocabModel, Vocab
 
@@ -369,7 +369,8 @@ class Dataset(torch.utils.data.Dataset):
         if 'val' in data.keys():
             self.val = data['val']
 
-        self.build_vocab()
+        vocab = torch.load(self.processed_file_paths['vocab'])
+        self.vocab_model = vocab
 
     @property
     def raw_dir(self) -> str:
@@ -686,6 +687,8 @@ class Dataset(torch.utils.data.Dataset):
             data_to_save['val'] = self.val
         torch.save(data_to_save, self.processed_file_paths['data'])
 
+        vocab_to_save = self.vocab_model
+        torch.save(vocab_to_save, self.processed_file_paths['vocab'])
 
 class Text2TextDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
@@ -868,12 +871,15 @@ class TextToTreeDataset(Dataset):
             src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
             tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
 
-        self.src_vocab_model = src_vocab_model
-        self.tgt_vocab_model = tgt_vocab_model
-        if self.share_vocab:
-            self.share_vocab_model = src_vocab_model
+        # self.src_vocab_model = src_vocab_model
+        # self.tgt_vocab_model = tgt_vocab_model
+        # if self.share_vocab:
+        #     self.share_vocab_model = src_vocab_model
+        self.vocab_model = VocabForAll(in_word_vocab=src_vocab_model, 
+                                       out_word_vocab=tgt_vocab_model, 
+                                       share_vocab=src_vocab_model if self.share_vocab else None)
 
-        return self.src_vocab_model
+        return self.vocab_model
 
     def vectorization(self, data_items):
         """For tree decoder we also need the vectorize the tree output."""
@@ -882,15 +888,15 @@ class TextToTreeDataset(Dataset):
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
                 node_token = graph.node_attributes[node_idx]['token']
-                node_token_id = self.src_vocab_model.get_symbol_idx(node_token)
+                node_token_id = self.vocab_model.in_word_vocab.get_symbol_idx(node_token)
                 graph.node_attributes[node_idx]['token_id'] = node_token_id
                 token_matrix.append([node_token_id])
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features['token_id'] = token_matrix
 
             tgt = item.output_text
-            tgt_list = self.tgt_vocab_model.get_symbol_idx_for_list(tgt.split())
-            output_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), self.tgt_vocab_model)
+            tgt_list = self.vocab_model.out_word_vocab.get_symbol_idx_for_list(tgt.split())
+            output_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), self.vocab_model.out_word_vocab)
             item.output_tree = output_tree
 
     @staticmethod
