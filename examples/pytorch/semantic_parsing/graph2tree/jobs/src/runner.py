@@ -201,7 +201,7 @@ class Jobs:
                 reference = model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
                 eval_vocab = self.tgt_vocab
 
-            candidate = model.decoder.translate(model.use_copy,
+            candidate = model.translate(model.use_copy,
                                                 model.decoder.enc_hidden_size,
                                                 model.decoder.hidden_size,
                                                 model,
