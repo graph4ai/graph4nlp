@@ -36,14 +36,14 @@ Below is an example to call the API.
                     'bert_lower_case': True
                    }
     graph_learner = NodeEmbeddingBasedGraphConstruction(
-                                        word_vocab,
-                                        embedding_style,
-                                        sim_metric_type='weighted_cosine',
-                                        num_heads=2,
-                                        epsilon_neigh=0.6,
-                                        smoothness_ratio=None,
-                                        connectivity_ratio=None,
-                                        sparsity_ratio=None,
+                                        word_vocab, # word vocab instance
+                                        embedding_style, # dict specifying the embedding style
+                                        sim_metric_type='weighted_cosine', # similarity metric learning type
+                                        num_heads=2, # num of similarity metric heads
+                                        epsilon_neigh=0.6, # threshold for epsilon-neighborhood sparsification
+                                        smoothness_ratio=None, # ratio for graph regularization smothness
+                                        connectivity_ratio=None, # ratio for graph regularization connectivity
+                                        sparsity_ratio=None, # ratio for graph regularization sparsity
                                         input_size=32,
                                         hidden_size=32,
                                         fix_word_emb=True,
@@ -56,7 +56,10 @@ Below is an example to call the API.
 Node Embedding Based Refined Graph
 -----------------
 Unlike the node embedding based metric learning, node embedding based refined graph metric
-learning in addition considers the existing edge information of the intrinsic graph when it’s available.
+learning in addition utilizes the intrinsic graph structure which potentially still carries
+rich and useful information regarding the optimal graph structure for the downstream task.
+It basically computes a linear combination of the normalized graph Laplacian of the intrinsic
+graph and the normalized adjacency matrix of the learned implicit graph.
 Below is an example to call the API.
 
 .. code-block:: python
@@ -72,7 +75,7 @@ Below is an example to call the API.
     graph_learner = NodeEmbeddingBasedRefinedGraphConstruction(
                                         word_vocab,
                                         embedding_style,
-                                        0.2, # init_adj_alpha
+                                        0.2, # ratio for combining the initial adjacency matrix
                                         sim_metric_type='weighted_cosine',
                                         num_heads=2,
                                         epsilon_neigh=0.6,
