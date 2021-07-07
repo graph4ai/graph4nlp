@@ -148,13 +148,38 @@ class Graph2XBase(nn.Module):
         raise NotImplementedError()
 
     def save_checkpoint(self, save_path, checkpoint_name):
+        """
+            The API for saving the model.
+        Parameters
+        ----------
+        save_path : str
+            The root path.
+        checkpoint_name : str
+            The name of the checkpoint.
+        Returns
+        -------
+
+        """
         checkpoint_path = os.path.join(save_path, checkpoint_name)
         os.makedirs(save_path, exist_ok=True)
         torch.save(self, checkpoint_path)
 
     @classmethod
     def load_checkpoint(cls, load_path, checkpoint_name):
+        """
+            The API to load the model.
+
+        Parameters
+        ----------
+        load_path : str
+            The root path to load the model.
+        checkpoint_name : str
+            The name of the model to be loaded.
+
+        Returns
+        -------
+        Graph2XBase
+        """
         checkpoint_path = os.path.join(load_path, checkpoint_name)
         model = torch.load(checkpoint_path)
         return model
-        # model = self.load_state_dict(torch.load(checkpoint_path))

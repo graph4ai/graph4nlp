@@ -47,8 +47,6 @@ class Jobs:
         self.use_share_vocab = self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
         self.make_inference = self.opt["make_inference"] == 1
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
-        self.inference_data_dir = self.opt["graph_construction_args"]["graph_construction_share"][
-            "inference_root_dir"] if self.make_inference else None
         self._build_model()
         self._build_dataloader()
         self._build_optimizer()
@@ -86,7 +84,7 @@ class Jobs:
         else:
             raise NotImplementedError
 
-        para_dic = {'root_dir': self.inference_data_dir,
+        para_dic = {'root_dir': self.data_dir,
                     'word_emb_size': enc_emb_size,
                     'topology_builder': my_topology_builder,
                     'topology_subdir': topology_subdir,

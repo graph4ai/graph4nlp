@@ -6,7 +6,6 @@ graph_construction_args:
   graph_construction_share:
     graph_type: 'node_emb'
     root_dir: "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data"
-    inference_root_dir: "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data_inference"
     topology_subdir: 'NodeEmbGraph'
     thread_number: 4
     port: 9000
