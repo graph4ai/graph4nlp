@@ -58,7 +58,11 @@ To make the utilization of GraphSAGE more felxbible, we also provide the low-lev
             activation=None)
 
 
+
 After define a GraphSAGE layer, we can use it to get the node embedding for the input graph. The generated embedding is the output of this layer, as shown in the below example:
+
+.. code-block:: python
+
     node_emb = layer(input_graph, 
                feat, # the node feature in tensor format
                edge_weight, # edge weight in tensor format; Only needed when consider the edge weights in message passing
