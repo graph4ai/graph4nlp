@@ -688,6 +688,9 @@ class Dataset(torch.utils.data.Dataset):
                     "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
                     "already been split.")
             return
+        print(self.for_inference)
+        print(all([(os.path.exists(processed_path) or 'data' not in processed_path) for processed_path in self.processed_file_paths.values()]))
+        print(all([os.path.exists(processed_path.replace(self.root, self.train_root)) for processed_path in self.processed_file_paths.values()]))
         if self.for_inference and \
            all([(os.path.exists(processed_path) or 'data' not in processed_path) for processed_path in self.processed_file_paths.values()]) and \
            all([os.path.exists(processed_path.replace(self.root, self.train_root)) for processed_path in self.processed_file_paths.values()]):
