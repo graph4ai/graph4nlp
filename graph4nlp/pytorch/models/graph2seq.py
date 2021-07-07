@@ -201,9 +201,7 @@ class Graph2Seq(Graph2XBase):
         args.update(gnn_args)
         args.update(dec_args)
         args["share_vocab"] = opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
-        ret = cls(vocab_model=vocab_model, **args)
-        ret.args = args
-        return ret
+        return cls(vocab_model=vocab_model, **args)
 
     @staticmethod
     def _get_decoder_params(opt):
