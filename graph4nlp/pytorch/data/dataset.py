@@ -288,7 +288,7 @@ class Dataset(torch.utils.data.Dataset):
                  port=9000,
                  timeout=15000,
                  for_inference=False,
-                 train_root=None,
+                 reused_vocab_model=None,
                  **kwargs):
         """
 
@@ -331,7 +331,7 @@ class Dataset(torch.utils.data.Dataset):
         for_inference: bool, default=False
             Whether this dataset is used for inference.
         train_root: str, default=None
-            When ``for_inference`` is true, you need to specify the directory where the training data is located.
+            When ``for_inference`` is true, you need to specify the directory where the vocabulary data is located.
         kwargs
         """
         super(Dataset, self).__init__()
@@ -346,7 +346,6 @@ class Dataset(torch.utils.data.Dataset):
         
         # inference
         self.for_inference = for_inference
-        self.train_root = train_root
 
         # Processing-specific attributes
         self.tokenizer = tokenizer
@@ -371,11 +370,9 @@ class Dataset(torch.utils.data.Dataset):
             self._download()
 
         if self.for_inference:
-            try:
-                vocab = torch.load(self.processed_file_paths['vocab'].replace(root, train_root))
-            except:
-                raise FileNotFoundError('Before inference, you should parse and generate vocab for train data.')
-            self.vocab_model = vocab
+            if not reused_vocab_model:
+                raise ValueError('Before inference, you should pass the processed vocab_model to ``reused_vocab_model``.')
+            self.vocab_model = reused_vocab_model
 
         self._process()
 
@@ -689,8 +686,7 @@ class Dataset(torch.utils.data.Dataset):
                     "already been split.")
             return
         if self.for_inference and \
-           all([(os.path.exists(processed_path) or self.processed_file_names['data'] not in processed_path) for processed_path in self.processed_file_paths.values()]) and \
-           all([os.path.exists(processed_path.replace(self.root, self.train_root)) for processed_path in self.processed_file_paths.values()]):
+           all([(os.path.exists(processed_path) or self.processed_file_names['data'] not in processed_path) for processed_path in self.processed_file_paths.values()]):
             return
 
         os.makedirs(self.processed_dir, exist_ok=True)

@@ -1,4 +1,5 @@
-import os
+import os, sys
+sys.path.append("/Users/mashiro/workspace/graph4ai/graph4nlp")
 import random
 import time
 import pickle
@@ -23,6 +24,7 @@ from graph4nlp.pytorch.modules.utils.tree_utils import Tree, VocabForAll
 
 import warnings
 warnings.filterwarnings('ignore')
+
 
 
 class Jobs:
@@ -104,12 +106,13 @@ class Jobs:
         # for inference
         para_dic['root_dir'] = self.inference_data_dir
         para_dic['for_inference'] = self.make_inference
-        para_dic['train_root'] = self.data_dir
+        para_dic['reused_vocab_model'] = dataset.vocab_model
+
         inference_dataset = JobsDatasetForTree(**para_dic)
 
-        self.train_data_loader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True, num_workers=1,
+        self.train_data_loader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True, num_workers=0,
                                            collate_fn=dataset.collate_fn)
-        self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=1,
+        self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=0,
                                           collate_fn=dataset.collate_fn)
 
         self.vocab_model = dataset.vocab_model
@@ -172,12 +175,16 @@ class Jobs:
         for epoch in range(1, self.opt["max_epochs"]+1):
             self.model.train()
             self.train_epoch(epoch)
+            self.model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
             if epoch >= 5:
                 val_acc = self.eval((self.model))
                 if val_acc > best_acc:
                     best_acc = val_acc
+                    self.model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
+                    print("Best Model Saved!")
         print(f"Best Accuracy: {val_acc:.4f}")
         print("="*20 + "making inference" + "="*20)
+        self.model.load_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
         self.infer(self.model) # replace the model with the best model you saved.
 
     def eval(self, model):

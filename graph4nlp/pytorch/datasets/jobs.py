@@ -119,7 +119,7 @@ class JobsDatasetForTree(TextToTreeDataset):
                  tokenizer=tokenize_jobs,
                  max_word_vocab_size=100000,
                  for_inference=False,
-                 train_root=None):
+                 reused_vocab_model=None):
         """
 
         Parameters
@@ -161,7 +161,7 @@ class JobsDatasetForTree(TextToTreeDataset):
                                           tokenizer=tokenizer,
                                           max_word_vocab_size=max_word_vocab_size,
                                           for_inference=for_inference,
-                                          train_root=train_root)
+                                          reused_vocab_model=reused_vocab_model)
 
 
 if __name__ == '__main__':
