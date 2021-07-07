@@ -247,19 +247,10 @@ class Jobs:
                 reference = model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
                 eval_vocab = self.tgt_vocab
 
-            candidate = model.decoder.translate(model.use_copy,
-                                                model.decoder.enc_hidden_size,
-                                                model.decoder.hidden_size,
-                                                model,
-                                                eval_input_graph,
-                                                self.src_vocab,
-                                                self.tgt_vocab,
-                                                self.device,
-                                                self.opt["decoder_args"]["rnn_decoder_private"]["max_decoder_step"],
-                                                self.opt["decoder_args"]["rnn_decoder_private"]["max_tree_depth"],
-                                                oov_dict=oov_dict,
-                                                use_beam_search=True,
-                                                beam_size=self.opt["beam_size"])
+            candidate = model.translate(eval_input_graph,
+                                        oov_dict=oov_dict,
+                                        use_beam_search=True,
+                                        beam_size=self.opt["beam_size"])
 
             candidate = [int(c) for c in candidate]
             print(" ".join(x['token'] for x in eval_input_graph.node_attributes))
