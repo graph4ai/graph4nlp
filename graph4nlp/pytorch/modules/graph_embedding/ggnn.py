@@ -1,7 +1,6 @@
 import torch
 import dgl
 import torch.nn as nn
-from dgl.nn import GatedGraphConv
 import dgl.function as fn
 from torch.nn import init
 from .base import GNNLayerBase, GNNBase
@@ -14,9 +13,11 @@ class UndirectedGGNNLayerConv(GNNLayerBase):
     Neural Networks <https://arxiv.org/pdf/1511.05493.pdf>`__.
 
     .. math::
-       h_{i}^{0} & = [ x_i \| \mathbf{0} ]
-       a_{i}^{t} & = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
-       h_{i}^{t+1} & = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
+       h_{i}^{0} = [ x_i \| \mathbf{0} ]
+
+       a_{i}^{t} = \sum_{j\in\mathcal{N}(i)} W_{e_{ij}} h_{j}^{t}
+
+       h_{i}^{t+1} = \mathrm{GRU}(a_{i}^{t}, h_{i}^{t})
 
     Parameters
     ----------
@@ -112,15 +113,15 @@ class BiFuseGGNNLayerConv(GNNLayerBase):
     Fuse aggregated embeddings from both incoming and outgoing
     directions before updating node embeddings.
     .. math::
-       h_{i}^{0} & = [ x_i \| \mathbf{0} ]
-       a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)}
+       h_{i}^{0} = [ x_i \| \mathbf{0} ]
+       a_{i, \vdash}^{t} = \sum_{j\in\mathcal{N}_{\vdash }(i)}
        W_{\vdash} h_{j}^{t}
-       a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)}
+       a_{i, \dashv}^{t} = \sum_{j\in\mathcal{N}_{\dashv }(i)}
        W_{\dashv} h_{j}^{t}
        e_{i}^{t} &= \sigma (W_{f}[a_{i, \vdash}^{t};a_{i, \dashv}^{t};
        a_{i, \vdash}^{t}*a_{i, \dashv}^{t};
        a_{i, \vdash}^{t}-a_{i, \dashv}^{t}])
-       h_{i}^{t+1} & = \mathrm{GRU}(e_{i}^{t}, h_{i}^{t})
+       h_{i}^{t+1} = \mathrm{GRU}(e_{i}^{t}, h_{i}^{t})
     Attributes
     ----------
     input_size: int
@@ -254,15 +255,15 @@ class BiSepGGNNLayerConv(GNNLayerBase):
     separately, and then concatenate the two output node embeddings
     after the final layer.
     .. math::
-       h_{i}^{0} & = [ x_i \| \mathbf{0} ]
-       a_{i, \vdash}^{t} & = \sum_{j\in\mathcal{N}_{\vdash }(i)}
-       W_{\vdash} h_{j, \vdash}^{t}
-       a_{i, \dashv}^{t} & = \sum_{j\in\mathcal{N}_{\dashv }(i)}
-       W_{\dashv} h_{j, \dashv}^{t}
-       h_{i, \vdash}^{t+1} & = \mathrm{GRU}_{\vdash}(a_{i, \vdash}^{t},
-       h_{i, \vdash}^{t})
-       h_{i, \dashv}^{t+1} & = \mathrm{GRU}_{\dashv}(a_{i, \dashv}^{t},
-       h_{i, \dashv}^{t})
+       h_{i}^{0} = [ x_i \| \mathbf{0} ]
+
+       a_{i, \vdash}^{t} = \sum_{j\in\mathcal{N}_{\vdash }(i)} W_{\vdash} h_{j, \vdash}^{t}
+
+       a_{i, \dashv}^{t} = \sum_{j\in\mathcal{N}_{\dashv }(i)} W_{\dashv} h_{j, \dashv}^{t}
+
+       h_{i, \vdash}^{t+1} = \mathrm{GRU}_{\vdash}(a_{i, \vdash}^{t}, h_{i, \vdash}^{t})
+
+       h_{i, \dashv}^{t+1} = \mathrm{GRU}_{\dashv}(a_{i, \dashv}^{t}, h_{i, \dashv}^{t})
     Attributes
     ----------
     input_size: int

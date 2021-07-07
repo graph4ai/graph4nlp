@@ -38,6 +38,7 @@ Sphinx themes: `Link <https://sphinx-themes.org/>`_
    guide/construction
    guide/gnn
    guide/decoding
+   guide/classification
    guide/evaluation
 
 
