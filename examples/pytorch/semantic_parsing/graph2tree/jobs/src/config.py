@@ -20,6 +20,7 @@ def get_args():
     # dataset config
     parser.add_argument("--batch-size", type=int, default=20, help="the size of one mini-batch")
     parser.add_argument("--share-vocab", type=bool, default=True, help="whether to share vocab")
+    parser.add_argument("--make-inference", type=int, default=1, help="make inference or not")
 
     parser.add_argument("--pretrained_word_emb_name", type=str,
                         default=None, help="")
@@ -27,6 +28,8 @@ def get_args():
                         default=None, help="")
     parser.add_argument("--pretrained_word_emb_cache_dir", type=str,
                         default=".vector_cache", help="")
+
+    parser.add_argument("--checkpoint-save-path", type=str, default="examples/pytorch/semantic_parsing/graph2tree/jobs/save")
     
     parser.add_argument("--beam-size", type=int, default=4, help="the beam size of beam search")
 
