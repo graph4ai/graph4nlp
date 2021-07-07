@@ -184,17 +184,6 @@ class StdRNNDecoder(RNNDecoderBase):
 
             self.coverage_strategy = coverage_strategy
 
-            def get_coverage_vector(enc_attn_weights):
-                if coverage_strategy == 'max':
-                    coverage_vector, _ = torch.max(torch.cat(enc_attn_weights), dim=0)
-                elif coverage_strategy == 'sum':
-                    coverage_vector = torch.sum(torch.cat(enc_attn_weights), dim=0)
-                else:
-                    raise ValueError('Unrecognized cover_func: ' + self.cover_func)
-                return coverage_vector
-
-            self.coverage_function = get_coverage_vector
-
             self.coverage_weight = torch.Tensor(1, 1, self.decoder_hidden_size)
             self.coverage_weight = nn.Parameter(nn.init.xavier_uniform_(self.coverage_weight))
 
@@ -230,6 +219,15 @@ class StdRNNDecoder(RNNDecoderBase):
             return nn.GRU(**kwargs)
         else:
             raise NotImplementedError("RNN type: {} is not supported.".format(rnn_type))
+
+    def coverage_function(self, enc_attn_weights):
+        if self.coverage_strategy == 'max':
+            coverage_vector, _ = torch.max(torch.cat(enc_attn_weights), dim=0)
+        elif self.coverage_strategy == 'sum':
+            coverage_vector = torch.sum(torch.cat(enc_attn_weights), dim=0)
+        else:
+            raise ValueError('Unrecognized cover_func: ' + self.cover_func)
+        return coverage_vector
 
     def _run_forward_pass(self, graph_node_embedding, graph_node_mask=None, rnn_node_embedding=None,
                           graph_level_embedding=None,
