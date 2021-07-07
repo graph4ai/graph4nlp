@@ -42,9 +42,7 @@ class Jobs:
 
         self.use_copy = self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"]
         self.use_share_vocab = self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
-        print("use share vocab or not: ", self.use_share_vocab)
         self.make_inference = self.opt["make_inference"]==1
-        print("make inference or not: ", self.make_inference)
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
         self.inference_data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["inference_root_dir"] if self.make_inference else None
 
@@ -115,7 +113,8 @@ class Jobs:
                                      pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
                                      pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
                                      pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
-                                     for_inference=self.make_inference)
+                                     for_inference=self.make_inference,
+                                     train_root=self.data_dir)
         print("Done...")
 
         self.train_data_loader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True, num_workers=1,
