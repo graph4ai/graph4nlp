@@ -126,7 +126,7 @@ class Graph2Tree(Graph2XBase):
             t = queue_decode[head-1]["t"]
 
             sibling_state = torch.zeros(
-                (1, dec_hidden_size), dtype=torch.float, requires_grad=False).to(device)
+                (1, self.dec_hidden_size), dtype=torch.float, requires_grad=False).to(device)
 
             flag_sibling = False
             for q_index in range(len(queue_decode)):
