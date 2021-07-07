@@ -287,7 +287,6 @@ class Dataset(torch.utils.data.Dataset):
                  thread_number=4,
                  port=9000,
                  timeout=15000,
-                 reuse_data=True,
                  for_inference=False,
                  **kwargs):
         """
@@ -328,8 +327,6 @@ class Dataset(torch.utils.data.Dataset):
             The port for stanfordcorenlp.
         timeout: int, default=15000
             The timeout for stanfordcorenlp.
-        reuse_data: bool, default=True
-            If all processed files are saved and ``reuse_data`` is true, we reuse these processed files and do not run the ``_process`` function.
         kwargs
         """
         super(Dataset, self).__init__()
@@ -344,7 +341,6 @@ class Dataset(torch.utils.data.Dataset):
         
         # inference
         self.for_inference = for_inference
-        print("dataset is for inference: ", self.for_inference)
 
         # Processing-specific attributes
         self.tokenizer = tokenizer
@@ -358,7 +354,6 @@ class Dataset(torch.utils.data.Dataset):
         self.min_word_vocab_freq = min_word_vocab_freq
 
         # self.pretrained_word_emb_file = pretrained_word_emb_file
-        self.reuse_data = reuse_data
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         self.use_val_for_vocab = use_val_for_vocab
@@ -372,15 +367,14 @@ class Dataset(torch.utils.data.Dataset):
         self._process()
 
         # After initialization, load the preprocessed files.
-        if self.reuse_data:
-            data = torch.load(self.processed_file_paths['data'])
-            self.train = data['train']
-            self.test = data['test']
-            if 'val' in data.keys():
-                self.val = data['val']
+        data = torch.load(self.processed_file_paths['data'])
+        self.train = data['train']
+        self.test = data['test']
+        if 'val' in data.keys():
+            self.val = data['val']
 
-            vocab = torch.load(self.processed_file_paths['vocab'])
-            self.vocab_model = vocab
+        vocab = torch.load(self.processed_file_paths['vocab'])
+        self.vocab_model = vocab
 
     @property
     def raw_dir(self) -> str:
@@ -668,7 +662,7 @@ class Dataset(torch.utils.data.Dataset):
         return self.vocab_model
 
     def _process(self):
-        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]) and self.reuse_data:
+        if all([os.path.exists(processed_path) for processed_path in self.processed_file_paths.values()]):
             if 'val_split_ratio' in self.__dict__:
                 UserWarning(
                     "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
