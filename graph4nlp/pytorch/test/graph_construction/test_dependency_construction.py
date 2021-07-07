@@ -8,7 +8,16 @@ def test_dependency():
 
     nlp_parser = StanfordCoreNLP('http://localhost', port=9000, timeout=300000)
 
-    DependencyBasedGraphConstruction.topology(raw_data, nlp_parser, merge_strategy="tailhead",
+    processor_args = {
+        'annotators': 'ssplit,tokenize,depparse',
+        "tokenize.options":
+            "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+        "tokenize.whitespace": True,
+        'ssplit.isOneSentence': True,
+        'outputFormat': 'json'
+    }
+
+    DependencyBasedGraphConstruction.topology(raw_data, nlp_parser, processor_args=processor_args, merge_strategy="tailhead",
                                               edge_strategy="heterogeneous", verbase=1)
     pass
 
