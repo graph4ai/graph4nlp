@@ -129,11 +129,14 @@ class Jobs:
                                            collate_fn=dataset.collate_fn)
         self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=1,
                                           collate_fn=dataset.collate_fn)
-        self.src_vocab = dataset.src_vocab_model
-        self.tgt_vocab = dataset.tgt_vocab_model
-        if self.use_share_vocab:
-            self.share_vocab = dataset.share_vocab_model
-        self.vocab_model = VocabForAll(in_word_vocab=self.src_vocab, out_word_vocab=self.tgt_vocab, share_vocab=self.share_vocab)
+
+        self.vocab_model = dataset.vocab_model
+        self.src_vocab = self.vocab_model.in_word_vocab
+        self.tgt_vocab = self.vocab_model.out_word_vocab
+        self.share_vocab = self.vocab_model.share_vocab if self.use_share_vocab else None
+        # if self.use_share_vocab:
+        #     self.share_vocab = dataset.share_vocab_model
+        # self.vocab_model = VocabForAll(in_word_vocab=self.src_vocab, out_word_vocab=self.tgt_vocab, share_vocab=self.share_vocab)
 
     def _build_model(self):
         '''For encoder-decoder'''
