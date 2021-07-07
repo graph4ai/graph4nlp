@@ -1,29 +1,15 @@
-import os, sys
-
-sys.path.append("/Users/mashiro/workspace/graph4ai/graph4nlp")
+import copy
 import random
 import time
-import pickle
-import argparse
-import copy
+import warnings
 
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.nn.init as init
-import torch.optim as optim
 from torch.utils.data import DataLoader
-from tqdm import tqdm
 
-from graph4nlp.pytorch.data.data import to_batch
 from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
-from graph4nlp.pytorch.modules.graph_construction import *
-from graph4nlp.pytorch.modules.graph_embedding import *
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
-from graph4nlp.pytorch.modules.utils.tree_utils import Tree, VocabForAll
-
-import warnings
+from graph4nlp.pytorch.modules.graph_construction import *
 
 warnings.filterwarnings('ignore')
 
@@ -49,7 +35,6 @@ class Jobs:
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
         self._build_model()
         self._build_dataloader()
-        self._build_optimizer()
 
     def _build_dataloader(self):
         graph_type = self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
@@ -118,12 +103,6 @@ class Jobs:
         '''For encoder-decoder'''
         self.model = Graph2Tree.load_checkpoint(self.opt["checkpoint_save_path"], "best.pt").to(self.device)
 
-    def _build_optimizer(self):
-        optim_state = {"learningRate": self.opt["learning_rate"], "weight_decay": self.opt["weight_decay"]}
-        parameters = [p for p in self.model.parameters() if p.requires_grad]
-        self.optimizer = optim.Adam(parameters, lr=optim_state['learningRate'],
-                                    weight_decay=optim_state['weight_decay'])
-
     def prepare_ext_vocab(self, batch_graph, src_vocab):
         oov_dict = copy.deepcopy(src_vocab)
         token_matrix = []
@@ -154,18 +133,19 @@ class Jobs:
                 eval_vocab = self.tgt_vocab
 
             candidate = self.model.decoder.translate(self.model.use_copy,
-                                                    self.model.decoder.enc_hidden_size,
-                                                    self.model.decoder.hidden_size,
-                                                    self.model,
-                                                    eval_input_graph,
-                                                    self.src_vocab,
-                                                    self.tgt_vocab,
-                                                    self.device,
-                                                    self.opt["decoder_args"]["rnn_decoder_private"]["max_decoder_step"],
-                                                    self.opt["decoder_args"]["rnn_decoder_private"]["max_tree_depth"],
-                                                    oov_dict=oov_dict,
-                                                    use_beam_search=True,
-                                                    beam_size=self.opt["beam_size"])
+                                                     self.model.decoder.enc_hidden_size,
+                                                     self.model.decoder.hidden_size,
+                                                     self.model,
+                                                     eval_input_graph,
+                                                     self.src_vocab,
+                                                     self.tgt_vocab,
+                                                     self.device,
+                                                     self.opt["decoder_args"]["rnn_decoder_private"][
+                                                         "max_decoder_step"],
+                                                     self.opt["decoder_args"]["rnn_decoder_private"]["max_tree_depth"],
+                                                     oov_dict=oov_dict,
+                                                     use_beam_search=True,
+                                                     beam_size=self.opt["beam_size"])
 
             candidate = [int(c) for c in candidate]
             print(" ".join(x['token'] for x in eval_input_graph.node_attributes))
@@ -177,9 +157,6 @@ if __name__ == "__main__":
 
     start = time.time()
     runner = Jobs(opt=get_args())
-    # import json
-    # print(json.dumps(runner.opt, indent=4))
-    # print(runner.model)
     runner.infer()
 
     end = time.time()
