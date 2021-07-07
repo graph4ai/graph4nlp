@@ -328,6 +328,10 @@ class Dataset(torch.utils.data.Dataset):
             The port for stanfordcorenlp.
         timeout: int, default=15000
             The timeout for stanfordcorenlp.
+        for_inference: bool, default=False
+            Whether this dataset is used for inference.
+        train_root: str, default=None
+            When ``for_inference`` is true, you need to specify the directory where the training data is located.
         kwargs
         """
         super(Dataset, self).__init__()
@@ -342,6 +346,7 @@ class Dataset(torch.utils.data.Dataset):
         
         # inference
         self.for_inference = for_inference
+        self.train_root = train_root
 
         # Processing-specific attributes
         self.tokenizer = tokenizer
