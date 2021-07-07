@@ -5,6 +5,7 @@ Graph4NLP implements four standard classification modules for: node classificati
 
 * :ref:`guide-node_classification`
 * :ref:`guide-link_prediction`
+* :ref:`kg-completion`
 
 
 .. toctree::
@@ -15,3 +16,4 @@ Graph4NLP implements four standard classification modules for: node classificati
 
    classification/node_classification
    Classification/link_prediction
+   classification/kgcompletion

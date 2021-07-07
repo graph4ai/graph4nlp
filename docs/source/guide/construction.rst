@@ -7,6 +7,7 @@ Roadmap
 -----------------
 
 * :ref:`dependency-graph-construction`
+* :ref:`ie-graph-construction`
 
 .. toctree::
    :glob:
@@ -14,3 +15,4 @@ Roadmap
    :hidden:
 
     construction/dependencygraphconstruction
+    construction/iegraphconstruction
