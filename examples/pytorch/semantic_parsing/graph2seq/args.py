@@ -25,6 +25,7 @@ def get_args():
     parser.add_argument("--lr-decay-per-epoch", type=int, default=5, help="")
     parser.add_argument("--min-lr", type=float, default=1e-3, help="")
     parser.add_argument("--use-gpu", type=float, default=1, help="0 for don't use cuda, 1 for using cuda")
+    parser.add_argument("--num_works", type=int, default=0, help="The number of works for Dataloader.")
     parser.add_argument("--gpu", type=int, default=0, help="gpu id")
     parser.add_argument("--seed", type=int, default=1236, help="")
 
@@ -34,7 +35,7 @@ def get_args():
     parser.add_argument("--val_split_ratio", type=float, default=0, help="")
 
     parser.add_argument("--pretrained_word_emb_name", type=str,
-                        default='6B', help="")
+                        default="6B", help="")
     parser.add_argument("--pretrained_word_emb_url", type=str,
                         default=None, help="")
     parser.add_argument("--pretrained_word_emb_cache_dir", type=str,

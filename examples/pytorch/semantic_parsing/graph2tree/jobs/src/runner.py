@@ -164,7 +164,6 @@ class Jobs:
         for epoch in range(1, self.opt["max_epochs"] + 1):
             self.model.train()
             self.train_epoch(epoch)
-            self.model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
             if epoch >= 5:
                 val_acc = self.eval((self.model))
                 if val_acc > best_acc:
