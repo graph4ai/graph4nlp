@@ -689,7 +689,7 @@ class Dataset(torch.utils.data.Dataset):
                     "already been split.")
             return
         if self.for_inference and \
-           all([(os.path.exists(processed_path) or 'test' not in processed_path) for processed_path in self.processed_file_paths.values()]) and \
+           all([(os.path.exists(processed_path) or 'data' not in processed_path) for processed_path in self.processed_file_paths.values()]) and \
            all([os.path.exists(processed_path.replace(self.root, self.train_root)) for processed_path in self.processed_file_paths.values()]):
             return
 
