@@ -1,6 +1,6 @@
 .. _guide-node_classification:
 
-node_classification:
+Node_classification:
 ===================
 
 Node classification is a downstream task that are normally observed in the GNN-based NLP tasks, such as sequence labeling and name entity recognition. The process is about classify the label of the each node in the graph based on the node embeddings that learnt from the GNNs modules.
@@ -26,6 +26,8 @@ This function is based on a combination of the BiLSTM layer and a feedforward la
             Dropout = 0, # the dropout rate of bilstm layer)
 
 After successfully define the BiLSTMFeedForwardNNLayer, we can apply this function to get the classification results (logins tensor) of specific nodes based on the node embedding, as shown in the below example.
+
+.. code-block:: python
 
     logits = layer(node_emb, #node embedding in format of tensor
              node_idx, # a list of index of nodes that needs classification; Example: [1,3,5])
@@ -66,6 +68,8 @@ This function is based on a combination of several feedforward layer. The low-le
             nn.ReLU())
 
 After successfully define the ForwardNNLayer, we can apply this function to get the classification results (logins tensor) of specific nodes based on the node embedding, as shown in the below example.
+
+.. code-block:: python
 
     logits = layer(node_emb, #node embedding in format of tensor
              node_idx, # a list of index of nodes that needs classification; Example: [1,3,5])
