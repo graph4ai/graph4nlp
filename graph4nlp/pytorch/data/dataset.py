@@ -192,7 +192,6 @@ class DoubleText2TextDataItem(DataItem):
         else:
             return input_tokens, output_tokens
 
-
 class SequenceLabelingDataItem(DataItem):
     def __init__(self, input_text, output_tags, tokenizer):
         super(SequenceLabelingDataItem, self).__init__(input_text, tokenizer)
@@ -1152,16 +1151,22 @@ class SequenceLabelingDataset(Dataset):
         data = []
         input = []
         output = []
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding="utf-8") as f:
             lines = f.readlines()
             for line in lines:
                 if len(line) > 1 and line[0] != '-':
                     if line[0] != '.':
-                        input.append(line.strip().split(' ')[0])
-                        output.append(line.strip().split(' ')[-1])
+                        words = [w.strip() for w in line.split()]
+                        input.append(words[0])
+                        output.append(words[-1]) # POS tags and Phrase etc in-between are ignored
+                        # input.append(line.strip().split(' ')[0])
+                        # output.append(line.strip().split(' ')[-1])
                     if line[0] == '.':
-                        input.append(line.strip().split(' ')[0])
-                        output.append(line.strip().split(' ')[-1])
+                        words = [w.strip() for w in line.split()]
+                        input.append(words[0])
+                        output.append(words[-1]) # POS tags and Phrase etc in-between is ignored
+                        # input.append(line.strip().split(' ')[0])
+                        # output.append(line.strip().split(' ')[-1])
                         if len(input) >= 2:
                             data_item = SequenceLabelingDataItem(input_text=input, output_tags=output,
                                                                  tokenizer=self.tokenizer)
