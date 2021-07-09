@@ -17,6 +17,7 @@ from torch.nn.utils.rnn import pad_sequence
 
 from graph4nlp.pytorch.data.data import *
 from conll import ConllDataset
+from sentdata import SentencesDataset
 from graph4nlp.pytorch.modules.graph_construction import *
 from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
 from line_graph_construction import LineBasedGraphConstruction
@@ -123,16 +124,19 @@ class SentenceBiLSTMCRF(nn.Module):
         self.dropout_rnn_out = nn.Dropout(p=args.rnn_dropout)
         self.logsoftmax = nn.LogSoftmax(dim=1)
         self.nll_loss = nn.NLLLoss()
-    def forward(self,batch_graph,tgt_tags):
+    def forward(self,batch_graph,tgt_tags=None):
 
         batch_graph= self.prediction(batch_graph)  
         batch_emb=batch_graph.node_features['logits']
             
         batch_graph.node_features['logits']=self.linear1_(self.dropout_tag(F.elu(self.linear1(self.dropout_rnn_out(batch_emb)))))           
-            
-        tgt=torch.cat(tgt_tags)
+        loss = 0.0
+        tgt = None
+        if tgt_tags != None:
+            tgt=torch.cat(tgt_tags)
         logits=batch_graph.node_features['logits'][:,:] #[batch*sentence*num_nodes,num_lable]
-        loss=self.nll_loss(self.logsoftmax(logits),tgt)
+        if tgt_tags != None:
+            loss=self.nll_loss(self.logsoftmax(logits),tgt)
         pred_tags=logits2tag(logits)
         
          
@@ -308,7 +312,7 @@ class Word2tag(nn.Module):
 class Conll:
     def __init__(self):
         super(Conll, self).__init__()
-        self.tag_types=['I-PER', 'O', 'B-ORG', 'B-LOC', 'I-ORG', 'I-MISC', 'I-LOC', 'B-MISC']
+        self.tag_types=['I-PER', 'O', 'B-ORG', 'B-LOC', 'I-ORG', 'I-MISC', 'I-LOC', 'B-MISC','B-PER']
         if args.gpu>-1:
             self.device = torch.device('cuda') 
         else:
@@ -469,7 +473,40 @@ class Conll:
         prec, rec, f1 = conll_score(pred_collect,tgt_collect,self.tag_types)
         print("Testing results: precision is %5.2f, rec is %5.2f, f1 is %5.2f"%(prec,rec,f1))          
         return f1
-    
+
+    def build_sentence_dataloader(self, sentences):
+        dataset = SentencesDataset(sentences,
+                               root_dir="examples/pytorch/name_entity_recognition/conll",
+                               topology_builder=DependencyBasedGraphConstruction,
+                               graph_type='static',
+                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,
+                               pretrained_word_emb_name="6B",
+                               topology_subdir='DependencyGraph',
+                               tag_types=self.tag_types)
+        print("strating loading the unseen data")
+        sentence_dataloader = DataLoader(dataset, batch_size=100, shuffle=True,
+                                          num_workers=1,
+                                          collate_fn=dataset.collate_fn)
+        print("strating loading the vocab")
+        self.vocab = dataset.vocab_model
+        return sentence_dataloader
+
+    def predict(self, sentences):
+        self.model.eval()
+        sentence_dataloader = self.build_sentence_dataloader(sentences)
+        with torch.no_grad():
+            for data in sentence_dataloader:
+                graph = data["graph_data"]
+                graph = graph.to(self.device)
+                pred, loss = self.model(graph, require_loss=False)
+                #pred = logits2tag(g)
+                tokens = get_tokens(from_batch(graph))
+                for word_idx in range(len(tokens)):
+                    w = tokens[word_idx]
+                    lb = self.tag_types[pred[word_idx].item()]
+                    print(f"{w} :: {lb}")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NER')
     parser.add_argument("--gpu", type=int, default=-1,
@@ -488,7 +525,7 @@ if __name__ == "__main__":
                         help="initial_emb_hidden_size")    
     parser.add_argument("--lstm_hidden_size", type=int, default=80,
                         help="initial_emb_hidden_size")    
-    parser.add_argument("--num_class", type=int, default=8,
+    parser.add_argument("--num_class", type=int, default=9,
                         help="num_class")
     parser.add_argument("--residual", action="store_true", default=False,
                         help="use residual connection")
@@ -548,7 +585,8 @@ if __name__ == "__main__":
     max_score,max_idx=runner.train()
     print("Train finish, best score: {:.3f}".format(max_score))
     print(max_idx)    
-    #score=runner.test()    
+    #score=runner.test() 
+    #runner.predict(["I love Pune.","This agreement between Microsoft and Google."])   
     endtime = datetime.datetime.now()
     print((endtime - starttime).seconds)   
     

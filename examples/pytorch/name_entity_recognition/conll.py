@@ -35,16 +35,19 @@ class ConllDataset(SequenceLabelingDataset):
         # return {'vocab': 'vocab.pt', 'data': 'data.pt', 'split_ids': 'split_ids.pt'}
         return {'vocab': 'vocab.pt', 'data': 'data.pt'}
 
-    #def download(self):
+    def download(self):
+        print('This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
     #    raise NotImplementedError(
     #        'This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
 
-    def __init__(self, root_dir, topology_builder=None, topology_subdir=None, graph_type='static',pretrained_word_emb_cache_dir=None,
+    def __init__(self, root_dir, topology_builder=None, topology_subdir=None, graph_type='static',
+                 pretrained_word_emb_name=None, pretrained_word_emb_cache_dir=None,
                  edge_strategy=None, merge_strategy=None,tag_types=None, dynamic_init_graph_type=None, dynamic_init_topology_builder=None, **kwargs):
         super(ConllDataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, graph_type=graph_type,
                                           edge_strategy=edge_strategy, merge_strategy=merge_strategy,tag_types=tag_types, 
-                                          dynamic_init_topology_builder=dynamic_init_topology_builder, 
+                                          dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                          pretrained_word_emb_name=pretrained_word_emb_name,
                                           pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir, **kwargs)
 
      
