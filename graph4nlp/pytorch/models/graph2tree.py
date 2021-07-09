@@ -124,7 +124,6 @@ class Graph2Tree(Graph2XBase):
         args.update(gnn_args)
         args.update(dec_args)
         args["share_vocab"] = opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
-
         return cls(vocab_model=vocab_model, **args)
 
     @staticmethod

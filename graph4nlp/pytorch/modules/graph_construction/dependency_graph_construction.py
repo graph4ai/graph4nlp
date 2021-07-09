@@ -216,7 +216,6 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
-                         It is not implemented yet.
 
         Returns
         -------
