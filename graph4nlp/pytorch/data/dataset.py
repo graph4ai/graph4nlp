@@ -27,6 +27,7 @@ class DataItem(object):
     def __init__(self, input_text, tokenizer):
         self.input_text = input_text
         self.tokenizer = tokenizer
+        self.graph = None
         pass
 
     @abc.abstractmethod

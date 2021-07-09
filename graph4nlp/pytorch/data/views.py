@@ -2,6 +2,8 @@
 from collections import namedtuple
 from typing import List, Union, Any
 
+import torch
+
 from .utils import slice_to_list
 
 NodeRepr = namedtuple('NodeData', ['features', 'attributes'])
@@ -65,11 +67,11 @@ class NodeFeatView(object):
         self._graph = graph
         self._nodes = nodes
 
-    def __getitem__(self, feature_name: Any) -> Any:
+    def __getitem__(self, feature_name: str) -> torch.Tensor:
         return self._graph.get_node_features(self._nodes)[feature_name]
 
-    def __setitem__(self, feature_name: Any, feature_value: Any) -> None:
-        return self._graph.set_node_features(self._nodes, {feature_name: feature_value})
+    def __setitem__(self, feature_name: str, feature_value: torch.Tensor) -> None:
+        self._graph.set_node_features(self._nodes, {feature_name: feature_value})
 
     def __repr__(self):
         return repr(self._graph.get_node_features(self._nodes))
@@ -122,15 +124,15 @@ class EdgeView(object):
 
 
 class EdgeFeatView(object):
-    def __init__(self, graph, edges: List[Any]):
+    def __init__(self, graph, edges: List[int]):
         self._graph = graph
         self._edges = edges
 
-    def __getitem__(self, item: Any):
-        return self._graph.get_edge_feature(self._edges)[item]
+    def __getitem__(self, feature_name: str):
+        return self._graph.get_edge_feature(self._edges)[feature_name]
 
-    def __setitem__(self, key: Any, value: Any):
-        self._graph.set_edge_feature(self._edges, {key: value})
+    def __setitem__(self, feature_name: str, feature_value: torch.Tensor):
+        self._graph.set_edge_feature(self._edges, {feature_name: feature_value})
 
     def keys(self):
         return self._graph.get_edge_feature_names()
