@@ -61,7 +61,7 @@ class Graph2Tree(Graph2XBase):
         self.use_copy = dec_use_copy
         self.input_size = self.src_vocab.vocab_size
         self.output_size = self.tgt_vocab.vocab_size
-        self.criterion = nn.NLLLoss(size_average=False) if criterion == None else criterion
+        self.criterion = nn.NLLLoss(size_average=False, ignore_index=self.src_vocab.get_symbol_idx(self.src_vocab.unk_token)) if criterion == None else criterion
         self.use_share_vocab = share_vocab
         if self.use_share_vocab == 0:
             self.tgt_word_embedding = nn.Embedding(self.tgt_vocab.vocab_size, dec_hidden_size, 

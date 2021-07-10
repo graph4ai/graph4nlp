@@ -53,51 +53,21 @@ class Mawps:
         enc_emb_size = self.opt["graph_construction_args"]["node_embedding"]["input_size"]
         tgt_emb_size = self.opt["decoder_args"]["rnn_decoder_share"]["input_size"]
         topology_subdir = self.opt["graph_construction_args"]["graph_construction_share"]["topology_subdir"]
-        if graph_type == "dependency":
-            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
-                                         topology_builder=DependencyBasedGraphConstruction,
-                                         topology_subdir=topology_subdir, 
-                                         edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
-                                         graph_type='static',
-                                         share_vocab=self.use_share_vocab, 
-                                         enc_emb_size=enc_emb_size,
-                                         dec_emb_size=tgt_emb_size,
-                                         min_word_vocab_freq=self.opt["min_freq"],
-                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
-                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
+        dynamic_init_topology_builder = None
 
+        if graph_type == "dependency":
+            my_topology_builder = DependencyBasedGraphConstruction
+            my_graph_type = 'static'
         elif graph_type == "constituency":
-            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
-                                         topology_builder=ConstituencyBasedGraphConstruction,
-                                         topology_subdir=topology_subdir, 
-                                         edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
-                                         graph_type='static',
-                                         share_vocab=self.use_share_vocab, 
-                                         enc_emb_size=enc_emb_size,
-                                         dec_emb_size=tgt_emb_size,
-                                         min_word_vocab_freq=self.opt["min_freq"],
-                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
-                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
-                                         
+            my_topology_builder = DependencyBasedGraphConstruction
+            my_graph_type = 'static'
         elif graph_type == "node_emb":
-            dataset = MawpsDatasetForTree(root_dir=self.data_dir, 
-                                         word_emb_size=enc_emb_size,
-                                         topology_builder=NodeEmbeddingBasedGraphConstruction,
-                                         topology_subdir=topology_subdir, 
-                                         graph_type='dynamic',
-                                         dynamic_graph_type=graph_type, 
-                                         edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
-                                         share_vocab=self.use_share_vocab, 
-                                         enc_emb_size=enc_emb_size,
-                                         dec_emb_size=tgt_emb_size,
-                                         min_word_vocab_freq=self.opt["min_freq"],
-                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
-                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])
-    
+            my_topology_builder = NodeEmbeddingBasedGraphConstruction
+            my_graph_type = 'dynamic'
         elif graph_type == "node_emb_refined":
+            my_topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            my_graph_type = 'dynamic'
+
             dynamic_init_graph_type = self.opt["graph_construction_args"]["graph_construction_private"]["dynamic_init_graph_type"]
             if dynamic_init_graph_type is None or dynamic_init_graph_type == 'line':
                 dynamic_init_topology_builder = None
@@ -108,34 +78,37 @@ class Mawps:
             else:
                 # dynamic_init_topology_builder
                 raise RuntimeError('Define your own dynamic_init_topology_builder')
-            dataset = MawpsDatasetForTree(root_dir=self.data_dir,
-                                         word_emb_size=enc_emb_size,
-                                         topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
-                                         topology_subdir=topology_subdir,
-                                         graph_type='dynamic',
-                                         dynamic_graph_type=graph_type,
-                                         share_vocab=self.use_share_vocab,
-                                         enc_emb_size=enc_emb_size, 
-                                         dec_emb_size=tgt_emb_size,
-                                         dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                         min_word_vocab_freq=self.opt["min_freq"],
-                                         pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                                         pretrained_word_emb_url=self.opt["pretrained_word_emb_url"], 
-                                         pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"])                                         
         else:
             raise NotImplementedError
+        
+        para_dic =  {'root_dir': self.data_dir,
+                    'word_emb_size': enc_emb_size,
+                    'topology_builder': my_topology_builder,
+                    'topology_subdir': topology_subdir, 
+                    'edge_strategy': self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
+                    'graph_type': my_graph_type,
+                    'dynamic_graph_type': graph_type, 
+                    'share_vocab': self.use_share_vocab, 
+                    'enc_emb_size': enc_emb_size,
+                    'dec_emb_size': tgt_emb_size,
+                    'dynamic_init_topology_builder': dynamic_init_topology_builder,
+                    'min_word_vocab_freq': self.opt["min_freq"],
+                    'pretrained_word_emb_name': self.opt["pretrained_word_emb_name"],
+                    'pretrained_word_emb_url': self.opt["pretrained_word_emb_url"], 
+                    'pretrained_word_emb_cache_dir': self.opt["pretrained_word_emb_cache_dir"]
+                    }
 
-        self.train_data_loader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True, num_workers=1,
+        dataset = MawpsDatasetForTree(**para_dic)
+
+        self.train_data_loader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True,
+                                            num_workers=0,
+                                            collate_fn=dataset.collate_fn)
+        self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=0,
                                            collate_fn=dataset.collate_fn)
-        self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=1,
-                                          collate_fn=dataset.collate_fn)
-        self.valid_data_loader = DataLoader(dataset.val, batch_size=1, shuffle=False, num_workers=1,
-                                          collate_fn=dataset.collate_fn)
-        self.src_vocab = dataset.src_vocab_model
-        self.tgt_vocab = dataset.tgt_vocab_model
-        if self.use_share_vocab:
-            self.share_vocab = dataset.share_vocab_model
-        self.vocab_model = VocabForAll(in_word_vocab=self.src_vocab, out_word_vocab=self.tgt_vocab, share_vocab=self.share_vocab)
+        self.vocab_model = dataset.vocab_model
+        self.src_vocab = self.vocab_model.in_word_vocab
+        self.tgt_vocab = self.vocab_model.out_word_vocab
+        self.share_vocab = self.vocab_model.share_vocab if self.use_share_vocab else None
 
     def _build_model(self):
         '''For encoder-decoder'''
@@ -185,6 +158,7 @@ class Mawps:
 
     def train(self):
         best_acc = (-1, -1)
+        best_model = None
 
         print("-------------\nStarting training.")
         for epoch in range(1, self.opt["max_epochs"]+1):
@@ -196,7 +170,9 @@ class Mawps:
                 val_acc = self.eval(self.model, mode="val")
                 if val_acc > best_acc[1]:
                     best_acc = (test_acc, val_acc)
+                    best_model = self.model
         print("Best Acc: {:.3f}\n".format(best_acc[0]))
+        best_model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
         return best_acc
 
     def eval(self, model, mode="val"):
