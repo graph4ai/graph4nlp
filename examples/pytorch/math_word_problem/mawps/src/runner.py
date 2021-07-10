@@ -105,6 +105,8 @@ class Mawps:
                                             collate_fn=dataset.collate_fn)
         self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=0,
                                            collate_fn=dataset.collate_fn)
+        self.valid_data_loader = DataLoader(dataset.val, batch_size=1, shuffle=False, num_workers=0,
+                                          collate_fn=dataset.collate_fn)
         self.vocab_model = dataset.vocab_model
         self.src_vocab = self.vocab_model.in_word_vocab
         self.tgt_vocab = self.vocab_model.out_word_vocab
