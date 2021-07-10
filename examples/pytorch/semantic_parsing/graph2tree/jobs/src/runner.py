@@ -36,7 +36,6 @@ class Jobs:
         self.use_share_vocab = self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
         self.make_inference = self.opt["make_inference"]==1
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
-        self.inference_data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["inference_root_dir"] if self.make_inference else None
 
         self._build_dataloader()
         self._build_model()
@@ -94,45 +93,15 @@ class Jobs:
 
         dataset = JobsDatasetForTree(**para_dic)
 
-        # for inference
-        para_dic['root_dir'] = self.inference_data_dir
-        para_dic['for_inference'] = self.make_inference
-        para_dic['train_root'] = self.data_dir
-        inference_dataset = JobsDatasetForTree(**para_dic)
-
-        para_dic = {'root_dir': self.data_dir,
-                    'word_emb_size': enc_emb_size,
-                    'topology_builder': my_topology_builder,
-                    'topology_subdir': topology_subdir,
-                    'edge_strategy': self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
-                    'graph_type': my_graph_type,
-                    'dynamic_graph_type': graph_type,
-                    'share_vocab': self.use_share_vocab,
-                    'enc_emb_size': enc_emb_size,
-                    'dec_emb_size': tgt_emb_size,
-                    'dynamic_init_topology_builder': dynamic_init_topology_builder,
-                    'min_word_vocab_freq': self.opt["min_freq"],
-                    'pretrained_word_emb_name': self.opt["pretrained_word_emb_name"],
-                    'pretrained_word_emb_url': self.opt["pretrained_word_emb_url"],
-                    'pretrained_word_emb_cache_dir': self.opt["pretrained_word_emb_cache_dir"]
-                    }
-
-        dataset = JobsDatasetForTree(**para_dic)
-
         self.train_data_loader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True,
                                             num_workers=0,
                                             collate_fn=dataset.collate_fn)
-        self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=1,
+        self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=0,
                                            collate_fn=dataset.collate_fn)
-        self.inference_data_loader = DataLoader(inference_dataset.test, batch_size=1, shuffle=False, num_workers=1,
-                                          collate_fn=inference_dataset.collate_fn)
         self.vocab_model = dataset.vocab_model
         self.src_vocab = self.vocab_model.in_word_vocab
         self.tgt_vocab = self.vocab_model.out_word_vocab
         self.share_vocab = self.vocab_model.share_vocab if self.use_share_vocab else None
-        # if self.use_share_vocab:
-        #     self.share_vocab = dataset.share_vocab_model
-        # self.vocab_model = VocabForAll(in_word_vocab=self.src_vocab, out_word_vocab=self.tgt_vocab, share_vocab=self.share_vocab)
 
     def _build_model(self):
         '''For encoder-decoder'''
@@ -192,14 +161,10 @@ class Jobs:
             self.model.train()
             self.train_epoch(epoch)
             if epoch >= 5:
-                val_acc = self.eval((self.model))
+                val_acc = self.eval(self.model)
                 if val_acc > best_acc:
                     best_acc = val_acc
-                    self.model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
-                    print("Best Model Saved!")
         print(f"Best Accuracy: {val_acc:.4f}")
-        print("="*20 + "making inference" + "="*20)
-        self.infer(self.model) # replace the model with the best model you saved.
 
     def eval(self, model):
         from evaluation import convert_to_string, compute_tree_accuracy
@@ -250,31 +215,6 @@ class Jobs:
         print(f"Accuracy: {eval_acc:.4f}\n")
         return eval_acc
 
-
-    def infer(self, model):
-        model.eval()
-        for data in self.inference_data_loader:
-            eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
-            eval_input_graph = eval_input_graph.to(self.device)
-            oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
-
-            if self.use_copy:
-                assert len(batch_original_tree_list) == 1
-                reference = oov_dict.get_symbol_idx_for_list(batch_original_tree_list[0].split())
-                eval_vocab = oov_dict
-            else:
-                assert len(batch_original_tree_list) == 1
-                reference = model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
-                eval_vocab = self.tgt_vocab
-
-            candidate = model.translate(eval_input_graph,
-                                        oov_dict=oov_dict,
-                                        use_beam_search=True,
-                                        beam_size=self.opt["beam_size"])
-
-            candidate = [int(c) for c in candidate]
-            print(" ".join(x['token'] for x in eval_input_graph.node_attributes))
-            print(" ".join(model.tgt_vocab.get_idx_symbol_for_list(candidate)) + '\n')
 
 if __name__ == "__main__":
     from config import get_args

@@ -31,7 +31,6 @@ class Jobs:
 
         self.use_copy = self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"]
         self.use_share_vocab = self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
-        self.make_inference = self.opt["make_inference"] == 1
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
         self._build_model()
         self._build_dataloader()
@@ -84,7 +83,7 @@ class Jobs:
                     'pretrained_word_emb_name': self.opt["pretrained_word_emb_name"],
                     'pretrained_word_emb_url': self.opt["pretrained_word_emb_url"],
                     'pretrained_word_emb_cache_dir': self.opt["pretrained_word_emb_cache_dir"],
-                    "for_inference": 1,
+                    "for_inference": self.opt["make_inference"],
                     'reused_vocab_model': self.model.vocab_model
                     }
 
@@ -118,8 +117,7 @@ class Jobs:
     def infer(self):
         self.model.eval()
         for data in self.inference_data_loader:
-            eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], \
-                                                                          data['original_dec_tree_batch']
+            eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
             eval_input_graph = eval_input_graph.to(self.device)
             oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
 
@@ -132,20 +130,10 @@ class Jobs:
                 reference = self.model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
                 eval_vocab = self.tgt_vocab
 
-            candidate = self.model.decoder.translate(self.model.use_copy,
-                                                     self.model.decoder.enc_hidden_size,
-                                                     self.model.decoder.hidden_size,
-                                                     self.model,
-                                                     eval_input_graph,
-                                                     self.src_vocab,
-                                                     self.tgt_vocab,
-                                                     self.device,
-                                                     self.opt["decoder_args"]["rnn_decoder_private"][
-                                                         "max_decoder_step"],
-                                                     self.opt["decoder_args"]["rnn_decoder_private"]["max_tree_depth"],
-                                                     oov_dict=oov_dict,
-                                                     use_beam_search=True,
-                                                     beam_size=self.opt["beam_size"])
+            candidate = self.model.translate(eval_input_graph,
+                                        oov_dict=oov_dict,
+                                        use_beam_search=True,
+                                        beam_size=self.opt["beam_size"])
 
             candidate = [int(c) for c in candidate]
             print(" ".join(x['token'] for x in eval_input_graph.node_attributes))
