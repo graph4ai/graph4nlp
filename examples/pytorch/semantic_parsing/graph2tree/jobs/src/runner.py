@@ -156,6 +156,7 @@ class Jobs:
     def train(self):
         print("-------------\nStarting training.")
         best_acc = 0.0
+        best_model = None
         for epoch in range(1, self.opt["max_epochs"] + 1):
             self.model.train()
             self.train_epoch(epoch)
@@ -163,6 +164,8 @@ class Jobs:
                 val_acc = self.eval(self.model)
                 if val_acc > best_acc:
                     best_acc = val_acc
+                    best_model = self.model
+        best_model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
         print(f"Best Accuracy: {val_acc:.4f}")
 
     def eval(self, model):
