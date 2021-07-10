@@ -176,8 +176,9 @@ class Geo:
         model.eval()
         reference_list = []
         candidate_list = []
-        for data in self.test_data_loader:
-            eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
+        for data in tqdm(self.test_data_loader, desc="Eval: "):
+            eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], \
+                                                                          data['original_dec_tree_batch']
             eval_input_graph = eval_input_graph.to(self.device)
             oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
 
@@ -190,19 +191,10 @@ class Geo:
                 reference = model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
                 eval_vocab = self.tgt_vocab
 
-            candidate = model.decoder.translate(model.use_copy,
-                                                model.decoder.enc_hidden_size,
-                                                model.decoder.hidden_size,
-                                                model,
-                                                eval_input_graph,
-                                                self.src_vocab,
-                                                self.tgt_vocab,
-                                                self.device,
-                                                self.opt["decoder_args"]["rnn_decoder_private"]["max_decoder_step"],
-                                                self.opt["decoder_args"]["rnn_decoder_private"]["max_tree_depth"],
-                                                oov_dict=oov_dict,
-                                                use_beam_search=True,
-                                                beam_size=self.opt["beam_size"])
+            candidate = model.translate(eval_input_graph,
+                                        oov_dict=oov_dict,
+                                        use_beam_search=True,
+                                        beam_size=self.opt["beam_size"])
             
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
@@ -225,8 +217,9 @@ class Geo:
             candidate_list.append(candidate)
         eval_acc = compute_tree_accuracy(
             candidate_list, reference_list, eval_vocab)
-        print("Accuracy: {:.3f}\n".format(eval_acc))
+        print(f"Accuracy: {eval_acc:.4f}\n")
         return eval_acc
+
 
 if __name__ == "__main__":
     from config import get_args
