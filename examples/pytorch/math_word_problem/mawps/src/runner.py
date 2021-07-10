@@ -181,7 +181,7 @@ class Mawps:
         reference_list = []
         candidate_list = []
         data_loader = self.test_data_loader if mode == "test" else self.valid_data_loader
-        for data in data_loader:
+        for data in tqdm(data_loader, desc="Eval: "):
             eval_input_graph, batch_tree_list, batch_original_tree_list = data['graph_data'], data['dec_tree_batch'], data['original_dec_tree_batch']
             eval_input_graph = eval_input_graph.to(self.device)
             oov_dict = self.prepare_ext_vocab(eval_input_graph, self.src_vocab)
@@ -194,20 +194,11 @@ class Mawps:
                 assert len(batch_original_tree_list) == 1
                 reference = model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
                 eval_vocab = self.tgt_vocab
-
-            candidate = model.decoder.translate(model.use_copy,
-                                                model.decoder.enc_hidden_size,
-                                                model.decoder.hidden_size,
-                                                model,
-                                                eval_input_graph,
-                                                self.src_vocab,
-                                                self.tgt_vocab,
-                                                self.device,
-                                                self.opt["decoder_args"]["rnn_decoder_private"]["max_decoder_step"],
-                                                self.opt["decoder_args"]["rnn_decoder_private"]["max_tree_depth"],
-                                                oov_dict=oov_dict,
-                                                use_beam_search=True,
-                                                beam_size=self.opt["beam_size"])
+            
+            candidate = model.translate(eval_input_graph,
+                                        oov_dict=oov_dict,
+                                        use_beam_search=True,
+                                        beam_size=self.opt["beam_size"])
             
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
