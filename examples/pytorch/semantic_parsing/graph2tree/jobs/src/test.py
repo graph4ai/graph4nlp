@@ -83,7 +83,7 @@ class Jobs:
                     'pretrained_word_emb_name': self.opt["pretrained_word_emb_name"],
                     'pretrained_word_emb_url': self.opt["pretrained_word_emb_url"],
                     'pretrained_word_emb_cache_dir': self.opt["pretrained_word_emb_cache_dir"],
-                    "for_inference": self.opt["make_inference"],
+                    "for_inference": 1,
                     'reused_vocab_model': self.model.vocab_model
                     }
 
