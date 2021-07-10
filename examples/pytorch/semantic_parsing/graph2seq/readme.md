@@ -25,6 +25,11 @@ How to run
 python examples/pytorch/semantic_parsing/graph2seq/main.py --dataset_yaml examples/pytorch/semantic_parsing/graph2seq/config/new_dependency_gcn_undirected.yaml
 ```
 
+#### Inference with following:
+```python
+python examples/pytorch/semantic_parsing/graph2seq/inference.py --dataset_yaml examples/pytorch/semantic_parsing/graph2seq/config_inference/new_dependency_gcn_undirected.yaml
+```
+
 Results
 -------
 
