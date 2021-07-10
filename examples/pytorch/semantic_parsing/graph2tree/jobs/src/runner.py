@@ -34,7 +34,6 @@ class Jobs:
 
         self.use_copy = self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"]
         self.use_share_vocab = self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
-        self.make_inference = self.opt["make_inference"]==1
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
 
         self._build_dataloader()
