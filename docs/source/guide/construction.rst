@@ -8,11 +8,15 @@ Roadmap
 
 * :ref:`dependency-graph-construction`
 * :ref:`ie-graph-construction`
+* :ref:`guide-dynamic_graph_construction`
+* :ref:`guide-embedding_construction`
 
 .. toctree::
    :glob:
    :maxdepth: 2
    :hidden:
 
-    construction/dependencygraphconstruction
-    construction/iegraphconstruction
+   construction/dependencygraphconstruction
+   construction/iegraphconstruction
+   construction/dynamic_graph_construction
+   construction/embedding_construction

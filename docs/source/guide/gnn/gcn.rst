@@ -1,6 +1,6 @@
 .. _guide-gcn:
 
-4.1 GCN Encoder
+Graph Convolutional Networks
 ==============
 
 Graph Convolutional Networks (`GCN <https://arxiv.org/abs/1609.02907>`_) is a typical example of spectral-based graph filters.

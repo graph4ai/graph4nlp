@@ -1,6 +1,6 @@
 .. _ie-graph-construction:
 
-Chapter 3.3 IE Graph Construction
+IE Graph Construction
 =====================
 The information extraction graph (IE Graph) aims to extract the structural information
 to represent the high-level information among natural sentences, e.g., text-based documents.
