@@ -39,7 +39,9 @@ class JobsDataset(Text2TextDataset):
                  thread_number=1, port=9000,
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
-                 dynamic_init_topology_aux_args=None):
+                 dynamic_init_topology_aux_args=None,
+                 for_inference=None,
+                 reused_vocab_model=None):
         """
 
         Parameters
@@ -76,7 +78,9 @@ class JobsDataset(Text2TextDataset):
                                           thread_number=thread_number, port=port,
                                           dynamic_graph_type=dynamic_graph_type,
                                           dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                          dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+                                          dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+                                          for_inference=for_inference,
+                                          reused_vocab_model=reused_vocab_model)
 
 
 
@@ -119,7 +123,7 @@ class JobsDatasetForTree(TextToTreeDataset):
                  tokenizer=tokenize_jobs,
                  max_word_vocab_size=100000,
                  for_inference=False,
-                 train_root=None):
+                 reused_vocab_model=None):
         """
 
         Parameters
@@ -161,7 +165,7 @@ class JobsDatasetForTree(TextToTreeDataset):
                                           tokenizer=tokenizer,
                                           max_word_vocab_size=max_word_vocab_size,
                                           for_inference=for_inference,
-                                          train_root=train_root)
+                                          reused_vocab_model=reused_vocab_model)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,7 @@
 import abc
+import os
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -28,6 +30,7 @@ class Graph2XBase(nn.Module):
                  gnn_feats_dropout=0.0, gnn_attn_dropout=0.0,
                  **kwargs):
         super(Graph2XBase, self).__init__()
+        self.vocab_model = vocab_model
         self._build_embedding_encoder(graph_type=graph_type, embedding_style=embedding_style, vocab_model=vocab_model,
                                       emb_input_size=emb_input_size, emb_hidden_size=emb_hidden_size, emb_word_dropout=emb_word_dropout,
                                       emb_rnn_dropout=emb_rnn_dropout, emb_fix_word_emb=emb_fix_word_emb,
@@ -143,3 +146,40 @@ class Graph2XBase(nn.Module):
     @abc.abstractmethod
     def __build_decoder(self):
         raise NotImplementedError()
+
+    def save_checkpoint(self, save_path, checkpoint_name):
+        """
+            The API for saving the model.
+        Parameters
+        ----------
+        save_path : str
+            The root path.
+        checkpoint_name : str
+            The name of the checkpoint.
+        Returns
+        -------
+
+        """
+        checkpoint_path = os.path.join(save_path, checkpoint_name)
+        os.makedirs(save_path, exist_ok=True)
+        torch.save(self, checkpoint_path)
+
+    @classmethod
+    def load_checkpoint(cls, load_path, checkpoint_name):
+        """
+            The API to load the model.
+
+        Parameters
+        ----------
+        load_path : str
+            The root path to load the model.
+        checkpoint_name : str
+            The name of the model to be loaded.
+
+        Returns
+        -------
+        Graph2XBase
+        """
+        checkpoint_path = os.path.join(load_path, checkpoint_name)
+        model = torch.load(checkpoint_path)
+        return model
