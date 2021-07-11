@@ -141,6 +141,7 @@ class SentenceBiLSTMCRF(nn.Module):
          
                    
 
+        
 
 class Conll:
     def __init__(self):
@@ -153,10 +154,13 @@ class Conll:
         self.checkpoint_path='./checkpoints/'
         if not os.path.exists(self.checkpoint_path):
            os.mkdir(self.checkpoint_path)  
-        self._build_dataloader()
-        print("finish dataloading")
-        self._build_model()
+
         print("finish building model")
+        self._build_model() 
+
+        print("finish dataloading")
+        self._build_dataloader()       
+
         self._build_optimizer()
         self._build_evaluation()
 
@@ -169,14 +173,18 @@ class Conll:
                               graph_type='static',
                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                               topology_subdir='LineGraph',
-                              tag_types=self.tag_types)
+                              tag_types=self.tag_types,
+                              for_inference=1,
+                              reused_vocab_model=self.model.vocab_model                              )
         elif args.graph_type=='dependency_graph':
           dataset = ConllDataset(root_dir="examples/pytorch/name_entity_recognition/conll",
                               topology_builder=DependencyBasedGraphConstruction_without_tokenizer,
                               graph_type='static',
                               pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                               topology_subdir='DependencyGraph',
-                              tag_types=self.tag_types) 
+                              tag_types=self.tag_types,
+                              for_inference=1,
+                              reused_vocab_model=self.model.vocab_model                              ) 
         elif args.graph_type=='node_emb':
           dataset = ConllDataset(root_dir="examples/pytorch/name_entity_recognition/conll",
                               topology_builder=NodeEmbeddingBasedGraphConstruction,
@@ -185,7 +193,9 @@ class Conll:
                               topology_subdir='DynamicGraph_node_emb',
                               tag_types=self.tag_types,
                               merge_strategy=None,
-                              dynamic_graph_type=args.graph_type if args.graph_type in ('node_emb', 'node_emb_refined') else None)
+                              dynamic_graph_type=args.graph_type if args.graph_type in ('node_emb', 'node_emb_refined') else None,
+                              for_inference=1,
+                              reused_vocab_model=self.model.vocab_model)
         elif args.graph_type=='node_emb_refined':
             if args.init_graph_type == 'line':
                 dynamic_init_topology_builder = LineBasedGraphConstruction
@@ -207,17 +217,11 @@ class Conll:
                               tag_types=self.tag_types,
                               dynamic_graph_type=args.graph_type if args.graph_type in ('node_emb', 'node_emb_refined') else None,
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
-                              dynamic_init_topology_aux_args={'dummy_param': 0})          
+                              dynamic_init_topology_aux_args={'dummy_param': 0},
+                              for_inference=1,
+                              reused_vocab_model=self.model.vocab_model)          
           
-        print(len(dataset.train))
-        print("strating loading the training data")
-        self.train_dataloader = DataLoader(dataset.train, batch_size=args.batch_size, shuffle=True,
-                                           num_workers=1,
-                                           collate_fn=dataset.collate_fn)
-        print("strating loading the validating data")
-        self.val_dataloader = DataLoader(dataset.val, batch_size=100, shuffle=True,
-                                          num_workers=1,
-                                          collate_fn=dataset.collate_fn)
+ 
         print("strating loading the testing data")
         self.test_dataloader = DataLoader(dataset.test, batch_size=100, shuffle=True,
                                           num_workers=1,
@@ -226,7 +230,7 @@ class Conll:
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-        self.model = Word2tag(self.vocab,device=self.device).to(self.device)
+        self.model = Word2tag.load_checkpoint(self.checkpoint_save_path, "best.pt").to(self.device) 
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -235,59 +239,9 @@ class Conll:
     def _build_evaluation(self):
         self.metrics = Accuracy(['F1','precision','recall'])
 
-    def train(self):
-        max_score = -1
-        max_idx=0
-        for epoch in range(args.epochs):
-            self.model.train()
-            print("Epoch: {}".format(epoch))
-            pred_collect = []
-            gt_collect = []
-            for data in self.train_dataloader:
-                graph, tgt = data["graph_data"], data["tgt_tag"]
-                tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
-                graph = graph.to(self.device) 
-                pred_tags, loss = self.model(graph, tgt_l, require_loss=True)
-                pred_collect.extend(pred_tags)   #pred: list of batch_sentence pred tensor         
-                gt_collect.extend(tgt)  #tgt:list of sentence token tensor                
-                #num_tokens=len(torch.cat(pred_tags).view(-1))
-                print("Epoch: {}".format(epoch)+" loss:"+str(loss.cpu().item()))
-                self.optimizer.zero_grad()
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1)
-                self.optimizer.step() 
-                
-            if epoch%1 ==0:
-                score = self.evaluate(epoch)
-                if score>max_score:
-                    self.model.save_checkpoint(self.checkpoint_path,'best.pt')
-                    max_idx=epoch
-                max_score = max(max_score, score)                
-        return max_score,max_idx
-
-    def evaluate(self,epoch):
-        self.model.eval()
-        pred_collect = []
-        gt_collect = []
-        tokens_collect=[]
-        with torch.no_grad():
-            for data in self.val_dataloader:
-                graph, tgt = data["graph_data"], data["tgt_tag"]
-                graph = graph.to(self.device)
-                tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
-                pred,loss= self.model(graph, tgt_l, require_loss=True)
-                pred_collect.extend(pred)   #pred: list of batch_sentence pred tensor         
-                gt_collect.extend(tgt)  #tgt:list of sentence token tensor
-                tokens_collect.extend(get_tokens(from_batch(graph)))  
-                
-        prec, rec, f1 = conll_score(pred_collect,gt_collect,self.tag_types)
-        print("Testing results: precision is %5.2f, rec is %5.2f, f1 is %5.2f"%(prec,rec,f1))          
-        print("Epoch: {}".format(epoch)+" loss:"+str(loss.cpu().item())) 
-                                                  
-        return f1 
-    
-    @torch.no_grad()    
     def test(self):
+        
+        print("sucessfully loaded the existing saved model!")
         self.model.eval()
         pred_collect = []
         tokens_collect = []
@@ -384,7 +338,7 @@ if __name__ == "__main__":
     max_score,max_idx=runner.train()
     print("Train finish, best score: {:.3f}".format(max_score))
     print(max_idx)    
-    score=runner.test()    
+    #score=runner.test()    
     endtime = datetime.datetime.now()
     print((endtime - starttime).seconds)   
     

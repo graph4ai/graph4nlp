@@ -6,13 +6,6 @@ GraphSAGE
 
 GraphSAGE (`GraphSAGE <https://arxiv.org/pdf/1706.02216.pdf>`__) is a framework for inductive representation learning on large graphs. GraphSAGE is used to generate low-dimensional vector representations for nodes, and is especially useful for graphs that have rich node attribute information. The math operation of GraphSAGE is represented as below:
 
-.. math::
-    h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
-    \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
-    h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
-    (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
-    h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
-
 
 We provide high level APIs to users to easily define a multi-layer GraphSage model. Besides, we support both
 regular GraphSAGE and bidirectional versions including `GraphSAGE-BiSep <https://arxiv.org/abs/1808.07624>`__
