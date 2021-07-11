@@ -48,7 +48,9 @@ class ConllDataset(SequenceLabelingDataset):
                  merge_strategy=None,
                  tag_types=None, 
                  dynamic_init_graph_type=None, 
-                 dynamic_init_topology_builder=None, **kwargs):
+                 dynamic_init_topology_builder=None, 
+                 for_inference=None,
+                 reused_vocab_model=None,**kwargs):
         super(ConllDataset, self).__init__(root_dir=root_dir, 
                                           topology_builder=topology_builder,
                                           topology_subdir=topology_subdir, 
@@ -58,10 +60,8 @@ class ConllDataset(SequenceLabelingDataset):
                                           tag_types=tag_types, 
                                           dynamic_init_topology_builder=dynamic_init_topology_builder, 
                                           pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir, 
-                                          for_inference=None,
-                                          reused_vocab_model=None,
                                           for_inference=for_inference,
-                                          reused_vocab_model=reused_vocab_model **kwargs)
+                                          reused_vocab_model=reused_vocab_model, **kwargs)
 
      
         self.dynamic_init_topology_builder=dynamic_init_topology_builder

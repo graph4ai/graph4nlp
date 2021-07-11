@@ -109,37 +109,6 @@ def get_tokens(g_list):
         
         
 
-class SentenceBiLSTMCRF(nn.Module):
-    def __init__(self, device=None, use_rnn=False):
-        super(SentenceBiLSTMCRF, self).__init__()
-        self.use_rnn=use_rnn
-        #if self.use_rnn is True:
-        self.prediction=BiLSTMFeedForwardNN(args.init_hidden_size*1,args.init_hidden_size*1).to(device)
-        
-        #self.crf=CRFLayer(8).to(device)
-        #self.use_crf=use_crf        
-        self.linear1=nn.Linear(int(args.init_hidden_size*1), args.hidden_size)
-        self.linear1_=nn.Linear(int(args.hidden_size*1), args.num_class)
-        self.dropout_tag = nn.Dropout(args.tag_dropout)
-        self.dropout_rnn_out = nn.Dropout(p=args.rnn_dropout)
-        self.logsoftmax = nn.LogSoftmax(dim=1)
-        self.nll_loss = nn.NLLLoss()
-    def forward(self,batch_graph,tgt_tags):
-
-        batch_graph= self.prediction(batch_graph)  
-        batch_emb=batch_graph.node_features['logits']
-            
-        batch_graph.node_features['logits']=self.linear1_(self.dropout_tag(F.elu(self.linear1(self.dropout_rnn_out(batch_emb)))))           
-            
-        tgt=torch.cat(tgt_tags)
-        logits=batch_graph.node_features['logits'][:,:] #[batch*sentence*num_nodes,num_lable]
-        loss=self.nll_loss(self.logsoftmax(logits),tgt)
-        pred_tags=logits2tag(logits)
-        
-         
-        return loss, pred_tags
-         
-                   
 
         
 
@@ -151,9 +120,8 @@ class Conll:
             self.device = torch.device('cuda') 
         else:
              self.device = torch.device('cpu')
-        self.checkpoint_path='./checkpoints/'
-        if not os.path.exists(self.checkpoint_path):
-           os.mkdir(self.checkpoint_path)  
+        self.checkpoint_save_path='./checkpoints/'
+
 
         print("finish building model")
         self._build_model() 
@@ -175,7 +143,7 @@ class Conll:
                               topology_subdir='LineGraph',
                               tag_types=self.tag_types,
                               for_inference=1,
-                              reused_vocab_model=self.model.vocab_model                              )
+                              reused_vocab_model=self.model.vocab)
         elif args.graph_type=='dependency_graph':
           dataset = ConllDataset(root_dir="examples/pytorch/name_entity_recognition/conll",
                               topology_builder=DependencyBasedGraphConstruction_without_tokenizer,
@@ -184,7 +152,7 @@ class Conll:
                               topology_subdir='DependencyGraph',
                               tag_types=self.tag_types,
                               for_inference=1,
-                              reused_vocab_model=self.model.vocab_model                              ) 
+                              reused_vocab_model=self.model.vocab) 
         elif args.graph_type=='node_emb':
           dataset = ConllDataset(root_dir="examples/pytorch/name_entity_recognition/conll",
                               topology_builder=NodeEmbeddingBasedGraphConstruction,
@@ -195,7 +163,7 @@ class Conll:
                               merge_strategy=None,
                               dynamic_graph_type=args.graph_type if args.graph_type in ('node_emb', 'node_emb_refined') else None,
                               for_inference=1,
-                              reused_vocab_model=self.model.vocab_model)
+                              reused_vocab_model=self.model.vocab)
         elif args.graph_type=='node_emb_refined':
             if args.init_graph_type == 'line':
                 dynamic_init_topology_builder = LineBasedGraphConstruction
@@ -219,7 +187,7 @@ class Conll:
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
                               dynamic_init_topology_aux_args={'dummy_param': 0},
                               for_inference=1,
-                              reused_vocab_model=self.model.vocab_model)          
+                              reused_vocab_model=self.model.vocab)          
           
  
         print("strating loading the testing data")
@@ -335,10 +303,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args() 
     runner = Conll()
-    max_score,max_idx=runner.train()
-    print("Train finish, best score: {:.3f}".format(max_score))
-    print(max_idx)    
-    #score=runner.test()    
+    max_score=runner.test()
+    print("Test finish, best score: {:.3f}".format(max_score))
     endtime = datetime.datetime.now()
     print((endtime - starttime).seconds)   
     

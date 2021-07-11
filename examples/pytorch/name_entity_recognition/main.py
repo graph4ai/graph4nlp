@@ -72,10 +72,7 @@ def conll_score(preds, tgts,tag_types):
     return prec, rec, f1
 
 
-def logits2tag(logits):
-        _, pred=torch.max(logits,dim=-1)
-        #print(pred.size())
-        return pred  
+
 
 def write_file(tokens_collect,pred_collect,tag_collect,file_name,tag_types):
     num_sent=len(tokens_collect)
@@ -109,35 +106,7 @@ def get_tokens(g_list):
         
         
 
-class SentenceBiLSTMCRF(nn.Module):
-    def __init__(self, device=None, use_rnn=False):
-        super(SentenceBiLSTMCRF, self).__init__()
-        self.use_rnn=use_rnn
-        #if self.use_rnn is True:
-        self.prediction=BiLSTMFeedForwardNN(args.init_hidden_size*1,args.init_hidden_size*1).to(device)
-        
-        #self.crf=CRFLayer(8).to(device)
-        #self.use_crf=use_crf        
-        self.linear1=nn.Linear(int(args.init_hidden_size*1), args.hidden_size)
-        self.linear1_=nn.Linear(int(args.hidden_size*1), args.num_class)
-        self.dropout_tag = nn.Dropout(args.tag_dropout)
-        self.dropout_rnn_out = nn.Dropout(p=args.rnn_dropout)
-        self.logsoftmax = nn.LogSoftmax(dim=1)
-        self.nll_loss = nn.NLLLoss()
-    def forward(self,batch_graph,tgt_tags):
 
-        batch_graph= self.prediction(batch_graph)  
-        batch_emb=batch_graph.node_features['logits']
-            
-        batch_graph.node_features['logits']=self.linear1_(self.dropout_tag(F.elu(self.linear1(self.dropout_rnn_out(batch_emb)))))           
-            
-        tgt=torch.cat(tgt_tags)
-        logits=batch_graph.node_features['logits'][:,:] #[batch*sentence*num_nodes,num_lable]
-        loss=self.nll_loss(self.logsoftmax(logits),tgt)
-        pred_tags=logits2tag(logits)
-        
-         
-        return loss, pred_tags
          
                    
 
@@ -226,7 +195,7 @@ class Conll:
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-        self.model = Word2tag(self.vocab,device=self.device).to(self.device)
+        self.model = Word2tag(self.vocab,args, device=self.device).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -310,7 +279,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='NER')
     parser.add_argument("--gpu", type=int, default=-1,
                         help="which GPU to use.")
-    parser.add_argument("--epochs", type=int, default=150,
+    parser.add_argument("--epochs", type=int, default=10,
                         help="number of training epochs")
     parser.add_argument("--direction_option", type=str, default='bi_fuse',
                         help="direction type (`undirected`, `bi_fuse`, `bi_sep`)")

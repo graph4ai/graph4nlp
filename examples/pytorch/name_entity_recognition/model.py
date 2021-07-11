@@ -1,8 +1,76 @@
+import os
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
+import torch.backends.cudnn as cudnn
+cudnn.benchmark = False
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+import sys
+import os
 
+import torch.nn.functional as F
+
+
+from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
+from line_graph_construction import LineBasedGraphConstruction
+
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
+from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
+from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
+from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
+
+import torch
+import torch.nn as nn
+
+#from torchcrf import CRF
+
+from graph4nlp.pytorch.modules.prediction.classification.node_classification.BiLSTMFeedForwardNN import BiLSTMFeedForwardNN 
+from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
+from line_graph_construction import LineBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import *
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import *
+
+
+
+def logits2tag(logits):
+        _, pred=torch.max(logits,dim=-1)
+        #print(pred.size())
+        return pred  
+    
+    
+class SentenceBiLSTMCRF(nn.Module):
+    def __init__(self, args, device=None, use_rnn=False):
+        super(SentenceBiLSTMCRF, self).__init__()
+        self.use_rnn=use_rnn
+        #if self.use_rnn is True:
+        self.prediction=BiLSTMFeedForwardNN(args.init_hidden_size*1,args.init_hidden_size*1).to(device)
+        
+        #self.crf=CRFLayer(8).to(device)
+        #self.use_crf=use_crf        
+        self.linear1=nn.Linear(int(args.init_hidden_size*1), args.hidden_size)
+        self.linear1_=nn.Linear(int(args.hidden_size*1), args.num_class)
+        self.dropout_tag = nn.Dropout(args.tag_dropout)
+        self.dropout_rnn_out = nn.Dropout(p=args.rnn_dropout)
+        self.logsoftmax = nn.LogSoftmax(dim=1)
+        self.nll_loss = nn.NLLLoss()
+    def forward(self,batch_graph,tgt_tags):
+
+        batch_graph= self.prediction(batch_graph)  
+        batch_emb=batch_graph.node_features['logits']
+            
+        batch_graph.node_features['logits']=self.linear1_(self.dropout_tag(F.elu(self.linear1(self.dropout_rnn_out(batch_emb)))))           
+            
+        tgt=torch.cat(tgt_tags)
+        logits=batch_graph.node_features['logits'][:,:] #[batch*sentence*num_nodes,num_lable]
+        loss=self.nll_loss(self.logsoftmax(logits),tgt)
+        pred_tags=logits2tag(logits)
+        
+         
+        return loss, pred_tags
 
 
 class Word2tag(nn.Module):
-    def __init__(self, vocab, device=None):
+    def __init__(self, vocab, args, device=None):
         super(Word2tag, self).__init__()
         self.vocab = vocab
         self.device =device
@@ -89,8 +157,9 @@ class Word2tag(nn.Module):
                                     fix_word_emb=not args.no_fix_word_emb,
                                     word_dropout=args.word_dropout,
                                     rnn_dropout=None,
-                                    device=self.device)
-            use_edge_weight = True        
+                                    device=self.device,
+                                    use_edge_weight = True)
+                   
         
         if 'w2v' in self.graph_topology.embedding_layer.word_emb_layers:
             self.word_emb = self.graph_topology.embedding_layer.word_emb_layers['w2v'].word_emb_layer
@@ -109,33 +178,33 @@ class Word2tag(nn.Module):
         self.dropout_tag = nn.Dropout(args.tag_dropout)
         self.dropout_rnn_out = nn.Dropout(p=args.rnn_dropout)
         if self.use_gnn is False:
-              self.bilstmcrf=SentenceBiLSTMCRF(device=self.device, use_rnn=False).to(self.device) 
+              self.bilstmcrf=SentenceBiLSTMCRF(args, device=self.device, use_rnn=False).to(self.device) 
         else:   
             if self.gnn_type=="graphsage":   
                if args.direction_option=='bi_sep':
                    self.gnn = GraphSAGE(args.gnn_num_layers, args.hidden_size, int(args.init_hidden_size/2), int(args.init_hidden_size/2), aggregator_type='mean',direction_option=args.direction_option, activation=F.elu).to(self.device)        
                else:                   
                    self.gnn = GraphSAGE(args.gnn_num_layers, args.hidden_size, args.init_hidden_size, args.init_hidden_size, aggregator_type='mean',direction_option=args.direction_option, activation=F.elu).to(self.device)        
-               self.bilstmcrf=SentenceBiLSTMCRF(device=self.device, use_rnn=True).to(self.device)
+               self.bilstmcrf=SentenceBiLSTMCRF(args, device=self.device, use_rnn=True).to(self.device)
             elif self.gnn_type=="ggnn":
                if args.direction_option=='bi_sep':
                   self.gnn = GGNN(args.gnn_num_layers, int(args.init_hidden_size/2), int(args.init_hidden_size/2),direction_option=args.direction_option,n_etypes=1).to(self.device)        
                else:    
                   self.gnn = GGNN(args.gnn_num_layers, args.init_hidden_size, args.init_hidden_size,direction_option=args.direction_option,n_etypes=1).to(self.device)        
-               self.bilstmcrf=SentenceBiLSTMCRF(device=self.device,use_rnn=True).to(self.device)            
+               self.bilstmcrf=SentenceBiLSTMCRF(args, device=self.device,use_rnn=True).to(self.device)            
             elif self.gnn_type=="gat":
                heads = 2
                if args.direction_option=='bi_sep': 
                    self.gnn = GAT(args.gnn_num_layers,args.hidden_size,int(args.init_hidden_size/2),int(args.init_hidden_size/2), heads,direction_option=args.direction_option,feat_drop=0.6, attn_drop=0.6, negative_slope=0.2, activation=F.elu).to(self.device)                                    
                else:
                    self.gnn = GAT(args.gnn_num_layers,args.hidden_size,args.init_hidden_size,args.init_hidden_size, heads,direction_option=args.direction_option,feat_drop=0.6, attn_drop=0.6, negative_slope=0.2, activation=F.elu).to(self.device)        
-               self.bilstmcrf=SentenceBiLSTMCRF(device=self.device, use_rnn=True).to(self.device)
+               self.bilstmcrf=SentenceBiLSTMCRF(args, device=self.device, use_rnn=True).to(self.device)
             elif self.gnn_type=="gcn":   
                if args.direction_option=='bi_sep':
                    self.gnn = GCN(args.gnn_num_layers, args.hidden_size, int(args.init_hidden_size/2), int(args.init_hidden_size/2), direction_option=args.direction_option, activation=F.elu).to(self.device)        
                else:                   
                    self.gnn = GCN(args.gnn_num_layers, args.hidden_size, args.init_hidden_size, args.init_hidden_size,direction_option=args.direction_option, activation=F.elu).to(self.device)        
-               self.bilstmcrf=SentenceBiLSTMCRF(device=self.device,use_rnn=True).to(self.device)
+               self.bilstmcrf=SentenceBiLSTMCRF(args, device=self.device,use_rnn=True).to(self.device)
               
      
 
