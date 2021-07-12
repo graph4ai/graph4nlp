@@ -1,6 +1,6 @@
 .. _guide-node_classification:
 
-Node_classification:
+Node Classification
 ===================
 
 Node classification is a downstream task that are normally observed in the GNN-based NLP tasks, such as sequence labeling and name entity recognition. The process is about classify the label of the each node in the graph based on the node embeddings that learnt from the GNNs modules.
@@ -10,7 +10,7 @@ To facilitate the implementation of node classification task, we provide both hi
 
 .. _guide-BiLSTMFeedForwardNN
 
-BiLSTMFeedForwardNN:
+BiLSTMFeedForwardNN
 ==================
 
 This function is based on a combination of the BiLSTM layer and a feedforward layer. The low-level function defines the a single layer classifier with the input of node embedding tensor and the output of legit tensor after classification. The user can specify the index of nodes that needs to be classified. If not specified, the classifier will be applied to all the nodes. Below is an example to call the BiLSTMFeedForwardNNLayer API.
@@ -52,7 +52,7 @@ To facilitate the easily implementation of the pipeline of GNN-based NLP applica
 
 .. _guide-FeedForwardNN
 
-FeedForwardNN:
+FeedForwardNN
 ==================
 
 This function is based on a combination of several feedforward layer. The low-level function defines the classifier layers with the input of node embedding tensor and the output of legit tensor after classification. The user can specify the index of nodes that needs to be classified. If not specified, the classifier will be applied to all the nodes. Below is an example to call the single FeedForwardNNLayer API.

@@ -1,6 +1,6 @@
 .. _guide-ggnn:
 
-4.2 GGNN Encoder
+Gated Graph Neural Networks
 ==============
 
 A typical example of recurrent-based graph filters is the Gated Graph Neural Networks (`GGNN <https://arxiv.org/pdf/1511.05493.pdf>`_)-filter.

@@ -1,6 +1,6 @@
 .. _guide-graphsage:
 
-GraphSAGE:
+GraphSAGE
 ===========
 
 

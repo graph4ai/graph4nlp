@@ -1,6 +1,6 @@
-                                                                                         .. _kg-completion:
+.. _guide-kgcompletion:
 
-Chapter 6.4 Knowledge Graph Completion
+Knowledge Graph Completion
 =====================
 The purpose of Knowledge Graph Completion (KGC) is to predict new triples on the basis of existing triples,
 so as to further extend KGs. KGC is usually considered as a link prediction task.

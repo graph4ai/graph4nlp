@@ -1,6 +1,6 @@
 .. _dependency-graph-construction:
 
-Chapter 3.1 Dependency Graph Construction
+Dependency Graph Construction
 =====================
 The dependency graph is widely used to capture the dependency relations between different objects in the given sentences.
 Formally, given a paragraph, one can obtain the dependency parsing tree (e.g., syntactic dependency tree or semantic dependency parsing tree) by using various NLP parsing tools (e.g., Stanford CoreNLP).

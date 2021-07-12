@@ -1,6 +1,6 @@
 .. _guide-link_prediction:
 
-Link_prediction:
+Link Prediction
 ===================
 
 Link prediction is a downstream task that are normally observed in the GNN-based NLP tasks, such as relation extract and amr parsing. The process is about classify the label of each edge or predict whether there is an edge between a pair of nodes based on the node embeddings that learnt from the GNNs modules.
@@ -10,7 +10,7 @@ To facilitate the implementation of link prediction task, we provide both high-l
 
 .. _guide-ConcatFeedForwardNN
 
-ConcatFeedForwardNN:
+ConcatFeedForwardNN
 ==================
 
 This function is based on the feedforward layer. To predict the edge between a pair of nodes, the embeddings of the two nodes is first concatenated and then inputed into the Feedforward neural network. The low-level function defines a two-layer classifier with the input of node embedding tensor and the output of legit tensor after classification. The user can specify the index of edge (represented as tuple of nodes pair indexes) that needs prediction. If not specified, the classifier will be applied to all pair of nodes. Below is an example to call the ConcatFeedForwardNNLayer API.
@@ -52,7 +52,7 @@ To facilitate the easily implementation of the pipeline of GNN-based NLP applica
 
 .. _guide-ElementSum
 
-ElementSum:
+ElementSum
 ==================
 
 This function is also based on the feedforward layer. To predict the edge between a pair of nodes, the embeddings of the two nodes is first inputted into feedforward neural network and get the updated embedding. Then the element sum operation is conducted on the two embedding for the final prediction. The low-level function defines a two-layer classifier with the input of node embedding tensor and the output of legit tensor after prediction. The user can specify the index of edge (represented as tuple of nodes pair indexes) that needs prediction. If not specified, the classifier will be applied to all pair of nodes. Below is an example to call the ElementSumLayer API.
@@ -95,7 +95,7 @@ To facilitate the easily implementation of the pipeline of GNN-based NLP applica
 
 .. _guide-StackedElementProd
 
-StackedElementProd:
+StackedElementProd
 ==================
 
 This function is also based on the feedforward layer and designed for a multi-layer GNN encoder. To predict the edge between a pair of nodes, the products of the embeddings of two nodes at each GNN-layer will be concatenated. Then the concatenation will be finally inputted into the feedforward neural network for the final prediction. The low-level function defines a classifier layer with the input of node embedding list (each element in the list refers to a node embedding tensor at each layer) and the output of legit tensor after prediction. The user can specify the index of edge (represented as tuple of nodes pair indexes) that needs prediction. If not specified, the classifier will be applied to all pair of nodes. Below is an example to call the StackedElementProdLayer API.

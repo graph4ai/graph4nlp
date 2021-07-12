@@ -1,11 +1,12 @@
-Chapter 6. Graph Classification
+Chapter 6. Classification
 ===========================
 Graph4NLP implements four standard classification modules for: node classification, link prediction, kg-completion and graph classification, respectively. Generally, they take the encoding matrix encoded by GraphEncoder as inputs and predict the target objects.
 
 
 * :ref:`guide-node_classification`
+* :ref:`guide-graph_classification`
 * :ref:`guide-link_prediction`
-* :ref:`kg-completion`
+* :ref:`guide-kgcompletion`
 
 
 .. toctree::
@@ -15,5 +16,6 @@ Graph4NLP implements four standard classification modules for: node classificati
    :caption: Hello
 
    classification/node_classification
+   classification/graph_classification
    Classification/link_prediction
    classification/kgcompletion
