@@ -166,7 +166,7 @@ class Jobs:
                     best_acc = val_acc
                     best_model = self.model
         best_model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
-        print(f"Best Accuracy: {val_acc:.4f}")
+        print(f"Best Accuracy: {best_acc:.4f}")
 
     def eval(self, model):
         from evaluation import convert_to_string, compute_tree_accuracy
