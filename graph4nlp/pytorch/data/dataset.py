@@ -330,7 +330,7 @@ class Dataset(torch.utils.data.Dataset):
             The timeout for stanfordcorenlp.
         for_inference: bool, default=False
             Whether this dataset is used for inference.
-        train_root: str, default=None
+        reused_vocab_model: str, default=None
             When ``for_inference`` is true, you need to specify the directory where the vocabulary data is located.
         kwargs
         """
@@ -346,7 +346,6 @@ class Dataset(torch.utils.data.Dataset):
         
         # inference
         self.for_inference = for_inference
-
         # Processing-specific attributes
         self.tokenizer = tokenizer
         self.lower_case = lower_case

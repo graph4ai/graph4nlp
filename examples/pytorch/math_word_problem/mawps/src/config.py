@@ -27,7 +27,9 @@ def get_args():
                         default=None, help="")
     parser.add_argument("--pretrained_word_emb_cache_dir", type=str,
                         default=".vector_cache", help="")
-    
+
+    parser.add_argument("--checkpoint-save-path", type=str, default="examples/pytorch/math_word_problem/mawps/save")
+
     parser.add_argument("--beam-size", type=int, default=4, help="the beam size of beam search")
 
     cfg = parser.parse_args()

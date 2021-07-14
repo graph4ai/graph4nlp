@@ -7,16 +7,16 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
+from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from graph4nlp.pytorch.modules.graph_construction import *
 
 warnings.filterwarnings('ignore')
 
 
-class Jobs:
+class Mawps:
     def __init__(self, opt=None):
-        super(Jobs, self).__init__()
+        super(Mawps, self).__init__()
         self.opt = opt
 
         seed = self.opt["seed"]
@@ -88,7 +88,7 @@ class Jobs:
                     }
 
         # for inference
-        inference_dataset = JobsDatasetForTree(**para_dic)
+        inference_dataset = MawpsDatasetForTree(**para_dic)
 
         self.inference_data_loader = DataLoader(inference_dataset.test, batch_size=1, shuffle=False, num_workers=0,
                                                 collate_fn=inference_dataset.collate_fn)
@@ -144,7 +144,7 @@ if __name__ == "__main__":
     from config import get_args
 
     start = time.time()
-    runner = Jobs(opt=get_args())
+    runner = Mawps(opt=get_args())
     runner.infer()
 
     end = time.time()

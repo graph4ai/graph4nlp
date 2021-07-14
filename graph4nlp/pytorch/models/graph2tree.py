@@ -7,6 +7,8 @@ import torch.nn.init as init
 
 from graph4nlp.pytorch.models.base import Graph2XBase
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder
+from graph4nlp.pytorch.modules.utils.tree_utils import Tree, to_cuda
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 
 
 class Graph2Tree(Graph2XBase):
@@ -54,10 +56,12 @@ class Graph2Tree(Graph2XBase):
                                         **kwargs)
 
         self.src_vocab, self.tgt_vocab = vocab_model.in_word_vocab, vocab_model.out_word_vocab
+        self.gnn_hidden_size = gnn_hidden_size
+        self.dec_hidden_size = dec_hidden_size
         self.use_copy = dec_use_copy
         self.input_size = self.src_vocab.vocab_size
         self.output_size = self.tgt_vocab.vocab_size
-        self.criterion = nn.NLLLoss(size_average=False) if criterion == None else criterion
+        self.criterion = nn.NLLLoss(size_average=False, ignore_index=self.src_vocab.get_symbol_idx(self.src_vocab.unk_token)) if criterion == None else criterion
         self.use_share_vocab = share_vocab
         if self.use_share_vocab == 0:
             self.tgt_word_embedding = nn.Embedding(self.tgt_vocab.vocab_size, dec_hidden_size, 
@@ -86,6 +90,119 @@ class Graph2Tree(Graph2XBase):
 
         loss = self.decoder(g=batch_graph, tgt_tree_batch=tgt_tree_batch, oov_dict=oov_dict)
         return loss
+
+    def translate(self, input_graph,
+                  use_beam_search=True,
+                  beam_size=4,
+                  oov_dict=None):
+        device = input_graph.device
+        prev_c = torch.zeros((1, self.dec_hidden_size), requires_grad=False)
+        prev_h = torch.zeros((1, self.dec_hidden_size), requires_grad=False)
+
+        batch_graph = self.graph_topology(input_graph)
+        batch_graph = self.gnn_encoder(batch_graph)
+        batch_graph.node_features["rnn_emb"] = batch_graph.node_features['node_feat']
+
+        params = self.decoder._extract_params(batch_graph)
+        graph_node_embedding = params['graph_node_embedding']
+        if self.decoder.graph_pooling_strategy == "max":
+            graph_level_embedding = torch.max(graph_node_embedding, 1)[0]
+        rnn_node_embedding = params['rnn_node_embedding']
+        graph_node_mask = params['graph_node_mask']
+        enc_w_list = params['enc_batch']
+
+        enc_outputs = graph_node_embedding
+        prev_c = graph_level_embedding
+        prev_h = graph_level_embedding
+
+        # decode
+        queue_decode = []
+        queue_decode.append(
+            {"s": (prev_c, prev_h), "parent": 0, "child_index": 1, "t": Tree()})
+        head = 1
+        while head <= len(queue_decode) and head <= self.decoder.max_dec_tree_depth:
+            s = queue_decode[head-1]["s"]
+            parent_h = s[1]
+            t = queue_decode[head-1]["t"]
+
+            sibling_state = torch.zeros(
+                (1, self.dec_hidden_size), dtype=torch.float, requires_grad=False).to(device)
+
+            flag_sibling = False
+            for q_index in range(len(queue_decode)):
+                if (head <= len(queue_decode)) and \
+                    (q_index < head - 1) and \
+                    (queue_decode[q_index]["parent"] == queue_decode[head - 1]["parent"]) and \
+                    (queue_decode[q_index]["child_index"] < queue_decode[head - 1]["child_index"]):
+                    flag_sibling = True
+                    sibling_index = q_index
+            if flag_sibling:
+                sibling_state = queue_decode[sibling_index]["s"][1]
+
+            if head == 1:
+                prev_word = torch.tensor([self.tgt_vocab.get_symbol_idx(
+                    self.tgt_vocab.start_token)], dtype=torch.long)
+            else:
+                prev_word = torch.tensor(
+                    [self.tgt_vocab.get_symbol_idx('(')], dtype=torch.long)
+
+            prev_word = to_cuda(prev_word, device)
+            i_child = 1
+            if not use_beam_search:
+                while True:
+                    prediction, (curr_c, curr_h), _ = self.decoder.decode_step(tgt_batch_size=1,
+                                                                 dec_single_input=prev_word,
+                                                                 dec_single_state=s,
+                                                                 memory=enc_outputs,
+                                                                 parent_state=parent_h,
+                                                                 oov_dict=oov_dict,
+                                                                 enc_batch=enc_w_list)
+                    s = (curr_c, curr_h)
+                    prev_word = torch.log(prediction + 1e-31)
+                    prev_word = prev_word.argmax(1)
+
+                    if int(prev_word[0]) == self.tgt_vocab.get_symbol_idx(self.tgt_vocab.end_token) or t.num_children >= self.decoder.max_dec_seq_length:
+                        break
+                    elif int(prev_word[0]) == self.tgt_vocab.get_symbol_idx(self.tgt_vocab.non_terminal_token):
+                        queue_decode.append({"s": (s[0].clone(), s[1].clone()), "parent": head, "child_index": i_child, "t": Tree()})
+                        t.add_child(int(prev_word[0]))
+                    else:
+                        t.add_child(int(prev_word[0]))
+                    i_child = i_child + 1
+            else:
+                topk = 1
+                # decoding goes sentence by sentence
+                assert(graph_node_embedding.size(0) == 1)
+                beam_search_generator = DecoderStrategy(
+                    beam_size=beam_size, vocab=self.tgt_vocab, decoder=self.decoder, rnn_type="lstm", use_copy=True, use_coverage=False)
+                decoded_results = beam_search_generator.beam_search_for_tree_decoding(decoder_initial_state=(s[0], s[1]),
+                                                                                          decoder_initial_input=prev_word,
+                                                                                          parent_state=parent_h,
+                                                                                          graph_node_embedding=enc_outputs,
+                                                                                          rnn_node_embedding=rnn_node_embedding,
+                                                                                          device=device,
+                                                                                          topk=topk,
+                                                                                          oov_dict=oov_dict,
+                                                                                          enc_batch=enc_w_list)
+                generated_sentence = decoded_results[0][0]
+                for node_i in generated_sentence:
+                    if int(node_i.wordid.item()) == self.tgt_vocab.get_symbol_idx(self.tgt_vocab.non_terminal_token):
+                        queue_decode.append({"s": (node_i.h[0].clone(), node_i.h[1].clone(
+                        )), "parent": head, "child_index": i_child, "t": Tree()})
+                        t.add_child(int(node_i.wordid.item()))
+                        i_child = i_child + 1
+                    elif int(node_i.wordid.item()) != self.tgt_vocab.get_symbol_idx(self.tgt_vocab.end_token) and \
+                            int(node_i.wordid.item()) != self.tgt_vocab.get_symbol_idx(self.tgt_vocab.start_token) and \
+                            int(node_i.wordid.item()) != self.tgt_vocab.get_symbol_idx('('):
+                        t.add_child(int(node_i.wordid.item()))
+                        i_child = i_child + 1
+
+            head = head + 1
+        for i in range(len(queue_decode)-1, 0, -1):
+            cur = queue_decode[i]
+            queue_decode[cur["parent"] -
+                         1]["t"].children[cur["child_index"]-1] = cur["t"]
+        return queue_decode[0]["t"].to_list(self.tgt_vocab)
 
     def init(self, init_weight):
         for name, param in self.named_parameters():

@@ -34,7 +34,6 @@ class Jobs:
 
         self.use_copy = self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"]
         self.use_share_vocab = self.opt["graph_construction_args"]["graph_construction_share"]["share_vocab"]
-        self.make_inference = 0
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
 
         self._build_dataloader()
@@ -60,8 +59,8 @@ class Jobs:
         elif graph_type == "node_emb_refined":
             my_topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             my_graph_type = 'dynamic'
-            dynamic_init_graph_type = self.opt["graph_construction_args"]["graph_construction_private"][
-                "dynamic_init_graph_type"]
+
+            dynamic_init_graph_type = self.opt["graph_construction_args"]["graph_construction_private"]["dynamic_init_graph_type"]
             if dynamic_init_graph_type is None or dynamic_init_graph_type == 'line':
                 dynamic_init_topology_builder = None
             elif dynamic_init_graph_type == 'dependency':
@@ -73,21 +72,21 @@ class Jobs:
                 raise RuntimeError('Define your own dynamic_init_topology_builder')
         else:
             raise NotImplementedError
-
-        para_dic = {'root_dir': self.data_dir,
+        
+        para_dic =  {'root_dir': self.data_dir,
                     'word_emb_size': enc_emb_size,
                     'topology_builder': my_topology_builder,
-                    'topology_subdir': topology_subdir,
+                    'topology_subdir': topology_subdir, 
                     'edge_strategy': self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"],
                     'graph_type': my_graph_type,
-                    'dynamic_graph_type': graph_type,
-                    'share_vocab': self.use_share_vocab,
+                    'dynamic_graph_type': graph_type, 
+                    'share_vocab': self.use_share_vocab, 
                     'enc_emb_size': enc_emb_size,
                     'dec_emb_size': tgt_emb_size,
                     'dynamic_init_topology_builder': dynamic_init_topology_builder,
                     'min_word_vocab_freq': self.opt["min_freq"],
                     'pretrained_word_emb_name': self.opt["pretrained_word_emb_name"],
-                    'pretrained_word_emb_url': self.opt["pretrained_word_emb_url"],
+                    'pretrained_word_emb_url': self.opt["pretrained_word_emb_url"], 
                     'pretrained_word_emb_cache_dir': self.opt["pretrained_word_emb_cache_dir"]
                     }
 
@@ -98,14 +97,10 @@ class Jobs:
                                             collate_fn=dataset.collate_fn)
         self.test_data_loader = DataLoader(dataset.test, batch_size=1, shuffle=False, num_workers=0,
                                            collate_fn=dataset.collate_fn)
-
         self.vocab_model = dataset.vocab_model
         self.src_vocab = self.vocab_model.in_word_vocab
         self.tgt_vocab = self.vocab_model.out_word_vocab
         self.share_vocab = self.vocab_model.share_vocab if self.use_share_vocab else None
-        # if self.use_share_vocab:
-        #     self.share_vocab = dataset.share_vocab_model
-        # self.vocab_model = VocabForAll(in_word_vocab=self.src_vocab, out_word_vocab=self.tgt_vocab, share_vocab=self.share_vocab)
 
     def _build_model(self):
         '''For encoder-decoder'''
@@ -161,15 +156,16 @@ class Jobs:
     def train(self):
         print("-------------\nStarting training.")
         best_acc = 0.0
+        best_model = None
         for epoch in range(1, self.opt["max_epochs"] + 1):
             self.model.train()
             self.train_epoch(epoch)
             if epoch >= 5:
-                val_acc = self.eval((self.model))
+                val_acc = self.eval(self.model)
                 if val_acc > best_acc:
                     best_acc = val_acc
-                    self.model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
-                    print("Best Model Saved!")
+                    best_model = self.model
+        best_model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
         print(f"Best Accuracy: {val_acc:.4f}")
 
     def eval(self, model):
@@ -192,20 +188,11 @@ class Jobs:
                 reference = model.tgt_vocab.get_symbol_idx_for_list(batch_original_tree_list[0].split())
                 eval_vocab = self.tgt_vocab
 
-            candidate = model.decoder.translate(model.use_copy,
-                                                model.decoder.enc_hidden_size,
-                                                model.decoder.hidden_size,
-                                                model,
-                                                eval_input_graph,
-                                                self.src_vocab,
-                                                self.tgt_vocab,
-                                                self.device,
-                                                self.opt["decoder_args"]["rnn_decoder_private"]["max_decoder_step"],
-                                                self.opt["decoder_args"]["rnn_decoder_private"]["max_tree_depth"],
-                                                oov_dict=oov_dict,
-                                                use_beam_search=True,
-                                                beam_size=self.opt["beam_size"])
-
+            candidate = model.translate(eval_input_graph,
+                                        oov_dict=oov_dict,
+                                        use_beam_search=True,
+                                        beam_size=self.opt["beam_size"])
+            
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(
                 1 for c in candidate if eval_vocab.idx2symbol[int(c)] == "(")
