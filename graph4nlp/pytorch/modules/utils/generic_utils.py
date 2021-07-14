@@ -1,7 +1,10 @@
+import os
+import pickle
 import yaml
 from collections import OrderedDict
 import numpy as np
 from scipy import sparse
+from sklearn import preprocessing
 import torch
 import torch.nn as nn
 
@@ -165,7 +168,7 @@ class EarlyStopping:
         score = acc
         if self.best_score is None:
             self.best_score = score
-            self.save_checkpoint(model)
+            save_model_checkpoint(model, self.save_model_path)
         elif score < self.best_score:
             self.counter += 1
             print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
@@ -173,17 +176,45 @@ class EarlyStopping:
                 self.early_stop = True
         else:
             self.best_score = score
-            self.save_checkpoint(model)
+            save_model_checkpoint(model, self.save_model_path)
             self.counter = 0
 
         return self.early_stop
 
-    def save_checkpoint(self, model):
-        '''Saves model when validation loss decrease.'''
-        torch.save(model.state_dict(), self.save_model_path)
-        print('Saved model to {}'.format(self.save_model_path))
+def save_model_checkpoint(model, model_path):
+    """The API for saving the model.
 
-    def load_checkpoint(self, model):
-        model.load_state_dict(torch.load(self.save_model_path))
+    Parameters
+    ----------
+    model : class
+        The model to be saved.
+    model_path : str
+        The saved model path.
 
-        return model
+    Returns
+    -------
+    """
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    torch.save(model, model_path)
+    print('Saved model to {}'.format(model_path))
+
+class LabelModel(object):
+    """Class for building label mappgings from a label set."""
+    def __init__(self, all_labels=None):
+        super(LabelModel, self).__init__()
+        self.le = preprocessing.LabelEncoder()
+        self.le.fit(list(all_labels))
+        self.num_classes = len(self.le.classes_)
+
+    @classmethod
+    def build(cls, saved_label_file, all_labels=None):
+        if os.path.exists(saved_label_file):
+            print('Loading pre-built label mappings stored in {}'.format(saved_label_file))
+            with open(saved_label_file, 'rb') as f:
+                label_model = pickle.load(f)
+        else:
+            label_model = cls(all_labels)
+            print('Saving label mappings to {}'.format(saved_label_file))
+            pickle.dump(label_model, open(saved_label_file, 'wb'))
+
+        return label_model
