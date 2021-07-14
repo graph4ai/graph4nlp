@@ -7,6 +7,7 @@ Roadmap
 -----------------
 
 * :ref:`dependency-graph-construction`
+* :ref:`constituency-graph-construction`
 * :ref:`ie-graph-construction`
 * :ref:`guide-dynamic_graph_construction`
 * :ref:`guide-embedding_construction`
@@ -17,6 +18,7 @@ Roadmap
    :hidden:
 
    construction/dependencygraphconstruction
+   construction/constituency_graph_construction
    construction/iegraphconstruction
    construction/dynamic_graph_construction
    construction/embedding_construction

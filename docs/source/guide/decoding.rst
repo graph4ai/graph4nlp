@@ -7,10 +7,14 @@ Roadmap
 The chapter starts with sections for decoding graphs with different strategy:
 
 * :ref:`std-rnn-decoder`
+* :ref:`std-tree-decoder`
 
 .. toctree::
    :glob:
    :maxdepth: 2
    :hidden:
 
-    docoding/stdrnndecoder
+   decoding/stdrnndecoder
+   decoding/stdtreedecoder
+
+    
