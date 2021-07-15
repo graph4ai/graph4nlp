@@ -67,8 +67,6 @@ class Graph2Tree(Graph2XBase):
             self.tgt_word_embedding = nn.Embedding(self.tgt_vocab.vocab_size, dec_hidden_size, 
                                                 padding_idx=self.tgt_vocab.get_symbol_idx(self.tgt_vocab.pad_token),
                                                 _weight=torch.from_numpy(self.tgt_vocab.embeddings).float())
-        else:
-            self.tgt_word_embedding = self.enc_word_emb
 
         self.decoder = StdTreeDecoder(attn_type=dec_attention_type,
                                       embeddings=self.enc_word_emb.word_emb_layer if self.use_share_vocab else self.tgt_word_embedding,
