@@ -1,15 +1,17 @@
 Chapter 1. Graph Data
 ======================
-Graph data is the basis of Graph4NLP's dataflow.
+Graph data is the basis of Graph4NLP's dataflow. A typical GraphData instance consists of nodes and edges, together with
+the attached features, which are tensors, and attributes, which can be arbitrary objects.
 
-* :ref:`guide-a`
-
+* :ref:`guide-construct`
+* :ref:`guide-manipulate`
+* :ref:`batching`
 
 .. toctree::
    :glob:
-   :maxdepth: 2
+   :maxdepth: 3
    :hidden:
-   :caption: Hello
+   :caption: Chapter 1. Graph Data
 
-   graphdata/a
-   graphdata/b
+   graphdata/construct
+   graphdata/manipulate
