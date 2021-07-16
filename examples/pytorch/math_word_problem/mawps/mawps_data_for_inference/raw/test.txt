@@ -1,0 +1,11 @@
+bert runs 1 miles every day . how many miles will bert run in 2 weeks ?	1 * ( 2 * 7 ) = x
+ruby has 1 apples . emily takes 2 away . how many apples will ruby have ?	x = ( 1 - 2 )
+there are 2 birds and 1 nests . how many more birds are there than nests ?	x = ( 2 - 1 )
+tim has 2 books . mike has 1 books . how many books do they have together ?	2 + 1 = x
+2 dogs are barking . 1 more dogs start to bark . how many dogs are barking ?	x = ( 2 + 1 )
+keith has 1 books . jason has 2 books . how many books do they have together ?	x = 1 + 2
+paco had 1 cookies . paco ate 2 of them . how many cookies did paco have left ?	1 - 2 = x
+dorothy has 1 cards . she gives 2 to harold . how many cards will dorothy have ?	x = ( 1 - 2 )
+wendy ran 2 miles and walked 1 miles . how much farther did wendy run than walk ?	x = 2 - 1
+mary starts with 1 eggs . she finds another 2 . how many eggs does mary end with ?	x = ( 1 + 2 )
+there are 1 calories in a candy bar . how many calories are there in 2 candy bars ?	1 * 2 = x

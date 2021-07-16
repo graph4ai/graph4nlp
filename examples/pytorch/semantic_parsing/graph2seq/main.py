@@ -1,12 +1,13 @@
-import os
+import numpy as np
 import numpy as np
 import torch
 import torch.optim as optim
-from torch.utils.data import DataLoader
-
 from args import get_args
 from build_model import get_model
 from evaluation import ExpressionAccuracy
+from torch.utils.data import DataLoader
+from utils import get_log, wordid2str
+
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
@@ -18,7 +19,6 @@ from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_con
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import \
     NodeEmbeddingBasedRefinedGraphConstruction
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
-from utils import get_log, wordid2str
 
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "4"
@@ -89,13 +89,13 @@ class Jobs:
                 raise RuntimeError('Define your own dynamic_init_topology_builder')
         else:
             raise NotImplementedError("Define your topology builder.")
-            
+
         dataset = JobsDataset(root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
                               #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
                               pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
                               pretrained_word_emb_url=self.opt["pretrained_word_emb_url"],
                               pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
-                            #   val_split_ratio=self.opt["val_split_ratio"],
+                              #   val_split_ratio=self.opt["val_split_ratio"],
                               merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
                                   "merge_strategy"],
                               edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
@@ -118,9 +118,10 @@ class Jobs:
                               dynamic_init_topology_aux_args=None)
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True,
-                                           num_workers=1,
+                                           num_workers=self.opt["num_works"],
                                            collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=self.opt["batch_size"], shuffle=False, num_workers=1,
+        self.test_dataloader = DataLoader(dataset.test, batch_size=self.opt["batch_size"], shuffle=False,
+                                          num_workers=self.opt["num_works"],
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
 
@@ -149,7 +150,7 @@ class Jobs:
                 score = self.evaluate(split="test")
                 if score >= max_score:
                     self.logger.info("Best model saved, epoch {}".format(epoch))
-                    self.save_checkpoint("best.pth")
+                    self.model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
                     self._best_epoch = epoch
                 max_score = max(max_score, score)
             if epoch >= 30 and self._stop_condition(epoch):
@@ -254,22 +255,10 @@ class Jobs:
         self.logger.info("Evaluation accuracy in `{}` split: {:.3f}".format("test", score))
         return score
 
-    def load_checkpoint(self, checkpoint_name):
-        checkpoint_path = os.path.join(self.opt["checkpoint_save_path"], checkpoint_name)
-        self.model.load_state_dict(torch.load(checkpoint_path))
-
-    def save_checkpoint(self, checkpoint_name):
-        checkpoint_path = os.path.join(self.opt["checkpoint_save_path"], checkpoint_name)
-        if not os.path.exists(self.opt["checkpoint_save_path"]):
-            os.makedirs(self.opt["checkpoint_save_path"], exist_ok=True)
-        torch.save(self.model.state_dict(), checkpoint_path)
-
 
 if __name__ == "__main__":
     opt = get_args()
     runner = Jobs(opt)
     max_score = runner.train()
     runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
-    runner.load_checkpoint("best.pth")
-    # runner.evaluate("test")
     runner.translate()

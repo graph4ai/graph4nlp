@@ -31,10 +31,11 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 
 
 class TextClassifier(nn.Module):
-    def __init__(self, vocab, config):
+    def __init__(self, vocab, label_model, config):
         super(TextClassifier, self).__init__()
         self.config = config
         self.vocab = vocab
+        self.label_model = label_model
         embedding_style = {'single_token_item': True if config['graph_type'] != 'ie' else False,
                             'emb_strategy': config.get('emb_strategy', 'w2v_bilstm'),
                             'num_rnn_layers': 1,
@@ -167,7 +168,6 @@ class TextClassifier(nn.Module):
 
         self.loss = GeneralLoss('CrossEntropy')
 
-
     def forward(self, graph_list, tgt=None, require_loss=True):
         # graph embedding construction
         batch_gd = self.graph_topology(graph_list)
@@ -185,6 +185,20 @@ class TextClassifier(nn.Module):
         else:
             return logits
 
+    @classmethod
+    def load_checkpoint(cls, model_path):
+        """The API to load the model.
+
+        Parameters
+        ----------
+        model_path : str
+            The saved model path.
+
+        Returns
+        -------
+        Class
+        """
+        return torch.load(model_path)
 
 class ModelHandler:
     def __init__(self, config):
@@ -241,6 +255,7 @@ class ModelHandler:
 
         dataset = TrecDataset(root_dir=self.config.get('root_dir', 'examples/pytorch/text_classification/data/trec'),
                               pretrained_word_emb_name=self.config.get('pretrained_word_emb_name', "840B"),
+                              pretrained_word_emb_cache_dir=self.config.get('pretrained_word_emb_cache_dir', '.vector_cache'),
                               merge_strategy=merge_strategy,
                               seed=self.config['seed'],
                               thread_number=4,
@@ -252,7 +267,10 @@ class ModelHandler:
                               topology_subdir=topology_subdir,
                               dynamic_graph_type=self.config['graph_type'] if self.config['graph_type'] in ('node_emb', 'node_emb_refined') else None,
                               dynamic_init_topology_builder=dynamic_init_topology_builder,
-                              dynamic_init_topology_aux_args={'dummy_param': 0})
+                              dynamic_init_topology_aux_args={'dummy_param': 0},
+                              for_inference=False,
+                              reused_vocab_model=None,
+                              reused_label_model=None)
 
         self.train_dataloader = DataLoader(dataset.train, batch_size=self.config['batch_size'], shuffle=True,
                                            num_workers=self.config['num_workers'],
@@ -266,7 +284,8 @@ class ModelHandler:
                                           num_workers=self.config['num_workers'],
                                           collate_fn=dataset.collate_fn)
         self.vocab = dataset.vocab_model
-        self.config['num_classes'] = dataset.num_classes
+        self.label_model = dataset.label_model
+        self.config['num_classes'] = self.label_model.num_classes
         self.num_train = len(dataset.train)
         self.num_val = len(dataset.val)
         self.num_test = len(dataset.test)
@@ -276,12 +295,12 @@ class ModelHandler:
             .format(self.num_train, self.num_val, self.num_test))
 
     def _build_model(self):
-        self.model = TextClassifier(self.vocab, self.config).to(self.config['device'])
+        self.model = TextClassifier(self.vocab, self.label_model, self.config).to(self.config['device'])
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
         self.optimizer = optim.Adam(parameters, lr=self.config['lr'])
-        self.stopper = EarlyStopping(os.path.join(self.config['out_dir'], Constants._SAVED_WEIGHTS_FILE), patience=self.config['patience'])
+        self.stopper = EarlyStopping(os.path.join(self.config['out_dir'], self.config.get('model_ckpt_name', Constants._SAVED_WEIGHTS_FILE)), patience=self.config['patience'])
         self.scheduler = ReduceLROnPlateau(self.optimizer, mode='max', factor=self.config['lr_reduce_factor'], \
             patience=self.config['lr_patience'], verbose=True)
 
@@ -345,7 +364,7 @@ class ModelHandler:
 
     def test(self):
         # restored best saved model
-        self.stopper.load_checkpoint(self.model)
+        self.model = TextClassifier.load_checkpoint(self.stopper.save_model_path)
 
         t0 = time.time()
         acc = self.evaluate(self.test_dataloader)
@@ -383,8 +402,6 @@ def main(config):
     val_acc = runner.train()
     test_acc = runner.test()
 
-    print('Removed best saved model file to save disk space')
-    os.remove(runner.stopper.save_model_path)
     runtime = time.time() - t0
     print('Total runtime: {:.2f}s'.format(runtime))
     runner.logger.write('Total runtime: {:.2f}s\n'.format(runtime))

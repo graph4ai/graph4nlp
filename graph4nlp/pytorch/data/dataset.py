@@ -18,9 +18,10 @@ from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
-from ..modules.utils.tree_utils import Tree
+from ..modules.utils.tree_utils import Tree, VocabForAll
 from ..modules.utils.tree_utils import Vocab as VocabForTree
 from ..modules.utils.vocab_utils import VocabModel, Vocab
+from ..modules.utils.generic_utils import LabelModel
 
 
 class DataItem(object):
@@ -287,6 +288,8 @@ class Dataset(torch.utils.data.Dataset):
                  thread_number=4,
                  port=9000,
                  timeout=15000,
+                 for_inference=False,
+                 reused_vocab_model=None,
                  **kwargs):
         """
 
@@ -326,6 +329,10 @@ class Dataset(torch.utils.data.Dataset):
             The port for stanfordcorenlp.
         timeout: int, default=15000
             The timeout for stanfordcorenlp.
+        for_inference: bool, default=False
+            Whether this dataset is used for inference.
+        reused_vocab_model: str, default=None
+            When ``for_inference`` is true, you need to specify the directory where the vocabulary data is located.
         kwargs
         """
         super(Dataset, self).__init__()
@@ -337,7 +344,9 @@ class Dataset(torch.utils.data.Dataset):
         self.thread_number = thread_number
         self.port = port
         self.timeout = timeout
-
+        
+        # inference
+        self.for_inference = for_inference
         # Processing-specific attributes
         self.tokenizer = tokenizer
         self.lower_case = lower_case
@@ -345,7 +354,7 @@ class Dataset(torch.utils.data.Dataset):
         self.pretrained_word_emb_url = pretrained_word_emb_url
         self.target_pretrained_word_emb_name = target_pretrained_word_emb_name
         self.target_pretrained_word_emb_url = target_pretrained_word_emb_url
-        self.pretrained_word_emb_cache_dir= pretrained_word_emb_cache_dir
+        self.pretrained_word_emb_cache_dir = pretrained_word_emb_cache_dir
         self.max_word_vocab_size = max_word_vocab_size
         self.min_word_vocab_freq = min_word_vocab_freq
 
@@ -360,16 +369,35 @@ class Dataset(torch.utils.data.Dataset):
         if 'download' in self.__class__.__dict__.keys():
             self._download()
 
+        if self.for_inference:
+            if not reused_vocab_model:
+                raise ValueError('Before inference, you should pass the processed vocab_model to ``reused_vocab_model``.')
+            self.vocab_model = reused_vocab_model
+
+            # Load saved label mappings only for label prediction tasks
+            if hasattr(self, 'reused_label_model'):
+                if not self.reused_label_model:
+                    raise ValueError('Before inference, you should pass the processed label_model to ``reused_label_model``.')
+                self.label_model = self.reused_label_model
+
         self._process()
 
         # After initialization, load the preprocessed files.
-        data = torch.load(self.processed_file_paths['data'])
-        self.train = data['train']
-        self.test = data['test']
-        if 'val' in data.keys():
-            self.val = data['val']
+        if self.for_inference:
+            data = torch.load(self.processed_file_paths['data'])
+            self.test = data['test']
+        else:
+            data = torch.load(self.processed_file_paths['data'])
+            self.train = data['train']
+            self.test = data['test']
+            if 'val' in data.keys():
+                self.val = data['val']
 
-        self.build_vocab()
+            vocab = torch.load(self.processed_file_paths['vocab'])
+            self.vocab_model = vocab
+
+            if hasattr(self, 'reused_label_model'):
+                self.label_model = LabelModel.build(self.processed_file_paths['label'])
 
     @property
     def raw_dir(self) -> str:
@@ -411,6 +439,9 @@ class Dataset(torch.utils.data.Dataset):
         defined by the user, indicating the indices of each subset (e.g. train, val and test).
 
         """
+        if self.for_inference:
+            self.test = self.parse_file(self.raw_file_paths['test'])
+            return
         self.train = self.parse_file(self.raw_file_paths['train'])
         self.test = self.parse_file(self.raw_file_paths['test'])
         if 'val' in self.raw_file_paths.keys():
@@ -663,29 +694,39 @@ class Dataset(torch.utils.data.Dataset):
                     "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
                     "already been split.")
             return
+        if self.for_inference and \
+           all([(os.path.exists(processed_path) or self.processed_file_names['data'] not in processed_path) for processed_path in self.processed_file_paths.values()]):
+            return
 
         os.makedirs(self.processed_dir, exist_ok=True)
 
         self.read_raw_data()
+        
+        if self.for_inference:
+            self.test = self.build_topology(self.test)
+            self.vectorization(self.test)
+            data_to_save = {'test': self.test}
+            torch.save(data_to_save, self.processed_file_paths['data'])
+        else:
+            self.train = self.build_topology(self.train)
+            self.test = self.build_topology(self.test)
+            if 'val' in self.__dict__:
+                self.val = self.build_topology(self.val)
 
-        self.train = self.build_topology(self.train)
+            self.build_vocab()
 
-        self.test = self.build_topology(self.test)
-        if 'val' in self.__dict__:
-            self.val = self.build_topology(self.val)
+            self.vectorization(self.train)
+            self.vectorization(self.test)
+            if 'val' in self.__dict__:
+                self.vectorization(self.val)
 
-        self.build_vocab()
+            data_to_save = {'train': self.train, 'test': self.test}
+            if 'val' in self.__dict__:
+                data_to_save['val'] = self.val
+            torch.save(data_to_save, self.processed_file_paths['data'])
 
-        self.vectorization(self.train)
-        self.vectorization(self.test)
-        if 'val' in self.__dict__:
-            self.vectorization(self.val)
-
-        data_to_save = {'train': self.train, 'test': self.test}
-        if 'val' in self.__dict__:
-            data_to_save['val'] = self.val
-        torch.save(data_to_save, self.processed_file_paths['data'])
-
+            vocab_to_save = self.vocab_model
+            torch.save(vocab_to_save, self.processed_file_paths['vocab'])
 
 class Text2TextDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
@@ -868,12 +909,15 @@ class TextToTreeDataset(Dataset):
             src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
             tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
 
-        self.src_vocab_model = src_vocab_model
-        self.tgt_vocab_model = tgt_vocab_model
-        if self.share_vocab:
-            self.share_vocab_model = src_vocab_model
+        # self.src_vocab_model = src_vocab_model
+        # self.tgt_vocab_model = tgt_vocab_model
+        # if self.share_vocab:
+        #     self.share_vocab_model = src_vocab_model
+        self.vocab_model = VocabForAll(in_word_vocab=src_vocab_model, 
+                                       out_word_vocab=tgt_vocab_model, 
+                                       share_vocab=src_vocab_model if self.share_vocab else None)
 
-        return self.src_vocab_model
+        return self.vocab_model
 
     def vectorization(self, data_items):
         """For tree decoder we also need the vectorize the tree output."""
@@ -882,15 +926,15 @@ class TextToTreeDataset(Dataset):
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
                 node_token = graph.node_attributes[node_idx]['token']
-                node_token_id = self.src_vocab_model.get_symbol_idx(node_token)
+                node_token_id = self.vocab_model.in_word_vocab.get_symbol_idx(node_token)
                 graph.node_attributes[node_idx]['token_id'] = node_token_id
                 token_matrix.append([node_token_id])
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features['token_id'] = token_matrix
 
             tgt = item.output_text
-            tgt_list = self.tgt_vocab_model.get_symbol_idx_for_list(tgt.split())
-            output_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), self.tgt_vocab_model)
+            tgt_list = self.vocab_model.out_word_vocab.get_symbol_idx_for_list(tgt.split())
+            output_tree = Tree.convert_to_tree(tgt_list, 0, len(tgt_list), self.vocab_model.out_word_vocab)
             item.output_tree = output_tree
 
     @staticmethod
@@ -953,7 +997,7 @@ class Text2LabelDataset(Dataset):
         if self.use_val_for_vocab:
             data_for_vocab = data_for_vocab + self.val
 
-        vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
+        self.vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
                                        data_set=data_for_vocab,
                                        tokenizer=self.tokenizer,
                                        lower_case=self.lower_case,
@@ -964,16 +1008,13 @@ class Text2LabelDataset(Dataset):
                                        pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
                                        word_emb_size=self.word_emb_size,
                                        share_vocab=True)
-        self.vocab_model = vocab_model
 
         # label encoding
         all_labels = {item.output_label for item in self.train + self.test}
         if 'val' in self.__dict__:
             all_labels = all_labels.union({item.output_label for item in self.val})
 
-        self.le = preprocessing.LabelEncoder()
-        self.le.fit(list(all_labels))
-        self.num_classes = len(self.le.classes_)
+        self.label_model = LabelModel.build(self.processed_file_paths['label'], all_labels=all_labels)
 
     def vectorization(self, data_items):
         for item in data_items:
@@ -987,7 +1028,7 @@ class Text2LabelDataset(Dataset):
             token_matrix = torch.LongTensor(token_matrix)
             graph.node_features['token_id'] = token_matrix
 
-            item.output = self.le.transform([item.output_label])[0]
+            item.output = self.label_model.le.transform([item.output_label])[0]
 
     @staticmethod
     def collate_fn(data_list: [Text2LabelDataItem]):

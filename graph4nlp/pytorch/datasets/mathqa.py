@@ -47,7 +47,9 @@ class MathQADatasetForTree(TextToTreeDataset):
                  dec_emb_size=300,
                  min_word_vocab_freq=1,
                  tokenizer=tokenize_mathqa,
-                 max_word_vocab_size=100000):
+                 max_word_vocab_size=100000,
+                 for_inference=False,
+                 reused_vocab_model=None):
         """
 
         Parameters
@@ -87,4 +89,6 @@ class MathQADatasetForTree(TextToTreeDataset):
                                           enc_emb_size=enc_emb_size, dec_emb_size=dec_emb_size,
                                           min_word_vocab_freq=min_word_vocab_freq,
                                           tokenizer=tokenizer,
-                                          max_word_vocab_size=max_word_vocab_size)
+                                          max_word_vocab_size=max_word_vocab_size,
+                                          for_inference=for_inference,
+                                          reused_vocab_model=reused_vocab_model)

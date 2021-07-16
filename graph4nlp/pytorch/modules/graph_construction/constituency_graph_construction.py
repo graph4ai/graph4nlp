@@ -84,6 +84,9 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                  processor_args,
                  merge_strategy=None,
                  edge_strategy=None,
+                 sequential_link=3,
+                 top_down=False,
+                 prune=2,
                  verbase=True):
         """topology This function generate a graph strcuture from a raw text data.
 
@@ -116,6 +119,22 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                          we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
                          It is not implemented yet.
 
+        sequential_link : int, option=[0,1,2,3]
+            Strategy to add sequential links between word nodes.
+            ``0``: Do not add sequential links.
+            ``1``: Add unidirectional links.
+            ``2``: Add bidirectional links.
+            ``3``: Do not add sequential links inside each sentence and add bidirectional links between adjacent sentences.
+
+        top_down : bool
+            If true, edges in constituency tree are from root nodes to leaf nodes. Otherwise, from leaf nodes to root nodes.
+            
+        prune : int, option=[0,1,2]
+            Strategies for pruning constituency trees
+            ``0``: No pruning.
+            ``1``: Prune pos nodes.
+            ``2``: Prune nodes with both in-degree and out-degree of 1.
+
         verbase : bool
             A boolean option to decide whether to print out the graph construction process.
 
@@ -126,20 +145,54 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         """
         output_graph_list = []
         parsed_output = cls.parsing(raw_text_data, nlp_processor, processor_args)
+        if prune == 0:
+            add_pos_nodes=True
+            cut_line_node = False
+        elif prune == 1:
+            add_pos_nodes=False
+            cut_line_node = False
+        elif prune == 2:
+            add_pos_nodes=False
+            cut_line_node = True
+        else:
+            raise ValueError('``prune`` should be chosen from [0,1,2].')
+
+        if sequential_link == 0:
+            seq_link = False
+            biseq_link = False
+        elif sequential_link == 1:
+            seq_link = True
+            biseq_link = False
+        elif sequential_link == 2:
+            seq_link = True
+            biseq_link = True
+        elif sequential_link == 3:
+            seq_link = False
+            biseq_link = True
+        else:
+            raise ValueError('``sequential_link`` should be chosen from [0,1,2,3].')
+        
+        if cut_line_node and sequential_link == 1:
+            raise ValueError('``cut_line_node`` should not be used when edges between word nodes are unidirectional.')
+
         for index in range(len(parsed_output)):
             # print(parsed_output[index]['parse'])
-            output_graph_list.append(
-                cls._construct_static_graph(parsed_output[index], index))
-        ret_graph = cls._graph_connect(output_graph_list)
+            output_graph_list.append(cls._construct_static_graph(parsed_output[index], index, 
+                                            sequential_link=seq_link, 
+                                            bisequential_link=biseq_link,
+                                            top_down=top_down,
+                                            add_pos_node=add_pos_nodes,
+                                            cut_line_node=cut_line_node)
+                                    )
+        ret_graph = cls._graph_connect(output_graph_list, bisequential_link=biseq_link)
         # for edge_item in ret_graph.get_all_edges():
         #     print(ret_graph.node_attributes[edge_item[0]]['token'], "->", ret_graph.node_attributes[edge_item[1]]['token'])
         if verbase:
             print('--------------------------------------')
             for _edge in ret_graph.get_all_edges():
-                print(ret_graph.nodes[_edge[0]].attributes['token'],
-                      "\t---\t", ret_graph.nodes[_edge[1]].attributes['token'])
+                print(ret_graph.node_attributes[_edge[0]]['token'],
+                      "\t---\t", ret_graph.node_attributes[_edge[1]]['token'])
             print('--------------------------------------')
-
         return ret_graph
 
     @classmethod
@@ -279,12 +332,6 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         ----------
         graph_list : list
             A graph list to be merged
-
-        bisequential_link : bool
-            whether add bi-direnctional links between word nodes
-
-        reformalize : bool
-            If true, separate word nodes and non-terminal nodes in ``graph.node_attributes`` and put word nodes in the front position
 
         bisequential_link : bool
             whether add bi-direnctional links between word nodes
