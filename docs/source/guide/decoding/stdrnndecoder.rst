@@ -45,8 +45,28 @@ Copy and coverage
 To further enhance the performance, we also implement the ``copy`` and ``coverage`` mechanism.  
 
 For ``copy`` mechanism, it helps model to copy words directly from the source sequence, and computed as, 
-:math:`p(w) = p_{gen}  p_{softmax}(w) + (1 - p_{gen})  p_{copy}(w)`
-Code snippets as follows help with how it works.
+:math:`p(w) = p_{gen}  p_{softmax}(w) + (1 - p_{gen})  p_{copy}(w)`. We refer to the implement of `pointer-network <https://arxiv.org/abs/1506.03134>`_. Technically, for a certain mini-batch graphdata, we extend the original vocabulary to a full-vocabulary containing all words (including out-of-vocabulary (oov) words) in the mini-batch:
+
+.. code:: python
+
+    # First pick out all out-of-vocabulary (oov) words in the mini-batch graphdata.
+    token_matrix = batch_graph.node_features["token_id"].squeeze(1)
+    unk_index = (token_matrix == oov_dict.UNK).nonzero(as_tuple=False).squeeze(1).detach().cpu().numpy()
+    # unk_token = batch_graph.node_attributes[unk_index.squeeze(1).detach().cpu().numpy().tolist()[:]]["token"]
+    unk_token = [batch_graph.node_attributes[index]["token"] for index in unk_index]
+
+    # Second build the oov vocabulary.
+    oov_dict = copy.deepcopy(vocab.in_word_vocab)
+    oov_dict._add_words(unk_token)
+    token_matrix_oov = token_matrix.clone()
+    for idx in unk_index:
+        unk_token = batch_graph.node_attributes[idx]["token"]
+        oov_dict._add_words(unk_token)
+        token_matrix_oov[idx] = oov_dict.getIndex(unk_token)
+    batch_graph.node_features["token_id_oov"] = token_matrix_oov
+
+Users can refer to the API ``prepare_ext_vocab``.
+After that, the decoder learns the conditional probability of an output sequence with elements that are discrete tokens corresponding to positions in an input sequence. Code snippets as follows help with how it works.
 
 .. code:: python
 
@@ -71,7 +91,25 @@ Code snippets as follows help with how it works.
     else:
         decoder_output = torch.softmax(decoder_output, dim=-1)
 
-The returned ``decoder_output`` is a distribution over the extend dictionary ``oov_dict`` if ``copy`` is adopted.
+The returned ``decoder_output`` is a distribution over the extend dictionary ``oov_dict`` if ``copy`` is adopted. Users can set ``use_copy`` to ``True`` to use this feature. And the oov vocabulary must be passed when utilizing it.
+
+As for the ``coverage`` mechanism, we refer to the paper: `Modeling Coverage for Neural Machine Translation <https://arxiv.org/abs/1601.04811>`_. Compared to the original attention that ignore the past alignment history information, we maintain a coverage vector to keep trace of that. As a result, it usually prevents the generated words and focuses on more about un-predicted words.
+Users can easily use this feature by setting ``use_coverage`` to ``True``. Note that an additional coverage loss should be included when conducting backward propagating:
+
+.. code:: python
+
+    _, enc_attn_weights, coverage_vectors = Graph2Seq(graph, tgt)
+
+    target_length = len(enc_attn_weights)
+    loss = 0
+    for i in range(target_length):
+        if coverage_vectors[i] is not None:
+            coverage_loss = torch.sum(
+                torch.min(coverage_vectors[i], enc_attn_weights[i])) / coverage_vectors[-1].shape[0] * self.cover_loss
+            loss += coverage_loss
+    coverage_loss = loss / target_length
+
+Users can use the ``CoverageLoss`` or ``Graph2SeqLoss`` (including both ``CoverageLoss`` and ``NLLLoss``) to conduct this process.
 
 
 
