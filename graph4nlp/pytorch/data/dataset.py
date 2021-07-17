@@ -1,16 +1,14 @@
 import abc
-import json
 import os
 import warnings
 from collections import Counter
+from copy import deepcopy
 from multiprocessing import Pool
 
 import numpy as np
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
-from sklearn import preprocessing
-from copy import deepcopy
 
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from ..data.data import GraphData, to_batch
@@ -18,10 +16,10 @@ from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
 from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from ..modules.utils.generic_utils import LabelModel
 from ..modules.utils.tree_utils import Tree, VocabForAll
 from ..modules.utils.tree_utils import Vocab as VocabForTree
-from ..modules.utils.vocab_utils import VocabModel, Vocab
-from ..modules.utils.generic_utils import LabelModel
+from ..modules.utils.vocab_utils import VocabModel
 
 
 class DataItem(object):
@@ -56,7 +54,6 @@ class Text2TextDataItem_seq2seq(DataItem):
         else:
             input_tokens = self.tokenizer(self.input_text)
 
-
         if lower_case:
             self.output_text = self.output_text.lower()
 
@@ -64,9 +61,9 @@ class Text2TextDataItem_seq2seq(DataItem):
             output_tokens = self.output_text.strip().split(' ')
         else:
             if '<t>' in self.output_text:
-                output_text = self.output_text.replace('<t>','').replace('</t>','')
+                output_text = self.output_text.replace('<t>', '').replace('</t>', '')
             output_tokens = self.tokenizer(output_text)
-            output_tokens = output_tokens + ['<t>','</t>']
+            output_tokens = output_tokens + ['<t>', '</t>']
 
         if self.share_vocab:
             return input_tokens + output_tokens
@@ -114,6 +111,7 @@ class Text2TreeDataItem(DataItem):
         self.output_text = output_text
         self.share_vocab = share_vocab
         self.output_tree = output_tree
+
     def extract(self):
         """
         Returns
@@ -344,7 +342,7 @@ class Dataset(torch.utils.data.Dataset):
         self.thread_number = thread_number
         self.port = port
         self.timeout = timeout
-        
+
         # inference
         self.for_inference = for_inference
         # Processing-specific attributes
@@ -371,13 +369,15 @@ class Dataset(torch.utils.data.Dataset):
 
         if self.for_inference:
             if not reused_vocab_model:
-                raise ValueError('Before inference, you should pass the processed vocab_model to ``reused_vocab_model``.')
+                raise ValueError(
+                    'Before inference, you should pass the processed vocab_model to ``reused_vocab_model``.')
             self.vocab_model = reused_vocab_model
 
             # Load saved label mappings only for label prediction tasks
             if hasattr(self, 'reused_label_model'):
                 if not self.reused_label_model:
-                    raise ValueError('Before inference, you should pass the processed label_model to ``reused_label_model``.')
+                    raise ValueError(
+                        'Before inference, you should pass the processed label_model to ``reused_label_model``.')
                 self.label_model = self.reused_label_model
 
         self._process()
@@ -547,7 +547,7 @@ class Dataset(torch.utils.data.Dataset):
                     ret.append(item)
             elif dynamic_graph_type == 'node_emb_refined':
                 if dynamic_init_topology_builder in (
-                IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
+                        IEBasedGraphConstruction, DependencyBasedGraphConstruction, ConstituencyBasedGraphConstruction):
                     print('Connecting to stanfordcorenlp server...')
                     processor = stanfordcorenlp.StanfordCoreNLP('http://localhost', port=port, timeout=timeout)
 
@@ -695,13 +695,14 @@ class Dataset(torch.utils.data.Dataset):
                     "already been split.")
             return
         if self.for_inference and \
-           all([(os.path.exists(processed_path) or self.processed_file_names['data'] not in processed_path) for processed_path in self.processed_file_paths.values()]):
+                all([(os.path.exists(processed_path) or self.processed_file_names['data'] not in processed_path) for
+                     processed_path in self.processed_file_paths.values()]):
             return
 
         os.makedirs(self.processed_dir, exist_ok=True)
 
         self.read_raw_data()
-        
+
         if self.for_inference:
             self.test = self.build_topology(self.test)
             self.vectorization(self.test)
@@ -727,6 +728,7 @@ class Dataset(torch.utils.data.Dataset):
 
             vocab_to_save = self.vocab_model
             torch.save(vocab_to_save, self.processed_file_paths['vocab'])
+
 
 class Text2TextDataset(Dataset):
     def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
@@ -777,7 +779,6 @@ class Text2TextDataset(Dataset):
             graph: GraphData = item.graph
             token_matrix = []
             for node_idx in range(graph.get_node_num()):
-
                 node_token = graph.node_attributes[node_idx]['token']
                 node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token, use_ie)
                 graph.node_attributes[node_idx]['token_id'] = node_token_id
@@ -903,18 +904,21 @@ class TextToTreeDataset(Dataset):
                 all_words[1].update(extracted_tokens[1])
 
         if self.share_vocab:
-            src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
+            src_vocab_model.init_from_list(list(all_words.items()), min_freq=self.min_word_vocab_freq,
+                                           max_vocab_size=self.max_word_vocab_size)
             tgt_vocab_model = src_vocab_model
         else:
-            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
-            tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=self.min_word_vocab_freq, max_vocab_size=self.max_word_vocab_size)
+            src_vocab_model.init_from_list(list(all_words[0].items()), min_freq=self.min_word_vocab_freq,
+                                           max_vocab_size=self.max_word_vocab_size)
+            tgt_vocab_model.init_from_list(list(all_words[1].items()), min_freq=self.min_word_vocab_freq,
+                                           max_vocab_size=self.max_word_vocab_size)
 
         # self.src_vocab_model = src_vocab_model
         # self.tgt_vocab_model = tgt_vocab_model
         # if self.share_vocab:
         #     self.share_vocab_model = src_vocab_model
-        self.vocab_model = VocabForAll(in_word_vocab=src_vocab_model, 
-                                       out_word_vocab=tgt_vocab_model, 
+        self.vocab_model = VocabForAll(in_word_vocab=src_vocab_model,
+                                       out_word_vocab=tgt_vocab_model,
                                        share_vocab=src_vocab_model if self.share_vocab else None)
 
         return self.vocab_model
@@ -998,16 +1002,16 @@ class Text2LabelDataset(Dataset):
             data_for_vocab = data_for_vocab + self.val
 
         self.vocab_model = VocabModel.build(saved_vocab_file=self.processed_file_paths['vocab'],
-                                       data_set=data_for_vocab,
-                                       tokenizer=self.tokenizer,
-                                       lower_case=self.lower_case,
-                                       max_word_vocab_size=self.max_word_vocab_size,
-                                       min_word_vocab_freq=self.min_word_vocab_freq,
-                                       pretrained_word_emb_name=self.pretrained_word_emb_name,
-                                       pretrained_word_emb_url=self.pretrained_word_emb_url,
-                                       pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
-                                       word_emb_size=self.word_emb_size,
-                                       share_vocab=True)
+                                            data_set=data_for_vocab,
+                                            tokenizer=self.tokenizer,
+                                            lower_case=self.lower_case,
+                                            max_word_vocab_size=self.max_word_vocab_size,
+                                            min_word_vocab_freq=self.min_word_vocab_freq,
+                                            pretrained_word_emb_name=self.pretrained_word_emb_name,
+                                            pretrained_word_emb_url=self.pretrained_word_emb_url,
+                                            pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
+                                            word_emb_size=self.word_emb_size,
+                                            share_vocab=True)
 
         # label encoding
         all_labels = {item.output_label for item in self.train + self.test}
@@ -1233,7 +1237,7 @@ class SequenceLabelingDataset(Dataset):
         return self.vocab_model
 
     def vectorization(self, data_items):
-        
+
         for item in data_items:
             graph: GraphData = item.graph
             token_matrix = []
@@ -1253,10 +1257,10 @@ class SequenceLabelingDataset(Dataset):
 
     @staticmethod
     def collate_fn(data_list: [SequenceLabelingDataItem]):
-        
-        graph_list= [item.graph for item in data_list]
-        graph_data=to_batch(graph_list)
+
+        graph_list = [item.graph for item in data_list]
+        graph_data = to_batch(graph_list)
         tgt_tag = [deepcopy(item.output_id) for item in data_list]
 
         return {"graph_data": graph_data,
-            "tgt_tag": tgt_tag}
+                "tgt_tag": tgt_tag}
