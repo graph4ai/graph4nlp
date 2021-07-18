@@ -21,19 +21,19 @@ The ``FeedForwardNN`` class calls the ``FeedForwardNNLayer`` API which implments
 .. code-block:: python
 
     class FeedForwardNN(GraphClassifierBase):
-    r"""FeedForwardNN class for graph classification task.
+        r"""FeedForwardNN class for graph classification task.
 
-    Parameters
-    ----------
-    input_size : int
-        The dimension of input graph embeddings.
-    num_class : int
-        The number of classes for classification.
-    hidden_size : list of int
-        Hidden size per NN layer.
-    activation: nn.Module, optional
-        The activation function, default: `nn.ReLU()`.
-    """
+        Parameters
+        ----------
+        input_size : int
+            The dimension of input graph embeddings.
+        num_class : int
+            The number of classes for classification.
+        hidden_size : list of int
+            Hidden size per NN layer.
+        activation: nn.Module, optional
+            The activation function, default: `nn.ReLU()`.
+        """
     def __init__(self,
                 input_size,
                 num_class,
@@ -69,11 +69,11 @@ It takes batched ``GraphData`` as input and returns a feature tensor containing 
 .. code-block:: python
 
     class AvgPooling(PoolingBase):
-    r"""Apply average pooling over the nodes in the graph.
+        r"""Apply average pooling over the nodes in the graph.
 
-    .. math::
-        r^{(i)} = \frac{1}{N_i}\sum_{k=1}^{N_i} x^{(i)}_k
-    """
+        .. math::
+            r^{(i)} = \frac{1}{N_i}\sum_{k=1}^{N_i} x^{(i)}_k
+        """
     def __init__(self):
         super(AvgPooling, self).__init__()
         # self.model = DGLAvgPooling()
@@ -116,11 +116,11 @@ It takes batched ``GraphData`` as input and returns a feature tensor containing 
 .. code-block:: python
 
     class MaxPooling(PoolingBase):
-    r"""Apply max pooling over the nodes in the graph.
+        r"""Apply max pooling over the nodes in the graph.
 
-    .. math::
-        r^{(i)} = \max_{k=1}^{N_i}\left( x^{(i)}_k \right)
-    """
+        .. math::
+            r^{(i)} = \max_{k=1}^{N_i}\left( x^{(i)}_k \right)
+        """
     def __init__(self, dim=None, use_linear_proj=False):
         super(MaxPooling, self).__init__()
         if use_linear_proj:

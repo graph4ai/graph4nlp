@@ -29,6 +29,7 @@ each token in the node/edge, then apply a BiLSTM encoder to encode each node/edg
 
 
 .. code-block:: python
+
     class EmbeddingConstruction(EmbeddingConstructionBase):
         """Initial graph embedding construction class.
 
