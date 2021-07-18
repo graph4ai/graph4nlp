@@ -22,34 +22,55 @@ and their vector representations, and apply various metric functions to learn pa
 node similarity. The output is a weighted adjacency matrix which is corresponding to a
 fully-connected weighted graph. Optional graph sparsification operation might be applied
 to obtain a sparse graph. Common similarity metric functions include attention-based and cosine-based functions.
-Below is an example to call the API.
+
+
+``NodeEmbeddingBasedGraphConstruction`` class inherits the ``DynamicGraphConstructionBase`` base class which performs
+several important steps including computing initial node embeddings (see ``embedding`` method),
+computing graph similarity metric function (see ``compute_similarity_metric`` method),
+sparsifying adjacency matrix (see ``sparsify_graph`` method),
+and computing graph regularization loss (see ``compute_graph_regularization`` method).
+
+The ``topology`` method in ``NodeEmbeddingBasedGraphConstruction`` implements the logic of learning a graph topology from
+initial node embeddings, as shown below:
 
 .. code-block:: python
 
+    def topology(self, graph):
+        """Compute graph topology.
 
-    from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedGraphConstruction
+        Parameters
+        ----------
+        graph : GraphData
+            The input graph data.
 
-    embedding_style = {'single_token_item': True if config['graph_type'] != 'ie' else False,
-                    'emb_strategy': config.get('emb_strategy', 'w2v_bilstm'),
-                    'num_rnn_layers': 1,
-                    'bert_model_name': config.get('bert_model_name', 'bert-base-uncased'),
-                    'bert_lower_case': True
-                   }
-    graph_learner = NodeEmbeddingBasedGraphConstruction(
-                                        word_vocab, # word vocab instance
-                                        embedding_style, # dict specifying the embedding style
-                                        sim_metric_type='weighted_cosine', # similarity metric learning type
-                                        num_heads=2, # num of similarity metric heads
-                                        epsilon_neigh=0.6, # threshold for epsilon-neighborhood sparsification
-                                        smoothness_ratio=None, # ratio for graph regularization smothness
-                                        connectivity_ratio=None, # ratio for graph regularization connectivity
-                                        sparsity_ratio=None, # ratio for graph regularization sparsity
-                                        input_size=32,
-                                        hidden_size=32,
-                                        fix_word_emb=True,
-                                        fix_bert_emb=True,
-                                        word_dropout=0.4,
-                                        rnn_dropout=0.4)
+        Returns
+        -------
+        GraphData
+            The constructed graph.
+        """
+        node_emb = graph.batch_node_features["node_feat"]
+        node_mask = (graph.batch_node_features["token_id"] != Vocab.PAD)
+
+        raw_adj = self.compute_similarity_metric(node_emb, node_mask)
+        raw_adj = self.sparsify_graph(raw_adj)
+        graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
+
+        if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
+            assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
+            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=torch.finfo(torch.float32).eps)
+            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-2, keepdim=True), min=torch.finfo(torch.float32).eps)
+        elif self.sim_metric_type == 'cosine':
+            raw_adj = (raw_adj > 0).float()
+            adj = normalize_adj(raw_adj)
+            reverse_adj = adj
+        else:
+            adj = torch.softmax(raw_adj, dim=-1)
+            reverse_adj = torch.softmax(raw_adj, dim=-2)
+
+        graph = convert_adj_to_graph(graph, adj, reverse_adj, 0)
+        graph.graph_attributes['graph_reg'] = graph_reg
+
+        return graph
 
 
 
@@ -60,31 +81,53 @@ learning in addition utilizes the intrinsic graph structure which potentially st
 rich and useful information regarding the optimal graph structure for the downstream task.
 It basically computes a linear combination of the normalized graph Laplacian of the intrinsic
 graph and the normalized adjacency matrix of the learned implicit graph.
-Below is an example to call the API.
+
+``NodeEmbeddingBasedRefinedGraphConstruction`` class also inherits the ``DynamicGraphConstructionBase`` base class.
+The ``topology`` method in ``NodeEmbeddingBasedRefinedGraphConstruction`` implements the logic of combining the initial
+graph topology and the learned implicit graph topology, as shown below:
+
 
 .. code-block:: python
 
-    from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
+    def topology(self, graph, init_norm_adj):
+        """Compute graph topology.
 
-    embedding_style = {'single_token_item': True if config['graph_type'] != 'ie' else False,
-                    'emb_strategy': config.get('emb_strategy', 'w2v_bilstm'),
-                    'num_rnn_layers': 1,
-                    'bert_model_name': config.get('bert_model_name', 'bert-base-uncased'),
-                    'bert_lower_case': True
-                   }
-    graph_learner = NodeEmbeddingBasedRefinedGraphConstruction(
-                                        word_vocab,
-                                        embedding_style,
-                                        0.2, # ratio for combining the initial adjacency matrix
-                                        sim_metric_type='weighted_cosine',
-                                        num_heads=2,
-                                        epsilon_neigh=0.6,
-                                        smoothness_ratio=None,
-                                        connectivity_ratio=None,
-                                        sparsity_ratio=None,
-                                        input_size=32,
-                                        hidden_size=32,
-                                        fix_word_emb=True,
-                                        fix_bert_emb=True,
-                                        word_dropout=0.4,
-                                        rnn_dropout=0.4)
+        Parameters
+        ----------
+        graph : GraphData
+            The input graph data.
+        init_norm_adj : torch.sparse.FloatTensor
+            The initial init_norm_adj adjacency matrix.
+
+        Returns
+        -------
+        GraphData
+            The constructed graph.
+        """
+        node_emb = graph.batch_node_features["node_feat"]
+        node_mask = (graph.batch_node_features["token_id"] != Vocab.PAD)
+
+        raw_adj = self.compute_similarity_metric(node_emb, node_mask)
+        raw_adj = self.sparsify_graph(raw_adj)
+        graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
+
+        if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
+            assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
+            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=torch.finfo(torch.float32).eps)
+            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-2, keepdim=True), min=torch.finfo(torch.float32).eps)
+        elif self.sim_metric_type == 'cosine':
+            raw_adj = (raw_adj > 0).float()
+            adj = normalize_adj(raw_adj)
+            reverse_adj = adj
+        else:
+            adj = torch.softmax(raw_adj, dim=-1)
+            reverse_adj = torch.softmax(raw_adj, dim=-2)
+
+        if self.alpha_fusion is not None:
+            adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * adj, self.alpha_fusion * init_norm_adj)
+            reverse_adj = torch.sparse.FloatTensor.add((1 - self.alpha_fusion) * reverse_adj, self.alpha_fusion * init_norm_adj)
+
+        graph = convert_adj_to_graph(graph, adj, reverse_adj, 0)
+        graph.graph_attributes['graph_reg'] = graph_reg
+
+        return graph
