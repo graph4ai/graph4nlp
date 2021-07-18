@@ -17,5 +17,5 @@ Graph4NLP implements four standard classification modules for: node classificati
 
    classification/node_classification
    classification/graph_classification
-   Classification/link_prediction
+   classification/link_prediction
    classification/kgcompletion
