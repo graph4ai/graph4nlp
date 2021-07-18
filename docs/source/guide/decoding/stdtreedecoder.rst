@@ -3,7 +3,7 @@
 Chapter 5.2 Standard Tree Decoder
 =================================
 
-The output of many NLP applications (i.e., semantic parsing, code generation, and math word problem) contain structural information. For example, the output in math word problem is a mathematical equation, which can be expressed naturally by the data structure of the tree. To model these kinds of outputs, tree decoders are widely adopted. Tree decoders can be divided into two main parts: ``DFS`` (depth-first search) based tree decoder, and ``BFS`` (breadth-first search) based tree decoder. We mainly implement ``BFS`` based tree decoder here. Similar to ``StdRNNDecoder``, ``StdTreeDecoder`` also employ ``copy`` and ``separate attention`` mechanism to enhance the overall ``Graph2Tree`` model.
+The output of many NLP applications (i.e., semantic parsing, code generation, and math word problem) contain structural information. For example, the output in math word problem is a mathematical equation, which can be expressed naturally by the data structure of the tree. To model these kinds of outputs, tree decoders are widely adopted. Tree decoders can be divided into two main parts: ``DFS`` (depth-first search) based tree decoder, and ``BFS`` (breadth-first search) based tree decoder. We mainly implement ``BFS`` based tree decoder here. Similar to ``StdRNNDecoder``, ``StdTreeDecoder`` also employ ``copy`` and ``separate attention`` mechanism to enhance the overall ``Graph2Tree`` model. For detailed implementation, please refer to :ref:`std-rnn-decoder` or source code.
 
 .. code:: python
 
@@ -30,3 +30,23 @@ The output of many NLP applications (i.e., semantic parsing, code generation, an
                              max_dec_tree_depth=5, tgt_vocab=out_vocab)
     
     predicted = decoder(batch_graph=batch_graph, tgt_tree_batch=tgt_tree_batch)
+
+Some detailed descriptions about tree decoding process
+------------------------------------------------------
+In the BFS-based tree decoding approach, we represent all subtrees as non-terminal nodes. Then we divide the whole tree structure into multiple "sequences" from top to bottom according to the non-terminal nodes. We then use sequence decoding to generate the tree structure in order. And for each sequence decoding process, we will feed the embedding of its parent node and sibling node as auxiliary input.
+
+.. code:: python
+
+    cur_index = 0
+    while (cur_index <= max_index):
+        if cur_index > max_dec_tree_depth:
+            break
+        ...
+        # get parent and sibling embeddings.
+        # do sequence decoding.
+        ...
+
+        cur_index = cur_index + 1
+
+Where ``max_index`` is the number of non-terminal nodes and ``max_dec_tree_depth`` is the maximum number of non-terminal nodes allowed.
+
