@@ -231,6 +231,71 @@ As shown in the equations, node embeddings in both directions are conveyed separ
 
 All learnable parameters and layers defined in this module are bidirectional, such as ``self.weight_fw`` and ``self.weight_bw``.
 
+Similarly, the aggregation and upate functions of ``BiFuseGCNLayerConv`` are formulated as:
+
+.. math::
+        h_{i, \vdash}^{(l+1)} = \sigma(b^{(l)}_{\vdash} + \sum_{j\in\mathcal{N}_{\vdash}(i)}\frac{1}{c_{ij}}h_{j}^{(l)}W^{(l)}_{\vdash})
+
+        h_{i, \dashv}^{(l+1)} = \sigma(b^{(l)}_{\dashv} + \sum_{j\in\mathcal{N}_{\dashv}(i)}\frac{1}{c_{ij}}h_{j}^{(l)}W^{(l)}_{\dashv})
+
+        r_{i}^{l} = \sigma (W_{f}[h_{i, \vdash}^{l};h_{i, \dashv}^{l};
+                h_{i, \vdash}^{l}*h_{i, \dashv}^{l};
+                h_{i, \vdash}^{l}-h_{i, \dashv}^{l}])
+
+Node embeddings in both directions are fused in every layer. The construction code of ``BiFuseGCNLayerConv`` is as follows:
+
+.. code::
+
+    class BiFuseGCNLayerConv(GNNLayerBase):
+
+        def __init__(self,
+                     input_size,
+                     output_size,
+                     feat_drop=0.,
+                     gcn_norm='both',
+                     weight=True,
+                     bias=True,
+                     activation=None,
+                     allow_zero_in_degree=False,
+                     residual=True):
+            super(BiFuseGCNLayerConv, self).__init__()
+            if gcn_norm not in ('none', 'both', 'right'):
+                raise RuntimeError('Invalid gcn_norm value. Must be either "none", "both" or "right".'
+                                   ' But got "{}".'.format(gcn_norm))
+            self._input_size = input_size
+            self._output_size = output_size
+            self._gcn_norm = gcn_norm
+            self._allow_zero_in_degree = allow_zero_in_degree
+            self._feat_drop=nn.Dropout(feat_drop)
+
+            if weight:
+                self.weight_fw = nn.Parameter(torch.Tensor(input_size, output_size))
+                self.weight_bw = nn.Parameter(torch.Tensor(input_size, output_size))
+            else:
+                self.register_parameter('weight_fw', None)
+                self.register_parameter('weight_bw', None)
+
+            if bias:
+                self.bias_fw = nn.Parameter(torch.Tensor(output_size))
+                self.bias_bw = nn.Parameter(torch.Tensor(output_size))
+            else:
+                self.register_parameter('bias_fw', None)
+                self.register_parameter('bias_bw', None)
+
+            self.reset_parameters()
+
+            self._activation = activation
+
+            self.fuse_linear = nn.Linear(4 * output_size, output_size, bias=True)
+
+            if residual:
+                if self._input_size != output_size:
+                    self.res_fc = nn.Linear(
+                        self._input_size, output_size, bias=True)
+                else:
+                    self.res_fc = nn.Identity()
+            else:
+                self.register_buffer('res_fc', None)
 
 4.1.4 GCN Forward Function
 --------------------------
