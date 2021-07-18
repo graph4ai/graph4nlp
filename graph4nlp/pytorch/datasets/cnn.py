@@ -29,6 +29,8 @@ class CNNDataset(Text2TextDataset):
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
                  dynamic_init_topology_aux_args=None,
+                 for_inference=False,
+                 reused_vocab_model=None,
                  **kwargs
                  ):
         super(CNNDataset, self).__init__(root_dir=root_dir,
@@ -54,6 +56,8 @@ class CNNDataset(Text2TextDataset):
                                          dynamic_graph_type=dynamic_graph_type,
                                          dynamic_init_topology_builder=dynamic_init_topology_builder,
                                          dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+                                         for_inference=for_inference,
+                                         reused_vocab_model=reused_vocab_model,
                                          **kwargs)
 
     @property

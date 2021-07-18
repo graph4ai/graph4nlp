@@ -159,8 +159,8 @@ def main(args, model_path):
         print(np.array(total_param_size).sum())
         model.load_state_dict(model_params)
         model.eval()
-        ranking_and_hits(model, test_rank_batcher, vocab, 'test_evaluation')
-        ranking_and_hits(model, dev_rank_batcher, vocab, 'dev_evaluation')
+        ranking_and_hits(model, test_rank_batcher, vocab, 'test_evaluation', kg_graph=KG_graph)
+        ranking_and_hits(model, dev_rank_batcher, vocab, 'dev_evaluation', kg_graph=KG_graph)
     else:
         model.init()
 
@@ -248,6 +248,4 @@ if __name__ == '__main__':
 
     torch.manual_seed(args.seed)
     main(args, model_path)
-
-# CUDA_VISIBLE_DEVICES=0 python main.py --data WN18RR --preprocess
 
