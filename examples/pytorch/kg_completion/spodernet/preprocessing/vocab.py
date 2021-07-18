@@ -6,7 +6,7 @@ import time
 import datetime
 import pickle
 import urllib
-import bashmagic
+# import bashmagic
 import time
 import json
 
