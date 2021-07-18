@@ -15,16 +15,45 @@ FeedForwardNN
 -----------------
 
 This is a high-level graph classification prediction module which consists of a graph pooling component and a multilayer perceptron (MLP).
-Below is an example to call the API.
+Users can specify important hyperparameters such as ``input_size``, ``num_class`` and ``hidden_size`` (i.e., list of hidden sizes for each dense layer).
+The ``FeedForwardNN`` class calls the ``FeedForwardNNLayer`` API which implments MLP.
 
 .. code-block:: python
 
-    from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
+    class FeedForwardNN(GraphClassifierBase):
+        r"""FeedForwardNN class for graph classification task.
 
-    clf = FeedForwardNN(32, # input size
-                        2, # output size
-                        [32], # list of hidden size for each FFN layer
-                        graph_pool_type='avg_pool')
+        Parameters
+        ----------
+        input_size : int
+            The dimension of input graph embeddings.
+        num_class : int
+            The number of classes for classification.
+        hidden_size : list of int
+            Hidden size per NN layer.
+        activation: nn.Module, optional
+            The activation function, default: `nn.ReLU()`.
+        """
+    def __init__(self,
+                input_size,
+                num_class,
+                hidden_size,
+                activation=None,
+                graph_pool_type='max_pool',
+                **kwargs):
+        super(FeedForwardNN, self).__init__()
+
+        if not activation:
+            activation = nn.ReLU()
+
+        if graph_pool_type == 'avg_pool':
+            self.graph_pool = AvgPooling()
+        elif graph_pool_type == 'max_pool':
+            self.graph_pool = MaxPooling(**kwargs)
+        else:
+            raise RuntimeError('Unknown graph pooling type: {}'.format(graph_pool_type))
+
+        self.classifier = FeedForwardNNLayer(input_size, num_class, hidden_size, activation)
 
 
 
@@ -35,13 +64,43 @@ AvgPooling
 -----------------
 
 This is the average pooling module which applies average pooling over the nodes in the graph.
-Below is an example to call the API.
+It takes batched ``GraphData`` as input and returns a feature tensor containing a vector for each graph in the batch.
 
 .. code-block:: python
 
-    from graph4nlp.pytorch.modules.prediction.classification.graph_classification import AvgPooling
-    graph_pool = AvgPooling()
-    graph_emb = graph_pool(graph_data, 'node_emb') # Input: the graph data, the feature field name, output: the graph embedding.
+    class AvgPooling(PoolingBase):
+        r"""Apply average pooling over the nodes in the graph.
+
+        .. math::
+            r^{(i)} = \frac{1}{N_i}\sum_{k=1}^{N_i} x^{(i)}_k
+        """
+    def __init__(self):
+        super(AvgPooling, self).__init__()
+        # self.model = DGLAvgPooling()
+
+    def forward(self, graph, feat):
+        r"""Compute average pooling.
+
+        Parameters
+        ----------
+        graph : GraphData
+            The graph data.
+        feat : str
+            The feature field name.
+
+        Returns
+        -------
+        torch.Tensor
+            The output feature.
+        """
+        graph_list = from_batch(graph)
+        output_feat = []
+        for g in graph_list:
+            output_feat.append(g.node_features[feat].mean(dim=0))
+
+        output_feat = torch.stack(output_feat, 0)
+
+        return output_feat
 
 
 
@@ -52,11 +111,48 @@ MaxPooling
 -----------------
 
 This is the max pooling module which applies max pooling over the nodes in the graph.
-Below is an example to call the API.
+It takes batched ``GraphData`` as input and returns a feature tensor containing a vector for each graph in the batch.
 
 .. code-block:: python
 
-    from graph4nlp.pytorch.modules.prediction.classification.graph_classification import MaxPooling
-    graph_pool = MaxPooling()
-    graph_emb = graph_pool(graph_data, 'node_emb') # Input: the graph data, the feature field name, output: the graph embedding.
+    class MaxPooling(PoolingBase):
+        r"""Apply max pooling over the nodes in the graph.
 
+        .. math::
+            r^{(i)} = \max_{k=1}^{N_i}\left( x^{(i)}_k \right)
+        """
+    def __init__(self, dim=None, use_linear_proj=False):
+        super(MaxPooling, self).__init__()
+        if use_linear_proj:
+            assert dim is not None, "dim should be specified when use_linear_proj is set to True"
+            self.linear = nn.Linear(dim, dim, bias=False)
+        else:
+            self.linear = None
+
+    def forward(self, graph, feat):
+        r"""Compute max pooling.
+
+        Parameters
+        ----------
+        graph : GraphData
+            The graph data.
+        feat : str
+            The feature field name.
+
+        Returns
+        -------
+        torch.Tensor
+            The output feature.
+        """
+        graph_list = from_batch(graph)
+        output_feat = []
+        for g in graph_list:
+            feat_tensor = g.node_features[feat]
+            if self.linear is not None:
+                feat_tensor = self.linear(feat_tensor)
+
+            output_feat.append(torch.max(feat_tensor, dim=0)[0])
+
+        output_feat = torch.stack(output_feat, 0)
+
+        return output_feat

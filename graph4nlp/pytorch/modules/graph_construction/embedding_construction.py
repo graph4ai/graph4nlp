@@ -33,15 +33,6 @@ class EmbeddingConstructionBase(nn.Module):
         super(EmbeddingConstructionBase, self).__init__()
 
     def forward(self):
-        raise NotImplementedError()
-
-class EmbeddingConstructionBase(nn.Module):
-    """Basic class for embedding construction.
-    """
-    def __init__(self):
-        super(EmbeddingConstructionBase, self).__init__()
-
-    def forward(self):
         """Compute initial node/edge embeddings.
 
         Raises
@@ -50,6 +41,7 @@ class EmbeddingConstructionBase(nn.Module):
             NotImplementedError.
         """
         raise NotImplementedError()
+
 
 class EmbeddingConstruction(EmbeddingConstructionBase):
     """Initial graph embedding construction class.
