@@ -15,6 +15,7 @@ Then, we can optionally apply graph sparsification to obtain a sparse graph.
 
 
 
+
 Node Embedding Based Graph
 -----------------
 For node embedding based similarity metric learning, we are given a set of data points
@@ -36,18 +37,6 @@ initial node embeddings, as shown below:
 .. code-block:: python
 
     def topology(self, graph):
-        """Compute graph topology.
-
-        Parameters
-        ----------
-        graph : GraphData
-            The input graph data.
-
-        Returns
-        -------
-        GraphData
-            The constructed graph.
-        """
         node_emb = graph.batch_node_features["node_feat"]
         node_mask = (graph.batch_node_features["token_id"] != Vocab.PAD)
 
@@ -90,20 +79,6 @@ graph topology and the learned implicit graph topology, as shown below:
 .. code-block:: python
 
     def topology(self, graph, init_norm_adj):
-        """Compute graph topology.
-
-        Parameters
-        ----------
-        graph : GraphData
-            The input graph data.
-        init_norm_adj : torch.sparse.FloatTensor
-            The initial init_norm_adj adjacency matrix.
-
-        Returns
-        -------
-        GraphData
-            The constructed graph.
-        """
         node_emb = graph.batch_node_features["node_feat"]
         node_mask = (graph.batch_node_features["token_id"] != Vocab.PAD)
 
