@@ -147,7 +147,7 @@ Next it is a simple how to use code:
     m = nn.Sigmoid()
     input = torch.randn(3, requires_grad=True)
     target = torch.empty(3).random_(2)
-    output = loss(m(input), target)
+    output = loss_function(m(input), target)
 
 
 General Loss
@@ -176,4 +176,4 @@ Next it is a simple how to use code:
     loss_function = GeneralLoss(loss_type="CrossEntropy")
     input = torch.randn(3, 5)
     target = torch.empty(3, dtype=torch.long).random_(5)
-    output = loss(input, target)
+    output = loss_function(input, target)
