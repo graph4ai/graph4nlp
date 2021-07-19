@@ -53,7 +53,88 @@ We have wrapped the cross-entropy loss and the coverage loss(optional) to calcul
 
 Knowledge Graph Loss
 ^^^^^^^^^^^^^^^^^^^^^
+In the state-of-the-art KGE models, loss functions were designed according to various
+pointwise, pairwise and multi-class approaches. Refers to
+`Loss Functions in Knowledge Graph Embedding Models <https://alammehwish.github.io/dl4kg-eswc/papers/paper%201.pdf>`__
 
+**Pointwise Loss Function**
+
+1. `MSELoss <https://pytorch.org/docs/master/generated/torch.nn.MSELoss.html>`__
+creates a criterion that measures the mean squared error (squared L2 norm)
+between each element in the input :math:`x` and target :math:`y`. It is the wrapper of ``nn.MSELoss`` in pytorch.
+
+
+2. `SOFTMARGINLOSS <https://pytorch.org/docs/master/generated/torch.nn.SoftMarginLoss
+.html>`__ Creates a criterion that optimizes a two-class classification
+logistic loss between input tensor :math:`x` and target tensor :math:`y`
+(containing 1 or -1). It is the wrapper of ``nn.SoftMarginLoss`` in pytorch.
+
+The number of positive and negative samples should be about the same, otherwise it's easy to overfit.
+
+.. math::
+    \text{loss}(x, y) = \sum_i \frac{\log(1 + \exp(-y[i]*x[i]))}{\text{x.nelement}()}
+
+
+**Pairwise Loss Function**
+
+1. `SoftplusLoss <https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SoftplusLoss.py>`__
+refers to the paper `OpenKE: An Open Toolkit for Knowledge Embedding <https://www.aclweb.org/anthology/D18-2024.pdf>`__
+
+.. code::
+
+    class SoftplusLoss(nn.Module):
+        def __init__(self, adv_temperature=None):
+            super(SoftplusLoss, self).__init__()
+            self.criterion = nn.Softplus()
+            if adv_temperature != None:
+                self.adv_temperature = nn.Parameter(torch.Tensor([adv_temperature]))
+                self.adv_temperature.requires_grad = False
+                self.adv_flag = True
+            else:
+                self.adv_flag = False
+
+        def get_weights(self, n_score):
+            return torch.softmax(n_score * self.adv_temperature, dim=-1).detach()
+
+        def forward(self, p_score, n_score):
+            if self.adv_flag:
+                return (self.criterion(-p_score).mean() + (self.get_weights(n_score) * self.criterion(n_score)).sum(
+                    dim=-1).mean()) / 2
+            else:
+                return (self.criterion(-p_score).mean() + self.criterion(n_score).mean()) / 2
+
+2. `SigmoidLoss <https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SigmoidLoss.py>`__
+refers to the paper `OpenKE: An Open Toolkit for Knowledge Embedding <https://www.aclweb.org/anthology/D18-2024.pdf>`__
+
+.. code::
+
+    class SigmoidLoss(nn.Module):
+        def __init__(self, adv_temperature = None):
+            super(SigmoidLoss, self).__init__()
+            self.criterion = nn.LogSigmoid()
+            if adv_temperature != None:
+                self.adv_temperature = nn.Parameter(torch.Tensor([adv_temperature]))
+                self.adv_temperature.requires_grad = False
+                self.adv_flag = True
+            else:
+                self.adv_flag = False
+
+        def get_weights(self, n_score):
+            return torch.softmax(n_score * self.adv_temperature, dim = -1).detach()
+
+        def forward(self, p_score, n_score):
+            if self.adv_flag:
+                return -(self.criterion(p_score).mean() + (self.get_weights(n_score) * self.criterion(-n_score)).sum(dim = -1).mean()) / 2
+            else:
+                return -(self.criterion(p_score).mean() + self.criterion(-n_score).mean()) / 2
+
+The implementations of ``SoftplusLoss`` and ``SigmoidLoss`` refer to `OpenKE <https://github.com/thunlp/OpenKE>`__.
+
+**Multi-Class Loss Function**
+
+1. `Binary Cross Entropy Loss <https://pytorch.org/docs/master/generated/torch.nn.BCELoss.html>`__
+Creates a criterion that measures the Binary Cross Entropy between the target and the output. Note that the targets
+:math:`y` should be numbers between 0 and 1. It is the wrapper of ``nn.BCELoss`` in pytorch.
 
 
 General Loss
