@@ -111,13 +111,13 @@ class Accuracy(EvaluationMetricBase):
         scores = []
 
         for metric_name in self.metrics:
-            if metric_name is "precision":
+            if metric_name == "precision":
                 scores.append(precision)
-            elif metric_name is "recall":
+            elif metric_name == "recall":
                 scores.append(recall)
-            elif metric_name is "F1":
+            elif metric_name == "F1":
                 scores.append(f_score)
-            elif metric_name is "accuracy":
+            elif metric_name == "accuracy":
                 scores.append(accuracy_score)
             else:
                 raise NotImplementedError()
@@ -149,7 +149,7 @@ class Accuracy(EvaluationMetricBase):
         if np.sum(zero_mask) == 0:
             return ret
         ret[zero_mask] = 0. if zero_division in ["warning", 0] else 1.
-        if zero_division is "warning":
+        if zero_division == "warning":
             warnings.warn("zero division encountered")
         return ret
 
@@ -193,7 +193,7 @@ class Accuracy(EvaluationMetricBase):
             raise ValueError("argument ground_truth and predict must be the same shape")
 
         zero_division_ok = False
-        if isinstance(zero_division, str) and zero_division is "warning":
+        if isinstance(zero_division, str) and zero_division == "warning":
             zero_division_ok = True
         elif isinstance(zero_division, (int, float)) and zero_division in [0, 1]:
             zero_division_ok = True
