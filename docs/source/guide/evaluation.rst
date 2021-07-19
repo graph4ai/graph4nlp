@@ -130,6 +130,20 @@ refers to the paper `OpenKE: An Open Toolkit for Knowledge Embedding <https://ww
 
 The implementations of ``SoftplusLoss`` and ``SigmoidLoss`` refer to `OpenKE <https://github.com/thunlp/OpenKE>`__.
 
+Next it is a simple how to use code:
+
+.. code:: python
+
+    import torch
+    from graph4nlp.pytorch.modules.loss.kg_loss import KGLoss
+
+    loss_function = KGLoss(loss_type="BCELoss")
+    m = nn.Sigmoid()
+    input = torch.randn(3, requires_grad=True)
+    target = torch.empty(3).random_(2)
+    output = loss(m(input), target)
+
+
 **Multi-Class Loss Function**
 
 1. `Binary Cross Entropy Loss <https://pytorch.org/docs/master/generated/torch.nn.BCELoss.html>`__
