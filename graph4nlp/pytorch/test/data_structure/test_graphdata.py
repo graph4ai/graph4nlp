@@ -2,7 +2,7 @@ import pytest
 import torch.nn as nn
 
 from ...data.data import GraphData, from_batch, to_batch, from_dgl
-from ...data.utils import EdgeNotFoundException
+from ...data.utils import EdgeNotFoundException, SizeMismatchException
 
 
 def fail_here():
@@ -39,7 +39,7 @@ def test_set_node_features_cpu():
     try:
         g.node_features['node_feat'] = torch.randn((9, 10))
         fail_here()
-    except AssertionError:
+    except SizeMismatchException:
         pass
 
     g.node_features['node_feat'] = torch.randn((10, 10))
@@ -82,7 +82,7 @@ def test_set_node_features_gpu():
     try:
         g.node_features['node_feat'] = torch.randn((9, 10))
         fail_here()
-    except AssertionError:
+    except SizeMismatchException:
         pass
 
     g.node_features['node_feat'] = torch.randn((10, 10))
