@@ -130,6 +130,12 @@ refers to the paper `OpenKE: An Open Toolkit for Knowledge Embedding <https://ww
 
 The implementations of ``SoftplusLoss`` and ``SigmoidLoss`` refer to `OpenKE <https://github.com/thunlp/OpenKE>`__.
 
+**Multi-Class Loss Function**
+
+1. `Binary Cross Entropy Loss <https://pytorch.org/docs/master/generated/torch.nn.BCELoss.html>`__
+Creates a criterion that measures the Binary Cross Entropy between the target and the output. Note that the targets
+:math:`y` should be numbers between 0 and 1. It is the wrapper of ``nn.BCELoss`` in pytorch.
+
 Next it is a simple how to use code:
 
 .. code:: python
@@ -142,13 +148,6 @@ Next it is a simple how to use code:
     input = torch.randn(3, requires_grad=True)
     target = torch.empty(3).random_(2)
     output = loss(m(input), target)
-
-
-**Multi-Class Loss Function**
-
-1. `Binary Cross Entropy Loss <https://pytorch.org/docs/master/generated/torch.nn.BCELoss.html>`__
-Creates a criterion that measures the Binary Cross Entropy between the target and the output. Note that the targets
-:math:`y` should be numbers between 0 and 1. It is the wrapper of ``nn.BCELoss`` in pytorch.
 
 
 General Loss
