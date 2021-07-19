@@ -11,8 +11,8 @@ class SeqGenerationLoss(GeneralLossBase):
         The general loss for ``Graph2Seq`` model.
     Parameters
     ----------
-    vocab: Vocab
-        The vocab for loss calculation.
+    ignore_index: ignore_index
+        The token index which will be ignored during calculation. Usually it is the padding index.
     use_coverage: bool, default=False
         Whether use coverage mechanism. If set ``True``, the we will add the coverage loss.
     coverage_weight: float, default=0.3

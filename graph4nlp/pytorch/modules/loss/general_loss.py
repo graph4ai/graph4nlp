@@ -72,7 +72,7 @@ class GeneralLoss(GeneralLossBase):
         if loss_type == 'CrossEntropy':
             self.loss_function = nn.CrossEntropyLoss(weight, size_average, ignore_index, reduce, reduction)
         if loss_type == 'BCE':
-            self.loss_function = nn.CrossEntropyLoss(weight, size_average, reduce, reduction)
+            self.loss_function = nn.BCELoss(weight, size_average, reduce, reduction)
 
     def forward(self, input, target):
         r"""

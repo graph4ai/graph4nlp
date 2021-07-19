@@ -265,7 +265,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
         sequential_list = [i for i in range(node_num)]
 
-        if sequential_list and len(sequential_list) > 1:
+        if sequential_link and len(sequential_list) > 1:
             for st, ed in zip(sequential_list[:-1], sequential_list[1:]):
                 try:
                     ret_graph.edge_ids(st, ed)
