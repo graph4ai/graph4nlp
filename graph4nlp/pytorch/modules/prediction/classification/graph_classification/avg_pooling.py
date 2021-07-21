@@ -1,6 +1,5 @@
 import torch
 import dgl
-from dgl.nn.pytorch.glob import AvgPooling as DGLAvgPooling
 
 from ..base import PoolingBase
 from .....data.data import from_batch
@@ -14,7 +13,6 @@ class AvgPooling(PoolingBase):
     """
     def __init__(self):
         super(AvgPooling, self).__init__()
-        # self.model = DGLAvgPooling()
 
     def forward(self, graph, feat):
         r"""Compute average pooling.

@@ -12,133 +12,121 @@ before being consumed by the subsequent GNN model.
 EmbeddingConstruction
 --------------------------------------
 
-
-The ``EmbeddingConstruction`` class inherits the ``EmbeddingConstructionBase`` base class, and supports
-various strategies (e.g., word2vec, BiLSTM, BERT) for initializing both single-token (i.e., containing single token)
-or multi-token (i.e., containing multiple tokens) nodes/edges.
-
-As shown in the below code piece,
-users can specify whether the node/edge contains single token or multiple tokens by setting ``single_token_item``.
-``emb_strategy`` is probably the most important parameter in this class which specifies which the encoding
-strategy. For instance, for single-token node/edge, ``w2v_bilstm`` strategy means we first use word2vec embeddings
-to initialize each item, and then apply a BiLSTM encoder to encode the whole graph (assuming the node order reserves
-the sequential order in raw text).
-For multi-token node/edge, ``w2v_bilstm`` strategy means we first use the word2vec embeddings to initialize
-each token in the node/edge, then apply a BiLSTM encoder to encode each node/edge text.
-
+The ``EmbeddingConstruction`` class supports various strategies for initializing both single-token
+(i.e., containing single token) and multi-token (i.e., containing multiple tokens) items (i.e., node/edge).
+As shown in the below code piece, for both single-token and multi-token items, supported embedding strategies
+include `w2v`, `w2v_bilstm`, `w2v_bigru`, `bert`, `bert_bilstm`, `bert_bigru`, `w2v_bert`, `w2v_bert_bilstm`
+and `w2v_bert_bigru`.
 
 
 .. code-block:: python
 
-    class EmbeddingConstruction(EmbeddingConstructionBase):
-        def __init__(self,
-                        word_vocab,
-                        single_token_item,
-                        emb_strategy='w2v_bilstm',
-                        hidden_size=None,
-                        num_rnn_layers=1,
-                        fix_word_emb=True,
-                        fix_bert_emb=True,
-                        bert_model_name='bert-base-uncased',
-                        bert_lower_case=True,
-                        word_dropout=None,
-                        bert_dropout=None,
-                        rnn_dropout=None):
-            super(EmbeddingConstruction, self).__init__()
-            self.word_dropout = word_dropout
-            self.bert_dropout = bert_dropout
-            self.rnn_dropout = rnn_dropout
-            self.single_token_item = single_token_item
+    assert emb_strategy in ('w2v', 'w2v_bilstm', 'w2v_bigru', 'bert', 'bert_bilstm', 'bert_bigru',
+        'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru')
 
-            assert emb_strategy in ('w2v', 'w2v_bilstm', 'w2v_bigru',
-                            'bert', 'bert_bilstm', 'bert_bigru',
-                            'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru'),\
-                "emb_strategy must be one of ('w2v', 'w2v_bilstm', 'w2v_bigru', 'bert', 'bert_bilstm', 'bert_bigru', 'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru')"
+    word_emb_type = set()
+    if single_token_item:
+        node_edge_emb_strategy = None
+        if 'w2v' in emb_strategy:
+            word_emb_type.add('w2v')
 
-            word_emb_type = set()
-            if single_token_item:
-                node_edge_emb_strategy = None
-                if 'w2v' in emb_strategy:
-                    word_emb_type.add('w2v')
+        if 'bert' in emb_strategy:
+            word_emb_type.add('seq_bert')
 
-                if 'bert' in emb_strategy:
-                    word_emb_type.add('seq_bert')
+        if 'bilstm' in emb_strategy:
+            seq_info_encode_strategy = 'bilstm'
+        elif 'bigru' in emb_strategy:
+            seq_info_encode_strategy = 'bigru'
+        else:
+            seq_info_encode_strategy = 'none'
+    else:
+        seq_info_encode_strategy = 'none'
+        if 'w2v' in emb_strategy:
+            word_emb_type.add('w2v')
 
-                if 'bilstm' in emb_strategy:
-                    seq_info_encode_strategy = 'bilstm'
-                elif 'bigru' in emb_strategy:
-                    seq_info_encode_strategy = 'bigru'
-                else:
-                    seq_info_encode_strategy = 'none'
-            else:
-                seq_info_encode_strategy = 'none'
-                if 'w2v' in emb_strategy:
-                    word_emb_type.add('w2v')
+        if 'bert' in emb_strategy:
+            word_emb_type.add('node_edge_bert')
 
-                if 'bert' in emb_strategy:
-                    word_emb_type.add('node_edge_bert')
-
-                if 'bilstm' in emb_strategy:
-                    node_edge_emb_strategy = 'bilstm'
-                elif 'bigru' in emb_strategy:
-                    node_edge_emb_strategy = 'bigru'
-                else:
-                    node_edge_emb_strategy = 'mean'
+        if 'bilstm' in emb_strategy:
+            node_edge_emb_strategy = 'bilstm'
+        elif 'bigru' in emb_strategy:
+            node_edge_emb_strategy = 'bigru'
+        else:
+            node_edge_emb_strategy = 'mean'
 
 
-            word_emb_size = 0
-            self.word_emb_layers = nn.ModuleDict()
-            if 'w2v' in word_emb_type:
-                self.word_emb_layers['w2v'] = WordEmbedding(
-                                word_vocab.embeddings.shape[0],
-                                word_vocab.embeddings.shape[1],
-                                pretrained_word_emb=word_vocab.embeddings,
-                                fix_emb=fix_word_emb)
-                word_emb_size += word_vocab.embeddings.shape[1]
 
-            if 'node_edge_bert' in word_emb_type:
-                self.word_emb_layers['node_edge_bert'] = BertEmbedding(name=bert_model_name,
-                                                                fix_emb=fix_bert_emb,
-                                                                lower_case=bert_lower_case)
-                word_emb_size += self.word_emb_layers['node_edge_bert'].bert_model.config.hidden_size
 
-            if 'seq_bert' in word_emb_type:
-                self.word_emb_layers['seq_bert'] = BertEmbedding(name=bert_model_name,
-                                                                fix_emb=fix_bert_emb,
-                                                                lower_case=bert_lower_case)
+For instance, for single-token item, ``w2v_bilstm`` strategy means we first use word2vec embeddings
+to initialize each item, and then apply a BiLSTM encoder to encode the whole graph (assuming the node
+order reserves the sequential order in raw text). Compared to ``w2v_bilstm``, the ``w2v_bert_bilstm``
+strategy in addition applies the BERT encoder to the whole graph (i.e., sequential text), the concatenation of
+the BERT embedding and word2vec embedding instead of word2vec embedding will be fed into the BiLSTM encoder.
 
-            if node_edge_emb_strategy in ('bilstm', 'bigru'):
-                self.node_edge_emb_layer = RNNEmbedding(
-                                        word_emb_size,
-                                        hidden_size,
-                                        bidirectional=True,
-                                        num_layers=num_rnn_layers,
-                                        rnn_type='lstm' if node_edge_emb_strategy == 'bilstm' else 'gru',
-                                        dropout=rnn_dropout)
-                rnn_input_size = hidden_size
-            elif node_edge_emb_strategy == 'mean':
-                self.node_edge_emb_layer = MeanEmbedding()
-                rnn_input_size = word_emb_size
-            else:
-                rnn_input_size = word_emb_size
 
-            if 'seq_bert' in word_emb_type:
-                rnn_input_size += self.word_emb_layers['seq_bert'].bert_model.config.hidden_size
+.. code-block:: python
 
-            if seq_info_encode_strategy in ('bilstm', 'bigru'):
-                self.output_size = hidden_size
-                self.seq_info_encode_layer = RNNEmbedding(
-                                        rnn_input_size,
-                                        hidden_size,
-                                        bidirectional=True,
-                                        num_layers=num_rnn_layers,
-                                        rnn_type='lstm' if seq_info_encode_strategy == 'bilstm' else 'gru',
-                                        dropout=rnn_dropout)
+    # single-token item graph
+    feat = []
+    token_ids = batch_gd.batch_node_features["token_id"]
+    if 'w2v' in self.word_emb_layers:
+        word_feat = self.word_emb_layers['w2v'](token_ids).squeeze(-2)
+        word_feat = dropout_fn(word_feat, self.word_dropout, shared_axes=[-2], training=self.training)
+        feat.append(word_feat)
 
-            else:
-                self.output_size = rnn_input_size
-                self.seq_info_encode_layer = None
+    new_feat = feat
+    if 'seq_bert' in self.word_emb_layers:
+        gd_list = from_batch(batch_gd)
+        raw_tokens = [[gd.node_attributes[i]['token'] for i in range(gd.get_node_num())] for gd in gd_list]
+        bert_feat = self.word_emb_layers['seq_bert'](raw_tokens)
+        bert_feat = dropout_fn(bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
+        new_feat.append(bert_feat)
 
+    new_feat = torch.cat(new_feat, -1)
+    if self.seq_info_encode_layer is None:
+        batch_gd.batch_node_features["node_feat"] = new_feat
+    else:
+        rnn_state = self.seq_info_encode_layer(new_feat, torch.LongTensor(batch_gd._batch_num_nodes).to(batch_gd.device))
+        if isinstance(rnn_state, (tuple, list)):
+            rnn_state = rnn_state[0]
+
+        batch_gd.batch_node_features["node_feat"] = rnn_state
+
+
+
+
+For multi-token item, ``w2v_bilstm`` strategy means we first use the word2vec embeddings to initialize
+each token in the item, then apply a BiLSTM encoder to encode each item text. Compared to ``w2v_bilstm``,
+the ``w2v_bert_bilstm`` strategy in addition applies the BERT encoder to each item text, the concatenation of
+the BERT embedding and word2vec embedding instead of word2vec embedding will be fed into the BiLSTM encoder.
+
+
+.. code-block:: python
+
+    # multi-token item graph
+    feat = []
+    token_ids = batch_gd.node_features["token_id"]
+    if 'w2v' in self.word_emb_layers:
+        word_feat = self.word_emb_layers['w2v'](token_ids)
+        word_feat = dropout_fn(word_feat, self.word_dropout, shared_axes=[-2], training=self.training)
+        feat.append(word_feat)
+
+    if 'node_edge_bert' in self.word_emb_layers:
+        input_data = [batch_gd.node_attributes[i]['token'].strip().split(' ') for i in range(batch_gd.get_node_num())]
+        node_edge_bert_feat = self.word_emb_layers['node_edge_bert'](input_data)
+        node_edge_bert_feat = dropout_fn(node_edge_bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
+        feat.append(node_edge_bert_feat)
+
+    if len(feat) > 0:
+        feat = torch.cat(feat, dim=-1)
+        node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
+        feat = self.node_edge_emb_layer(feat, node_token_lens)
+        if isinstance(feat, (tuple, list)):
+            feat = feat[-1]
+
+        feat = batch_gd.split_features(feat)
+
+    batch_gd.batch_node_features["node_feat"] = feat
 
 
 
@@ -168,12 +156,7 @@ learnable parameter.
 .. code-block:: python
 
     class BertEmbedding(nn.Module):
-        def __init__(self,
-                    name='bert-base-uncased',
-                    max_seq_len=500,
-                    doc_stride=250,
-                    fix_emb=True,
-                    lower_case=True):
+        def __init__(self, name='bert-base-uncased', max_seq_len=500, doc_stride=250, fix_emb=True, lower_case=True):
             super(BertEmbedding, self).__init__()
             self.bert_max_seq_len = max_seq_len
             self.bert_doc_stride = doc_stride

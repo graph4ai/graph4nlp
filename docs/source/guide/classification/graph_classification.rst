@@ -21,13 +21,7 @@ The ``FeedForwardNN`` class calls the ``FeedForwardNNLayer`` API which implments
 .. code-block:: python
 
     class FeedForwardNN(GraphClassifierBase):
-        def __init__(self,
-                    input_size,
-                    num_class,
-                    hidden_size,
-                    activation=None,
-                    graph_pool_type='max_pool',
-                    **kwargs):
+        def __init__(self, input_size, num_class, hidden_size, activation=None, graph_pool_type='max_pool', **kwargs):
             super(FeedForwardNN, self).__init__()
 
             if not activation:
@@ -58,23 +52,8 @@ It takes batched ``GraphData`` as input and returns a feature tensor containing 
     class AvgPooling(PoolingBase):
         def __init__(self):
             super(AvgPooling, self).__init__()
-            # self.model = DGLAvgPooling()
 
         def forward(self, graph, feat):
-            r"""Compute average pooling.
-
-            Parameters
-            ----------
-            graph : GraphData
-                The graph data.
-            feat : str
-                The feature field name.
-
-            Returns
-            -------
-            torch.Tensor
-                The output feature.
-            """
             graph_list = from_batch(graph)
             output_feat = []
             for g in graph_list:
@@ -108,20 +87,6 @@ An optional linear projection can be applied to node embeddings before conductin
                 self.linear = None
 
         def forward(self, graph, feat):
-            r"""Compute max pooling.
-
-            Parameters
-            ----------
-            graph : GraphData
-                The graph data.
-            feat : str
-                The feature field name.
-
-            Returns
-            -------
-            torch.Tensor
-                The output feature.
-            """
             graph_list = from_batch(graph)
             output_feat = []
             for g in graph_list:

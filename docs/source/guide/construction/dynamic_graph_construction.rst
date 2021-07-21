@@ -130,6 +130,7 @@ Below is the implementation of this method.
 
 Node Embedding Based Dynamic Graph Construction
 -----------------
+
 For node embedding based dynamic graph construction, we aim to learn the graph structure from a set of node embeddings.
 The ``NodeEmbeddingBasedGraphConstruction`` class inherits the ``DynamicGraphConstructionBase`` base class which implements
 several aforementioned important components (e.g., ``compute_similarity_metric``, ``sparsify_graph``).
@@ -167,6 +168,7 @@ initial node embeddings, as shown below:
 
 Node Embedding Based Refined Dynamic Graph Construction
 -----------------
+
 Unlike the node embedding based metric learning, node embedding based refined graph metric
 learning in addition utilizes the intrinsic graph structure which potentially still carries
 rich and useful information regarding the optimal graph structure for the downstream task.
