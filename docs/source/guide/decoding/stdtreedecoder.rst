@@ -31,8 +31,8 @@ The output of many NLP applications (i.e., semantic parsing, code generation, an
     
     predicted = decoder(batch_graph=batch_graph, tgt_tree_batch=tgt_tree_batch)
 
-More details
-------------
+Implementation details
+----------------------
 
 What is the tree decoding process
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
