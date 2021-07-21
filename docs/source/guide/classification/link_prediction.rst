@@ -124,8 +124,8 @@ Below is how the StackedElementProdLayer module constructed.
 
 .. code::
 
-class StackedElementProdLayer(LinkPredictionLayerBase):   
-    def __init__(self, input_size,  hidden_size, num_class, num_channel):        
+  class StackedElementProdLayer(LinkPredictionLayerBase):   
+     def __init__(self, input_size,  hidden_size, num_class, num_channel):        
         super(StackedElementProdLayer, self).__init__() 
             
         #build the linear module list
