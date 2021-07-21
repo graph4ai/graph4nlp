@@ -166,8 +166,8 @@ Below is an example to construct the FeedForwardNN module.
 
 .. code::
 
-class FeedForwardNN(NodeClassifierBase):
-    def __init__(self, 
+  class FeedForwardNN(NodeClassifierBase):
+     def __init__(self, 
                  input_size, 
                  num_class, 
                  hidden_size, 
@@ -181,7 +181,7 @@ After the construction of the module, the next step is to make the ``forward()``
 
 .. code::
 
-def forward(self, input_graph):
+  def forward(self, input_graph):
         node_emb=input_graph.node_features['node_emb']
         input_graph.node_features['logits']=self.classifier(node_emb)
         return input_graph
