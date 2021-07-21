@@ -15,7 +15,10 @@ class IWSLT14Dataset(Text2TextDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        return {'train': 'train.pkl', 'val': "val.pkl", 'test': 'test.pkl'}
+        if self.for_inference:
+            return {'test': 'test.pkl'}
+        else:
+            return {'train': 'train.pkl', 'val': "val.pkl", 'test': 'test.pkl'}
 
     @property
     def processed_file_names(self):
@@ -85,7 +88,9 @@ class IWSLT14Dataset(Text2TextDataset):
                  word_emb_size=300, share_vocab=False,
                  dynamic_graph_type=None,
                  dynamic_init_topology_builder=None,
-                 dynamic_init_topology_aux_args=None):
+                 dynamic_init_topology_aux_args=None,
+                 for_inference=False,
+                 reused_vocab_model=None):
         """
 
         Parameters
@@ -127,7 +132,8 @@ class IWSLT14Dataset(Text2TextDataset):
                                             use_val_for_vocab=use_val_for_vocab,
                                             dynamic_graph_type=dynamic_graph_type,
                                             dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+                                            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+                                            for_inference=for_inference, reused_vocab_model=reused_vocab_model)
 
     @staticmethod
     def collate_fn(data_list):

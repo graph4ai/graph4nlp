@@ -9,7 +9,10 @@ class SQuADDataset(DoubleText2TextDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        return {'train': 'train.txt', 'val': 'val.txt', 'test': 'test.txt'}
+        if self.for_inference:
+            return {"test": "test.txt"}
+        else:
+            return {'train': 'train.txt', 'val': 'val.txt', 'test': 'test.txt'}
 
     @property
     def processed_file_names(self):
