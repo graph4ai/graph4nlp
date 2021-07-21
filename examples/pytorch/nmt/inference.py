@@ -1,3 +1,5 @@
+import sys
+sys.path.append("/export/shenkai/shiina/lib/graph4nlp")
 import logging
 import os
 from random import shuffle
