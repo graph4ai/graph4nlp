@@ -38,8 +38,8 @@ The figure below is an example for generated constituency graph.
     :height: 300px
 
 
-Details
-------------
+Implementation details
+----------------------
 
 Parsing
 ^^^^^^^
