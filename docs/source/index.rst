@@ -14,6 +14,11 @@ this library will boost research in relevant fields. This library has the follow
 
 - To be added here.
 
+.. image:: https://img.shields.io/github/forks/graph4ai/graph4nlp?style=social
+        :target: https://github.com/graph4ai/graph4nlp/fork
+.. image:: https://img.shields.io/github/stars/graph4ai/graph4nlp?style=social
+        :target: https://github.com/graph4ai/graph4nlp
+
 Sphinx reference: `reStructuredText Primer <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
 
 Sphinx themes: `Link <https://sphinx-themes.org/>`_
