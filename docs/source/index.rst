@@ -63,11 +63,11 @@ Sphinx themes: `Link <https://sphinx-themes.org/>`_
 .. toctree::
    :glob:
    :maxdepth: 1
-   :caption: Model Examples
+   :caption: Tutorials
    :hidden:
 
-   tutorial/example1
-   tutorial/example2
+   tutorial/text_classification
+   tutorial/semantic_parsing
 
 
 
