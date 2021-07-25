@@ -4,8 +4,10 @@ Installation
 ```bash
 pip install spacy
 python -m spacy download en_core_web_sm
+pip install h5py
+pip install future
 ```
-+ Run the preprocessing script for WN18RR and Kinship: ```sh preprocess.sh```
++ Run the preprocessing script for WN18RR and Kinship: ```sh examples/pytorch/kg_completion/preprocess.sh```
 + You can now run the model
 
 How to run
