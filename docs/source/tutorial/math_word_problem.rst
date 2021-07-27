@@ -77,7 +77,7 @@ Environment setup
 Load the config file
 --------------------
 
-.. code:: ipython3
+.. code:: python
 
     from graph4nlp.pytorch.modules.config import get_basic_args
     from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
@@ -199,7 +199,7 @@ The config output
 Import packages
 ---------------
 
-.. code:: ipython3
+.. code:: python
 
     import copy
     import torch
@@ -223,7 +223,7 @@ Import packages
 Build the model
 ---------------
 
-.. code:: ipython3
+.. code:: python
 
     class Mawps:
         def __init__(self, opt=None):
@@ -374,36 +374,11 @@ Build the model
 Run and get results
 -------------------
 
-.. code:: ipython3
+.. code:: python
 
     a = Mawps(cfg_g2t)
     best_acc = a.train()
 
-.. parsed-literal::
-
-Starting training.
-
-.. parsed-literal::
-
-    HBox(children=(FloatProgress(value=0.0, description='Epoch 01', max=94.0, style=ProgressStyle(description_widt…
-
-
-.. parsed-literal::
-
-    
-    epochs = 1, train_loss = 22.205
-
-
-
-.. parsed-literal::
-
-    HBox(children=(FloatProgress(value=0.0, description='Epoch 02', max=94.0, style=ProgressStyle(description_widt…
-
-
-.. parsed-literal::
-
-    
-    epochs = 2, train_loss = 13.180
 
 Download the full example
 ---------
