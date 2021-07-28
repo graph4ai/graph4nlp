@@ -1,5 +1,9 @@
 Chapter 7. Evaluations and Loss components
 ===========================
+.. image:: https://img.shields.io/github/forks/graph4ai/graph4nlp?style=social
+        :target: https://github.com/graph4ai/graph4nlp/fork
+.. image:: https://img.shields.io/github/stars/graph4ai/graph4nlp?style=social
+        :target: https://github.com/graph4ai/graph4nlp
 
 Evaluations
 --------------
