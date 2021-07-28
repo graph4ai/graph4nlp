@@ -129,4 +129,4 @@ Finally, install the package:
 .. code-block::
     python setup.py install
 
-
+Enjoy!
