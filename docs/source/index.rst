@@ -5,6 +5,10 @@
 
 Graph4NLP Documentation
 =====================================
+.. image:: https://img.shields.io/github/forks/graph4ai/graph4nlp?style=social
+        :target: https://github.com/graph4ai/graph4nlp/fork
+.. image:: https://img.shields.io/github/stars/graph4ai/graph4nlp?style=social
+        :target: https://github.com/graph4ai/graph4nlp
 Graph4NLP is a library utilizing deep learning on graphs to carry out natural language processing tasks. We believe
 this library will boost research in relevant fields. This library has the following advantages:
 
@@ -59,11 +63,12 @@ Sphinx themes: `Link <https://sphinx-themes.org/>`_
 .. toctree::
    :glob:
    :maxdepth: 1
-   :caption: Model Examples
+   :caption: Tutorials
    :hidden:
 
-   tutorial/example1
-   tutorial/example2
+   tutorial/text_classification
+   tutorial/semantic_parsing
+   tutorial/math_word_problem
 
 
 
