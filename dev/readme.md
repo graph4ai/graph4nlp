@@ -22,4 +22,4 @@ Example: ``graph4nlp/pytorch/models/graph2seq.py``
 3. ``flake8``. This is a code style checker. It will raise errors and warnings. Fix them all!
 When you meet the error: e.g., "graph4nlp/pytorch/models/graph2seq.py:259:101: E501 line too long (111 > 100 characters)" and find it in comments, you just need to add "# noqa" at the end of the line.
 
-Contact @AlanSwift if you meet any problem.
+Contact [me](https://github.com/AlanSwift) if you meet any problem.
