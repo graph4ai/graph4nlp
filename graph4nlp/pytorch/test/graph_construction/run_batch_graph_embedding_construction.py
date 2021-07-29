@@ -1,13 +1,12 @@
 import time
+import dgl
 import numpy as np
 import torch
-import dgl
 
 from ...data.data import GraphData
 from ...modules.graph_construction.embedding_construction import EmbeddingConstruction
-from ...modules.utils.vocab_utils import VocabModel
 from ...modules.utils.padding_utils import pad_2d_vals, pad_2d_vals_no_size
-
+from ...modules.utils.vocab_utils import VocabModel
 
 if __name__ == '__main__':
     raw_text_data = [['Google News is a news aggregator service developed by Google.',

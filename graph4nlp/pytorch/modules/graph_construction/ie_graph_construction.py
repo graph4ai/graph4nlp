@@ -1,15 +1,14 @@
 import json
-
+import dgl
+import networkx as nx
+import numpy as np
+import torch
 from stanfordcorenlp import StanfordCoreNLP
 
 from graph4nlp.pytorch.data.data import GraphData, to_batch
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
-import dgl
-import networkx as nx
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals
-import numpy as np
-import torch
+from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 
 
 class IEBasedGraphConstruction(StaticGraphConstructionBase):

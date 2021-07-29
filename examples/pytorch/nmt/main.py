@@ -1,38 +1,45 @@
 import logging
 import os
-from random import shuffle
 import resource
-
+from random import shuffle
+import numpy as np
+import torch
+import torch.optim as optim
 from torch.functional import split
+from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
+
+from graph4nlp.pytorch.models.graph2seq import Graph2Seq
+from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
+from graph4nlp.pytorch.modules.evaluation import BLEU
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
+    ConstituencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
+    NodeEmbeddingBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (
+    NodeEmbeddingBasedRefinedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+
+from args import get_args
+from build_model import get_model
+# os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
+from dataset import IWSLT14Dataset
+from utils import WarmupCosineSchedule, get_log, save_config, wordid2str
+
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 # resource.setrlimit(resource.RLIMIT_NOFILE, (409600, rlimit[1]))
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
-# os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
-from dataset import IWSLT14Dataset
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import \
-    ConstituencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import \
-    NodeEmbeddingBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import \
-    NodeEmbeddingBasedRefinedGraphConstruction
-
-import numpy as np
-import torch
-from torch.utils.data import DataLoader
-import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
 
 
-from args import get_args
-from utils import get_log, wordid2str, WarmupCosineSchedule, save_config
-from build_model import get_model
-from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
-from graph4nlp.pytorch.models.graph2seq import Graph2Seq
-from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
-from graph4nlp.pytorch.modules.evaluation import BLEU
+
 
 
 

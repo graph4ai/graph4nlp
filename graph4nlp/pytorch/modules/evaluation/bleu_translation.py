@@ -1,5 +1,6 @@
-from .base import EvaluationMetricBase
 import sacrebleu
+
+from .base import EvaluationMetricBase
 
 
 class BLEUTranslation(EvaluationMetricBase):

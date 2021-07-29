@@ -1,5 +1,6 @@
-from .base import GeneralLossBase
 import torch
+
+from .base import GeneralLossBase
 
 
 class CoverageLoss(GeneralLossBase):

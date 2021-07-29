@@ -1,5 +1,6 @@
 import os
 from collections import namedtuple
+
 from src.spodernet.spodernet.utils.logger import Logger
 
 log = Logger('global_config.py.txt')
@@ -159,5 +160,3 @@ params2field['process'] = lambda x: setattr(Config, 'process', x)
 params2field['model_name'] = lambda x: setattr(Config, 'model_name', x)
 params2field['save_model_dir'] = lambda x: setattr(Config, 'save_model_dir', x)
 params2field['load_model'] = lambda x: setattr(Config, 'load_model', x)
-
-

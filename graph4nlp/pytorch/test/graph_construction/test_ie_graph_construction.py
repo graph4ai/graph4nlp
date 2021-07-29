@@ -1,5 +1,8 @@
-from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from stanfordcorenlp import StanfordCoreNLP
+
+from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import (
+    IEBasedGraphConstruction,
+)
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 
 

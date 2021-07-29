@@ -1,12 +1,16 @@
+import datetime
 import numpy as np
 import scipy.stats
-import datetime
 
-from src.spodernet.spodernet.interfaces import IAtIterEndObservable, IAtEpochEndObservable, IAtEpochStartObservable
-from src.spodernet.spodernet.utils.util import Timer
-from src.spodernet.spodernet.utils.global_config import Config, Backends
-
+from src.spodernet.spodernet.interfaces import (
+    IAtEpochEndObservable,
+    IAtEpochStartObservable,
+    IAtIterEndObservable,
+)
+from src.spodernet.spodernet.utils.global_config import Backends, Config
 from src.spodernet.spodernet.utils.logger import Logger
+from src.spodernet.spodernet.utils.util import Timer
+
 log = Logger('hooks.py.txt')
 
 class AbstractHook(IAtIterEndObservable, IAtEpochEndObservable):

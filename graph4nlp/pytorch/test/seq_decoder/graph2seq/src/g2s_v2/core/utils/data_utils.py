@@ -3,21 +3,20 @@
 Module to handle getting data loading classes and helper functions.
 """
 
-import json
-import re
 import io
+import json
 import random
+import re
 import string
 # from nltk.tokenize import wordpunct_tokenize
-from collections import Counter, defaultdict, OrderedDict
-
+from collections import Counter, OrderedDict, defaultdict
 import numpy as np
-from scipy.sparse import *
 import torch
+from scipy.sparse import *
 
 from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.timer import Timer
-from . import padding_utils
-from . import constants
+
+from . import constants, padding_utils
 
 tokenize = lambda s: re.split("\\s+", s)
 

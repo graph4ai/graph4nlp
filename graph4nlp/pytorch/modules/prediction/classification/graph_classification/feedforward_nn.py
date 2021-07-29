@@ -1,7 +1,7 @@
 import collections
 from torch import nn
 
-from ..base import GraphClassifierLayerBase, GraphClassifierBase
+from ..base import GraphClassifierBase, GraphClassifierLayerBase
 from .avg_pooling import AvgPooling
 from .max_pooling import MaxPooling
 

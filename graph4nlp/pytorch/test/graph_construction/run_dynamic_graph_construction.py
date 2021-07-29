@@ -1,23 +1,26 @@
-import os
 import argparse
-import numpy as np
-from scipy import sparse
-import networkx as nx
+import os
 import time
+import dgl
+import dgl.function as fn
+import networkx as nx
+import numpy as np
 import torch
+import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.backends.cudnn as cudnn
-import dgl
 from dgl import DGLGraph
-import dgl.function as fn
-from dgl.data import register_data_args, load_data
+from dgl.data import load_data, register_data_args
+from scipy import sparse
 
-from ..utils import EarlyStopping
-from ...modules.graph_construction import NodeEmbeddingBasedGraphConstruction, NodeEmbeddingBasedRefinedGraphConstruction
-from ...modules.utils.vocab_utils import VocabModel
-from ...modules.utils.padding_utils import pad_2d_vals_no_size
+from ...modules.graph_construction import (
+    NodeEmbeddingBasedGraphConstruction,
+    NodeEmbeddingBasedRefinedGraphConstruction,
+)
 from ...modules.utils.generic_utils import to_cuda
+from ...modules.utils.padding_utils import pad_2d_vals_no_size
+from ...modules.utils.vocab_utils import VocabModel
+from ..utils import EarlyStopping
 
 
 def accuracy(logits, labels):

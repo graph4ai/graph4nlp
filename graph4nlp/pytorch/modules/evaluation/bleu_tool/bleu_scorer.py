@@ -15,11 +15,13 @@
 cook_refs(refs, n=4): Transform a list of reference sentences as strings into a form usable by cook_test().
 cook_test(test, refs, n=4): Transform a test sentence as a string (together with the cooked reference sentences) into a form usable by score_cooked().
 '''
-from builtins import range, dict
-
 import copy
-import sys, math, re
+import math
+import re
+import sys
+from builtins import dict, range
 from collections import defaultdict
+
 
 def precook(s, n=4, out=False):
     """Takes a string as input and returns an object that can be given to

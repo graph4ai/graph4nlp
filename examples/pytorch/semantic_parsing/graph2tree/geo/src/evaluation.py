@@ -1,5 +1,6 @@
 from graph4nlp.pytorch.modules.utils.tree_utils import Tree
 
+
 def convert_to_string(idx_list, form_manager):
     w_list = []
     for i in range(len(idx_list)):
@@ -58,4 +59,3 @@ def compute_tree_accuracy(candidate_list_, reference_list_, form_manager):
     for i in range(len(reference_list_)):
         reference_list.append(reference_list_[i])
     return compute_accuracy(candidate_list, reference_list, form_manager)
-

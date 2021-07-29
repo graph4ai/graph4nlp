@@ -5,25 +5,26 @@ References
 ----------
 DGL GAT example: https://github.com/dmlc/dgl/tree/master/examples/pytorch/gat
 """
+import argparse
 import os
 import time
-import argparse
-import numpy as np
-import networkx as nx
 from collections import namedtuple
+import dgl
+import networkx as nx
+import numpy as np
 import torch
+import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.backends.cudnn as cudnn
-import dgl
 from dgl import DGLGraph
-from dgl.data import register_data_args, load_data
+from dgl.data import load_data, register_data_args
 
-from .utils import EarlyStopping
-from ...modules.utils.generic_utils import *
-from ...modules.graph_embedding.gat import GAT
-from ...data.data import GraphData
 from graph4nlp.pytorch.modules.utils.logger import Logger
+
+from ...data.data import GraphData
+from ...modules.graph_embedding.gat import GAT
+from ...modules.utils.generic_utils import *
+from .utils import EarlyStopping
 
 
 def accuracy(logits, labels):

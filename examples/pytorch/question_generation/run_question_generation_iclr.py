@@ -1,41 +1,50 @@
+import argparse
+import copy
+import datetime
 import json
+import math
+import multiprocessing
 import os
 import time
-import datetime
-import copy
-import argparse
 from argparse import Namespace
-import yaml
-
 import numpy as np
-from scipy import sparse
 import torch
+import torch.backends.cudnn as cudnn
+import torch.multiprocessing
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
 import torch.optim as optim
+import yaml
+from scipy import sparse
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-import torch.backends.cudnn as cudnn
+from torch.utils.data import DataLoader
 
-from graph4nlp.pytorch.datasets.squad import SQuADDataset
 from graph4nlp.pytorch.data.data import from_batch
-from graph4nlp.pytorch.modules.graph_construction import *
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import RNNEmbedding, WordEmbedding
+from graph4nlp.pytorch.datasets.squad import SQuADDataset
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
-from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, dropout_fn, sparse_mx_to_torch_sparse_tensor, EarlyStopping
-from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
-from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.modules.evaluation import BLEU, METEOR, ROUGE
-from graph4nlp.pytorch.modules.utils.logger import Logger
-from graph4nlp.pytorch.modules.utils import constants as Constants
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+from graph4nlp.pytorch.modules.graph_construction import *
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import (
+    RNNEmbedding,
+    WordEmbedding,
+)
 from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
-from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
+from graph4nlp.pytorch.modules.utils import constants as Constants
+from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
+from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+from graph4nlp.pytorch.modules.utils.generic_utils import (
+    EarlyStopping,
+    dropout_fn,
+    grid,
+    sparse_mx_to_torch_sparse_tensor,
+    to_cuda,
+)
+from graph4nlp.pytorch.modules.utils.logger import Logger
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+
 from fused_embedding_construction import FusedEmbeddingConstruction
-import multiprocessing
-import torch.multiprocessing
-import math
 
 
 class QGModel(nn.Module):

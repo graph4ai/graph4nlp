@@ -1,31 +1,37 @@
-import json
-import torch
-import pickle
-import numpy as np
 import argparse
-import sys
-import os
+import json
 import math
-
+import os
+import pickle
+import sys
 from os.path import join
+import numpy as np
+import torch
 import torch.backends.cudnn as cudnn
 
 from evaluation import ranking_and_hits
-from model import ConvE, Distmult, Complex, GGNNDistMult, GCNDistMult, GCNComplex
-
-from spodernet.preprocessing.pipeline import DatasetStreamer
-from spodernet.preprocessing.processors import JsonLoaderProcessors, Tokenizer, AddToVocab, SaveLengthsToState, StreamToHDF5, SaveMaxLengthsToState, CustomTokenizer
-from spodernet.preprocessing.processors import ConvertTokenToIdx, ApplyFunction, ToLower, DictKey2ListMapper, ApplyFunction, StreamToBatch
-from spodernet.utils.global_config import Config, Backends
-from spodernet.utils.logger import Logger, LogLevel
+from model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
+from spodernet.hooks import ETAHook, LossHook
 from spodernet.preprocessing.batching import StreamBatcher
-from spodernet.preprocessing.pipeline import Pipeline
-from spodernet.preprocessing.processors import TargetIdx2MultiTarget
-from spodernet.hooks import LossHook, ETAHook
+from spodernet.preprocessing.pipeline import DatasetStreamer, Pipeline
+from spodernet.preprocessing.processors import (
+    AddToVocab,
+    ApplyFunction,
+    ConvertTokenToIdx,
+    CustomTokenizer,
+    DictKey2ListMapper,
+    JsonLoaderProcessors,
+    SaveLengthsToState,
+    SaveMaxLengthsToState,
+    StreamToBatch,
+    StreamToHDF5,
+    TargetIdx2MultiTarget,
+    Tokenizer,
+    ToLower,
+)
+from spodernet.utils.global_config import Backends, Config
+from spodernet.utils.logger import Logger, LogLevel
 from spodernet.utils.util import Timer
-from spodernet.preprocessing.processors import TargetIdx2MultiTarget
-import argparse
-
 
 np.set_printoptions(precision=3)
 
@@ -248,4 +254,3 @@ if __name__ == '__main__':
 
     torch.manual_seed(args.seed)
     main(args, model_path)
-

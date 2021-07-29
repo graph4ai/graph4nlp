@@ -1,8 +1,8 @@
-import torch
 import dgl
+import torch
 
-from ..base import PoolingBase
 from .....data.data import from_batch
+from ..base import PoolingBase
 
 
 class AvgPooling(PoolingBase):

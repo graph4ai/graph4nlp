@@ -1,7 +1,9 @@
 import collections
+import torch
 from torch import nn
-import torch 
+
 from ..base import LinkPredictionLayerBase
+
 
 class ElementSumLayer(LinkPredictionLayerBase):
     r"""Specific class for link prediction task.
@@ -66,6 +68,3 @@ class ElementSumLayer(LinkPredictionLayerBase):
         dst_emb = self.ffnn_dst(node_emb[dst_idx, :])  # input the destinate node embeddings into ffnn
 
         return self.ffnn_all(self.activation(scr_emb+dst_emb))
-
-
-

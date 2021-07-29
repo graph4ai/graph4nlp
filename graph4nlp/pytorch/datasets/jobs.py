@@ -1,12 +1,13 @@
-import torch
 import numpy as np
-
+import torch
 
 from graph4nlp.pytorch.data.dataset import Text2TextDataset, TextToTreeDataset
-from ..modules.graph_construction.base import GraphConstructionBase
-from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from ..data.data import GraphData
 
+from ..data.data import GraphData
+from ..modules.graph_construction.base import GraphConstructionBase
+from ..modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
 
 dataset_root = '../test/dataset/jobs'
 

@@ -7,7 +7,9 @@ from torch.utils.data import DataLoader
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab

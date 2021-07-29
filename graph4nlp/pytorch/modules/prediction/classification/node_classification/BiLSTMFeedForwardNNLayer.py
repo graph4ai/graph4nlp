@@ -1,7 +1,9 @@
-from torch import nn
 import torch as th
 import torch.autograd as autograd
+from torch import nn
+
 from ..base import NodeClassifierLayerBase
+
 
 class BiLSTMFeedForwardNNLayer(NodeClassifierLayerBase):
     r"""Specific class for node classification layer.
@@ -74,5 +76,3 @@ class BiLSTMFeedForwardNNLayer(NodeClassifierLayerBase):
         else:
            lstm_feats = self.linear(lstm_out)
            return lstm_feats
-
-       

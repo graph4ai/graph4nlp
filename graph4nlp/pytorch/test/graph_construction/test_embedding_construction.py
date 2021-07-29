@@ -1,9 +1,8 @@
 import torch
 
 from ...modules.graph_construction.embedding_construction import EmbeddingConstruction
-from ...modules.utils.vocab_utils import VocabModel
 from ...modules.utils.padding_utils import pad_2d_vals_no_size
-
+from ...modules.utils.vocab_utils import VocabModel
 
 if __name__ == '__main__':
     raw_text_data = [['I like nlp.', 'Same here!'], ['I like graph.', 'Same here!']]

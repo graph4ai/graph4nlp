@@ -1,12 +1,13 @@
-from dgl.nn.pytorch import GraphConv
-
+import dgl.function as fn
 import torch
 import torch.nn as nn
-import dgl.function as fn
-from torch.nn import init
-from .base import GNNLayerBase, GNNBase
-from ...data.data import GraphData
+from dgl.nn.pytorch import GraphConv
 from dgl.utils import expand_as_pair
+from torch.nn import init
+
+from ...data.data import GraphData
+from .base import GNNBase, GNNLayerBase
+
 
 class GCN(GNNBase):
     r"""Multi-layer Graph Convolutional Networks (GCN).

@@ -4,15 +4,16 @@
     nn_modules.py
 """
 
-import torch
-from torch import nn
-from torch.nn import functional as F
-from torch.autograd import Variable
-
 import numpy as np
+import torch
 from scipy import sparse
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.constants import VERY_SMALL_NUMBER
+from torch import nn
+from torch.autograd import Variable
+from torch.nn import functional as F
 
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.constants import (
+    VERY_SMALL_NUMBER,
+)
 
 # --
 # Samplers

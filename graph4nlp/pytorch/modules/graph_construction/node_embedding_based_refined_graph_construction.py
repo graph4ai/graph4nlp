@@ -1,17 +1,16 @@
-from nltk.tokenize import word_tokenize
 import torch
+from nltk.tokenize import word_tokenize
 from torch import nn
 
-from ...data.data import GraphData
-from .base import DynamicGraphConstructionBase
-from .dependency_graph_construction import DependencyBasedGraphConstruction
-from .constituency_graph_construction import ConstituencyBasedGraphConstruction
-from .ie_graph_construction import IEBasedGraphConstruction
+from ...data.data import GraphData, to_batch
 from ..utils.generic_utils import normalize_adj, to_cuda
+from ..utils.vocab_utils import Vocab
+from .base import DynamicGraphConstructionBase
+from .constituency_graph_construction import ConstituencyBasedGraphConstruction
+from .dependency_graph_construction import DependencyBasedGraphConstruction
+from .ie_graph_construction import IEBasedGraphConstruction
 # from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
-from ...data.data import to_batch
-from ..utils.vocab_utils import Vocab
 
 
 class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):

@@ -1,10 +1,10 @@
-import torch
-import numpy as np
 import datetime
+import numpy as np
+import torch
+from sklearn import metrics
+from torch.autograd import Variable
 
 from spodernet.utils.logger import Logger
-from torch.autograd import Variable
-from sklearn import metrics
 
 log = Logger('evaluation{0}.py.txt'.format(datetime.datetime.now()))
 

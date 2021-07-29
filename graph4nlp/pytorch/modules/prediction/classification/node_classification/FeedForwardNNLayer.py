@@ -1,7 +1,9 @@
 import collections
-from torch import nn
 import torch as th
+from torch import nn
+
 from ..base import NodeClassifierLayerBase
+
 
 class FeedForwardNNLayer(NodeClassifierLayerBase):
     r"""Specific class for node classification task.

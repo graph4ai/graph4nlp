@@ -1,10 +1,10 @@
 import copy
-import torch
 import numpy as np
+import torch
 
-from .padding_utils import pad_2d_vals_no_size
 from ...data.data import GraphData
-from .vocab_utils import VocabModel, Vocab
+from .padding_utils import pad_2d_vals_no_size
+from .vocab_utils import Vocab, VocabModel
 
 
 def prepare_ext_vocab(batch_graph, vocab, gt_str=None, device=None):

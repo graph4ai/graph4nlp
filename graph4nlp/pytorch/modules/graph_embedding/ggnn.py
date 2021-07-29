@@ -1,10 +1,11 @@
-import torch
 import dgl
-import torch.nn as nn
 import dgl.function as fn
+import torch
+import torch.nn as nn
 from torch.nn import init
-from .base import GNNLayerBase, GNNBase
+
 from ...data.data import GraphData
+from .base import GNNBase, GNNLayerBase
 
 
 class UndirectedGGNNLayerConv(GNNLayerBase):

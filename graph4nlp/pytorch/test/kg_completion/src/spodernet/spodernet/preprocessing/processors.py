@@ -1,20 +1,25 @@
 from __future__ import unicode_literals
+import copy
+import json
+import os
+import pickle
 from os.path import join
-from src.spodernet.spodernet.utils.util import Timer
-from src.spodernet.spodernet.utils.util import get_data_path, save_data, make_dirs_if_not_exists, load_data, Timer
+import nltk
+import numpy as np
+
+import spacy
+from past.builtins import basestring, long
 from src.spodernet.spodernet.interfaces import IAtBatchPreparedObservable
 from src.spodernet.spodernet.utils.global_config import Config
-from past.builtins import basestring, long
-
-import numpy as np
-import os
-import copy
-import spacy
-import nltk
-import json
-import pickle
-
 from src.spodernet.spodernet.utils.logger import Logger
+from src.spodernet.spodernet.utils.util import (
+    Timer,
+    get_data_path,
+    load_data,
+    make_dirs_if_not_exists,
+    save_data,
+)
+
 log = Logger('processors.py.txt')
 
 nlp = spacy.load('en_core_web_sm')

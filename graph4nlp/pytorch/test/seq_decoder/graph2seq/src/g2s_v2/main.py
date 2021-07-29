@@ -1,16 +1,18 @@
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 import argparse
-import yaml
-import torch
-import numpy as np
+import os
+import warnings
 # import far_ho as far
 from collections import OrderedDict
+import numpy as np
+import torch
+import yaml
 
 from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.model_handler import ModelHandler
 
-import warnings
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+
+
 
 warnings.filterwarnings('ignore')
 

@@ -1,12 +1,11 @@
 import copy
 import enum
 import json
-
 import torch
 from stanfordcorenlp import StanfordCoreNLP
 
-from .base import StaticGraphConstructionBase
 from ...data.data import GraphData, to_batch
+from .base import StaticGraphConstructionBase
 
 
 class DependencyBasedGraphConstruction(StaticGraphConstructionBase):

@@ -1,15 +1,22 @@
 import random
-
-import torch.nn.functional as F
 import torch.nn as nn
-
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.layers.attention import *
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.layers.common import EncoderRNN, DecoderRNN, dropout
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.layers.graphs import GraphNN
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.constants import VERY_SMALL_NUMBER
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.generic_utils import to_cuda, create_mask
+import torch.nn.functional as F
 
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.layers.attention import *
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.layers.common import (
+    DecoderRNN,
+    EncoderRNN,
+    dropout,
+)
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.layers.graphs import GraphNN
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.constants import (
+    VERY_SMALL_NUMBER,
+)
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.generic_utils import (
+    create_mask,
+    to_cuda,
+)
 
 
 class Graph2SeqOutput(object):

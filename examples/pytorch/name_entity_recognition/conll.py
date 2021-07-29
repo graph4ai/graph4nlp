@@ -1,25 +1,29 @@
+import json
 import os
-
-import torch
+import pickle
+from collections import Counter
+import numpy as np
 import stanfordcorenlp
+import torch
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 from sklearn import preprocessing
-import numpy as np
-from collections import Counter
-import pickle
 
 from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel, Vocab
-
-from graph4nlp.pytorch.modules.utils.tree_utils import Vocab as VocabForTree
-from graph4nlp.pytorch.modules.utils.tree_utils import Tree
-
-import json
 from graph4nlp.pytorch.data.dataset import SequenceLabelingDataset
-from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
-from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
+    ConstituencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import (
+    IEBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.utils.tree_utils import Tree
+from graph4nlp.pytorch.modules.utils.tree_utils import Vocab as VocabForTree
+from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab, VocabModel
+
+from dependency_graph_construction_without_tokenize import (
+    DependencyBasedGraphConstruction_without_tokenizer,
+)
 from line_graph_construction import LineBasedGraphConstruction
 
 
@@ -225,5 +229,3 @@ class ConllDataset(SequenceLabelingDataset):
         else:
             raise NotImplementedError('Currently only static and dynamic are supported!')
         return data_items            
-
-

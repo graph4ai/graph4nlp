@@ -1,14 +1,13 @@
+import os
+import time
 from os.path import join
+import numpy as np
+import torch
 from scipy.sparse import csr_matrix, spmatrix
 
 import h5py
-import os
-import time
-import os
-import numpy as np
-import torch
-
 from src.spodernet.spodernet.utils.logger import Logger
+
 log = Logger('util.py.txt')
 
 rdm = np.random.RandomState(2345235)
@@ -175,4 +174,3 @@ class Timer(object):
         self.current_ticks.pop(name, None)
 
         return value
-

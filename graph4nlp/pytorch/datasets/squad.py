@@ -1,6 +1,6 @@
 import os
-import torch
 import nltk
+import torch
 
 from ..data.dataset import DoubleText2TextDataset
 

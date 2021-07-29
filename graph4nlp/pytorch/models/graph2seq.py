@@ -1,20 +1,16 @@
 import copy
-
 import torch.nn.functional as F
 
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import (
-    WordEmbedding,
-)
-from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import (
-    DecoderStrategy,
-)
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
+
 from .base import Graph2XBase
 
 
 class Graph2Seq(Graph2XBase):
     """
-        The graph2seq model consists the following components: 1) node embedding 2) graph embedding 3) decoding.
+        The graph2seq model consists the following components: 1) node embedding 2) graph embedding 3) decoding. # noqa
         Since the full pipeline will consist all parameters, so we will add prefix to the original parameters
          in each component as follows (except the listed four parameters):
             1) emb_ + parameter_name (eg: ``emb_input_size``)
@@ -109,9 +105,7 @@ class Graph2Seq(Graph2XBase):
             vocab_model=vocab_model,
             rnn_input_size=emb_hidden_size,
             share_vocab=share_vocab,
-            input_size=2 * gnn_hidden_size
-            if gnn_direction_option == "bi_sep"
-            else gnn_hidden_size,
+            input_size=2 * gnn_hidden_size if gnn_direction_option == "bi_sep" else gnn_hidden_size,
             hidden_size=dec_hidden_size,
             graph_pooling_strategy=dec_graph_pooling_strategy,
             use_copy=dec_use_copy,
@@ -188,9 +182,7 @@ class Graph2Seq(Graph2XBase):
         )
         return prob, enc_attn_weights, coverage_vectors
 
-    def encoder_decoder_beam_search(
-        self, batch_graph, beam_size, topk=1, oov_dict=None
-    ):
+    def encoder_decoder_beam_search(self, batch_graph, beam_size, topk=1, oov_dict=None):
         generator = DecoderStrategy(
             beam_size=beam_size,
             vocab=self.seq_decoder.vocab,
@@ -203,9 +195,7 @@ class Graph2Seq(Graph2XBase):
 
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features["node_feat"]
-        beam_results = generator.generate(
-            batch_graph=batch_graph, oov_dict=oov_dict, topk=topk
-        )
+        beam_results = generator.generate(batch_graph=batch_graph, oov_dict=oov_dict, topk=topk)
         return beam_results
 
     def forward(self, batch_graph, tgt_seq=None, oov_dict=None):
@@ -233,9 +223,7 @@ class Graph2Seq(Graph2XBase):
             The coverage vector.
         """
         batch_graph = self.graph_topology(batch_graph)
-        return self.encoder_decoder(
-            batch_graph=batch_graph, oov_dict=oov_dict, tgt_seq=tgt_seq
-        )
+        return self.encoder_decoder(batch_graph=batch_graph, oov_dict=oov_dict, tgt_seq=tgt_seq)
 
     def translate(self, batch_graph, beam_size, topk=1, oov_dict=None):
         """
@@ -256,7 +244,7 @@ class Graph2Seq(Graph2XBase):
         Returns
         -------
         results: torch.Tensor
-            The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes.
+            The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes. # noqa
         """
 
         batch_graph = self.graph_topology(batch_graph)
@@ -286,9 +274,9 @@ class Graph2Seq(Graph2XBase):
         args = copy.deepcopy(emb_args)
         args.update(gnn_args)
         args.update(dec_args)
-        args["share_vocab"] = opt["graph_construction_args"][
-            "graph_construction_share"
-        ]["share_vocab"]
+        args["share_vocab"] = opt["graph_construction_args"]["graph_construction_share"][
+            "share_vocab"
+        ]
         return cls(vocab_model=vocab_model, **args)
 
     @staticmethod
@@ -307,9 +295,7 @@ class Graph2Seq(Graph2XBase):
         private_args = copy.deepcopy(args["graph_embedding_private"])
         if "activation" in private_args.keys():
             private_args["activation"] = (
-                getattr(F, private_args["activation"])
-                if private_args["activation"]
-                else None
+                getattr(F, private_args["activation"]) if private_args["activation"] else None
             )
         if "norm" in private_args.keys():
             private_args["norm"] = (

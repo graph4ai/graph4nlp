@@ -1,9 +1,9 @@
+import dgl
 import torch
 import torch.nn as nn
-import dgl
 
-from ..base import PoolingBase
 from .....data.data import from_batch
+from ..base import PoolingBase
 
 
 class MaxPooling(PoolingBase):

@@ -1,10 +1,13 @@
-from operator import itemgetter
+import copy
 import pickle as pkl
-import torch
+from operator import itemgetter
 from random import randint
 import numpy as np
-import copy
+import torch
+
 from graph4nlp.pytorch.data.data import to_batch
+
+
 class Tree():
     def __init__(self):
         self.parent = None

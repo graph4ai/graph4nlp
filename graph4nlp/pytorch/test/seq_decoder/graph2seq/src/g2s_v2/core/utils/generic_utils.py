@@ -4,11 +4,11 @@ Created on Nov, 2018
 @author: hugo
 
 '''
-import yaml
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import yaml
 
 
 def tile(x, count, dim=0):

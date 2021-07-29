@@ -4,8 +4,8 @@
 # Acknowledge Michael Denkowski for the generous discussion and help
 
 import os
-import sys
 import subprocess
+import sys
 import threading
 
 # Assumes meteor_tool-1.5.jar is in the same directory as meteor_tool.py.  Change as needed.

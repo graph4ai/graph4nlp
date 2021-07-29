@@ -1,25 +1,29 @@
 import numpy as np
-import numpy as np
 import torch
 import torch.optim as optim
-from args import get_args
-from build_model import get_model
-from evaluation import ExpressionAccuracy
 from torch.utils.data import DataLoader
-from utils import get_log, wordid2str
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import \
-    ConstituencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import \
-    NodeEmbeddingBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import \
-    NodeEmbeddingBasedRefinedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
+    ConstituencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
+    NodeEmbeddingBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (
+    NodeEmbeddingBasedRefinedGraphConstruction,
+)
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
+from args import get_args
+from build_model import get_model
+from evaluation import ExpressionAccuracy
+from utils import get_log, wordid2str
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 

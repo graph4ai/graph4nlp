@@ -1,15 +1,16 @@
 import copy
-import json
 import itertools
+import json
+from collections import Counter
 import dgl
+import stanfordcorenlp
 import torch
 from stanfordcorenlp import StanfordCoreNLP
-from collections import Counter
-#from nltk.parse.corenlp import CoreNLPDependencyParser
+
 from graph4nlp.pytorch.data.data import *
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
-import stanfordcorenlp
+from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
+
 
 def get_new_sent(dep_info):
     new_sent=[]

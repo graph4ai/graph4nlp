@@ -1,37 +1,42 @@
-import json
-import torch
-import pickle
-import numpy as np
 import argparse
-import sys
-import os
+import json
 import math
-
-from os.path import join
+import os
+import pickle as pkl
+import sys
+from os.path import exists, join
+import numpy as np
+import scipy
+import scipy.sparse as sp
+import torch
 import torch.backends.cudnn as cudnn
 
 from evaluation import ranking_and_hits
-from models import SACN, ConvTransE, ConvE
-from models_graph4nlp import DistMult, DistMultGNN, TransEGNN, TransE, Complex, ComplexGNN
-from src.spodernet.spodernet.preprocessing.pipeline import Pipeline, DatasetStreamer
-from src.spodernet.spodernet.preprocessing.processors import JsonLoaderProcessors, Tokenizer, AddToVocab, SaveLengthsToState, StreamToHDF5, SaveMaxLengthsToState, CustomTokenizer
-from src.spodernet.spodernet.preprocessing.processors import ConvertTokenToIdx, ApplyFunction, ToLower, DictKey2ListMapper, ApplyFunction, StreamToBatch
-from src.spodernet.spodernet.utils.global_config import Config, Backends
-from src.spodernet.spodernet.utils.logger import Logger, LogLevel
+from models import SACN, ConvE, ConvTransE
+from models_graph4nlp import Complex, ComplexGNN, DistMult, DistMultGNN, TransE, TransEGNN
+from src.spodernet.spodernet.hooks import ETAHook, LossHook
 from src.spodernet.spodernet.preprocessing.batching import StreamBatcher
-from src.spodernet.spodernet.preprocessing.pipeline import Pipeline
-from src.spodernet.spodernet.preprocessing.processors import TargetIdx2MultiTarget
-from src.spodernet.spodernet.hooks import LossHook, ETAHook
+from src.spodernet.spodernet.preprocessing.pipeline import DatasetStreamer, Pipeline
+from src.spodernet.spodernet.preprocessing.processors import (
+    AddToVocab,
+    ApplyFunction,
+    ConvertTokenToIdx,
+    CustomTokenizer,
+    DictKey2ListMapper,
+    JsonLoaderProcessors,
+    SaveLengthsToState,
+    SaveMaxLengthsToState,
+    StreamToBatch,
+    StreamToHDF5,
+    TargetIdx2MultiTarget,
+    Tokenizer,
+    ToLower,
+)
+from src.spodernet.spodernet.utils.cuda_utils import CUDATimer
+from src.spodernet.spodernet.utils.global_config import Backends, Config
+from src.spodernet.spodernet.utils.logger import Logger, LogLevel
 from src.spodernet.spodernet.utils.util import Timer
-from src.spodernet.spodernet.utils.cuda_utils import CUDATimer
-from src.spodernet.spodernet.utils.cuda_utils import CUDATimer
-from src.spodernet.spodernet.preprocessing.processors import TargetIdx2MultiTarget
-import scipy.sparse as sp
-import scipy
-from os.path import join, exists
-import os, sys
-import pickle as pkl
-import pickle
+
 path_dir = os.getcwd()
 
 np.set_printoptions(precision=3)
@@ -278,4 +283,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

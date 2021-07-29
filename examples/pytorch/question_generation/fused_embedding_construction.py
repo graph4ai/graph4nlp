@@ -2,8 +2,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import *
+from graph4nlp.pytorch.modules.utils import constants as Constants
 
 
 class FusedEmbeddingConstruction(EmbeddingConstructionBase):

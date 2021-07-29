@@ -1,18 +1,24 @@
 import abc
 import os
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import \
-    ConstituencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import \
-    NodeEmbeddingBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import \
-    NodeEmbeddingBasedRefinedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
+    ConstituencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import (
+    IEBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
+    NodeEmbeddingBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (
+    NodeEmbeddingBasedRefinedGraphConstruction,
+)
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN

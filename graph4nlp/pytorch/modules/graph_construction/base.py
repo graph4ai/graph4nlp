@@ -1,13 +1,12 @@
 import numpy as np
-from scipy import sparse
 import torch
-from torch import nn
 import torch.nn.functional as F
+from scipy import sparse
+from torch import nn
 
-from .embedding_construction import EmbeddingConstruction
-from ..utils.constants import INF
+from ..utils.constants import INF, VERY_SMALL_NUMBER
 from ..utils.generic_utils import normalize_adj, sparse_mx_to_torch_sparse_tensor
-from ..utils.constants import VERY_SMALL_NUMBER
+from .embedding_construction import EmbeddingConstruction
 
 
 class GraphConstructionBase(nn.Module):

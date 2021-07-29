@@ -1,13 +1,12 @@
 import operator
+from copy import deepcopy
 from queue import PriorityQueue
-
 import torch
 import torch.nn as nn
 
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.prediction.generation.base import DecoderBase
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-from copy import deepcopy
 
 
 class StrategyBase(nn.Module):
@@ -389,5 +388,3 @@ class DecoderStrategy(StrategyBase):
                                                      length=-1))
 
         return output_results
-
-

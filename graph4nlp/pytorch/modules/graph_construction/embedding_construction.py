@@ -1,15 +1,14 @@
+import dgl
 import numpy as np
 import torch
 from torch import nn
-from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
-import dgl
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
-from ..utils.vocab_utils import Vocab
-from ..utils.generic_utils import to_cuda, dropout_fn, create_mask
-from ..utils.padding_utils import pad_4d_vals
-from ..utils.bert_utils import *
 from ...data.data import from_batch
-
+from ..utils.bert_utils import *
+from ..utils.generic_utils import create_mask, dropout_fn, to_cuda
+from ..utils.padding_utils import pad_4d_vals
+from ..utils.vocab_utils import Vocab
 
 
 class EmbeddingConstructionBase(nn.Module):

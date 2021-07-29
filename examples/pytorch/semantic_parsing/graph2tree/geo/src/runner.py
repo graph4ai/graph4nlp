@@ -1,10 +1,10 @@
-import os
-import random
-import time
-import pickle
 import argparse
 import copy
-
+import os
+import pickle
+import random
+import time
+import warnings
 import numpy as np
 import torch
 import torch.nn as nn
@@ -16,12 +16,11 @@ from tqdm import tqdm
 
 from graph4nlp.pytorch.data.data import to_batch
 from graph4nlp.pytorch.datasets.geo import GeoDatasetForTree
+from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_embedding import *
-from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from graph4nlp.pytorch.modules.utils.tree_utils import Tree, VocabForAll
 
-import warnings
 warnings.filterwarnings('ignore')
 
 

@@ -1,23 +1,30 @@
+import datetime
+import pickle
+import queue
+import threading
+import time
+from collections import namedtuple
+from os.path import exists, join
+import numpy as np
+
 from future import standard_library
+from src.spodernet.spodernet.hooks import ETAHook
+from src.spodernet.spodernet.interfaces import (
+    IAtBatchPreparedObservable,
+    IAtEpochEndObservable,
+    IAtEpochStartObservable,
+    IAtIterEndObservable,
+)
+from src.spodernet.spodernet.preprocessing.processors import DictConverter
+from src.spodernet.spodernet.utils.global_config import Backends, Config
+from src.spodernet.spodernet.utils.logger import Logger
+from src.spodernet.spodernet.utils.util import Timer, get_data_path, load_data
+
 standard_library.install_aliases()
 
-from os.path import join, exists
-import threading
-from collections import namedtuple
 
-import time
-import datetime
-import numpy as np
-import queue
-import pickle
 
-from src.spodernet.spodernet.utils.util import get_data_path, load_data, Timer
-from src.spodernet.spodernet.utils.global_config import Config, Backends
-from src.spodernet.spodernet.hooks import ETAHook
-from src.spodernet.spodernet.interfaces import IAtIterEndObservable, IAtEpochEndObservable, IAtEpochStartObservable, IAtBatchPreparedObservable
-from src.spodernet.spodernet.preprocessing.processors import DictConverter
 
-from src.spodernet.spodernet.utils.logger import Logger
 log = Logger('batching.py.txt')
 
 benchmark = False

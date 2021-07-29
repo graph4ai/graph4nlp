@@ -1,20 +1,21 @@
-import os
 import argparse
-import numpy as np
-import networkx as nx
+import os
 import time
+import dgl
+import networkx as nx
+import numpy as np
 import torch
+import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.backends.cudnn as cudnn
-import dgl
 from dgl import DGLGraph
-from dgl.data import register_data_args, load_data
+from dgl.data import load_data, register_data_args
 
-from .utils import EarlyStopping
+from ...data.data import GraphData
 # from utils import EarlyStopping
 from ...modules.graph_embedding.ggnn import GGNN
-from ...data.data import GraphData
+from .utils import EarlyStopping
+
 # from graph4nlp.pytorch.modules.graph_construction.ggnn import GGNN
 # from graph4nlp.pytorch.test.graph_construction.utils import EarlyStopping
 

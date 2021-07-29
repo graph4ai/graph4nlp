@@ -2,6 +2,7 @@ from __future__ import print_function
 import torch
 from torch.cuda import Event
 
+
 class CUDATimer(object):
     def __init__(self, silent=False):
         self.cumulative_secs = {}

@@ -1,7 +1,9 @@
 import collections
+import torch
 from torch import nn
-import torch 
+
 from ..base import LinkPredictionLayerBase
+
 
 class ConcatFeedForwardNNLayer(LinkPredictionLayerBase):
     r"""Specific class for link prediction task.
@@ -65,7 +67,3 @@ class ConcatFeedForwardNNLayer(LinkPredictionLayerBase):
         dst_emb = node_emb[dst_idx, :]  # input the destinate node embeddings into ffnn
         fused_emb=self.ffnn_all1(torch.cat([src_emb, dst_emb], dim=1))
         return self.ffnn_all2(self.activation(fused_emb))
-
-
-
-

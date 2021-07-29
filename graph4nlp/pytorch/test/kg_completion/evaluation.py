@@ -1,13 +1,12 @@
-import torch
-import numpy as np
 import datetime
-
-from src.spodernet.spodernet.utils.global_config import Config
-from src.spodernet.spodernet.utils.cuda_utils import CUDATimer
-from src.spodernet.spodernet.utils.logger import Logger
-from torch.autograd import Variable
+import numpy as np
+import torch
 from sklearn import metrics
+from torch.autograd import Variable
 
+from src.spodernet.spodernet.utils.cuda_utils import CUDATimer
+from src.spodernet.spodernet.utils.global_config import Config
+from src.spodernet.spodernet.utils.logger import Logger
 
 #timer = CUDATimer()
 log = Logger('evaluation{0}.py.txt'.format(datetime.datetime.now()))

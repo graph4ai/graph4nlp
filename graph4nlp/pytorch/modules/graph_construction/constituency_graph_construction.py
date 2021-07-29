@@ -1,11 +1,11 @@
 import copy
 import json
-
 import torch
 from pythonds.basic.stack import Stack
 from stanfordcorenlp import StanfordCoreNLP
 
 from graph4nlp.pytorch.data.data import GraphData, to_batch
+
 from .base import StaticGraphConstructionBase
 from .utils import CORENLP_TIMEOUT_SIGNATURE
 

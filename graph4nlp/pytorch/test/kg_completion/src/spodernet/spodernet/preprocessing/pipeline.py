@@ -1,19 +1,17 @@
-from os.path import join
-
+import json
 import os
 import shutil
-import json
+import sys
 import zipfile
+from os.path import join
 import numpy as np
-
-from src.spodernet.spodernet.preprocessing.vocab import Vocab
-from src.spodernet.spodernet.utils.util import Timer
-from src.spodernet.spodernet.preprocessing.processors import SaveLengthsToState
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from src.spodernet.spodernet.preprocessing.processors import SaveLengthsToState
+from src.spodernet.spodernet.preprocessing.vocab import Vocab
 from src.spodernet.spodernet.utils.logger import Logger
+from src.spodernet.spodernet.utils.util import Timer
 
-import os, sys
 path_dir = os.getcwd()
 
 log = Logger('pipeline.py.txt')

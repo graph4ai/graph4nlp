@@ -1,6 +1,4 @@
 import torch
-from .StackedElementProdLayer import StackedElementProdLayer
-import torch
 
 from .StackedElementProdLayer import StackedElementProdLayer
 

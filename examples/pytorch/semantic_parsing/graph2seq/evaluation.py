@@ -12,4 +12,3 @@ class ExpressionAccuracy(EvaluationMetricBase):
             if gt == pred:
                 correct += 1.
         return correct / len(ground_truth)
-

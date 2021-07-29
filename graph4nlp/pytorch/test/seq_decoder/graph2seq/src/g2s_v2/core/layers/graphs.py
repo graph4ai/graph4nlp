@@ -2,8 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.layers.common import (
+    GatedFusion,
+    GRUStep,
+)
 from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.generic_utils import to_cuda
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.layers.common import GatedFusion, GRUStep
 
 
 class GraphNN(nn.Module):

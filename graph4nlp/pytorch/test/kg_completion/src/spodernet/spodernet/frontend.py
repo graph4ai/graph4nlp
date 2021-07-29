@@ -1,8 +1,8 @@
 from itertools import chain
 
-from src.spodernet.spodernet.utils.global_config import Config, Backends
-
+from src.spodernet.spodernet.utils.global_config import Backends, Config
 from src.spodernet.spodernet.utils.logger import Logger
+
 log = Logger('frontend.py.txt')
 
 

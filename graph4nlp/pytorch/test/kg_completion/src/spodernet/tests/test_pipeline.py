@@ -1,34 +1,48 @@
 from __future__ import unicode_literals
+import itertools
+import json
+import os
+import pickle
+import shutil
+import uuid
 from io import StringIO
 from os.path import join
-
-import uuid
-import os
 import nltk
-import pytest
-import json
 import numpy as np
-import shutil
-import itertools
 import scipy.stats
-import spacy
-import pickle
-
-from io import StringIO
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from spodernet.preprocessing.pipeline import Pipeline, DatasetStreamer, StreamMethods
-from spodernet.preprocessing.processors import Tokenizer, CustomTokenizer, SaveStateToList, AddToVocab, ToLower, ConvertTokenToIdx, SentTokenizer
-from spodernet.preprocessing.processors import JsonLoaderProcessors, RemoveLineOnJsonValueCondition, DictKey2ListMapper
-from spodernet.preprocessing.processors import StreamToHDF5, DeepSeqMap, StreamToBatch, TargetIdx2MultiTarget
-from spodernet.preprocessing.processors import NERTokenizer, POSTokenizer, DependencyParser, TfidfFitter, TfidfTransformer
+import pytest
+import spacy
+from spodernet.hooks import AccuracyHook, ETAHook, LossHook
+from spodernet.preprocessing.batching import BatcherState, StreamBatcher
+from spodernet.preprocessing.pipeline import DatasetStreamer, Pipeline, StreamMethods
+from spodernet.preprocessing.processors import (
+    AddToVocab,
+    ConvertTokenToIdx,
+    CustomTokenizer,
+    DeepSeqMap,
+    DependencyParser,
+    DictKey2ListMapper,
+    JsonLoaderProcessors,
+    NERTokenizer,
+    POSTokenizer,
+    RemoveLineOnJsonValueCondition,
+    SaveStateToList,
+    SentTokenizer,
+    StreamToBatch,
+    StreamToHDF5,
+    TargetIdx2MultiTarget,
+    TfidfFitter,
+    TfidfTransformer,
+    Tokenizer,
+    ToLower,
+)
 from spodernet.preprocessing.vocab import Vocab
-from spodernet.preprocessing.batching import StreamBatcher, BatcherState
-from spodernet.utils.util import get_data_path, load_data
-from spodernet.utils.global_config import Config, Backends
-from spodernet.hooks import LossHook, AccuracyHook, ETAHook
-
+from spodernet.utils.global_config import Backends, Config
 from spodernet.utils.logger import Logger, LogLevel
+from spodernet.utils.util import get_data_path, load_data
+
 log = Logger('test_pipeline.py.txt')
 
 Logger.GLOBAL_LOG_LEVEL = LogLevel.STATISTICAL

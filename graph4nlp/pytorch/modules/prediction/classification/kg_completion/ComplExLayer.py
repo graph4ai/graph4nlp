@@ -1,5 +1,6 @@
-from torch import nn
 import torch
+from torch import nn
+
 from ..base import KGCompletionLayerBase
 
 

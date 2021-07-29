@@ -1,6 +1,8 @@
-from torch import nn
 import torch
+from torch import nn
+
 from ..base import LinkPredictionLayerBase
+
 
 class StackedElementProdLayer(LinkPredictionLayerBase):
     r"""Specific class for link prediction task.
@@ -69,9 +71,3 @@ class StackedElementProdLayer(LinkPredictionLayerBase):
             
             
         return self.ffnn(torch.cat(edge_emb,dim=1))
-
-
-
-
-
-

@@ -1,8 +1,8 @@
 import tensorflow as tf
-
 from spodernet.interfaces import IAtBatchPreparedObservable
-from spodernet.utils.util import Timer
 from spodernet.utils.global_config import Config
+from spodernet.utils.util import Timer
+
 
 class TensorFlowConfig:
     inp = None
@@ -104,4 +104,3 @@ class TFTrainer(object):
 
             if iterations > 0:
                 if i == iterations: break
-

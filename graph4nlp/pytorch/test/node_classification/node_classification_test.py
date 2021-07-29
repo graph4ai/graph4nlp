@@ -1,15 +1,21 @@
-import argparse, time
-import numpy as np
+import argparse
+import time
 import networkx as nx
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dgl import DGLGraph
-from dgl.data import register_data_args, load_data
-from prediction.classification.node_classification.FeedForwardNNLayer import FeedForwardNNLayer  
+from dgl.data import load_data, register_data_args
 from dgl.nn.pytorch import GraphConv
-from ...modules.prediction.classification.node_classification.BiLSTMFeedForwardNNLayer import BiLSTMFeedForwardNNLayer 
+
+from prediction.classification.node_classification.FeedForwardNNLayer import FeedForwardNNLayer
+
 from ...data.data import *
+from ...modules.prediction.classification.node_classification.BiLSTMFeedForwardNNLayer import (
+    BiLSTMFeedForwardNNLayer,
+)
+
 
 class GCN(nn.Module):
     def __init__(self,

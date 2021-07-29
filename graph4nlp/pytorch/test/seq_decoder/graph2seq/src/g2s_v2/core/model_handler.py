@@ -1,15 +1,27 @@
+import json
 import os
 import time
-import json
-
 import torch
-from torch.utils.data import DataLoader
 import torch.backends.cudnn as cudnn
+from torch.utils.data import DataLoader
 
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.model import Model, evaluate_predictions, compute_accuracy
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.data_utils import prepare_datasets, DataStream, vectorize_input
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils import Timer, DummyLogger, AverageMeter
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils import constants as Constants
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.model import (
+    Model,
+    compute_accuracy,
+    evaluate_predictions,
+)
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils import (
+    AverageMeter,
+    DummyLogger,
+    Timer,
+)
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils import \
+    constants as Constants
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.data_utils import (
+    DataStream,
+    prepare_datasets,
+    vectorize_input,
+)
 
 
 class ModelHandler(object):

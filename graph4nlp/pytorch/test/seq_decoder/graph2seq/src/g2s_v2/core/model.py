@@ -1,22 +1,27 @@
 import os
 import random
-import numpy as np
 from collections import Counter
-import sympy
-from sympy.parsing.sympy_parser import parse_expr
-
-
+import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-import torch.nn.functional as F
 
 from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.models.graph2seq2 import Graph2Seq
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.vocab_utils import VocabModel
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils import constants as Constants
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.generic_utils import to_cuda, create_mask
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils import \
+    constants as Constants
 from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.constants import INF
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.generic_utils import (
+    create_mask,
+    to_cuda,
+)
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.vocab_utils import (
+    VocabModel,
+)
+
+import sympy
+from sympy.parsing.sympy_parser import parse_expr
 
 
 class Model(object):

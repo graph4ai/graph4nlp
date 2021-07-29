@@ -6,6 +6,23 @@ nodes or edges. Batching operations is also supported by :py:class:`GraphData`.
 
 """
 import os
+import warnings
+from collections import namedtuple
+from typing import Any, Callable, Dict, KeysView, List, Tuple, Union
+import dgl
+import scipy.sparse
+import torch
+from torch.nn.utils.rnn import pad_sequence
+
+from .utils import (
+    EdgeNotFoundException,
+    SizeMismatchException,
+    check_and_expand,
+    entail_zero_padding,
+    int_to_list,
+    slice_to_list,
+)
+from .views import BatchEdgeFeatView, BatchNodeFeatView, EdgeView, NodeFeatView, NodeView
 
 """
 Log level: 0 for verbose, 1 for warnings only, 2 for muted. Default is 0.
@@ -14,18 +31,8 @@ log_level = os.environ.get("G4NLP_LOG_LEVEL")
 if log_level is None:
     log_level = 0
 
-import warnings
-from collections import namedtuple
-from typing import KeysView, Tuple, Union, List, Dict, Any, Callable
 
-import dgl
-import scipy.sparse
-import torch
-from torch.nn.utils.rnn import pad_sequence
 
-from .utils import SizeMismatchException, EdgeNotFoundException
-from .utils import check_and_expand, int_to_list, entail_zero_padding, slice_to_list
-from .views import NodeView, NodeFeatView, EdgeView, BatchNodeFeatView, BatchEdgeFeatView
 
 EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
 

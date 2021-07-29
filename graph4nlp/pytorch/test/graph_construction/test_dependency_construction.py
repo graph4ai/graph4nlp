@@ -1,5 +1,8 @@
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from stanfordcorenlp import StanfordCoreNLP
+
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 
 

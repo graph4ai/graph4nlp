@@ -1,20 +1,22 @@
 
-import os
 import argparse
-import numpy as np
-import networkx as nx
+import os
 import time
+import dgl
+import networkx as nx
+import numpy as np
 import torch
+import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.backends.cudnn as cudnn
-import dgl
 from dgl import DGLGraph
-from dgl.data import register_data_args, load_data
 from dgl.data import citation_graph as citegrh
+from dgl.data import load_data, register_data_args
+
 from ...data.data import *
-from .utils import EarlyStopping
 from ...modules.graph_embedding.graphsage import GraphSAGE
+from .utils import EarlyStopping
+
 
 def accuracy(logits, labels):
     _, indices = torch.max(logits, dim=1)

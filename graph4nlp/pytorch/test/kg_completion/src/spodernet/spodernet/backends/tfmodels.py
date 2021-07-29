@@ -1,9 +1,11 @@
-import tensorflow as tf
-from tensorflow import placeholder
-from spodernet.backends.tfbackend import TensorFlowConfig
-from spodernet.utils.global_config import Config
-from spodernet.frontend import AbstractModel
 import numpy as np
+
+import tensorflow as tf
+from spodernet.backends.tfbackend import TensorFlowConfig
+from spodernet.frontend import AbstractModel
+from spodernet.utils.global_config import Config
+from tensorflow import placeholder
+
 
 def reader(inputs, lengths, output_size, contexts=(None, None), scope=None):
     with tf.variable_scope(scope or "reader") as varscope:

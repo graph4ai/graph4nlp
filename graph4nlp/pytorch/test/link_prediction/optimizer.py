@@ -1,7 +1,6 @@
 import torch
-import torch.nn.modules.loss
 import torch.nn.functional as F
-
+import torch.nn.modules.loss
 
 # def loss_function(preds, labels, mu, logvar, n_nodes, norm, weight):
 #     cost = norm * F.cross_entropy(preds, labels, weight=torch.tensor([weight,1]))
