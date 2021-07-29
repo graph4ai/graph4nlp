@@ -69,6 +69,7 @@ Sphinx themes: `Link <https://sphinx-themes.org/>`_
    tutorial/text_classification
    tutorial/semantic_parsing
    tutorial/math_word_problem
+   tutorial/knowledge_graph_completion
 
 
 
