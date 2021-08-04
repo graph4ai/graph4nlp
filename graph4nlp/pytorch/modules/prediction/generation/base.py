@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 
 
@@ -31,8 +30,14 @@ class DecoderBase(nn.Module):
         "``concatenate``": We will concatenate all results to one.
     """
 
-    def __init__(self, use_attention=True, use_copy=False, use_coverage=False,
-                 attention_type="uniform", fuse_strategy="average"):
+    def __init__(
+        self,
+        use_attention=True,
+        use_copy=False,
+        use_coverage=False,
+        attention_type="uniform",
+        fuse_strategy="average",
+    ):
         super(DecoderBase, self).__init__()
         self.use_attention = use_attention
         self.use_copy = use_copy
@@ -42,13 +47,13 @@ class DecoderBase(nn.Module):
 
     def forward(self, **kwargs):
         r"""
-            Forward calculation method
+        Forward calculation method
         """
         raise NotImplementedError()
 
     def decode_step(self, **kwargs):
         r"""
-            One step for decoding
+        One step for decoding
         """
         raise NotImplementedError()
 
@@ -62,15 +67,26 @@ class DecoderBase(nn.Module):
 
 
 class RNNDecoderBase(DecoderBase):
-    def __init__(self, use_attention=True, use_copy=False, use_coverage=False, attention_type="uniform",
-                 fuse_strategy="average"):
-        super(RNNDecoderBase, self).__init__(use_attention=use_attention, use_copy=use_copy, use_coverage=use_coverage,
-                                             attention_type=attention_type, fuse_strategy=fuse_strategy)
+    def __init__(
+        self,
+        use_attention=True,
+        use_copy=False,
+        use_coverage=False,
+        attention_type="uniform",
+        fuse_strategy="average",
+    ):
+        super(RNNDecoderBase, self).__init__(
+            use_attention=use_attention,
+            use_copy=use_copy,
+            use_coverage=use_coverage,
+            attention_type=attention_type,
+            fuse_strategy=fuse_strategy,
+        )
 
     def _build_rnn(self, **kwargs):
         """
-            The private function to design the specific RNN models.
-            MUST be override by subclass
+        The private function to design the specific RNN models.
+        MUST be override by subclass
         """
         raise NotImplementedError()
 
@@ -81,8 +97,16 @@ class RNNDecoderBase(DecoderBase):
         params = self._extract_params(g)
         return self._run_forward_pass(**params, tgt_seq=tgt_seq)
 
-    def _run_forward_pass(self, graph_node_embedding, graph_node_mask, rnn_node_embedding, graph_level_embedding,
-                          graph_edge_embedding=None, graph_edge_mask=None, tgt_seq=None):
+    def _run_forward_pass(
+        self,
+        graph_node_embedding,
+        graph_node_mask,
+        rnn_node_embedding,
+        graph_level_embedding,
+        graph_edge_embedding=None,
+        graph_edge_mask=None,
+        tgt_seq=None,
+    ):
         r"""
             The private calculation method for decoder.
 
@@ -112,9 +136,17 @@ class RNNDecoderBase(DecoderBase):
         """
         raise NotImplementedError()
 
-    def decode_step(self, decoder_input, rnn_state, encoder_out, dec_input_mask, rnn_emb=None,
-                    enc_attn_weights_average=None,
-                    src_seq=None, oov_dict=None):
+    def decode_step(
+        self,
+        decoder_input,
+        rnn_state,
+        encoder_out,
+        dec_input_mask,
+        rnn_emb=None,
+        enc_attn_weights_average=None,
+        src_seq=None,
+        oov_dict=None,
+    ):
         r"""
             One step for decoding
         Parameters
@@ -127,7 +159,7 @@ class RNNDecoderBase(DecoderBase):
             The graph node embedding for decoding
         dec_input_mask: torch.Tensor
             The mask of graph node.
-            Notes: ``-1`` is the dummy node, each int larger than -1 is one class for separate attention.
+            Notes: ``-1`` is the dummy node, each int larger than -1 is one class for separate attention. # noqa
         rnn_emb: torch.Tensor
             The graph node embedding from RNN encoder.
         enc_attn_weights_average: list
@@ -174,7 +206,7 @@ class RNNTreeDecoderBase(DecoderBase):
         The attention strategy choice.
         "``uniform``": uniform attention. We will attend on the nodes uniformly.
         "``separate_different_encoder_type``": separate attention.
-                                               We will attend on different encoder results separately.
+                                               We will attend on different encoder results separately. # noqa
         "``separate_different_node_type``": separate attention.
                                             We will attend on different node type separately.
 
@@ -187,22 +219,39 @@ class RNNTreeDecoderBase(DecoderBase):
         The probability rate to use teacher forcing strategy.
     """
 
-    def __init__(self, use_attention=True, use_copy=False, use_coverage=False, attention_type="uniform",
-                 fuse_strategy="average"):
+    def __init__(
+        self,
+        use_attention=True,
+        use_copy=False,
+        use_coverage=False,
+        attention_type="uniform",
+        fuse_strategy="average",
+    ):
         super(RNNTreeDecoderBase, self).__init__(use_attention=use_attention)
 
     def _build_rnn(self, rnn_type, **kwargs):
         """
-            The private function to design the specific RNN models.
-            MUST be override by subclass
+        The private function to design the specific RNN models.
+        MUST be override by subclass
         """
         raise NotImplementedError()
 
     def forward(self, encoder_output_dict, tgt_tree_batch, enc_batch):
-        return self._run_forward_pass(**encoder_output_dict, tgt_tree_batch=tgt_tree_batch, enc_batch=enc_batch)
+        return self._run_forward_pass(
+            **encoder_output_dict, tgt_tree_batch=tgt_tree_batch, enc_batch=enc_batch
+        )
 
-    def _run_forward_pass(self, graph_node_embedding, graph_node_mask, rnn_node_embedding, graph_level_embedding,
-                          graph_edge_embedding=None, graph_edge_mask=None, tgt=None, enc_batch=None):
+    def _run_forward_pass(
+        self,
+        graph_node_embedding,
+        graph_node_mask,
+        rnn_node_embedding,
+        graph_level_embedding,
+        graph_edge_embedding=None,
+        graph_edge_mask=None,
+        tgt=None,
+        enc_batch=None,
+    ):
         r"""
             The private calculation method for decoder.
 
