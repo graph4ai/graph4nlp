@@ -56,7 +56,7 @@
 
 ## Quick tour
 
-***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (check out [Graph4NLP Documentation](http://saizhuo.wang/g4nlp/index.html)). Here is an example of how to use the [*Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering,
+***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (check out [Graph4NLP Documentation](https://graph4ai.github.io/graph4nlp/)). Here is an example of how to use the [*Graph2seq*](https://graph4ai.github.io/graph4nlp/) model (widely used in machine translation, question answering,
 semantic parsing, and various other NLP tasks that can be abstracted as graph-to-sequence problem and has shown superior
 performance).
 
@@ -226,7 +226,7 @@ python setup.py install
 If you want to learn more on applying Deep Learning on Graphs techniques to NLP tasks, you can refer to our survey paper which provides an overview of this existing research direction. If you want detailed reference to our library, please refer to our docs.
 
 <!-- [Docs]() | [Graph4nlp survey]() | [Related paper list]() | [Workshops]() -->
-- Documentation: [Docs](http://saizhuo.wang/g4nlp/index.html)  
+- Documentation: [Docs](https://graph4ai.github.io/graph4nlp/)  
 - Graph4NLP Survey: [Graph4nlp survey](http://arxiv.org/abs/2106.06090)  
 - Graph4NLP Tutorials: 
     - [Graph4NLP-SIGIR'21](Video: [google drive](https://lnkd.in/ekx3qaJ), Slides: [google drive](https://lnkd.in/ekMx-m7))
