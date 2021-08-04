@@ -17,7 +17,8 @@ class GraphConstructionBase(nn.Module):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens. # noqa
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single
+         token or multiple tokens.
         - ``emb_strategy`` : specify the embedding construction strategy.
         - ``num_rnn_layers``: specify the number of RNN layers.
         - ``bert_model_name``: specify the BERT model name.
@@ -116,7 +117,8 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens. # noqa
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single
+        token or multiple tokens.
         - ``emb_strategy`` : specify the embedding construction strategy.
         - ``num_rnn_layers``: specify the number of RNN layers.
         - ``bert_model_name``: specify the BERT model name.
@@ -187,7 +189,8 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens. # noqa
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single
+        token or multiple tokens.
         - ``emb_strategy`` : specify the embedding construction strategy.
         - ``num_rnn_layers``: specify the number of RNN layers.
         - ``bert_model_name``: specify the BERT model name.
