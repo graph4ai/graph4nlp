@@ -4,11 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from graph4nlp.pytorch.data.data import GraphData, from_batch
-from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
-from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
+from graph4nlp.pytorch.modules.utils.tree_utils import Tree, to_cuda
 
-from ...utils.tree_utils import Tree, to_cuda
 from .attention import Attention
 from .base import RNNTreeDecoderBase
 
@@ -19,19 +16,21 @@ class StdTreeDecoder(RNNTreeDecoderBase):
     Attributes
     ----------
     attn_type : str,
-        Describe which attention mechanism is used, can be ``uniform``, ``separate_on_encoder_type``, ``separate_on_node_type``.
+        Describe which attention mechanism is used, can be ``uniform``,
+        ``separate_on_encoder_type``, ``separate_on_node_type``.
 
     embeddings : torch.nn.Module,
         Embedding layer, input is tensor of word index, output is word embedding tensor.
 
-    enc_hidden_size : int, 
+    enc_hidden_size : int,
         Size of encoder hidden state.
 
     dec_emb_size : int,
         Size of decoder word embedding layer output size.
 
     dec_hidden_size : int,
-        Size of decoder hidden state. (namely the ``lstm`` or ``gru`` hidden size when rnn unit has been specified)
+        Size of decoder hidden state. (namely the ``lstm`` or ``gru``
+        hidden size when rnn unit has been specified)
 
     output_size : int,
         Size of output vocabulary size.
@@ -55,11 +54,13 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         Layer number of decoder rnn unit.
 
     dropout_for_decoder: float,
-        Dropout ratio for decoder(include both the dropout for word embedding and the dropout for attention layer)
-    
+        Dropout ratio for decoder(include both the dropout for word embedding
+        and the dropout for attention layer)
+
     tgt_vocab : object,
-        The vocab object used in decoder, including all the word<->id pairs appeared in the output sentences.
-    
+        The vocab object used in decoder, including all the word<->id pairs
+        appeared in the output sentences.
+
     graph_pooling_strategy : str,
         The graph pooling strategy used to generate the graph embedding with node embeddings
 
@@ -73,18 +74,36 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         In decoding, the tree depth lower limit.
     """
 
-    def __init__(self, attn_type, embeddings, enc_hidden_size, dec_emb_size,
-                 dec_hidden_size, output_size, criterion, teacher_force_ratio,
-                 use_sibling=True, use_attention=True, use_copy=False,
-                 fuse_strategy="average", num_layers=1,
-                 dropout_for_decoder=0.1, rnn_type="lstm", max_dec_seq_length=512,
-                 max_dec_tree_depth=256, tgt_vocab=None, graph_pooling_strategy="max"):
+    def __init__(
+        self,
+        attn_type,
+        embeddings,
+        enc_hidden_size,
+        dec_emb_size,
+        dec_hidden_size,
+        output_size,
+        criterion,
+        teacher_force_ratio,
+        use_sibling=True,
+        use_attention=True,
+        use_copy=False,
+        fuse_strategy="average",
+        num_layers=1,
+        dropout_for_decoder=0.1,
+        rnn_type="lstm",
+        max_dec_seq_length=512,
+        max_dec_tree_depth=256,
+        tgt_vocab=None,
+        graph_pooling_strategy="max",
+    ):
 
-        super(StdTreeDecoder, self).__init__(use_attention=True,
-                                             use_copy=use_copy,
-                                             use_coverage=False,
-                                             attention_type="uniform",
-                                             fuse_strategy="average")
+        super(StdTreeDecoder, self).__init__(
+            use_attention=True,
+            use_copy=use_copy,
+            use_coverage=False,
+            attention_type="uniform",
+            fuse_strategy="average",
+        )
         self.num_layers = num_layers
         self.criterion = criterion
         self.rnn_size = dec_hidden_size
@@ -102,39 +121,52 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
         self.attn_state = {}
         self.use_copy = use_copy
-        self.attention = Attention(query_size=dec_hidden_size,
-                                   memory_size=enc_hidden_size*2 if (enc_hidden_size*2 == dec_hidden_size) else enc_hidden_size,
-                                   hidden_size=dec_hidden_size,
-                                   has_bias=True, dropout=dropout_for_decoder,
-                                   attention_funtion="dot")
-        self.separate_attn = (attn_type != "uniform")
+        self.attention = Attention(
+            query_size=dec_hidden_size,
+            memory_size=enc_hidden_size * 2
+            if (enc_hidden_size * 2 == dec_hidden_size)
+            else enc_hidden_size,
+            hidden_size=dec_hidden_size,
+            has_bias=True,
+            dropout=dropout_for_decoder,
+            attention_funtion="dot",
+        )
+        self.separate_attn = attn_type != "uniform"
 
         if self.separate_attn:
-            self.linear_att = nn.Linear(3*dec_hidden_size, dec_hidden_size)
+            self.linear_att = nn.Linear(3 * dec_hidden_size, dec_hidden_size)
         else:
-            self.linear_att = nn.Linear(2*dec_hidden_size, dec_hidden_size)
+            self.linear_att = nn.Linear(2 * dec_hidden_size, dec_hidden_size)
         self.linear_out = nn.Linear(dec_hidden_size, output_size)
         self.dropout_attn = nn.Dropout(dropout_for_decoder)
         self.logsoftmax = nn.LogSoftmax(dim=1)
 
         if self.use_copy:
             ptr_size = self.embeddings.embedding_dim
-            ptr_size += 4*self.rnn_size
+            ptr_size += 4 * self.rnn_size
             self.ptr = nn.Linear(ptr_size, 1)
 
-        self.rnn = self._build_rnn(rnn_type=rnn_type, input_size=output_size, emb_size=dec_emb_size,
-                                   hidden_size=dec_hidden_size, dropout_input=dropout_for_decoder, use_sibling=use_sibling)
+        self.rnn = self._build_rnn(
+            rnn_type=rnn_type,
+            input_size=output_size,
+            emb_size=dec_emb_size,
+            hidden_size=dec_hidden_size,
+            dropout_input=dropout_for_decoder,
+            use_sibling=use_sibling,
+        )
 
-    def _run_forward_pass(self, 
-                          graph_node_embedding, 
-                          graph_node_mask, 
-                          rnn_node_embedding, 
-                          graph_level_embedding,
-                          graph_edge_embedding=None, 
-                          graph_edge_mask=None, 
-                          tgt_tree_batch=None, 
-                          enc_batch=None, 
-                          oov_dict=None):
+    def _run_forward_pass(
+        self,
+        graph_node_embedding,
+        graph_node_mask,
+        rnn_node_embedding,
+        graph_level_embedding,
+        graph_edge_embedding=None,
+        graph_edge_mask=None,
+        tgt_tree_batch=None,
+        enc_batch=None,
+        oov_dict=None,
+    ):
         r"""
             The private calculation method for decoder.
 
@@ -144,7 +176,8 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             The input batch : (Batch_size * Source sentence word index tensor).
 
         tgt_tree_batch:
-            The target tree to generate : consists of (Batch_size * Tree object), each node in a Tree object is either a word index or a children Tree object.
+            The target tree to generate : consists of (Batch_size * Tree object),
+            each node in a Tree object is either a word index or a children Tree object.
 
         graph_node_embedding: torch.Tensor,
             The graph node embedding matrix of shape :math:`(B, N, D_{in})`
@@ -165,14 +198,15 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             graph edge type embedding
 
         oov_dict: dict,
-            vocab dict used in copy mechanism to incorporate some new words which have never appeared in vocab for input sentences in training set.
+            vocab dict used in copy mechanism to incorporate some new words which
+            have never appeared in vocab for input sentences in training set.
         """
         tgt_batch_size = len(tgt_tree_batch)
 
         enc_outputs = graph_node_embedding
         device = graph_node_embedding.device
 
-        if graph_level_embedding == None:
+        if graph_level_embedding is None:
             if self.graph_pooling_strategy == "max":
                 graph_level_embedding = torch.max(graph_node_embedding, 1)[0]
             elif self.graph_pooling_strategy == "min":
@@ -187,14 +221,15 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         else:
             graph_cell_state, graph_hidden_state = graph_level_embedding
 
-        rnn_node_embedding = torch.zeros_like(
-            graph_node_embedding, requires_grad=False).to(device)
+        # rnn_node_embedding = torch.zeros_like(graph_node_embedding,
+        #   requires_grad=False).to(device)
 
         cur_index = 1
         loss = 0
 
         dec_batch, queue_tree, max_index = get_dec_batch(
-            tgt_tree_batch, tgt_batch_size, device, self.tgt_vocab)
+            tgt_tree_batch, tgt_batch_size, device, self.tgt_vocab
+        )
 
         dec_state = {}
         for i in range(self.max_dec_tree_depth + 1):
@@ -202,15 +237,17 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             for j in range(self.max_dec_seq_length + 1):
                 dec_state[i][j] = {}
 
-        while (cur_index <= max_index):
+        while cur_index <= max_index:
             if cur_index > self.max_dec_tree_depth:
                 break
             for j in range(1, 3):
                 dec_state[cur_index][0][j] = torch.zeros(
-                    (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False).to(device)
+                    (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False
+                ).to(device)
 
             sibling_state = torch.zeros(
-                (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False).to(device)
+                (tgt_batch_size, self.rnn_size), dtype=torch.float, requires_grad=False
+            ).to(device)
 
             # with torch.no_grad():
             if cur_index == 1:
@@ -219,47 +256,61 @@ class StdTreeDecoder(RNNTreeDecoderBase):
                     dec_state[1][0][2][i, :] = graph_hidden_state[i]
 
             else:
-                for i in range(1, tgt_batch_size+1):
-                    if (cur_index <= len(queue_tree[i])):
+                for i in range(1, tgt_batch_size + 1):
+                    if cur_index <= len(queue_tree[i]):
                         par_index = queue_tree[i][cur_index - 1]["parent"]
-                        child_index = queue_tree[i][cur_index -
-                                                    1]["child_index"]
+                        child_index = queue_tree[i][cur_index - 1]["child_index"]
 
-                        dec_state[cur_index][0][1][i-1,
-                                                   :] = dec_state[par_index][child_index][1][i-1, :]
-                        dec_state[cur_index][0][2][i-1,
-                                                   :] = dec_state[par_index][child_index][2][i-1, :]
+                        dec_state[cur_index][0][1][i - 1, :] = dec_state[par_index][child_index][1][
+                            i - 1, :
+                        ]
+                        dec_state[cur_index][0][2][i - 1, :] = dec_state[par_index][child_index][2][
+                            i - 1, :
+                        ]
 
                     flag_sibling = False
                     for q_index in range(len(queue_tree[i])):
-                        if (cur_index <= len(queue_tree[i])) and (q_index < cur_index - 1) and (queue_tree[i][q_index]["parent"] == queue_tree[i][cur_index - 1]["parent"]) and (queue_tree[i][q_index]["child_index"] < queue_tree[i][cur_index - 1]["child_index"]):
+                        if (
+                            (cur_index <= len(queue_tree[i]))
+                            and (q_index < cur_index - 1)
+                            and (
+                                queue_tree[i][q_index]["parent"]
+                                == queue_tree[i][cur_index - 1]["parent"]
+                            )
+                            and (
+                                queue_tree[i][q_index]["child_index"]
+                                < queue_tree[i][cur_index - 1]["child_index"]
+                            )
+                        ):
                             flag_sibling = True
                             sibling_index = q_index
                     if flag_sibling:
-                        sibling_state[i - 1, :] = dec_state[sibling_index][dec_batch[sibling_index].size(
-                            1) - 1][2][i - 1, :]
+                        sibling_state[i - 1, :] = dec_state[sibling_index][
+                            dec_batch[sibling_index].size(1) - 1
+                        ][2][i - 1, :]
 
             parent_h = dec_state[cur_index][0][2]
+            pred = None
             for i in range(dec_batch[cur_index].size(1) - 1):
                 teacher_force = random.random() < self.teacher_force_ratio
-                if teacher_force != True and i > 0:
+                if teacher_force is not True and i > 0:
                     input_word = pred.argmax(1)
                 else:
                     input_word = dec_batch[cur_index][:, i]
-                pred, rnn_state_iter, attn_scores = self.decode_step(tgt_batch_size=tgt_batch_size,
-                                                                     dec_single_input=input_word,
-                                                                     dec_single_state=(
-                                                                         dec_state[cur_index][i][1], dec_state[cur_index][i][2]),
-                                                                     memory=enc_outputs,
-                                                                     parent_state=parent_h,
-                                                                     oov_dict=oov_dict,
-                                                                     enc_batch=enc_batch)
+                pred, rnn_state_iter, attn_scores = self.decode_step(
+                    tgt_batch_size=tgt_batch_size,
+                    dec_single_input=input_word,
+                    dec_single_state=(dec_state[cur_index][i][1], dec_state[cur_index][i][2]),
+                    memory=enc_outputs,
+                    parent_state=parent_h,
+                    oov_dict=oov_dict,
+                    enc_batch=enc_batch,
+                )
 
-                dec_state[cur_index][i +
-                                     1][1], dec_state[cur_index][i+1][2] = rnn_state_iter
+                dec_state[cur_index][i + 1][1], dec_state[cur_index][i + 1][2] = rnn_state_iter
 
                 pred = torch.log(pred + 1e-31)
-                loss += self.criterion(pred, dec_batch[cur_index][:, i+1])
+                loss += self.criterion(pred, dec_batch[cur_index][:, i + 1])
             cur_index = cur_index + 1
         loss = loss / tgt_batch_size
         return loss
@@ -270,17 +321,20 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         ret[tokens >= vocab.vocab_size] = vocab.get_symbol_idx(vocab.unk_token)
         return ret
 
-    def decode_step(self, tgt_batch_size, 
-                          dec_single_input, 
-                          dec_single_state, 
-                          memory, 
-                          parent_state, 
-                          input_mask=None, 
-                          memory_mask=None, 
-                          memory_candidate=None, 
-                          sibling_state=None, 
-                          oov_dict=None, 
-                          enc_batch=None):
+    def decode_step(
+        self,
+        tgt_batch_size,
+        dec_single_input,
+        dec_single_state,
+        memory,
+        parent_state,
+        input_mask=None,
+        memory_mask=None,
+        memory_candidate=None,
+        sibling_state=None,
+        oov_dict=None,
+        enc_batch=None,
+    ):
         """The decoding function in tree decoder.
 
         Parameters
@@ -312,21 +366,20 @@ class StdTreeDecoder(RNNTreeDecoderBase):
 
         dec_single_input = self._filter_oov(dec_single_input, self.tgt_vocab)
         rnn_state_c, rnn_state_h, dec_emb = self.rnn(
-            dec_single_input, dec_single_state[0], dec_single_state[1], parent_state, sibling_state)
-        
+            dec_single_input, dec_single_state[0], dec_single_state[1], parent_state, sibling_state
+        )
+
         attn_collect = []
         score_collect = []
 
         if self.separate_attn:
             pass
         else:
-            context_vector, attn_scores = self.attention(
-                query=rnn_state_h, memory=memory)
+            context_vector, attn_scores = self.attention(query=rnn_state_h, memory=memory)
             attn_collect.append(context_vector)
             score_collect.append(attn_scores)
 
-        pred = F.tanh(self.linear_att(
-            torch.cat((context_vector, rnn_state_h), 1)))
+        pred = F.tanh(self.linear_att(torch.cat((context_vector, rnn_state_h), 1)))
         decoder_output = self.linear_out(self.dropout_attn(pred))
         if self.use_copy:
             assert enc_batch is not None
@@ -354,15 +407,16 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         return decoder_output, (rnn_state_c, rnn_state_h), attn_scores
 
     def _build_rnn(self, rnn_type, input_size, emb_size, hidden_size, dropout_input, use_sibling):
-        """_build_rnn : how the rnn unit should be build.
-        """
-        rnn = TreeDecodingUnit(input_size, emb_size, hidden_size, dropout_input, use_sibling, self.embeddings)
+        """_build_rnn : how the rnn unit should be build."""
+        rnn = TreeDecodingUnit(
+            input_size, emb_size, hidden_size, dropout_input, use_sibling, self.embeddings
+        )
 
         return rnn
 
     def forward(self, g, tgt_tree_batch=None, oov_dict=None):
         params = self._extract_params(g)
-        params['tgt_tree_batch'] = tgt_tree_batch
+        params["tgt_tree_batch"] = tgt_tree_batch
         params["oov_dict"] = oov_dict
         return self._run_forward_pass(**params)
 
@@ -379,7 +433,7 @@ class StdTreeDecoder(RNNTreeDecoderBase):
         """
         batch_data_dict = graph_list.batch_node_features
         graph_node_emb = batch_data_dict["node_emb"]
-        
+
         # [s_g.node_features["node_emb"] for s_g in graph_list]
         rnn_node_emb = batch_data_dict["rnn_emb"]
 
@@ -397,27 +451,29 @@ class StdTreeDecoder(RNNTreeDecoderBase):
             "graph_level_embedding": None,
             "graph_edge_embedding": None,
             "graph_edge_mask": None,
-            "enc_batch": src_seq_ret.long() if self.use_copy else None
+            "enc_batch": src_seq_ret.long() if self.use_copy else None,
         }
+
 
 def create_mask(x, N, device=None):
     x = x.data
     mask = np.zeros((x.size(0), N))
     for i in range(x.size(0)):
-        mask[i, :x[i]] = 1
+        mask[i, : x[i]] = 1
     return torch.Tensor(mask).to(device)
 
 
 class TreeDecodingUnit(nn.Module):
-    def __init__(self, input_size, emb_size, hidden_size, dropout_input, use_sibling, dec_embeddings):
+    def __init__(
+        self, input_size, emb_size, hidden_size, dropout_input, use_sibling, dec_embeddings
+    ):
         super(TreeDecodingUnit, self).__init__()
         self.hidden_size = hidden_size
         self.emb_size = emb_size
         self.embedding = dec_embeddings
         self.dropout = nn.Dropout(dropout_input)
 
-        self.lstm = nn.LSTMCell(
-            emb_size + hidden_size * (2 if use_sibling else 1), hidden_size)
+        self.lstm = nn.LSTMCell(emb_size + hidden_size * (2 if use_sibling else 1), hidden_size)
         self.use_sibling = use_sibling
 
     def forward(self, input_src, prev_c, prev_h, parent_h, sibling_state):
@@ -425,8 +481,7 @@ class TreeDecodingUnit(nn.Module):
         src_emb = self.embedding(input_src)
         src_emb = self.dropout(src_emb)
         if self.use_sibling:
-            input_single_step = torch.cat(
-                (src_emb, parent_h, sibling_state), 1)
+            input_single_step = torch.cat((src_emb, parent_h, sibling_state), 1)
         else:
             input_single_step = torch.cat((src_emb, parent_h), 1)
         prev_cy, prev_hy = self.lstm(input_single_step, (prev_c, prev_h))
@@ -435,27 +490,27 @@ class TreeDecodingUnit(nn.Module):
 
 def get_dec_batch(dec_tree_batch, batch_size, device, form_manager):
     queue_tree = {}
-    for i in range(1, batch_size+1):
+    for i in range(1, batch_size + 1):
         queue_tree[i] = []
-        queue_tree[i].append(
-            {"tree": dec_tree_batch[i-1], "parent": 0, "child_index": 1})
+        queue_tree[i].append({"tree": dec_tree_batch[i - 1], "parent": 0, "child_index": 1})
 
     cur_index, max_index = 1, 1
     dec_batch = {}
     # max_index: the max number of sequence decoder in one batch
-    while (cur_index <= max_index):
+    while cur_index <= max_index:
         max_w_len = -1
         batch_w_list = []
-        for i in range(1, batch_size+1):
+        for i in range(1, batch_size + 1):
             w_list = []
-            if (cur_index <= len(queue_tree[i])):
+            if cur_index <= len(queue_tree[i]):
                 t = queue_tree[i][cur_index - 1]["tree"]
 
                 for ic in range(t.num_children):
                     if isinstance(t.children[ic], Tree):
                         w_list.append(4)
                         queue_tree[i].append(
-                            {"tree": t.children[ic], "parent": cur_index, "child_index": ic + 1})
+                            {"tree": t.children[ic], "parent": cur_index, "child_index": ic + 1}
+                        )
                     else:
                         w_list.append(t.children[ic])
                 if len(queue_tree[i]) > max_index:
@@ -463,19 +518,17 @@ def get_dec_batch(dec_tree_batch, batch_size, device, form_manager):
             if len(w_list) > max_w_len:
                 max_w_len = len(w_list)
             batch_w_list.append(w_list)
-        dec_batch[cur_index] = torch.zeros(
-            (batch_size, max_w_len + 2), dtype=torch.long)
+        dec_batch[cur_index] = torch.zeros((batch_size, max_w_len + 2), dtype=torch.long)
         for i in range(batch_size):
             w_list = batch_w_list[i]
             if len(w_list) > 0:
                 for j in range(len(w_list)):
-                    dec_batch[cur_index][i][j+1] = w_list[j]
+                    dec_batch[cur_index][i][j + 1] = w_list[j]
                 # add <S>, <E>
                 if cur_index == 1:
                     dec_batch[cur_index][i][0] = 1
                 else:
-                    dec_batch[cur_index][i][0] = form_manager.get_symbol_idx(
-                        '(')
+                    dec_batch[cur_index][i][0] = form_manager.get_symbol_idx("(")
                 dec_batch[cur_index][i][len(w_list) + 1] = 2
 
         dec_batch[cur_index] = to_cuda(dec_batch[cur_index], device)
