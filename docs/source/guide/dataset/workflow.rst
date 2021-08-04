@@ -9,7 +9,13 @@ The processed data will be loaded to memory for training. During training, the w
 and fed to the model iteratively.
 According to the workflow described above, a typical dataset workflow consists of 4 steps: downloading raw data, pre-processing
 raw data, loading data and iterating over it.
-The following example is such an illustrated workflow.
+The following figure illustrates this workflow:
+
+.. figure:: workflow.png
+    :width: 600
+    :align: center
+
+    Dataset Workflow
 
 For the first two steps, we need to specify the raw data and processed data file names. In Graph4NLP's convention, similar to
 `PyG <https://pytorch-geometric.readthedocs.io/en/latest/>`_, the raw data file is stored under the ``raw`` directory under

@@ -3,7 +3,7 @@
 Constructing GraphData
 ===========
 
-This section illustrates the ways to construct GraphData instances.
+This section illustrates how to construct GraphData instances.
 
 Constructing from scratch
 ---------
@@ -30,8 +30,13 @@ makes it more suitable to appear in the next section :ref:`guide-manipulate`.
 Importing from other sources
 -----------
 Another way to construct GraphData is to import from other sources. Currently GraphData supports importing from
-``from_dgl()``, ``from_dense_adj()``, ``from_scipy_sparse_matrix()`` and ``from_graphdata()``. Interested readers may go to the
-API reference for more details.
+``from_dgl()``, ``from_dense_adj()``, ``from_scipy_sparse_matrix()`` and ``from_graphdata()``.
+Interested readers may refer to the ``API reference`` for more details.
+
+.. code-block::
+
+
+
 
 Exporting to other formats
 -----------

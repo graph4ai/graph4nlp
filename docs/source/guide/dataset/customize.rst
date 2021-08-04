@@ -158,6 +158,20 @@ system. Otherwise it will perform several pre-processing steps, namely ``build_t
             vocab_to_save = self.vocab_model
             torch.save(vocab_to_save, self.processed_file_paths['vocab'])
 
+
+``build_topology`` builds text graph for each ``DataItem`` in the dataset and bind it to the corresponding ``DataItem``
+object. This routine usually involves functions provided by the ``GraphConstruction`` module. Besides, since the
+construction of each individual text graph is independent of each other, the construction of multiple graphs can be done
+concurrently, which involves the multiprocessing module of Python.
+
+``build_vocab`` takes all the tokens that have appeared in the data items and build a vocabulary out of it.
+By default, the ``VocabModel`` in ``graph4nlp.utils.vocab_utils.VocabModel`` takes the responsibility of constructing
+a vocabulary and represents the vocabulary itself. The constructed vocabulary will become a member of the ``Dataset``
+instance.
+
+``vectorization`` is a lookup step, which converts the tokens from ASCII characters to word embeddings. Since there are
+various ways to assign embedding vectors to tokens, this step is usually overridden by the downstream classes.
+
 In Jobs, these pre-processing steps are implemented in its base classes: ``Text2TextDataset`` and ``Dataset``:
 
 .. code-block::
