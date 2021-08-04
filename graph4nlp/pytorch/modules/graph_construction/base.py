@@ -17,7 +17,8 @@ class GraphConstructionBase(nn.Module):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single
+         token or multiple tokens.
         - ``emb_strategy`` : specify the embedding construction strategy.
         - ``num_rnn_layers``: specify the number of RNN layers.
         - ``bert_model_name``: specify the BERT model name.
@@ -33,26 +34,31 @@ class GraphConstructionBase(nn.Module):
     rnn_dropout : float, optional
         Dropout ratio for RNN embedding, default: ``None``.
     """
-    def __init__(self,
-                word_vocab,
-                embedding_styles,
-                hidden_size=None,
-                fix_word_emb=True,
-                fix_bert_emb=True,
-                word_dropout=None,
-                rnn_dropout=None):
+
+    def __init__(
+        self,
+        word_vocab,
+        embedding_styles,
+        hidden_size=None,
+        fix_word_emb=True,
+        fix_bert_emb=True,
+        word_dropout=None,
+        rnn_dropout=None,
+    ):
         super(GraphConstructionBase, self).__init__()
-        self.embedding_layer = EmbeddingConstruction(word_vocab,
-                                        embedding_styles['single_token_item'],
-                                        emb_strategy=embedding_styles['emb_strategy'],
-                                        hidden_size=hidden_size,
-                                        num_rnn_layers=embedding_styles.get('num_rnn_layers', 1),
-                                        fix_word_emb=fix_word_emb,
-                                        fix_bert_emb=fix_bert_emb,
-                                        bert_model_name=embedding_styles.get('bert_model_name', 'bert-base-uncased'),
-                                        bert_lower_case=embedding_styles.get('bert_lower_case', True),
-                                        word_dropout=word_dropout,
-                                        rnn_dropout=rnn_dropout)
+        self.embedding_layer = EmbeddingConstruction(
+            word_vocab,
+            embedding_styles["single_token_item"],
+            emb_strategy=embedding_styles["emb_strategy"],
+            hidden_size=hidden_size,
+            num_rnn_layers=embedding_styles.get("num_rnn_layers", 1),
+            fix_word_emb=fix_word_emb,
+            fix_bert_emb=fix_bert_emb,
+            bert_model_name=embedding_styles.get("bert_model_name", "bert-base-uncased"),
+            bert_lower_case=embedding_styles.get("bert_lower_case", True),
+            word_dropout=word_dropout,
+            rnn_dropout=rnn_dropout,
+        )
 
     def forward(self, raw_text_data, **kwargs):
         """Compute graph topology and initial node/edge embeddings.
@@ -101,6 +107,7 @@ class GraphConstructionBase(nn.Module):
         """
         raise NotImplementedError()
 
+
 class StaticGraphConstructionBase(GraphConstructionBase):
     """
     Base class for static graph construction.
@@ -110,7 +117,8 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single
+        token or multiple tokens.
         - ``emb_strategy`` : specify the embedding construction strategy.
         - ``num_rnn_layers``: specify the number of RNN layers.
         - ``bert_model_name``: specify the BERT model name.
@@ -127,15 +135,25 @@ class StaticGraphConstructionBase(GraphConstructionBase):
         Dropout ratio for RNN embedding, default: ``None``.
     """
 
-    def __init__(self, word_vocab, embedding_styles, hidden_size,
-                 fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None):
-        super(StaticGraphConstructionBase, self).__init__(word_vocab,
-                                                           embedding_styles,
-                                                           hidden_size,
-                                                           fix_word_emb=fix_word_emb,
-                                                           fix_bert_emb=fix_bert_emb,
-                                                           word_dropout=word_dropout,
-                                                           rnn_dropout=rnn_dropout)
+    def __init__(
+        self,
+        word_vocab,
+        embedding_styles,
+        hidden_size,
+        fix_word_emb=True,
+        fix_bert_emb=True,
+        word_dropout=None,
+        rnn_dropout=None,
+    ):
+        super(StaticGraphConstructionBase, self).__init__(
+            word_vocab,
+            embedding_styles,
+            hidden_size,
+            fix_word_emb=fix_word_emb,
+            fix_bert_emb=fix_bert_emb,
+            word_dropout=word_dropout,
+            rnn_dropout=rnn_dropout,
+        )
 
     def add_vocab(self, **kwargs):
         raise NotImplementedError()
@@ -162,6 +180,7 @@ class StaticGraphConstructionBase(GraphConstructionBase):
     def _graph_connect(cls, **kwargs):
         raise NotImplementedError()
 
+
 class DynamicGraphConstructionBase(GraphConstructionBase):
     """Base class for dynamic graph construction.
 
@@ -170,7 +189,8 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single
+        token or multiple tokens.
         - ``emb_strategy`` : specify the embedding construction strategy.
         - ``num_rnn_layers``: specify the number of RNN layers.
         - ``bert_model_name``: specify the BERT model name.
@@ -210,32 +230,37 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
     rnn_dropout : float, optional
         Dropout ratio for RNN embedding, default: ``None``.
     """
-    def __init__(self,
-                word_vocab,
-                embedding_styles,
-                sim_metric_type='weighted_cosine',
-                num_heads=1,
-                top_k_neigh=None,
-                epsilon_neigh=None,
-                smoothness_ratio=None,
-                connectivity_ratio=None,
-                sparsity_ratio=None,
-                input_size=None,
-                hidden_size=None,
-                fix_word_emb=False,
-                fix_bert_emb=False,
-                word_dropout=None,
-                rnn_dropout=None):
+
+    def __init__(
+        self,
+        word_vocab,
+        embedding_styles,
+        sim_metric_type="weighted_cosine",
+        num_heads=1,
+        top_k_neigh=None,
+        epsilon_neigh=None,
+        smoothness_ratio=None,
+        connectivity_ratio=None,
+        sparsity_ratio=None,
+        input_size=None,
+        hidden_size=None,
+        fix_word_emb=False,
+        fix_bert_emb=False,
+        word_dropout=None,
+        rnn_dropout=None,
+    ):
         super(DynamicGraphConstructionBase, self).__init__(
-                                                    word_vocab,
-                                                    embedding_styles,
-                                                    hidden_size=hidden_size,
-                                                    fix_word_emb=fix_word_emb,
-                                                    fix_bert_emb=fix_bert_emb,
-                                                    word_dropout=word_dropout,
-                                                    rnn_dropout=rnn_dropout)
-        assert top_k_neigh is None or epsilon_neigh is None, \
-            'top_k_neigh and epsilon_neigh cannot be activated at the same time!'
+            word_vocab,
+            embedding_styles,
+            hidden_size=hidden_size,
+            fix_word_emb=fix_word_emb,
+            fix_bert_emb=fix_bert_emb,
+            word_dropout=word_dropout,
+            rnn_dropout=rnn_dropout,
+        )
+        assert (
+            top_k_neigh is None or epsilon_neigh is None
+        ), "top_k_neigh and epsilon_neigh cannot be activated at the same time!"
         self.top_k_neigh = top_k_neigh
         self.epsilon_neigh = epsilon_neigh
         self.sim_metric_type = sim_metric_type
@@ -243,31 +268,35 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         self.connectivity_ratio = connectivity_ratio
         self.sparsity_ratio = sparsity_ratio
 
-        if self.sim_metric_type == 'attention':
+        if self.sim_metric_type == "attention":
             self.mask_off_val = -INF
-            self.linear_sims = nn.ModuleList([nn.Linear(input_size, hidden_size, bias=False)
-                                                    for _ in range(num_heads)])
-        elif self.sim_metric_type == 'weighted_cosine':
+            self.linear_sims = nn.ModuleList(
+                [nn.Linear(input_size, hidden_size, bias=False) for _ in range(num_heads)]
+            )
+        elif self.sim_metric_type == "weighted_cosine":
             self.mask_off_val = 0
             self.weight = torch.Tensor(num_heads, input_size)
             self.weight = nn.Parameter(nn.init.xavier_uniform_(self.weight))
-        elif self.sim_metric_type == 'gat_attention':
+        elif self.sim_metric_type == "gat_attention":
             self.mask_off_val = -INF
-            self.linear_sims1 = nn.ModuleList([nn.Linear(input_size, 1, bias=False)
-                                                    for _ in range(num_heads)])
-            self.linear_sims2 = nn.ModuleList([nn.Linear(input_size, 1, bias=False)
-                                                    for _ in range(num_heads)])
+            self.linear_sims1 = nn.ModuleList(
+                [nn.Linear(input_size, 1, bias=False) for _ in range(num_heads)]
+            )
+            self.linear_sims2 = nn.ModuleList(
+                [nn.Linear(input_size, 1, bias=False) for _ in range(num_heads)]
+            )
             self.leakyrelu = nn.LeakyReLU(0.2)
-        elif self.sim_metric_type == 'rbf_kernel':
+        elif self.sim_metric_type == "rbf_kernel":
             self.mask_off_val = 0
             self.precision_inv_dis = nn.Parameter(torch.Tensor(1, 1))
             self.precision_inv_dis.data.uniform_(0, 1.0)
-            self.weight = nn.Parameter(nn.init.xavier_uniform_(torch.Tensor(input_size, hidden_size)))
-        elif self.sim_metric_type == 'cosine':
+            self.weight = nn.Parameter(
+                nn.init.xavier_uniform_(torch.Tensor(input_size, hidden_size))
+            )
+        elif self.sim_metric_type == "cosine":
             self.mask_off_val = 0
         else:
-            raise RuntimeError('Unknown sim_metric_type: {}'.format(self.sim_metric_type))
-
+            raise RuntimeError("Unknown sim_metric_type: {}".format(self.sim_metric_type))
 
     def forward(self, raw_text_data, **kwargs):
         """Compute graph topology and initial node/edge embeddings.
@@ -286,8 +315,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         """
         raise NotImplementedError()
 
-    def topology(self, node_emb, edge_emb=None,
-                    init_adj=None, node_mask=None, **kwargs):
+    def topology(self, node_emb, edge_emb=None, init_adj=None, node_mask=None, **kwargs):
         """Compute graph topology.
 
         Parameters
@@ -340,14 +368,14 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         torch.Tensor
             Adjacency matrix.
         """
-        if self.sim_metric_type == 'attention':
+        if self.sim_metric_type == "attention":
             attention = 0
             for _ in range(len(self.linear_sims)):
                 node_vec_t = torch.relu(self.linear_sims[_](node_emb))
                 attention += torch.matmul(node_vec_t, node_vec_t.transpose(-1, -2))
 
             attention /= len(self.linear_sims)
-        elif self.sim_metric_type == 'weighted_cosine':
+        elif self.sim_metric_type == "weighted_cosine":
             expand_weight_tensor = self.weight.unsqueeze(1)
             if len(node_emb.shape) == 3:
                 expand_weight_tensor = expand_weight_tensor.unsqueeze(1)
@@ -355,7 +383,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             node_vec_t = node_emb.unsqueeze(0) * expand_weight_tensor
             node_vec_norm = F.normalize(node_vec_t, p=2, dim=-1)
             attention = torch.matmul(node_vec_norm, node_vec_norm.transpose(-1, -2)).mean(0)
-        elif self.sim_metric_type == 'gat_attention':
+        elif self.sim_metric_type == "gat_attention":
             attention = []
             for _ in range(len(self.linear_sims1)):
                 a_input1 = self.linear_sims1[_](node_emb)
@@ -363,20 +391,19 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
                 attention.append(self.leakyrelu(a_input1 + a_input2.transpose(-1, -2)))
 
             attention = torch.mean(torch.stack(attention, 0), 0)
-        elif self.sim_metric_type == 'rbf_kernel':
+        elif self.sim_metric_type == "rbf_kernel":
             dist_weight = torch.mm(self.weight, self.weight.transpose(-1, -2))
             attention = self._compute_distance_matrix(node_emb, dist_weight)
-            attention = torch.exp(-0.5 * attention * (self.precision_inv_dis**2))
-        elif self.sim_metric_type == 'cosine':
+            attention = torch.exp(-0.5 * attention * (self.precision_inv_dis ** 2))
+        elif self.sim_metric_type == "cosine":
             node_vec_norm = node_emb.div(torch.norm(node_emb, p=2, dim=-1, keepdim=True))
             attention = torch.mm(node_vec_norm, node_vec_norm.transpose(-1, -2)).detach()
 
         if node_mask is not None:
-            if torch.__version__ < '1.3.0':
-                attention = attention.masked_fill_(~(node_mask == 1.), self.mask_off_val)
+            if torch.__version__ < "1.3.0":
+                attention = attention.masked_fill_(~(node_mask == 1.0), self.mask_off_val)
             else:
                 attention = attention.masked_fill_(~node_mask.bool(), self.mask_off_val)
-
 
         return attention
 
@@ -418,17 +445,33 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             The graph regularization loss.
         """
         graph_reg = 0
-        if not self.smoothness_ratio in (0, None):
+        if self.smoothness_ratio not in (0, None):
             for i in range(adj.shape[0]):
                 L = torch.diagflat(torch.sum(adj[i], -1)) - adj[i]
-                graph_reg += self.smoothness_ratio * torch.trace(torch.mm(node_feat[i].transpose(-1, -2), torch.mm(L, node_feat[i]))) / int(np.prod(adj.shape))
+                graph_reg += (
+                    self.smoothness_ratio
+                    * torch.trace(
+                        torch.mm(node_feat[i].transpose(-1, -2), torch.mm(L, node_feat[i]))
+                    )
+                    / int(np.prod(adj.shape))
+                )
 
-        if not self.connectivity_ratio in (0, None):
+        if self.connectivity_ratio not in (0, None):
             ones_vec = torch.ones(adj.shape[:-1]).to(adj.device)
-            graph_reg += -self.connectivity_ratio * torch.matmul(ones_vec.unsqueeze(1), torch.log(torch.matmul(adj, ones_vec.unsqueeze(-1)) + VERY_SMALL_NUMBER)).sum() / adj.shape[0] / adj.shape[-1]
+            graph_reg += (
+                -self.connectivity_ratio
+                * torch.matmul(
+                    ones_vec.unsqueeze(1),
+                    torch.log(torch.matmul(adj, ones_vec.unsqueeze(-1)) + VERY_SMALL_NUMBER),
+                ).sum()
+                / adj.shape[0]
+                / adj.shape[-1]
+            )
 
-        if not self.sparsity_ratio in (0, None):
-            graph_reg += self.sparsity_ratio * torch.sum(torch.pow(adj, 2)) / int(np.prod(adj.shape))
+        if self.sparsity_ratio not in (0, None):
+            graph_reg += (
+                self.sparsity_ratio * torch.sum(torch.pow(adj, 2)) / int(np.prod(adj.shape))
+            )
 
         return graph_reg
 
@@ -449,7 +492,11 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
         """
         top_k_neigh = min(top_k_neigh, attention.size(-1))
         knn_val, knn_ind = torch.topk(attention, top_k_neigh, dim=-1)
-        weighted_adj = (self.mask_off_val * torch.ones_like(attention)).scatter_(-1, knn_ind, knn_val).to(attention.device)
+        weighted_adj = (
+            (self.mask_off_val * torch.ones_like(attention))
+            .scatter_(-1, knn_ind, knn_val)
+            .to(attention.device)
+        )
         weighted_adj[weighted_adj <= 0] = 0
         return weighted_adj
 
@@ -494,7 +541,9 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             trans_X = X
 
         norm = torch.sum(trans_X * X, dim=-1)
-        dists = -2 * torch.matmul(trans_X, X.transpose(-1, -2)) + norm.unsqueeze(0) + norm.unsqueeze(1)
+        dists = (
+            -2 * torch.matmul(trans_X, X.transpose(-1, -2)) + norm.unsqueeze(0) + norm.unsqueeze(1)
+        )
 
         return dists
 
@@ -512,7 +561,7 @@ class DynamicGraphConstructionBase(GraphConstructionBase):
             The node mask matrix.
         """
         node_mask = []
-        for i in range(num_nodes.shape[0]): # batch
+        for i in range(num_nodes.shape[0]):  # batch
             graph_node_num = num_nodes[i].item()
             node_mask.append(sparse.coo_matrix(np.ones((graph_node_num, graph_node_num))))
 

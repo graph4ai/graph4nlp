@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 
 from . import constants as Constants
 
@@ -10,7 +9,7 @@ class Logger:
         self.logging = logging
         if os.path.exists(dirname):
             if not overwrite:
-                raise Exception('Directory already exists: {}'.format(dirname))
+                raise Exception("Directory already exists: {}".format(dirname))
         else:
             os.makedirs(dirname)
 
@@ -18,15 +17,15 @@ class Logger:
             self.log_json(config, os.path.join(dirname, Constants._CONFIG_FILE))
 
         if logging:
-            self.fout = open(os.path.join(dirname, Constants._SAVED_METRICS_FILE), 'a')
+            self.fout = open(os.path.join(dirname, Constants._SAVED_METRICS_FILE), "a")
 
-    def log_json(self, data, filename, mode='w'):
+    def log_json(self, data, filename, mode="w"):
         with open(filename, mode) as outfile:
             outfile.write(json.dumps(data, indent=4, ensure_ascii=False))
 
     def write(self, text):
         if self.logging:
-            self.fout.writelines(text + '\n')
+            self.fout.writelines(text + "\n")
             self.fout.flush()
 
     def close(self):

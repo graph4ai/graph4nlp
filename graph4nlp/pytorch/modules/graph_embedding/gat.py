@@ -1,14 +1,11 @@
-import dgl
 import dgl.function as fn
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from dgl.base import DGLError
 from dgl.nn.pytorch import GATConv
 from dgl.nn.pytorch.softmax import edge_softmax
 from dgl.utils import expand_as_pair
 
-from ...data.data import GraphData
 from ..utils.generic_utils import Identity
 from .base import GNNBase, GNNLayerBase
 
@@ -41,13 +38,16 @@ class GAT(GNNBase):
         a scalar is given, the source and destination node feature size would take the
         same value.
     hidden_size: int or list of int
-        Hidden size per GAT layer. If ``int`` is given, all layers are forced to have the same hidden size.
+        Hidden size per GAT layer. If ``int`` is given, all layers are forced to have
+        the same hidden size.
     output_size : int
         Output feature size.
     heads : int or list of int
-        Number of heads per GAT layer. If ``int`` is given, all layers are forced to have the same number of heads.
+        Number of heads per GAT layer. If ``int`` is given, all layers are forced to
+        have the same number of heads.
     direction_option: str
-        Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep" and "bi_fuse") versions.
+        Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep"
+        and "bi_fuse") versions.
         Default : ``'bi_sep'``.
     feat_drop : float, optional
         Dropout rate on feature, default: ``0``.
@@ -68,19 +68,22 @@ class GAT(GNNBase):
         0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
         and let the users handle it by themselves. Defaults: ``False``.
     """
-    def __init__(self,
-                num_layers,
-                input_size,
-                hidden_size,
-                output_size,
-                heads,
-                direction_option='bi_sep',
-                feat_drop=0.,
-                attn_drop=0.,
-                negative_slope=0.2,
-                residual=False,
-                activation=None,
-                allow_zero_in_degree=False):
+
+    def __init__(
+        self,
+        num_layers,
+        input_size,
+        hidden_size,
+        output_size,
+        heads,
+        direction_option="bi_sep",
+        feat_drop=0.0,
+        attn_drop=0.0,
+        negative_slope=0.2,
+        residual=False,
+        activation=None,
+        allow_zero_in_degree=False,
+    ):
         super(GAT, self).__init__()
         self.num_layers = num_layers
         self.direction_option = direction_option
@@ -94,41 +97,53 @@ class GAT(GNNBase):
 
         if self.num_layers > 1:
             # input projection
-            self.gat_layers.append(GATLayer(input_size,
-                                            hidden_size[0],
-                                            heads[0],
-                                            direction_option=self.direction_option,
-                                            feat_drop=feat_drop,
-                                            attn_drop=attn_drop,
-                                            negative_slope=negative_slope,
-                                            residual=residual,
-                                            activation=activation,
-                                            allow_zero_in_degree=allow_zero_in_degree))
+            self.gat_layers.append(
+                GATLayer(
+                    input_size,
+                    hidden_size[0],
+                    heads[0],
+                    direction_option=self.direction_option,
+                    feat_drop=feat_drop,
+                    attn_drop=attn_drop,
+                    negative_slope=negative_slope,
+                    residual=residual,
+                    activation=activation,
+                    allow_zero_in_degree=allow_zero_in_degree,
+                )
+            )
 
         # hidden layers
         for l in range(1, self.num_layers - 1):
             # due to multi-head, the input_size = hidden_size * num_heads
-            self.gat_layers.append(GATLayer(hidden_size[l - 1] * heads[l - 1],
-                                            hidden_size[l],
-                                            heads[l],
-                                            direction_option=self.direction_option,
-                                            feat_drop=feat_drop,
-                                            attn_drop=attn_drop,
-                                            negative_slope=negative_slope,
-                                            residual=residual,
-                                            activation=activation,
-                                            allow_zero_in_degree=allow_zero_in_degree))
+            self.gat_layers.append(
+                GATLayer(
+                    hidden_size[l - 1] * heads[l - 1],
+                    hidden_size[l],
+                    heads[l],
+                    direction_option=self.direction_option,
+                    feat_drop=feat_drop,
+                    attn_drop=attn_drop,
+                    negative_slope=negative_slope,
+                    residual=residual,
+                    activation=activation,
+                    allow_zero_in_degree=allow_zero_in_degree,
+                )
+            )
         # output projection
-        self.gat_layers.append(GATLayer(hidden_size[-1] * heads[-2] if self.num_layers > 1 else input_size,
-                                        output_size,
-                                        heads[-1],
-                                        direction_option=self.direction_option,
-                                        feat_drop=feat_drop,
-                                        attn_drop=attn_drop,
-                                        negative_slope=negative_slope,
-                                        residual=residual,
-                                        activation=None,
-                                        allow_zero_in_degree=allow_zero_in_degree))
+        self.gat_layers.append(
+            GATLayer(
+                hidden_size[-1] * heads[-2] if self.num_layers > 1 else input_size,
+                output_size,
+                heads[-1],
+                direction_option=self.direction_option,
+                feat_drop=feat_drop,
+                attn_drop=attn_drop,
+                negative_slope=negative_slope,
+                residual=residual,
+                activation=None,
+                allow_zero_in_degree=allow_zero_in_degree,
+            )
+        )
 
     def forward(self, graph):
         r"""Compute multi-layer graph attention network.
@@ -143,17 +158,17 @@ class GAT(GNNBase):
         GraphData
             The output graph data containing updated embeddings.
         """
-        feat = graph.node_features['node_feat']
+        feat = graph.node_features["node_feat"]
         dgl_graph = graph.to_dgl()
 
-        if self.direction_option == 'bi_sep':
+        if self.direction_option == "bi_sep":
             h = [feat, feat]
         else:
             h = feat
 
         for l in range(self.num_layers - 1):
             h = self.gat_layers[l](dgl_graph, h)
-            if self.direction_option == 'bi_sep':
+            if self.direction_option == "bi_sep":
                 h = [each.flatten(1) for each in h]
             else:
                 h = h.flatten(1)
@@ -161,15 +176,16 @@ class GAT(GNNBase):
         # output projection
         logits = self.gat_layers[-1](dgl_graph, h)
 
-        if self.direction_option == 'bi_sep':
+        if self.direction_option == "bi_sep":
             logits = [each.mean(1) for each in logits]
             logits = torch.cat(logits, -1)
         else:
             logits = logits.mean(1)
 
-        graph.node_features['node_emb'] = logits
+        graph.node_features["node_emb"] = logits
 
         return graph
+
 
 class GATLayer(GNNLayerBase):
     # TODO: improve math descriptions bidirectional GNN.
@@ -201,7 +217,8 @@ class GATLayer(GNNLayerBase):
     num_heads : int
         Number of heads in Multi-Head Attention.
     direction_option: str
-        Whether use unidirectional (i.e., regular) or bidirectional (i.e., `bi_sep` and `bi_fuse`) versions.
+        Whether use unidirectional (i.e., regular) or bidirectional (i.e., `bi_sep`
+        and `bi_fuse`) versions.
         Default: ``'bi_sep'``.
     feat_drop : float, optional
         Dropout rate on feature, default: ``0``.
@@ -222,54 +239,64 @@ class GATLayer(GNNLayerBase):
         0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
         and let the users handle it by themselves. Defaults: ``False``.
     """
-    def __init__(self,
+
+    def __init__(
+        self,
+        input_size,
+        output_size,
+        num_heads,
+        direction_option="bi_sep",
+        feat_drop=0.0,
+        attn_drop=0.0,
+        negative_slope=0.2,
+        residual=False,
+        activation=None,
+        allow_zero_in_degree=False,
+    ):
+        super(GATLayer, self).__init__()
+        if num_heads > 1 and residual:
+            residual = False
+            import warnings
+
+            warnings.warn("The residual option must be False when num_heads > 1")
+        if direction_option == "undirected":
+            self.model = UndirectedGATLayerConv(
                 input_size,
                 output_size,
                 num_heads,
-                direction_option='bi_sep',
-                feat_drop=0.,
-                attn_drop=0.,
-                negative_slope=0.2,
-                residual=False,
-                activation=None,
-                allow_zero_in_degree=False):
-        super(GATLayer, self).__init__()
-        if num_heads >  1 and residual:
-            residual = False
-            import warnings
-            warnings.warn("The residual option must be False when num_heads > 1")
-        if direction_option == 'undirected':
-            self.model = UndirectedGATLayerConv(input_size,
-                                        output_size,
-                                        num_heads,
-                                        feat_drop=feat_drop,
-                                        attn_drop=attn_drop,
-                                        negative_slope=negative_slope,
-                                        residual=residual,
-                                        activation=activation, 
-                                        allow_zero_in_degree=allow_zero_in_degree)
-        elif direction_option == 'bi_sep':
-            self.model = BiSepGATLayerConv(input_size,
-                                        output_size,
-                                        num_heads,
-                                        feat_drop=feat_drop,
-                                        attn_drop=attn_drop,
-                                        negative_slope=negative_slope,
-                                        residual=residual,
-                                        activation=activation,
-                                        allow_zero_in_degree=allow_zero_in_degree)
-        elif direction_option == 'bi_fuse':
-            self.model = BiFuseGATLayerConv(input_size,
-                                            output_size,
-                                            num_heads,
-                                            feat_drop=feat_drop,
-                                            attn_drop=attn_drop,
-                                            negative_slope=negative_slope,
-                                            residual=residual,
-                                            activation=activation,
-                                            allow_zero_in_degree=allow_zero_in_degree)
+                feat_drop=feat_drop,
+                attn_drop=attn_drop,
+                negative_slope=negative_slope,
+                residual=residual,
+                activation=activation,
+                allow_zero_in_degree=allow_zero_in_degree,
+            )
+        elif direction_option == "bi_sep":
+            self.model = BiSepGATLayerConv(
+                input_size,
+                output_size,
+                num_heads,
+                feat_drop=feat_drop,
+                attn_drop=attn_drop,
+                negative_slope=negative_slope,
+                residual=residual,
+                activation=activation,
+                allow_zero_in_degree=allow_zero_in_degree,
+            )
+        elif direction_option == "bi_fuse":
+            self.model = BiFuseGATLayerConv(
+                input_size,
+                output_size,
+                num_heads,
+                feat_drop=feat_drop,
+                attn_drop=attn_drop,
+                negative_slope=negative_slope,
+                residual=residual,
+                activation=activation,
+                allow_zero_in_degree=allow_zero_in_degree,
+            )
         else:
-            raise RuntimeError('Unknown `direction_option` value: {}'.format(direction_option))
+            raise RuntimeError("Unknown `direction_option` value: {}".format(direction_option))
 
     def forward(self, graph, feat):
         r"""Compute graph attention network layer.
@@ -291,6 +318,7 @@ class GATLayer(GNNLayerBase):
             is the number of heads, and :math:`D_{out}` is size of output feature.
         """
         return self.model(graph, feat)
+
 
 class UndirectedGATLayerConv(GNNLayerBase):
     r"""Apply `Graph Attention Network <https://arxiv.org/abs/1710.10903>`__
@@ -336,20 +364,31 @@ class UndirectedGATLayerConv(GNNLayerBase):
         0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
         and let the users handle it by themselves. Defaults: ``False``.
     """
-    def __init__(self,
-                input_size,
-                output_size,
-                num_heads,
-                feat_drop=0.,
-                attn_drop=0.,
-                negative_slope=0.2,
-                residual=False,
-                activation=None,
-                allow_zero_in_degree=False):
+
+    def __init__(
+        self,
+        input_size,
+        output_size,
+        num_heads,
+        feat_drop=0.0,
+        attn_drop=0.0,
+        negative_slope=0.2,
+        residual=False,
+        activation=None,
+        allow_zero_in_degree=False,
+    ):
         super(UndirectedGATLayerConv, self).__init__()
-        self.model = GATConv(in_feats=input_size, out_feats=output_size, num_heads=num_heads, 
-                            feat_drop=feat_drop, attn_drop=attn_drop, 
-                            negative_slope=negative_slope, residual=residual, activation=activation, allow_zero_in_degree=allow_zero_in_degree)
+        self.model = GATConv(
+            in_feats=input_size,
+            out_feats=output_size,
+            num_heads=num_heads,
+            feat_drop=feat_drop,
+            attn_drop=attn_drop,
+            negative_slope=negative_slope,
+            residual=residual,
+            activation=activation,
+            allow_zero_in_degree=allow_zero_in_degree,
+        )
 
     def forward(self, graph, feat):
         r"""Compute graph attention network layer.
@@ -371,6 +410,7 @@ class UndirectedGATLayerConv(GNNLayerBase):
             is the number of heads, and :math:`D_{out}` is size of output feature.
         """
         return self.model(graph, feat)
+
 
 class BiFuseGATLayerConv(GNNLayerBase):
     # TODO: improve math descriptions bidirectional GNN.
@@ -419,36 +459,33 @@ class BiFuseGATLayerConv(GNNLayerBase):
         0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
         and let the users handle it by themselves. Defaults: ``False``.
     """
-    def __init__(self,
-                input_size,
-                output_size,
-                num_heads,
-                feat_drop=0.,
-                attn_drop=0.,
-                negative_slope=0.2,
-                residual=False,
-                activation=None,
-                allow_zero_in_degree=False):
+
+    def __init__(
+        self,
+        input_size,
+        output_size,
+        num_heads,
+        feat_drop=0.0,
+        attn_drop=0.0,
+        negative_slope=0.2,
+        residual=False,
+        activation=None,
+        allow_zero_in_degree=False,
+    ):
         super(BiFuseGATLayerConv, self).__init__()
         self._num_heads = num_heads
         self._in_src_feats, self._in_dst_feats = expand_as_pair(input_size)
         self._out_feats = output_size
         self._allow_zero_in_degree = allow_zero_in_degree
         if isinstance(input_size, tuple):
-            self.fc_src_fw = nn.Linear(
-                self._in_src_feats, output_size * num_heads, bias=False)
-            self.fc_dst_fw = nn.Linear(
-                self._in_dst_feats, output_size * num_heads, bias=False)
+            self.fc_src_fw = nn.Linear(self._in_src_feats, output_size * num_heads, bias=False)
+            self.fc_dst_fw = nn.Linear(self._in_dst_feats, output_size * num_heads, bias=False)
 
-            self.fc_src_bw = nn.Linear(
-                self._in_src_feats, output_size * num_heads, bias=False)
-            self.fc_dst_bw = nn.Linear(
-                self._in_dst_feats, output_size * num_heads, bias=False)
+            self.fc_src_bw = nn.Linear(self._in_src_feats, output_size * num_heads, bias=False)
+            self.fc_dst_bw = nn.Linear(self._in_dst_feats, output_size * num_heads, bias=False)
         else:
-            self.fc_fw = nn.Linear(
-                self._in_src_feats, output_size * num_heads, bias=False)
-            self.fc_bw = nn.Linear(
-                self._in_src_feats, output_size * num_heads, bias=False)
+            self.fc_fw = nn.Linear(self._in_src_feats, output_size * num_heads, bias=False)
+            self.fc_bw = nn.Linear(self._in_src_feats, output_size * num_heads, bias=False)
 
         self.attn_l_fw = nn.Parameter(torch.FloatTensor(size=(1, num_heads, output_size)))
         self.attn_l_bw = nn.Parameter(torch.FloatTensor(size=(1, num_heads, output_size)))
@@ -460,12 +497,11 @@ class BiFuseGATLayerConv(GNNLayerBase):
         self.leaky_relu_bw = nn.LeakyReLU(negative_slope)
         if residual:
             if self._in_dst_feats != output_size:
-                self.res_fc = nn.Linear(
-                    self._in_dst_feats, num_heads * output_size, bias=False)
+                self.res_fc = nn.Linear(self._in_dst_feats, num_heads * output_size, bias=False)
             else:
                 self.res_fc = Identity()
         else:
-            self.register_buffer('res_fc', None)
+            self.register_buffer("res_fc", None)
         self.reset_parameters()
         self.activation = activation
 
@@ -473,11 +509,11 @@ class BiFuseGATLayerConv(GNNLayerBase):
 
     def reset_parameters(self):
         """Reinitialize learnable parameters."""
-        gain = nn.init.calculate_gain('relu')
-        if hasattr(self, 'fc_fw') or hasattr(self, 'fc_bw'):
+        gain = nn.init.calculate_gain("relu")
+        if hasattr(self, "fc_fw") or hasattr(self, "fc_bw"):
             nn.init.xavier_normal_(self.fc_fw.weight, gain=gain)
             nn.init.xavier_normal_(self.fc_bw.weight, gain=gain)
-        else: # bipartite graph neural works
+        else:  # bipartite graph neural works
             nn.init.xavier_normal_(self.fc_src_fw.weight, gain=gain)
             nn.init.xavier_normal_(self.fc_src_bw.weight, gain=gain)
             nn.init.xavier_normal_(self.fc_dst_fw.weight, gain=gain)
@@ -490,7 +526,7 @@ class BiFuseGATLayerConv(GNNLayerBase):
         if isinstance(self.res_fc, nn.Linear):
             nn.init.xavier_normal_(self.res_fc.weight, gain=gain)
 
-        if hasattr(self, 'fuse_linear'):
+        if hasattr(self, "fuse_linear"):
             nn.init.xavier_normal_(self.fuse_linear.weight, gain=gain)
 
     def forward(self, graph, feat):
@@ -513,16 +549,17 @@ class BiFuseGATLayerConv(GNNLayerBase):
         with graph.local_scope():
             if not self._allow_zero_in_degree:
                 if (graph.in_degrees() == 0).any():
-                    raise DGLError('There are 0-in-degree nodes in the graph, '
-                                   'output for those nodes will be invalid. '
-                                   'This is harmful for some applications, '
-                                   'causing silent performance regression. '
-                                   'Adding self-loop on the input graph by '
-                                   'calling `g = dgl.add_self_loop(g)` will resolve '
-                                   'the issue. Setting ``allow_zero_in_degree`` '
-                                   'to be `True` when constructing this module will '
-                                   'suppress the check and let the code run.')
-
+                    raise DGLError(
+                        "There are 0-in-degree nodes in the graph, "
+                        "output for those nodes will be invalid. "
+                        "This is harmful for some applications, "
+                        "causing silent performance regression. "
+                        "Adding self-loop on the input graph by "
+                        "calling `g = dgl.add_self_loop(g)` will resolve "
+                        "the issue. Setting ``allow_zero_in_degree`` "
+                        "to be `True` when constructing this module will "
+                        "suppress the check and let the code run."
+                    )
 
         feat_fw = feat_bw = feat
 
@@ -545,7 +582,8 @@ class BiFuseGATLayerConv(GNNLayerBase):
                 feat_dst = self.fc_dst_fw(h_dst_fw).view(-1, self._num_heads, self._out_feats)
             else:
                 feat_src = feat_dst = self.fc_fw(h_src_fw).view(
-                    -1, self._num_heads, self._out_feats)
+                    -1, self._num_heads, self._out_feats
+                )
             # NOTE: GAT paper uses "first concatenation then linear projection"
             # to compute attention scores, while ours is "first projection then
             # addition", the two approaches are mathematically equivalent:
@@ -558,18 +596,16 @@ class BiFuseGATLayerConv(GNNLayerBase):
             # which further speeds up computation and saves memory footprint.
             el = (feat_src * self.attn_l_fw).sum(dim=-1).unsqueeze(-1)
             er = (feat_dst * self.attn_r_fw).sum(dim=-1).unsqueeze(-1)
-            graph.srcdata.update({'ft': feat_src, 'el': el})
-            graph.dstdata.update({'er': er})
+            graph.srcdata.update({"ft": feat_src, "el": el})
+            graph.dstdata.update({"er": er})
             # compute edge attention, el and er are a_l Wh_i and a_r Wh_j respectively.
-            graph.apply_edges(fn.u_add_v('el', 'er', 'e'))
-            e = self.leaky_relu_fw(graph.edata.pop('e'))
+            graph.apply_edges(fn.u_add_v("el", "er", "e"))
+            e = self.leaky_relu_fw(graph.edata.pop("e"))
             # compute softmax
-            graph.edata['a'] = self.attn_drop(edge_softmax(graph, e))
+            graph.edata["a"] = self.attn_drop(edge_softmax(graph, e))
             # message passing
-            graph.update_all(fn.u_mul_e('ft', 'a', 'm'),
-                             fn.sum('m', 'ft'))
-            agg_emb_fw = graph.dstdata['ft']
-
+            graph.update_all(fn.u_mul_e("ft", "a", "m"), fn.sum("m", "ft"))
+            agg_emb_fw = graph.dstdata["ft"]
 
         # backward direction
         graph = graph.reverse()
@@ -579,27 +615,27 @@ class BiFuseGATLayerConv(GNNLayerBase):
                 feat_dst = self.fc_dst_bw(h_dst_bw).view(-1, self._num_heads, self._out_feats)
             else:
                 feat_src = feat_dst = self.fc_bw(h_src_bw).view(
-                    -1, self._num_heads, self._out_feats)
+                    -1, self._num_heads, self._out_feats
+                )
 
             el = (feat_src * self.attn_l_bw).sum(dim=-1).unsqueeze(-1)
             er = (feat_dst * self.attn_r_bw).sum(dim=-1).unsqueeze(-1)
-            graph.srcdata.update({'ft': feat_src, 'el': el})
-            graph.dstdata.update({'er': er})
+            graph.srcdata.update({"ft": feat_src, "el": el})
+            graph.dstdata.update({"er": er})
             # compute edge attention, el and er are a_l Wh_i and a_r Wh_j respectively.
-            graph.apply_edges(fn.u_add_v('el', 'er', 'e'))
-            e = self.leaky_relu_bw(graph.edata.pop('e'))
+            graph.apply_edges(fn.u_add_v("el", "er", "e"))
+            e = self.leaky_relu_bw(graph.edata.pop("e"))
             # compute softmax
-            graph.edata['a'] = self.attn_drop(edge_softmax(graph, e))
+            graph.edata["a"] = self.attn_drop(edge_softmax(graph, e))
             # message passing
-            graph.update_all(fn.u_mul_e('ft', 'a', 'm'),
-                             fn.sum('m', 'ft'))
-            agg_emb_bw = graph.dstdata['ft']
+            graph.update_all(fn.u_mul_e("ft", "a", "m"), fn.sum("m", "ft"))
+            agg_emb_bw = graph.dstdata["ft"]
 
         fuse_vector = torch.cat(
-            [agg_emb_fw, agg_emb_bw, agg_emb_fw * agg_emb_bw, agg_emb_fw - agg_emb_bw], dim=-1)
+            [agg_emb_fw, agg_emb_bw, agg_emb_fw * agg_emb_bw, agg_emb_fw - agg_emb_bw], dim=-1
+        )
         fuse_gate_vector = torch.sigmoid(self.fuse_linear(fuse_vector))
         agg_emb = fuse_gate_vector * agg_emb_fw + (1 - fuse_gate_vector) * agg_emb_bw
-
 
         # residual
         if self.res_fc is not None:
@@ -612,6 +648,7 @@ class BiFuseGATLayerConv(GNNLayerBase):
             agg_emb = self.activation(agg_emb)
 
         return agg_emb
+
 
 class BiSepGATLayerConv(GNNLayerBase):
     # TODO: improve math descriptions bidirectional GNN.
@@ -661,36 +698,33 @@ class BiSepGATLayerConv(GNNLayerBase):
         0-in-degree nodes in input graph. By setting ``True``, it will suppress the check
         and let the users handle it by themselves. Defaults: ``False``.
     """
-    def __init__(self,
-                input_size,
-                output_size,
-                num_heads,
-                feat_drop=0.,
-                attn_drop=0.,
-                negative_slope=0.2,
-                residual=False,
-                activation=None,
-                allow_zero_in_degree=False):
+
+    def __init__(
+        self,
+        input_size,
+        output_size,
+        num_heads,
+        feat_drop=0.0,
+        attn_drop=0.0,
+        negative_slope=0.2,
+        residual=False,
+        activation=None,
+        allow_zero_in_degree=False,
+    ):
         super(BiSepGATLayerConv, self).__init__()
         self._num_heads = num_heads
         self._in_src_feats, self._in_dst_feats = expand_as_pair(input_size)
         self._out_feats = output_size
         self._allow_zero_in_degree = allow_zero_in_degree
         if isinstance(input_size, tuple):
-            self.fc_src_fw = nn.Linear(
-                self._in_src_feats, output_size * num_heads, bias=False)
-            self.fc_dst_fw = nn.Linear(
-                self._in_dst_feats, output_size * num_heads, bias=False)
+            self.fc_src_fw = nn.Linear(self._in_src_feats, output_size * num_heads, bias=False)
+            self.fc_dst_fw = nn.Linear(self._in_dst_feats, output_size * num_heads, bias=False)
 
-            self.fc_src_bw = nn.Linear(
-                self._in_src_feats, output_size * num_heads, bias=False)
-            self.fc_dst_bw = nn.Linear(
-                self._in_dst_feats, output_size * num_heads, bias=False)
+            self.fc_src_bw = nn.Linear(self._in_src_feats, output_size * num_heads, bias=False)
+            self.fc_dst_bw = nn.Linear(self._in_dst_feats, output_size * num_heads, bias=False)
         else:
-            self.fc_fw = nn.Linear(
-                self._in_src_feats, output_size * num_heads, bias=False)
-            self.fc_bw = nn.Linear(
-                self._in_src_feats, output_size * num_heads, bias=False)
+            self.fc_fw = nn.Linear(self._in_src_feats, output_size * num_heads, bias=False)
+            self.fc_bw = nn.Linear(self._in_src_feats, output_size * num_heads, bias=False)
 
         self.attn_l_fw = nn.Parameter(torch.FloatTensor(size=(1, num_heads, output_size)))
         self.attn_l_bw = nn.Parameter(torch.FloatTensor(size=(1, num_heads, output_size)))
@@ -702,25 +736,23 @@ class BiSepGATLayerConv(GNNLayerBase):
         self.leaky_relu_bw = nn.LeakyReLU(negative_slope)
         if residual:
             if self._in_dst_feats != output_size:
-                self.res_fc_fw = nn.Linear(
-                    self._in_dst_feats, num_heads * output_size, bias=False)
-                self.res_fc_bw = nn.Linear(
-                    self._in_dst_feats, num_heads * output_size, bias=False)
+                self.res_fc_fw = nn.Linear(self._in_dst_feats, num_heads * output_size, bias=False)
+                self.res_fc_bw = nn.Linear(self._in_dst_feats, num_heads * output_size, bias=False)
             else:
                 self.res_fc_fw = self.res_fc_bw = Identity()
         else:
-            self.register_buffer('res_fc_fw', None)
-            self.register_buffer('res_fc_bw', None)
+            self.register_buffer("res_fc_fw", None)
+            self.register_buffer("res_fc_bw", None)
         self.reset_parameters()
         self.activation = activation
 
     def reset_parameters(self):
         """Reinitialize learnable parameters."""
-        gain = nn.init.calculate_gain('relu')
-        if hasattr(self, 'fc_fw') or hasattr(self, 'fc_bw'):
+        gain = nn.init.calculate_gain("relu")
+        if hasattr(self, "fc_fw") or hasattr(self, "fc_bw"):
             nn.init.xavier_normal_(self.fc_fw.weight, gain=gain)
             nn.init.xavier_normal_(self.fc_bw.weight, gain=gain)
-        else: # bipartite graph neural works
+        else:  # bipartite graph neural works
             nn.init.xavier_normal_(self.fc_src_fw.weight, gain=gain)
             nn.init.xavier_normal_(self.fc_src_bw.weight, gain=gain)
             nn.init.xavier_normal_(self.fc_dst_fw.weight, gain=gain)
@@ -737,7 +769,7 @@ class BiSepGATLayerConv(GNNLayerBase):
         if isinstance(self.res_fc_bw, nn.Linear):
             nn.init.xavier_normal_(self.res_fc_bw.weight, gain=gain)
 
-        if hasattr(self, 'fuse_linear'):
+        if hasattr(self, "fuse_linear"):
             nn.init.xavier_normal_(self.fuse_linear.weight, gain=gain)
 
     def forward(self, graph, feat):
@@ -774,15 +806,17 @@ class BiSepGATLayerConv(GNNLayerBase):
         with graph.local_scope():
             if not self._allow_zero_in_degree:
                 if (graph.in_degrees() == 0).any():
-                    raise DGLError('There are 0-in-degree nodes in the graph, '
-                                   'output for those nodes will be invalid. '
-                                   'This is harmful for some applications, '
-                                   'causing silent performance regression. '
-                                   'Adding self-loop on the input graph by '
-                                   'calling `g = dgl.add_self_loop(g)` will resolve '
-                                   'the issue. Setting ``allow_zero_in_degree`` '
-                                   'to be `True` when constructing this module will '
-                                   'suppress the check and let the code run.')
+                    raise DGLError(
+                        "There are 0-in-degree nodes in the graph, "
+                        "output for those nodes will be invalid. "
+                        "This is harmful for some applications, "
+                        "causing silent performance regression. "
+                        "Adding self-loop on the input graph by "
+                        "calling `g = dgl.add_self_loop(g)` will resolve "
+                        "the issue. Setting ``allow_zero_in_degree`` "
+                        "to be `True` when constructing this module will "
+                        "suppress the check and let the code run."
+                    )
 
         feat_fw, feat_bw = feat
 
@@ -798,7 +832,6 @@ class BiSepGATLayerConv(GNNLayerBase):
         else:
             h_src_bw = h_dst_bw = self.feat_drop(feat_bw)
 
-
         # forward direction
         with graph.local_scope():
             if isinstance(feat_fw, tuple):
@@ -806,7 +839,8 @@ class BiSepGATLayerConv(GNNLayerBase):
                 feat_dst = self.fc_dst_fw(h_dst_fw).view(-1, self._num_heads, self._out_feats)
             else:
                 feat_src = feat_dst = self.fc_fw(h_src_fw).view(
-                    -1, self._num_heads, self._out_feats)
+                    -1, self._num_heads, self._out_feats
+                )
             # NOTE: GAT paper uses "first concatenation then linear projection"
             # to compute attention scores, while ours is "first projection then
             # addition", the two approaches are mathematically equivalent:
@@ -819,18 +853,16 @@ class BiSepGATLayerConv(GNNLayerBase):
             # which further speeds up computation and saves memory footprint.
             el = (feat_src * self.attn_l_fw).sum(dim=-1).unsqueeze(-1)
             er = (feat_dst * self.attn_r_fw).sum(dim=-1).unsqueeze(-1)
-            graph.srcdata.update({'ft': feat_src, 'el': el})
-            graph.dstdata.update({'er': er})
+            graph.srcdata.update({"ft": feat_src, "el": el})
+            graph.dstdata.update({"er": er})
             # compute edge attention, el and er are a_l Wh_i and a_r Wh_j respectively.
-            graph.apply_edges(fn.u_add_v('el', 'er', 'e'))
-            e = self.leaky_relu_fw(graph.edata.pop('e'))
+            graph.apply_edges(fn.u_add_v("el", "er", "e"))
+            e = self.leaky_relu_fw(graph.edata.pop("e"))
             # compute softmax
-            graph.edata['a'] = self.attn_drop(edge_softmax(graph, e))
+            graph.edata["a"] = self.attn_drop(edge_softmax(graph, e))
             # message passing
-            graph.update_all(fn.u_mul_e('ft', 'a', 'm'),
-                             fn.sum('m', 'ft'))
-            agg_emb_fw = graph.dstdata['ft']
-
+            graph.update_all(fn.u_mul_e("ft", "a", "m"), fn.sum("m", "ft"))
+            agg_emb_fw = graph.dstdata["ft"]
 
         # backward direction
         graph = graph.reverse()
@@ -840,22 +872,21 @@ class BiSepGATLayerConv(GNNLayerBase):
                 feat_dst = self.fc_dst_bw(h_dst_bw).view(-1, self._num_heads, self._out_feats)
             else:
                 feat_src = feat_dst = self.fc_bw(h_src_bw).view(
-                    -1, self._num_heads, self._out_feats)
+                    -1, self._num_heads, self._out_feats
+                )
 
             el = (feat_src * self.attn_l_bw).sum(dim=-1).unsqueeze(-1)
             er = (feat_dst * self.attn_r_bw).sum(dim=-1).unsqueeze(-1)
-            graph.srcdata.update({'ft': feat_src, 'el': el})
-            graph.dstdata.update({'er': er})
+            graph.srcdata.update({"ft": feat_src, "el": el})
+            graph.dstdata.update({"er": er})
             # compute edge attention, el and er are a_l Wh_i and a_r Wh_j respectively.
-            graph.apply_edges(fn.u_add_v('el', 'er', 'e'))
-            e = self.leaky_relu_bw(graph.edata.pop('e'))
+            graph.apply_edges(fn.u_add_v("el", "er", "e"))
+            e = self.leaky_relu_bw(graph.edata.pop("e"))
             # compute softmax
-            graph.edata['a'] = self.attn_drop(edge_softmax(graph, e))
+            graph.edata["a"] = self.attn_drop(edge_softmax(graph, e))
             # message passing
-            graph.update_all(fn.u_mul_e('ft', 'a', 'm'),
-                             fn.sum('m', 'ft'))
-            agg_emb_bw = graph.dstdata['ft']
-
+            graph.update_all(fn.u_mul_e("ft", "a", "m"), fn.sum("m", "ft"))
+            agg_emb_bw = graph.dstdata["ft"]
 
         # residual
         if self.res_fc_fw is not None:

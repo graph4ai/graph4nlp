@@ -11,6 +11,7 @@ class AvgPooling(PoolingBase):
     .. math::
         r^{(i)} = \frac{1}{N_i}\sum_{k=1}^{N_i} x^{(i)}_k
     """
+
     def __init__(self):
         super(AvgPooling, self).__init__()
 

@@ -12,6 +12,7 @@ class MaxPooling(PoolingBase):
     .. math::
         r^{(i)} = \max_{k=1}^{N_i}\left( x^{(i)}_k \right)
     """
+
     def __init__(self, dim=None, use_linear_proj=False):
         super(MaxPooling, self).__init__()
         if use_linear_proj:
