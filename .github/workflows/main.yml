@@ -3,7 +3,9 @@ on:
   push:
     branches:
      - "graph4nlp-documentation"
-
+  pull_request:
+    branches:
+     - "graph4nlp-documentation"
 jobs:
   docs:
     runs-on: ubuntu-latest
