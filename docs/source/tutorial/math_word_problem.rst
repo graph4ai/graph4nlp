@@ -1,5 +1,6 @@
 Math Word Problem Tutorial
 ==========================
+Download the full example `here. <https://github.com/schenglee/Graph4nlp_demo/blob/main/demo_graph2tree/math_word_problem.ipynb>`__
 
 Introduction
 ------------
@@ -379,7 +380,8 @@ Run and get results
     a = Mawps(cfg_g2t)
     best_acc = a.train()
 
-
-Download the full example
----------
-`Math word problem notebook <https://github.com/schenglee/Graph4nlp_demo/blob/main/demo_graph2tree/math_word_problem.ipynb>`__
++------------------------+----------------+------------+----------+
+|   Graph construction   | GNN embedding  |    Model   | Accuracy |
++========================+================+============+==========+
+|    Dependency graph    |  Graphsage     | Graph2tree |  78.0    |
++------------------------+----------------+------------+----------+
