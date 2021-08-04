@@ -1,10 +1,9 @@
+import datetime
+import os
+import time
 from enum import IntEnum
 from os.path import join
-
-import os
-import datetime
 import numpy as np
-import time
 
 # util functions start
 #
@@ -124,5 +123,3 @@ class Logger:
                 self.f.write(message + '\n')
                 if GlobalLogger.f_global_logger is None: GlobalLogger.init()
                 GlobalLogger.f_global_logger.write(message + '\n')
-
-

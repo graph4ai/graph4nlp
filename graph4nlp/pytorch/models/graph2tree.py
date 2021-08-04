@@ -1,14 +1,13 @@
 import copy
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 
 from graph4nlp.pytorch.models.base import Graph2XBase
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 from graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder
 from graph4nlp.pytorch.modules.utils.tree_utils import Tree, to_cuda
-from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 
 
 class Graph2Tree(Graph2XBase):

@@ -1,14 +1,16 @@
-from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-import torch
-import os
 import json
-from stanfordcorenlp import StanfordCoreNLP
+import os
 import pickle
 import re
 import nltk
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+import torch
+from stanfordcorenlp import StanfordCoreNLP
 
+from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 
 
 class IWSLT14Dataset(Text2TextDataset):

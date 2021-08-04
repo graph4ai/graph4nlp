@@ -6,7 +6,11 @@ Created on Nov, 2018
 '''
 import torch
 import torch.nn as nn
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.constants import INF, VERY_SMALL_NUMBER
+
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.constants import (
+    INF,
+    VERY_SMALL_NUMBER,
+)
 
 
 class Context2AnswerAttention(nn.Module):

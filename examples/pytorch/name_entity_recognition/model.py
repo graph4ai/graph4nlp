@@ -1,34 +1,38 @@
 import os
-import torch.multiprocessing
-torch.multiprocessing.set_sharing_strategy('file_system')
-import torch.backends.cudnn as cudnn
-cudnn.benchmark = False
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import sys
-import os
-
+import torch
+import torch.backends.cudnn as cudnn
+import torch.multiprocessing
+import torch.nn as nn
 import torch.nn.functional as F
 
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import *
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import *
+from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
+from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
+from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
+from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.prediction.classification.node_classification.BiLSTMFeedForwardNN import (
+    BiLSTMFeedForwardNN,
+)
 
-from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
+from dependency_graph_construction_without_tokenize import (
+    DependencyBasedGraphConstruction_without_tokenizer,
+)
 from line_graph_construction import LineBasedGraphConstruction
 
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
-from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
-from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
-from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
-from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
+torch.multiprocessing.set_sharing_strategy('file_system')
+cudnn.benchmark = False
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-import torch
-import torch.nn as nn
+
+
+
+
 
 #from torchcrf import CRF
 
-from graph4nlp.pytorch.modules.prediction.classification.node_classification.BiLSTMFeedForwardNN import BiLSTMFeedForwardNN 
-from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
-from line_graph_construction import LineBasedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import *
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import *
 
 
 

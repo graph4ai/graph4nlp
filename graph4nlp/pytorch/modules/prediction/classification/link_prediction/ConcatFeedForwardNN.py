@@ -1,7 +1,9 @@
-from torch import nn
 import torch
+from torch import nn
+
 from ..base import LinkPredictionBase
 from .ConcatFeedForwardNNLayer import ConcatFeedForwardNNLayer
+
 
 class ConcatFeedForwardNN(LinkPredictionBase):
     r"""Specific class for link prediction task.
@@ -60,10 +62,3 @@ class ConcatFeedForwardNN(LinkPredictionBase):
         input_graph.edge_features['logits']=self.classifier(node_emb)
          
         return input_graph
-
-
-
-
-
-
-

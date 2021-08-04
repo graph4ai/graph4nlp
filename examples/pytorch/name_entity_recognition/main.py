@@ -1,48 +1,56 @@
-import os
-import torch.multiprocessing
-torch.multiprocessing.set_sharing_strategy('file_system')
-import torch.backends.cudnn as cudnn
-cudnn.benchmark = False
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-import sys
-import os
-import json
-import time
 import argparse
+import json
+import os
 import random
+import sys
+import time
 from decimal import Decimal
+import dgl
 import numpy as np
+import torch
+import torch.backends.cudnn as cudnn
+import torch.multiprocessing
+import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.data.data import *
-from conll import ConllDataset
+from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
+from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction import *
-from dependency_graph_construction_without_tokenize import DependencyBasedGraphConstruction_without_tokenizer
-from line_graph_construction import LineBasedGraphConstruction
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import *
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import *
-from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
-from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
-from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
+from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
+from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
+from graph4nlp.pytorch.modules.prediction.classification.node_classification.BiLSTMFeedForwardNN import (
+    BiLSTMFeedForwardNN,
+)
+from graph4nlp.pytorch.modules.prediction.classification.node_classification.FeedForwardNN import (
+    FeedForwardNN,
+)
+from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader
-import torch.optim as optim
-import dgl
+
+from conll import ConllDataset
+from conlleval import evaluate
+from dependency_graph_construction_without_tokenize import (
+    DependencyBasedGraphConstruction_without_tokenizer,
+)
+from line_graph_construction import LineBasedGraphConstruction
+from model import Word2tag
+
+torch.multiprocessing.set_sharing_strategy('file_system')
+cudnn.benchmark = False
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 #from torchcrf import CRF
 
-from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-from graph4nlp.pytorch.modules.prediction.classification.node_classification.FeedForwardNN import FeedForwardNN 
-from graph4nlp.pytorch.modules.prediction.classification.node_classification.BiLSTMFeedForwardNN import BiLSTMFeedForwardNN 
-from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
-from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
-from conlleval import evaluate
-from model import Word2tag
 
 
 def all_to_cuda(data, device=None):
@@ -356,6 +364,3 @@ if __name__ == "__main__":
     score=runner.test()    
     endtime = datetime.datetime.now()
     print((endtime - starttime).seconds)   
-    
-
-

@@ -1,7 +1,12 @@
-import pytest
+import gc
+import time
+import matplotlib.pyplot as plt
+import torch
 import torch.nn as nn
 
-from ...data.data import GraphData, from_batch, to_batch, from_dgl
+import pytest
+
+from ...data.data import GraphData, from_batch, from_dgl, to_batch
 from ...data.utils import EdgeNotFoundException, SizeMismatchException
 
 
@@ -412,12 +417,8 @@ def test_batch_node_features():
         assert torch.all(torch.eq(g.edge_features['edge_feat'], new_batch_edge_features[i]))
 
 
-import matplotlib.pyplot as plt
-import time
 
-import gc
 
-import torch
 
 
 ## MEM utils ##

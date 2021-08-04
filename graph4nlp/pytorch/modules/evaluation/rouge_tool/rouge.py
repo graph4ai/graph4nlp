@@ -7,8 +7,9 @@
 # Creation Date : 2015-01-07 06:03
 # Author : Ramakrishna Vedantam <vrama91@vt.edu>
 
-import numpy as np
 import pdb
+import numpy as np
+
 
 def my_lcs(string, sub):
     """

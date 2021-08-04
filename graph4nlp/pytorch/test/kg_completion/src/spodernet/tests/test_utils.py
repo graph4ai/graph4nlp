@@ -1,14 +1,14 @@
 from __future__ import print_function
-from spodernet.utils.logger import Logger, GlobalLogger
-from spodernet.utils.util import save_data, load_data, get_data_path
+import os
+import shutil
+import uuid
 from os.path import join
+import numpy as np
 from scipy.sparse import csr_matrix
 
 import pytest
-import numpy as np
-import uuid
-import os
-import shutil
+from spodernet.utils.logger import GlobalLogger, Logger
+from spodernet.utils.util import get_data_path, load_data, save_data
 
 
 def test_global_logger():
@@ -67,4 +67,3 @@ def test_sparse_save_load_data(dtype):
         data2 = load_data(join(folder, filename))
         np.testing.assert_array_equal(data1.toarray(), data2, 'Arrays must be equal')
     shutil.rmtree(folder)
-

@@ -36,19 +36,21 @@ networks to this problem has been a popular approach recently. This can be seen 
 # Implement a synthetic dataset :class:`data.MiniGCDataset` in DGL. The dataset has eight
 # different types of graphs and each class has the same number of graph samples.
 import argparse
+import dgl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data import DataLoader
-import dgl
 from dgl.data import MiniGCDataset
-# import matplotlib.pyplot as plt
-# import networkx as nx
+from torch.utils.data import DataLoader
 
 from ...data.data import GraphData
 from ...modules.graph_embedding.gat import GAT
 from ...modules.prediction.classification.graph_classification import FeedForwardNN
+
+# import matplotlib.pyplot as plt
+# import networkx as nx
+
 
 
 

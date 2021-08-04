@@ -1,9 +1,11 @@
-import json, re, string
-from unicodedata import normalize
 import argparse
-import tqdm
+import json
 import os
 import pickle as pkl
+import re
+import string
+from unicodedata import normalize
+import tqdm
 
 
 def get_args():
@@ -52,7 +54,3 @@ if __name__ == "__main__":
     test_split = process(test_source_file_path_raw, test_target_file_path_raw)
     with open(test_split_path_processed, "wb") as f:
         pkl.dump(test_split, f)
-
-
-
-

@@ -5,27 +5,27 @@ References
 ----------
 DGL GCN example: https://github.com/dmlc/dgl/tree/master/examples/pytorch/gcn
 """
-import os
 import argparse
-import numpy as np
-import networkx as nx
-from collections import namedtuple
+import os
 import time
+import warnings
+from collections import namedtuple
+import dgl
+import networkx as nx
+import numpy as np
 import torch
+import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.backends.cudnn as cudnn
-import dgl
 from dgl import DGLGraph
-from dgl.data import register_data_args, load_data
+from dgl.data import load_data, register_data_args
 
-from ...modules.utils.generic_utils import *
-from ...modules.graph_embedding.gcn import GCN
 from ...data.data import GraphData
+from ...modules.graph_embedding.gcn import GCN
+from ...modules.utils.generic_utils import *
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
-import warnings
 warnings.filterwarnings("ignore")
 
 

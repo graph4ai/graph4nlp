@@ -1,16 +1,14 @@
 from __future__ import print_function
-from os.path import join
-import json
-
 import argparse
 import datetime
 import json
-import urllib
-import pickle
-import os
-import numpy as np
 import operator
+import os
+import pickle
 import sys
+import urllib
+from os.path import join
+import numpy as np
 
 rdm = np.random.RandomState(234234)
 

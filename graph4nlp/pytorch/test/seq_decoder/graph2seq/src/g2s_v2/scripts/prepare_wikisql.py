@@ -1,10 +1,8 @@
 import argparse
-import os
 import json
+import os
 from collections import defaultdict
 from nltk.tokenize import wordpunct_tokenize
-
-
 
 ##############
 # Below copied from the WikiSQL code

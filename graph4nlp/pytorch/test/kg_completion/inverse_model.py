@@ -1,12 +1,9 @@
 from __future__ import print_function
-from os.path import join
-
-import os
-import numpy as np
 import itertools
+import os
 import sys
+from os.path import join
 import numpy as np
-
 
 rdm = np.random.RandomState(345345)
 

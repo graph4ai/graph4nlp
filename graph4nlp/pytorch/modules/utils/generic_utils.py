@@ -1,13 +1,12 @@
 import os
 import pickle
-import yaml
 from collections import OrderedDict
 import numpy as np
-from scipy import sparse
-from sklearn import preprocessing
 import torch
 import torch.nn as nn
-
+import yaml
+from scipy import sparse
+from sklearn import preprocessing
 
 
 def get_config(config_path="config.yml"):

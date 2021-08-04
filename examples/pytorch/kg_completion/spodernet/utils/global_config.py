@@ -1,6 +1,8 @@
 import os
 from collections import namedtuple
+
 from spodernet.utils.logger import Logger
+
 log = Logger('global_config.py.txt')
 
 class Backends:
@@ -119,5 +121,3 @@ params2field['epochs'] = lambda x: setattr(Config, 'epochs', x)
 params2field['dataset'] = lambda x: setattr(Config, 'dataset', x)
 params2field['process'] = lambda x: setattr(Config, 'process', x)
 params2field['model_name'] = lambda x: setattr(Config, 'model_name', x)
-
-

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import os
-import re
 import pickle
-import numpy as np
+import re
 from collections import Counter
 from functools import lru_cache
+import numpy as np
 
 from . import constants
 from .data_utils import tokenize

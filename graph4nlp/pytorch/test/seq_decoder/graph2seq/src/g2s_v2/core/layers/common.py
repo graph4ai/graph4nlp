@@ -7,10 +7,12 @@ Created on Nov, 2018
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.layers.attention import Attention
-from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.constants import VERY_SMALL_NUMBER
+from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.constants import (
+    VERY_SMALL_NUMBER,
+)
 from graph4nlp.pytorch.test.seq_decoder.graph2seq.src.g2s_v2.core.utils.generic_utils import to_cuda
 
 

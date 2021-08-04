@@ -1,9 +1,6 @@
-from __future__ import division
-from __future__ import print_function
-
+from __future__ import division, print_function
 import argparse
 import time
-
 import numpy as np
 import scipy.sparse as sp
 import torch
@@ -11,7 +8,7 @@ from torch import optim
 
 from model import GCNModelVAE
 from optimizer import loss_function
-from utils import load_data, mask_test_edges, preprocess_graph, get_roc_score
+from utils import get_roc_score, load_data, mask_test_edges, preprocess_graph
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model', type=str, default='gcn_vae', help="models used")

@@ -1,16 +1,15 @@
 import random
 import string
-from typing import Union, List
-
+from typing import List, Union
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..layers.common import EncoderRNN, DecoderRNN, dropout
 from ..layers.attention import *
+from ..layers.common import DecoderRNN, EncoderRNN, dropout
 from ..layers.graphs import GraphNN
-from ..utils.generic_utils import to_cuda, create_mask
 from ..utils.constants import VERY_SMALL_NUMBER
+from ..utils.generic_utils import create_mask, to_cuda
 
 
 class Graph2SeqOutput(object):

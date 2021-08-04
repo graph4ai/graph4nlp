@@ -1,5 +1,6 @@
-import pickle as pkl
 import json
+import pickle as pkl
+
 
 def create_njson(part, graph_file, txt_file):
     dataset = []
@@ -24,5 +25,3 @@ def create_njson(part, graph_file, txt_file):
 create_njson('train','../../../data/GEO/graph.train','../../../data/GEO/train.txt')
 create_njson('test','../../../data/GEO/graph.test','../../../data/GEO/test.txt')
 # create_njson('valid','../../../data/ATIS/graph.valid','../../../data/ATIS/valid.txt')
-
-

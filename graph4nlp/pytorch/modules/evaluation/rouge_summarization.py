@@ -1,8 +1,10 @@
-from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-import pyrouge
-import re
 import os
+import re
 import shutil
+
+from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
+
+import pyrouge
 
 
 class SummarizationRouge(EvaluationMetricBase):

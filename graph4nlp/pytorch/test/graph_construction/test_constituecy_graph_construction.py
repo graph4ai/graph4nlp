@@ -3,11 +3,12 @@ import numpy as np
 import torch
 from stanfordcorenlp import StanfordCoreNLP
 
-from ...modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+from ...data.data import GraphData
+from ...modules.graph_construction.constituency_graph_construction import (
+    ConstituencyBasedGraphConstruction,
+)
 from ...modules.graph_construction.embedding_construction import EmbeddingConstruction
 from ...modules.utils.vocab_utils import VocabModel
-from ...data.data import GraphData
-
 
 if __name__ == "__main__":
     seed = 1234

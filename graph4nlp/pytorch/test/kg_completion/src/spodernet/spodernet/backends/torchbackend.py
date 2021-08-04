@@ -1,13 +1,13 @@
 from __future__ import print_function
-from torch.autograd import Variable
 from itertools import chain
-
-import torch
 import numpy as np
+import torch
+from torch.autograd import Variable
 
 from src.spodernet.spodernet.interfaces import IAtBatchPreparedObservable
-from src.spodernet.spodernet.utils.util import Timer
 from src.spodernet.spodernet.utils.global_config import Config
+from src.spodernet.spodernet.utils.util import Timer
+
 
 class TorchConverter(IAtBatchPreparedObservable):
     def __init__(self, is_volatile):

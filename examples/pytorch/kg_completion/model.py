@@ -1,6 +1,13 @@
 import torch
-from torch.nn import functional as F, Parameter
+from torch.nn import Parameter
+from torch.nn import functional as F
 from torch.nn.init import xavier_normal_
+
+from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
+# Add your own model here
+from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
+from graph4nlp.pytorch.modules.loss.kg_loss import KGLoss
+from graph4nlp.pytorch.modules.prediction.classification.kg_completion import ComplEx, DistMult
 
 
 class Complex(torch.nn.Module):
@@ -118,9 +125,6 @@ class ConvE(torch.nn.Module):
         return pred
 
 
-# Add your own model here
-from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
-from graph4nlp.pytorch.modules.prediction.classification.kg_completion import DistMult
 
 
 class GGNNDistMult(torch.nn.Module):
@@ -160,8 +164,6 @@ class GGNNDistMult(torch.nn.Module):
         return logits
 
 
-from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-from graph4nlp.pytorch.modules.loss.kg_loss import KGLoss
 class GCNDistMult(torch.nn.Module):
     def __init__(self, args, num_entities, num_relations, num_layers=2):
         super(GCNDistMult, self).__init__()
@@ -200,7 +202,6 @@ class GCNDistMult(torch.nn.Module):
 
         return logits
 
-from graph4nlp.pytorch.modules.prediction.classification.kg_completion import ComplEx
 
 class GCNComplex(torch.nn.Module):
     def __init__(self, args, num_entities, num_relations, num_layers=2):

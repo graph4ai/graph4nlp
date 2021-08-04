@@ -1,33 +1,34 @@
-import os
+import argparse
+import datetime
 # os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 import json
+import os
 import time
-import datetime
-import argparse
-import yaml
-
 import numpy as np
 import torch
+import torch.backends.cudnn as cudnn
+import torch.multiprocessing
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
 import torch.optim as optim
+import yaml
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-import torch.backends.cudnn as cudnn
+from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.trec import TrecDataset
+from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
+from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 from graph4nlp.pytorch.modules.graph_construction import *
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
-from graph4nlp.pytorch.modules.graph_embedding import GAT, GraphSAGE, GGNN
-from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
-from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
-from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
+from graph4nlp.pytorch.modules.graph_embedding import GAT, GGNN, GraphSAGE
 from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
-from graph4nlp.pytorch.modules.utils.logger import Logger
+from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
 from graph4nlp.pytorch.modules.utils import constants as Constants
+from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, grid, to_cuda
+from graph4nlp.pytorch.modules.utils.logger import Logger
+
 from .run_text_classifier import TextClassifier
-import torch.multiprocessing
+
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 

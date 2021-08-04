@@ -1,10 +1,9 @@
 import pickle as pkl
-
 import networkx as nx
 import numpy as np
 import scipy.sparse as sp
 import torch
-from sklearn.metrics import roc_auc_score, average_precision_score
+from sklearn.metrics import average_precision_score, roc_auc_score
 
 
 def load_data(dataset):

@@ -1,8 +1,10 @@
 import collections
-from torch import nn
 import torch as th
+from torch import nn
+
 from ..base import NodeClassifierBase
 from .FeedForwardNNLayer import FeedForwardNNLayer
+
 
 class FeedForwardNN(NodeClassifierBase):
     r"""Specific class for node classification task.
@@ -55,6 +57,3 @@ class FeedForwardNN(NodeClassifierBase):
         input_graph.node_features['logits']=self.classifier(node_emb)
         
         return input_graph
-
-
-

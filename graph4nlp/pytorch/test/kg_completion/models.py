@@ -1,21 +1,22 @@
-import torch
-from torch.nn import functional as F, Parameter
-from torch.autograd import Variable
-
-
-from src.spodernet.spodernet.utils.global_config import Config
-from src.spodernet.spodernet.utils.cuda_utils import CUDATimer
-from torch.nn.init import xavier_normal_, xavier_uniform_
-from src.spodernet.spodernet.utils.cuda_utils import CUDATimer
-from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 import math
+import os
+import random
+import sys
 import torch
-from torch.nn.parameter import Parameter
-from torch.nn.modules.module import Module
 import torch.nn as nn
 import torch.nn.init as init
-import os, sys
-import random
+from torch import nn as nn
+from torch.autograd import Variable
+from torch.nn import Parameter
+from torch.nn import functional as F
+from torch.nn.init import xavier_normal_, xavier_uniform_
+from torch.nn.modules.module import Module
+from torch.nn.parameter import Parameter
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
+
+from src.spodernet.spodernet.utils.cuda_utils import CUDATimer
+from src.spodernet.spodernet.utils.global_config import Config
+
 path_dir = os.getcwd()
 random.seed(123)
 
@@ -457,8 +458,6 @@ class SACN(torch.nn.Module):
         return pred
 
 
-from torch import nn
-import torch
 # from ..base import KGCompletionLayerBase
 
 class KGCompletionLayerBase(nn.Module):

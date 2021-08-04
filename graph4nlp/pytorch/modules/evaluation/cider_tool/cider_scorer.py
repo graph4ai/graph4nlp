@@ -3,7 +3,11 @@
 # Ramakrishna Vedantam <vrama91@vt.edu>
 
 import copy
+import math
+import os
 import sys
+from collections import defaultdict
+import numpy as np
 
 # Use cPickle if it is installed, as it is much faster
 if 'cPickle' in sys.modules:
@@ -11,10 +15,6 @@ if 'cPickle' in sys.modules:
 else:
     import pickle
 
-from collections import defaultdict
-import numpy as np
-import math
-import os
 
 
 def precook(s, n=4, out=False):

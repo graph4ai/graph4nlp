@@ -1,26 +1,35 @@
 '''This models is an example for training a classifier on SNLI'''
 from __future__ import print_function
-from os.path import join
-
-import nltk
-import numpy as np
 import os
+import sys
 import urllib
 import zipfile
-import sys
-
-from spodernet.hooks import AccuracyHook, LossHook, ETAHook
-from spodernet.preprocessing.pipeline import Pipeline
-from spodernet.preprocessing.processors import AddToVocab, CreateBinsByNestedLength, SaveLengthsToState, ConvertTokenToIdx, StreamToHDF5, Tokenizer, NaiveNCharTokenizer
-from spodernet.preprocessing.processors import JsonLoaderProcessors, DictKey2ListMapper, RemoveLineOnJsonValueCondition, ToLower
-from spodernet.preprocessing.batching import StreamBatcher
-from spodernet.utils.logger import Logger, LogLevel
-from spodernet.utils.global_config import Config, Backends
-from spodernet.utils.util import get_data_path
-
-from torch.nn.modules.rnn import LSTM
-from torch.autograd import Variable
+from os.path import join
+import nltk
+import numpy as np
 import torch
+from torch.autograd import Variable
+from torch.nn.modules.rnn import LSTM
+
+from spodernet.hooks import AccuracyHook, ETAHook, LossHook
+from spodernet.preprocessing.batching import StreamBatcher
+from spodernet.preprocessing.pipeline import Pipeline
+from spodernet.preprocessing.processors import (
+    AddToVocab,
+    ConvertTokenToIdx,
+    CreateBinsByNestedLength,
+    DictKey2ListMapper,
+    JsonLoaderProcessors,
+    NaiveNCharTokenizer,
+    RemoveLineOnJsonValueCondition,
+    SaveLengthsToState,
+    StreamToHDF5,
+    Tokenizer,
+    ToLower,
+)
+from spodernet.utils.global_config import Backends, Config
+from spodernet.utils.logger import Logger, LogLevel
+from spodernet.utils.util import get_data_path
 
 Config.parse_argv(sys.argv)
 

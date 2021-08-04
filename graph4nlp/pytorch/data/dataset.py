@@ -4,21 +4,26 @@ import warnings
 from collections import Counter
 from copy import deepcopy
 from multiprocessing import Pool
-
 import numpy as np
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+
 from ..data.data import GraphData, to_batch
 from ..modules.graph_construction.base import GraphConstructionBase
-from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
-from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
+from ..modules.graph_construction.constituency_graph_construction import (
+    ConstituencyBasedGraphConstruction,
+)
+from ..modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from ..modules.utils.generic_utils import LabelModel
-from ..modules.utils.tree_utils import Tree, VocabForAll
+from ..modules.utils.tree_utils import Tree
 from ..modules.utils.tree_utils import Vocab as VocabForTree
+from ..modules.utils.tree_utils import VocabForAll
 from ..modules.utils.vocab_utils import VocabModel
 
 

@@ -1,11 +1,11 @@
-from torch.nn import LSTM
-from torch.autograd import Variable
-
 import torch
 import torch.nn.functional as F
+from torch.autograd import Variable
+from torch.nn import LSTM
 
 from spodernet.frontend import AbstractModel
 from spodernet.utils.global_config import Config
+
 
 class TorchEmbedding(torch.nn.Module, AbstractModel):
     def __init__(self, embedding_size, num_embeddings):
@@ -175,4 +175,3 @@ class TorchSoftmaxCrossEntropy(torch.nn.Module, AbstractModel):
         maximum, argmax = torch.topk(out.data, 1)
 
         return [logits, loss, argmax]
-

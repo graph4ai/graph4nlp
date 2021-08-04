@@ -1,9 +1,10 @@
 import torch
 
+from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
+
+from .base import GeneralLossBase
 from .coverage_loss import CoverageLoss
 from .general_loss import GeneralLoss
-from .base import GeneralLossBase
-from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
 
 
 class SeqGenerationLoss(GeneralLossBase):

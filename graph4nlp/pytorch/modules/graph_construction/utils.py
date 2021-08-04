@@ -1,6 +1,6 @@
 from copy import copy
-from scipy import sparse
 import torch
+from scipy import sparse
 
 from ...data.data import GraphData
 

@@ -1,6 +1,6 @@
+from .....data.data import GraphData
 from ..base import KGCompletionBase
 from .ComplExLayer import ComplExLayer
-from .....data.data import GraphData
 
 
 class ComplEx(KGCompletionBase):

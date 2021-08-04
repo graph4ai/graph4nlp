@@ -1,10 +1,11 @@
-from torch import nn
 import torch as th
 import torch.autograd as autograd
+from torch import nn
 from torch.nn.utils.rnn import pad_sequence
+
+from .....data.data import *
 from ..base import NodeClassifierBase
 from .BiLSTMFeedForwardNNLayer import BiLSTMFeedForwardNNLayer
-from .....data.data import *
 
 
 class BiLSTMFeedForwardNN(NodeClassifierBase):
@@ -71,6 +72,3 @@ class BiLSTMFeedForwardNN(NodeClassifierBase):
             input_graph.batch_node_features['logits']=bilstm_emb
             
         return input_graph
-
-
-

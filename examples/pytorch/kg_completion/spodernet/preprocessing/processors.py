@@ -1,20 +1,19 @@
 from __future__ import unicode_literals
+import copy
+import json
+import os
+import pickle
 from os.path import join
-from spodernet.utils.util import Timer
-from spodernet.utils.util import get_data_path, save_data, make_dirs_if_not_exists, load_data, Timer
+import nltk
+import numpy as np
+
+import spacy
+from past.builtins import basestring, long
 from spodernet.interfaces import IAtBatchPreparedObservable
 from spodernet.utils.global_config import Config
-from past.builtins import basestring, long
-
-import numpy as np
-import os
-import copy
-import spacy
-import nltk
-import json
-import pickle
-
 from spodernet.utils.logger import Logger
+from spodernet.utils.util import Timer, get_data_path, load_data, make_dirs_if_not_exists, save_data
+
 log = Logger('processors.py.txt')
 
 nlp = spacy.load('en_core_web_sm')

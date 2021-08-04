@@ -1,14 +1,14 @@
 import copy
-import json
 import itertools
+import json
+from collections import Counter
 import dgl
 import torch
 from stanfordcorenlp import StanfordCoreNLP
-from collections import Counter
 
 from graph4nlp.pytorch.data.data import *
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
+from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 
 
 class LineBasedGraphConstruction(StaticGraphConstructionBase):

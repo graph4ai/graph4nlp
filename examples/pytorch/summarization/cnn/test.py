@@ -1,31 +1,34 @@
-import os
-import datetime
+import argparse
 import copy
-import torch
+import datetime
+import os
 import time
-import torch.backends.cudnn as cudnn
 import numpy as np
+import torch
+import torch.backends.cudnn as cudnn
 import torch.nn as nn
-from torch.utils.data import DataLoader
 import torch.optim as optim
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.utils.data import DataLoader
+
+from graph4nlp.pytorch.datasets.cnn import CNNDataset
+from graph4nlp.pytorch.models.graph2seq import Graph2Seq
+from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
+from graph4nlp.pytorch.modules.config import get_basic_args
+from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
+from graph4nlp.pytorch.modules.graph_construction import *
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
+from graph4nlp.pytorch.modules.utils import constants as Constants
+from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
+from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, grid, to_cuda
+from graph4nlp.pytorch.modules.utils.logger import Logger
+from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
+
+from .main import SumModel
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
-from graph4nlp.pytorch.datasets.cnn import CNNDataset
-from graph4nlp.pytorch.modules.graph_construction import *
-from graph4nlp.pytorch.modules.utils.generic_utils import grid, to_cuda, EarlyStopping
-from torch.optim.lr_scheduler import ReduceLROnPlateau
-from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
-from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
-from graph4nlp.pytorch.modules.utils.logger import Logger
-from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
-from graph4nlp.pytorch.modules.config import get_basic_args
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
-from graph4nlp.pytorch.models.graph2seq import Graph2Seq
-from graph4nlp.pytorch.modules.utils import constants as Constants
-from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
-from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
-from .main import SumModel
 
 
 def all_to_cuda(data, device=None):
@@ -226,7 +229,6 @@ class ModelHandler:
 
         return format_str[:-1]
 
-import argparse
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-task_config', '--task_config', required=True, type=str, help='path to the config file')

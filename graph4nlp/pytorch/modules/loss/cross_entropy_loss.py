@@ -1,7 +1,9 @@
-from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-from .base import GeneralLossBase
-import torch.nn as nn
 import torch
+import torch.nn as nn
+
+from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
+
+from .base import GeneralLossBase
 
 
 class CrossEntropyLoss(GeneralLossBase):

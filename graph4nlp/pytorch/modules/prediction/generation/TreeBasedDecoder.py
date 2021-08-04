@@ -1,17 +1,16 @@
+import random
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import random
-import numpy as np
+from graph4nlp.pytorch.data.data import GraphData, from_batch
+from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
+from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
 
-from .base import RNNTreeDecoderBase
 from ...utils.tree_utils import Tree, to_cuda
 from .attention import Attention
-
-from graph4nlp.pytorch.data.data import GraphData, from_batch
-from graph4nlp.pytorch.modules.utils.tree_utils import to_cuda
-from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
+from .base import RNNTreeDecoderBase
 
 
 class StdTreeDecoder(RNNTreeDecoderBase):

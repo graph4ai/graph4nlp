@@ -1,7 +1,6 @@
-import platform
 import os
-
-from setuptools import setup, find_packages
+import platform
+from setuptools import find_packages, setup
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 cuda_versions = {

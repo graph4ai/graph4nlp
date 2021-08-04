@@ -1,16 +1,16 @@
+import dgl
+import dgl.function as fn
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import dgl
-import dgl.function as fn
+from dgl.base import DGLError
 from dgl.nn.pytorch import GATConv
 from dgl.nn.pytorch.softmax import edge_softmax
 from dgl.utils import expand_as_pair
 
-from .base import GNNLayerBase, GNNBase
 from ...data.data import GraphData
 from ..utils.generic_utils import Identity
-from dgl.base import DGLError
+from .base import GNNBase, GNNLayerBase
 
 
 class GAT(GNNBase):

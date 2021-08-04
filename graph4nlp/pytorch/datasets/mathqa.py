@@ -1,13 +1,16 @@
 
 import os
-
-import torch
 import pickle
-
+import torch
 
 from graph4nlp.pytorch.data.dataset import Text2TextDataset, TextToTreeDataset
-from ..modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-from ..modules.graph_construction.constituency_graph_construction import ConstituencyBasedGraphConstruction
+
+from ..modules.graph_construction.constituency_graph_construction import (
+    ConstituencyBasedGraphConstruction,
+)
+from ..modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
 
 
 def tokenize_mathqa(str_input):

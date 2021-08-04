@@ -1,28 +1,34 @@
 import os
-
-# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+import dgl
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
 
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "5"
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset, KinshipTestDataset
+from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import (
+    EmbeddingConstruction,
+)
 # from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 # from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 # from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
-from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-from graph4nlp.pytorch.modules.prediction.classification.kg_completion.DistMult import DistMult, DistMultLayer
-
-import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader
-import torch.optim as optim
-import dgl
-import numpy as np
-
-from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import EmbeddingConstruction
 from graph4nlp.pytorch.modules.loss.kg_loss import *
+from graph4nlp.pytorch.modules.prediction.classification.kg_completion.DistMult import (
+    DistMult,
+    DistMultLayer,
+)
+from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
+
+# os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+
+
+
 
 class RankingAndHits(EvaluationMetricBase):
     def __init__(self, model_path='best_graph2distmult', batch_size=128):

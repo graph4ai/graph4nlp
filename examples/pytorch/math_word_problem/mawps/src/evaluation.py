@@ -1,6 +1,8 @@
-import sympy
 from random import randint
+
+import sympy
 from sympy.parsing.sympy_parser import parse_expr
+
 
 def convert_to_string(idx_list, form_manager):
     w_list = []

@@ -9,6 +9,7 @@
 
 from .cider_scorer import CiderScorer
 
+
 class Cider(object):
     """Main Class to compute the CIDEr metric"""
     def __init__(self, df, test=None, refs=None, n=4, sigma=6.0):

@@ -1,16 +1,14 @@
+import argparse
 import os
 import random
-import argparse
+import time
 import warnings
-
 import numpy as np
 import torch
-import time
-from stanfordcorenlp import StanfordCoreNLP
-from torch import nn
 import torch.nn.functional as F
 import torch.nn.init as init
-from torch import optim
+from stanfordcorenlp import StanfordCoreNLP
+from torch import nn, optim
 
 from ....data.data import GraphData
 from ....modules.prediction.generation.TreeBasedDecoder import StdTreeDecoder, create_mask, dropout

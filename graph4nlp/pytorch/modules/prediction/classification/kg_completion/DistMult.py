@@ -1,6 +1,6 @@
+from .....data.data import GraphData
 from ..base import KGCompletionBase
 from .DistMultLayer import DistMultLayer
-from .....data.data import GraphData
 
 
 class DistMult(KGCompletionBase):
