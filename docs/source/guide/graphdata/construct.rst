@@ -35,7 +35,47 @@ Interested readers may refer to the ``API reference`` for more details.
 
 .. code-block::
 
-
+    g = GraphData()
+    g.add_nodes(10)
+    for i in range(10):
+        g.add_edge(src=i, tgt=(i + 1) % 10)
+    g.node_features['node_feat'] = torch.randn((10, 10))
+    g.node_features['zero'] = torch.zeros(10)
+    g.node_features['idx'] = torch.tensor(list(range(10)), dtype=torch.long)
+    g.edge_features['edge_feat'] = torch.randn((10, 10))
+    g.edge_features['idx'] = torch.tensor(list(range(10)), dtype=torch.long)
+    # Test to_dgl
+    dgl_g = g.to_dgl()
+    for node_feat_name in g.node_feature_names():
+        if g.node_features[node_feat_name] is None:
+            assert node_feat_name not in dgl_g.ndata.keys()
+        else:
+            assert torch.all(torch.eq(dgl_g.ndata[node_feat_name], g.node_features[node_feat_name]))
+    for edge_feat_name in g.get_edge_feature_names():
+        if g.edge_features[edge_feat_name] is None:
+            assert edge_feat_name not in dgl_g.edata.keys()
+        else:
+            assert torch.all(torch.eq(dgl_g.edata[edge_feat_name], g.edge_features[edge_feat_name]))
+    assert g.get_node_num() == dgl_g.number_of_nodes()
+    src, tgt = dgl_g.all_edges()
+    dgl_g_edges = []
+    for i in range(src.shape[0]):
+        dgl_g_edges.append((int(src[i]), int(tgt[i])))
+    assert g.get_all_edges() == dgl_g_edges
+    # Test from_dgl
+    g1 = from_dgl(dgl_g)
+    for node_feat_name in g.node_feature_names():
+        try:
+            assert torch.all(torch.eq(g1.node_features[node_feat_name], g.node_features[node_feat_name]))
+        except TypeError:
+            assert g1.node_features[node_feat_name] == g.node_features[node_feat_name]
+    for edge_feat_name in g.get_edge_feature_names():
+        try:
+            assert torch.all(torch.eq(g1.edge_features[edge_feat_name], g.edge_features[edge_feat_name]))
+        except TypeError:
+            assert g1.edge_features[edge_feat_name] == g.edge_features[edge_feat_name]
+    assert g1.get_node_num() == g.get_node_num()
+    assert g1.get_all_edges() == g.get_all_edges()
 
 
 Exporting to other formats
