@@ -304,7 +304,8 @@ class StdRNNDecoder(RNNDecoderBase):
             The target sequence's index.
         src_seq: torch.Tensor
             shape=[B, S]
-            The source sequence's index. It is used for ``use_copy``. Note that it can be encoded by target word embedding. # noqa
+            The source sequence's index. It is used for ``use_copy``.
+            Note that it can be encoded by target word embedding.
         oov_dict: Vocab
         teacher_forcing_rate: float, default=1.0
             The teacher forcing rate.
