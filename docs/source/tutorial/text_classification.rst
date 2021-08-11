@@ -1,17 +1,18 @@
 Text Classification Tutorial
-==========
+===================================
 
 
 Introduction
-------
+------------
 
 
 In this tutorial demo, we will use the Graph4NLP library to build a GNN-based text classification model. The model consists of
-    * graph construction module (e.g., dependency based static graph)
-    * graph embedding module (e.g., Bi-Fuse GraphSAGE)
-    * predictoin module (e.g., graph pooling + MLP classifier)
 
-We will use the built-in module APIs to build the model, and evaluate it on the TREC dataset.
+- graph construction module (e.g., dependency based static graph)
+- graph embedding module (e.g., Bi-Fuse GraphSAGE)
+- predictoin module (e.g., graph pooling + MLP classifier)
+
+We will use the built-in module APIs to build the model, and evaluate it on the TREC dataset. The full example can be downloaded from `text classification notebook <https://github.com/graph4ai/graph4nlp_demo/blob/main/SIGIR2021_demo/text_classification.ipynb>`__.
 
 
 
@@ -346,6 +347,26 @@ Users can build their customized dataset APIs by inheriting our low-level datase
             return acc
 
 
-Download the full example
----------
-`text classification notebook <https://github.com/graph4ai/graph4nlp_demo/blob/main/SIGIR2021_demo/text_classification.ipynb>`__
+
+Run the model
+----
+
+.. code-block:: python
+
+    runner = ModelHandler(config)
+    val_acc = runner.train()
+    test_acc = runner.test()
+
+
+
+.. parsed-literal::
+
+    out/trec/graphsage_bi_fuse_dependency_ckpt_1628651059.35833
+    Loading pre-built label mappings stored in ../data/trec/processed/dependency_graph/label.pt
+    Train size: 5452, Val size: 500, Test size: 500
+    [ Fix word embeddings ]
+    Epoch: [1 / 500] | Time: 14.28s | Loss: 1.1777 | Train Acc: 0.5249 | Val Acc: 0.7740
+    Saved model to out/trec/graphsage_bi_fuse_dependency_ckpt_1628651059.35833/params.saved
+    Epoch: [2 / 500] | Time: 13.17s | Loss: 0.6613 | Train Acc: 0.7596 | Val Acc: 0.8280
+    Saved model to out/trec/graphsage_bi_fuse_dependency_ckpt_1628651059.35833/params.saved
+    ......
