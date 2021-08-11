@@ -19,19 +19,22 @@ class ComplEx(KGCompletionBase):
         The loss type selected fot the KG completion task. Default: `'BCELoss'`
     """
 
-    def __init__(self,
-                 input_dropout=0.0,
-                 loss_name='BCELoss'):
+    def __init__(self, input_dropout=0.0, loss_name="BCELoss"):
         super(ComplEx, self).__init__()
         self.loss_name = loss_name
         self.classifier = ComplExLayer(input_dropout, loss_name)
 
-
-    def forward(self, input_graph: GraphData,
-                e1_embedded_real, rel_embedded_real,
-                e1_embedded_img, rel_embedded_img,
-                all_node_emb_real, all_node_emb_img,
-                multi_label=None):
+    def forward(
+        self,
+        input_graph: GraphData,
+        e1_embedded_real,
+        rel_embedded_real,
+        e1_embedded_img,
+        rel_embedded_img,
+        all_node_emb_real,
+        all_node_emb_img,
+        multi_label=None,
+    ):
         r"""
         Forward functions to compute the logits tensor for kg completion.
 
@@ -89,20 +92,27 @@ class ComplEx(KGCompletionBase):
         """
 
         if multi_label is None:
-            input_graph.graph_attributes['logits'] = self.classifier(e1_embedded_real,
-                                                                     e1_embedded_img,
-                                                                     rel_embedded_real,
-                                                                     rel_embedded_img,
-                                                                     all_node_emb_real,
-                                                                     all_node_emb_img)
+            input_graph.graph_attributes["logits"] = self.classifier(
+                e1_embedded_real,
+                e1_embedded_img,
+                rel_embedded_real,
+                rel_embedded_img,
+                all_node_emb_real,
+                all_node_emb_img,
+            )
         else:
-            input_graph.graph_attributes['logits'], input_graph.graph_attributes['p_score'], \
-            input_graph.graph_attributes['n_score'] = self.classifier(e1_embedded_real,
-                                                                      e1_embedded_img,
-                                                                      rel_embedded_real,
-                                                                      rel_embedded_img,
-                                                                      all_node_emb_real,
-                                                                      all_node_emb_img,
-                                                                      multi_label)
+            (
+                input_graph.graph_attributes["logits"],
+                input_graph.graph_attributes["p_score"],
+                input_graph.graph_attributes["n_score"],
+            ) = self.classifier(
+                e1_embedded_real,
+                e1_embedded_img,
+                rel_embedded_real,
+                rel_embedded_img,
+                all_node_emb_real,
+                all_node_emb_img,
+                multi_label,
+            )
 
         return input_graph

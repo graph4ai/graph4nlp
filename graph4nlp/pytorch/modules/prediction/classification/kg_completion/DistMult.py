@@ -18,9 +18,7 @@ class DistMult(KGCompletionBase):
         The loss type selected fot the KG completion task. Default: `'BCELoss'`
     """
 
-    def __init__(self,
-                 input_dropout=0.0,
-                 loss_name='BCELoss'):
+    def __init__(self, input_dropout=0.0, loss_name="BCELoss"):
         super(DistMult, self).__init__()
         self.loss_name = loss_name
         self.classifier = DistMultLayer(input_dropout, loss_name)
@@ -68,15 +66,15 @@ class DistMult(KGCompletionBase):
         """
 
         if multi_label is None:
-            input_graph.graph_attributes['logits'] = self.classifier(e1_emb,
-                                                                     rel_emb,
-                                                                     all_node_emb)  # [B, N]
+            input_graph.graph_attributes["logits"] = self.classifier(
+                e1_emb, rel_emb, all_node_emb
+            )  # [B, N]
         else:
-            input_graph.graph_attributes['logits'], input_graph.graph_attributes['p_score'], \
-            input_graph.graph_attributes['n_score'] = self.classifier(e1_emb,
-                                                                      rel_emb,
-                                                                      all_node_emb,
-                                                                      multi_label)
+            (
+                input_graph.graph_attributes["logits"],
+                input_graph.graph_attributes["p_score"],
+                input_graph.graph_attributes["n_score"],
+            ) = self.classifier(e1_emb, rel_emb, all_node_emb, multi_label)
             # input_graph.graph_attributes['p_score']: [L_p]
             # input_graph.graph_attributes['n_score']: [L_n]
             # L_p + L_n == B * N
