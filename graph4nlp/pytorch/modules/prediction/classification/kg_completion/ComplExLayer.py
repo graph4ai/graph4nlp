@@ -7,33 +7,34 @@ from ..base import KGCompletionLayerBase
 class ComplExLayer(KGCompletionLayerBase):
     r"""Specific class for knowledge graph completion task.
 
-        ComplEx from paper `Complex Embeddings for Simple Link Prediction
-        <http://proceedings.mlr.press/v48/trouillon16.pdf>`__.
+    ComplEx from paper `Complex Embeddings for Simple Link Prediction
+    <http://proceedings.mlr.press/v48/trouillon16.pdf>`__.
 
-        Parameters
-        ----------
-        input_dropout: float
-           Dropout for node_emb and rel_emb. Default: 0.0
+    Parameters
+    ----------
+    input_dropout: float
+       Dropout for node_emb and rel_emb. Default: 0.0
 
-        loss_name: str
-           The loss type selected fot the KG completion task.
+    loss_name: str
+       The loss type selected fot the KG completion task.
 
     """
-    def __init__(self,
-                 input_dropout=0.0,
-                 loss_name='BCELoss'):
+
+    def __init__(self, input_dropout=0.0, loss_name="BCELoss"):
         super(ComplExLayer, self).__init__()
         self.inp_drop = nn.Dropout(input_dropout)
         self.loss_name = loss_name
 
-    def forward(self,
-                e1_embedded_real,
-                e1_embedded_img,
-                rel_embedded_real,
-                rel_embedded_img,
-                all_node_emb_real,
-                all_node_emb_img,
-                multi_label=None):
+    def forward(
+        self,
+        e1_embedded_real,
+        e1_embedded_img,
+        rel_embedded_real,
+        rel_embedded_img,
+        all_node_emb_real,
+        all_node_emb_img,
+        multi_label=None,
+    ):
         r"""
 
         Parameters
@@ -99,10 +100,18 @@ class ComplExLayer(KGCompletionLayerBase):
         rel_embedded_img = self.inp_drop(rel_embedded_img)
 
         # complex space bilinear product (equivalent to HolE)
-        realrealreal = torch.mm(e1_embedded_real * rel_embedded_real, all_node_emb_real.weight.transpose(1, 0))
-        realimgimg = torch.mm(e1_embedded_real * rel_embedded_img, all_node_emb_img.weight.transpose(1, 0))
-        imgrealimg = torch.mm(e1_embedded_img * rel_embedded_real, all_node_emb_img.weight.transpose(1, 0))
-        imgimgreal = torch.mm(e1_embedded_img * rel_embedded_img, all_node_emb_real.weight.transpose(1, 0))
+        realrealreal = torch.mm(
+            e1_embedded_real * rel_embedded_real, all_node_emb_real.weight.transpose(1, 0)
+        )
+        realimgimg = torch.mm(
+            e1_embedded_real * rel_embedded_img, all_node_emb_img.weight.transpose(1, 0)
+        )
+        imgrealimg = torch.mm(
+            e1_embedded_img * rel_embedded_real, all_node_emb_img.weight.transpose(1, 0)
+        )
+        imgimgreal = torch.mm(
+            e1_embedded_img * rel_embedded_img, all_node_emb_real.weight.transpose(1, 0)
+        )
         pred = realrealreal + realimgimg + imgrealimg - imgimgreal
 
         if self.loss_name in ["SoftMarginLoss"]:
@@ -111,10 +120,10 @@ class ComplExLayer(KGCompletionLayerBase):
             pred = torch.sigmoid(pred)
 
         if multi_label is not None:
-            idxs_pos = torch.nonzero(multi_label == 1.)
+            idxs_pos = torch.nonzero(multi_label == 1.0)
             pred_pos = pred[idxs_pos[:, 0], idxs_pos[:, 1]]
 
-            idxs_neg = torch.nonzero(multi_label == 0.)
+            idxs_neg = torch.nonzero(multi_label == 0.0)
             pred_neg = pred[idxs_neg[:, 0], idxs_neg[:, 1]]
 
             return pred, pred_pos, pred_neg
