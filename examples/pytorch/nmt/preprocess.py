@@ -1,19 +1,25 @@
 import argparse
-import json
 import os
 import pickle as pkl
-import re
-import string
-from unicodedata import normalize
-import tqdm
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--raw_data_root', default='/home/shiina/data/nmt/iwslt14/iwslt14.tokenized.de-en', type=str, help='path to the config file')
-    parser.add_argument('--train_raw_dataset_tgt', type=str, default='/home/shiina/shiina/lib/dataset/europarl-v7.fr-en.en', help='rank')
-    parser.add_argument('--output_dir_root', default="examples/pytorch/nmt/data/raw", type=str, help="")
-
+    parser.add_argument(
+        "--raw_data_root",
+        default="/home/shiina/data/nmt/iwslt14/iwslt14.tokenized.de-en",
+        type=str,
+        help="path to the config file",
+    )
+    parser.add_argument(
+        "--train_raw_dataset_tgt",
+        type=str,
+        default="/home/shiina/shiina/lib/dataset/europarl-v7.fr-en.en",
+        help="rank",
+    )
+    parser.add_argument(
+        "--output_dir_root", default="examples/pytorch/nmt/data/raw", type=str, help=""
+    )
 
     cfg = parser.parse_args()
     return cfg
@@ -40,14 +46,14 @@ if __name__ == "__main__":
     train_split = process(train_source_file_path_raw, train_target_file_path_raw)
     with open(train_split_path_processed, "wb") as f:
         pkl.dump(train_split, f)
-    
+
     val_source_file_path_raw = os.path.join(opt.raw_data_root, "valid.de")
     val_target_file_path_raw = os.path.join(opt.raw_data_root, "valid.en")
     val_split_path_processed = os.path.join(opt.output_dir_root, "val.pkl")
     val_split = process(val_source_file_path_raw, val_target_file_path_raw)
     with open(val_split_path_processed, "wb") as f:
         pkl.dump(val_split, f)
-    
+
     test_source_file_path_raw = os.path.join(opt.raw_data_root, "test.de")
     test_target_file_path_raw = os.path.join(opt.raw_data_root, "test.en")
     test_split_path_processed = os.path.join(opt.output_dir_root, "test.pkl")

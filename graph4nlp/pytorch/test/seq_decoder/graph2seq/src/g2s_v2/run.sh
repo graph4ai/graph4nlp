@@ -1,1 +1,0 @@
-python main.py -config config/JOBS/JOBS_graph2seq_wo_pretrain_1234.yml
