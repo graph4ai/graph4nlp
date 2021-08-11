@@ -1,17 +1,19 @@
 Semantic Parsing Tutorial
-==========
+===================================
 
 
 Introduction
-------
+------------
 
 
 In this tutorial demo, we will use the Graph4NLP library to build a GNN-based semantic parsing model. The model consists of
-    * graph construction module (e.g., node embedding based dynamic graph)
-    * graph embedding module (e.g., Bi-Sep GAT)
-    * predictoin module (e.g., RNN decoder with attention, copy and coverage mechanisms)
+
+- graph construction module (e.g., node embedding based dynamic graph)
+- graph embedding module (e.g., Bi-Sep GAT)
+- predictoin module (e.g., RNN decoder with attention, copy and coverage mechanisms)
 
 We will use the built-in Graph2Seq model APIs to build the model, and evaluate it on the Jobs dataset.
+The full example can be downloaded from `Semantic parsing notebook <https://github.com/graph4ai/graph4nlp_demo/blob/main/SIGIR2021_demo/semantic_parsing.ipynb>`__.
 
 
 
@@ -254,8 +256,33 @@ Users can build their customized dataset APIs by inheriting our low-level datase
         torch.save(self.model.state_dict(), checkpoint_path)
 
 
+Run the model
+----
+
+.. code-block:: python
+
+    runner = Jobs(opt)
+    max_score = runner.train()
+    runner.load_checkpoint("best.pth")
+    test_score = runner.translate()
 
 
-Download the full example
----------
-`Semantic parsing notebook <https://github.com/graph4ai/graph4nlp_demo/blob/main/SIGIR2021_demo/semantic_parsing.ipynb>`__
+.. parsed-literal::
+
+    [ Using CPU ]
+    Start training in split train, Epoch: 0
+    Epoch 0: [10 / 21] loss: 3.938
+    Epoch 0: [20 / 21] loss: 2.506
+    Evaluation accuracy in `test` split: 0.000
+    Best model saved, epoch 0
+    Start training in split train, Epoch: 1
+    Epoch 1: [10 / 21] loss: 1.845
+    Epoch 1: [20 / 21] loss: 1.487
+    Evaluation accuracy in `test` split: 0.000
+    Best model saved, epoch 1
+    Start training in split train, Epoch: 2
+    Epoch 2: [10 / 21] loss: 1.198
+    Epoch 2: [20 / 21] loss: 1.104
+    Evaluation accuracy in `test` split: 0.100
+    Best model saved, epoch 2
+    ......
