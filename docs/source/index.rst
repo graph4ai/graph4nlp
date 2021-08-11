@@ -9,18 +9,20 @@ Graph4NLP Documentation
         :target: https://github.com/graph4ai/graph4nlp/fork
 .. image:: https://img.shields.io/github/stars/graph4ai/graph4nlp?style=social
         :target: https://github.com/graph4ai/graph4nlp
-Graph4NLP is a library utilizing deep learning on graphs to carry out natural language processing tasks. We believe
-this library will boost research in relevant fields. This library has the following advantages:
 
-- End-to-End supporting: Graph4NLP implements every necessary components in the pipeline of natural language processing tasks.
+**Graph4NLP** is an easy-to-use library for R&D at the intersection of **Deep Learning on Graphs** and
+**Natural Language Processing** (i.e., DLG4NLP). It provides both **full implementations** of state-of-the-art models for
+data scientists and also **flexible interfaces** to build customized models for researchers and developers with whole-pipeline
+support. Built upon highly-optimized runtime libraries including `DGL <https://github.com/dmlc/dgl>`_ , **Graph4NLP** has both
+high running efficiency and great extensibility. The architecture of **Graph4NLP** is shown in the following figure, where boxes
+with dashed lines represents the features under development. Graph4NLP consists of four different layers: 1) Data Layer,
+2) Module Layer, 3) Model Layer, and 4) Application Layer.
 
-- Large coverage: Graph4NLP implements all popular methods in graph deep learning.
+.. figure:: ../arch.png
+   :align: center
+   :width: 600
 
-- To be added here.
-
-Sphinx reference: `reStructuredText Primer <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
-
-Sphinx themes: `Link <https://sphinx-themes.org/>`_
+   Graph4NLP Architecture
 
 .. toctree::
    :glob:

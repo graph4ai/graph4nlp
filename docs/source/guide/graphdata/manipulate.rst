@@ -114,3 +114,29 @@ keys are `node_attr` for node attributes and `edge_attr` for edge attributes.
     g.node_attributes
     >>> [{'node_attr': None}, {'node_attr': 'hello'}]
 
+
+Features vs. Attributes
+----------------
+
+To make it clear, in this subsection we compare the differences between features and attributes in order for users to
+better utilize them.
+
+1. Types of storage
+
+``features`` store only the numerical feature objects. In current version these data are PyTorch tensors. The shape of these
+tensor data should be consistent with the number of nodes/edges in the graph. Specifically, the first dimension
+of the tensor data corresponds to the number of instances. For example, in a graph with 10 nodes and 20 edges, the shape
+of any node feature tensor should be [10, *] and [20, *] for any edge feature.
+
+On the other hand, ``attributes`` store arbitrary type of data. The data can be of any type and do not necessarily need
+to have a ``shape``.
+
+2. Order of access
+
+Both ``features`` and ``attributes`` have two levels of keys: *names* and *indices*. ``features`` are implemented as a
+dictionary where the keys are strings and values are tensors. Therefore, the first level of key is the feature names.
+In this way, the second level of keys are just direct access to the corresponding PyTorch tensors.
+
+On the other hand, ``attributes`` are implemented as a list of dictionaries, where the list indices are the node indices.
+Therefore, when accessing attributes, users should use the index first.
+
