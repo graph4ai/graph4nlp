@@ -1,12 +1,6 @@
 from __future__ import print_function
-import argparse
-import datetime
 import json
-import operator
-import os
-import pickle
 import sys
-import urllib
 from os.path import join
 import numpy as np
 
@@ -15,16 +9,16 @@ rdm = np.random.RandomState(234234)
 if len(sys.argv) > 1:
     dataset_name = sys.argv[1]
 else:
-    dataset_name = 'FB15k-237'
-    #dataset_name = 'FB15k'
-    #dataset_name = 'yago'
-    #dataset_name = 'WN18RR'
+    dataset_name = "FB15k-237"
+    # dataset_name = 'FB15k'
+    # dataset_name = 'yago'
+    # dataset_name = 'WN18RR'
 
-print('Processing dataset {0}'.format(dataset_name))
+print("Processing dataset {0}".format(dataset_name))
 
 rdm = np.random.RandomState(2342423)
-base_path = 'examples/pytorch/kg_completion/data/{0}/'.format(dataset_name)
-files = ['train.txt', 'valid.txt', 'test.txt']
+base_path = "examples/pytorch/kg_completion/data/{0}/".format(dataset_name)
+files = ["train.txt", "valid.txt", "test.txt"]
 
 data = []
 for p in files:
@@ -43,23 +37,23 @@ for p in files:
 for p in files:
     with open(join(base_path, p)) as f:
         for i, line in enumerate(f):
-            e1, rel, e2 = line.split('\t')
+            e1, rel, e2 = line.split("\t")
             e1 = e1.strip()
             e2 = e2.strip()
             rel = rel.strip()
-            rel_reverse = rel+ '_reverse'
+            rel_reverse = rel + "_reverse"
 
             # data
             # (Mike, fatherOf, John)
             # (John, fatherOf, Tom)
 
-            if (e1 , rel) not in label_graph:
+            if (e1, rel) not in label_graph:
                 label_graph[(e1, rel)] = set()
 
-            if (e2,  rel_reverse) not in label_graph:
+            if (e2, rel_reverse) not in label_graph:
                 label_graph[(e2, rel_reverse)] = set()
 
-            if (e1,  rel) not in train_graph[p]:
+            if (e1, rel) not in train_graph[p]:
                 train_graph[p][(e1, rel)] = set()
             if (e2, rel_reverse) not in train_graph[p]:
                 train_graph[p][(e2, rel_reverse)] = set()
@@ -87,10 +81,8 @@ for p in files:
             train_graph[p][(e2, rel_reverse)].add(e1)
 
 
-
 def write_training_graph(cases, graph, path):
-    with open(path, 'w') as f:
-        n = len(graph)
+    with open(path, "w") as f:
         for i, key in enumerate(graph):
             e1, rel = key
             # (Mike, fatherOf, John)
@@ -99,48 +91,65 @@ def write_training_graph(cases, graph, path):
             # (Tom, fatherOf_reverse, John)
 
             # (John, fatherOf) -> Tom
-            # (John, fatherOf_reverse, Mike) 
+            # (John, fatherOf_reverse, Mike)
             entities1 = " ".join(list(graph[key]))
 
             data_point = {}
-            data_point['e1'] = e1
-            data_point['e2'] = 'None'
-            data_point['rel'] = rel
-            data_point['rel_eval'] = 'None'
-            data_point['e2_multi1'] =  entities1
-            data_point['e2_multi2'] = "None"
+            data_point["e1"] = e1
+            data_point["e2"] = "None"
+            data_point["rel"] = rel
+            data_point["rel_eval"] = "None"
+            data_point["e2_multi1"] = entities1
+            data_point["e2_multi2"] = "None"
 
-            f.write(json.dumps(data_point)  + '\n')
+            f.write(json.dumps(data_point) + "\n")
+
 
 def write_evaluation_graph(cases, graph, path):
-    with open(path, 'w') as f:
-        n = len(cases)
+    with open(path, "w") as f:
         n1 = 0
         n2 = 0
         for i, (e1, rel, e2) in enumerate(cases):
             # (Mike, fatherOf) -> John
             # (John, fatherOf, Tom)
-            rel_reverse = rel+'_reverse'
+            rel_reverse = rel + "_reverse"
             entities1 = " ".join(list(graph[(e1, rel)]))
             entities2 = " ".join(list(graph[(e2, rel_reverse)]))
 
-            n1 += len(entities1.split(' '))
-            n2 += len(entities2.split(' '))
-
+            n1 += len(entities1.split(" "))
+            n2 += len(entities2.split(" "))
 
             data_point = {}
-            data_point['e1'] = e1
-            data_point['e2'] = e2
-            data_point['rel'] = rel
-            data_point['rel_eval'] = rel_reverse
-            data_point['e2_multi1'] = entities1
-            data_point['e2_multi2'] = entities2
+            data_point["e1"] = e1
+            data_point["e2"] = e2
+            data_point["rel"] = rel
+            data_point["rel_eval"] = rel_reverse
+            data_point["e2_multi1"] = entities1
+            data_point["e2_multi2"] = entities2
 
-            f.write(json.dumps(data_point)  + '\n')
+            f.write(json.dumps(data_point) + "\n")
 
 
-all_cases = test_cases['train.txt'] + test_cases['valid.txt'] + test_cases['test.txt']
-write_training_graph(test_cases['train.txt'], train_graph['train.txt'], 'examples/pytorch/kg_completion/data/{0}/e1rel_to_e2_train.json'.format(dataset_name))
-write_evaluation_graph(test_cases['valid.txt'], label_graph, join('examples/pytorch/kg_completion/data/{0}/e1rel_to_e2_ranking_dev.json'.format(dataset_name)))
-write_evaluation_graph(test_cases['test.txt'], label_graph, 'examples/pytorch/kg_completion/data/{0}/e1rel_to_e2_ranking_test.json'.format(dataset_name))
-write_training_graph(all_cases, label_graph, 'examples/pytorch/kg_completion/data/{0}/e1rel_to_e2_full.json'.format(dataset_name))
+all_cases = test_cases["train.txt"] + test_cases["valid.txt"] + test_cases["test.txt"]
+write_training_graph(
+    test_cases["train.txt"],
+    train_graph["train.txt"],
+    "examples/pytorch/kg_completion/data/{0}/e1rel_to_e2_train.json".format(dataset_name),
+)
+write_evaluation_graph(
+    test_cases["valid.txt"],
+    label_graph,
+    join(
+        "examples/pytorch/kg_completion/data/{0}/e1rel_to_e2_ranking_dev.json".format(dataset_name)
+    ),
+)
+write_evaluation_graph(
+    test_cases["test.txt"],
+    label_graph,
+    "examples/pytorch/kg_completion/data/{0}/e1rel_to_e2_ranking_test.json".format(dataset_name),
+)
+write_training_graph(
+    all_cases,
+    label_graph,
+    "examples/pytorch/kg_completion/data/{0}/e1rel_to_e2_full.json".format(dataset_name),
+)
