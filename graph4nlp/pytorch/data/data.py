@@ -1,14 +1,15 @@
 """
-The Graph4NLP library uses the class :py:class:`GraphData` as the representation for structured data (graphs).
-:py:class:`GraphData` supports basic operations to the graph, including adding nodes and edges. :py:class:`GraphData` also
-supports adding features which are in tensor form, and attributes which are of arbitrary form to the corresponding
-nodes or edges. Batching operations is also supported by :py:class:`GraphData`.
-
+The Graph4NLP library uses the class :py:class:`GraphData` as the representation
+for structured data (graphs). :py:class:`GraphData` supports basic operations to
+the graph, including adding nodes and edges. :py:class:`GraphData` also supports
+adding features which are in tensor form, and attributes which are of arbitrary
+form to the correspondingnodes or edges. Batching operations is also supported
+by :py:class:`GraphData`.
 """
 import os
 import warnings
 from collections import namedtuple
-from typing import Any, Callable, Dict, KeysView, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 import dgl
 import scipy.sparse
 import torch
@@ -31,24 +32,21 @@ log_level = os.environ.get("G4NLP_LOG_LEVEL")
 if log_level is None:
     log_level = 0
 
-
-
-
-EdgeIndex = namedtuple('EdgeIndex', ['src', 'tgt'])
+EdgeIndex = namedtuple("EdgeIndex", ["src", "tgt"])
 
 node_feature_factory = dict
 node_attribute_factory = list
 single_node_attr_factory = dict
-res_init_node_attr = {'node_attr': None}
-res_init_node_features = {'node_feat': None, 'node_emb': None}
+res_init_node_attr = {"node_attr": None}
+res_init_node_features = {"node_feat": None, "node_emb": None}
 
 eid_nids_mapping_factory = dict
 nids_eid_mapping_factory = dict
 edge_feature_factory = dict
 edge_attribute_factory = list
 single_edge_attr_factory = dict
-res_init_edge_features = {'edge_feat': None, 'edge_emb': None, 'edge_weight': None}
-res_init_edge_attributes = {'edge_attr': None}
+res_init_edge_features = {"edge_feat": None, "edge_emb": None, "edge_weight": None}
+res_init_edge_attributes = {"edge_attr": None}
 
 graph_data_factory = dict
 
@@ -63,7 +61,8 @@ class GraphData(object):
         Parameters
         ----------
         src: GraphData, default=None
-            The source graph. If not None, then the newly generated graph is a copy of :py:class:`src`.
+            The source graph. If not None, then the newly generated graph
+            is a copy of :py:class:`src`.
         device: str, default=None
             The device descriptor for graph. By default it is None.
         """
@@ -78,7 +77,8 @@ class GraphData(object):
         self.graph_attributes = graph_data_factory()
         self.device = device
 
-        # Batch information. If this instance is not a batch, then the following attributes are all `None`.
+        # Batch information.
+        # If this instance is not a batch, then the following attributes are all `None`.
         self._is_batch = False  # Bool flag indicating whether this graph is a batch graph
         self.batch = None  # Batch node indices
         self.batch_size = None  # Batch size
@@ -93,8 +93,9 @@ class GraphData(object):
 
     def to(self, device: str):
         """
-        Move the GraphData object to different devices(cpu, gpu, etc.). The usage of this method is similar to that of
-        torch.Tensor and dgl.DGLGraph
+        Move the GraphData object to different devices(cpu, gpu, etc.).
+        The usage of this method is similar to that of torch.Tensor and
+        dgl.DGLGraph
 
         Parameters
         ----------
@@ -118,9 +119,12 @@ class GraphData(object):
     @property
     def nodes(self) -> NodeView:
         """
-        Return a node view through which the user can access the features and attributes. A NodeView object provides a
-        high-level view of the underlying storage of the features and supports both query and modification to the original
-        storage.
+        Return a node view through which the user can access the features
+        and attributes.
+
+        A NodeView object provides a high-level view of the underlying
+        storage of the features and supports both query and modification
+        to the original storage.
 
         Returns
         -------
@@ -149,10 +153,14 @@ class GraphData(object):
         node_num: int
             The number of nodes to be added
         """
-        assert node_num > 0, "The number of nodes to be added should be greater than 0. (Got {})".format(node_num)
+        assert (
+            node_num > 0
+        ), "The number of nodes to be added should be greater than 0. (Got {})".format(node_num)
 
         # Create placeholders in the node attribute dictionary
-        self._node_attributes.extend([single_node_attr_factory(**res_init_node_attr) for _ in range(node_num)])
+        self._node_attributes.extend(
+            [single_node_attr_factory(**res_init_node_attr) for _ in range(node_num)]
+        )
 
         # Do padding in the node feature dictionary
         for key in self._node_features.keys():
@@ -163,9 +171,12 @@ class GraphData(object):
     def node_features(self) -> NodeFeatView:
         """
         Access and modify node feature vectors (tensor).
-        This property can be accessed in a dict-of-dict fashion, with the order being [name][index].
-        'name' indicates the name of the feature vector. 'index' selects the specific nodes to be accessed.
-        When accessed independently, returns the feature dictionary with the format {name: tensor}
+        This property can be accessed in a dict-of-dict fashion,
+        with the order being [name][index].
+        'name' indicates the name of the feature vector. 'index' selects
+        the specific nodes to be accessed.
+        When accessed independently, returns the feature dictionary with
+        the format {name: tensor}.
 
         Examples
         --------
@@ -174,7 +185,8 @@ class GraphData(object):
         >>> import torch
         >>> g.node_features['x'] = torch.rand((10, 10))
         >>> g.node_features['x'][0]
-        torch.Tensor([0.1036, 0.6757, 0.4702, 0.8938, 0.6337, 0.3290, 0.6739, 0.1091, 0.7996, 0.0586])
+        torch.Tensor([0.1036, 0.6757, 0.4702, 0.8938, 0.6337, 0.3290,
+                      0.6739, 0.1091, 0.7996, 0.0586])
 
         Returns
         -------
@@ -216,7 +228,9 @@ class GraphData(object):
         """
         return list(self._node_features.keys())
 
-    def set_node_features(self, nodes: Union[int, slice], new_data: Dict[str, torch.Tensor]) -> None:
+    def set_node_features(
+        self, nodes: Union[int, slice], new_data: Dict[str, torch.Tensor]
+    ) -> None:
         """
         Set the features of the `nodes` with the given `new_data``.
 
@@ -225,7 +239,8 @@ class GraphData(object):
         nodes : int or slice
             The nodes involved
         new_data : dict
-            The new data to write. Key indicates feature name and value indicates the actual value
+            The new data to write. Key indicates feature name and value indicates the
+            actual value.
 
         Raises
         ----------
@@ -234,26 +249,32 @@ class GraphData(object):
         """
         # Consistency check
         for key in new_data.keys():
-            if key not in self._node_features or self._node_features[key] is None:  # A new feature is added
-                # If the shape of the new feature does not match the number of existing nodes, then error occurs
+            if (
+                key not in self._node_features or self._node_features[key] is None
+            ):  # A new feature is added
+                # If the shape of the new feature does not match the number of
+                # existing nodes, then error occurs
                 if (not isinstance(nodes, slice)) or (
-                        len(slice_to_list(nodes, self.get_node_num())) != self.get_node_num()):
+                    len(slice_to_list(nodes, self.get_node_num())) != self.get_node_num()
+                ):
                     raise ValueError(
-                        'The new feature `{}\' should cover all existing {} nodes!'.format(key, self.get_node_num()))
+                        "The new feature `{}' should cover all existing {} nodes!".format(
+                            key, self.get_node_num()
+                        )
+                    )
 
         # Modification
         for key, value in new_data.items():
             # Node-shape check
             if not (value.shape[0] == self.get_node_num()):
                 raise SizeMismatchException(
-                    "The shape feature '{}' does not match the number of nodes in the graph. Got a {} tensor but have {} nodes.".format(
-                        key, value.shape, self.get_node_num()))
-            # assert value.shape[0] == self.get_node_num(), \
-            #     "The shape feature '{}' does not match the number of nodes in the graph. Got a {} tensor but have {} nodes.".format(
-            #         key, value.shape, self.get_node_num())
+                    "The shape feature '{}' does not match the number of nodes in the graph."
+                    "Got a {} tensor but have {} nodes.".format(
+                        key, value.shape, self.get_node_num()
+                    )
+                )
             if not isinstance(value, torch.Tensor):
                 raise TypeError("torch.Tensor expected, received `{}'.".format(type(value)))
-            # assert isinstance(value, torch.Tensor), "`{}' is not a tensor. Node features are expected to be tensor."
 
             value_on_device = value
             if key not in self._node_features or self._node_features[key] is None:
@@ -334,13 +355,16 @@ class GraphData(object):
         """
         # Consistency check
         if (src < 0 or src >= self.get_node_num()) and (tgt < 0 and tgt >= self.get_node_num()):
-            raise ValueError('Endpoint not in the graph.')
+            raise ValueError("Endpoint not in the graph.")
 
         # Duplicate edge check. If the edge to be added already exists in the graph, then skip it.
         endpoint_tuple = (src, tgt)
         if endpoint_tuple in self._nids_eid_mapping.keys():
             if log_level < 2:
-                warnings.warn('Edge {} is already in the graph. Skipping this edge.'.format(endpoint_tuple), Warning)
+                warnings.warn(
+                    "Edge {} is already in the graph. Skipping this edge.".format(endpoint_tuple),
+                    Warning,
+                )
             return
 
         # Append to the mapping list
@@ -376,30 +400,38 @@ class GraphData(object):
         """
         src, tgt = check_and_expand(int_to_list(src), int_to_list(tgt))
         if len(src) != len(tgt):
-            raise ValueError("Length of the source and target indices is not the same. " \
-                             "Got {} source nodes and {} target nodes".format(len(src), len(tgt)))
-        # assert len(src) == len(tgt), "Length of the source and target indices is not the same. " \
-        #                              "Got {} source nodes and {} target nodes".format(len(src), len(tgt))
+            raise ValueError(
+                "Length of the source and target indices is not the same. "
+                "Got {} source nodes and {} target nodes".format(len(src), len(tgt))
+            )
         for src_idx, tgt_idx in zip(src, tgt):
             # Consistency check
-            if (src_idx < 0 or src_idx >= self.get_node_num()) and (tgt_idx < 0 and tgt_idx >= self.get_node_num()):
-                raise ValueError('Endpoint not in the graph.')
+            if (src_idx < 0 or src_idx >= self.get_node_num()) and (
+                tgt_idx < 0 and tgt_idx >= self.get_node_num()
+            ):
+                raise ValueError("Endpoint not in the graph.")
 
         current_num_edges = len(self._edge_attributes)
         duplicate_edge_indices = list()
         for i in range(len(src)):
-            # Duplicate edge check. If the edge to be added already exists in the graph, then skip it.
+            # Duplicate edge check.
+            # If the edge to be added already exists in the graph, then skip it.
             endpoint_tuple = (src[i], tgt[i])
             if endpoint_tuple in self._nids_eid_mapping.keys():
                 if log_level < 2:
-                    warnings.warn('Edge {} is already in the graph. Skipping this edge.'.format(endpoint_tuple),
-                                  Warning)
+                    warnings.warn(
+                        "Edge {} is already in the graph. Skipping this edge.".format(
+                            endpoint_tuple
+                        ),
+                        Warning,
+                    )
                 duplicate_edge_indices.append(i)
                 continue
             self._nids_eid_mapping[endpoint_tuple] = current_num_edges + i
 
         # Remove duplicate edges
-        duplicate_edge_indices.reverse()  # Needs to be reversed first to avoid index overflow after popping.
+        # Needs to be reversed first to avoid index overflow after popping.
+        duplicate_edge_indices.reverse()
         for edge_index in duplicate_edge_indices:
             src.pop(edge_index)
             tgt.pop(edge_index)
@@ -411,7 +443,9 @@ class GraphData(object):
         self._edge_indices.tgt.extend(tgt)
 
         # Initialize edge attributes and features
-        self._edge_attributes.extend([single_edge_attr_factory(**res_init_edge_attributes) for _ in range(num_edges)])
+        self._edge_attributes.extend(
+            [single_edge_attr_factory(**res_init_edge_attributes) for _ in range(num_edges)]
+        )
         for key in self._edge_features.keys():
             self._edge_features[key] = entail_zero_padding(self._edge_features[key], num_edges)
 
@@ -443,19 +477,19 @@ class GraphData(object):
         if not (isinstance(tgt, int) or isinstance(tgt, list)):
             raise TypeError("'tgt' should be either int or list of int.")
 
-        # assert isinstance(src, int) or isinstance(src, list), "`src` should be either int or list."
-        # assert isinstance(tgt, int) or isinstance(tgt, list), "`tgt` should be either int or list."
         src, tgt = check_and_expand(int_to_list(src), int_to_list(tgt))
         eid_list = []
         try:
             for src_idx, tgt_idx in zip(src, tgt):
                 if not (isinstance(src_idx, int) or isinstance(tgt_idx, int)):
-                    raise TypeError("'src' and 'tgt' should be (int, int), ('{}', '{}') received.".format(type(src_idx),
-                                                                                                          type(
-                                                                                                              tgt_idx)))
+                    raise TypeError(
+                        "'src' and 'tgt' should be (int, int), ('{}', '{}') received.".format(
+                            type(src_idx), type(tgt_idx)
+                        )
+                    )
                 eid_list.append(self._nids_eid_mapping[(src_idx, tgt_idx)])
         except KeyError:
-            raise EdgeNotFoundException('Edge {} does not exist!'.format((src, tgt)))
+            raise EdgeNotFoundException("Edge {} does not exist!".format((src, tgt)))
         return eid_list
 
     def get_all_edges(self) -> List[Tuple[int, int]]:
@@ -480,7 +514,8 @@ class GraphData(object):
         Returns
         -------
         dict
-            Edge features with the keys being the feature names and values be the corresponding tensors.
+            Edge features with the keys being the feature names and values
+            be the corresponding tensors.
         """
         return self.edges[:].features
 
@@ -493,8 +528,10 @@ class GraphData(object):
         >>> g = GraphData()
         >>> g.add_nodes(10)
         >>> g.add_edges(list(range(0, 9, 1)), list(range(1, 10, 1)))
-        >>> g.edge_features['random'] = torch.rand((9, 1024, 1024))     # Added some feature tensors to the edges
-        >>> g.remove_all_edges()    # Remove all edges and the corresponding data. The tensor memory is freed now.
+        # Added some feature tensors to the edges
+        >>> g.edge_features['random'] = torch.rand((9, 1024, 1024))
+        # Remove all edges and the corresponding data. The tensor memory is freed now.
+        >>> g.remove_all_edges()
 
         Returns
         -------
@@ -532,7 +569,9 @@ class GraphData(object):
         """Get all the names of edge features"""
         return self._edge_features.keys()
 
-    def set_edge_feature(self, edges: Union[int, slice, List[int]], new_data: Dict[str, torch.Tensor]):
+    def set_edge_feature(
+        self, edges: Union[int, slice, List[int]], new_data: Dict[str, torch.Tensor]
+    ):
         """
         Set edge feature
 
@@ -550,25 +589,33 @@ class GraphData(object):
         """
         # Consistency check
         for key in new_data.keys():
-            if key not in self._edge_features or self._edge_features[key] is None:  # A new feature is added
-                # If the shape of the new feature does not match the number of existing nodes, then error occurs
-                if (not isinstance(edges, slice)) or (
-                        len(slice_to_list(edges, self.get_edge_num())) != self.get_edge_num()):
+            if key not in self._edge_features or self._edge_features[key] is None:
+                # A new feature is added
+                # If the shape of the new feature does not match
+                # the number of existing nodes, then error occurs
+                if (
+                    not isinstance(edges, slice)
+                    or len(slice_to_list(edges, self.get_edge_num())) != self.get_edge_num()
+                ):
                     raise SizeMismatchException(
-                        'The new feature `{}\' should cover all existing {} edges!'.format(key, self.get_edge_num()))
+                        "The new feature `{}' should cover all existing {} edges!".format(
+                            key, self.get_edge_num()
+                        )
+                    )
 
         # Modification
         for key, value in new_data.items():
             if not isinstance(value, torch.Tensor):
-                raise TypeError("'{}' is not a tensor. Node features are expected to be tensor.".format(value))
-            # assert isinstance(value, torch.Tensor), "`{}' is not a tensor. Node features are expected to be tensor."
+                raise TypeError(
+                    "'{}' is not a tensor. Node features are expected to be tensor.".format(value)
+                )
             if not (value.shape[0] == self.get_edge_num()):
-                raise SizeMismatchException("Length of the feature vector does not match the edge number." \
-                                            "Got tensor '{}' of shape {} but the graph has only {} edges.".format(
-                    key, value.shape, self.get_edge_num()))
-            # assert value.shape[0] == self.get_edge_num(), "Length of the feature vector does not match the edge number." \
-            #                                               "Got tensor '{}' of shape {} but the graph has only {} edges.".format(
-            #     key, value.shape, self.get_edge_num())
+                raise SizeMismatchException(
+                    "Length of the feature vector does not match the edge number."
+                    "Got tensor '{}' of shape {} but the graph has only {} edges.".format(
+                        key, value.shape, self.get_edge_num()
+                    )
+                )
             # Move the new value to the device consistent with current graph
             value_on_device = value.to(self.device)
 
@@ -588,7 +635,8 @@ class GraphData(object):
         Returns
         -------
         list:
-            A list of dictionaries. Each dictionary represents all the attributes on the corresponding edge.
+            A list of dictionaries. Each dictionary represents all
+            the attributes on the corresponding edge.
         """
         return self._edge_attributes
 
@@ -596,7 +644,8 @@ class GraphData(object):
     def to_dgl(self) -> dgl.DGLGraph:
         """
         Convert to dgl.DGLGraph
-        Note that there will be some information loss when calling this funciton, e.g. the batch-related information
+        Note that there will be some information loss when calling this function,
+        e.g. the batch-related information
         will not be copied to DGLGraph since it is only intended for computation.
 
         Returns
@@ -627,7 +676,9 @@ class GraphData(object):
             The source graph
         """
         if not (self.get_edge_num() == 0 and self.get_node_num() == 0):
-            raise ValueError('This graph isn\'t an empty graph. Please use an empty graph for conversion.')
+            raise ValueError(
+                "This graph isn't an empty graph. Please use an empty graph for conversion."
+            )
         # assert self.get_edge_num() == 0 and self.get_node_num() == 0, \
         #     'This graph isn\'t an empty graph. Please use an empty graph for conversion.'
 
@@ -647,8 +698,9 @@ class GraphData(object):
 
     def from_dense_adj(self, adj: torch.Tensor):
         """
-        Construct a graph from a dense (2-D NxN) adjacency matrix with the edge weights represented by the value of
-        the matrix entries
+        Construct a graph from a dense (2-D NxN) adjacency matrix with
+        the edge weights represented by the value of the matrix entries.
+
         Parameters
         ----------
         adj : torch.Tensor
@@ -659,9 +711,9 @@ class GraphData(object):
         self
         """
         if not (adj.dim() == 2):
-            raise SizeMismatchException('Adjancency matrix is not 2-dimensional.')
+            raise SizeMismatchException("Adjancency matrix is not 2-dimensional.")
         if not (adj.shape[0] == adj.shape[1]):
-            raise SizeMismatchException('Adjancecy is not a square.')
+            raise SizeMismatchException("Adjancecy is not a square.")
         # assert adj.dim() == 2, 'Adjancency matrix is not 2-dimensional.'
         # assert adj.shape[0] == adj.shape[1], 'Adjancecy is not a square.'
 
@@ -674,13 +726,13 @@ class GraphData(object):
                     self.add_edge(i, j)
                     edge_weight.append(adj[i][j])
         edge_weight = torch.stack(edge_weight, dim=0)
-        self.edge_features['edge_weight'] = edge_weight
+        self.edge_features["edge_weight"] = edge_weight
         return self
 
     def from_scipy_sparse_matrix(self, adj: scipy.sparse.coo_matrix):
         """
-        Construct a graph from a sparse adjacency matrix with the edge weights represented by the value of
-        the matrix entries
+        Construct a graph from a sparse adjacency matrix with the edge weights
+        represented by the value of the matrix entries.
         Parameters
         ----------
         adj : scipy.sparse.coo_matrix
@@ -691,7 +743,7 @@ class GraphData(object):
         self
         """
         if not (adj.shape[0] == adj.shape[1]):
-            raise SizeMismatchException('Got an adjancecy matrix which is not a square.')
+            raise SizeMismatchException("Got an adjancecy matrix which is not a square.")
         # assert adj.shape[0] == adj.shape[1], 'Got an adjancecy matrix which is not a square.'
 
         num_nodes = adj.shape[0]
@@ -699,20 +751,24 @@ class GraphData(object):
 
         for i in range(adj.row.shape[0]):
             self.add_edge(adj.row[i], adj.col[i])
-        self.edge_features['edge_weight'] = torch.tensor(adj.data)
+        self.edge_features["edge_weight"] = torch.tensor(adj.data)
         return self
 
-    def adj_matrix(self, batch_view: bool = False, post_processing_fn: Callable = None) -> torch.Tensor:
+    def adj_matrix(
+        self, batch_view: bool = False, post_processing_fn: Callable = None
+    ) -> torch.Tensor:
         """
-        Returns the adjacency matrix of the graph. Returns a 2D tensor if it is a single graph and a 3D tensor if it
-        is a batched graph, with the matrices padded with 0 (B x N x N)
+        Returns the adjacency matrix of the graph. Returns a 2D tensor if
+        it is a single graph and a 3D tensor if it is a batched graph, with
+        the matrices padded with 0 (B x N x N)
 
         Parameters
         ----------
         batch_view : bool
             Whether to return a batched view of the adjacency matrix(3D, True) or not (2D).
         post_processing_fn : function
-            A callback function which takes a binary adjacency matrix (2D) and do some post-processing on it.
+            A callback function which takes a binary adjacency matrix (2D)
+            and do some post-processing on it.
             The return of this function should also be N x N
 
         Returns
@@ -739,7 +795,7 @@ class GraphData(object):
             cum_num_edges = 0
             all_edges = self.get_all_edges()
             for i in range(self.batch_size):
-                edges = all_edges[cum_num_edges:cum_num_edges + self._batch_num_edges[i]]
+                edges = all_edges[cum_num_edges : cum_num_edges + self._batch_num_edges[i]]
                 for edge in edges:
                     ret[i][edge[0] - cum_num_nodes, edge[1] - cum_num_nodes] = 1
                 if post_processing_fn is not None:
@@ -754,7 +810,8 @@ class GraphData(object):
         Parameters
         ----------
         batch_view : bool
-            Whether to return the split view of the adjacency matrix. Return a list of COO matrix if True
+            Whether to return the split view of the adjacency matrix.
+            Return a list of COO matrix if True
 
         Returns
         -------
@@ -765,12 +822,15 @@ class GraphData(object):
         data = torch.ones(self.get_edge_num()).to(self.device)
         if not batch_view:
             indices = torch.stack([row, col])
-            matrix = torch.sparse_coo_tensor(indices=indices, values=data,
-                                             size=(self.get_node_num(), self.get_node_num()))
+            matrix = torch.sparse_coo_tensor(
+                indices=indices, values=data, size=(self.get_node_num(), self.get_node_num())
+            )
             return matrix
         else:
             if self._is_batch is not True:
-                raise Exception("Cannot enable batch view of COO adjacency matrix on a non-batch graph.")
+                raise Exception(
+                    "Cannot enable batch view of COO adjacency matrix on a non-batch graph."
+                )
             matrices = []
             cum_num_edges = 0
             cum_num_nodes = 0
@@ -778,13 +838,15 @@ class GraphData(object):
                 num_edges = self._batch_num_edges[i]
                 num_nodes = self._batch_num_nodes[i]
                 # Slicing the matrix one by one
-                cur_row = row[cum_num_edges:cum_num_edges + num_edges]
-                cur_col = col[cum_num_edges:cum_num_edges + num_edges]
-                cur_data = data[cum_num_edges:cum_num_edges + num_edges]
+                cur_row = row[cum_num_edges : cum_num_edges + num_edges]
+                cur_col = col[cum_num_edges : cum_num_edges + num_edges]
+                cur_data = data[cum_num_edges : cum_num_edges + num_edges]
                 cur_row -= cum_num_nodes
                 cur_col -= cum_num_nodes
                 indices = torch.stack([cur_row, cur_col])
-                cur_matrix = torch.sparse_coo_tensor(indices=indices, values=cur_data, size=(num_nodes, num_nodes))
+                cur_matrix = torch.sparse_coo_tensor(
+                    indices=indices, values=cur_data, size=(num_nodes, num_nodes)
+                )
                 matrices.append(cur_matrix)
                 cum_num_edges += num_edges
                 cum_num_nodes += num_nodes
@@ -805,6 +867,7 @@ class GraphData(object):
 
         # Copy attributes
         import copy
+
         self._node_attributes = copy.deepcopy(src.node_attributes)
         self._edge_attributes = copy.deepcopy(src.edge_attributes)
         self.graph_attributes = copy.deepcopy(src.graph_attributes)
@@ -846,7 +909,9 @@ class GraphData(object):
         """
         return BatchNodeFeatView(self)
 
-    def _get_batch_node_features(self, item: str = None) -> Union[Dict[str, torch.Tensor], torch.Tensor]:
+    def _get_batch_node_features(
+        self, item: str = None
+    ) -> Union[Dict[str, torch.Tensor], torch.Tensor]:
         """
         Get the batched view of node feature tensors, i.e., tensors in (B, N, D) view
 
@@ -858,8 +923,8 @@ class GraphData(object):
         Returns
         -------
         dict or torch.Tensor
-            A dictionary containing the node feature names and the corresponding batch-view tensors, or just the
-            specified tensor.
+            A dictionary containing the node feature names and the corresponding
+            batch-view tensors, or just the specified tensor.
         """
         if not self._is_batch:
             raise Exception("Calling batch_node_features() method on a non-batch graph.")
@@ -885,7 +950,9 @@ class GraphData(object):
         value : torch.Tensor
             The values to be written, in the shape of (B, N, D)
         """
-        individual_features = [value[i, :self._batch_num_nodes[i]] for i in range(len(self._batch_num_nodes))]
+        individual_features = [
+            value[i, : self._batch_num_nodes[i]] for i in range(len(self._batch_num_nodes))
+        ]
         self.set_node_features(slice(None, None, None), {key: torch.cat(individual_features)})
 
     @property
@@ -899,7 +966,9 @@ class GraphData(object):
         """
         return BatchEdgeFeatView(self)
 
-    def _get_batch_edge_features(self, item: str = None) -> Union[Dict[str, torch.Tensor], torch.Tensor]:
+    def _get_batch_edge_features(
+        self, item: str = None
+    ) -> Union[Dict[str, torch.Tensor], torch.Tensor]:
         """
         An edge version of :py:method `batch_node_features`.
 
@@ -921,7 +990,9 @@ class GraphData(object):
             return pad_sequence(self.split_edge_features[item], batch_first=True)
 
     def _set_batch_edge_features(self, key: str, value: torch.Tensor):
-        individual_features = [value[i, :self._batch_num_edges[i]] for i in range(len(self._batch_num_edges))]
+        individual_features = [
+            value[i, : self._batch_num_edges[i]] for i in range(len(self._batch_num_edges))
+        ]
         self.set_edge_feature(slice(None, None, None), {key: torch.cat(individual_features)})
 
     @property
@@ -932,8 +1003,9 @@ class GraphData(object):
         for feature in self.node_features.keys():
             if self.node_features[feature] is None:
                 continue
-            node_features[feature] = torch.split(self.node_features[feature],
-                                                 split_size_or_sections=self._batch_num_nodes)
+            node_features[feature] = torch.split(
+                self.node_features[feature], split_size_or_sections=self._batch_num_nodes
+            )
         return node_features
 
     @property
@@ -944,20 +1016,23 @@ class GraphData(object):
         for feature in self.edge_features.keys():
             if self.edge_features[feature] is None:
                 continue
-            edge_features[feature] = torch.split(self.edge_features[feature],
-                                                 split_size_or_sections=self._batch_num_edges)
+            edge_features[feature] = torch.split(
+                self.edge_features[feature], split_size_or_sections=self._batch_num_edges
+            )
         return edge_features
 
-    def split_features(self, input_tensor: torch.Tensor, type: str = 'node') -> torch.Tensor:
+    def split_features(self, input_tensor: torch.Tensor, type: str = "node") -> torch.Tensor:
         """
-        Convert a tensor from [N, *] to [B, N_max, *] with zero padding according to the batch information stored in
-        the graph.
+        Convert a tensor from [N, *] to [B, N_max, *] with zero padding according
+        to the batch information stored in the graph.
+
         Parameters
         ----------
         input_tensor : torch.Tensor
         The original tensor to be split.
         type : str
         'node' or 'edge'. Indicates the source of batch information.
+
         Returns
         -------
         torch.Tensor
@@ -967,29 +1042,29 @@ class GraphData(object):
         if not self._is_batch:
             raise Exception("Cannot invoke `batch_split` method on a non-batch graph.")
         # assert self._is_batch, "Cannot invoke `batch_split` method on a non-batch graph."
-        if type == 'node':
+        if type == "node":
             info_src = self._batch_num_nodes
-        elif type == 'edge':
+        elif type == "edge":
             info_src = self._batch_num_edges
         else:
-            raise NotImplementedError("Currently only 'node' and 'edge' is accepted in GraphData.split_features().")
+            raise NotImplementedError(
+                "Currently only 'node' and 'edge' is accepted in GraphData.split_features()."
+            )
         num_instance = 0
         for number in info_src:
             num_instance += number
         if not (num_instance == input_tensor.shape[0]):
-            raise SizeMismatchException("Number of instances " \
-                                        "doesn't match: The graph " \
-                                        "has {} instances while the input " \
-                                        "contains {}".format(num_instance, input_tensor.shape[0]))
-        # assert num_instance == input_tensor.shape[0], "Number of instances " \
-        #                                               "doesn't match: The graph " \
-        #                                               "has {} instances while the input " \
-        #                                               "contains {}".format(num_instance, input_tensor.shape[0])
+            raise SizeMismatchException(
+                "Number of instances "
+                "doesn't match: The graph "
+                "has {} instances while the input "
+                "contains {}".format(num_instance, input_tensor.shape[0])
+            )
         n_max = max(info_src)
         output = torch.zeros(size=(self.batch_size, n_max, *input_tensor.shape[1:])).to(self.device)
         split_input = torch.split(tensor=input_tensor, split_size_or_sections=info_src)
         for i in range(self.batch_size):
-            output[i, :info_src[i]] = split_input[i]
+            output[i, : info_src[i]] = split_input[i]
         return output
 
 
@@ -1147,7 +1222,7 @@ def from_batch(batch: GraphData) -> List[GraphData]:
     for i in range(batch_size):
         g = GraphData(device=batch.device)
         g.add_nodes(num_nodes[i])
-        edges = all_edges[cum_n_edges:cum_n_edges + num_edges[i]]
+        edges = all_edges[cum_n_edges : cum_n_edges + num_edges[i]]
         src, tgt = [e[0] - cum_n_nodes for e in edges], [e[1] - cum_n_nodes for e in edges]
         g.add_edges(src, tgt)
         cum_n_edges += num_edges[i]
@@ -1160,14 +1235,14 @@ def from_batch(batch: GraphData) -> List[GraphData]:
         if v is not None:
             cum_n_nodes = 0  # Cumulative node numbers
             for i in range(batch_size):
-                ret[i].node_features[k] = v[cum_n_nodes:cum_n_nodes + num_nodes[i]]
+                ret[i].node_features[k] = v[cum_n_nodes : cum_n_nodes + num_nodes[i]]
                 cum_n_nodes += num_nodes[i]
 
     for k, v in batch._edge_features.items():
         if v is not None:
             cum_n_edges = 0  # Cumulative edge numbers
             for i in range(batch_size):
-                ret[i].edge_features[k] = v[cum_n_edges:cum_n_edges + num_edges[i]]
+                ret[i].edge_features[k] = v[cum_n_edges : cum_n_edges + num_edges[i]]
                 cum_n_edges += num_edges[i]
 
     cum_n_nodes = 0
@@ -1176,9 +1251,13 @@ def from_batch(batch: GraphData) -> List[GraphData]:
     # Add node and edge attributes
     for graph_cnt in range(batch_size):
         for num_graph_nodes in range(num_nodes[graph_cnt]):
-            ret[graph_cnt].node_attributes[num_graph_nodes] = batch.node_attributes[cum_n_nodes + num_graph_nodes]
+            ret[graph_cnt].node_attributes[num_graph_nodes] = batch.node_attributes[
+                cum_n_nodes + num_graph_nodes
+            ]
         for num_graph_edges in range(num_edges[graph_cnt]):
-            ret[graph_cnt].edge_attributes[num_graph_edges] = batch.edge_attributes[cum_n_edges + num_graph_edges]
+            ret[graph_cnt].edge_attributes[num_graph_edges] = batch.edge_attributes[
+                cum_n_edges + num_graph_edges
+            ]
         cum_n_edges += num_edges[graph_cnt]
         cum_n_nodes += num_nodes[graph_cnt]
 
@@ -1186,7 +1265,7 @@ def from_batch(batch: GraphData) -> List[GraphData]:
 
 
 # Testing code
-if __name__ == '__main__':
+if __name__ == "__main__":
     a1 = GraphData()
     a1.add_nodes(10)
     a2 = GraphData()
