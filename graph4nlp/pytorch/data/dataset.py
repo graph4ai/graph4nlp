@@ -4,13 +4,13 @@ import warnings
 from collections import Counter
 from copy import deepcopy
 from multiprocessing import Pool
-
 import numpy as np
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+
 from ..data.data import GraphData, to_batch
 from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.constituency_graph_construction import (
@@ -275,27 +275,27 @@ class Dataset(torch.utils.data.Dataset):
         raise NotImplementedError
 
     def __init__(
-            self,
-            root,
-            topology_builder,
-            topology_subdir,
-            tokenizer=word_tokenize,
-            lower_case=True,
-            pretrained_word_emb_name="840B",
-            pretrained_word_emb_url=None,
-            target_pretrained_word_emb_name=None,
-            target_pretrained_word_emb_url=None,
-            pretrained_word_emb_cache_dir=".vector_cache/",
-            max_word_vocab_size=None,
-            min_word_vocab_freq=1,
-            use_val_for_vocab=False,
-            seed=1234,
-            thread_number=4,
-            port=9000,
-            timeout=15000,
-            for_inference=False,
-            reused_vocab_model=None,
-            **kwargs
+        self,
+        root,
+        topology_builder,
+        topology_subdir,
+        tokenizer=word_tokenize,
+        lower_case=True,
+        pretrained_word_emb_name="840B",
+        pretrained_word_emb_url=None,
+        target_pretrained_word_emb_name=None,
+        target_pretrained_word_emb_url=None,
+        pretrained_word_emb_cache_dir=".vector_cache/",
+        max_word_vocab_size=None,
+        min_word_vocab_freq=1,
+        use_val_for_vocab=False,
+        seed=1234,
+        thread_number=4,
+        port=9000,
+        timeout=15000,
+        for_inference=False,
+        reused_vocab_model=None,
+        **kwargs
     ):
         """
 
@@ -471,18 +471,18 @@ class Dataset(torch.utils.data.Dataset):
 
     @staticmethod
     def _build_topology_process(
-            data_items,
-            topology_builder,
-            graph_type,
-            dynamic_graph_type,
-            dynamic_init_topology_builder,
-            merge_strategy,
-            edge_strategy,
-            dynamic_init_topology_aux_args,
-            lower_case,
-            tokenizer,
-            port,
-            timeout,
+        data_items,
+        topology_builder,
+        graph_type,
+        dynamic_graph_type,
+        dynamic_init_topology_builder,
+        merge_strategy,
+        edge_strategy,
+        dynamic_init_topology_aux_args,
+        lower_case,
+        tokenizer,
+        port,
+        timeout,
     ):
 
         ret = []
@@ -558,9 +558,9 @@ class Dataset(torch.utils.data.Dataset):
                     ret.append(item)
             elif dynamic_graph_type == "node_emb_refined":
                 if dynamic_init_topology_builder in (
-                        IEBasedGraphConstruction,
-                        DependencyBasedGraphConstruction,
-                        ConstituencyBasedGraphConstruction,
+                    IEBasedGraphConstruction,
+                    DependencyBasedGraphConstruction,
+                    ConstituencyBasedGraphConstruction,
                 ):
                     print("Connecting to stanfordcorenlp server...")
                     processor = stanfordcorenlp.StanfordCoreNLP(
@@ -717,10 +717,10 @@ class Dataset(torch.utils.data.Dataset):
 
     def _process(self):
         if all(
-                [
-                    os.path.exists(processed_path)
-                    for processed_path in self.processed_file_paths.values()
-                ]
+            [
+                os.path.exists(processed_path)
+                for processed_path in self.processed_file_paths.values()
+            ]
         ):
             if "val_split_ratio" in self.__dict__:
                 UserWarning(
@@ -729,13 +729,13 @@ class Dataset(torch.utils.data.Dataset):
                 )
             return
         if self.for_inference and all(
-                [
-                    (
-                            os.path.exists(processed_path)
-                            or self.processed_file_names["data"] not in processed_path
-                    )
-                    for processed_path in self.processed_file_paths.values()
-                ]
+            [
+                (
+                    os.path.exists(processed_path)
+                    or self.processed_file_names["data"] not in processed_path
+                )
+                for processed_path in self.processed_file_paths.values()
+            ]
         ):
             return
 
@@ -1265,10 +1265,11 @@ class SequenceLabelingDataset(Dataset):
 
     def parse_file(self, file_path) -> list:
         """
-        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
-        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
-        For SequenceLabelingDataset, the format of the input file should contain lines of tokens, each line representing one
-        record of token at first column and its tag at the last column.
+        Read and parse the file specified by `file_path`. The file format is specified by each 
+        individual task-specific base class. Returns all the indices of data items in 
+        this file w.r.t. the whole dataset.
+        For SequenceLabelingDataset, the format of the input file should contain lines of tokens, 
+        each line representing one record of token at first column and its tag at the last column.
 
         Examples
         --------
@@ -1355,7 +1356,17 @@ class SequenceLabelingDataset(Dataset):
 
 
 __all__ = [
-    "DataItem", "Text2TextDataItem", "Text2TextDataItem_seq2seq", "Text2TreeDataItem", "Text2LabelDataItem",
-    "DoubleText2TextDataItem", "SequenceLabelingDataItem", "Dataset", "Text2TextDataset", "TextToTreeDataset",
-    "Text2LabelDataset", "DoubleText2TextDataset", "SequenceLabelingDataset"
+    "DataItem",
+    "Text2TextDataItem",
+    "Text2TextDataItem_seq2seq",
+    "Text2TreeDataItem",
+    "Text2LabelDataItem",
+    "DoubleText2TextDataItem",
+    "SequenceLabelingDataItem",
+    "Dataset",
+    "Text2TextDataset",
+    "TextToTreeDataset",
+    "Text2LabelDataset",
+    "DoubleText2TextDataset",
+    "SequenceLabelingDataset",
 ]

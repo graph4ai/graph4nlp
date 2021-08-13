@@ -3,7 +3,6 @@ from torch import nn
 
 
 class ClassifierBase(nn.Module):
-
     def __init__(self):
         super(ClassifierBase, self).__init__()
 
@@ -12,7 +11,6 @@ class ClassifierBase(nn.Module):
 
 
 class ClassifierLayerBase(nn.Module):
-
     def __init__(self):
         super(ClassifierLayerBase, self).__init__()
 
@@ -21,7 +19,6 @@ class ClassifierLayerBase(nn.Module):
 
 
 class NodeClassifierBase(ClassifierBase):
-
     def __init__(self):
         super(NodeClassifierBase, self).__init__()
 
@@ -30,7 +27,6 @@ class NodeClassifierBase(ClassifierBase):
 
 
 class NodeClassifierLayerBase(ClassifierLayerBase):
-
     def __init__(self):
         super(NodeClassifierLayerBase, self).__init__()
 
@@ -40,7 +36,6 @@ class NodeClassifierLayerBase(ClassifierLayerBase):
 
 
 class KGCompletionBase(nn.Module):
-
     def __init__(self):
         super(KGCompletionBase, self).__init__()
 
@@ -52,7 +47,6 @@ class KGCompletionBase(nn.Module):
 
 
 class KGCompletionLayerBase(nn.Module):
-
     def __init__(self):
         super(KGCompletionLayerBase, self).__init__()
 
@@ -61,7 +55,6 @@ class KGCompletionLayerBase(nn.Module):
 
 
 class LinkPredictionBase(ClassifierBase):
-
     def __init__(self):
         super(LinkPredictionBase, self).__init__()
 
@@ -70,7 +63,6 @@ class LinkPredictionBase(ClassifierBase):
 
 
 class LinkPredictionLayerBase(ClassifierLayerBase):
-
     def __init__(self):
         super(LinkPredictionLayerBase, self).__init__()
 
@@ -80,7 +72,6 @@ class LinkPredictionLayerBase(ClassifierLayerBase):
 
 
 class GraphClassifierBase(ClassifierBase):
-
     def __init__(self):
         super(GraphClassifierBase, self).__init__()
 
@@ -89,7 +80,6 @@ class GraphClassifierBase(ClassifierBase):
 
 
 class GraphClassifierLayerBase(ClassifierLayerBase):
-
     def __init__(self):
         super(GraphClassifierLayerBase, self).__init__()
 
@@ -97,8 +87,8 @@ class GraphClassifierLayerBase(ClassifierLayerBase):
 
         raise NotImplementedError()
 
-class PoolingBase(nn.Module):
 
+class PoolingBase(nn.Module):
     def __init__(self):
         super(PoolingBase, self).__init__()
 
