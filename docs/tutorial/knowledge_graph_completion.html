@@ -130,7 +130,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#after-preprocess-the-kinship-data-then-run">After preprocess the kinship data, then run:</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#download-the-full-example">Download the full example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#results-on-kinship">Results on kinship</a></li>
 </ul>
 </li>
 </ul>
@@ -211,7 +211,8 @@ GNN-based knowledge graph completion model. The model consists of</p>
 <li><p>predictoin module (e.g., DistMult decoder)</p></li>
 </ul>
 <p>We will use the built-in Graph2Seq model APIs to build the model, and
-evaluate it on the Kinship dataset.</p>
+evaluate it on the Kinship dataset. The full example can be downloaded from
+<a class="reference external" href="https://github.com/graph4ai/graph4nlp_demo/tree/main/KDD2021_demo/kg_completion">knowledge graph completion notebook</a></p>
 </div>
 <div class="section" id="environment-setup">
 <h2>Environment setup<a class="headerlink" href="#environment-setup" title="Permalink to this headline">¶</a></h2>
@@ -559,9 +560,41 @@ pip install future
 </div>
 </div>
 </div>
-<div class="section" id="download-the-full-example">
-<h2>Download the full example<a class="headerlink" href="#download-the-full-example" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://github.com/graph4ai/graph4nlp_demo/tree/main/KDD2021_demo/kg_completion">text classification notebook</a></p>
+<div class="section" id="results-on-kinship">
+<h2>Results on kinship<a class="headerlink" href="#results-on-kinship" title="Permalink to this headline">¶</a></h2>
+<table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-text">BCELoss+GGNNDistmult</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Metrics</p></th>
+<th class="head"><p>uni</p></th>
+<th class="head"><p>bi_fuse</p></th>
+<th class="head"><p>bi_sep</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Hits &#64;1</p></td>
+<td><p>40.4</p></td>
+<td><p>39.4</p></td>
+<td><p>38.2</p></td>
+</tr>
+<tr class="row-odd"><td><p>Hits &#64;10</p></td>
+<td><p>88.3</p></td>
+<td><p>88.8</p></td>
+<td><p>88.9</p></td>
+</tr>
+<tr class="row-even"><td><p>MRR</p></td>
+<td><p>54.9</p></td>
+<td><p>54.8</p></td>
+<td><p>53.4</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 
