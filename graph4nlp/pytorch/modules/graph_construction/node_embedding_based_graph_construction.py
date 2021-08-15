@@ -5,7 +5,6 @@ from ...data.data import GraphData
 from ..utils.generic_utils import normalize_adj
 from ..utils.vocab_utils import Vocab
 from .base import DynamicGraphConstructionBase
-
 # from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
 

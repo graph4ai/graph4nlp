@@ -24,7 +24,6 @@ from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_g
 
 from args import get_args
 from build_model import get_model
-
 from dataset import IWSLT14Dataset
 from utils import WarmupCosineSchedule, get_log, wordid2str
 
