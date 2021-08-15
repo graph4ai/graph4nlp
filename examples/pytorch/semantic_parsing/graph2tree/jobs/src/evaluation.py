@@ -10,14 +10,14 @@ def get_split_comma(input_str):
     input_list = [item.strip() for item in input_str.split()]
     ref_char = "$"
     for index in range(len(input_list)):
-        if input_list[index] == ',':
-            if input_list[:index].count('(') == input_list[:index].count(')'):
-                if input_list[index+1:].count('(') == input_list[index+1:].count(')'):
+        if input_list[index] == ",":
+            if input_list[:index].count("(") == input_list[:index].count(")"):
+                if input_list[index + 1 :].count("(") == input_list[index + 1 :].count(")"):
                     if input_list[index] == ref_char:
                         raise RuntimeError
                     else:
                         input_list[index] = ref_char
-    new_str = " ".join(input_list).split('$')
+    new_str = " ".join(input_list).split("$")
     result_set = set()
     for str_ in new_str:
         result_set.add(str_.strip())
@@ -34,7 +34,7 @@ def is_all_same(c1, c2, form_manager):
                 break
         if all_same:
             return True
-    if len(c1) != len(c2) or all_same == False:
+    if len(c1) != len(c2) or all_same is False:
         d1 = " ".join([form_manager.get_idx_symbol(x) for x in c1])
         d2 = " ".join([form_manager.get_idx_symbol(x) for x in c2])
         if get_split_comma(d1) == get_split_comma(d2):
@@ -42,20 +42,24 @@ def is_all_same(c1, c2, form_manager):
         return False
     raise NotImplementedError("you should not arrive here!")
 
+
 def compute_accuracy(candidate_list, reference_list, form_manager):
     if len(candidate_list) != len(reference_list):
-        print("candidate list has length {}, reference list has length {}\n".format(
-            len(candidate_list), len(reference_list)))
+        print(
+            "candidate list has length {}, reference list has length {}\n".format(
+                len(candidate_list), len(reference_list)
+            )
+        )
 
     len_min = min(len(candidate_list), len(reference_list))
     c = 0
     for i in range(len_min):
         if is_all_same(candidate_list[i], reference_list[i], form_manager):
-            c = c+1
+            c = c + 1
         else:
             pass
 
-    return c/float(len_min)
+    return c / float(len_min)
 
 
 def compute_tree_accuracy(candidate_list_, reference_list_, form_manager):
