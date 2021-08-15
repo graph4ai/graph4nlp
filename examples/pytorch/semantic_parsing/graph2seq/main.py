@@ -3,7 +3,6 @@ import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-# os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
@@ -15,7 +14,7 @@ from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction 
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
 )
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
@@ -46,87 +45,117 @@ class Jobs:
         seed = opt["seed"]
         np.random.seed(seed)
         if opt["use_gpu"] != 0 and torch.cuda.is_available():
-            print('[ Using CUDA ]')
+            print("[ Using CUDA ]")
             torch.manual_seed(seed)
             torch.cuda.manual_seed_all(seed)
             from torch.backends import cudnn
+
             cudnn.benchmark = True
-            device = torch.device('cuda' if opt["gpu"] < 0 else 'cuda:%d' % opt["gpu"])
+            device = torch.device("cuda" if opt["gpu"] < 0 else "cuda:%d" % opt["gpu"])
         else:
-            print('[ Using CPU ]')
-            device = torch.device('cpu')
+            print("[ Using CPU ]")
+            device = torch.device("cpu")
         self.device = device
 
     def _build_logger(self, log_file):
         import os
+
         log_folder = os.path.split(log_file)[0]
         if not os.path.exists(log_file):
             os.makedirs(log_folder)
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
-        if self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"] == "dependency":
+        if (
+            self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
+            == "dependency"
+        ):
             topology_builder = DependencyBasedGraphConstruction
-            graph_type = 'static'
+            graph_type = "static"
             dynamic_init_topology_builder = None
-        elif self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"] == "constituency":
+        elif (
+            self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
+            == "constituency"
+        ):
             topology_builder = ConstituencyBasedGraphConstruction
-            graph_type = 'static'
+            graph_type = "static"
             dynamic_init_topology_builder = None
-        elif self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"] == "node_emb":
+        elif (
+            self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
+            == "node_emb"
+        ):
             topology_builder = NodeEmbeddingBasedGraphConstruction
-            graph_type = 'dynamic'
+            graph_type = "dynamic"
             dynamic_init_topology_builder = None
-        elif self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"] == "node_emb_refined":
+        elif (
+            self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
+            == "node_emb_refined"
+        ):
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-            graph_type = 'dynamic'
-            dynamic_init_graph_type = self.opt["graph_construction_args"]["graph_construction_private"][
-                "dynamic_init_graph_type"]
-            if dynamic_init_graph_type is None or dynamic_init_graph_type == 'line':
+            graph_type = "dynamic"
+            dynamic_init_graph_type = self.opt["graph_construction_args"][
+                "graph_construction_private"
+            ]["dynamic_init_graph_type"]
+            if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
                 dynamic_init_topology_builder = None
-            elif dynamic_init_graph_type == 'dependency':
+            elif dynamic_init_graph_type == "dependency":
                 dynamic_init_topology_builder = DependencyBasedGraphConstruction
-            elif dynamic_init_graph_type == 'constituency':
+            elif dynamic_init_graph_type == "constituency":
                 dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             else:
                 # dynamic_init_topology_builder
-                raise RuntimeError('Define your own dynamic_init_topology_builder')
+                raise RuntimeError("Define your own dynamic_init_topology_builder")
         else:
             raise NotImplementedError("Define your topology builder.")
 
-        dataset = JobsDataset(root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
-                              #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
-                              pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                              pretrained_word_emb_url=self.opt["pretrained_word_emb_url"],
-                              pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
-                              #   val_split_ratio=self.opt["val_split_ratio"],
-                              merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
-                                  "merge_strategy"],
-                              edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
-                                  "edge_strategy"],
-                              seed=self.opt["seed"],
-                              word_emb_size=self.opt["word_emb_size"],
-                              share_vocab=self.opt["graph_construction_args"]["graph_construction_share"][
-                                  "share_vocab"],
-                              graph_type=graph_type,
-                              topology_builder=topology_builder,
-                              topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
-                                  "topology_subdir"],
-                              thread_number=self.opt["graph_construction_args"]["graph_construction_share"][
-                                  "thread_number"],
-                              port=self.opt["graph_construction_args"]["graph_construction_share"][
-                                  "port"],
-                              dynamic_graph_type=self.opt["graph_construction_args"]["graph_construction_share"][
-                                  "graph_type"],
-                              dynamic_init_topology_builder=dynamic_init_topology_builder,
-                              dynamic_init_topology_aux_args=None)
+        dataset = JobsDataset(
+            root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
+            #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
+            pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
+            pretrained_word_emb_url=self.opt["pretrained_word_emb_url"],
+            pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
+            #   val_split_ratio=self.opt["val_split_ratio"],
+            merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
+                "merge_strategy"
+            ],
+            edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
+                "edge_strategy"
+            ],
+            seed=self.opt["seed"],
+            word_emb_size=self.opt["word_emb_size"],
+            share_vocab=self.opt["graph_construction_args"]["graph_construction_share"][
+                "share_vocab"
+            ],
+            graph_type=graph_type,
+            topology_builder=topology_builder,
+            topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
+                "topology_subdir"
+            ],
+            thread_number=self.opt["graph_construction_args"]["graph_construction_share"][
+                "thread_number"
+            ],
+            port=self.opt["graph_construction_args"]["graph_construction_share"]["port"],
+            dynamic_graph_type=self.opt["graph_construction_args"]["graph_construction_share"][
+                "graph_type"
+            ],
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=None,
+        )
 
-        self.train_dataloader = DataLoader(dataset.train, batch_size=self.opt["batch_size"], shuffle=True,
-                                           num_workers=self.opt["num_works"],
-                                           collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=self.opt["batch_size"], shuffle=False,
-                                          num_workers=self.opt["num_works"],
-                                          collate_fn=dataset.collate_fn)
+        self.train_dataloader = DataLoader(
+            dataset.train,
+            batch_size=self.opt["batch_size"],
+            shuffle=True,
+            num_workers=self.opt["num_works"],
+            collate_fn=dataset.collate_fn,
+        )
+        self.test_dataloader = DataLoader(
+            dataset.test,
+            batch_size=self.opt["batch_size"],
+            shuffle=False,
+            num_workers=self.opt["num_works"],
+            collate_fn=dataset.collate_fn,
+        )
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
@@ -140,8 +169,11 @@ class Jobs:
         self.metrics = [ExpressionAccuracy()]
 
     def _build_loss_function(self):
-        self.loss = Graph2SeqLoss(ignore_index=self.vocab.out_word_vocab.PAD,
-                                  use_coverage=self.use_coverage, coverage_weight=0.3)
+        self.loss = Graph2SeqLoss(
+            ignore_index=self.vocab.out_word_vocab.PAD,
+            use_coverage=self.use_coverage,
+            coverage_weight=0.3,
+        )
 
     def train(self):
         max_score = -1
@@ -167,7 +199,7 @@ class Jobs:
     def _adjust_lr(self, epoch):
         def set_lr(optimizer, decay_factor):
             for group in optimizer.param_groups:
-                group['lr'] = group['lr'] * decay_factor
+                group["lr"] = group["lr"] * decay_factor
 
         epoch_diff = epoch - self.opt["lr_start_decay_epoch"]
         if epoch_diff >= 0 and epoch_diff % self.opt["lr_decay_per_epoch"] == 0:
@@ -188,15 +220,24 @@ class Jobs:
             tgt = tgt.to(self.device)
             oov_dict = None
             if self.use_copy:
-                oov_dict, tgt = prepare_ext_vocab(graph, self.vocab, gt_str=gt_str, device=self.device)
+                oov_dict, tgt = prepare_ext_vocab(
+                    graph, self.vocab, gt_str=gt_str, device=self.device
+                )
 
             prob, enc_attn_weights, coverage_vectors = self.model(graph, tgt, oov_dict=oov_dict)
-            loss = self.loss(logits=prob, label=tgt, enc_attn_weights=enc_attn_weights,
-                             coverage_vectors=coverage_vectors)
+            loss = self.loss(
+                logits=prob,
+                label=tgt,
+                enc_attn_weights=enc_attn_weights,
+                coverage_vectors=coverage_vectors,
+            )
             loss_collect.append(loss.item())
             if step % self.opt["loss_display_step"] == 0 and step != 0:
-                self.logger.info("Epoch {}: [{} / {}] loss: {:.3f}".format(epoch, step, step_all_train,
-                                                                           np.mean(loss_collect)))
+                self.logger.info(
+                    "Epoch {}: [{} / {}] loss: {:.3f}".format(
+                        epoch, step, step_all_train, np.mean(loss_collect)
+                    )
+                )
                 loss_collect = []
             self.optimizer.zero_grad()
             loss.backward()
@@ -206,13 +247,15 @@ class Jobs:
         self.model.eval()
         pred_collect = []
         gt_collect = []
-        assert split in ["val", "test"]
-        dataloader = self.val_dataloader if split == "val" else self.test_dataloader
+        assert split in ["test"]
+        dataloader = self.test_dataloader
         for data in dataloader:
-            graph, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
+            graph, gt_str = data["graph_data"], data["output_str"]
             graph = graph.to(self.device)
             if self.use_copy:
-                oov_dict = prepare_ext_vocab(batch_graph=graph, vocab=self.vocab, device=self.device)
+                oov_dict = prepare_ext_vocab(
+                    batch_graph=graph, vocab=self.vocab, device=self.device
+                )
                 ref_dict = oov_dict
             else:
                 oov_dict = None
@@ -237,10 +280,12 @@ class Jobs:
         gt_collect = []
         dataloader = self.test_dataloader
         for data in dataloader:
-            graph, tgt, gt_str = data["graph_data"], data["tgt_seq"], data["output_str"]
+            graph, gt_str = data["graph_data"], data["output_str"]
             graph = graph.to(self.device)
             if self.use_copy:
-                oov_dict = prepare_ext_vocab(batch_graph=graph, vocab=self.vocab, device=self.device)
+                oov_dict = prepare_ext_vocab(
+                    batch_graph=graph, vocab=self.vocab, device=self.device
+                )
                 ref_dict = oov_dict
             else:
                 oov_dict = None
