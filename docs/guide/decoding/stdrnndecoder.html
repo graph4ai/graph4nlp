@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Chapter 5.1 Standard RNN Decoder &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Chapter 5.2 Standard Tree Decoder" href="stdtreedecoder.html" />
+    <link rel="prev" title="Chapter 5. Decoder" href="../decoding.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../decoding.html">Chapter 5. Decoder</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../decoding.html#roadmap">Roadmap</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Chapter 5.1 Standard RNN Decoder</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#some-advanced-mechanisms">Some advanced mechanisms</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="stdtreedecoder.html">Chapter 5.2 Standard Tree Decoder</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../decoding.html">Chapter 5. Decoder</a> &raquo;</li>
+        
+      <li>Chapter 5.1 Standard RNN Decoder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/guide/decoding/stdrnndecoder.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="chapter-5-1-standard-rnn-decoder">
+<span id="std-rnn-decoder"></span><h1>Chapter 5.1 Standard RNN Decoder<a class="headerlink" href="#chapter-5-1-standard-rnn-decoder" title="Permalink to this headline">¶</a></h1>
+<p>There are various solutions for translating the graph based data to sequential outputs, such as RNN based and transformer based decoding.
+However, in this section, we focus on the RNN based decoding mechanism.
+Similar to most sequence-to-sequence decoder, the graph based <code class="docutils literal notranslate"><span class="pre">StdRNNDecoder</span></code> adopts the attention mechanism to learn
+the soft alignment between the input graphs and the sequential outputs.</p>
+<p>Specifically, we give a simple example on how <code class="docutils literal notranslate"><span class="pre">StdRNNDecoder</span></code> is initialized as follows,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.datasets.jobs</span> <span class="kn">import</span> <span class="n">JobsDataset</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction</span> <span class="kn">import</span> <span class="n">DependencyBasedGraphConstruction</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.config</span> <span class="kn">import</span> <span class="n">get_basic_args</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.models.graph2seq</span> <span class="kn">import</span> <span class="n">Graph2Seq</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.utils.config_utils</span> <span class="kn">import</span> <span class="n">update_values</span><span class="p">,</span> <span class="n">get_yaml_config</span>
+
+<span class="c1"># define your vocab_model</span>
+
+<span class="n">dec_word_emb</span> <span class="o">=</span> <span class="n">WordEmbedding</span><span class="p">(</span><span class="n">vocab_model</span><span class="o">.</span><span class="n">out_word_vocab</span><span class="o">.</span><span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                             <span class="n">vocab_model</span><span class="o">.</span><span class="n">out_word_vocab</span><span class="o">.</span><span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                             <span class="n">pretrained_word_emb</span><span class="o">=</span><span class="n">vocab_model</span><span class="o">.</span><span class="n">out_word_vocab</span><span class="o">.</span><span class="n">embeddings</span><span class="p">,</span>
+                             <span class="n">fix_emb</span><span class="o">=</span><span class="n">fix_word_emb</span><span class="p">)</span><span class="o">.</span><span class="n">word_emb_layer</span>
+
+<span class="n">attention_type</span> <span class="o">=</span> <span class="s2">&quot;uniform&quot;</span>
+
+<span class="n">seq_decoder</span> <span class="o">=</span> <span class="n">StdRNNDecoder</span><span class="p">(</span><span class="n">rnn_type</span><span class="o">=</span><span class="s2">&quot;lstm&quot;</span><span class="p">,</span> <span class="n">max_decoder_step</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                            <span class="n">attention_type</span><span class="o">=</span><span class="n">attention_type</span><span class="p">,</span> <span class="n">fuse_strategy</span><span class="o">=</span><span class="s2">&quot;average&quot;</span><span class="p">,</span>
+                            <span class="n">use_coverage</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">use_copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">input_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">hidden_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">rnn_emb_input_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+                            <span class="n">graph_pooling_strategy</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">,</span>
+                            <span class="n">word_emb</span><span class="o">=</span><span class="n">dec_word_emb</span><span class="p">,</span> <span class="n">vocab</span><span class="o">=</span><span class="n">vocab_model</span><span class="o">.</span><span class="n">out_word_vocab</span><span class="p">)</span>
+
+<span class="c1"># g is the output of encoder, tgt is the ground truth sequence</span>
+<span class="n">predicted</span> <span class="o">=</span> <span class="n">seq_decoder</span><span class="p">(</span><span class="n">batch_graph</span><span class="o">=</span><span class="n">batch_graph</span><span class="p">,</span> <span class="n">tgt_seq</span><span class="o">=</span><span class="n">tgt_seq</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="some-advanced-mechanisms">
+<h2>Some advanced mechanisms<a class="headerlink" href="#some-advanced-mechanisms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="copy-and-coverage">
+<h3>Copy and coverage<a class="headerlink" href="#copy-and-coverage" title="Permalink to this headline">¶</a></h3>
+<p>To further enhance the performance, we also implement the <code class="docutils literal notranslate"><span class="pre">copy</span></code> and <code class="docutils literal notranslate"><span class="pre">coverage</span></code> mechanism.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">copy</span></code> mechanism, it helps model to copy words directly from the source sequence, and computed as,
+<span class="math notranslate nohighlight">\(p(w) = p_{gen}  p_{softmax}(w) + (1 - p_{gen})  p_{copy}(w)\)</span>. We refer to the implement of <a class="reference external" href="https://arxiv.org/abs/1506.03134">pointer-network</a>. Technically, for a certain mini-batch graphdata, we extend the original vocabulary to a full-vocabulary containing all words (including out-of-vocabulary (oov) words) in the mini-batch:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># First pick out all out-of-vocabulary (oov) words in the mini-batch graphdata.</span>
+<span class="n">token_matrix</span> <span class="o">=</span> <span class="n">batch_graph</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s2">&quot;token_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">unk_index</span> <span class="o">=</span> <span class="p">(</span><span class="n">token_matrix</span> <span class="o">==</span> <span class="n">oov_dict</span><span class="o">.</span><span class="n">UNK</span><span class="p">)</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">unk_token</span> <span class="o">=</span> <span class="p">[</span><span class="n">batch_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="s2">&quot;token&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">unk_index</span><span class="p">]</span>
+
+<span class="c1"># Second build the oov vocabulary.</span>
+<span class="n">oov_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">vocab</span><span class="o">.</span><span class="n">in_word_vocab</span><span class="p">)</span>
+<span class="n">oov_dict</span><span class="o">.</span><span class="n">_add_words</span><span class="p">(</span><span class="n">unk_token</span><span class="p">)</span>
+<span class="n">token_matrix_oov</span> <span class="o">=</span> <span class="n">token_matrix</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">unk_index</span><span class="p">:</span>
+    <span class="n">unk_token</span> <span class="o">=</span> <span class="n">batch_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="s2">&quot;token&quot;</span><span class="p">]</span>
+    <span class="n">oov_dict</span><span class="o">.</span><span class="n">_add_words</span><span class="p">(</span><span class="n">unk_token</span><span class="p">)</span>
+    <span class="n">token_matrix_oov</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">oov_dict</span><span class="o">.</span><span class="n">getIndex</span><span class="p">(</span><span class="n">unk_token</span><span class="p">)</span>
+<span class="n">batch_graph</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s2">&quot;token_id_oov&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">token_matrix_oov</span>
+</pre></div>
+</div>
+<p>Users can refer to the API <code class="docutils literal notranslate"><span class="pre">prepare_ext_vocab</span></code>.
+After that, the decoder learns the conditional probability of an output sequence with elements that are discrete tokens corresponding to positions in an input sequence. Code snippets as follows help with how it works.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_copy</span><span class="p">:</span>
+    <span class="n">pgen_collect</span> <span class="o">=</span> <span class="p">[</span><span class="n">dec_emb</span><span class="p">,</span> <span class="n">hidden</span><span class="p">,</span> <span class="n">attn_ptr</span><span class="p">]</span>
+
+    <span class="c1"># the probability of copying a word from the source</span>
+    <span class="n">prob_ptr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ptr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">pgen_collect</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+
+    <span class="c1"># the probability of generating a word over the standard softmax on vocabulary model.</span>
+    <span class="n">prob_gen</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">prob_ptr</span>
+    <span class="n">gen_output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">decoder_output</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">prob_gen</span> <span class="o">*</span> <span class="n">gen_output</span>
+    <span class="n">need_pad_length</span> <span class="o">=</span> <span class="n">oov_dict</span><span class="o">.</span><span class="n">get_vocab_size</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">get_vocab_size</span><span class="p">()</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">ret</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">need_pad_length</span><span class="p">))),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># attention scores</span>
+    <span class="n">ptr_output</span> <span class="o">=</span> <span class="n">dec_attn_scores</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">scatter_add_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">src_seq</span><span class="p">,</span> <span class="n">prob_ptr</span> <span class="o">*</span> <span class="n">ptr_output</span><span class="p">)</span>
+    <span class="n">decoder_output</span> <span class="o">=</span> <span class="n">output</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">decoder_output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">decoder_output</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The returned <code class="docutils literal notranslate"><span class="pre">decoder_output</span></code> is a distribution over the extend dictionary <code class="docutils literal notranslate"><span class="pre">oov_dict</span></code> if <code class="docutils literal notranslate"><span class="pre">copy</span></code> is adopted. Users can set <code class="docutils literal notranslate"><span class="pre">use_copy</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> to use this feature. And the oov vocabulary must be passed when utilizing it.</p>
+<p>As for the <code class="docutils literal notranslate"><span class="pre">coverage</span></code> mechanism, we refer to the paper: <a class="reference external" href="https://arxiv.org/abs/1601.04811">Modeling Coverage for Neural Machine Translation</a>. Compared to the original attention that ignore the past alignment history information, we maintain a coverage vector to keep trace of that. As a result, it usually prevents the generated words and focuses on more about un-predicted words.
+Users can easily use this feature by setting <code class="docutils literal notranslate"><span class="pre">use_coverage</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code>. Note that an additional coverage loss should be included when conducting backward propagating:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">_</span><span class="p">,</span> <span class="n">enc_attn_weights</span><span class="p">,</span> <span class="n">coverage_vectors</span> <span class="o">=</span> <span class="n">Graph2Seq</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span>
+
+<span class="n">target_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">enc_attn_weights</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">target_length</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">coverage_vectors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">coverage_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">coverage_vectors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">enc_attn_weights</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="o">/</span> <span class="n">coverage_vectors</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cover_loss</span>
+        <span class="n">loss</span> <span class="o">+=</span> <span class="n">coverage_loss</span>
+<span class="n">coverage_loss</span> <span class="o">=</span> <span class="n">loss</span> <span class="o">/</span> <span class="n">target_length</span>
+</pre></div>
+</div>
+<p>Users can use the <code class="docutils literal notranslate"><span class="pre">CoverageLoss</span></code> or <code class="docutils literal notranslate"><span class="pre">Graph2SeqLoss</span></code> (including both <code class="docutils literal notranslate"><span class="pre">CoverageLoss</span></code> and <code class="docutils literal notranslate"><span class="pre">NLLLoss</span></code>) to conduct this process.</p>
+</div>
+<div class="section" id="separate-attention">
+<h3>Separate attention<a class="headerlink" href="#separate-attention" title="Permalink to this headline">¶</a></h3>
+<p>And different from most sequence-to-sequence decoder, our <code class="docutils literal notranslate"><span class="pre">StdRNNDecoder</span></code> designs both <code class="docutils literal notranslate"><span class="pre">separate</span> <span class="pre">attention</span></code> and <code class="docutils literal notranslate"><span class="pre">uniform</span> <span class="pre">attention</span></code> for sequential encoder’s outputs <span class="math notranslate nohighlight">\(\mathbf{S}\)</span> and graph encoder’s outputs <span class="math notranslate nohighlight">\(\mathcal{G}(\mathcal{V}, \mathcal{E})\)</span>, respectively:</p>
+<ol class="arabic simple">
+<li><p>Uniform attention: It means the decoder only attends on the graph encoder’s output <span class="math notranslate nohighlight">\(\mathcal{G}(\mathcal{V}, \mathcal{E})\)</span>. Note that we only support attending on node features and leaving the edges for future. Technically, it regard the nodes as tokens and apply attention on them to calculate the output vector. Users can set <code class="docutils literal notranslate"><span class="pre">attention_type</span></code> to <code class="docutils literal notranslate"><span class="pre">uniform</span></code> to use this feature.</p></li>
+<li><p>Separate attention: There are two kinds of separate attention in this implement: a) attends on sequential encoder’s outputs and graph encoder’s outputs separately, b) attends on the graph’s nodes separately.</p></li>
+</ol>
+<ul class="simple">
+<li><p>2.1 Case a): The decoder first attends on <span class="math notranslate nohighlight">\(\mathbf{S}\)</span> and <span class="math notranslate nohighlight">\(\mathcal{G}(\mathcal{V}, \mathcal{E})\)</span> separately. Then it fuse the obtained attention results into one single vector to generate next token. Users can set <code class="docutils literal notranslate"><span class="pre">attention_type</span></code> to <code class="docutils literal notranslate"><span class="pre">sep_diff_encoder_type</span></code> to use this feature.</p></li>
+<li><p>2.2 Case b): This feature is designed for heterogeneous graphs. Firstly, the decoder will group the nodes by their node types. Secondly, the decoder will attends on each group separately to obtain the vector representations. Finally, it will fuses the obtained vectors into one single vector. Users can set <code class="docutils literal notranslate"><span class="pre">attention_type</span></code> to <code class="docutils literal notranslate"><span class="pre">sep_diff_node_type</span></code> to use this feature. Specifically, <code class="docutils literal notranslate"><span class="pre">node_type_num</span></code> should be the amount of node types.</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="stdtreedecoder.html" class="btn btn-neutral float-right" title="Chapter 5.2 Standard Tree Decoder" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../decoding.html" class="btn btn-neutral float-left" title="Chapter 5. Decoder" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

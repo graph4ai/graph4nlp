@@ -1,0 +1,326 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Link Prediction &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Knowledge Graph Completion" href="kgcompletion.html" />
+    <link rel="prev" title="Graph Classification" href="graph_classification.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="node_classification.html">Node Classification</a></li>
+<li class="toctree-l2"><a class="reference internal" href="graph_classification.html">Graph Classification</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Link Prediction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#concatfeedforwardnn">ConcatFeedForwardNN</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#elementsum">ElementSum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stackedelementprod">StackedElementProd</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kgcompletion.html">Knowledge Graph Completion</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../classification.html">Chapter 6. Classification</a> &raquo;</li>
+        
+      <li>Link Prediction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/guide/classification/link_prediction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="link-prediction">
+<span id="guide-link-prediction"></span><h1>Link Prediction<a class="headerlink" href="#link-prediction" title="Permalink to this headline">¶</a></h1>
+<p>Link prediction is a downstream task that are normally observed in the GNN-based NLP tasks, such as relation extract and amr parsing. The process is about classify the label of each edge or predict whether there is an edge between a pair of nodes based on the node embeddings that learnt from the GNNs modules.
+To facilitate the implementation of link prediction task, we provide both high-level and low-level APIs to users to easily define a multi-layer link prediction function. Besides, for each level’s APIs, we support three popularly used node classifiers, namely, ConcatFeedForwardNN, ElementSum, and StackedElementProd.</p>
+<div class="section" id="concatfeedforwardnn">
+<h2>ConcatFeedForwardNN<a class="headerlink" href="#concatfeedforwardnn" title="Permalink to this headline">¶</a></h2>
+<p>This function is based on the feedforward layer. To predict the edge between a pair of nodes, the embeddings of the two nodes is first concatenated and then inputed into the Feedforward neural network. The low-level function defines a two-layer classifier with the input of node embedding tensor and the output of legit tensor after classification. The user can specify the index of edge (represented as tuple of nodes pair indexes) that needs prediction. If not specified, the classifier will be applied to all pair of nodes. Below is how the ConcatFeedForwardNNLayer module.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ConcatFeedForwardNNLayer</span><span class="p">(</span><span class="n">LinkPredictionLayerBase</span><span class="p">):</span>
+   <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">num_class</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()):</span>
+     <span class="nb">super</span><span class="p">(</span><span class="n">ConcatFeedForwardNNLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+     <span class="c1">#build the linear module list</span>
+     <span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="o">=</span><span class="n">activation</span>
+     <span class="bp">self</span><span class="o">.</span><span class="n">ffnn_all1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
+     <span class="bp">self</span><span class="o">.</span><span class="n">ffnn_all2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">num_class</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As shown above, there are two feed forward layers implemented. The <code class="docutils literal notranslate"><span class="pre">num_class</span></code> is the number of edge types. If there is no edge type, just make <code class="docutils literal notranslate"><span class="pre">num_class</span></code> as 2. In this way, we could predict whether there is an edge between any pair of nodes.</p>
+<p>After successfully define the ConcatFeedForwardNNLayer, we implementt the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> part to get the prediction results (logins tensor) of specific pair of nodes based on the node embedding, as shown in the below example. <code class="docutils literal notranslate"><span class="pre">edge_idx</span></code> is a list and each element is a tuple of two node index.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">src_idx</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">tuple_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">tuple_idx</span> <span class="ow">in</span> <span class="n">edge_idx</span><span class="p">])</span>
+<span class="n">dst_idx</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">tuple_idx</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">tuple_idx</span> <span class="ow">in</span> <span class="n">edge_idx</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">edge_idx</span></code> is not given, the module will return the prediction logits of all pair of nodes.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">num_node</span><span class="o">=</span><span class="n">node_emb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1">#get the index list for all the node pairs</span>
+<span class="n">node_idx_list</span><span class="o">=</span><span class="p">[</span><span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_node</span><span class="p">)]</span>
+<span class="n">src_idx</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">node_idx_list</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">num_node</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">dst_idx</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">node_idx_list</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">num_node</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then the final prediction is conducted based on <code class="docutils literal notranslate"><span class="pre">src_emb</span></code> and <code class="docutils literal notranslate"><span class="pre">dst_emb</span></code> as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">src_emb</span> <span class="o">=</span> <span class="n">node_emb</span><span class="p">[</span><span class="n">src_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="c1"># input the source node embeddings into ffnn</span>
+<span class="n">dst_emb</span> <span class="o">=</span> <span class="n">node_emb</span><span class="p">[</span><span class="n">dst_idx</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># input the destinate node embeddings into ffnn</span>
+<span class="n">fused_emb</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ffnn_all1</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">src_emb</span><span class="p">,</span> <span class="n">dst_emb</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>To facilitate the easily implementation of the pipeline of GNN-based NLP application, we also provide the high-level function for link prediction, where the input and output are both the graph in type of <cite>GraphData</cite>. The node embedding tensor should be stored in the node feature field named “node_emb”  in the input_graph for prediction. The computed logit tensor for each pair of nodes in the graph are stored in the edge feature field named “edge_logits”. The <code class="docutils literal notranslate"><span class="pre">forward</span></code> part of <code class="docutils literal notranslate"><span class="pre">ConcatFeedForwardNN</span></code> module is implement as</p>
+<p>Here the <code class="docutils literal notranslate"><span class="pre">self.classifier</span></code> is defined by <code class="docutils literal notranslate"><span class="pre">ConcatFeedForwardNNLayer</span></code> mentioned above.</p>
+</div>
+<div class="section" id="elementsum">
+<h2>ElementSum<a class="headerlink" href="#elementsum" title="Permalink to this headline">¶</a></h2>
+<p>This function is also based on the feedforward layer. To predict the edge between a pair of nodes, the embeddings of the two nodes is first inputted into feedforward neural network and get the updated embedding. Then the element sum operation is conducted on the two embedding for the final prediction. The low-level function defines a two-layer classifier with the input of node embedding tensor and the output of legit tensor after prediction. The user can specify the index of edge (represented as tuple of nodes pair indexes) that needs prediction. If not specified, the classifier will be applied to all pair of nodes.</p>
+<p>Below is how the ElementSumLayer module constructed.</p>
+<p>As shown above. Three linear layers are defined. Two are for embeddings from source nodes and destinated node, the other one is for the final aggregation step.</p>
+<p>After successfully define the module, we implement the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> part to get the prediction results (logins tensor) of specific pair of nodes based on the node embedding, as shown in the below example. Similar to the <code class="docutils literal notranslate"><span class="pre">ConcatFeedForwardNNLayer</span></code>, we first get the <code class="docutils literal notranslate"><span class="pre">src_idx</span></code> and <code class="docutils literal notranslate"><span class="pre">dst_idx</span></code>. Based on them, the final prediction is conducted as</p>
+<p>Then the final output is</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">ffnn_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="p">(</span><span class="n">scr_emb</span><span class="o">+</span><span class="n">dst_emb</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>To facilitate the easily implementation of the pipeline of GNN-based NLP application, we also provide the high-level function here, where the input and output are both the graph in type of <cite>GraphData</cite>. The node embedding tensor should be stored in the node feature field named “node_emb”  in the input_graph for prediction. The computed logit tensor for each pair of nodes in the graph are stored in the edge feature field named “edge_logits”. The <code class="docutils literal notranslate"><span class="pre">forward</span></code> part of <code class="docutils literal notranslate"><span class="pre">ElementSum</span></code> is the same to that of <code class="docutils literal notranslate"><span class="pre">ConcatFeedForwardNN</span></code>.</p>
+</div>
+<div class="section" id="stackedelementprod">
+<h2>StackedElementProd<a class="headerlink" href="#stackedelementprod" title="Permalink to this headline">¶</a></h2>
+<p>This function is also based on the feedforward layer and designed for a multi-layer GNN encoder. To predict the edge between a pair of nodes, the products of the embeddings of two nodes at each GNN-layer will be concatenated. Then the concatenation will be finally inputted into the feedforward neural network for the final prediction. The low-level function defines a classifier layer with the input of node embedding list (each element in the list refers to a node embedding tensor at each layer) and the output of legit tensor after prediction. The user can specify the index of edge (represented as tuple of nodes pair indexes) that needs prediction. If not specified, the classifier will be applied to all pair of nodes.</p>
+<p>Below is how the StackedElementProdLayer module constructed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">StackedElementProdLayer</span><span class="p">(</span><span class="n">LinkPredictionLayerBase</span><span class="p">):</span>
+   <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span>  <span class="n">hidden_size</span><span class="p">,</span> <span class="n">num_class</span><span class="p">,</span> <span class="n">num_channel</span><span class="p">):</span>
+      <span class="nb">super</span><span class="p">(</span><span class="n">StackedElementProdLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+      <span class="c1">#build the linear module list</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">num_channel</span><span class="o">=</span><span class="n">num_channel</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">ffnn</span><span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_channel</span><span class="o">*</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">num_class</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">num_channel</span></code> indicate how many channels of node embedding will be stacked together and are used for the final prediction.</p>
+<p>After successfully define the module, we implement the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> part to get the prediction results (logins tensor) of specific pair of nodes based on several channels of node embedding, as shown in the below example. Similar to the <code class="docutils literal notranslate"><span class="pre">ConcatFeedForwardNNLayer</span></code>, we first get the <code class="docutils literal notranslate"><span class="pre">src_idx</span></code> and <code class="docutils literal notranslate"><span class="pre">dst_idx</span></code>. Based on them, the final prediction is conducted as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">edge_emb</span><span class="o">=</span><span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">channel_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_channel</span><span class="p">):</span>
+    <span class="n">edge_emb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node_emb</span><span class="p">[</span><span class="n">channel_idx</span><span class="p">][</span><span class="n">src_idx</span><span class="p">,:]</span><span class="o">*</span><span class="n">node_emb</span><span class="p">[</span><span class="n">channel_idx</span><span class="p">][</span><span class="n">dst_idx</span><span class="p">,:])</span>
+
+<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ffnn</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">edge_emb</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>In this situation, the <code class="docutils literal notranslate"><span class="pre">node_emb</span></code> is not a tensor, but a list of tensor.</p>
+<p>To facilitate the easily implementation of the pipeline of GNN-based NLP application, we also provide the high-level function here, where the input and output are both the graph in type of <cite>GraphData</cite>. The node embedding tensor at channel <cite>N</cite> should be stored in the node feature field named “node_emb_&lt;N&gt;”  in the input_graph for prediction. The computed logit tensor for each pair of nodes in the graph are stored in the edge feature field named “edge_logits”. The input graph can be either batched graph or original single graph. The <code class="docutils literal notranslate"><span class="pre">forward</span></code> part of <code class="docutils literal notranslate"><span class="pre">StackedElementProd</span></code> is the same to that of <code class="docutils literal notranslate"><span class="pre">ConcatFeedForwardNN</span></code>.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="kgcompletion.html" class="btn btn-neutral float-right" title="Knowledge Graph Completion" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="graph_classification.html" class="btn btn-neutral float-left" title="Graph Classification" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
