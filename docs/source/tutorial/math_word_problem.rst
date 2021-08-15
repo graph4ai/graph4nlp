@@ -1,6 +1,6 @@
 Math Word Problem Tutorial
 ==========================
-Download the full example `here. <https://github.com/schenglee/Graph4nlp_demo/blob/main/demo_graph2tree/math_word_problem.ipynb>`__
+
 
 Introduction
 ------------
@@ -19,6 +19,10 @@ The **Graph2Tree** model consists of:
 -  graph embedding module (e.g., undirected GraphSage)
 -  predictoin module (e.g., tree decoder with attention and copy
    mechanisms)
+
+The full example can be downloaded from `Math word problem notebook <https://github.com/schenglee/Graph4nlp_demo/blob/main/demo_graph2tree/math_word_problem.ipynb>`__.
+
+
 
 As shown in the picture below, we firstly construct graph input from
 problem description by syntactic parsing (CoreNLP) and then represent
