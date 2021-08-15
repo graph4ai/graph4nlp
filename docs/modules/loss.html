@@ -550,45 +550,66 @@ The detailed decription for each loss function can be found at:</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl>
-<dt><strong>loss_type: str</strong></dt><dd><p>the loss function to select (<code class="docutils literal notranslate"><span class="pre">NLL</span></code>,``BCEWithLogits``, <code class="docutils literal notranslate"><span class="pre">MultiLabelMargin</span></code>,``SoftMargin``,``CrossEntropy`` )</p>
-<p><cite>NLL loss&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#NLLLoss&gt;</cite> measures
-the negative log likelihood loss. It is useful to train a classification problem with C classes.</p>
-<p><cite>BCEWithLogits loss&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#BCEWithLogitsLoss&gt;</cite> combines a
-<cite>Sigmoid</cite> layer and the <cite>BCELoss</cite> in one single class. This version is more numerically stable than using a plain <cite>Sigmoid</cite>
-followed by a <cite>BCELoss</cite> as, by combining the operations into one layer, we take advantage of the log-sum-exp trick for numerical stability.</p>
-<p><cite>BCE Loss&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#BCELoss&gt;</cite> creates a criterion that measures
+<dt><strong>loss_type: str</strong></dt><dd><p>the loss function to select (<code class="docutils literal notranslate"><span class="pre">NLL</span></code>,``BCEWithLogits``, <code class="docutils literal notranslate"><span class="pre">MultiLabelMargin</span></code>,``SoftMargin``
+,``CrossEntropy`` )</p>
+<p><cite>NLL loss&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#NLLLoss&gt;</cite>
+measures
+the negative log likelihood loss. It is useful to train a classification problem
+with C classes.</p>
+<p><cite>BCEWithLogits loss
+&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#BCEWithLogitsLoss&gt;</cite>
+combines a
+<cite>Sigmoid</cite> layer and the <cite>BCELoss</cite> in one single class. This version is more numerically
+stable than using a plain <cite>Sigmoid`followed by a `BCELoss</cite> as, by combining the operations
+into one layer, we take advantage of the log-sum-exp trick for numerical stability.</p>
+<p><cite>BCE Loss&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#BCELoss&gt;</cite>
+creates a criterion that measures
 the Binary Cross Entropy between the target and the output.</p>
-<p><cite>MultiLabelMargin loss&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#MultiLabelMarginLoss&gt;</cite> creates a
-criterion that optimizes a multi-class multi-classification hinge loss (margin-based loss) between
-input <span class="math notranslate nohighlight">\(x\)</span> (a 2D mini-batch <cite>Tensor</cite>) and output <span class="math notranslate nohighlight">\(y\)</span> (which is a 2D <cite>Tensor</cite> of target class indices).</p>
-<p><cite>SoftMargin loss&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#SoftMarginLoss&gt;</cite> creates a criterion
-that optimizes a two-class classification logistic loss between input tensor <span class="math notranslate nohighlight">\(x\)</span> and target tensor <span class="math notranslate nohighlight">\(y\)</span> (containing 1 or -1).</p>
-<p><cite>CrossEntropy loss&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#CrossEntropyLoss&gt; `combines
-pytorch function `nn.LogSoftmax</cite> and <cite>nn.NLLLoss</cite> in one single class. It is useful when training a classification
-problem with <cite>C</cite> classes.</p>
+<p><cite>MultiLabelMargin loss
+&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#MultiLabelMarginLoss&gt;</cite>
+creates a
+criterion that optimizes a multi-class multi-classification hinge loss (margin-based loss)
+between input <span class="math notranslate nohighlight">\(x\)</span> (a 2D mini-batch <cite>Tensor</cite>) and output <span class="math notranslate nohighlight">\(y\)</span>
+(which is a 2D <cite>Tensor</cite> of target class indices).</p>
+<p><cite>SoftMargin loss
+&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#SoftMarginLoss&gt;</cite>
+creates a criterion that optimizes a two-class classification logistic loss between
+input tensor <span class="math notranslate nohighlight">\(x\)</span> and target tensor <span class="math notranslate nohighlight">\(y\)</span> (containing 1 or -1).</p>
+<p><cite>CrossEntropy loss
+&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#CrossEntropyLoss&gt; `
+combines pytorch function `nn.LogSoftmax</cite> and <cite>nn.NLLLoss</cite> in one single class. It is
+useful when training a classification problem with <cite>C</cite> classes.</p>
 </dd>
-<dt><strong>weight: Tensor, optional</strong></dt><dd><p>a manual rescaling weight given to the loss of each batch element. If given, has to be a Tensor of size <cite>nbatch</cite>.
+<dt><strong>weight: Tensor, optional</strong></dt><dd><p>a manual rescaling weight given to the loss of each batch element. If given, has to be
+a Tensor of size <cite>nbatch</cite>.
 This parameter is not suitable for <code class="docutils literal notranslate"><span class="pre">SoftMargin</span></code> loss functions.</p>
 </dd>
-<dt><strong>size_average: bool, optional</strong></dt><dd><p>By default,the losses are averaged over each loss element in the batch. Note that for some losses, there are
-multiple elements per sample. If the field <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, the losses are instead summed
+<dt><strong>size_average: bool, optional</strong></dt><dd><p>By default,the losses are averaged over each loss element in the batch. Note that for
+some losses, there are multiple elements per sample.
+If the field <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, the losses are instead summed
 for each minibatch. Ignored when reduce is <code class="docutils literal notranslate"><span class="pre">False</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </dd>
-<dt><strong>reduce: bool, optional</strong></dt><dd><p>By default, the losses are averaged or summed over observations for each minibatch depending on <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code>.
-When <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduce</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, returns a loss per batch element instead and ignores <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
+<dt><strong>reduce: bool, optional</strong></dt><dd><p>By default, the losses are averaged or summed over observations for each minibatch depending
+on <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code>.
+When <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduce</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, returns a loss per batch element instead
+and ignores <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
 </dd>
-<dt><strong>reduction: string, optional</strong></dt><dd><dl class="simple">
-<dt>Specifies the reduction to apply to the output: <code class="docutils literal notranslate"><span class="pre">'none'</span></code> | <code class="docutils literal notranslate"><span class="pre">'mean'</span></code> | <code class="docutils literal notranslate"><span class="pre">'sum'</span></code>. <code class="docutils literal notranslate"><span class="pre">'none'</span></code>: no reduction will be applied,</dt><dd><p><code class="docutils literal notranslate"><span class="pre">'mean'</span></code>: the sum of the output will be divided by the number of elements in the output, <code class="docutils literal notranslate"><span class="pre">'sum'</span></code>: the output will be summed.</p>
+<dt><strong>reduction: string, optional</strong></dt><dd><p>Specifies the reduction to apply to the output: <code class="docutils literal notranslate"><span class="pre">'none'</span></code> | <code class="docutils literal notranslate"><span class="pre">'mean'</span></code> | <code class="docutils literal notranslate"><span class="pre">'sum'</span></code>.
+<code class="docutils literal notranslate"><span class="pre">'none'</span></code>: no reduction will be applied,</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">'mean'</span></code>: the sum of the output will be divided by the number of elements in the output,
+<code class="docutils literal notranslate"><span class="pre">'sum'</span></code>: the output will be summed.</p>
+</div></blockquote>
+<p>Note: <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduce</span></code> are in the process of being deprecated, and
+in the meantime, specifying either of those two args will override <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code>.
+Default: <code class="docutils literal notranslate"><span class="pre">'mean'</span></code></p>
 </dd>
-</dl>
-<p>Note: <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduce</span></code> are in the process of being deprecated, and in the meantime, specifying either of
-those two args will override <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">'mean'</span></code></p>
+<dt><strong>pos_weight:Tensor, optional</strong></dt><dd><p>A weight of positive examples. Must be a vector with length equal to the number of classes.
+This paramter is only suitable for <code class="docutils literal notranslate"><span class="pre">BCEWithLogits</span></code> loss function.</p>
 </dd>
-<dt><strong>pos_weight:Tensor, optional</strong></dt><dd><p>A weight of positive examples. Must be a vector with length equal to the number of classes. This paramter is only suitable for
-<code class="docutils literal notranslate"><span class="pre">BCEWithLogits</span></code> loss function.</p>
-</dd>
-<dt><strong>ignore_index: int, optional</strong></dt><dd><p>Specifies a target value that is ignored and does not contribute to the input gradient. When <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code> is
-<code class="docutils literal notranslate"><span class="pre">True</span></code>, the loss is averaged over non-ignored targets. This paramter is only suitable for <code class="docutils literal notranslate"><span class="pre">CrossEntropy</span></code> loss function.</p>
+<dt><strong>ignore_index: int, optional</strong></dt><dd><p>Specifies a target value that is ignored and does not contribute to the input gradient.
+When <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the loss is averaged over non-ignored targets.
+This paramter is only suitable for <code class="docutils literal notranslate"><span class="pre">CrossEntropy</span></code> loss function.</p>
 </dd>
 </dl>
 </dd>
@@ -735,18 +756,16 @@ those two args will override <code class="xref py py-attr docutils literal notra
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl>
 <dt><strong>NLL loss:</strong></dt><dd><dl class="simple">
-<dt>Input: tensor.</dt><dd><dl class="simple">
-<dt><span class="math notranslate nohighlight">\((N, C)\)</span> where <cite>C = number of classes</cite>, or <span class="math notranslate nohighlight">\((N, C, d_1, d_2, ..., d_K)\)</span> with <span class="math notranslate nohighlight">\(K \geq 1\)</span></dt><dd><p>in the case of <cite>K</cite>-dimensional loss.</p>
+<dt>Input: tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N, C)\)</span> where <cite>C = number of classes</cite>, or <span class="math notranslate nohighlight">\((N, C, d_1, d_2, ..., d_K)\)</span>
+with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of <cite>K</cite>-dimensional loss.</p>
 </dd>
-</dl>
+<dt>Target: tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N)\)</span> where each value is <span class="math notranslate nohighlight">\(0 \leq \text{targets}[i] \leq C-1\)</span>,
+or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span> with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional
+loss.</p>
 </dd>
-<dt>Target: tensor.</dt><dd><dl class="simple">
-<dt><span class="math notranslate nohighlight">\((N)\)</span> where each value is <span class="math notranslate nohighlight">\(0 \leq \text{targets}[i] \leq C-1\)</span>, or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span></dt><dd><p>with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional loss.</p>
-</dd>
-</dl>
-</dd>
-<dt>Output: scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then the same size as the target: <span class="math notranslate nohighlight">\((N)\)</span>, or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span>
-with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional loss.</p>
+<dt>Output: scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then the same size as the target: <span class="math notranslate nohighlight">\((N)\)</span>,
+or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span> with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional
+loss.</p>
 </dd>
 </dl>
 </dd>
@@ -760,9 +779,11 @@ with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case 
 </dl>
 </dd>
 <dt><strong>MultiLabelMargin loss:</strong></dt><dd><dl class="simple">
-<dt>Input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((C)\)</span> or <span class="math notranslate nohighlight">\((N, C)\)</span> where <cite>N</cite> is the batch size and <cite>C</cite> is the number of classes.</p>
+<dt>Input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((C)\)</span> or <span class="math notranslate nohighlight">\((N, C)\)</span> where <cite>N</cite> is the batch size and <cite>C</cite> is the number
+of classes.</p>
 </dd>
-<dt>Target: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((C)\)</span> or <span class="math notranslate nohighlight">\((N, C)\)</span>, label targets padded by -1 ensuring same shape as the input.</p>
+<dt>Target: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((C)\)</span> or <span class="math notranslate nohighlight">\((N, C)\)</span>, label targets padded by -1 ensuring same shape as
+the input.</p>
 </dd>
 <dt>Output: Scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then <span class="math notranslate nohighlight">\((N)\)</span>.</p>
 </dd>
@@ -779,17 +800,19 @@ with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case 
 </dd>
 <dt><strong>CrossEntropy:</strong></dt><dd><blockquote>
 <div><dl class="simple">
-<dt>Input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N, C)\)</span> where <cite>C = number of classes</cite>, or <span class="math notranslate nohighlight">\((N, C, d_1, d_2, ..., d_K)\)</span> with <span class="math notranslate nohighlight">\(K \geq 1\)</span>
-in the case of <cite>K</cite>-dimensional loss.</p>
+<dt>Input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N, C)\)</span> where <cite>C = number of classes</cite>, or <span class="math notranslate nohighlight">\((N, C, d_1, d_2, ..., d_K)\)</span>
+with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of <cite>K</cite>-dimensional loss.</p>
 </dd>
-<dt>Target: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N)\)</span> where each value is <span class="math notranslate nohighlight">\(0 \leq \text{targets}[i] \leq C-1\)</span>, or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span>
-with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional loss.</p>
+<dt>Target: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N)\)</span> where each value is <span class="math notranslate nohighlight">\(0 \leq \text{targets}[i] \leq C-1\)</span>,
+or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span> with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional
+loss.</p>
 </dd>
 </dl>
 </div></blockquote>
 <dl class="simple">
-<dt>Output: scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then the same size as the target: <span class="math notranslate nohighlight">\((N)\)</span>, or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span>
-with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional loss.</p>
+<dt>Output: scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then the same size as the target: <span class="math notranslate nohighlight">\((N)\)</span>,
+or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span> with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional
+loss.</p>
 </dd>
 </dl>
 </dd>

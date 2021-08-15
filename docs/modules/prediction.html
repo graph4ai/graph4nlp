@@ -1689,14 +1689,16 @@ Example: nn.ReLU(),nn.Sigmoid().</p>
 <dt><strong>node_emb</strong><span class="classifier">tensor [N,H]</span></dt><dd><p>N: number of nodes
 H: length of the node embeddings</p>
 </dd>
-<dt><strong>edge_idx</strong><span class="classifier">a list of index of edge (represented as tuple of nodes pair indexes) that needs prediction.</span></dt><dd><p>Default: ‘None’, doing link prediction for all pairs of nodes.
+<dt><strong>edge_idx</strong><span class="classifier">a list of index of edge (represented as tuple of nodes pair indexes)</span></dt><dd></dd>
+<dt><strong>that needs prediction.</strong></dt><dd><p>Default: ‘None’, doing link prediction for all pairs of nodes.
 Example: [(1,2),(1,0),(2,9)]</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl>
-<dt>logit tensor: [M, num_class] The score logits for all links that need to be preidcted.</dt><dd><p>If edge_idx is given, the order of the predicted logits for edges is the same with that in the edge_idx
+<dt>logit tensor: [M, num_class] The score logits for all links that need to be preidcted.</dt><dd><p>If edge_idx is given, the order of the predicted logits for edges is the same with
+that in the edge_idx
 If full prediction is select (default),the order of predicted logits are like:</p>
 <blockquote>
 <div><p>“[(0,0),(0,1),…(0,N),(1,0),(1,1),….(N,N)]”</p>
@@ -2050,14 +2052,16 @@ Example: nn.ReLU(),nn.Sigmoid().</p>
 <dt><strong>node_emb</strong><span class="classifier">tensor [N,H]</span></dt><dd><p>N: number of nodes
 H: length of the node embeddings</p>
 </dd>
-<dt><strong>edge_idx</strong><span class="classifier">a list of index of edge (represented as tuple of nodes pair indexes) that needs prediction.</span></dt><dd><p>Default: ‘None’, doing link prediction for all pairs of nodes.
+<dt><strong>edge_idx</strong><span class="classifier">a list of index of edge (represented as tuple of nodes pair indexes)</span></dt><dd></dd>
+<dt><strong>that needs prediction.</strong></dt><dd><p>Default: ‘None’, doing link prediction for all pairs of nodes.
 Example: [(1,2),(1,0),(2,9)]</p>
 </dd>
 </dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl>
-<dt>logit tensor: [M, num_class] The score logits for all links that need to be preidcted.</dt><dd><p>If edge_idx is given, the order of the predicted logits for edges is the same with that in the edge_idx
+<dt>logit tensor: [M, num_class] The score logits for all links that need to be preidcted.</dt><dd><p>If edge_idx is given, the order of the predicted logits for edges is the same with
+that in the edge_idx
 If full prediction is select (default),the order of predicted logits are like:</p>
 <blockquote>
 <div><p>“[(0,0),(0,1),…(0,N),(1,0),(1,1),….(N,N)]”</p>
@@ -2416,12 +2420,16 @@ H: length of the node embeddings</p>
 </div></blockquote>
 <dl class="field-list">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>edge_idx</strong> (<em>a list of index of edge</em><em> (</em><em>represented as tuple of nodes pair indexes</em><em>) </em><em>that needs prediction.</em>) – Default: ‘None’, doing link prediction for all pairs of nodes.
-Example: [(1,2),(1,0),(2,9)]</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edge_idx</strong> (<em>a list of index of edge</em><em> (</em><em>represented as tuple of nodes pair indexes</em><em>) </em><em>that</em>) – </p></li>
+<li><p><strong>prediction.</strong> (<em>needs</em>) – Default: ‘None’, doing link prediction for all pairs of nodes.
+Example: [(1,2),(1,0),(2,9)]</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl>
-<dt>logit tensor: [M, num_class] The score logits for all links that need to be preidcted.</dt><dd><p>If edge_idx is given, the order of the predicted logits for edges is the same with that in the edge_idx
+<dt>logit tensor: [M, num_class] The score logits for all links that need to be preidcted.</dt><dd><p>If edge_idx is given, the order of the predicted logits for edges is the same with that
+in the edge_idx
 If full prediction is select (default),the order of predicted logits are like:</p>
 <blockquote>
 <div><p>“[(0,0),(0,1),…(0,N),(1,0),(1,1),….(N,N)]”</p>

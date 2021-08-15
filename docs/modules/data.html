@@ -1438,10 +1438,11 @@ the vocabulary. Otherwise only the training set is used.</p>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.SequenceLabelingDataset.parse_file">
 <code class="sig-name descname">parse_file</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#graph4nlp.data.dataset.SequenceLabelingDataset.parse_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each individual task-specific
-base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
-For SequenceLabelingDataset, the format of the input file should contain lines of tokens, each line representing one
-record of token at first column and its tag at the last column.</p>
+<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each
+individual task-specific base class. Returns all the indices of data items in
+this file w.r.t. the whole dataset.
+For SequenceLabelingDataset, the format of the input file should contain lines of tokens,
+each line representing one record of token at first column and its tag at the last column.</p>
 <p class="rubric">Examples</p>
 <dl class="simple">
 <dt>“EU       I-ORG “</dt><dd><p>rejects  O

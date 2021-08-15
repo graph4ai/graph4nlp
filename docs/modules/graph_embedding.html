@@ -647,7 +647,8 @@ named <cite>node_emb</cite>.</p>
 <dt id="graph4nlp.graph_embedding.GraphSAGE">
 <em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_embedding.</code><code class="sig-name descname">GraphSAGE</code><span class="sig-paren">(</span><em class="sig-param">num_layers</em>, <em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">output_size</em>, <em class="sig-param">aggregator_type</em>, <em class="sig-param">direction_option='undirected'</em>, <em class="sig-param">feat_drop=0.0</em>, <em class="sig-param">bias=True</em>, <em class="sig-param">norm=None</em>, <em class="sig-param">activation=None</em>, <em class="sig-param">use_edge_weight=False</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_embedding.GraphSAGE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Multi-layered <a class="reference external" href="https://arxiv.org/pdf/1706.02216.pdf">GraphSAGE Network</a>
-Support both unidirectional (i.e., regular) and bidirectional (i.e., <cite>bi_sep</cite> and <cite>bi_fuse</cite>) versions.</p>
+Support both unidirectional (i.e., regular) and bidirectional (i.e., <cite>bi_sep</cite> and <cite>bi_fuse</cite>)
+versions.</p>
 <div class="math notranslate nohighlight">
 \[h_{\mathcal{N}(i)}^{(l+1)} &amp; = \mathrm{aggregate}
 \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
@@ -674,7 +675,8 @@ Example: [100,50]</p>
 </dd>
 <dt><strong>output_size</strong><span class="classifier">int</span></dt><dd><p>Output feature size. For the bisep version, the output size is 2*output_size</p>
 </dd>
-<dt><strong>direction_option: str</strong></dt><dd><p>Whether use unidirectional (i.e., regular) or bidirectional (i.e., <cite>bi_sep</cite> and <cite>bi_fuse</cite>) versions.</p>
+<dt><strong>direction_option: str</strong></dt><dd><p>Whether use unidirectional (i.e., regular) or bidirectional (i.e., <cite>bi_sep</cite> and <cite>bi_fuse</cite>)
+versions.</p>
 </dd>
 <dt><strong>feat_drop</strong><span class="classifier">float, optional</span></dt><dd><p>Dropout rate on feature, defaults: <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
 </dd>
