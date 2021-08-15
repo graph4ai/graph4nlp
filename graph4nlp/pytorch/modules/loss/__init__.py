@@ -1,6 +1,6 @@
-from .general_loss import GeneralLoss
 from .coverage_loss import CoverageLoss
-from .seq_generation_loss import SeqGenerationLoss
+from .general_loss import GeneralLoss
 from .kg_loss import KGLoss
+from .seq_generation_loss import SeqGenerationLoss
 
 __all__ = ["GeneralLoss", "CoverageLoss", "SeqGenerationLoss", "KGLoss"]

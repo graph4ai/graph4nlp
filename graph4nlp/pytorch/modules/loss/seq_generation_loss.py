@@ -1,7 +1,5 @@
 import torch
 
-from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-
 from .base import GeneralLossBase
 from .coverage_loss import CoverageLoss
 from .general_loss import GeneralLoss
@@ -19,11 +17,11 @@ class SeqGenerationLoss(GeneralLossBase):
     coverage_weight: float, default=0.3
         The weight of coverage loss.
     """
+
     def __init__(self, ignore_index, use_coverage=False, coverage_weight=0.3):
         super(SeqGenerationLoss, self).__init__()
         self.use_coverage = use_coverage
-        self.loss_ce = GeneralLoss(loss_type="NLL", reduction="mean",
-                                   ignore_index=ignore_index)
+        self.loss_ce = GeneralLoss(loss_type="NLL", reduction="mean", ignore_index=ignore_index)
         self.loss_coverage = CoverageLoss(cover_loss=coverage_weight)
 
     def forward(self, logits, label, enc_attn_weights=None, coverage_vectors=None):
