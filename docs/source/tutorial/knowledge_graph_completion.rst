@@ -11,7 +11,9 @@ GNN-based knowledge graph completion model. The model consists of
 -  predictoin module (e.g., DistMult decoder)
 
 We will use the built-in Graph2Seq model APIs to build the model, and
-evaluate it on the Kinship dataset.
+evaluate it on the Kinship dataset. The full example can be downloaded from
+`knowledge graph completion notebook <https://github.com/graph4ai/graph4nlp_demo/tree/main/KDD2021_demo/kg_completion>`__
+
 
 Environment setup
 -----------------
@@ -361,7 +363,26 @@ After preprocess the kinship data, then run:
     main(args, model_path)
 
 
-Download the full example
----------
-`text classification notebook <https://github.com/graph4ai/graph4nlp_demo/tree/main/KDD2021_demo/kg_completion>`__
+Results on kinship
+------------------
 
+.. list-table:: BCELoss+GGNNDistmult
+   :widths: 25 25 25 25
+   :header-rows: 1
+
+   * - Metrics
+     - uni
+     - bi_fuse
+     - bi_sep
+   * - Hits @1
+     - 40.4
+     - 39.4
+     - 38.2
+   * - Hits @10
+     - 88.3
+     - 88.8
+     - 88.9
+   * - MRR
+     - 54.9
+     - 54.8
+     - 53.4
