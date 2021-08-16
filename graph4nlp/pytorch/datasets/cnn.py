@@ -103,15 +103,10 @@ class CNNDataset(Text2TextDataset):
         with open(file_path, "r") as f:
             examples = json.load(f)
             for example_dict in examples:
-                input = " ".join(
-                    " ".join(example_dict["article"]).split()[:400]
-                ).lower()
+                input = " ".join(" ".join(example_dict["article"]).split()[:400]).lower()
                 output = " ".join(
                     " ".join(
-                        [
-                            "<t> " + sent[0] + " . </t>"
-                            for sent in example_dict["highlight"]
-                        ]
+                        ["<t> " + sent[0] + " . </t>" for sent in example_dict["highlight"]]
                     ).split()[:99]
                 ).lower()
                 if input == "" or output == "":
@@ -130,14 +125,10 @@ class CNNDataset(Text2TextDataset):
         graph_data = [item.graph for item in data_list]
         max_node_len = 0
         for graph_item in graph_data:
-            max_node_len = max(
-                max_node_len, graph_item.node_features["token_id"].size()[1]
-            )
+            max_node_len = max(max_node_len, graph_item.node_features["token_id"].size()[1])
         for graph_item in graph_data:
             token_id_numpy = graph_item.node_features["token_id"].numpy()
-            token_id_pad = pad_2d_vals(
-                token_id_numpy, token_id_numpy.shape[0], max_node_len
-            )
+            token_id_pad = pad_2d_vals(token_id_numpy, token_id_numpy.shape[0], max_node_len)
             graph_item.node_features["token_id"] = torch.from_numpy(token_id_pad).long()
 
         from graph4nlp.pytorch.data.data import to_batch

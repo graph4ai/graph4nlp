@@ -559,9 +559,11 @@ class BiFuseGCNLayerConv(GNNLayerBase):
     r"""Bidirection version GCN layer from paper `GCN <https://arxiv.org/abs/1609.02907>`__.
 
     .. math::
-        h_{i, \vdash}^{(l+1)} = \sigma(b^{(l)}_{\vdash} + \sum_{j\in\mathcal{N}_{\vdash}(i)}\frac{1}{c_{ij}}h_{j}^{(l)}W^{(l)}_{\vdash})
+        h_{i, \vdash}^{(l+1)} = \sigma(b^{(l)}_{\vdash} + \sum_{j\in\mathcal{N}_{\vdash}(i)}
+        \frac{1}{c_{ij}}h_{j}^{(l)}W^{(l)}_{\vdash})
 
-        h_{i, \dashv}^{(l+1)} = \sigma(b^{(l)}_{\dashv} + \sum_{j\in\mathcal{N}_{\dashv}(i)}\frac{1}{c_{ij}}h_{j}^{(l)}W^{(l)}_{\dashv})
+        h_{i, \dashv}^{(l+1)} = \sigma(b^{(l)}_{\dashv} + \sum_{j\in\mathcal{N}_{\dashv}(i)}
+        \frac{1}{c_{ij}}h_{j}^{(l)}W^{(l)}_{\dashv})
 
         r_{i}^{l} &= \sigma (W_{f}[h_{i, \vdash}^{l};h_{i, \dashv}^{l};
                 h_{i, \vdash}^{l}*h_{i, \dashv}^{l};
@@ -847,9 +849,11 @@ class BiSepGCNLayerConv(GNNLayerBase):
     r"""Bidirection version GCN layer from paper `GCN <https://arxiv.org/abs/1609.02907>`__.
 
     .. math::
-        h_{i, \vdash}^{(l+1)} = \sigma(b^{(l)}_{\vdash} + \sum_{j\in\mathcal{N}_{\vdash}(i)}\frac{1}{c_{ij}}h_{j, \vdash}^{(l)}W^{(l)}_{\vdash})
+        h_{i, \vdash}^{(l+1)} = \sigma(b^{(l)}_{\vdash} + \sum_{j\in\mathcal{N}_{\vdash}(i)}
+        \frac{1}{c_{ij}}h_{j, \vdash}^{(l)}W^{(l)}_{\vdash})
 
-        h_{i, \dashv}^{(l+1)} = \sigma(b^{(l)}_{\dashv} + \sum_{j\in\mathcal{N}_{\dashv}(i)}\frac{1}{c_{ij}}h_{j, \dashv}^{(l)}W^{(l)}_{\dashv})
+        h_{i, \dashv}^{(l+1)} = \sigma(b^{(l)}_{\dashv} + \sum_{j\in\mathcal{N}_{\dashv}(i)}
+        \frac{1}{c_{ij}}h_{j, \dashv}^{(l)}W^{(l)}_{\dashv})
     """
 
     def __init__(
