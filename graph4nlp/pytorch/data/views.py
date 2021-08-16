@@ -5,8 +5,8 @@ import torch
 
 from .utils import slice_to_list
 
-NodeRepr = namedtuple('NodeData', ['features', 'attributes'])
-EdgeRepr = namedtuple('EdgeData', ['features'])
+NodeRepr = namedtuple("NodeData", ["features", "attributes"])
+EdgeRepr = namedtuple("EdgeData", ["features"])
 
 
 class NodeView(object):
@@ -33,22 +33,22 @@ class NodeView(object):
         """
         # consistency check
         # 1. type check
-        if not(isinstance(node_idx, int) or isinstance(node_idx, slice)):
+        if not (isinstance(node_idx, int) or isinstance(node_idx, slice)):
             raise TypeError("Only int and slice are supported currently.")
-        # assert isinstance(node_idx, int) or isinstance(node_idx, slice), "Only int and slice are supported currently."
         # 2. boundary check
         if isinstance(node_idx, slice):
             node_idx_list = slice_to_list(node_idx, self._graph.get_node_num())
             for idx in node_idx_list:
                 if not (idx < self._graph.get_node_num()):
-                    raise ValueError('Node {} does not exist in the graph.'.format(idx))
-                # assert idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(idx)
+                    raise ValueError("Node {} does not exist in the graph.".format(idx))
         else:
             if not (node_idx < self._graph.get_node_num()):
-                raise ValueError('Node {} does not exist in the graph.'.format(node_idx))
-            # assert node_idx < self._graph.get_node_num(), 'Node {} does not exist in the graph.'.format(node_idx)
+                raise ValueError("Node {} does not exist in the graph.".format(node_idx))
 
-        return NodeRepr(features=NodeFeatView(self._graph, node_idx), attributes=NodeAttrView(self._graph, node_idx))
+        return NodeRepr(
+            features=NodeFeatView(self._graph, node_idx),
+            attributes=NodeAttrView(self._graph, node_idx),
+        )
 
     def __len__(self):
         return self._graph.get_node_num()
@@ -97,8 +97,10 @@ class NodeAttrView(object):
         return filtered_attrs
 
     def __setitem__(self, key, value):
-        raise NotImplementedError('NodeAttrView does not support modifying node attributes.'
-                                  'To modify node attributes, please use GraphData.node_attributes')
+        raise NotImplementedError(
+            "NodeAttrView does not support modifying node attributes."
+            "To modify node attributes, please use GraphData.node_attributes"
+        )
 
     def __repr__(self):
         return repr(self._graph.get_node_attrs(self._nodes))
@@ -119,7 +121,7 @@ class EdgeView(object):
         return EdgeRepr(features=EdgeFeatView(self._graph, item))
 
     def __repr__(self):
-        return repr({'Edges': self._graph.get_all_edges()})
+        return repr({"Edges": self._graph.get_all_edges()})
 
 
 class EdgeFeatView(object):
