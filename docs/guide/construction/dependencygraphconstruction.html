@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Dependency Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Constituency Graph Construction" href="constituency_graph_construction.html" />
+    <link rel="prev" title="Chapter 3. Graph Construction" href="../construction.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../construction.html">Chapter 3. Graph Construction</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../construction.html#roadmap">Roadmap</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Dependency Graph Construction</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#how-to-use">How to use</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#the-specific-details">The specific details</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="constituency_graph_construction.html">Constituency Graph Construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iegraphconstruction.html">IE Graph Construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dynamic_graph_construction.html">Dynamic Graph Construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="embedding_construction.html">Embedding Construction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../construction.html">Chapter 3. Graph Construction</a> &raquo;</li>
+        
+      <li>Dependency Graph Construction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/guide/construction/dependencygraphconstruction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dependency-graph-construction">
+<span id="id1"></span><h1>Dependency Graph Construction<a class="headerlink" href="#dependency-graph-construction" title="Permalink to this headline">¶</a></h1>
+<p>The dependency graph is widely used to capture the dependency relations between different objects in the given sentences.
+Formally, given a paragraph, one can obtain the dependency parsing tree (e.g., syntactic dependency tree or semantic dependency parsing tree) by using various NLP parsing tools (e.g., Stanford CoreNLP).
+Then one may extract the dependency relations from the dependency parsing tree and convert them into a dependency graph.</p>
+<p>More concretely, we devide the process into several steps:</p>
+<ol class="arabic simple">
+<li><p>Parsing. It will parse the input paragraph into list of sentences. Then for each sentence, we will parse the dependency relations.</p></li>
+<li><p>Sub-graph construction. We will construct subgraph for each sentence.</p></li>
+<li><p>Graph merging. We will merge sub-graphs into one big graph.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@classmethod</span>
+<span class="k">def</span> <span class="nf">topology</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">raw_text_data</span><span class="p">,</span> <span class="n">nlp_processor</span><span class="p">,</span> <span class="n">processor_args</span><span class="p">,</span> <span class="n">merge_strategy</span><span class="p">,</span> <span class="n">edge_strategy</span><span class="p">,</span> <span class="n">sequential_link</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+             <span class="n">verbase</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="c1"># 1) Parsing</span>
+    <span class="n">parsed_results</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parsing</span><span class="p">(</span><span class="n">raw_text_data</span><span class="o">=</span><span class="n">raw_text_data</span><span class="p">,</span> <span class="n">nlp_processor</span><span class="o">=</span><span class="n">nlp_processor</span><span class="p">,</span>
+                                 <span class="n">processor_args</span><span class="o">=</span><span class="n">processor_args</span><span class="p">)</span>
+
+    <span class="c1"># 2) Sub-graphs construction.</span>
+    <span class="n">sub_graphs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sent_id</span><span class="p">,</span> <span class="n">parsed_sent</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parsed_results</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_construct_static_graph</span><span class="p">(</span><span class="n">parsed_sent</span><span class="p">,</span> <span class="n">edge_strategy</span><span class="o">=</span><span class="n">edge_strategy</span><span class="p">,</span>
+                                            <span class="n">sequential_link</span><span class="o">=</span><span class="n">sequential_link</span><span class="p">)</span>
+        <span class="n">sub_graphs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+    <span class="c1"># 3) Graph merging.</span>
+    <span class="n">joint_graph</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_graph_connect</span><span class="p">(</span><span class="n">sub_graphs</span><span class="p">,</span> <span class="n">merge_strategy</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">joint_graph</span>
+</pre></div>
+</div>
+<div class="section" id="how-to-use">
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
+<p>For example, we can construct the dependency graph given a raw textual input:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction</span> <span class="kn">import</span> <span class="n">DependencyBasedGraphConstruction</span>
+<span class="kn">from</span> <span class="nn">stanfordcorenlp</span> <span class="kn">import</span> <span class="n">StanfordCoreNLP</span>
+
+<span class="n">raw_data</span> <span class="o">=</span> <span class="s2">&quot;James went to the corner-shop.&quot;</span>
+
+<span class="n">nlp_parser</span> <span class="o">=</span> <span class="n">StanfordCoreNLP</span><span class="p">(</span><span class="s1">&#39;http://localhost&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">9000</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">300000</span><span class="p">)</span>
+
+<span class="n">processor_args</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;annotators&#39;</span><span class="p">:</span> <span class="s1">&#39;ssplit,tokenize,depparse&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;tokenize.options&quot;</span><span class="p">:</span>
+        <span class="s2">&quot;splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tokenize.whitespace&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;ssplit.isOneSentence&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;outputFormat&#39;</span><span class="p">:</span> <span class="s1">&#39;json&#39;</span>
+<span class="p">}</span>
+
+<span class="n">graphdata</span> <span class="o">=</span> <span class="n">DependencyBasedGraphConstruction</span><span class="o">.</span><span class="n">topology</span><span class="p">(</span><span class="n">raw_data</span><span class="p">,</span> <span class="n">nlp_parser</span><span class="p">,</span> <span class="n">processor_args</span><span class="o">=</span><span class="n">processor_args</span><span class="p">,</span> <span class="n">merge_strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                                      <span class="n">edge_strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-specific-details">
+<h2>The specific details<a class="headerlink" href="#the-specific-details" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="parsing">
+<h3>Parsing<a class="headerlink" href="#parsing" title="Permalink to this headline">¶</a></h3>
+<p>The parsing function first parses the input paragraph into list of sentences. Then for each sentence, we will parse it into dict containing:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">node_num</span></code> indicating the number of nodes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">node_content</span></code>. It is a list of dicts. Each dict is a node.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">graph_content</span></code>. It is a list of dicts. Each dict is a dependency relation between the source and target nodes.</p></li>
+</ol>
+</div>
+<div class="section" id="sub-graph-construction">
+<h3>Sub-graph construction<a class="headerlink" href="#sub-graph-construction" title="Permalink to this headline">¶</a></h3>
+<p>In this step, we constrcut sub-graph given parsed sentence results in the previous step controlled by <code class="docutils literal notranslate"><span class="pre">edge_strategy</span></code> and <code class="docutils literal notranslate"><span class="pre">sequential_link</span></code>.</p>
+<p>We first add the nodes to the graph.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ret_graph</span> <span class="o">=</span> <span class="n">GraphData</span><span class="p">()</span>
+<span class="n">node_objects</span> <span class="o">=</span> <span class="n">parsed_object</span><span class="p">[</span><span class="s2">&quot;node_content&quot;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">node_objects</span><span class="p">:</span>
+    <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]][</span><span class="s1">&#39;token&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;token&#39;</span><span class="p">]</span>
+    <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]][</span><span class="s1">&#39;position_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;position_id&#39;</span><span class="p">]</span>
+    <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]][</span><span class="s1">&#39;sentence_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;sentence_id&#39;</span><span class="p">]</span>
+    <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]][</span><span class="s1">&#39;head&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]][</span><span class="s1">&#39;tail&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>Then we will add edges according to the dependency relations. There are various dependency relations for dependency graph nodes. According to the need for down-tasks, we provide several options for: 1. homogeneous graph, 2. heterogeneous graph. Specifically, for heterogeneous graphs, we support not only various graph edge types but also support bipartite graphs, which regarding the edges as special nodes:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">homogeneous</span></code>. It means we will drop the edge type information and only preserve the connectivity information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">heterogeneous</span></code>. It means we will preserve the edge type information in the final <code class="docutils literal notranslate"><span class="pre">GraphData</span></code>. Note that they are stored in the <code class="docutils literal notranslate"><span class="pre">edge_attributes</span></code> with <code class="docutils literal notranslate"><span class="pre">token</span></code> key.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">as_node</span></code>. We will view each edge as a graph node and construct the bipartite graph. For example, if there is an edge whose type is <span class="math notranslate nohighlight">\(k\)</span> between node <span class="math notranslate nohighlight">\(i\)</span> and node <span class="math notranslate nohighlight">\(j\)</span>, we will insert a node <span class="math notranslate nohighlight">\(k\)</span> into the graph and link node <span class="math notranslate nohighlight">\((i, k)\)</span> and <span class="math notranslate nohighlight">\((k, j)\)</span>.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">dep_info</span> <span class="ow">in</span> <span class="n">parsed_object</span><span class="p">[</span><span class="s2">&quot;graph_content&quot;</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">edge_strategy</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">edge_strategy</span> <span class="o">==</span> <span class="s2">&quot;homogeneous&quot;</span><span class="p">:</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">dep_info</span><span class="p">[</span><span class="s2">&quot;src&quot;</span><span class="p">],</span> <span class="n">dep_info</span><span class="p">[</span><span class="s1">&#39;tgt&#39;</span><span class="p">])</span> <span class="c1"># Node edge type, only connectivity information.</span>
+    <span class="k">elif</span> <span class="n">edge_strategy</span> <span class="o">==</span> <span class="s2">&quot;heterogeneous&quot;</span><span class="p">:</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">dep_info</span><span class="p">[</span><span class="s2">&quot;src&quot;</span><span class="p">],</span> <span class="n">dep_info</span><span class="p">[</span><span class="s1">&#39;tgt&#39;</span><span class="p">])</span>
+        <span class="n">edge_idx</span> <span class="o">=</span> <span class="n">ret_graph</span><span class="o">.</span><span class="n">edge_ids</span><span class="p">(</span><span class="n">dep_info</span><span class="p">[</span><span class="s2">&quot;src&quot;</span><span class="p">],</span> <span class="n">dep_info</span><span class="p">[</span><span class="s1">&#39;tgt&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">edge_attributes</span><span class="p">[</span><span class="n">edge_idx</span><span class="p">][</span><span class="s2">&quot;token&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dep_info</span><span class="p">[</span><span class="s2">&quot;edge_type&quot;</span><span class="p">]</span> <span class="c1"># The node types are stored.</span>
+    <span class="k">elif</span> <span class="n">edge_strategy</span> <span class="o">==</span> <span class="s2">&quot;as_node&quot;</span><span class="p">:</span>
+        <span class="c1"># insert a node</span>
+        <span class="n">node_idx</span> <span class="o">=</span> <span class="n">ret_graph</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node_idx</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># 3 for edge node</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node_idx</span><span class="p">][</span><span class="s1">&#39;token&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dep_info</span><span class="p">[</span><span class="s1">&#39;edge_type&#39;</span><span class="p">]</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node_idx</span><span class="p">][</span><span class="s1">&#39;position_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node_idx</span><span class="p">][</span><span class="s1">&#39;head&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node_idx</span><span class="p">][</span><span class="s1">&#39;tail&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># add edge infos</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">dep_info</span><span class="p">[</span><span class="s1">&#39;src&#39;</span><span class="p">],</span> <span class="n">node_idx</span><span class="p">)</span>
+        <span class="n">ret_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">node_idx</span><span class="p">,</span> <span class="n">dep_info</span><span class="p">[</span><span class="s1">&#39;tgt&#39;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In addition, the sequential relation encodes the adjacent relation of the elements in the original paragraph.
+Specifically, for dependency graph constructing, we define the sequential relation set <span class="math notranslate nohighlight">\(\mathcal{R}_{seq} \subseteq \mathcal{V} \times \mathcal{V}\)</span>, where <span class="math notranslate nohighlight">\(\mathcal{V}\)</span> is the basic element (i.e., word) set. For each sequential relation <span class="math notranslate nohighlight">\((w_i, w_{i+1}) \in \mathcal{R}_{seq}\)</span>, it means <span class="math notranslate nohighlight">\(w_i\)</span> is adjacent to <span class="math notranslate nohighlight">\(w_{i+1}\)</span> in the given paragraph.</p>
+<p>Users can set <code class="docutils literal notranslate"><span class="pre">sequential_link</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> to enable this feature.</p>
+</div>
+<div class="section" id="graph-merging">
+<h3>Graph merging<a class="headerlink" href="#graph-merging" title="Permalink to this headline">¶</a></h3>
+<p>Since the dependency graph is only constructed for sentences individually, we provide options to construct one graph
+for the paragraph consisting of multiple sentences. Currently, we support the following options:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tailhead</span></code>. It means we will link the tail node of <span class="math notranslate nohighlight">\({i-1}^{th}\)</span> sentence’s graph with the head node of <span class="math notranslate nohighlight">\(i^{th}\)</span> sentence’s graph.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">user_define</span></code>. We suggest users to define their merge strategy by overriding the <code class="docutils literal notranslate"><span class="pre">_graph_connect</span></code> as follows:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction</span> <span class="kn">import</span> <span class="n">DependencyBasedGraphConstruction</span>
+
+<span class="k">class</span> <span class="nc">NewDependencyGraphConstruction</span><span class="p">(</span><span class="n">DependencyBasedGraphConstruction</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_graph_connect</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nx_graph_list</span><span class="p">,</span> <span class="n">merge_strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="constituency_graph_construction.html" class="btn btn-neutral float-right" title="Constituency Graph Construction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../construction.html" class="btn btn-neutral float-left" title="Chapter 3. Graph Construction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,9 +1,16 @@
-from ....modules.utils.config_utils import get_yaml_config
 import os
 
-str2yaml = {"gat": "gat.yaml", "gcn": "gcn.yaml", "ggnn": "ggnn.yaml", "graphsage": "graphsage.yaml"}
+from ....modules.utils.config_utils import get_yaml_config
+
+str2yaml = {
+    "gat": "gat.yaml",
+    "gcn": "gcn.yaml",
+    "ggnn": "ggnn.yaml",
+    "graphsage": "graphsage.yaml",
+}
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
 
 def get_graph_embedding_args(graph_embedding_name):
     """
@@ -23,7 +30,8 @@ def get_graph_embedding_args(graph_embedding_name):
             graph_embedding_private: {heads: [1], attn_drop: 0.0}
         }
         The ``graph_embedding_share`` contains the parameters shared by all ``GNNBase`` models.
-        The ``graph_embedding_private`` contains the parameters specifically in each graph_embedding methods.
+        The ``graph_embedding_private`` contains the parameters specifically in each \
+            graph_embedding methods.
     """
     if graph_embedding_name in str2yaml.keys():
         yaml_name = str2yaml[graph_embedding_name]

@@ -1,0 +1,1102 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>graph4nlp.loss &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="graph4nlp.evaluation" href="evaluation.html" />
+    <link rel="prev" title="graph4nlp.prediction" href="prediction.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">graph4nlp.loss</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#losses">Losses</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>graph4nlp.loss</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/modules/loss.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-graph4nlp.loss">
+<span id="graph4nlp-loss"></span><h1>graph4nlp.loss<a class="headerlink" href="#module-graph4nlp.loss" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="losses">
+<h2>Losses<a class="headerlink" href="#losses" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="graph4nlp.loss.CoverageLoss">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.loss.</code><code class="sig-name descname">CoverageLoss</code><span class="sig-paren">(</span><em class="sig-param">cover_loss</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.loss.CoverageLoss" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The loss function for coverage mechanism.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cover_loss</strong> (<em>float</em>) – The weight for coverage loss.</p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.loss.CoverageLoss.forward" title="graph4nlp.loss.CoverageLoss.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(enc_attn_weights, coverage_vectors)</p></td>
+<td><p>The calculation function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.loss.CoverageLoss.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">enc_attn_weights</em>, <em class="sig-param">coverage_vectors</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.loss.CoverageLoss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The calculation function.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>enc_attn_weights</strong> (<em>list</em><em>[</em><em>torch.Tensor</em><em>]</em>) – The list containing all decoding steps’ attention weights.
+The length should be the decoding step.
+Each element should be the tensor.</p></li>
+<li><p><strong>coverage_vectors</strong> (<em>list</em><em>[</em><em>torch.Tensor</em><em>]</em>) – The list containing all coverage vectors in decoding module.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>coverage_loss</strong> – The loss.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.loss.SeqGenerationLoss">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.loss.</code><code class="sig-name descname">SeqGenerationLoss</code><span class="sig-paren">(</span><em class="sig-param">ignore_index</em>, <em class="sig-param">use_coverage=False</em>, <em class="sig-param">coverage_weight=0.3</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.loss.SeqGenerationLoss" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The general loss for <code class="docutils literal notranslate"><span class="pre">Graph2Seq</span></code> model.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ignore_index</strong> (<em>ignore_index</em>) – The token index which will be ignored during calculation. Usually it is the padding index.</p></li>
+<li><p><strong>use_coverage</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether use coverage mechanism. If set <code class="docutils literal notranslate"><span class="pre">True</span></code>, the we will add the coverage loss.</p></li>
+<li><p><strong>coverage_weight</strong> (<em>float</em><em>, </em><em>default=0.3</em>) – The weight of coverage loss.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.loss.SeqGenerationLoss.forward" title="graph4nlp.loss.SeqGenerationLoss.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(logits, label[, enc_attn_weights, …])</p></td>
+<td><p>The calculation method.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.loss.SeqGenerationLoss.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">logits</em>, <em class="sig-param">label</em>, <em class="sig-param">enc_attn_weights=None</em>, <em class="sig-param">coverage_vectors=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.loss.SeqGenerationLoss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The calculation method.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logits</strong> (<em>torch.Tensor</em>) – The probability with the shape of <code class="docutils literal notranslate"><span class="pre">[batch_size,</span> <span class="pre">max_decoder_step,</span> <span class="pre">vocab_size]</span></code>.             Note that it is calculated by <code class="docutils literal notranslate"><span class="pre">softmax</span></code>.</p></li>
+<li><p><strong>label</strong> (<em>torch.Tensor</em>) – The ground-truth with the shape of <code class="docutils literal notranslate"><span class="pre">[batch_size,</span> <span class="pre">max_decoder_step]</span></code>.</p></li>
+<li><p><strong>enc_attn_weights</strong> (<em>list</em><em>[</em><em>torch.Tensor</em><em>]</em><em>, </em><em>default=None</em>) – The list containing all decoding steps’ attention weights.
+The length should be the decoding step.
+Each element should be the tensor.</p></li>
+<li><p><strong>coverage_vectors</strong> (<em>list</em><em>[</em><em>torch.Tensor</em><em>]</em><em>, </em><em>default=None</em>) – The list containing all coverage vectors in decoding module.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>graph2seq_loss: torch.Tensor</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.loss.GeneralLoss">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.loss.</code><code class="sig-name descname">GeneralLoss</code><span class="sig-paren">(</span><em class="sig-param">loss_type</em>, <em class="sig-param">weight=None</em>, <em class="sig-param">size_average=None</em>, <em class="sig-param">ignore_index=-100</em>, <em class="sig-param">reduce=None</em>, <em class="sig-param">reduction='mean'</em>, <em class="sig-param">pos_weight=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.loss.GeneralLoss" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>This general loss are backended on the pytorch loss function.
+The detailed decription for each loss function can be found at:</p>
+<blockquote>
+<div><p><cite>pytorch loss function &lt;https://pytorch.org/docs/stable/nn.html#loss-functions&gt;</cite></p>
+</div></blockquote>
+</div></blockquote>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>loss_type: str</strong></dt><dd><p>the loss function to select (<code class="docutils literal notranslate"><span class="pre">NLL</span></code>,``BCEWithLogits``, <code class="docutils literal notranslate"><span class="pre">MultiLabelMargin</span></code>,``SoftMargin``
+,``CrossEntropy`` )</p>
+<p><cite>NLL loss&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#NLLLoss&gt;</cite>
+measures
+the negative log likelihood loss. It is useful to train a classification problem
+with C classes.</p>
+<p><cite>BCEWithLogits loss
+&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#BCEWithLogitsLoss&gt;</cite>
+combines a
+<cite>Sigmoid</cite> layer and the <cite>BCELoss</cite> in one single class. This version is more numerically
+stable than using a plain <cite>Sigmoid`followed by a `BCELoss</cite> as, by combining the operations
+into one layer, we take advantage of the log-sum-exp trick for numerical stability.</p>
+<p><cite>BCE Loss&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#BCELoss&gt;</cite>
+creates a criterion that measures
+the Binary Cross Entropy between the target and the output.</p>
+<p><cite>MultiLabelMargin loss
+&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#MultiLabelMarginLoss&gt;</cite>
+creates a
+criterion that optimizes a multi-class multi-classification hinge loss (margin-based loss)
+between input <span class="math notranslate nohighlight">\(x\)</span> (a 2D mini-batch <cite>Tensor</cite>) and output <span class="math notranslate nohighlight">\(y\)</span>
+(which is a 2D <cite>Tensor</cite> of target class indices).</p>
+<p><cite>SoftMargin loss
+&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#SoftMarginLoss&gt;</cite>
+creates a criterion that optimizes a two-class classification logistic loss between
+input tensor <span class="math notranslate nohighlight">\(x\)</span> and target tensor <span class="math notranslate nohighlight">\(y\)</span> (containing 1 or -1).</p>
+<p><cite>CrossEntropy loss
+&lt;https://pytorch.org/docs/stable/_modules/torch/nn/modules/loss.html#CrossEntropyLoss&gt; `
+combines pytorch function `nn.LogSoftmax</cite> and <cite>nn.NLLLoss</cite> in one single class. It is
+useful when training a classification problem with <cite>C</cite> classes.</p>
+</dd>
+<dt><strong>weight: Tensor, optional</strong></dt><dd><p>a manual rescaling weight given to the loss of each batch element. If given, has to be
+a Tensor of size <cite>nbatch</cite>.
+This parameter is not suitable for <code class="docutils literal notranslate"><span class="pre">SoftMargin</span></code> loss functions.</p>
+</dd>
+<dt><strong>size_average: bool, optional</strong></dt><dd><p>By default,the losses are averaged over each loss element in the batch. Note that for
+some losses, there are multiple elements per sample.
+If the field <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code> is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, the losses are instead summed
+for each minibatch. Ignored when reduce is <code class="docutils literal notranslate"><span class="pre">False</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt><strong>reduce: bool, optional</strong></dt><dd><p>By default, the losses are averaged or summed over observations for each minibatch depending
+on <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code>.
+When <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduce</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>, returns a loss per batch element instead
+and ignores <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
+</dd>
+<dt><strong>reduction: string, optional</strong></dt><dd><p>Specifies the reduction to apply to the output: <code class="docutils literal notranslate"><span class="pre">'none'</span></code> | <code class="docutils literal notranslate"><span class="pre">'mean'</span></code> | <code class="docutils literal notranslate"><span class="pre">'sum'</span></code>.
+<code class="docutils literal notranslate"><span class="pre">'none'</span></code>: no reduction will be applied,</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">'mean'</span></code>: the sum of the output will be divided by the number of elements in the output,
+<code class="docutils literal notranslate"><span class="pre">'sum'</span></code>: the output will be summed.</p>
+</div></blockquote>
+<p>Note: <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code> and <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduce</span></code> are in the process of being deprecated, and
+in the meantime, specifying either of those two args will override <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code>.
+Default: <code class="docutils literal notranslate"><span class="pre">'mean'</span></code></p>
+</dd>
+<dt><strong>pos_weight:Tensor, optional</strong></dt><dd><p>A weight of positive examples. Must be a vector with length equal to the number of classes.
+This paramter is only suitable for <code class="docutils literal notranslate"><span class="pre">BCEWithLogits</span></code> loss function.</p>
+</dd>
+<dt><strong>ignore_index: int, optional</strong></dt><dd><p>Specifies a target value that is ignored and does not contribute to the input gradient.
+When <code class="xref py py-attr docutils literal notranslate"><span class="pre">size_average</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, the loss is averaged over non-ignored targets.
+This paramter is only suitable for <code class="docutils literal notranslate"><span class="pre">CrossEntropy</span></code> loss function.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.loss.GeneralLoss.forward" title="graph4nlp.loss.GeneralLoss.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(input, target)</p></td>
+<td><p>Compute the loss.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.loss.GeneralLoss.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">input</em>, <em class="sig-param">target</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.loss.GeneralLoss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the loss.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>NLL loss:</strong></dt><dd><dl class="simple">
+<dt>Input: tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N, C)\)</span> where <cite>C = number of classes</cite>, or <span class="math notranslate nohighlight">\((N, C, d_1, d_2, ..., d_K)\)</span>
+with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of <cite>K</cite>-dimensional loss.</p>
+</dd>
+<dt>Target: tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N)\)</span> where each value is <span class="math notranslate nohighlight">\(0 \leq \text{targets}[i] \leq C-1\)</span>,
+or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span> with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional
+loss.</p>
+</dd>
+<dt>Output: scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then the same size as the target: <span class="math notranslate nohighlight">\((N)\)</span>,
+or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span> with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional
+loss.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>BCE/BCEWithLogits loss:</strong></dt><dd><dl class="simple">
+<dt>Input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N, *)\)</span> where <span class="math notranslate nohighlight">\(*\)</span> means, any number of additional dimensions</p>
+</dd>
+<dt>Target: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N, *)\)</span>, same shape as the input</p>
+</dd>
+<dt>Output: scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then <span class="math notranslate nohighlight">\((N, *)\)</span>, same shape as input.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>MultiLabelMargin loss:</strong></dt><dd><dl class="simple">
+<dt>Input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((C)\)</span> or <span class="math notranslate nohighlight">\((N, C)\)</span> where <cite>N</cite> is the batch size and <cite>C</cite> is the number
+of classes.</p>
+</dd>
+<dt>Target: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((C)\)</span> or <span class="math notranslate nohighlight">\((N, C)\)</span>, label targets padded by -1 ensuring same shape as
+the input.</p>
+</dd>
+<dt>Output: Scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then <span class="math notranslate nohighlight">\((N)\)</span>.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>SoftMargin loss:</strong></dt><dd><dl class="simple">
+<dt>Input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((*)\)</span> where <span class="math notranslate nohighlight">\(*\)</span> means, any number of additional dimensions</p>
+</dd>
+<dt>Target: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((*)\)</span>, same shape as the input</p>
+</dd>
+<dt>Output: scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then same shape as the input</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>CrossEntropy:</strong></dt><dd><blockquote>
+<div><dl class="simple">
+<dt>Input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N, C)\)</span> where <cite>C = number of classes</cite>, or <span class="math notranslate nohighlight">\((N, C, d_1, d_2, ..., d_K)\)</span>
+with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of <cite>K</cite>-dimensional loss.</p>
+</dd>
+<dt>Target: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N)\)</span> where each value is <span class="math notranslate nohighlight">\(0 \leq \text{targets}[i] \leq C-1\)</span>,
+or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span> with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional
+loss.</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="simple">
+<dt>Output: scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then the same size as the target: <span class="math notranslate nohighlight">\((N)\)</span>,
+or <span class="math notranslate nohighlight">\((N, d_1, d_2, ..., d_K)\)</span> with <span class="math notranslate nohighlight">\(K \geq 1\)</span> in the case of K-dimensional
+loss.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.loss.KGLoss">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.loss.</code><code class="sig-name descname">KGLoss</code><span class="sig-paren">(</span><em class="sig-param">loss_type</em>, <em class="sig-param">size_average=None</em>, <em class="sig-param">reduce=None</em>, <em class="sig-param">reduction='mean'</em>, <em class="sig-param">adv_temperature=None</em>, <em class="sig-param">weight=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.loss.KGLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>In the state-of-the-art KGE models, loss functions were designed according to
+various pointwise, pairwise and multi-class approaches. Refers to
+<a class="reference external" href="https://alammehwish.github.io/dl4kg-eswc/papers/paper%201.pdf">Loss Functions in Knowledge Graph Embedding Models</a></p>
+<p><strong>Pointwise Loss Function</strong></p>
+<p><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.MSELoss.html">MSELoss</a>
+Creates a criterion that measures the mean squared error (squared L2 norm)
+between each element in the input <span class="math notranslate nohighlight">\(x\)</span> and target <span class="math notranslate nohighlight">\(y\)</span>.</p>
+<p><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.SoftMarginLoss.html">SOFTMARGINLOSS</a> Creates a criterion that optimizes a two-class classification
+logistic loss between input tensor <span class="math notranslate nohighlight">\(x\)</span> and target tensor <span class="math notranslate nohighlight">\(y\)</span>
+(containing 1 or -1).
+Tips:   The number of positive and negative samples should be about the same,</p>
+<blockquote>
+<div><p>otherwise it’s easy to overfit</p>
+</div></blockquote>
+<div class="math notranslate nohighlight">
+\[\text{loss}(x, y) = \sum_i \frac{\log(1 + \exp(-y[i]*x[i]))}{\text{x.nelement}()}\]</div>
+<p><strong>Pairwise Loss Function</strong></p>
+<p><a class="reference external" href="https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SoftplusLoss.py">SoftplusLoss</a> # noqa
+refers to the paper <a class="reference external" href="https://www.aclweb.org/anthology/D18-2024.pdf">OpenKE: An Open Toolkit for Knowledge Embedding</a></p>
+<p><a class="reference external" href="https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SigmoidLoss.py">SigmoidLoss</a> # noqa
+refers to the paper <a class="reference external" href="https://www.aclweb.org/anthology/D18-2024.pdf">OpenKE: An Open Toolkit for Knowledge Embedding</a></p>
+<p><strong>Multi-Class Loss Function</strong></p>
+<p><a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.BCELoss.html">Binary Cross Entropy Loss</a>
+Creates a criterion that measures the Binary Cross Entropy between the target
+and the output. Note that the targets
+<span class="math notranslate nohighlight">\(y\)</span> should be numbers between 0 and 1.</p>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.loss.KGLoss.forward" title="graph4nlp.loss.KGLoss.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>([input, target, p_score, n_score])</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.loss.KGLoss.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">input=None</em>, <em class="sig-param">target=None</em>, <em class="sig-param">p_score=None</em>, <em class="sig-param">n_score=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.loss.KGLoss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>MSELoss</strong></dt><dd><dl class="simple">
+<dt>input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N,*)\)</span> where <span class="math notranslate nohighlight">\(*\)</span> means any number of additional dimensions</p>
+</dd>
+<dt>target: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N,*)\)</span>, same shape as the input</p>
+</dd>
+<dt>output:</dt><dd><p>If reduction is <cite>‘none’</cite>, then same shape as the input</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>SoftMarginLoss</strong></dt><dd><dl class="simple">
+<dt>input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((*)\)</span> where * means, any number of additional dimensions</p>
+</dd>
+<dt>target: Tensor.</dt><dd><p>same shape as the input</p>
+</dd>
+<dt>output: scalar.</dt><dd><p>If reduction is <cite>‘none’</cite>, then same shape as the input</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>SoftplusLoss</strong></dt><dd><dl class="simple">
+<dt>p_score: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((*)\)</span> where * means, any number of additional dimensions</p>
+</dd>
+<dt>n_score: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((*)\)</span> where * means, any number of additional dimensions.
+The dimension could be different from the <cite>p_score</cite> dimension.</p>
+</dd>
+</dl>
+<p>output: scalar.</p>
+</dd>
+<dt><strong>SigmoidLoss</strong></dt><dd><dl class="simple">
+<dt>p_score: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((*)\)</span> where * means, any number of additional dimensions</p>
+</dd>
+<dt>n_score: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((*)\)</span> where * means, any number of additional dimensions.
+The dimension could be different from the <cite>p_score</cite> dimension.</p>
+</dd>
+</dl>
+<p>output: scalar.</p>
+</dd>
+<dt><strong>BCELoss:</strong></dt><dd><dl class="simple">
+<dt>Input: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N, *)\)</span> where <span class="math notranslate nohighlight">\(*\)</span> means, any number of additional dimensions</p>
+</dd>
+<dt>Target: Tensor.</dt><dd><p><span class="math notranslate nohighlight">\((N, *)\)</span>, same shape as the input</p>
+</dd>
+<dt>Output: scalar.</dt><dd><p>If <code class="xref py py-attr docutils literal notranslate"><span class="pre">reduction</span></code> is <code class="docutils literal notranslate"><span class="pre">'none'</span></code>, then <span class="math notranslate nohighlight">\((N, *)\)</span>, same shape as input.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="evaluation.html" class="btn btn-neutral float-right" title="graph4nlp.evaluation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="prediction.html" class="btn btn-neutral float-left" title="graph4nlp.prediction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

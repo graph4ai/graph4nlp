@@ -12,6 +12,7 @@ from nltk.tokenize import word_tokenize
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 
 from ..data.data import GraphData, to_batch
+from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.constituency_graph_construction import (
     ConstituencyBasedGraphConstruction,
 )
@@ -226,22 +227,17 @@ class Dataset(torch.utils.data.Dataset):
     """
     Base class for datasets.
 
-    The dataset is organized in a two-layer index style. Direct access
-    to the dataset object, e.g. Dataset[1], will first be converted to
-    the access to the internal index list, which is then passed to
-    access the actual data. This design is for the ease of sampling.
+    The dataset is organized in a two-layer index style. Direct access to the dataset object, e.g. Dataset[1], will first
+    be converted to the access to the internal index list, which is then passed to access the actual data. This design
+    is for the ease of sampling.
 
     Examples
     --------
-    Suppose we have a Dataset containing 5 data items
-    ['a', 'b', 'c', 'd', 'e']. The indices of the 5 elements in the
-    list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset
-    is shuffled, which shuffles the internal index list, the consequent
-    indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset
-    `Dataset[2]` will first access the indices[2] which is 1, and then
-    use the received index to access the actual dataset, which will
-    return the actual data item 'b'. Now to the user the 3rd ([2])
-    element in the dataset got shuffled and is not 'c'.
+    Suppose we have a Dataset containing 5 data items ['a', 'b', 'c', 'd', 'e']. The indices of the 5 elements in the
+    list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset is shuffled, which shuffles the internal index list, the
+    consequent indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset `Dataset[2]` will first access the indices[2]
+    which is 1, and then use the received index to access the actual dataset, which will return the actual data item 'b'.
+    Now to the user the 3rd ([2]) element in the dataset got shuffled and is not 'c'.
 
     Parameters
     ----------
@@ -320,15 +316,13 @@ class Dataset(torch.utils.data.Dataset):
             If it is set ``None``, we will randomly set the initial word embedding values.
         pretrained_word_emb_url: str optional, default: ``None``
             The url for downloading pretrained word embedding.
-            Note that we only prepare the default ``url`` for English with
-            ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+            Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
         target_pretrained_word_emb_name: str, optional, default=None
             The name of pretrained word embedding in ``torchtext`` for target language.
             If it is set ``None``, we will use ``pretrained_word_emb_name``.
         target_pretrained_word_emb_url: str optional, default: ``None``
             The url for downloading pretrained word embedding for target language.
-            Note that we only prepare the default ``url`` for English with
-            ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+            Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
         pretrained_word_emb_cache_dir: str, optional, default: ``".vector_cache/"``
             The path of directory saving the temporary word embedding file.
         use_val_for_vocab: bool, default=False
@@ -336,8 +330,7 @@ class Dataset(torch.utils.data.Dataset):
         seed: int, default=1234
             The seed for random function.
         thread_number: int, default=4
-            The thread number for building initial graph. For most case, it may be the
-            number of your CPU cores.
+            The thread number for building initial graph. For most case, it may be the number of your CPU cores.
         port: int, default=9000
             The port for stanfordcorenlp.
         timeout: int, default=15000
@@ -345,8 +338,7 @@ class Dataset(torch.utils.data.Dataset):
         for_inference: bool, default=False
             Whether this dataset is used for inference.
         reused_vocab_model: str, default=None
-            When ``for_inference`` is true, you need to specify the directory where the
-            vocabulary data is located.
+            When ``for_inference`` is true, you need to specify the directory where the vocabulary data is located.
         kwargs
         """
         super(Dataset, self).__init__()
@@ -386,8 +378,7 @@ class Dataset(torch.utils.data.Dataset):
         if self.for_inference:
             if not reused_vocab_model:
                 raise ValueError(
-                    "Before inference, you should pass the processed vocab_model to "
-                    "``reused_vocab_model``."
+                    "Before inference, you should pass the processed vocab_model to ``reused_vocab_model``."
                 )
             self.vocab_model = reused_vocab_model
 
@@ -395,8 +386,7 @@ class Dataset(torch.utils.data.Dataset):
             if hasattr(self, "reused_label_model"):
                 if not self.reused_label_model:
                     raise ValueError(
-                        "Before inference, you should pass the processed label_model to "
-                        "``reused_label_model``."
+                        "Before inference, you should pass the processed label_model to ``reused_label_model``."
                     )
                 self.label_model = self.reused_label_model
 
@@ -452,15 +442,13 @@ class Dataset(torch.utils.data.Dataset):
         Read raw data from the disk and put them in a dictionary (`self.data`).
         The raw data file should be organized as the format defined in `self.parse_file()` method.
 
-        This function calls `self.parse_file()` repeatedly and pass the file paths in
-        `self.raw_file_names` once at a time.
+        This function calls `self.parse_file()` repeatedly and pass the file paths in `self.raw_file_names` once at a time.
 
-        This function builds `self.data` which is a dict of {int (index): DataItem},
-        where the id represents the index of the DataItem w.r.t. the whole dataset.
+        This function builds `self.data` which is a dict of {int (index): DataItem}, where the id represents the
+        index of the DataItem w.r.t. the whole dataset.
 
-        This function also builds the `self.split_ids` dictionary whose keys correspond to
-        those of self.raw_file_names defined by the user, indicating the indices of each
-        subset (e.g. train, val and test).
+        This function also builds the `self.split_ids` dictionary whose keys correspond to those of self.raw_file_names
+        defined by the user, indicating the indices of each subset (e.g. train, val and test).
 
         """
         if self.for_inference:
@@ -507,16 +495,14 @@ class Dataset(torch.utils.data.Dataset):
             if topology_builder == IEBasedGraphConstruction:
                 props_coref = {
                     "annotators": "tokenize, ssplit, pos, lemma, ner, parse, coref",
-                    "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,"
-                    "normalizeOtherBrackets=true",
+                    "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
                     "tokenize.whitespace": False,
                     "ssplit.isOneSentence": False,
                     "outputFormat": "json",
                 }
                 props_openie = {
                     "annotators": "tokenize, ssplit, pos, ner, parse, openie",
-                    "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,"
-                    "normalizeOtherBrackets=true",
+                    "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
                     "tokenize.whitespace": False,
                     "ssplit.isOneSentence": False,
                     "outputFormat": "json",
@@ -526,8 +512,7 @@ class Dataset(torch.utils.data.Dataset):
             elif topology_builder == DependencyBasedGraphConstruction:
                 processor_args = {
                     "annotators": "ssplit,tokenize,depparse",
-                    "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,"
-                    "normalizeOtherBrackets=false",
+                    "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
                     "tokenize.whitespace": True,
                     "ssplit.isOneSentence": True,
                     "outputFormat": "json",
@@ -535,8 +520,7 @@ class Dataset(torch.utils.data.Dataset):
             elif topology_builder == ConstituencyBasedGraphConstruction:
                 processor_args = {
                     "annotators": "tokenize,ssplit,pos,parse",
-                    "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,"
-                    "normalizeOtherBrackets=false",
+                    "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
                     "tokenize.whitespace": True,
                     "ssplit.isOneSentence": False,
                     "outputFormat": "json",
@@ -586,18 +570,14 @@ class Dataset(torch.utils.data.Dataset):
                     if dynamic_init_topology_builder == IEBasedGraphConstruction:
                         props_coref = {
                             "annotators": "tokenize, ssplit, pos, lemma, ner, parse, coref",
-                            "tokenize.options": "splitHyphenated=true,"
-                            "normalizeParentheses=true,"
-                            "normalizeOtherBrackets=true",
+                            "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
                             "tokenize.whitespace": False,
                             "ssplit.isOneSentence": False,
                             "outputFormat": "json",
                         }
                         props_openie = {
                             "annotators": "tokenize, ssplit, pos, ner, parse, openie",
-                            "tokenize.options": "splitHyphenated=true,"
-                            "normalizeParentheses=true,"
-                            "normalizeOtherBrackets=true",
+                            "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
                             "tokenize.whitespace": False,
                             "ssplit.isOneSentence": False,
                             "outputFormat": "json",
@@ -607,9 +587,7 @@ class Dataset(torch.utils.data.Dataset):
                     elif dynamic_init_topology_builder == DependencyBasedGraphConstruction:
                         processor_args = {
                             "annotators": "ssplit,tokenize,depparse",
-                            "tokenize.options": "splitHyphenated=false,"
-                            "normalizeParentheses=false,"
-                            "normalizeOtherBrackets=false",
+                            "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
                             "tokenize.whitespace": False,
                             "ssplit.isOneSentence": False,
                             "outputFormat": "json",
@@ -617,9 +595,7 @@ class Dataset(torch.utils.data.Dataset):
                     elif dynamic_init_topology_builder == ConstituencyBasedGraphConstruction:
                         processor_args = {
                             "annotators": "tokenize,ssplit,pos,parse",
-                            "tokenize.options": "splitHyphenated=true,"
-                            "normalizeParentheses=true,"
-                            "normalizeOtherBrackets=true",
+                            "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,normalizeOtherBrackets=true",
                             "tokenize.whitespace": False,
                             "ssplit.isOneSentence": False,
                             "outputFormat": "json",
@@ -663,8 +639,8 @@ class Dataset(torch.utils.data.Dataset):
 
     def build_topology(self, data_items):
         """
-        Build graph topology for each item in the dataset. The generated graph
-        is bound to the `graph` attribute of the DataItem.
+        Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the
+        DataItem.
         """
         total = len(data_items)
         thread_number = min(total, self.thread_number)
@@ -712,8 +688,7 @@ class Dataset(torch.utils.data.Dataset):
 
     def build_vocab(self):
         """
-        Build the vocabulary. If `self.use_val_for_vocab` is `True`,
-        use both training set and validation set for building
+        Build the vocabulary. If `self.use_val_for_vocab` is `True`, use both training set and validation set for building
         the vocabulary. Otherwise only the training set is used.
 
         """
@@ -749,8 +724,7 @@ class Dataset(torch.utils.data.Dataset):
         ):
             if "val_split_ratio" in self.__dict__:
                 UserWarning(
-                    "Loading existing processed files on disk. "
-                    "Your `val_split_ratio` might not work since the data have"
+                    "Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have"
                     "already been split."
                 )
             return
@@ -806,21 +780,17 @@ class Text2TextDataset(Dataset):
 
     def parse_file(self, file_path) -> list:
         """
-        Read and parse the file specified by `file_path`. The file format is
-        specified by each individual task-specific base class. Returns all
-        the indices of data items in this file w.r.t. the whole dataset.
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
 
-        For Text2TextDataset, the format of the input file should contain
-        lines of input, each line representing one record of data. The
-        input and output is separated by a tab(\t).
+        For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
 
         Examples
         --------
         input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
 
-        DataItem:
-            input_text="list job use languageid0",
-            output_text="job ( ANS ) , language ( ANS , languageid0 )"
+        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
 
         Parameters
         ----------
@@ -1064,13 +1034,11 @@ class Text2LabelDataset(Dataset):
 
     def parse_file(self, file_path) -> list:
         """
-        Read and parse the file specified by `file_path`. The file format
-        is specified by each individual task-specific base class. Returns
-        all the indices of data items in this file w.r.t. the whole dataset.
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
 
-        For Text2LabelDataset, the format of the input file should contain
-        lines of input, each line representing one record of data. The
-        input and output is separated by a tab(\t).
+        For Text2LabelDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
 
         Examples
         --------
@@ -1162,23 +1130,18 @@ class DoubleText2TextDataset(Dataset):
 
     def parse_file(self, file_path) -> list:
         """
-        Read and parse the file specified by `file_path`. The file format is
-        specified by each individual task-specific base class.
-        Returns all the indices of data items in this file w.r.t. the whole dataset.
+        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
 
-        For DoubleText2TextDataset, the format of the input file should
-        contain lines of input, each line representing one record of data.
-        The input and output is separated by a tab(\t).
+        For DoubleText2TextDataset, the format of the input file should contain lines of input, each line representing one
+        record of data. The input and output is separated by a tab(\t).
         # TODO: update example
 
         Examples
         --------
         input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
 
-        DataItem:
-            input_text="list job use languageid0",
-            input_text2="list job use languageid0",
-            output_text="job ( ANS ) , language ( ANS , languageid0 )"
+        DataItem: input_text="list job use languageid0", input_text2="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
 
         Parameters
         ----------
@@ -1302,10 +1265,10 @@ class SequenceLabelingDataset(Dataset):
 
     def parse_file(self, file_path) -> list:
         """
-        Read and parse the file specified by `file_path`.
-        The file format is specified by each individual task-specific base class.
-        Returns all the indices of data items in this file w.r.t. the whole dataset.
-        For SequenceLabelingDataset, the format of the input file should contain lines of tokens,
+        Read and parse the file specified by `file_path`. The file format is specified by each 
+        individual task-specific base class. Returns all the indices of data items in 
+        this file w.r.t. the whole dataset.
+        For SequenceLabelingDataset, the format of the input file should contain lines of tokens, 
         each line representing one record of token at first column and its tag at the last column.
 
         Examples

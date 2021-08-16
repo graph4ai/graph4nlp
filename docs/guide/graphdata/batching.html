@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Batching &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Chapter 2. Dataset" href="../dataset.html" />
+    <link rel="prev" title="Manipulating GraphData" href="manipulate.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="construct.html">Constructing GraphData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="manipulate.html">Manipulating GraphData</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Batching</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../graphdata.html">Chapter 1. Graph Data</a> &raquo;</li>
+        
+      <li>Batching</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/guide/graphdata/batching.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="batching">
+<span id="guide-batching"></span><h1>Batching<a class="headerlink" href="#batching" title="Permalink to this headline">¶</a></h1>
+<p>In practice, we usually need to convert a collection of small graph into a large graph where each original small graph
+is a connected component of the large graph. This operation is called <cite>batching</cite> in graph deep learning and is widely
+applied to improve computing efficiency.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GraphData</span></code> provides interfaces for batching and unbatching graphs for training and inference. The <code class="docutils literal notranslate"><span class="pre">to_batch()</span></code>
+function takes a list of <code class="docutils literal notranslate"><span class="pre">GraphData</span></code> instances and returns a single <code class="docutils literal notranslate"><span class="pre">GraphData</span></code> which is the merged large graph.
+On the other hand, users may use <code class="docutils literal notranslate"><span class="pre">from_batch()</span></code> to decompose a large graph generated by merging small graphs into a
+list of <code class="docutils literal notranslate"><span class="pre">GraphData</span></code>.</p>
+<p>The following code snippet shows an example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">batched_edges</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">graph_edges_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Build a number of graphs</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">GraphData</span><span class="p">()</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">j</span><span class="p">,</span> <span class="n">tgt</span><span class="o">=</span><span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">batched_edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">j</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="p">((</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">)))</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s1">&#39;idx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="s1">&#39;idx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span>
+    <span class="n">graph_edges_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">get_all_edges</span><span class="p">())</span>
+    <span class="n">g_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+
+<span class="c1"># Test to_batch</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">to_batch</span><span class="p">(</span><span class="n">g_list</span><span class="p">)</span>
+
+<span class="n">target_batch_idx</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">target_batch_idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+<span class="c1"># Expected behaviors</span>
+<span class="k">assert</span> <span class="n">batch</span><span class="o">.</span><span class="n">batch</span> <span class="o">==</span> <span class="n">target_batch_idx</span>
+<span class="k">assert</span> <span class="n">batch</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()</span> <span class="o">==</span> <span class="mi">50</span>
+<span class="k">assert</span> <span class="n">batch</span><span class="o">.</span><span class="n">get_all_edges</span><span class="p">()</span> <span class="o">==</span> <span class="n">batched_edges</span>
+
+<span class="c1"># Un-batching</span>
+<span class="n">graph_list</span> <span class="o">=</span> <span class="n">from_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">graph_list</span><span class="p">)):</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">graph_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="c1"># Expected behaviors</span>
+    <span class="k">assert</span> <span class="n">g</span><span class="o">.</span><span class="n">get_all_edges</span><span class="p">()</span> <span class="o">==</span> <span class="n">graph_edges_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">g</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()</span> <span class="o">==</span> <span class="mi">10</span>
+    <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s1">&#39;idx&#39;</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="s1">&#39;idx&#39;</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../dataset.html" class="btn btn-neutral float-right" title="Chapter 2. Dataset" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="manipulate.html" class="btn btn-neutral float-left" title="Manipulating GraphData" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

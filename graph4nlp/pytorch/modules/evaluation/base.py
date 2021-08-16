@@ -1,6 +1,6 @@
 class EvaluationMetricBase:
     """
-        Base class for evaluation metric
+    Base class for evaluation metric
     """
 
     def __init__(self):

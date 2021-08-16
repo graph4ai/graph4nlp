@@ -8,7 +8,6 @@ from .base import DynamicGraphConstructionBase
 from .constituency_graph_construction import ConstituencyBasedGraphConstruction
 from .dependency_graph_construction import DependencyBasedGraphConstruction
 from .ie_graph_construction import IEBasedGraphConstruction
-
 # from ..utils.constants import VERY_SMALL_NUMBER
 from .utils import convert_adj_to_graph
 

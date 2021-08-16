@@ -2,43 +2,52 @@ import copy
 import itertools
 import json
 from collections import Counter
-import dgl
-import stanfordcorenlp
-import torch
-from stanfordcorenlp import StanfordCoreNLP
 
-from graph4nlp.pytorch.data.data import *
+from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 
 
 def get_new_sent(dep_info):
-    new_sent=[]
-    idx=0
-    for line in dep_info.strip().split('\n'):
-           new_sent.append(line.split('\t')[1])
-           idx+=1      
+    new_sent = []
+    idx = 0
+    for line in dep_info.strip().split("\n"):
+        new_sent.append(line.split("\t")[1])
+        idx += 1
     return new_sent
- 
+
+
 class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstructionBase):
     """
         Line based graph construction class
     Parameters
     ----------
     embedding_style: dict
-        Specify embedding styles including ``word_emb_type``, ``node_edge_level_emb_type`` and ``graph_level_emb_type``.
+        Specify embedding styles including ``word_emb_type``, ``node_edge_level_emb_type``
+        and ``graph_level_emb_type``.
     vocab: VocabModel
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(self, embedding_style, vocab, hidden_size=300, fix_word_emb=True, fix_bert_emb=True, word_dropout=None, rnn_dropout=None, device=None):
-        super(DependencyBasedGraphConstruction_without_tokenizer, self).__init__(word_vocab=vocab,
-                                                               embedding_styles=embedding_style,
-                                                               hidden_size=hidden_size,
-                                                               fix_word_emb=fix_word_emb,
-                                                               fix_bert_emb=fix_bert_emb,
-                                                               word_dropout=word_dropout,
-                                                               rnn_dropout=rnn_dropout)
+    def __init__(
+        self,
+        embedding_style,
+        vocab,
+        hidden_size=300,
+        fix_word_emb=True,
+        fix_bert_emb=True,
+        word_dropout=None,
+        rnn_dropout=None,
+        device=None,
+    ):
+        super(DependencyBasedGraphConstruction_without_tokenizer, self).__init__(
+            word_vocab=vocab,
+            embedding_styles=embedding_style,
+            hidden_size=hidden_size,
+            fix_word_emb=fix_word_emb,
+            fix_bert_emb=fix_bert_emb,
+            word_dropout=word_dropout,
+            rnn_dropout=rnn_dropout,
+        )
         self.vocab = vocab
         self.verbase = 1
 
@@ -55,7 +64,7 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             self.vocab.word_vocab._add_words([attr["token"]])
 
     def parsing(cls, raw_text_data):
-        '''
+        """
         Parameters
         ----------
         raw_text_data: list of list of word tokens
@@ -70,7 +79,8 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
                 'token': str
                     word token
                 'position_id': int
-                    the word's position id in original sentence. eg: I am a dog. position_id: 0, 1, 2, 3
+                    the word's position id in original sentence. eg: I am a dog.
+                    position_id: 0, 1, 2, 3
                 'id': int,
                     the node token's id which will be used in GraphData
                 "sentence_id": int
@@ -83,65 +93,75 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
                     The source node ``id``
                 'tgt': int
                     The target node ``id``
-        '''
-        parsed_results=[]
-        #for sent_id in range(len(raw_text_data)):
-        parsed_sent={}
-        parsed_sent['graph_content']=[]
-        parsed_sent['node_content']=[]            
-        sent=raw_text_data#[sent_id]
+        """
+        parsed_results = []
+        # for sent_id in range(len(raw_text_data)):
+        parsed_sent = {}
+        parsed_sent["graph_content"] = []
+        parsed_sent["node_content"] = []
+        sent = raw_text_data  # [sent_id]
         assert len(sent) >= 2
-        parsed_sent['node_num']=len(sent)
-        #generate node content in a text   
-        #dep_parser = CoreNLPDependencyParser(url='http://localhost:9020')             
-        #processor = stanfordcorenlp.StanfordCoreNLP('F:/xiaojie/stanford-corenlp-4.1.0', port=9080, timeout=1000)
+        parsed_sent["node_num"] = len(sent)
+        # generate node content in a text
+        # dep_parser = CoreNLPDependencyParser(url='http://localhost:9020')
+        # processor = stanfordcorenlp.StanfordCoreNLP('F:/xiaojie/stanford-corenlp-4.1.0',
+        # port=9080, timeout=1000)
         for token_id in range(len(sent)):
-                    node={}
-                    node['token']=sent[token_id]
-                    node['sentence_id']=0
-                    node['id']=token_id
-                    node['position_id']=token_id
-                    parsed_sent['node_content'].append(node)
-        #generate graph content in a text        
-        raw_sent=' '.join(sent)
-        if len(sent)<20:
-            dep_json = cls.processor.annotate(raw_sent)       
+            node = {}
+            node["token"] = sent[token_id]
+            node["sentence_id"] = 0
+            node["id"] = token_id
+            node["position_id"] = token_id
+            parsed_sent["node_content"].append(node)
+        # generate graph content in a text
+        raw_sent = " ".join(sent)
+        if len(sent) < 20:
+            dep_json = cls.processor.annotate(raw_sent)
             dep_dict = json.loads(dep_json)
-            tokens=dep_dict["sentences"][0]['tokens']
+            tokens = dep_dict["sentences"][0]["tokens"]
             for dep in dep_dict["sentences"][0]["basicDependencies"]:
-                    if cls.verbase > 0:
-                        print(dep)
-                    if dep['governorGloss'] == "ROOT":
-                        continue
-                    if dep['dependentGloss'] == "ROOT":
-                        continue  
-                    g={}
-                    if tokens[int(dep['governor']-1)] in sent and tokens[int(dep['dependent']-1)] in sent:
-                        g['src']=int(dep['governor']-1)
-                        g['tgt']=int(dep['dependent']-1)
-                        g['edge_type']=dep['dep']
-                        parsed_sent['graph_content'].append(g)   
-           
-#        (parse_sent, ),(null, )=dep_parser.parse_sents([sent,sent])
-#        dep_info = parse_sent.to_conll(10)
-#        new_sent=get_new_sent(dep_info)
-#        for line in dep_info.strip().split('\n'):
-#                    g={}                                        
-#                    if line.split('\t')[1] in sent:
-#                      g['src']=sent.index(line.split('\t')[1])
-#                      if int(line.split('\t')[6])>0:
-#                          if new_sent[int(line.split('\t')[6])-1] in sent:
-#                              token=new_sent[int(line.split('\t')[6])-1]
-#                              g['tgt']=sent.index(token)
-#                              g['edge_type']=line.split('\t')[-3]
-#                              parsed_sent['graph_content'].append(g)                  
+                if cls.verbase > 0:
+                    print(dep)
+                if dep["governorGloss"] == "ROOT":
+                    continue
+                if dep["dependentGloss"] == "ROOT":
+                    continue
+                g = {}
+                if (
+                    tokens[int(dep["governor"] - 1)] in sent
+                    and tokens[int(dep["dependent"] - 1)] in sent
+                ):
+                    g["src"] = int(dep["governor"] - 1)
+                    g["tgt"] = int(dep["dependent"] - 1)
+                    g["edge_type"] = dep["dep"]
+                    parsed_sent["graph_content"].append(g)
+
+        #        (parse_sent, ),(null, )=dep_parser.parse_sents([sent,sent])
+        #        dep_info = parse_sent.to_conll(10)
+        #        new_sent=get_new_sent(dep_info)
+        #        for line in dep_info.strip().split('\n'):
+        #                    g={}
+        #                    if line.split('\t')[1] in sent:
+        #                      g['src']=sent.index(line.split('\t')[1])
+        #                      if int(line.split('\t')[6])>0:
+        #                          if new_sent[int(line.split('\t')[6])-1] in sent:
+        #                              token=new_sent[int(line.split('\t')[6])-1]
+        #                              g['tgt']=sent.index(token)
+        #                              g['edge_type']=line.split('\t')[-3]
+        #                              parsed_sent['graph_content'].append(g)
         parsed_results.append(parsed_sent)
-        
+
         return parsed_results
-        
+
     @classmethod
-    def topology(cls, raw_text_data, auxiliary_args, split_hyphenated=False,
-                 normalize=False, sequential_link=True):
+    def topology(
+        cls,
+        raw_text_data,
+        auxiliary_args,
+        split_hyphenated=False,
+        normalize=False,
+        sequential_link=True,
+    ):
         """
             Graph building method.
         Parameters
@@ -156,24 +176,26 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             Strategy to merge sub-graphs into one graph
             ``None``: It will be the default option. We will do as ``"tailhead"``.
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
-            ``"sequential"``: If sub-graph has ``a1, a2, ..., an`` nodes, and sub-graph has ``b1, b2, ..., bm`` nodes.
-                              We will link ``a1, a2``, ``a2, a3``, ..., ``an-1, an``, \
+            ``"sequential"``: If sub-graph has ``a1, a2, ..., an`` nodes, and sub-graph has
+            ``b1, b2, ..., bm`` nodes. We will link ``a1, a2``, ``a2, a3``, ..., ``an-1, an``, \
                               ``an, b1``, ``b1, b2``, ..., ``bm-1, bm``.
-            ``"user_define"``: We will give this option to the user. User can override this method to define your merge
-                               strategy.
+            ``"user_define"``: We will give this option to the user. User can override this
+            method to define your merge strategy.
         edge_strategy: None or str, option=[None, "homogeneous", "heterogeneous", "as_node"]
             Strategy to process edge.
             ``None``: It will be the default option. We will do as ``"homogeneous"``.
             ``"homogeneous"``: We will drop the edge type information.
-                               If there is a linkage among node ``i`` and node ``j``, we will add an edge whose weight
-                               is ``1.0``. Otherwise there is no edge.
+                               If there is a linkage among node ``i`` and node ``j``, we will add an
+                               edge whose weight is ``1.0``. Otherwise there is no edge.
             ``heterogeneous``: We will keep the edge type information.
                                An edge will have type information like ``n_subj``.
             ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
-                         we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
+                         we will insert a node ``k`` into the graph and link node (``i``, ``k``)
+                         and (``k``, ``j``).
         split_hyphenated: bool, default=False
-            Whether or not to tokenize segments of hyphenated words separately (“school” “-“ “aged”, “frog” “-“ “lipped”)
+            Whether or not to tokenize segments of hyphenated words separately (“school” “-“ “aged”,
+            “frog” “-“ “lipped”)
         normalize: bool, default=False
             Whether to convert bracket (`(`) to  -LRB-, and etc.
         sequential_link: bool, default=True
@@ -185,21 +207,24 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         joint_graph: GraphData
             The merged graph data-structure.
         """
-        cls.processor=auxiliary_args['nlp_processor']
-        split_hyphenated=False,
-        normalize=False,
-        sequential_link=True, 
-        verbase=0
-        cls.verbase = auxiliary_args['verbase']
+        cls.processor = auxiliary_args["nlp_processor"]
+        # split_hyphenated = (False,)
+        # normalize = (False,)
+        sequential_link = (True,)
+        # verbase = 0
+        cls.verbase = auxiliary_args["verbase"]
 
-        parsed_results = cls.parsing(cls,raw_text_data=raw_text_data)
+        parsed_results = cls.parsing(cls, raw_text_data=raw_text_data)
 
         sub_graphs = []
         for sent_id, parsed_sent in enumerate(parsed_results):
-            graph = cls._construct_static_graph(parsed_sent, edge_strategy=auxiliary_args['edge_strategy'],
-                                                sequential_link=sequential_link)
+            graph = cls._construct_static_graph(
+                parsed_sent,
+                edge_strategy=auxiliary_args["edge_strategy"],
+                sequential_link=sequential_link,
+            )
             sub_graphs.append(graph)
-        joint_graph = cls._graph_connect(sub_graphs, auxiliary_args['merge_strategy'])
+        joint_graph = cls._graph_connect(sub_graphs, auxiliary_args["merge_strategy"])
         return joint_graph
 
     @classmethod
@@ -214,15 +239,16 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             Strategy to process edge.
             ``None``: It will be the default option. We will do as ``"homogeneous"``.
             ``"homogeneous"``: We will drop the edge type information.
-                               If there is a linkage among node ``i`` and node ``j``, we will add an edge whose weight
-                               is ``1.0``. Otherwise there is no edge.
+                               If there is a linkage among node ``i`` and node ``j``,
+                               we will add an edge whose weight is ``1.0``. Otherwise there is
+                               no edge.
             ``heterogeneous``: We will keep the edge type information.
                                An edge will have type information like ``n_subj``.
                                It is not implemented yet.
             ``as_node``: We will view the edge as a graph node.
                          If there is an edge whose type is ``k`` between node ``i`` and node ``j``,
-                         we will insert a node ``k`` into the graph and link node (``i``, ``k``) and (``k``, ``j``).
-                         It is not implemented yet.
+                         we will insert a node ``k`` into the graph and link node (``i``, ``k``)
+                         and (``k``, ``j``). It is not implemented yet.
         Returns
         -------
         graph: GraphData
@@ -238,36 +264,36 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         # insert node attributes
         node_objects = parsed_object["node_content"]
         for node in node_objects:
-            ret_graph.node_attributes[node['id']]['type'] = 0
-            ret_graph.node_attributes[node['id']]['token'] = node['token']
-            ret_graph.node_attributes[node['id']]['position_id'] = node['position_id']
-            ret_graph.node_attributes[node['id']]['sentence_id'] = node['sentence_id']
-            ret_graph.node_attributes[node['id']]['head'] = False
-            ret_graph.node_attributes[node['id']]['tail'] = False
+            ret_graph.node_attributes[node["id"]]["type"] = 0
+            ret_graph.node_attributes[node["id"]]["token"] = node["token"]
+            ret_graph.node_attributes[node["id"]]["position_id"] = node["position_id"]
+            ret_graph.node_attributes[node["id"]]["sentence_id"] = node["sentence_id"]
+            ret_graph.node_attributes[node["id"]]["head"] = False
+            ret_graph.node_attributes[node["id"]]["tail"] = False
 
         for dep_info in parsed_object["graph_content"]:
             if edge_strategy is None or edge_strategy == "homogeneous":
-                ret_graph.add_edge(dep_info["src"], dep_info['tgt'])
+                ret_graph.add_edge(dep_info["src"], dep_info["tgt"])
             elif edge_strategy == "heterogeneous":
-                ret_graph.add_edge(dep_info["src"], dep_info['tgt'])
-                edge_idx = ret_graph.edge_ids(dep_info["src"], dep_info['tgt'])[0]
+                ret_graph.add_edge(dep_info["src"], dep_info["tgt"])
+                edge_idx = ret_graph.edge_ids(dep_info["src"], dep_info["tgt"])[0]
                 ret_graph.edge_attributes[edge_idx]["token"] = dep_info["edge_type"]
             elif edge_strategy == "as_node":
                 # insert a node
                 node_idx = ret_graph.get_node_num()
                 ret_graph.add_nodes(1)
-                ret_graph.node_attributes[node_idx]['type'] = 3  # 3 for edge node
-                ret_graph.node_attributes[node_idx]['token'] = dep_info['edge_type']
-                ret_graph.node_attributes[node_idx]['position_id'] = None
-                ret_graph.node_attributes[node_idx]['head'] = False
-                ret_graph.node_attributes[node_idx]['tail'] = False
+                ret_graph.node_attributes[node_idx]["type"] = 3  # 3 for edge node
+                ret_graph.node_attributes[node_idx]["token"] = dep_info["edge_type"]
+                ret_graph.node_attributes[node_idx]["position_id"] = None
+                ret_graph.node_attributes[node_idx]["head"] = False
+                ret_graph.node_attributes[node_idx]["tail"] = False
                 # add edge infos
-                ret_graph.add_edge(dep_info['src'], node_idx)
-                ret_graph.add_edge(node_idx, dep_info['tgt'])
+                ret_graph.add_edge(dep_info["src"], node_idx)
+                ret_graph.add_edge(node_idx, dep_info["tgt"])
             else:
                 raise NotImplementedError()
-        ret_graph.node_attributes[head_node]['head'] = True
-        ret_graph.node_attributes[tail_node]['tail'] = True
+        ret_graph.node_attributes[head_node]["head"] = True
+        ret_graph.node_attributes[tail_node]["tail"] = True
 
         sequential_list = [i for i in range(node_num)]
 
@@ -275,11 +301,11 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             for st, ed in zip(sequential_list[:-1], sequential_list[1:]):
                 try:
                     ret_graph.edge_ids(st, ed)
-                except:
+                except Exception:
                     ret_graph.add_edge(st, ed)
                 try:
                     ret_graph.edge_ids(ed, st)
-                except:
+                except Exception:
                     ret_graph.add_edge(ed, st)
         return ret_graph
 
@@ -295,8 +321,8 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             Strategy to merge sub-graphs into one graph
             ``None``: It will be the default option. We will do as ``"tailhead"``.
             ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
-            ``"user_define"``: We will give this option to the user. User can override this method to define your merge
-                               strategy.
+            ``"user_define"``: We will give this option to the user. User can override
+            this method to define your merge strategy.
         Returns
         -------
         joint_graph: GraphData
@@ -350,9 +376,9 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         node_idx_off = 0
         for i in range(len(nx_graph_list)):
             for node_idx, node_attrs in nx_graph_list[i].node_attributes.items():
-                if node_attrs['head'] is True:
+                if node_attrs["head"] is True:
                     head = node_idx + node_idx_off
-                if node_attrs['tail'] is True:
+                if node_attrs["tail"] is True:
                     tail = node_idx + node_idx_off
             assert head != -1
             assert tail != -1
@@ -377,24 +403,24 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
                 print("src list:", src_list)
                 print("tgt list:", tgt_list)
             g.add_edges(src_list, tgt_list)
-            
+
         elif merge_strategy == "re_occurrences":
-            token_list=[g.node_attributes[node_id]["token"] for node_id in g.node_attributes]
-            token_count=dict(Counter(token_list))
-            repeat_token=[key for key,value in token_count.items() if value>1]
-            re_occ_pair=[]
+            token_list = [g.node_attributes[node_id]["token"] for node_id in g.node_attributes]
+            token_count = dict(Counter(token_list))
+            repeat_token = [key for key, value in token_count.items() if value > 1]
+            re_occ_pair = []
             for token in repeat_token:
-                re_occ_list=[i for i,v in enumerate(token_list) if v==token]
-                re_occ_pair.extend(list(itertools.combinations(re_occ_list,2)))
+                re_occ_list = [i for i, v in enumerate(token_list) if v == token]
+                re_occ_pair.extend(list(itertools.combinations(re_occ_list, 2)))
             for pair in re_occ_pair:
-                g.add_edge(pair[0],pair[1])
-                g.add_edge(pair[1],pair[0])
+                g.add_edge(pair[0], pair[1])
+                g.add_edge(pair[1], pair[0])
         else:
             raise NotImplementedError()
 
         for node_idx, node_attrs in g.node_attributes.items():
-            node_attrs['head'] = node_idx == head_g
-            node_attrs['tail'] = node_idx == tail_g
+            node_attrs["head"] = node_idx == head_g
+            node_attrs["tail"] = node_idx == tail_g
 
         if cls.verbase > 0:
             print("-----------------------------")
@@ -413,6 +439,5 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         return batch_graphdata
 
     def embedding(self, node_attributes, edge_attributes):
-        node_emb, edge_emb = self.embedding_layer(
-            node_attributes, edge_attributes)
+        node_emb, edge_emb = self.embedding_layer(node_attributes, edge_attributes)
         return node_emb, edge_emb

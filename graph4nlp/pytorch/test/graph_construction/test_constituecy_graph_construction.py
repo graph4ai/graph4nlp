@@ -17,7 +17,7 @@ if __name__ == "__main__":
     torch.manual_seed(seed)
 
     # some tests for data structure code.
-    
+
     # g = GraphData()
     # g.add_nodes(1)
     # g.add_nodes(1)
@@ -41,26 +41,29 @@ if __name__ == "__main__":
 
     raw_data = "I love you. My motherland."
     # raw_data = "James went to the corner-shop. He want to buy some (eggs), <milk> and bread for breakfast."
-    vocab_model = VocabModel(raw_data, max_word_vocab_size=None,
-                                min_word_vocab_freq=1,
-                                word_emb_size=300)
+    vocab_model = VocabModel(
+        raw_data, max_word_vocab_size=None, min_word_vocab_freq=1, word_emb_size=300
+    )
 
     embedding_styles = {
-        'word_emb_type': 'w2v',
-        'node_edge_level_emb_type': 'mean',
-        'graph_level_emb_type': 'identity',
+        "word_emb_type": "w2v",
+        "node_edge_level_emb_type": "mean",
+        "graph_level_emb_type": "identity",
     }
 
-    nlp_parser = StanfordCoreNLP('http://localhost', port=9000, timeout=300000)
+    nlp_parser = StanfordCoreNLP("http://localhost", port=9000, timeout=300000)
     print("syntactic parser ready\n-------------------")
 
     # constituency_graph_gonstructor = ConstituencyBasedGraphConstruction(hidden_emb_size=128, embedding_style=embedding_styles, word_emb_size=300, vocab=vocab_model.word_vocab)
     # for sentence in raw_data:
-        # output_graph = constituency_graph_gonstructor.forward(sentence[0], nlp_parser)
+    # output_graph = constituency_graph_gonstructor.forward(sentence[0], nlp_parser)
     output_graph = ConstituencyBasedGraphConstruction.topology(raw_data, nlp_parser)
     print(output_graph.node_attributes)
     print(output_graph.edges)
     for _edge in output_graph.get_all_edges():
-        print(output_graph.nodes[_edge[0]].attributes['token'], output_graph.nodes[_edge[1]].attributes['token'])
+        print(
+            output_graph.nodes[_edge[0]].attributes["token"],
+            output_graph.nodes[_edge[1]].attributes["token"],
+        )
     # print("-----------------------\nvocab size")
     # print(vocab_model.word_vocab.word2index)
