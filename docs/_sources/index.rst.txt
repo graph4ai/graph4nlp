@@ -15,8 +15,17 @@ Graph4NLP Documentation
 data scientists and also **flexible interfaces** to build customized models for researchers and developers with whole-pipeline
 support. Built upon highly-optimized runtime libraries including `DGL <https://github.com/dmlc/dgl>`_ , **Graph4NLP** has both
 high running efficiency and great extensibility. The architecture of **Graph4NLP** is shown in the following figure, where boxes
-with dashed lines represents the features under development. Graph4NLP consists of four different layers: 1) Data Layer,
-2) Module Layer, 3) Model Layer, and 4) Application Layer.
+with dashed lines represents the features under development.
+
+This library has the following key features:
+
+1. **Easy-to-use and Flexible:** Provides both full implementations of state-of-the-art models and alsoflexible interfaces to build customized models with whole-pipeline support.
+2. **Rich Set of Learning Resources:** Provide a variety of learning materials including code demos, code documentations, research tutorials and videos, and paper survey.
+3. **High Running Efficiency and Extensibility:** Build upon highly-optimized runtime libraries including DGL and provide highly modularization blocks.
+4. **Comprehensive Code Examples:** Provide a comprehensive collection of NLP applications and the corresponding code examples for quick-start.
+
+Graph4NLP consists of four different layers: 1) Data Layer, 2) Module Layer, 3) Model Layer,
+and 4) Application Layer, as illustrated in the following figure.
 
 .. figure:: ../arch.png
    :align: center
