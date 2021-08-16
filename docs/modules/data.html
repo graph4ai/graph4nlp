@@ -920,9 +920,10 @@ will not be copied to DGLGraph since it is only intended for computation.</p>
 <dt id="graph4nlp.data.dataset.Dataset">
 <em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Dataset</code><span class="sig-paren">(</span><em class="sig-param">root</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">tokenizer=&lt;function word_tokenize&gt;</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">pretrained_word_emb_name='840B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">target_pretrained_word_emb_name=None</em>, <em class="sig-param">target_pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir='.vector_cache/'</em>, <em class="sig-param">max_word_vocab_size=None</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">use_val_for_vocab=False</em>, <em class="sig-param">seed=1234</em>, <em class="sig-param">thread_number=4</em>, <em class="sig-param">port=9000</em>, <em class="sig-param">timeout=15000</em>, <em class="sig-param">for_inference=False</em>, <em class="sig-param">reused_vocab_model=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for datasets.</p>
-<p>The dataset is organized in a two-layer index style. Direct access to the dataset object, e.g. Dataset[1], will first
-be converted to the access to the internal index list, which is then passed to access the actual data. This design
-is for the ease of sampling.</p>
+<p>The dataset is organized in a two-layer index style. Direct access
+to the dataset object, e.g. Dataset[1], will first be converted to
+the access to the internal index list, which is then passed to
+access the actual data. This design is for the ease of sampling.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -932,11 +933,15 @@ is for the ease of sampling.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<p>Suppose we have a Dataset containing 5 data items [‘a’, ‘b’, ‘c’, ‘d’, ‘e’]. The indices of the 5 elements in the
-list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset is shuffled, which shuffles the internal index list, the
-consequent indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset <cite>Dataset[2]</cite> will first access the indices[2]
-which is 1, and then use the received index to access the actual dataset, which will return the actual data item ‘b’.
-Now to the user the 3rd ([2]) element in the dataset got shuffled and is not ‘c’.</p>
+<p>Suppose we have a Dataset containing 5 data items
+[‘a’, ‘b’, ‘c’, ‘d’, ‘e’]. The indices of the 5 elements in the
+list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset
+is shuffled, which shuffles the internal index list, the consequent
+indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset
+<cite>Dataset[2]</cite> will first access the indices[2] which is 1, and then
+use the received index to access the actual dataset, which will
+return the actual data item ‘b’. Now to the user the 3rd ([2])
+element in the dataset got shuffled and is not ‘c’.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1031,11 +1036,13 @@ the vocabulary. Otherwise only the training set is used.</p>
 <code class="sig-name descname">read_raw_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Dataset.read_raw_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read raw data from the disk and put them in a dictionary (<cite>self.data</cite>).
 The raw data file should be organized as the format defined in <cite>self.parse_file()</cite> method.</p>
-<p>This function calls <cite>self.parse_file()</cite> repeatedly and pass the file paths in <cite>self.raw_file_names</cite> once at a time.</p>
-<p>This function builds <cite>self.data</cite> which is a dict of {int (index): DataItem}, where the id represents the
-index of the DataItem w.r.t. the whole dataset.</p>
-<p>This function also builds the <cite>self.split_ids</cite> dictionary whose keys correspond to those of self.raw_file_names
-defined by the user, indicating the indices of each subset (e.g. train, val and test).</p>
+<p>This function calls <cite>self.parse_file()</cite> repeatedly and pass the file paths in
+<cite>self.raw_file_names</cite> once at a time.</p>
+<p>This function builds <cite>self.data</cite> which is a dict of {int (index): DataItem},
+where the id represents the index of the DataItem w.r.t. the whole dataset.</p>
+<p>This function also builds the <cite>self.split_ids</cite> dictionary whose keys correspond to
+those of self.raw_file_names defined by the user, indicating the indices of each
+subset (e.g. train, val and test).</p>
 </dd></dl>
 
 <dl class="method">
@@ -1500,6 +1507,8 @@ For SequenceLabelingDataset, the format of the input file should contain lines o
 each line representing one record of token at first column and its tag at the last column.
 Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each
 individual task-specific base class. Returns all the indices of data items in
+Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each
+individual task-specific base class. Returns all the indices of data items in
 this file w.r.t. the whole dataset.
 For SequenceLabelingDataset, the format of the input file should contain lines of tokens,
 each line representing one record of token at first column and its tag at the last column.</p>
@@ -1526,9 +1535,10 @@ German   I-MISC</p>
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Dataset</code><span class="sig-paren">(</span><em class="sig-param">root</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">tokenizer=&lt;function word_tokenize&gt;</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">pretrained_word_emb_name='840B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">target_pretrained_word_emb_name=None</em>, <em class="sig-param">target_pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir='.vector_cache/'</em>, <em class="sig-param">max_word_vocab_size=None</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">use_val_for_vocab=False</em>, <em class="sig-param">seed=1234</em>, <em class="sig-param">thread_number=4</em>, <em class="sig-param">port=9000</em>, <em class="sig-param">timeout=15000</em>, <em class="sig-param">for_inference=False</em>, <em class="sig-param">reused_vocab_model=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span></dt>
 <dd><p>Base class for datasets.</p>
-<p>The dataset is organized in a two-layer index style. Direct access to the dataset object, e.g. Dataset[1], will first
-be converted to the access to the internal index list, which is then passed to access the actual data. This design
-is for the ease of sampling.</p>
+<p>The dataset is organized in a two-layer index style. Direct access
+to the dataset object, e.g. Dataset[1], will first be converted to
+the access to the internal index list, which is then passed to
+access the actual data. This design is for the ease of sampling.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1538,11 +1548,15 @@ is for the ease of sampling.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<p>Suppose we have a Dataset containing 5 data items [‘a’, ‘b’, ‘c’, ‘d’, ‘e’]. The indices of the 5 elements in the
-list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset is shuffled, which shuffles the internal index list, the
-consequent indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset <cite>Dataset[2]</cite> will first access the indices[2]
-which is 1, and then use the received index to access the actual dataset, which will return the actual data item ‘b’.
-Now to the user the 3rd ([2]) element in the dataset got shuffled and is not ‘c’.</p>
+<p>Suppose we have a Dataset containing 5 data items
+[‘a’, ‘b’, ‘c’, ‘d’, ‘e’]. The indices of the 5 elements in the
+list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset
+is shuffled, which shuffles the internal index list, the consequent
+indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset
+<cite>Dataset[2]</cite> will first access the indices[2] which is 1, and then
+use the received index to access the actual dataset, which will
+return the actual data item ‘b’. Now to the user the 3rd ([2])
+element in the dataset got shuffled and is not ‘c’.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1637,11 +1651,13 @@ the vocabulary. Otherwise only the training set is used.</p>
 <code class="sig-name descname">read_raw_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Read raw data from the disk and put them in a dictionary (<cite>self.data</cite>).
 The raw data file should be organized as the format defined in <cite>self.parse_file()</cite> method.</p>
-<p>This function calls <cite>self.parse_file()</cite> repeatedly and pass the file paths in <cite>self.raw_file_names</cite> once at a time.</p>
-<p>This function builds <cite>self.data</cite> which is a dict of {int (index): DataItem}, where the id represents the
-index of the DataItem w.r.t. the whole dataset.</p>
-<p>This function also builds the <cite>self.split_ids</cite> dictionary whose keys correspond to those of self.raw_file_names
-defined by the user, indicating the indices of each subset (e.g. train, val and test).</p>
+<p>This function calls <cite>self.parse_file()</cite> repeatedly and pass the file paths in
+<cite>self.raw_file_names</cite> once at a time.</p>
+<p>This function builds <cite>self.data</cite> which is a dict of {int (index): DataItem},
+where the id represents the index of the DataItem w.r.t. the whole dataset.</p>
+<p>This function also builds the <cite>self.split_ids</cite> dictionary whose keys correspond to
+those of self.raw_file_names defined by the user, indicating the indices of each
+subset (e.g. train, val and test).</p>
 </dd></dl>
 
 <dl class="method">
