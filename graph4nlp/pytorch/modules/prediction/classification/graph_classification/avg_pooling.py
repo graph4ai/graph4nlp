@@ -1,4 +1,3 @@
-import dgl
 import torch
 
 from .....data.data import from_batch
