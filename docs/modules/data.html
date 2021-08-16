@@ -190,12 +190,10 @@
             
   <div class="section" id="module-graph4nlp.data.data">
 <span id="graph4nlp-data"></span><h1>graph4nlp.data<a class="headerlink" href="#module-graph4nlp.data.data" title="Permalink to this headline">¶</a></h1>
-<p>The Graph4NLP library uses the class <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="graph4nlp.data.data.GraphData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GraphData</span></code></a> as the representation
-for structured data (graphs). <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="graph4nlp.data.data.GraphData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GraphData</span></code></a> supports basic operations to
-the graph, including adding nodes and edges. <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="graph4nlp.data.data.GraphData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GraphData</span></code></a> also supports
-adding features which are in tensor form, and attributes which are of arbitrary
-form to the correspondingnodes or edges. Batching operations is also supported
-by <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="graph4nlp.data.data.GraphData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GraphData</span></code></a>.</p>
+<p>The Graph4NLP library uses the class <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="graph4nlp.data.data.GraphData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GraphData</span></code></a> as the representation for structured data (graphs).
+<a class="reference internal" href="#graph4nlp.data.data.GraphData" title="graph4nlp.data.data.GraphData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GraphData</span></code></a> supports basic operations to the graph, including adding nodes and edges. <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="graph4nlp.data.data.GraphData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GraphData</span></code></a> also
+supports adding features which are in tensor form, and attributes which are of arbitrary form to the corresponding
+nodes or edges. Batching operations is also supported by <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="graph4nlp.data.data.GraphData"><code class="xref py py-class docutils literal notranslate"><span class="pre">GraphData</span></code></a>.</p>
 <div class="section" id="graph-representation">
 <h2>Graph Representation<a class="headerlink" href="#graph-representation" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
@@ -252,7 +250,7 @@ by <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="gr
 <td><p>Convert the given endpoints to edge indices.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.data.GraphData.from_dense_adj" title="graph4nlp.data.data.GraphData.from_dense_adj"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_dense_adj</span></code></a>(adj)</p></td>
-<td><p>Construct a graph from a dense (2-D NxN) adjacency matrix with the edge weights represented by the value of the matrix entries.</p></td>
+<td><p>Construct a graph from a dense (2-D NxN) adjacency matrix with the edge weights represented by the value of the matrix entries :param adj: The tensor representing the adjacency matrix.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.data.data.GraphData.from_dgl" title="graph4nlp.data.data.GraphData.from_dgl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_dgl</span></code></a>(dgl_g)</p></td>
 <td><p>Build the graph from dgl.DGLGraph</p></td>
@@ -261,7 +259,7 @@ by <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="gr
 <td><p>Build a clone from a source GraphData</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.data.data.GraphData.from_scipy_sparse_matrix" title="graph4nlp.data.data.GraphData.from_scipy_sparse_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_scipy_sparse_matrix</span></code></a>(adj)</p></td>
-<td><p>Construct a graph from a sparse adjacency matrix with the edge weights represented by the value of the matrix entries.</p></td>
+<td><p>Construct a graph from a sparse adjacency matrix with the edge weights represented by the value of the matrix entries :param adj: The object representing the sparse adjacency matrix.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.data.GraphData.get_all_edges" title="graph4nlp.data.data.GraphData.get_all_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_edges</span></code></a>()</p></td>
 <td><p>Get all the edges in the graph</p></td>
@@ -300,13 +298,13 @@ by <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="gr
 <td><p>Return the scipy.sparse.coo_matrix form of the adjacency matrix :param batch_view: Whether to return the split view of the adjacency matrix.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.data.GraphData.split_features" title="graph4nlp.data.data.GraphData.split_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_features</span></code></a>(input_tensor[, type])</p></td>
-<td><p>Convert a tensor from [N, <a href="#id1"><span class="problematic" id="id2">*</span></a>] to [B, N_max, <a href="#id3"><span class="problematic" id="id4">*</span></a>] with zero padding according to the batch information stored in the graph.</p></td>
+<td><p>Convert a tensor from [N, <a href="#id1"><span class="problematic" id="id2">*</span></a>] to [B, N_max, <a href="#id3"><span class="problematic" id="id4">*</span></a>] with zero padding according to the batch information stored in the graph.:param input_tensor: :type input_tensor: torch.Tensor :param The original tensor to be split.: :param type: :type type: str :param ‘node’ or ‘edge’.Indicates the source of batch information.:.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.data.data.GraphData.to" title="graph4nlp.data.data.GraphData.to"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code></a>(device)</p></td>
 <td><p>Move the GraphData object to different devices(cpu, gpu, etc.).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.data.GraphData.to_dgl" title="graph4nlp.data.data.GraphData.to_dgl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dgl</span></code></a>()</p></td>
-<td><p>Convert to dgl.DGLGraph Note that there will be some information loss when calling this function, e.g.</p></td>
+<td><p>Convert to dgl.DGLGraph Note that there will be some information loss when calling this funciton, e.g.</p></td>
 </tr>
 </tbody>
 </table>
@@ -368,16 +366,14 @@ by <a class="reference internal" href="#graph4nlp.data.data.GraphData" title="gr
 <dl class="method">
 <dt id="graph4nlp.data.data.GraphData.adj_matrix">
 <code class="sig-name descname">adj_matrix</code><span class="sig-paren">(</span><em class="sig-param">batch_view: bool = False</em>, <em class="sig-param">post_processing_fn: Callable = None</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="headerlink" href="#graph4nlp.data.data.GraphData.adj_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the adjacency matrix of the graph. Returns a 2D tensor if
-it is a single graph and a 3D tensor if it is a batched graph, with
-the matrices padded with 0 (B x N x N)</p>
+<dd><p>Returns the adjacency matrix of the graph. Returns a 2D tensor if it is a single graph and a 3D tensor if it
+is a batched graph, with the matrices padded with 0 (B x N x N)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>batch_view</strong><span class="classifier">bool</span></dt><dd><p>Whether to return a batched view of the adjacency matrix(3D, True) or not (2D).</p>
 </dd>
-<dt><strong>post_processing_fn</strong><span class="classifier">function</span></dt><dd><p>A callback function which takes a binary adjacency matrix (2D)
-and do some post-processing on it.
+<dt><strong>post_processing_fn</strong><span class="classifier">function</span></dt><dd><p>A callback function which takes a binary adjacency matrix (2D) and do some post-processing on it.
 The return of this function should also be N x N</p>
 </dd>
 </dl>
@@ -440,30 +436,16 @@ The return of this function should also be N x N</p>
 <dt id="graph4nlp.data.data.GraphData.edge_attributes">
 <em class="property">property </em><code class="sig-name descname">edge_attributes</code><a class="headerlink" href="#graph4nlp.data.data.GraphData.edge_attributes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the edge attributes in a list.
-:returns: A list of dictionaries. Each dictionary represents all</p>
-<blockquote>
-<div><p>the attributes on the corresponding edge.</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
+:returns: A list of dictionaries. Each dictionary represents all the attributes on the corresponding edge.
+:rtype: list</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="graph4nlp.data.data.GraphData.edge_features">
 <em class="property">property </em><code class="sig-name descname">edge_features</code><a class="headerlink" href="#graph4nlp.data.data.GraphData.edge_features" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all the edge features in a dictionary.
-:returns: Edge features with the keys being the feature names and values</p>
-<blockquote>
-<div><p>be the corresponding tensors.</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>dict</p>
-</dd>
-</dl>
+:returns: Edge features with the keys being the feature names and values be the corresponding tensors.
+:rtype: dict</p>
 </dd></dl>
 
 <dl class="method">
@@ -512,17 +494,13 @@ The return of this function should also be N x N</p>
 <dl class="method">
 <dt id="graph4nlp.data.data.GraphData.from_dense_adj">
 <code class="sig-name descname">from_dense_adj</code><span class="sig-paren">(</span><em class="sig-param">adj: torch.Tensor</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.data.GraphData.from_dense_adj" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a graph from a dense (2-D NxN) adjacency matrix with
-the edge weights represented by the value of the matrix entries.</p>
+<dd><p>Construct a graph from a dense (2-D NxN) adjacency matrix with the edge weights represented by the value of
+the matrix entries
+:param adj: The tensor representing the adjacency matrix.
+:type adj: torch.Tensor</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Returns</dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>adj</strong><span class="classifier">torch.Tensor</span></dt><dd><p>The tensor representing the adjacency matrix.</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
 <dt>self</dt><dd></dd>
 </dl>
 </dd>
@@ -552,8 +530,8 @@ the edge weights represented by the value of the matrix entries.</p>
 <dl class="method">
 <dt id="graph4nlp.data.data.GraphData.from_scipy_sparse_matrix">
 <code class="sig-name descname">from_scipy_sparse_matrix</code><span class="sig-paren">(</span><em class="sig-param">adj: scipy.sparse.coo.coo_matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.data.GraphData.from_scipy_sparse_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a graph from a sparse adjacency matrix with the edge weights
-represented by the value of the matrix entries.
+<dd><p>Construct a graph from a sparse adjacency matrix with the edge weights represented by the value of
+the matrix entries
 :param adj: The object representing the sparse adjacency matrix.
 :type adj: scipy.sparse.coo_matrix</p>
 <dl class="field-list simple">
@@ -705,12 +683,9 @@ represented by the value of the matrix entries.
 <dt id="graph4nlp.data.data.GraphData.node_features">
 <em class="property">property </em><code class="sig-name descname">node_features</code><a class="headerlink" href="#graph4nlp.data.data.GraphData.node_features" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access and modify node feature vectors (tensor).
-This property can be accessed in a dict-of-dict fashion,
-with the order being [name][index].
-‘name’ indicates the name of the feature vector. ‘index’ selects
-the specific nodes to be accessed.
-When accessed independently, returns the feature dictionary with
-the format {name: tensor}.</p>
+This property can be accessed in a dict-of-dict fashion, with the order being [name][index].
+‘name’ indicates the name of the feature vector. ‘index’ selects the specific nodes to be accessed.
+When accessed independently, returns the feature dictionary with the format {name: tensor}</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><dl class="simple">
@@ -724,8 +699,7 @@ the format {name: tensor}.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-<span class="go">torch.Tensor([0.1036, 0.6757, 0.4702, 0.8938, 0.6337, 0.3290,</span>
-<span class="go">              0.6739, 0.1091, 0.7996, 0.0586])</span>
+<span class="go">torch.Tensor([0.1036, 0.6757, 0.4702, 0.8938, 0.6337, 0.3290, 0.6739, 0.1091, 0.7996, 0.0586])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -733,11 +707,9 @@ the format {name: tensor}.</p>
 <dl class="method">
 <dt id="graph4nlp.data.data.GraphData.nodes">
 <em class="property">property </em><code class="sig-name descname">nodes</code><a class="headerlink" href="#graph4nlp.data.data.GraphData.nodes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a node view through which the user can access the features
-and attributes.</p>
-<p>A NodeView object provides a high-level view of the underlying
-storage of the features and supports both query and modification
-to the original storage.</p>
+<dd><p>Return a node view through which the user can access the features and attributes. A NodeView object provides a
+high-level view of the underlying storage of the features and supports both query and modification to the original
+storage.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><dl class="simple">
@@ -763,10 +735,8 @@ to the original storage.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">GraphData</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">add_edges</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
-<span class="go"># Added some feature tensors to the edges</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="s1">&#39;random&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">9</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">))</span>
-<span class="go"># Remove all edges and the corresponding data. The tensor memory is freed now.</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">remove_all_edges</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="s1">&#39;random&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">9</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">))</span>     <span class="c1"># Added some feature tensors to the edges</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">remove_all_edges</span><span class="p">()</span>    <span class="c1"># Remove all edges and the corresponding data. The tensor memory is freed now.</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -802,8 +772,7 @@ to the original storage.</p>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>nodes</strong><span class="classifier">int or slice</span></dt><dd><p>The nodes involved</p>
 </dd>
-<dt><strong>new_data</strong><span class="classifier">dict</span></dt><dd><p>The new data to write. Key indicates feature name and value indicates the
-actual value.</p>
+<dt><strong>new_data</strong><span class="classifier">dict</span></dt><dd><p>The new data to write. Key indicates feature name and value indicates the actual value</p>
 </dd>
 </dl>
 </dd>
@@ -820,10 +789,8 @@ actual value.</p>
 <dt id="graph4nlp.data.data.GraphData.sparse_adj">
 <code class="sig-name descname">sparse_adj</code><span class="sig-paren">(</span><em class="sig-param">batch_view: bool = False</em><span class="sig-paren">)</span> &#x2192; Union[torch.Tensor, List[torch.Tensor]]<a class="headerlink" href="#graph4nlp.data.data.GraphData.sparse_adj" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the scipy.sparse.coo_matrix form of the adjacency matrix
-:param batch_view: Whether to return the split view of the adjacency matrix.</p>
-<blockquote>
-<div><p>Return a list of COO matrix if True</p>
-</div></blockquote>
+:param batch_view: Whether to return the split view of the adjacency matrix. Return a list of COO matrix if True
+:type batch_view: bool</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><dl class="simple">
@@ -836,22 +803,21 @@ actual value.</p>
 <dl class="method">
 <dt id="graph4nlp.data.data.GraphData.split_features">
 <code class="sig-name descname">split_features</code><span class="sig-paren">(</span><em class="sig-param">input_tensor: torch.Tensor</em>, <em class="sig-param">type: str = 'node'</em><span class="sig-paren">)</span> &#x2192; torch.Tensor<a class="headerlink" href="#graph4nlp.data.data.GraphData.split_features" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a tensor from [N, <a href="#id5"><span class="problematic" id="id6">*</span></a>] to [B, N_max, <a href="#id7"><span class="problematic" id="id8">*</span></a>] with zero padding according
-to the batch information stored in the graph.</p>
+<dd><p>Convert a tensor from [N, <a href="#id5"><span class="problematic" id="id6">*</span></a>] to [B, N_max, <a href="#id7"><span class="problematic" id="id8">*</span></a>] with zero padding according to the batch information stored in
+the graph.
+:param input_tensor:
+:type input_tensor: torch.Tensor
+:param The original tensor to be split.:
+:param type:
+:type type: str
+:param ‘node’ or ‘edge’. Indicates the source of batch information.:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>input_tensor</strong><span class="classifier">torch.Tensor</span></dt><dd></dd>
-<dt><strong>The original tensor to be split.</strong></dt><dd></dd>
-<dt><strong>type</strong><span class="classifier">str</span></dt><dd></dd>
-<dt><strong>‘node’ or ‘edge’. Indicates the source of batch information.</strong></dt><dd></dd>
-</dl>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><dl class="simple">
-<dt>torch.Tensor</dt><dd></dd>
-<dt>The split tensor.</dt><dd></dd>
-</dl>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><em>torch.Tensor</em></p></li>
+<li><p><em>The split tensor.</em></p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
@@ -859,9 +825,8 @@ to the batch information stored in the graph.</p>
 <dl class="method">
 <dt id="graph4nlp.data.data.GraphData.to">
 <code class="sig-name descname">to</code><span class="sig-paren">(</span><em class="sig-param">device: str</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.data.GraphData.to" title="Permalink to this definition">¶</a></dt>
-<dd><p>Move the GraphData object to different devices(cpu, gpu, etc.).
-The usage of this method is similar to that of torch.Tensor and
-dgl.DGLGraph</p>
+<dd><p>Move the GraphData object to different devices(cpu, gpu, etc.). The usage of this method is similar to that of
+torch.Tensor and dgl.DGLGraph</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -881,8 +846,7 @@ dgl.DGLGraph</p>
 <dt id="graph4nlp.data.data.GraphData.to_dgl">
 <code class="sig-name descname">to_dgl</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dgl.heterograph.DGLHeteroGraph<a class="headerlink" href="#graph4nlp.data.data.GraphData.to_dgl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to dgl.DGLGraph
-Note that there will be some information loss when calling this function,
-e.g. the batch-related information
+Note that there will be some information loss when calling this funciton, e.g. the batch-related information
 will not be copied to DGLGraph since it is only intended for computation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -920,10 +884,9 @@ will not be copied to DGLGraph since it is only intended for computation.</p>
 <dt id="graph4nlp.data.dataset.Dataset">
 <em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Dataset</code><span class="sig-paren">(</span><em class="sig-param">root</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">tokenizer=&lt;function word_tokenize&gt;</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">pretrained_word_emb_name='840B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">target_pretrained_word_emb_name=None</em>, <em class="sig-param">target_pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir='.vector_cache/'</em>, <em class="sig-param">max_word_vocab_size=None</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">use_val_for_vocab=False</em>, <em class="sig-param">seed=1234</em>, <em class="sig-param">thread_number=4</em>, <em class="sig-param">port=9000</em>, <em class="sig-param">timeout=15000</em>, <em class="sig-param">for_inference=False</em>, <em class="sig-param">reused_vocab_model=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for datasets.</p>
-<p>The dataset is organized in a two-layer index style. Direct access
-to the dataset object, e.g. Dataset[1], will first be converted to
-the access to the internal index list, which is then passed to
-access the actual data. This design is for the ease of sampling.</p>
+<p>The dataset is organized in a two-layer index style. Direct access to the dataset object, e.g. Dataset[1], will first
+be converted to the access to the internal index list, which is then passed to access the actual data. This design
+is for the ease of sampling.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -933,15 +896,11 @@ access the actual data. This design is for the ease of sampling.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<p>Suppose we have a Dataset containing 5 data items
-[‘a’, ‘b’, ‘c’, ‘d’, ‘e’]. The indices of the 5 elements in the
-list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset
-is shuffled, which shuffles the internal index list, the consequent
-indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset
-<cite>Dataset[2]</cite> will first access the indices[2] which is 1, and then
-use the received index to access the actual dataset, which will
-return the actual data item ‘b’. Now to the user the 3rd ([2])
-element in the dataset got shuffled and is not ‘c’.</p>
+<p>Suppose we have a Dataset containing 5 data items [‘a’, ‘b’, ‘c’, ‘d’, ‘e’]. The indices of the 5 elements in the
+list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset is shuffled, which shuffles the internal index list, the
+consequent indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset <cite>Dataset[2]</cite> will first access the indices[2]
+which is 1, and then use the received index to access the actual dataset, which will return the actual data item ‘b’.
+Now to the user the 3rd ([2]) element in the dataset got shuffled and is not ‘c’.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -989,15 +948,14 @@ element in the dataset got shuffled and is not ‘c’.</p>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.Dataset.build_topology">
 <code class="sig-name descname">build_topology</code><span class="sig-paren">(</span><em class="sig-param">data_items</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Dataset.build_topology" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build graph topology for each item in the dataset. The generated graph
-is bound to the <cite>graph</cite> attribute of the DataItem.</p>
+<dd><p>Build graph topology for each item in the dataset. The generated graph is bound to the <cite>graph</cite> attribute of the
+DataItem.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="graph4nlp.data.dataset.Dataset.build_vocab">
 <code class="sig-name descname">build_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Dataset.build_vocab" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>,
-use both training set and validation set for building
+<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>, use both training set and validation set for building
 the vocabulary. Otherwise only the training set is used.</p>
 </dd></dl>
 
@@ -1036,13 +994,11 @@ the vocabulary. Otherwise only the training set is used.</p>
 <code class="sig-name descname">read_raw_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Dataset.read_raw_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read raw data from the disk and put them in a dictionary (<cite>self.data</cite>).
 The raw data file should be organized as the format defined in <cite>self.parse_file()</cite> method.</p>
-<p>This function calls <cite>self.parse_file()</cite> repeatedly and pass the file paths in
-<cite>self.raw_file_names</cite> once at a time.</p>
-<p>This function builds <cite>self.data</cite> which is a dict of {int (index): DataItem},
-where the id represents the index of the DataItem w.r.t. the whole dataset.</p>
-<p>This function also builds the <cite>self.split_ids</cite> dictionary whose keys correspond to
-those of self.raw_file_names defined by the user, indicating the indices of each
-subset (e.g. train, val and test).</p>
+<p>This function calls <cite>self.parse_file()</cite> repeatedly and pass the file paths in <cite>self.raw_file_names</cite> once at a time.</p>
+<p>This function builds <cite>self.data</cite> which is a dict of {int (index): DataItem}, where the id represents the
+index of the DataItem w.r.t. the whole dataset.</p>
+<p>This function also builds the <cite>self.split_ids</cite> dictionary whose keys correspond to those of self.raw_file_names
+defined by the user, indicating the indices of each subset (e.g. train, val and test).</p>
 </dd></dl>
 
 <dl class="method">
@@ -1109,12 +1065,10 @@ subset (e.g. train, val and test).</p>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.Text2TextDataset.parse_file">
 <code class="sig-name descname">parse_file</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#graph4nlp.data.dataset.Text2TextDataset.parse_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format is
-specified by each individual task-specific base class. Returns all
-the indices of data items in this file w.r.t. the whole dataset.</p>
-<p>For Text2TextDataset, the format of the input file should contain
-lines of input, each line representing one record of data. The
-input and output is separated by a tab( ).</p>
+<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each individual task-specific
+base class. Returns all the indices of data items in this file w.r.t. the whole dataset.</p>
+<p>For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
+record of data. The input and output is separated by a tab(     ).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1131,11 +1085,7 @@ input and output is separated by a tab( ).</p>
 </dl>
 <p class="rubric">Examples</p>
 <p>input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )</p>
-<dl class="simple">
-<dt>DataItem:</dt><dd><p>input_text=”list job use languageid0”,
-output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
-</dd>
-</dl>
+<p>DataItem: input_text=”list job use languageid0”, output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 </dd></dl>
 
 <dl class="method">
@@ -1196,8 +1146,7 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.TextToTreeDataset.build_vocab">
 <code class="sig-name descname">build_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.TextToTreeDataset.build_vocab" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>,
-use both training set and validation set for building
+<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>, use both training set and validation set for building
 the vocabulary. Otherwise only the training set is used.</p>
 </dd></dl>
 
@@ -1294,8 +1243,7 @@ language ( ANS , languageid0 )”</p>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.Text2LabelDataset.build_vocab">
 <code class="sig-name descname">build_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2LabelDataset.build_vocab" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>,
-use both training set and validation set for building
+<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>, use both training set and validation set for building
 the vocabulary. Otherwise only the training set is used.</p>
 </dd></dl>
 
@@ -1308,12 +1256,10 @@ the vocabulary. Otherwise only the training set is used.</p>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.Text2LabelDataset.parse_file">
 <code class="sig-name descname">parse_file</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#graph4nlp.data.dataset.Text2LabelDataset.parse_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format
-is specified by each individual task-specific base class. Returns
-all the indices of data items in this file w.r.t. the whole dataset.</p>
-<p>For Text2LabelDataset, the format of the input file should contain
-lines of input, each line representing one record of data. The
-input and output is separated by a tab( ).</p>
+<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each individual task-specific
+base class. Returns all the indices of data items in this file w.r.t. the whole dataset.</p>
+<p>For Text2LabelDataset, the format of the input file should contain lines of input, each line representing one
+record of data. The input and output is separated by a tab(     ).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1397,12 +1343,10 @@ input and output is separated by a tab( ).</p>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.DoubleText2TextDataset.parse_file">
 <code class="sig-name descname">parse_file</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset.parse_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format is
-specified by each individual task-specific base class.
-Returns all the indices of data items in this file w.r.t. the whole dataset.</p>
-<p>For DoubleText2TextDataset, the format of the input file should
-contain lines of input, each line representing one record of data.
-The input and output is separated by a tab(     ).
+<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each individual task-specific
+base class. Returns all the indices of data items in this file w.r.t. the whole dataset.</p>
+<p>For DoubleText2TextDataset, the format of the input file should contain lines of input, each line representing one
+record of data. The input and output is separated by a tab(     ).
 # TODO: update example</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1420,12 +1364,7 @@ The input and output is separated by a tab(     ).
 </dl>
 <p class="rubric">Examples</p>
 <p>input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )</p>
-<dl class="simple">
-<dt>DataItem:</dt><dd><p>input_text=”list job use languageid0”,
-input_text2=”list job use languageid0”,
-output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
-</dd>
-</dl>
+<p>DataItem: input_text=”list job use languageid0”, input_text2=”list job use languageid0”, output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 </dd></dl>
 
 <dl class="method">
@@ -1486,8 +1425,7 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.SequenceLabelingDataset.build_vocab">
 <code class="sig-name descname">build_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.SequenceLabelingDataset.build_vocab" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>,
-use both training set and validation set for building
+<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>, use both training set and validation set for building
 the vocabulary. Otherwise only the training set is used.</p>
 </dd></dl>
 
@@ -1500,14 +1438,7 @@ the vocabulary. Otherwise only the training set is used.</p>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.SequenceLabelingDataset.parse_file">
 <code class="sig-name descname">parse_file</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#graph4nlp.data.dataset.SequenceLabelingDataset.parse_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Read and parse the file specified by <cite>file_path</cite>.
-The file format is specified by each individual task-specific base class.
-Returns all the indices of data items in this file w.r.t. the whole dataset.
-For SequenceLabelingDataset, the format of the input file should contain lines of tokens,
-each line representing one record of token at first column and its tag at the last column.
-Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each
-individual task-specific base class. Returns all the indices of data items in
-Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each
+<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each
 individual task-specific base class. Returns all the indices of data items in
 this file w.r.t. the whole dataset.
 For SequenceLabelingDataset, the format of the input file should contain lines of tokens,
@@ -1535,10 +1466,9 @@ German   I-MISC</p>
 <dt>
 <em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Dataset</code><span class="sig-paren">(</span><em class="sig-param">root</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">tokenizer=&lt;function word_tokenize&gt;</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">pretrained_word_emb_name='840B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">target_pretrained_word_emb_name=None</em>, <em class="sig-param">target_pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir='.vector_cache/'</em>, <em class="sig-param">max_word_vocab_size=None</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">use_val_for_vocab=False</em>, <em class="sig-param">seed=1234</em>, <em class="sig-param">thread_number=4</em>, <em class="sig-param">port=9000</em>, <em class="sig-param">timeout=15000</em>, <em class="sig-param">for_inference=False</em>, <em class="sig-param">reused_vocab_model=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span></dt>
 <dd><p>Base class for datasets.</p>
-<p>The dataset is organized in a two-layer index style. Direct access
-to the dataset object, e.g. Dataset[1], will first be converted to
-the access to the internal index list, which is then passed to
-access the actual data. This design is for the ease of sampling.</p>
+<p>The dataset is organized in a two-layer index style. Direct access to the dataset object, e.g. Dataset[1], will first
+be converted to the access to the internal index list, which is then passed to access the actual data. This design
+is for the ease of sampling.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1548,15 +1478,11 @@ access the actual data. This design is for the ease of sampling.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<p>Suppose we have a Dataset containing 5 data items
-[‘a’, ‘b’, ‘c’, ‘d’, ‘e’]. The indices of the 5 elements in the
-list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset
-is shuffled, which shuffles the internal index list, the consequent
-indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset
-<cite>Dataset[2]</cite> will first access the indices[2] which is 1, and then
-use the received index to access the actual dataset, which will
-return the actual data item ‘b’. Now to the user the 3rd ([2])
-element in the dataset got shuffled and is not ‘c’.</p>
+<p>Suppose we have a Dataset containing 5 data items [‘a’, ‘b’, ‘c’, ‘d’, ‘e’]. The indices of the 5 elements in the
+list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset is shuffled, which shuffles the internal index list, the
+consequent indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset <cite>Dataset[2]</cite> will first access the indices[2]
+which is 1, and then use the received index to access the actual dataset, which will return the actual data item ‘b’.
+Now to the user the 3rd ([2]) element in the dataset got shuffled and is not ‘c’.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1604,15 +1530,14 @@ element in the dataset got shuffled and is not ‘c’.</p>
 <dl class="method">
 <dt>
 <code class="sig-name descname">build_topology</code><span class="sig-paren">(</span><em class="sig-param">data_items</em><span class="sig-paren">)</span></dt>
-<dd><p>Build graph topology for each item in the dataset. The generated graph
-is bound to the <cite>graph</cite> attribute of the DataItem.</p>
+<dd><p>Build graph topology for each item in the dataset. The generated graph is bound to the <cite>graph</cite> attribute of the
+DataItem.</p>
 </dd></dl>
 
 <dl class="method">
 <dt>
 <code class="sig-name descname">build_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>,
-use both training set and validation set for building
+<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>, use both training set and validation set for building
 the vocabulary. Otherwise only the training set is used.</p>
 </dd></dl>
 
@@ -1651,13 +1576,11 @@ the vocabulary. Otherwise only the training set is used.</p>
 <code class="sig-name descname">read_raw_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Read raw data from the disk and put them in a dictionary (<cite>self.data</cite>).
 The raw data file should be organized as the format defined in <cite>self.parse_file()</cite> method.</p>
-<p>This function calls <cite>self.parse_file()</cite> repeatedly and pass the file paths in
-<cite>self.raw_file_names</cite> once at a time.</p>
-<p>This function builds <cite>self.data</cite> which is a dict of {int (index): DataItem},
-where the id represents the index of the DataItem w.r.t. the whole dataset.</p>
-<p>This function also builds the <cite>self.split_ids</cite> dictionary whose keys correspond to
-those of self.raw_file_names defined by the user, indicating the indices of each
-subset (e.g. train, val and test).</p>
+<p>This function calls <cite>self.parse_file()</cite> repeatedly and pass the file paths in <cite>self.raw_file_names</cite> once at a time.</p>
+<p>This function builds <cite>self.data</cite> which is a dict of {int (index): DataItem}, where the id represents the
+index of the DataItem w.r.t. the whole dataset.</p>
+<p>This function also builds the <cite>self.split_ids</cite> dictionary whose keys correspond to those of self.raw_file_names
+defined by the user, indicating the indices of each subset (e.g. train, val and test).</p>
 </dd></dl>
 
 <dl class="method">
@@ -1721,8 +1644,7 @@ subset (e.g. train, val and test).</p>
 <dl class="method">
 <dt>
 <code class="sig-name descname">build_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>,
-use both training set and validation set for building
+<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>, use both training set and validation set for building
 the vocabulary. Otherwise only the training set is used.</p>
 </dd></dl>
 
@@ -1735,12 +1657,10 @@ the vocabulary. Otherwise only the training set is used.</p>
 <dl class="method">
 <dt>
 <code class="sig-name descname">parse_file</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span> &#x2192; list</dt>
-<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format
-is specified by each individual task-specific base class. Returns
-all the indices of data items in this file w.r.t. the whole dataset.</p>
-<p>For Text2LabelDataset, the format of the input file should contain
-lines of input, each line representing one record of data. The
-input and output is separated by a tab( ).</p>
+<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format is specified by each individual task-specific
+base class. Returns all the indices of data items in this file w.r.t. the whole dataset.</p>
+<p>For Text2LabelDataset, the format of the input file should contain lines of input, each line representing one
+record of data. The input and output is separated by a tab(     ).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
