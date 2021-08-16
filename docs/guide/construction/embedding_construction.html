@@ -1,0 +1,404 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Embedding Construction &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Chapter 4. Graph Encoder" href="../gnn.html" />
+    <link rel="prev" title="Dynamic Graph Construction" href="dynamic_graph_construction.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../construction.html">Chapter 3. Graph Construction</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../construction.html#roadmap">Roadmap</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dependencygraphconstruction.html">Dependency Graph Construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="constituency_graph_construction.html">Constituency Graph Construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iegraphconstruction.html">IE Graph Construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dynamic_graph_construction.html">Dynamic Graph Construction</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Embedding Construction</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#embeddingconstruction">EmbeddingConstruction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#various-embedding-modules">Various embedding modules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../construction.html">Chapter 3. Graph Construction</a> &raquo;</li>
+        
+      <li>Embedding Construction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/guide/construction/embedding_construction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="embedding-construction">
+<span id="guide-embedding-construction"></span><h1>Embedding Construction<a class="headerlink" href="#embedding-construction" title="Permalink to this headline">¶</a></h1>
+<p>The embedding construction module aims to learn the initial node/edge embeddings for the input graph
+before being consumed by the subsequent GNN model.</p>
+<div class="section" id="embeddingconstruction">
+<h2>EmbeddingConstruction<a class="headerlink" href="#embeddingconstruction" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">EmbeddingConstruction</span></code> class supports various strategies for initializing both single-token
+(i.e., containing single token) and multi-token (i.e., containing multiple tokens) items (i.e., node/edge).
+As shown in the below code piece, for both single-token and multi-token items, supported embedding strategies
+include <cite>w2v</cite>, <cite>w2v_bilstm</cite>, <cite>w2v_bigru</cite>, <cite>bert</cite>, <cite>bert_bilstm</cite>, <cite>bert_bigru</cite>, <cite>w2v_bert</cite>, <cite>w2v_bert_bilstm</cite>
+and <cite>w2v_bert_bigru</cite>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">emb_strategy</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;w2v&#39;</span><span class="p">,</span> <span class="s1">&#39;w2v_bilstm&#39;</span><span class="p">,</span> <span class="s1">&#39;w2v_bigru&#39;</span><span class="p">,</span> <span class="s1">&#39;bert&#39;</span><span class="p">,</span> <span class="s1">&#39;bert_bilstm&#39;</span><span class="p">,</span> <span class="s1">&#39;bert_bigru&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;w2v_bert&#39;</span><span class="p">,</span> <span class="s1">&#39;w2v_bert_bilstm&#39;</span><span class="p">,</span> <span class="s1">&#39;w2v_bert_bigru&#39;</span><span class="p">)</span>
+
+<span class="n">word_emb_type</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="k">if</span> <span class="n">single_token_item</span><span class="p">:</span>
+    <span class="n">node_edge_emb_strategy</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s1">&#39;w2v&#39;</span> <span class="ow">in</span> <span class="n">emb_strategy</span><span class="p">:</span>
+        <span class="n">word_emb_type</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;w2v&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;bert&#39;</span> <span class="ow">in</span> <span class="n">emb_strategy</span><span class="p">:</span>
+        <span class="n">word_emb_type</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;seq_bert&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;bilstm&#39;</span> <span class="ow">in</span> <span class="n">emb_strategy</span><span class="p">:</span>
+        <span class="n">seq_info_encode_strategy</span> <span class="o">=</span> <span class="s1">&#39;bilstm&#39;</span>
+    <span class="k">elif</span> <span class="s1">&#39;bigru&#39;</span> <span class="ow">in</span> <span class="n">emb_strategy</span><span class="p">:</span>
+        <span class="n">seq_info_encode_strategy</span> <span class="o">=</span> <span class="s1">&#39;bigru&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">seq_info_encode_strategy</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">seq_info_encode_strategy</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+    <span class="k">if</span> <span class="s1">&#39;w2v&#39;</span> <span class="ow">in</span> <span class="n">emb_strategy</span><span class="p">:</span>
+        <span class="n">word_emb_type</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;w2v&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;bert&#39;</span> <span class="ow">in</span> <span class="n">emb_strategy</span><span class="p">:</span>
+        <span class="n">word_emb_type</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;node_edge_bert&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;bilstm&#39;</span> <span class="ow">in</span> <span class="n">emb_strategy</span><span class="p">:</span>
+        <span class="n">node_edge_emb_strategy</span> <span class="o">=</span> <span class="s1">&#39;bilstm&#39;</span>
+    <span class="k">elif</span> <span class="s1">&#39;bigru&#39;</span> <span class="ow">in</span> <span class="n">emb_strategy</span><span class="p">:</span>
+        <span class="n">node_edge_emb_strategy</span> <span class="o">=</span> <span class="s1">&#39;bigru&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">node_edge_emb_strategy</span> <span class="o">=</span> <span class="s1">&#39;mean&#39;</span>
+</pre></div>
+</div>
+<p>For instance, for single-token item, <code class="docutils literal notranslate"><span class="pre">w2v_bilstm</span></code> strategy means we first use word2vec embeddings
+to initialize each item, and then apply a BiLSTM encoder to encode the whole graph (assuming the node
+order reserves the sequential order in raw text). Compared to <code class="docutils literal notranslate"><span class="pre">w2v_bilstm</span></code>, the <code class="docutils literal notranslate"><span class="pre">w2v_bert_bilstm</span></code>
+strategy in addition applies the BERT encoder to the whole graph (i.e., sequential text), the concatenation of
+the BERT embedding and word2vec embedding instead of word2vec embedding will be fed into the BiLSTM encoder.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># single-token item graph</span>
+<span class="n">feat</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">token_ids</span> <span class="o">=</span> <span class="n">batch_gd</span><span class="o">.</span><span class="n">batch_node_features</span><span class="p">[</span><span class="s2">&quot;token_id&quot;</span><span class="p">]</span>
+<span class="k">if</span> <span class="s1">&#39;w2v&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_emb_layers</span><span class="p">:</span>
+    <span class="n">word_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_emb_layers</span><span class="p">[</span><span class="s1">&#39;w2v&#39;</span><span class="p">](</span><span class="n">token_ids</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">word_feat</span> <span class="o">=</span> <span class="n">dropout_fn</span><span class="p">(</span><span class="n">word_feat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_dropout</span><span class="p">,</span> <span class="n">shared_axes</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span>
+    <span class="n">feat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word_feat</span><span class="p">)</span>
+
+<span class="n">new_feat</span> <span class="o">=</span> <span class="n">feat</span>
+<span class="k">if</span> <span class="s1">&#39;seq_bert&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_emb_layers</span><span class="p">:</span>
+    <span class="n">gd_list</span> <span class="o">=</span> <span class="n">from_batch</span><span class="p">(</span><span class="n">batch_gd</span><span class="p">)</span>
+    <span class="n">raw_tokens</span> <span class="o">=</span> <span class="p">[[</span><span class="n">gd</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;token&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gd</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">())]</span> <span class="k">for</span> <span class="n">gd</span> <span class="ow">in</span> <span class="n">gd_list</span><span class="p">]</span>
+    <span class="n">bert_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_emb_layers</span><span class="p">[</span><span class="s1">&#39;seq_bert&#39;</span><span class="p">](</span><span class="n">raw_tokens</span><span class="p">)</span>
+    <span class="n">bert_feat</span> <span class="o">=</span> <span class="n">dropout_fn</span><span class="p">(</span><span class="n">bert_feat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bert_dropout</span><span class="p">,</span> <span class="n">shared_axes</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span>
+    <span class="n">new_feat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bert_feat</span><span class="p">)</span>
+
+<span class="n">new_feat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">new_feat</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq_info_encode_layer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">batch_gd</span><span class="o">.</span><span class="n">batch_node_features</span><span class="p">[</span><span class="s2">&quot;node_feat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_feat</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">rnn_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq_info_encode_layer</span><span class="p">(</span><span class="n">new_feat</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">batch_gd</span><span class="o">.</span><span class="n">_batch_num_nodes</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">batch_gd</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rnn_state</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+        <span class="n">rnn_state</span> <span class="o">=</span> <span class="n">rnn_state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">batch_gd</span><span class="o">.</span><span class="n">batch_node_features</span><span class="p">[</span><span class="s2">&quot;node_feat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rnn_state</span>
+</pre></div>
+</div>
+<p>For multi-token item, <code class="docutils literal notranslate"><span class="pre">w2v_bilstm</span></code> strategy means we first use the word2vec embeddings to initialize
+each token in the item, then apply a BiLSTM encoder to encode each item text. Compared to <code class="docutils literal notranslate"><span class="pre">w2v_bilstm</span></code>,
+the <code class="docutils literal notranslate"><span class="pre">w2v_bert_bilstm</span></code> strategy in addition applies the BERT encoder to each item text, the concatenation of
+the BERT embedding and word2vec embedding instead of word2vec embedding will be fed into the BiLSTM encoder.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># multi-token item graph</span>
+<span class="n">feat</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">token_ids</span> <span class="o">=</span> <span class="n">batch_gd</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s2">&quot;token_id&quot;</span><span class="p">]</span>
+<span class="k">if</span> <span class="s1">&#39;w2v&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_emb_layers</span><span class="p">:</span>
+    <span class="n">word_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_emb_layers</span><span class="p">[</span><span class="s1">&#39;w2v&#39;</span><span class="p">](</span><span class="n">token_ids</span><span class="p">)</span>
+    <span class="n">word_feat</span> <span class="o">=</span> <span class="n">dropout_fn</span><span class="p">(</span><span class="n">word_feat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_dropout</span><span class="p">,</span> <span class="n">shared_axes</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span>
+    <span class="n">feat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word_feat</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="s1">&#39;node_edge_bert&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_emb_layers</span><span class="p">:</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">batch_gd</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;token&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_gd</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">())]</span>
+    <span class="n">node_edge_bert_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_emb_layers</span><span class="p">[</span><span class="s1">&#39;node_edge_bert&#39;</span><span class="p">](</span><span class="n">input_data</span><span class="p">)</span>
+    <span class="n">node_edge_bert_feat</span> <span class="o">=</span> <span class="n">dropout_fn</span><span class="p">(</span><span class="n">node_edge_bert_feat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bert_dropout</span><span class="p">,</span> <span class="n">shared_axes</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span>
+    <span class="n">feat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node_edge_bert_feat</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">feat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">node_token_lens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">((</span><span class="n">token_ids</span> <span class="o">!=</span> <span class="n">Vocab</span><span class="o">.</span><span class="n">PAD</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_edge_emb_layer</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="n">node_token_lens</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feat</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="n">feat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">feat</span> <span class="o">=</span> <span class="n">batch_gd</span><span class="o">.</span><span class="n">split_features</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+
+<span class="n">batch_gd</span><span class="o">.</span><span class="n">batch_node_features</span><span class="p">[</span><span class="s2">&quot;node_feat&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feat</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="various-embedding-modules">
+<h2>Various embedding modules<a class="headerlink" href="#various-embedding-modules" title="Permalink to this headline">¶</a></h2>
+<p>Various embedding modules are provided in the library to support embedding construction.
+For instance, <code class="docutils literal notranslate"><span class="pre">WordEmbedding</span></code> class aims to convert the input word index sequence to the word embedding matrix.
+<code class="docutils literal notranslate"><span class="pre">MeanEmbedding</span></code> class simply computes the average embeddings.
+<code class="docutils literal notranslate"><span class="pre">RNNEmbedding</span></code> class applies the RNN network (e.g., GRU, LSTM, BiGRU, BiLSTM) to a sequence of word embeddings.</p>
+<p>We will introduce <code class="docutils literal notranslate"><span class="pre">BertEmbedding</span></code> in more detail next.
+<code class="docutils literal notranslate"><span class="pre">BertEmbedding</span></code> class calls the Hugging Face Transformers APIs to compute the BERT embeddings for the input text.
+Transformer-based models like BERT have limit on the maximal sequence length.
+The <code class="docutils literal notranslate"><span class="pre">BertEmbedding</span></code> class can automaticall cut the long input sequence to multiple small chunks and
+call Transformers APIs for each of the small chunk, and then automtically merge their embeddings to
+obtain the embedding for the original long sequence.
+Below is the code piece showing the <code class="docutils literal notranslate"><span class="pre">BertEmbedding</span></code> class API. Users can specify <code class="docutils literal notranslate"><span class="pre">max_seq_len</span></code> and <code class="docutils literal notranslate"><span class="pre">doc_stride</span></code>
+to indicate the maximal sequence length and the stride (i.e., similar to the stride idea in ConvNet)
+when cutting long text into small chunks.
+In addition, instead of returning the last encoder layer as the output state, it returns the weighted average of
+all the encoder layer states as the output layer, as we find this works better in practice. Note the weight is a
+learnable parameter.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BertEmbedding</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;bert-base-uncased&#39;</span><span class="p">,</span> <span class="n">max_seq_len</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">doc_stride</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">fix_emb</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lower_case</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BertEmbedding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bert_max_seq_len</span> <span class="o">=</span> <span class="n">max_seq_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bert_doc_stride</span> <span class="o">=</span> <span class="n">doc_stride</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fix_emb</span> <span class="o">=</span> <span class="n">fix_emb</span>
+
+        <span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">BertModel</span>
+        <span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">BertTokenizer</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[ Using pretrained BERT embeddings ]&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bert_tokenizer</span> <span class="o">=</span> <span class="n">BertTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">do_lower_case</span><span class="o">=</span><span class="n">lower_case</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bert_model</span> <span class="o">=</span> <span class="n">BertModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fix_emb</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[ Fix BERT layers ]&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bert_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bert_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+                <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[ Finetune BERT layers ]&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bert_model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+        <span class="c1"># compute weighted average over BERT layers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logits_bert_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bert_model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">num_hidden_layers</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../gnn.html" class="btn btn-neutral float-right" title="Chapter 4. Graph Encoder" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="dynamic_graph_construction.html" class="btn btn-neutral float-left" title="Dynamic Graph Construction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

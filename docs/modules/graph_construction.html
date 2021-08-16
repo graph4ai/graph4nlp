@@ -1,0 +1,1509 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>graph4nlp.graph_construction &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="graph4nlp.graph_embedding" href="graph_embedding.html" />
+    <link rel="prev" title="graph4nlp.datasets" href="datasets.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">graph4nlp.graph_construction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#graph-constructor">Graph Constructor</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>graph4nlp.graph_construction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/modules/graph_construction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-graph4nlp.graph_construction">
+<span id="graph4nlp-graph-construction"></span><h1>graph4nlp.graph_construction<a class="headerlink" href="#module-graph4nlp.graph_construction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="graph-constructor">
+<h2>Graph Constructor<a class="headerlink" href="#graph-constructor" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="graph4nlp.graph_construction.DependencyBasedGraphConstruction">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_construction.</code><code class="sig-name descname">DependencyBasedGraphConstruction</code><span class="sig-paren">(</span><em class="sig-param">embedding_style</em>, <em class="sig-param">vocab</em>, <em class="sig-param">hidden_size=300</em>, <em class="sig-param">fix_word_emb=True</em>, <em class="sig-param">fix_bert_emb=True</em>, <em class="sig-param">word_dropout=None</em>, <em class="sig-param">rnn_dropout=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Dependency-parsing-tree based graph construction class</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>embedding_style: dict</strong></dt><dd><p>Specify embedding styles including <code class="docutils literal notranslate"><span class="pre">single_token_item</span></code>, <code class="docutils literal notranslate"><span class="pre">emb_strategy</span></code>, <code class="docutils literal notranslate"><span class="pre">num_rnn_layers</span></code>, <code class="docutils literal notranslate"><span class="pre">bert_model_name</span></code> and <code class="docutils literal notranslate"><span class="pre">bert_lower_case</span></code>. # noqa</p>
+</dd>
+<dt><strong>vocab: VocabModel</strong></dt><dd><p>Vocabulary including all words appeared in graphs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab" title="graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_vocab</span></code></a>(g)</p></td>
+<td><p>Add node tokens appeared in graph g to vocabulary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">embedding</span></code>(**kwargs)</p></td>
+<td><p>Compute initial node/edge embeddings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.forward" title="graph4nlp.graph_construction.DependencyBasedGraphConstruction.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(batch_graphdata)</p></td>
+<td><p>Compute graph topology and initial node/edge embeddings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing" title="graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parsing</span></code></a>(raw_text_data, nlp_processor, …)</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.topology" title="graph4nlp.graph_construction.DependencyBasedGraphConstruction.topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topology</span></code></a>(raw_text_data, nlp_processor, …)</p></td>
+<td><p>Graph building method.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab">
+<code class="sig-name descname">add_vocab</code><span class="sig-paren">(</span><em class="sig-param">g</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Add node tokens appeared in graph g to vocabulary.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>g: GraphData</strong></dt><dd><p>Graph data-structure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch_graphdata: list</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute graph topology and initial node/edge embeddings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw_text_data :</strong></dt><dd><p>The raw text data.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Extra parameters.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt>NotImplementedError</dt><dd><p>NotImplementedError.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing">
+<em class="property">classmethod </em><code class="sig-name descname">parsing</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw_text_data: str</strong></dt><dd></dd>
+<dt><strong>nlp_processor: StanfordCoreNLP</strong></dt><dd></dd>
+<dt><strong>processor_args: dict</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt>parsed_results: list[dict]</dt><dd><p>Each sentence is a dict. All sentences are packed by a list.
+key, value
+“node_num”: int</p>
+<blockquote>
+<div><p>the node amount</p>
+</div></blockquote>
+<dl>
+<dt>“node_content”: list[dict]</dt><dd><p>The list consisting node information. Each node is organized by a dict.
+‘token’: str</p>
+<blockquote>
+<div><p>word token</p>
+</div></blockquote>
+<dl class="simple">
+<dt>‘position_id’: int</dt><dd><p>the word’s position id in original sentence. eg: I am a dog. position_id: 0, 1, 2, 3 # noqa</p>
+</dd>
+<dt>‘id’: int,</dt><dd><p>the node token’s id which will be used in GraphData</p>
+</dd>
+<dt>“sentence_id”: int</dt><dd><p>The sentence’s id in the whole text.</p>
+</dd>
+</dl>
+</dd>
+<dt>“graph_content”: list[dict]</dt><dd><p>The list consisting edge information. Each edge is organized by a dict.
+“edge_type”: str</p>
+<blockquote>
+<div><p>The edge type token, eg: ‘nsubj’</p>
+</div></blockquote>
+<dl class="simple">
+<dt>‘src’: int</dt><dd><p>The source node <code class="docutils literal notranslate"><span class="pre">id</span></code></p>
+</dd>
+<dt>‘tgt’: int</dt><dd><p>The target node <code class="docutils literal notranslate"><span class="pre">id</span></code></p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.topology">
+<em class="property">classmethod </em><code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy</em>, <em class="sig-param">edge_strategy</em>, <em class="sig-param">sequential_link=True</em>, <em class="sig-param">verbase=0</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Graph building method.</p>
+</div></blockquote>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>raw_text_data: str or list[list]</strong></dt><dd><p>Raw text data, it can be multi-sentences.
+When it is <code class="docutils literal notranslate"><span class="pre">str</span></code> type, it is the raw text.
+When it is <code class="docutils literal notranslate"><span class="pre">list[list]</span></code> type, it is the tokenized token lists.</p>
+</dd>
+<dt><strong>nlp_processor: StanfordCoreNLP</strong></dt><dd><p>NLP parsing tools</p>
+</dd>
+<dt><strong>processor_args: dict</strong></dt><dd><p>The configure dict for StanfordCoreNLP.annotate</p>
+</dd>
+<dt><strong>merge_strategy: None or str, option=[None, “tailhead”, “user_define”]</strong></dt><dd><p>Strategy to merge sub-graphs into one graph
+<code class="docutils literal notranslate"><span class="pre">None</span></code>: It will be the default option. We will do as <code class="docutils literal notranslate"><span class="pre">&quot;tailhead&quot;</span></code>.
+<code class="docutils literal notranslate"><span class="pre">&quot;tailhead&quot;</span></code>: Link the sub-graph  <code class="docutils literal notranslate"><span class="pre">i</span></code>’s tail node with <code class="docutils literal notranslate"><span class="pre">i+1</span></code>’s head node
+<code class="docutils literal notranslate"><span class="pre">&quot;user_define&quot;</span></code>: We will give this option to the user. User can override this method to define your merge # noqa</p>
+<blockquote>
+<div><p>strategy.</p>
+</div></blockquote>
+</dd>
+<dt><strong>edge_strategy: None or str, option=[None, “homogeneous”, “heterogeneous”, “as_node”]</strong></dt><dd><p>Strategy to process edge.
+<code class="docutils literal notranslate"><span class="pre">None</span></code>: It will be the default option. We will do as <code class="docutils literal notranslate"><span class="pre">&quot;homogeneous&quot;</span></code>.
+<code class="docutils literal notranslate"><span class="pre">&quot;homogeneous&quot;</span></code>: We will drop the edge type information.</p>
+<blockquote>
+<div><p>If there is a linkage among node <code class="docutils literal notranslate"><span class="pre">i</span></code> and node <code class="docutils literal notranslate"><span class="pre">j</span></code>, we will add an edge whose weight # noqa
+is <code class="docutils literal notranslate"><span class="pre">1.0</span></code>. Otherwise there is no edge.</p>
+</div></blockquote>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">heterogeneous</span></code>: We will keep the edge type information.</dt><dd><p>An edge will have type information like <code class="docutils literal notranslate"><span class="pre">n_subj</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">as_node</span></code>: We will view the edge as a graph node.</dt><dd><p>If there is an edge whose type is <code class="docutils literal notranslate"><span class="pre">k</span></code> between node <code class="docutils literal notranslate"><span class="pre">i</span></code> and node <code class="docutils literal notranslate"><span class="pre">j</span></code>,
+we will insert a node <code class="docutils literal notranslate"><span class="pre">k</span></code> into the graph and link node (<code class="docutils literal notranslate"><span class="pre">i</span></code>, <code class="docutils literal notranslate"><span class="pre">k</span></code>) and (<code class="docutils literal notranslate"><span class="pre">k</span></code>, <code class="docutils literal notranslate"><span class="pre">j</span></code>). # noqa</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>sequential_link: bool, default=True</strong></dt><dd><p>Whether to link node tokens sequentially (note that it is bidirectional)</p>
+</dd>
+<dt><strong>verbase: int, default=0</strong></dt><dd><p>Whether to output log infors. Set 1 to output more infos.</p>
+</dd>
+<dt><strong>Returns</strong></dt><dd></dd>
+<dt><strong>——-</strong></dt><dd></dd>
+<dt><strong>joint_graph: GraphData</strong></dt><dd><p>The merged graph data-structure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_construction.</code><code class="sig-name descname">ConstituencyBasedGraphConstruction</code><span class="sig-paren">(</span><em class="sig-param">embedding_style</em>, <em class="sig-param">vocab</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">fix_word_emb=True</em>, <em class="sig-param">fix_bert_emb=True</em>, <em class="sig-param">word_dropout=None</em>, <em class="sig-param">rnn_dropout=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for constituency graph construction.</p>
+<p>…</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>embedding_styles</strong><span class="classifier">(dict)</span></dt><dd><p>Specify embedding styles including <code class="docutils literal notranslate"><span class="pre">single_token_item</span></code>, <code class="docutils literal notranslate"><span class="pre">emb_strategy</span></code>,
+<code class="docutils literal notranslate"><span class="pre">num_rnn_layers</span></code>, <code class="docutils literal notranslate"><span class="pre">bert_model_name</span></code> and <code class="docutils literal notranslate"><span class="pre">bert_lower_case</span></code>.</p>
+</dd>
+<dt><strong>vocab: (set, optional)</strong></dt><dd><p>Vocabulary including all words appeared in graphs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 47%" />
+<col style="width: 53%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>topology(raw_text_data, nlp_processor, merge_strategy=None, edge_strategy=None)</strong></p></td>
+<td><p>Generate graph structure with nlp parser like <code class="docutils literal notranslate"><span class="pre">CoreNLP</span></code> etc.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>_construct_static_graph(parsed_object, sub_sentence_id, edge_strategy=None)</strong></p></td>
+<td><p>Construct a single static graph from a single sentence, to be called by <code class="docutils literal notranslate"><span class="pre">topology</span></code> function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>_graph_connect(nx_graph_list, merge_strategy=None)</strong></p></td>
+<td><p>Construct a merged graph from a list of graphs, to be called by <code class="docutils literal notranslate"><span class="pre">topology</span></code> function.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>embedding(node_attributes, edge_attributes)</strong></p></td>
+<td><p>Generate node/edge embeddings from node/edge attributes through an embedding layer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>forward(raw_text_data, nlp_parser)</strong></p></td>
+<td><p>Generate graph topology and embeddings.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch_graphdata: list</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute graph topology and initial node/edge embeddings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw_text_data :</strong></dt><dd><p>The raw text data.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Extra parameters.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt>NotImplementedError</dt><dd><p>NotImplementedError.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.parsing">
+<em class="property">classmethod </em><code class="sig-name descname">parsing</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.parsing" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw_text_data: str</strong></dt><dd></dd>
+<dt><strong>nlp_processor: StanfordCoreNLP</strong></dt><dd></dd>
+<dt><strong>processor_args: json config for constituency graph construction</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.topology">
+<em class="property">classmethod </em><code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy=None</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">sequential_link=3</em>, <em class="sig-param">top_down=False</em>, <em class="sig-param">prune=2</em>, <em class="sig-param">verbase=True</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
+<dd><p>topology This function generate a graph strcuture from a raw text data.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>raw_text_data</strong><span class="classifier">string</span></dt><dd><p>A string to be used to construct a static graph, can be composed of multiple strings</p>
+</dd>
+<dt><strong>nlp_processor</strong><span class="classifier">object</span></dt><dd><p>A parser used to parse sentence string to parsing trees like dependency parsing tree
+or constituency parsing tree</p>
+</dd>
+<dt><strong>merge_strategy</strong><span class="classifier">None or str, option=[None, “tailhead”, “user_define”]</span></dt><dd><p>Strategy to merge sub-graphs into one graph
+<code class="docutils literal notranslate"><span class="pre">None</span></code>: It will be the default option. We will do as <code class="docutils literal notranslate"><span class="pre">&quot;tailhead&quot;</span></code>.
+<code class="docutils literal notranslate"><span class="pre">&quot;tailhead&quot;</span></code>: Link the sub-graph  <code class="docutils literal notranslate"><span class="pre">i</span></code>’s tail node with <code class="docutils literal notranslate"><span class="pre">i+1</span></code>’s head node
+<code class="docutils literal notranslate"><span class="pre">&quot;user_define&quot;</span></code>: We will give this option to the user. User can override the</p>
+<blockquote>
+<div><p>method <code class="docutils literal notranslate"><span class="pre">_graph_connnect</span></code> to define your merge strategy.</p>
+</div></blockquote>
+</dd>
+<dt><strong>edge_strategy: None or str, option=[None, “homogeneous”, “heterogeneous”, “as_node”]</strong></dt><dd><p>Strategy to process edge.
+<code class="docutils literal notranslate"><span class="pre">None</span></code>: It will be the default option. We will do as <code class="docutils literal notranslate"><span class="pre">&quot;homogeneous&quot;</span></code>.
+<code class="docutils literal notranslate"><span class="pre">&quot;homogeneous&quot;</span></code>: We will drop the edge type information.</p>
+<blockquote>
+<div><p>If there is a linkage among node <code class="docutils literal notranslate"><span class="pre">i</span></code> and node <code class="docutils literal notranslate"><span class="pre">j</span></code>, we will
+add an edge whose weight is <code class="docutils literal notranslate"><span class="pre">1.0</span></code>. Otherwise there is no edge.</p>
+</div></blockquote>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">heterogeneous</span></code>: We will keep the edge type information.</dt><dd><p>An edge will have type information like <code class="docutils literal notranslate"><span class="pre">n_subj</span></code>.
+It is not implemented yet.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">as_node</span></code>: We will view the edge as a graph node.</dt><dd><p>If there is an edge whose type is <code class="docutils literal notranslate"><span class="pre">k</span></code> between node <code class="docutils literal notranslate"><span class="pre">i</span></code> and node <code class="docutils literal notranslate"><span class="pre">j</span></code>,
+we will insert a node <code class="docutils literal notranslate"><span class="pre">k</span></code> into the graph and link
+node (<code class="docutils literal notranslate"><span class="pre">i</span></code>, <code class="docutils literal notranslate"><span class="pre">k</span></code>) and (<code class="docutils literal notranslate"><span class="pre">k</span></code>, <code class="docutils literal notranslate"><span class="pre">j</span></code>). It is not implemented yet.</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>sequential_link</strong><span class="classifier">int, option=[0,1,2,3]</span></dt><dd><p>Strategy to add sequential links between word nodes.
+<code class="docutils literal notranslate"><span class="pre">0</span></code>: Do not add sequential links.
+<code class="docutils literal notranslate"><span class="pre">1</span></code>: Add unidirectional links.
+<code class="docutils literal notranslate"><span class="pre">2</span></code>: Add bidirectional links.
+<code class="docutils literal notranslate"><span class="pre">3</span></code>: Do not add sequential links inside each sentence and add bidirectional links</p>
+<blockquote>
+<div><p>between adjacent sentences.</p>
+</div></blockquote>
+</dd>
+<dt><strong>top_down</strong><span class="classifier">bool</span></dt><dd><p>If true, edges in constituency tree are from root nodes to leaf nodes. Otherwise,
+from leaf nodes to root nodes.</p>
+</dd>
+<dt><strong>prune</strong><span class="classifier">int, option=[0,1,2]</span></dt><dd><p>Strategies for pruning constituency trees
+<code class="docutils literal notranslate"><span class="pre">0</span></code>: No pruning.
+<code class="docutils literal notranslate"><span class="pre">1</span></code>: Prune pos nodes.
+<code class="docutils literal notranslate"><span class="pre">2</span></code>: Prune nodes with both in-degree and out-degree of 1.</p>
+</dd>
+<dt><strong>verbase</strong><span class="classifier">bool</span></dt><dd><p>A boolean option to decide whether to print out the graph construction process.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>GraphData</dt><dd><p>A customized graph data structure</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.graph_construction.IEBasedGraphConstruction">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_construction.</code><code class="sig-name descname">IEBasedGraphConstruction</code><span class="sig-paren">(</span><em class="sig-param">embedding_style</em>, <em class="sig-param">vocab</em>, <em class="sig-param">hidden_size=300</em>, <em class="sig-param">fix_word_emb=True</em>, <em class="sig-param">fix_bert_emb=True</em>, <em class="sig-param">word_dropout=None</em>, <em class="sig-param">rnn_dropout=None</em>, <em class="sig-param">device=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Information Extraction based graph construction class</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>embedding_style: dict</strong></dt><dd><p>Specify embedding styles including <code class="docutils literal notranslate"><span class="pre">single_token_item</span></code>,
+<code class="docutils literal notranslate"><span class="pre">emb_strategy</span></code>, <code class="docutils literal notranslate"><span class="pre">num_rnn_layers</span></code>, <code class="docutils literal notranslate"><span class="pre">bert_model_name</span></code>
+and <code class="docutils literal notranslate"><span class="pre">bert_lower_case</span></code>.</p>
+</dd>
+<dt><strong>vocab: VocabModel</strong></dt><dd><p>Vocabulary including all words appeared in graphs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.add_vocab" title="graph4nlp.graph_construction.IEBasedGraphConstruction.add_vocab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_vocab</span></code></a>(g)</p></td>
+<td><p>Add node tokens appeared in graph g to vocabulary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.embedding" title="graph4nlp.graph_construction.IEBasedGraphConstruction.embedding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">embedding</span></code></a>(graph)</p></td>
+<td><p>Compute initial node/edge embeddings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.forward" title="graph4nlp.graph_construction.IEBasedGraphConstruction.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(batch_graphdata)</p></td>
+<td><p>Compute graph topology and initial node/edge embeddings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.parsing" title="graph4nlp.graph_construction.IEBasedGraphConstruction.parsing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parsing</span></code></a>(all_sent_triples_list, edge_strategy)</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.topology" title="graph4nlp.graph_construction.IEBasedGraphConstruction.topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topology</span></code></a>(raw_text_data, nlp_processor, …)</p></td>
+<td><p>Graph building method.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.graph_construction.IEBasedGraphConstruction.add_vocab">
+<code class="sig-name descname">add_vocab</code><span class="sig-paren">(</span><em class="sig-param">g</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.add_vocab" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Add node tokens appeared in graph g to vocabulary.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>g: GraphData</strong></dt><dd><p>Graph data-structure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.IEBasedGraphConstruction.embedding">
+<code class="sig-name descname">embedding</code><span class="sig-paren">(</span><em class="sig-param">graph: graph4nlp.pytorch.data.data.GraphData</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.embedding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute initial node/edge embeddings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>**kwargs</strong></dt><dd><p>Extra parameters.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt>NotImplementedError</dt><dd><p>NotImplementedError.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.IEBasedGraphConstruction.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch_graphdata: list</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute graph topology and initial node/edge embeddings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw_text_data :</strong></dt><dd><p>The raw text data.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Extra parameters.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt>NotImplementedError</dt><dd><p>NotImplementedError.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.IEBasedGraphConstruction.parsing">
+<em class="property">classmethod </em><code class="sig-name descname">parsing</code><span class="sig-paren">(</span><em class="sig-param">all_sent_triples_list</em>, <em class="sig-param">edge_strategy</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.parsing" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>all_sent_triples_list: list</strong></dt><dd></dd>
+<dt><strong>edge_strategy: str</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl>
+<dt>parsed_results: dict</dt><dd><p>parsed_results is an intermediate dict that contains all the information of
+the constructed IE graph for a piece of raw text input.</p>
+<p><cite>parsed_results[‘graph_content’]</cite> is a list of dict.</p>
+<p>Each dict in <cite>parsed_results[‘graph_content’]</cite> contains information about a
+triple (src_ent, rel, tgt_ent).</p>
+<p><cite>parsed_results[‘graph_nodes’]</cite> contains all nodes in the KG graph.</p>
+<p><cite>parsed_results[‘node_num’]</cite> is the number of nodes in the KG graph.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.IEBasedGraphConstruction.topology">
+<em class="property">classmethod </em><code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy</em>, <em class="sig-param">edge_strategy</em>, <em class="sig-param">verbase=True</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>Graph building method.</p>
+</div></blockquote>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>raw_text_data: str</strong></dt><dd><p>Raw text data, it can be multi-sentences.</p>
+</dd>
+<dt><strong>nlp_processor: StanfordCoreNLP</strong></dt><dd><p>NLP parsing tools</p>
+</dd>
+<dt><strong>merge_strategy: None or str, option=[None, “global”, “user_define”]</strong></dt><dd><p>Strategy to merge sub-graphs into one graph
+<code class="docutils literal notranslate"><span class="pre">None</span></code>:  Do not add additional nodes and edges.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">global</span></code>: All subjects in extracted triples are connected by a “GLOBAL_NODE”</dt><dd><p>using a “global” edge</p>
+</dd>
+</dl>
+<p><code class="docutils literal notranslate"><span class="pre">&quot;user_define&quot;</span></code>: We will give this option to the user.
+User can override this method to define your merge strategy.</p>
+</dd>
+<dt><strong>edge_strategy: None or str, option=[None, “as_node”]</strong></dt><dd><p>Strategy to process edge.
+<code class="docutils literal notranslate"><span class="pre">None</span></code>: It will be the default option.</p>
+<blockquote>
+<div><p>Edge information will be preserved in GraphDate.edge_attributes.</p>
+</div></blockquote>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">as_node</span></code>: We will view the edge as a graph node.</dt><dd><p>If there is an edge whose type is <code class="docutils literal notranslate"><span class="pre">k</span></code> between node <code class="docutils literal notranslate"><span class="pre">i</span></code> and node <code class="docutils literal notranslate"><span class="pre">j</span></code>,
+we will insert a node <code class="docutils literal notranslate"><span class="pre">k</span></code> into the graph and link node
+(<code class="docutils literal notranslate"><span class="pre">i</span></code>, <code class="docutils literal notranslate"><span class="pre">k</span></code>) and (<code class="docutils literal notranslate"><span class="pre">k</span></code>, <code class="docutils literal notranslate"><span class="pre">j</span></code>).
+The <code class="docutils literal notranslate"><span class="pre">type</span></code> of original nodes will be set as <code class="docutils literal notranslate"><span class="pre">ent_node</span></code>,
+while the <code class="docutils literal notranslate"><span class="pre">type</span></code> of edge nodes is <a href="#id1"><span class="problematic" id="id2">``</span></a>edge_node`.`</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>graph: GraphData</dt><dd><p>The merged graph data-structure.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_construction.</code><code class="sig-name descname">NodeEmbeddingBasedGraphConstruction</code><span class="sig-paren">(</span><em class="sig-param">word_vocab</em>, <em class="sig-param">embedding_styles</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for node embedding based dynamic graph construction.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>word_vocab</strong><span class="classifier">Vocab</span></dt><dd><p>The word vocabulary.</p>
+</dd>
+<dt><strong>embedding_styles</strong><span class="classifier">dict</span></dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">single_token_item</span></code> : specify whether the item (i.e., node or edge) contains</p></li>
+</ul>
+<p>single token or multiple tokens.
+- <code class="docutils literal notranslate"><span class="pre">emb_strategy</span></code> : specify the embedding construction strategy.
+- <code class="docutils literal notranslate"><span class="pre">num_rnn_layers</span></code>: specify the number of RNN layers.
+- <code class="docutils literal notranslate"><span class="pre">bert_model_name</span></code>: specify the BERT model name.
+- <code class="docutils literal notranslate"><span class="pre">bert_lower_case</span></code>: specify whether to lower case the input text for BERT embeddings.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_graph_regularization</span></code>(adj, node_feat)</p></td>
+<td><p>Graph graph regularization loss.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_similarity_metric</span></code>(node_emb[, node_mask])</p></td>
+<td><p>Compute similarity metric.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">embedding</span></code>(batch_graph)</p></td>
+<td><p>Compute initial node embeddings.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.forward" title="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(batch_graphdata)</p></td>
+<td><p>Compute graph topology and initial node embeddings.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology" title="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_topology</span></code></a>(raw_text_data[, lower_case, …])</p></td>
+<td><p>Convert raw text data to the initial node set graph (i.e., no edge information).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sparsify_graph</span></code>(adj)</p></td>
+<td><p>Return a sparsified graph of the input graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.topology" title="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topology</span></code></a>(graph)</p></td>
+<td><p>Compute graph topology.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch_graphdata</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute graph topology and initial node embeddings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>batch_graphdata</strong><span class="classifier">GraphData</span></dt><dd><p>The input graph data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>GraphData</dt><dd><p>The constructed batched graph.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology">
+<em class="property">classmethod </em><code class="sig-name descname">init_topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">tokenizer=&lt;function word_tokenize&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert raw text data to the initial node set graph (i.e., no edge information).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw_text_data</strong><span class="classifier">str or list/tuple of str</span></dt><dd><p>The raw text data. When a list/tuple of tokens is provided, no
+tokenization will be conducted and each token is a node;
+otherwise, tokenization will be conducted on the input string
+to get a list of tokens.</p>
+</dd>
+<dt><strong>lower_case</strong><span class="classifier">boolean</span></dt><dd><p>Specify whether to lower case the input text, default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt><strong>tokenizer</strong><span class="classifier">callable, optional</span></dt><dd><p>The tokenization function.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>GraphData</dt><dd><p>The constructed graph.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.topology">
+<code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">graph</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute graph topology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>graph</strong><span class="classifier">GraphData</span></dt><dd><p>The input graph data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>GraphData</dt><dd><p>The constructed graph.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_construction.</code><code class="sig-name descname">NodeEmbeddingBasedRefinedGraphConstruction</code><span class="sig-paren">(</span><em class="sig-param">word_vocab</em>, <em class="sig-param">embedding_styles</em>, <em class="sig-param">alpha_fusion</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for node embedding based refined dynamic graph construction.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>word_vocab</strong><span class="classifier">Vocab</span></dt><dd><p>The word vocabulary.</p>
+</dd>
+<dt><strong>embedding_styles</strong><span class="classifier">dict</span></dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">single_token_item</span></code> : specify whether the item (i.e., node or edge) contains</p></li>
+</ul>
+<blockquote>
+<div><p>single token or multiple tokens.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">emb_strategy</span></code> : specify the embedding construction strategy.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">num_rnn_layers</span></code>: specify the number of RNN layers.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bert_model_name</span></code>: specify the BERT model name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bert_lower_case</span></code>: specify whether to lower case the input text for BERT embeddings.</p></li>
+</ul>
+</dd>
+<dt><strong>alpha_fusion</strong><span class="classifier">float</span></dt><dd><p>Specify the fusion value for combining initial and learned adjacency matrices.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_graph_regularization</span></code>(adj, node_feat)</p></td>
+<td><p>Graph graph regularization loss.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_similarity_metric</span></code>(node_emb[, node_mask])</p></td>
+<td><p>Compute similarity metric.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">embedding</span></code>(batch_graph)</p></td>
+<td><p>Compute initial node embeddings.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.forward" title="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(batch_graphdata)</p></td>
+<td><p>Compute graph topology and initial node embeddings.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology" title="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_topology</span></code></a>(raw_text_data[, lower_case, …])</p></td>
+<td><p>Convert raw text data to the initial graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sparsify_graph</span></code>(adj)</p></td>
+<td><p>Return a sparsified graph of the input graph.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.topology" title="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topology</span></code></a>(graph, init_norm_adj)</p></td>
+<td><p>Compute graph topology.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">batch_graphdata</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute graph topology and initial node embeddings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>batch_graphdata</strong><span class="classifier">GraphData</span></dt><dd><p>The input graph data.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>GraphData</dt><dd><p>The constructed batched graph.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology">
+<em class="property">classmethod </em><code class="sig-name descname">init_topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">tokenizer=&lt;function word_tokenize&gt;</em>, <em class="sig-param">nlp_processor=None</em>, <em class="sig-param">processor_args=None</em>, <em class="sig-param">merge_strategy=None</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">verbase=False</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert raw text data to the initial graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raw_text_data</strong><span class="classifier">str or list/tuple of str</span></dt><dd><p>The raw text data. When a list/tuple of tokens is provided, no
+tokenization will be conducted and each token is a node
+(used for line graph builder); otherwise, tokenization will
+be conducted on the input string to get a list of tokens.</p>
+</dd>
+<dt><strong>lower_case</strong><span class="classifier">boolean</span></dt><dd><p>Specify whether to lower case the input text, default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt><strong>tokenizer</strong><span class="classifier">callable, optional</span></dt><dd><p>The tokenization function, default: <code class="docutils literal notranslate"><span class="pre">nltk.tokenize.word_tokenize</span></code>.</p>
+</dd>
+<dt><strong>nlp_processor: StanfordCoreNLP, optional</strong></dt><dd><p>The NLP processor, default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt><strong>processor_args: dict, optional</strong></dt><dd><p>The NLP processor arguments, default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt><strong>merge_strategy: str</strong></dt><dd><p>Strategy to merge sub-graphs into one graph, depends on specific
+<code class="docutils literal notranslate"><span class="pre">dynamic_init_topology_builder</span></code>, default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt><strong>edge_strategy: str</strong></dt><dd><p>Strategy to process edge, depends on specific <code class="docutils literal notranslate"><span class="pre">dynamic_init_topology_builder</span></code>,
+default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt><strong>verbase: boolean</strong></dt><dd><p>verbase flag, default: <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+<dt><strong>dynamic_init_topology_builder</strong><span class="classifier">class, optional</span></dt><dd><p>The initial graph topology builder, default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt><strong>dynamic_init_topology_aux_args</strong><span class="classifier">dict, optional</span></dt><dd><p>The auxiliary args for dynamic_init_topology_builder.topology, default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>GraphData</dt><dd><p>The constructed graph.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.topology">
+<code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">graph</em>, <em class="sig-param">init_norm_adj</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute graph topology.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>graph</strong><span class="classifier">GraphData</span></dt><dd><p>The input graph data.</p>
+</dd>
+<dt><strong>init_norm_adj</strong><span class="classifier">torch.sparse.FloatTensor</span></dt><dd><p>The initial init_norm_adj adjacency matrix.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>GraphData</dt><dd><p>The constructed graph.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="graph_embedding.html" class="btn btn-neutral float-right" title="graph4nlp.graph_embedding" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="datasets.html" class="btn btn-neutral float-left" title="graph4nlp.datasets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

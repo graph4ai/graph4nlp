@@ -4,6 +4,7 @@ import warnings
 from collections import Counter
 from copy import deepcopy
 from multiprocessing import Pool
+
 import numpy as np
 import stanfordcorenlp
 import torch.utils.data
@@ -12,6 +13,7 @@ from nltk.tokenize import word_tokenize
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 
 from ..data.data import GraphData, to_batch
+from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.constituency_graph_construction import (
     ConstituencyBasedGraphConstruction,
 )
@@ -226,22 +228,17 @@ class Dataset(torch.utils.data.Dataset):
     """
     Base class for datasets.
 
-    The dataset is organized in a two-layer index style. Direct access
-    to the dataset object, e.g. Dataset[1], will first be converted to
-    the access to the internal index list, which is then passed to
-    access the actual data. This design is for the ease of sampling.
+    The dataset is organized in a two-layer index style. Direct access to the dataset object, e.g. Dataset[1], will first
+    be converted to the access to the internal index list, which is then passed to access the actual data. This design
+    is for the ease of sampling.
 
     Examples
     --------
-    Suppose we have a Dataset containing 5 data items
-    ['a', 'b', 'c', 'd', 'e']. The indices of the 5 elements in the
-    list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset
-    is shuffled, which shuffles the internal index list, the consequent
-    indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset
-    `Dataset[2]` will first access the indices[2] which is 1, and then
-    use the received index to access the actual dataset, which will
-    return the actual data item 'b'. Now to the user the 3rd ([2])
-    element in the dataset got shuffled and is not 'c'.
+    Suppose we have a Dataset containing 5 data items ['a', 'b', 'c', 'd', 'e']. The indices of the 5 elements in the
+    list are correspondingly [0, 1, 2, 3, 4]. Suppose the dataset is shuffled, which shuffles the internal index list, the
+    consequent indices becomes [2, 3, 1, 4, 5]. Then an access to the dataset `Dataset[2]` will first access the indices[2]
+    which is 1, and then use the received index to access the actual dataset, which will return the actual data item 'b'.
+    Now to the user the 3rd ([2]) element in the dataset got shuffled and is not 'c'.
 
     Parameters
     ----------
@@ -320,15 +317,13 @@ class Dataset(torch.utils.data.Dataset):
             If it is set ``None``, we will randomly set the initial word embedding values.
         pretrained_word_emb_url: str optional, default: ``None``
             The url for downloading pretrained word embedding.
-            Note that we only prepare the default ``url`` for English with
-            ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+            Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
         target_pretrained_word_emb_name: str, optional, default=None
             The name of pretrained word embedding in ``torchtext`` for target language.
             If it is set ``None``, we will use ``pretrained_word_emb_name``.
         target_pretrained_word_emb_url: str optional, default: ``None``
             The url for downloading pretrained word embedding for target language.
-            Note that we only prepare the default ``url`` for English with
-            ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+            Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
         pretrained_word_emb_cache_dir: str, optional, default: ``".vector_cache/"``
             The path of directory saving the temporary word embedding file.
         use_val_for_vocab: bool, default=False
@@ -336,8 +331,7 @@ class Dataset(torch.utils.data.Dataset):
         seed: int, default=1234
             The seed for random function.
         thread_number: int, default=4
-            The thread number for building initial graph. For most case, it may be the
-            number of your CPU cores.
+            The thread number for building initial graph. For most case, it may be the number of your CPU cores.
         port: int, default=9000
             The port for stanfordcorenlp.
         timeout: int, default=15000
@@ -345,8 +339,7 @@ class Dataset(torch.utils.data.Dataset):
         for_inference: bool, default=False
             Whether this dataset is used for inference.
         reused_vocab_model: str, default=None
-            When ``for_inference`` is true, you need to specify the directory where the
-            vocabulary data is located.
+            When ``for_inference`` is true, you need to specify the directory where the vocabulary data is located.
         kwargs
         """
         super(Dataset, self).__init__()
@@ -386,8 +379,7 @@ class Dataset(torch.utils.data.Dataset):
         if self.for_inference:
             if not reused_vocab_model:
                 raise ValueError(
-                    "Before inference, you should pass the processed vocab_model to "
-                    "``reused_vocab_model``."
+                    "Before inference, you should pass the processed vocab_model to ``reused_vocab_model``."
                 )
             self.vocab_model = reused_vocab_model
 
@@ -395,8 +387,7 @@ class Dataset(torch.utils.data.Dataset):
             if hasattr(self, "reused_label_model"):
                 if not self.reused_label_model:
                     raise ValueError(
-                        "Before inference, you should pass the processed label_model to "
-                        "``reused_label_model``."
+                        "Before inference, you should pass the processed label_model to ``reused_label_model``."
                     )
                 self.label_model = self.reused_label_model
 
@@ -452,15 +443,13 @@ class Dataset(torch.utils.data.Dataset):
         Read raw data from the disk and put them in a dictionary (`self.data`).
         The raw data file should be organized as the format defined in `self.parse_file()` method.
 
-        This function calls `self.parse_file()` repeatedly and pass the file paths in
-        `self.raw_file_names` once at a time.
+        This function calls `self.parse_file()` repeatedly and pass the file paths in `self.raw_file_names` once at a time.
 
-        This function builds `self.data` which is a dict of {int (index): DataItem},
-        where the id represents the index of the DataItem w.r.t. the whole dataset.
+        This function builds `self.data` which is a dict of {int (index): DataItem}, where the id represents the
+        index of the DataItem w.r.t. the whole dataset.
 
-        This function also builds the `self.split_ids` dictionary whose keys correspond to
-        those of self.raw_file_names defined by the user, indicating the indices of each
-        subset (e.g. train, val and test).
+        This function also builds the `self.split_ids` dictionary whose keys correspond to those of self.raw_file_names
+        defined by the user, indicating the indices of each subset (e.g. train, val and test).
 
         """
         if self.for_inference:
@@ -1305,6 +1294,11 @@ class SequenceLabelingDataset(Dataset):
         Read and parse the file specified by `file_path`.
         The file format is specified by each individual task-specific base class.
         Returns all the indices of data items in this file w.r.t. the whole dataset.
+        For SequenceLabelingDataset, the format of the input file should contain lines of tokens,
+        each line representing one record of token at first column and its tag at the last column.
+        Read and parse the file specified by `file_path`. The file format is specified by each
+        individual task-specific base class. Returns all the indices of data items in
+        this file w.r.t. the whole dataset.
         For SequenceLabelingDataset, the format of the input file should contain lines of tokens,
         each line representing one record of token at first column and its tag at the last column.
 

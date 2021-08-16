@@ -8,7 +8,8 @@ class BLEU(EvaluationMetricBase):
     Parameters
     ----------
     n_grams: list[int]
-        The BLEU's n_gram parameter. The results will be returned according to the ``n_grams`` one-by-one.
+        The BLEU's n_gram parameter. The results will be returned according \
+            to the ``n_grams`` one-by-one.
     verbase: int, default = 0
         The log indicator. If set to 0, it will output no logs.
     """

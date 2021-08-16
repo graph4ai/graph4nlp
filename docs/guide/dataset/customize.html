@@ -1,0 +1,547 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Customizing your own dataset &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Chapter 3. Graph Construction" href="../construction.html" />
+    <link rel="prev" title="Dataset workflow" href="workflow.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="workflow.html">Dataset workflow</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Customizing your own dataset</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#customizing-dataitem">Customizing DataItem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customizing-downloading">Customizing downloading</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customizing-processing">Customizing processing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#customizing-batching">Customizing batching</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../dataset.html">Chapter 2. Dataset</a> &raquo;</li>
+        
+      <li>Customizing your own dataset</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/guide/dataset/customize.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="customizing-your-own-dataset">
+<span id="guide-customize"></span><h1>Customizing your own dataset<a class="headerlink" href="#customizing-your-own-dataset" title="Permalink to this headline">¶</a></h1>
+<p>The first thing to know about Graph4NLP’s Dataset class is that the basic element for a dataset is <code class="docutils literal notranslate"><span class="pre">DataItem</span></code>, which
+can be arbitrary collection of data instances, including natural language sentences (string), token list (list) or graphs.
+In this guide we will use the JOBS dataset as an example to walk readers through the process of customizing a dataset.</p>
+<div class="section" id="customizing-dataitem">
+<h2>Customizing DataItem<a class="headerlink" href="#customizing-dataitem" title="Permalink to this headline">¶</a></h2>
+<p>The base class for data item is <code class="docutils literal notranslate"><span class="pre">DataItem</span></code>. <code class="docutils literal notranslate"><span class="pre">DataItem</span></code> has an abstract method <code class="docutils literal notranslate"><span class="pre">extract()</span></code>, which returns the input
+and output tokens. To create your own <code class="docutils literal notranslate"><span class="pre">DataItem</span></code> class, simply inherit the base class and implement the <code class="docutils literal notranslate"><span class="pre">extract()</span></code>
+method.</p>
+<p>The Jobs dataset inherits the <code class="docutils literal notranslate"><span class="pre">Text2TextDataset</span></code> base class, which uses <code class="docutils literal notranslate"><span class="pre">Text2TextDataItem</span></code> as its composing elements.
+<code class="docutils literal notranslate"><span class="pre">Text2TextDataItem</span></code> implements its own <code class="docutils literal notranslate"><span class="pre">extract</span></code> method which returns the list(s) of tokens contained in the text graph.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Text2TextDataItem</span><span class="p">(</span><span class="n">DataItem</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_text</span><span class="p">,</span> <span class="n">output_text</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">share_vocab</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Text2TextDataItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">input_text</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_text</span> <span class="o">=</span> <span class="n">output_text</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">share_vocab</span> <span class="o">=</span> <span class="n">share_vocab</span>
+    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">g</span><span class="p">:</span> <span class="n">GraphData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span>
+        <span class="n">input_tokens</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tokenized_token</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;token&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">tokenized_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;token&#39;</span><span class="p">])</span>
+
+            <span class="n">input_tokens</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tokenized_token</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_text</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">share_vocab</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">input_tokens</span> <span class="o">+</span> <span class="n">output_tokens</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">input_tokens</span><span class="p">,</span> <span class="n">output_tokens</span>
+
+
+<span class="k">class</span> <span class="nc">JobsDataset</span><span class="p">(</span><span class="n">Text2TextDataset</span><span class="p">):</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_dir</span><span class="p">,</span>
+             <span class="n">topology_builder</span><span class="p">,</span> <span class="n">topology_subdir</span><span class="p">,</span>
+            <span class="c1">#  pretrained_word_emb_file=None,</span>
+             <span class="n">pretrained_word_emb_name</span><span class="o">=</span><span class="s2">&quot;6B&quot;</span><span class="p">,</span>
+             <span class="n">pretrained_word_emb_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">pretrained_word_emb_cache_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">graph_type</span><span class="o">=</span><span class="s1">&#39;static&#39;</span><span class="p">,</span>
+             <span class="n">merge_strategy</span><span class="o">=</span><span class="s2">&quot;tailhead&quot;</span><span class="p">,</span> <span class="n">edge_strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">word_emb_size</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">share_vocab</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lower_case</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+             <span class="n">thread_number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">9000</span><span class="p">,</span>
+             <span class="n">dynamic_graph_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">dynamic_init_topology_builder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">dynamic_init_topology_aux_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">for_inference</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">reused_vocab_model</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># Initialize the dataset. If the preprocessed files are not found, then do the preprocessing and save them.</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">JobsDataset</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">root_dir</span><span class="o">=</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">topology_builder</span><span class="o">=</span><span class="n">topology_builder</span><span class="p">,</span>
+                                      <span class="n">topology_subdir</span><span class="o">=</span><span class="n">topology_subdir</span><span class="p">,</span> <span class="n">graph_type</span><span class="o">=</span><span class="n">graph_type</span><span class="p">,</span>
+                                      <span class="n">edge_strategy</span><span class="o">=</span><span class="n">edge_strategy</span><span class="p">,</span> <span class="n">merge_strategy</span><span class="o">=</span><span class="n">merge_strategy</span><span class="p">,</span>
+                                      <span class="n">share_vocab</span><span class="o">=</span><span class="n">share_vocab</span><span class="p">,</span> <span class="n">lower_case</span><span class="o">=</span><span class="n">lower_case</span><span class="p">,</span>
+                                      <span class="n">pretrained_word_emb_name</span><span class="o">=</span><span class="n">pretrained_word_emb_name</span><span class="p">,</span> <span class="n">pretrained_word_emb_url</span><span class="o">=</span><span class="n">pretrained_word_emb_url</span><span class="p">,</span> <span class="n">pretrained_word_emb_cache_dir</span><span class="o">=</span><span class="n">pretrained_word_emb_cache_dir</span><span class="p">,</span>
+                                      <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">word_emb_size</span><span class="o">=</span><span class="n">word_emb_size</span><span class="p">,</span>
+                                      <span class="n">thread_number</span><span class="o">=</span><span class="n">thread_number</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+                                      <span class="n">dynamic_graph_type</span><span class="o">=</span><span class="n">dynamic_graph_type</span><span class="p">,</span>
+                                      <span class="n">dynamic_init_topology_builder</span><span class="o">=</span><span class="n">dynamic_init_topology_builder</span><span class="p">,</span>
+                                      <span class="n">dynamic_init_topology_aux_args</span><span class="o">=</span><span class="n">dynamic_init_topology_aux_args</span><span class="p">,</span>
+                                      <span class="n">for_inference</span><span class="o">=</span><span class="n">for_inference</span><span class="p">,</span>
+                                      <span class="n">reused_vocab_model</span><span class="o">=</span><span class="n">reused_vocab_model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="customizing-downloading">
+<h2>Customizing downloading<a class="headerlink" href="#customizing-downloading" title="Permalink to this headline">¶</a></h2>
+<p>Downloading can be decomposed into 2 steps: 1) check whether file exist and 2) download the missing files.
+To customize checking, the file names must be specified:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@property</span>
+<span class="k">def</span> <span class="nf">raw_file_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;3 reserved keys: &#39;train&#39;, &#39;val&#39; (optional), &#39;test&#39;. Represent the split of dataset.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;train&#39;</span><span class="p">:</span> <span class="s1">&#39;train.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;test&#39;</span><span class="p">:</span> <span class="s1">&#39;test.txt&#39;</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>The file names will be concatenated with <code class="docutils literal notranslate"><span class="pre">self.raw_dir</span></code> to compose the complete file path. To customize downloading,
+simply override the <code class="docutils literal notranslate"><span class="pre">download()</span></code> method, since the root downloading method in the base class <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> is defined
+in such a way.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Dataset</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_download</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">raw_path</span><span class="p">)</span> <span class="k">for</span> <span class="n">raw_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_file_paths</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
+            <span class="k">return</span>
+
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download</span><span class="p">()</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Download the raw data from the Internet.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="customizing-processing">
+<h2>Customizing processing<a class="headerlink" href="#customizing-processing" title="Permalink to this headline">¶</a></h2>
+<p>Similar to the way we customize downloading, processing consists of the same set of sub-steps. Except for an additional
+check for split ratio. It first checks if the processed files exist, and directly load these files if they exist in the file
+system. Otherwise it will perform several pre-processing steps, namely <code class="docutils literal notranslate"><span class="pre">build_topology</span></code>, <code class="docutils literal notranslate"><span class="pre">build_vocab</span></code> and <code class="docutils literal notranslate"><span class="pre">vectorization</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">all</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">processed_path</span><span class="p">)</span> <span class="k">for</span> <span class="n">processed_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_file_paths</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
+        <span class="k">if</span> <span class="s1">&#39;val_split_ratio&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="ne">UserWarning</span><span class="p">(</span>
+                <span class="s2">&quot;Loading existing processed files on disk. Your `val_split_ratio` might not work since the data have&quot;</span>
+                <span class="s2">&quot;already been split.&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">for_inference</span> <span class="ow">and</span> \
+            <span class="nb">all</span><span class="p">([(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">processed_path</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_file_names</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">processed_path</span><span class="p">)</span> <span class="k">for</span>
+                 <span class="n">processed_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_file_paths</span><span class="o">.</span><span class="n">values</span><span class="p">()]):</span>
+        <span class="k">return</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">processed_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">read_raw_data</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">for_inference</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_topology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vectorization</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test</span><span class="p">)</span>
+        <span class="n">data_to_save</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;test&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">test</span><span class="p">}</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">data_to_save</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_file_paths</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_topology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_topology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;val&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_topology</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_vocab</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vectorization</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vectorization</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;val&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vectorization</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+
+        <span class="n">data_to_save</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;train&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">train</span><span class="p">,</span> <span class="s1">&#39;test&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">test</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s1">&#39;val&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="n">data_to_save</span><span class="p">[</span><span class="s1">&#39;val&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">val</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">data_to_save</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_file_paths</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+
+        <span class="n">vocab_to_save</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab_model</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">vocab_to_save</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_file_paths</span><span class="p">[</span><span class="s1">&#39;vocab&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">build_topology</span></code> builds text graph for each <code class="docutils literal notranslate"><span class="pre">DataItem</span></code> in the dataset and bind it to the corresponding <code class="docutils literal notranslate"><span class="pre">DataItem</span></code>
+object. This routine usually involves functions provided by the <code class="docutils literal notranslate"><span class="pre">GraphConstruction</span></code> module. Besides, since the
+construction of each individual text graph is independent of each other, the construction of multiple graphs can be done
+concurrently, which involves the multiprocessing module of Python.</p>
+<p><code class="docutils literal notranslate"><span class="pre">build_vocab</span></code> takes all the tokens that have appeared in the data items and build a vocabulary out of it.
+By default, the <code class="docutils literal notranslate"><span class="pre">VocabModel</span></code> in <code class="docutils literal notranslate"><span class="pre">graph4nlp.utils.vocab_utils.VocabModel</span></code> takes the responsibility of constructing
+a vocabulary and represents the vocabulary itself. The constructed vocabulary will become a member of the <code class="docutils literal notranslate"><span class="pre">Dataset</span></code>
+instance.</p>
+<p><code class="docutils literal notranslate"><span class="pre">vectorization</span></code> is a lookup step, which converts the tokens from ASCII characters to word embeddings. Since there are
+various ways to assign embedding vectors to tokens, this step is usually overridden by the downstream classes.</p>
+<p>In Jobs, these pre-processing steps are implemented in its base classes: <code class="docutils literal notranslate"><span class="pre">Text2TextDataset</span></code> and <code class="docutils literal notranslate"><span class="pre">Dataset</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Dataset</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">build_topology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_items</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build graph topology for each item in the dataset. The generated graph is bound to the `graph` attribute of the</span>
+<span class="sd">        DataItem.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_items</span><span class="p">)</span>
+        <span class="n">thread_number</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">total</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread_number</span><span class="p">)</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">(</span><span class="n">thread_number</span><span class="p">)</span>
+        <span class="n">res_l</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">thread_number</span><span class="p">):</span>
+            <span class="n">start_index</span> <span class="o">=</span> <span class="n">total</span> <span class="o">*</span> <span class="n">i</span> <span class="o">//</span> <span class="n">thread_number</span>
+            <span class="n">end_index</span> <span class="o">=</span> <span class="n">total</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">thread_number</span>
+
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            data_items, topology_builder,</span>
+<span class="sd">                                graph_type, dynamic_graph_type, dynamic_init_topology_builder,</span>
+<span class="sd">                                merge_strategy, edge_strategy, dynamic_init_topology_aux_args,</span>
+<span class="sd">                                lower_case, tokenizer, port, timeout</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_build_topology_process</span><span class="p">,</span>
+                                 <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">data_items</span><span class="p">[</span><span class="n">start_index</span><span class="p">:</span><span class="n">end_index</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_builder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph_type</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_graph_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_init_topology_builder</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">merge_strategy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_strategy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynamic_init_topology_aux_args</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">lower_case</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">))</span>
+            <span class="n">res_l</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+        <span class="n">data_items</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">thread_number</span><span class="p">):</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">res_l</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">data_items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">data_items</span>
+
+    <span class="k">def</span> <span class="nf">build_vocab</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build the vocabulary. If `self.use_val_for_vocab` is `True`, use both training set and validation set for building</span>
+<span class="sd">        the vocabulary. Otherwise only the training set is used.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_for_vocab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_val_for_vocab</span><span class="p">:</span>
+            <span class="n">data_for_vocab</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">+</span> <span class="n">data_for_vocab</span>
+
+        <span class="n">vocab_model</span> <span class="o">=</span> <span class="n">VocabModel</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">saved_vocab_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processed_file_paths</span><span class="p">[</span><span class="s1">&#39;vocab&#39;</span><span class="p">],</span>
+                                       <span class="n">data_set</span><span class="o">=</span><span class="n">data_for_vocab</span><span class="p">,</span>
+                                       <span class="n">tokenizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">,</span>
+                                       <span class="n">lower_case</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lower_case</span><span class="p">,</span>
+                                       <span class="n">max_word_vocab_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_word_vocab_size</span><span class="p">,</span>
+                                       <span class="n">min_word_vocab_freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">min_word_vocab_freq</span><span class="p">,</span>
+                                       <span class="n">share_vocab</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">share_vocab</span><span class="p">,</span>
+                                       <span class="n">pretrained_word_emb_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pretrained_word_emb_name</span><span class="p">,</span>
+                                       <span class="n">pretrained_word_emb_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pretrained_word_emb_url</span><span class="p">,</span>
+                                       <span class="n">pretrained_word_emb_cache_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pretrained_word_emb_cache_dir</span><span class="p">,</span>
+                                       <span class="n">target_pretrained_word_emb_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target_pretrained_word_emb_name</span><span class="p">,</span>
+                                       <span class="n">target_pretrained_word_emb_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target_pretrained_word_emb_url</span><span class="p">,</span>
+                                       <span class="n">word_emb_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">word_emb_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vocab_model</span> <span class="o">=</span> <span class="n">vocab_model</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab_model</span>
+
+<span class="k">class</span> <span class="nc">Text2TextDataset</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">vectorization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_items</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_builder</span> <span class="o">==</span> <span class="n">IEBasedGraphConstruction</span><span class="p">:</span>
+            <span class="n">use_ie</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">use_ie</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data_items</span><span class="p">:</span>
+            <span class="n">graph</span><span class="p">:</span> <span class="n">GraphData</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">graph</span>
+            <span class="n">token_matrix</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">node_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()):</span>
+                <span class="n">node_token</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node_idx</span><span class="p">][</span><span class="s1">&#39;token&#39;</span><span class="p">]</span>
+                <span class="n">node_token_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab_model</span><span class="o">.</span><span class="n">in_word_vocab</span><span class="o">.</span><span class="n">getIndex</span><span class="p">(</span><span class="n">node_token</span><span class="p">,</span> <span class="n">use_ie</span><span class="p">)</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">node_idx</span><span class="p">][</span><span class="s1">&#39;token_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_token_id</span>
+
+                <span class="n">token_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">node_token_id</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_builder</span> <span class="o">==</span> <span class="n">IEBasedGraphConstruction</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">token_matrix</span><span class="p">)):</span>
+                    <span class="n">token_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">token_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">token_matrix</span> <span class="o">=</span> <span class="n">pad_2d_vals_no_size</span><span class="p">(</span><span class="n">token_matrix</span><span class="p">)</span>
+                <span class="n">token_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">token_matrix</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s1">&#39;token_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">token_matrix</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">token_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">token_matrix</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+                <span class="n">graph</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s1">&#39;token_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">token_matrix</span>
+
+            <span class="k">if</span> <span class="n">use_ie</span> <span class="ow">and</span> <span class="s1">&#39;token&#39;</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_attributes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">edge_token_matrix</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">edge_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">get_edge_num</span><span class="p">()):</span>
+                    <span class="n">edge_token</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_attributes</span><span class="p">[</span><span class="n">edge_idx</span><span class="p">][</span><span class="s1">&#39;token&#39;</span><span class="p">]</span>
+                    <span class="n">edge_token_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab_model</span><span class="o">.</span><span class="n">in_word_vocab</span><span class="o">.</span><span class="n">getIndex</span><span class="p">(</span><span class="n">edge_token</span><span class="p">,</span> <span class="n">use_ie</span><span class="p">)</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">edge_attributes</span><span class="p">[</span><span class="n">edge_idx</span><span class="p">][</span><span class="s1">&#39;token_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge_token_id</span>
+                    <span class="n">edge_token_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">edge_token_id</span><span class="p">])</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_builder</span> <span class="o">==</span> <span class="n">IEBasedGraphConstruction</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">edge_token_matrix</span><span class="p">)):</span>
+                        <span class="n">edge_token_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">edge_token_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">edge_token_matrix</span> <span class="o">=</span> <span class="n">pad_2d_vals_no_size</span><span class="p">(</span><span class="n">edge_token_matrix</span><span class="p">)</span>
+                    <span class="n">edge_token_matrix</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">edge_token_matrix</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+                    <span class="n">graph</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="s1">&#39;token_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge_token_matrix</span>
+
+            <span class="n">tgt</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">output_text</span>
+            <span class="n">tgt_token_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab_model</span><span class="o">.</span><span class="n">out_word_vocab</span><span class="o">.</span><span class="n">to_index_sequence</span><span class="p">(</span><span class="n">tgt</span><span class="p">)</span>
+            <span class="n">tgt_token_id</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vocab_model</span><span class="o">.</span><span class="n">out_word_vocab</span><span class="o">.</span><span class="n">EOS</span><span class="p">)</span>
+            <span class="n">tgt_token_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tgt_token_id</span><span class="p">)</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">output_np</span> <span class="o">=</span> <span class="n">tgt_token_id</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="customizing-batching">
+<h2>Customizing batching<a class="headerlink" href="#customizing-batching" title="Permalink to this headline">¶</a></h2>
+<p>The runtime iteration over dataset is performed by PyTorch’s dataloader. And since the basic composing element is
+<code class="docutils literal notranslate"><span class="pre">DataItem</span></code>, it is our job to convert the low-level list of <code class="docutils literal notranslate"><span class="pre">DataItem</span></code> fetched by <code class="docutils literal notranslate"><span class="pre">torch.DataLoader</span></code> to the batch
+data we want.
+<code class="docutils literal notranslate"><span class="pre">Dataset.collate_fn()</span></code> is designed to do this job.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Text2TextDataset</span><span class="p">:</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">collate_fn</span><span class="p">(</span><span class="n">data_list</span><span class="p">:</span> <span class="p">[</span><span class="n">Text2TextDataItem</span><span class="p">]):</span>
+        <span class="n">graph_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">graph</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">]</span>
+        <span class="n">graph_data</span> <span class="o">=</span> <span class="n">to_batch</span><span class="p">(</span><span class="n">graph_list</span><span class="p">)</span>
+
+        <span class="n">output_numpy</span> <span class="o">=</span> <span class="p">[</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">output_np</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">]</span>
+        <span class="n">output_str</span> <span class="o">=</span> <span class="p">[</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">output_text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data_list</span><span class="p">]</span>
+        <span class="n">output_pad</span> <span class="o">=</span> <span class="n">pad_2d_vals_no_size</span><span class="p">(</span><span class="n">output_numpy</span><span class="p">)</span>
+
+        <span class="n">tgt_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">output_pad</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;graph_data&quot;</span><span class="p">:</span> <span class="n">graph_data</span><span class="p">,</span>
+            <span class="s2">&quot;tgt_seq&quot;</span><span class="p">:</span> <span class="n">tgt_seq</span><span class="p">,</span>
+            <span class="s2">&quot;output_str&quot;</span><span class="p">:</span> <span class="n">output_str</span>
+        <span class="p">}</span>
+</pre></div>
+</div>
+<p>It takes in a list of DataItem and returns the expected type of data required by the model. Interested readers may
+refer to the examples we provided in the source code for practical usages.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../construction.html" class="btn btn-neutral float-right" title="Chapter 3. Graph Construction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="workflow.html" class="btn btn-neutral float-left" title="Dataset workflow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

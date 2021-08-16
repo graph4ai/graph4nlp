@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Constructing GraphData &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Manipulating GraphData" href="manipulate.html" />
+    <link rel="prev" title="Chapter 1. Graph Data" href="../graphdata.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Constructing GraphData</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#constructing-from-scratch">Constructing from scratch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#importing-from-other-sources">Importing from other sources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exporting-to-other-formats">Exporting to other formats</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manipulate.html">Manipulating GraphData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="batching.html">Batching</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../graphdata.html">Chapter 1. Graph Data</a> &raquo;</li>
+        
+      <li>Constructing GraphData</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/guide/graphdata/construct.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="constructing-graphdata">
+<span id="guide-construct"></span><h1>Constructing GraphData<a class="headerlink" href="#constructing-graphdata" title="Permalink to this headline">¶</a></h1>
+<p>This section illustrates how to construct GraphData instances.</p>
+<div class="section" id="constructing-from-scratch">
+<h2>Constructing from scratch<a class="headerlink" href="#constructing-from-scratch" title="Permalink to this headline">¶</a></h2>
+<p>The most basic way is to construct a GraphData instance from scratch, as the following example shows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">GraphData</span><span class="p">()</span> <span class="c1"># Construct an empty graph</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># Add 10 nodes to this graph sequentially.</span>
+<span class="n">g</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="mi">10</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>  <span class="c1"># Add another 9 nodes. This operation will append the new nodes to existing ones.</span>
+<span class="n">g</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="mi">19</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_edges</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>   <span class="c1"># Add 3 edges, connecting nodes 0~4 into a line.</span>
+<span class="n">g</span><span class="o">.</span><span class="n">get_all_edges</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>You may want to access the nodes or edges after adding them. <code class="docutils literal notranslate"><span class="pre">GraphData</span></code> provides two interfaces <code class="docutils literal notranslate"><span class="pre">GraphData.nodes()</span></code>
+and <code class="docutils literal notranslate"><span class="pre">GraphData.edges()</span></code> to do this job.
+However, it may be more illustrative to show the examples with features and attributes attached to nodes and edges, which
+makes it more suitable to appear in the next section <a class="reference internal" href="manipulate.html#guide-manipulate"><span class="std std-ref">Manipulating GraphData</span></a>.</p>
+</div>
+<div class="section" id="importing-from-other-sources">
+<h2>Importing from other sources<a class="headerlink" href="#importing-from-other-sources" title="Permalink to this headline">¶</a></h2>
+<p>Another way to construct GraphData is to import from other sources. Currently GraphData supports importing from
+<code class="docutils literal notranslate"><span class="pre">from_dgl()</span></code>, <code class="docutils literal notranslate"><span class="pre">from_dense_adj()</span></code>, <code class="docutils literal notranslate"><span class="pre">from_scipy_sparse_matrix()</span></code> and <code class="docutils literal notranslate"><span class="pre">from_graphdata()</span></code>.
+Interested readers may refer to the <code class="docutils literal notranslate"><span class="pre">API</span> <span class="pre">reference</span></code> for more details.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">GraphData</span><span class="p">()</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">tgt</span><span class="o">=</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s1">&#39;node_feat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s1">&#39;zero&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="s1">&#39;idx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="s1">&#39;edge_feat&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">g</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="s1">&#39;idx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+<span class="c1"># Test to_dgl</span>
+<span class="n">dgl_g</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">to_dgl</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">node_feat_name</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">node_feature_names</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="n">node_feat_name</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">node_feat_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dgl_g</span><span class="o">.</span><span class="n">ndata</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">dgl_g</span><span class="o">.</span><span class="n">ndata</span><span class="p">[</span><span class="n">node_feat_name</span><span class="p">],</span> <span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="n">node_feat_name</span><span class="p">]))</span>
+<span class="k">for</span> <span class="n">edge_feat_name</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">get_edge_feature_names</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="n">edge_feat_name</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">edge_feat_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dgl_g</span><span class="o">.</span><span class="n">edata</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">dgl_g</span><span class="o">.</span><span class="n">edata</span><span class="p">[</span><span class="n">edge_feat_name</span><span class="p">],</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="n">edge_feat_name</span><span class="p">]))</span>
+<span class="k">assert</span> <span class="n">g</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()</span> <span class="o">==</span> <span class="n">dgl_g</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">()</span>
+<span class="n">src</span><span class="p">,</span> <span class="n">tgt</span> <span class="o">=</span> <span class="n">dgl_g</span><span class="o">.</span><span class="n">all_edges</span><span class="p">()</span>
+<span class="n">dgl_g_edges</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="n">dgl_g_edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">tgt</span><span class="p">[</span><span class="n">i</span><span class="p">])))</span>
+<span class="k">assert</span> <span class="n">g</span><span class="o">.</span><span class="n">get_all_edges</span><span class="p">()</span> <span class="o">==</span> <span class="n">dgl_g_edges</span>
+<span class="c1"># Test from_dgl</span>
+<span class="n">g1</span> <span class="o">=</span> <span class="n">from_dgl</span><span class="p">(</span><span class="n">dgl_g</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">node_feat_name</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">node_feature_names</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">g1</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="n">node_feat_name</span><span class="p">],</span> <span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="n">node_feat_name</span><span class="p">]))</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">g1</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="n">node_feat_name</span><span class="p">]</span> <span class="o">==</span> <span class="n">g</span><span class="o">.</span><span class="n">node_features</span><span class="p">[</span><span class="n">node_feat_name</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">edge_feat_name</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">get_edge_feature_names</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">g1</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="n">edge_feat_name</span><span class="p">],</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="n">edge_feat_name</span><span class="p">]))</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">g1</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="n">edge_feat_name</span><span class="p">]</span> <span class="o">==</span> <span class="n">g</span><span class="o">.</span><span class="n">edge_features</span><span class="p">[</span><span class="n">edge_feat_name</span><span class="p">]</span>
+<span class="k">assert</span> <span class="n">g1</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()</span> <span class="o">==</span> <span class="n">g</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">g1</span><span class="o">.</span><span class="n">get_all_edges</span><span class="p">()</span> <span class="o">==</span> <span class="n">g</span><span class="o">.</span><span class="n">get_all_edges</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="exporting-to-other-formats">
+<h2>Exporting to other formats<a class="headerlink" href="#exporting-to-other-formats" title="Permalink to this headline">¶</a></h2>
+<p>On the other hand, GraphData also supports converting itself to other formats. Currently <code class="docutils literal notranslate"><span class="pre">to_dgl()</span></code> is provided to export
+a <code class="docutils literal notranslate"><span class="pre">GraphData</span></code> to <code class="docutils literal notranslate"><span class="pre">dgl.DGLGraph</span></code>.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="manipulate.html" class="btn btn-neutral float-right" title="Manipulating GraphData" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../graphdata.html" class="btn btn-neutral float-left" title="Chapter 1. Graph Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

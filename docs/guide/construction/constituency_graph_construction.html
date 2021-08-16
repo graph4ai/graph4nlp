@@ -1,0 +1,377 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Constituency Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="IE Graph Construction" href="iegraphconstruction.html" />
+    <link rel="prev" title="Dependency Graph Construction" href="dependencygraphconstruction.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../construction.html">Chapter 3. Graph Construction</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../construction.html#roadmap">Roadmap</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dependencygraphconstruction.html">Dependency Graph Construction</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Constituency Graph Construction</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#how-to-use">How to use</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#implementation-details">Implementation details</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="iegraphconstruction.html">IE Graph Construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dynamic_graph_construction.html">Dynamic Graph Construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="embedding_construction.html">Embedding Construction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../construction.html">Chapter 3. Graph Construction</a> &raquo;</li>
+        
+      <li>Constituency Graph Construction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/guide/construction/constituency_graph_construction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="constituency-graph-construction">
+<span id="id1"></span><h1>Constituency Graph Construction<a class="headerlink" href="#constituency-graph-construction" title="Permalink to this headline">¶</a></h1>
+<p>The constituency graph is a widely used static graph that is able to capture phrase-based syntactic relations in a sentence. Constituency parsing models the assembly of one or several corresponded words (i.e., phrase level). Thus it provides new insight into the grammatical structure of a sentence. Specifically, we could devide the graph construction process into following several steps:</p>
+<ol class="arabic simple">
+<li><p>Parsing. For each sentence in the input paragraph, we use an external parser like CoreNLP to perform constituency parsing on it.</p></li>
+<li><p>Sub-graph construction. With constituency parsing trees from 1), we construct a subgraph for each sentence.</p></li>
+<li><p>Graph merging. We merge subgraphs into a final constituency graph.</p></li>
+</ol>
+<p>For example, we can construct the constituency graph given a raw textual input:</p>
+<div class="section" id="how-to-use">
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction</span> <span class="kn">import</span> <span class="n">ConstituencyBasedGraphConstruction</span>
+<span class="kn">from</span> <span class="nn">stanfordcorenlp</span> <span class="kn">import</span> <span class="n">StanfordCoreNLP</span>
+
+<span class="n">raw_data</span> <span class="o">=</span> <span class="s2">&quot;James went to the corner-shop. And bought some eggs.&quot;</span>
+
+<span class="n">nlp_parser</span> <span class="o">=</span> <span class="n">StanfordCoreNLP</span><span class="p">(</span><span class="s1">&#39;http://localhost&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">9000</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">300000</span><span class="p">)</span>
+
+<span class="n">processor_args</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;annotators&#39;</span><span class="p">:</span> <span class="s1">&#39;tokenize,ssplit,pos,parse&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;tokenize.options&quot;</span><span class="p">:</span>
+        <span class="s2">&quot;splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tokenize.whitespace&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s1">&#39;ssplit.isOneSentence&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="s1">&#39;outputFormat&#39;</span><span class="p">:</span> <span class="s1">&#39;json&#39;</span>
+<span class="p">}</span>
+
+<span class="n">graphdata</span> <span class="o">=</span> <span class="n">ConstituencyBasedGraphConstruction</span><span class="o">.</span><span class="n">topology</span><span class="p">(</span><span class="n">raw_data</span><span class="p">,</span> <span class="n">nlp_parser</span><span class="p">,</span> <span class="n">processor_args</span><span class="o">=</span><span class="n">processor_args</span><span class="p">,</span> <span class="n">merge_strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edge_strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbase</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The figure below is an example for generated constituency graph.</p>
+<a class="reference internal image-reference" href="../../_images/cons_tree.jpg"><img alt="../../_images/cons_tree.jpg" src="../../_images/cons_tree.jpg" style="height: 300px;" /></a>
+</div>
+<div class="section" id="implementation-details">
+<h2>Implementation details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="parsing">
+<h3>Parsing<a class="headerlink" href="#parsing" title="Permalink to this headline">¶</a></h3>
+<p>We use CoreNLP as our parser and load the constituency parsing results in json format.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">parsing</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">raw_text_data</span><span class="p">,</span> <span class="n">nlp_processor</span><span class="p">,</span> <span class="n">processor_args</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">nlp_processor</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">raw_text_data</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;LB&gt;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;RB&gt;&#39;</span><span class="p">),</span> <span class="n">properties</span><span class="o">=</span><span class="n">processor_args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">CORENLP_TIMEOUT_SIGNATURE</span> <span class="ow">in</span> <span class="n">output</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s1">&#39;CoreNLP timed out at input: </span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s1"> This item will be skipped. &#39;</span>
+                           <span class="s1">&#39;Please check the input or change the timeout threshold.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">raw_text_data</span><span class="p">))</span>
+    <span class="n">parsed_output</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">output</span><span class="p">)[</span><span class="s1">&#39;sentences&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">parsed_output</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="sub-graph-construction">
+<h3>Sub-graph construction<a class="headerlink" href="#sub-graph-construction" title="Permalink to this headline">¶</a></h3>
+<p>For subgraph construction of each sentence, we provide two operations: adding sequential links and constituency graph pruning. Instructions of them are as follows,</p>
+<div class="section" id="sequential-link">
+<h4>Sequential Link<a class="headerlink" href="#sequential-link" title="Permalink to this headline">¶</a></h4>
+<p>We provide an option to add no/unidirectional/bidirectional edges between word nodes and nodes connecting two sub-graphs.</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sequential_link</span></code> = <code class="docutils literal notranslate"><span class="pre">0</span></code>. Do not add sequential links.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sequential_link</span></code> = <code class="docutils literal notranslate"><span class="pre">1</span></code>. Add unidirectional links.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sequential_link</span></code> = <code class="docutils literal notranslate"><span class="pre">2</span></code>. Add bidirectional links.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sequential_link</span></code> = <code class="docutils literal notranslate"><span class="pre">3</span></code>. Do not add sequential links inside each sentence; but add bidirectional links between adjacent sentences.</p></li>
+</ol>
+</div>
+<div class="section" id="prune">
+<h4>Prune<a class="headerlink" href="#prune" title="Permalink to this headline">¶</a></h4>
+<p>The hierarchical structure of constituency graph is complicated, we, therefore, provide some pruning options as follows (<code class="docutils literal notranslate"><span class="pre">ROOT</span></code> node are pruned by default),</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">prune</span></code> = <code class="docutils literal notranslate"><span class="pre">0</span></code>. No pruning.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prune</span></code> = <code class="docutils literal notranslate"><span class="pre">1</span></code>. Prune pos (part-of-speech) nodes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prune</span></code> = <code class="docutils literal notranslate"><span class="pre">2</span></code>. Prune nodes with both in-degree and out-degree of 1.</p></li>
+</ol>
+<p>For example, function below is used to prune nodes when <code class="docutils literal notranslate"><span class="pre">prune</span></code> = <code class="docutils literal notranslate"><span class="pre">2</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_cut_line_node</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">input_graph</span><span class="p">:</span> <span class="n">GraphData</span><span class="p">):</span>
+    <span class="n">idx_to_be_deleted</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">new_edges</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">input_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">):</span>
+        <span class="n">edge_arr</span> <span class="o">=</span> <span class="n">input_graph</span><span class="o">.</span><span class="n">get_all_edges</span><span class="p">()</span>
+        <span class="n">cnt_in</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">cnt_out</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">edge_arr</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">cnt_out</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">out_</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">cnt_in</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">in_</span> <span class="o">=</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">cnt_in</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">cnt_out</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">idx_to_be_deleted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">new_edges</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">in_</span><span class="p">,</span> <span class="n">out_</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idx_to_be_deleted</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">input_graph</span>
+    <span class="n">res_graph</span> <span class="o">=</span> <span class="n">GraphData</span><span class="p">()</span>
+    <span class="n">id_map</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">cnt_node</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">input_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">idx_to_be_deleted</span><span class="p">:</span>
+            <span class="n">res_graph</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">res_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">[</span><span class="n">res_graph</span><span class="o">.</span><span class="n">get_node_num</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span>
+            <span class="n">id_map</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">cnt_node</span>
+            <span class="n">cnt_node</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">id_map</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">edge_arr</span> <span class="ow">in</span> <span class="n">input_graph</span><span class="o">.</span><span class="n">get_all_edges</span><span class="p">()</span><span class="o">+</span><span class="n">new_edges</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">edge_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">idx_to_be_deleted</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">edge_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">idx_to_be_deleted</span><span class="p">):</span>
+            <span class="n">res_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">id_map</span><span class="p">[</span><span class="n">edge_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">id_map</span><span class="p">[</span><span class="n">edge_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">res_graph</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="graph-merging">
+<h3>Graph merging<a class="headerlink" href="#graph-merging" title="Permalink to this headline">¶</a></h3>
+<p>Since the constituency graph is only constructed for sentences individually, we provide options to construct one graph
+for the paragraph consisting of multiple sentences. Currently, we support the following options:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tailhead</span></code>. It means we will link the tail node of <span class="math notranslate nohighlight">\({i-1}^{th}\)</span> sentence’s graph with the head node of <span class="math notranslate nohighlight">\(i^{th}\)</span> sentence’s graph.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">user_define</span></code>. We suggest users to define their merge strategy by overriding the <code class="docutils literal notranslate"><span class="pre">_graph_connect</span></code> as follows:</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction</span> <span class="kn">import</span> <span class="n">ConstituencyBasedGraphConstruction</span>
+
+<span class="k">class</span> <span class="nc">NewConstituencyGraphConstruction</span><span class="p">(</span><span class="n">ConstituencyBasedGraphConstruction</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_graph_connect</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nx_graph_list</span><span class="p">,</span> <span class="n">merge_strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="iegraphconstruction.html" class="btn btn-neutral float-right" title="IE Graph Construction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="dependencygraphconstruction.html" class="btn btn-neutral float-left" title="Dependency Graph Construction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

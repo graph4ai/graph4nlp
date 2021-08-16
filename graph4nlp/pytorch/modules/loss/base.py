@@ -6,7 +6,7 @@ class GeneralLossBase(nn.Module):
         super(GeneralLossBase, self).__init__()
 
     def forward(self, logits, label, **kwargs):
-        raise NotImplementedError('GeneralLossBase: Not Implemented.')
+        raise NotImplementedError("GeneralLossBase: Not Implemented.")
 
 
 class KGLossBase(nn.Module):
@@ -14,4 +14,4 @@ class KGLossBase(nn.Module):
         super(KGLossBase, self).__init__()
 
     def forward(self, graph, node_feat):
-        raise NotImplementedError('KGLossBase: Not Implemented.')
+        raise NotImplementedError("KGLossBase: Not Implemented.")

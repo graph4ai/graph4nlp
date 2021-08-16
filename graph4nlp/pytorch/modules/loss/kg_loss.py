@@ -99,11 +99,11 @@ class KGLoss(KGLossBase):
 
     **Pairwise Loss Function**
 
-    `SoftplusLoss <https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SoftplusLoss.py>`__
+    `SoftplusLoss <https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SoftplusLoss.py>`__ # noqa
     refers to the paper `OpenKE: An Open Toolkit for Knowledge Embedding
     <https://www.aclweb.org/anthology/D18-2024.pdf>`__
 
-    `SigmoidLoss <https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SigmoidLoss.py>`__
+    `SigmoidLoss <https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SigmoidLoss.py>`__ # noqa
     refers to the paper `OpenKE: An Open Toolkit for Knowledge Embedding
     <https://www.aclweb.org/anthology/D18-2024.pdf>`__
 

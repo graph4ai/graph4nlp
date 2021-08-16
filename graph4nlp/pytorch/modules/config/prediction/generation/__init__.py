@@ -1,5 +1,6 @@
-from ....utils.config_utils import get_yaml_config
 import os
+
+from ....utils.config_utils import get_yaml_config
 
 str2yaml = {"stdrnn": "stdrnndecoder.yaml", "stdtree": "stdtreedecoder.yaml"}
 dir_path = os.path.dirname(os.path.realpath(__file__))

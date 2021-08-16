@@ -1,0 +1,507 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Semantic Parsing Tutorial &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Math Word Problem Tutorial" href="math_word_problem.html" />
+    <link rel="prev" title="Text Classification Tutorial" href="text_classification.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Semantic Parsing Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#environment-setup">Environment setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build-the-model-handler">Build the model handler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-the-model">Run the model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Semantic Parsing Tutorial</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/tutorial/semantic_parsing.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="semantic-parsing-tutorial">
+<h1>Semantic Parsing Tutorial<a class="headerlink" href="#semantic-parsing-tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial demo, we will use the Graph4NLP library to build a GNN-based semantic parsing model. The model consists of</p>
+<ul class="simple">
+<li><p>graph construction module (e.g., node embedding based dynamic graph)</p></li>
+<li><p>graph embedding module (e.g., Bi-Sep GAT)</p></li>
+<li><p>predictoin module (e.g., RNN decoder with attention, copy and coverage mechanisms)</p></li>
+</ul>
+<p>We will use the built-in Graph2Seq model APIs to build the model, and evaluate it on the Jobs dataset.
+The full example can be downloaded from <a class="reference external" href="https://github.com/graph4ai/graph4nlp_demo/blob/main/SIGIR2021_demo/semantic_parsing.ipynb">Semantic parsing notebook</a>.</p>
+</div>
+<div class="section" id="environment-setup">
+<h2>Environment setup<a class="headerlink" href="#environment-setup" title="Permalink to this headline">¶</a></h2>
+<p>Please follow the instructions <a class="reference external" href="https://github.com/graph4ai/graph4nlp_demo#environment-setup">here</a> to set up the environment.</p>
+</div>
+<div class="section" id="build-the-model-handler">
+<h2>Build the model handler<a class="headerlink" href="#build-the-model-handler" title="Permalink to this headline">¶</a></h2>
+<p>Let’s build a model handler which will do a bunch of things including setting up dataloader, model, optimizer, evaluation metrics, train/val/test loops, and so on.</p>
+<p>We will call the Graph2Seq model API which implements a GNN-based encoder and LSTM-based decoder.</p>
+<p>When setting up the dataloader, users will need to call the dataset API which will preprocess the data, e.g., calling the graph construction module, building the vocabulary, tensorizing the data. Users will need to specify the graph construction type when calling the dataset API.</p>
+<p>Users can build their customized dataset APIs by inheriting our low-level dataset APIs. We provide low-level dataset APIs to support various scenarios (e.g., <cite>Text2Label</cite>, <cite>Sequence2Labeling</cite>, <cite>Text2Text</cite>, <cite>Text2Tree</cite>, <cite>DoubleText2Text</cite>).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Jobs</span><span class="p">:</span>
+<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">Jobs</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">opt</span> <span class="o">=</span> <span class="n">opt</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">use_copy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;decoder_args&quot;</span><span class="p">][</span><span class="s2">&quot;rnn_decoder_share&quot;</span><span class="p">][</span><span class="s2">&quot;use_copy&quot;</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">use_coverage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;decoder_args&quot;</span><span class="p">][</span><span class="s2">&quot;rnn_decoder_share&quot;</span><span class="p">][</span><span class="s2">&quot;use_coverage&quot;</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_build_device</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_build_dataloader</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_build_model</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_build_loss_function</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_build_optimizer</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_build_evaluation</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">_build_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
+    <span class="n">seed</span> <span class="o">=</span> <span class="n">opt</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">]</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">opt</span><span class="p">[</span><span class="s2">&quot;use_gpu&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[ Using CUDA ]&#39;</span><span class="p">)</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">manual_seed_all</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">torch.backends</span> <span class="kn">import</span> <span class="n">cudnn</span>
+        <span class="n">cudnn</span><span class="o">.</span><span class="n">benchmark</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span> <span class="k">if</span> <span class="n">opt</span><span class="p">[</span><span class="s2">&quot;gpu&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;cuda:</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">opt</span><span class="p">[</span><span class="s2">&quot;gpu&quot;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;[ Using CPU ]&#39;</span><span class="p">)</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+
+<span class="k">def</span> <span class="nf">_build_dataloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_share&quot;</span><span class="p">][</span><span class="s2">&quot;graph_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;dependency&quot;</span><span class="p">:</span>
+        <span class="n">topology_builder</span> <span class="o">=</span> <span class="n">DependencyBasedGraphConstruction</span>
+        <span class="n">graph_type</span> <span class="o">=</span> <span class="s1">&#39;static&#39;</span>
+        <span class="n">dynamic_init_topology_builder</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_share&quot;</span><span class="p">][</span><span class="s2">&quot;graph_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;constituency&quot;</span><span class="p">:</span>
+        <span class="n">topology_builder</span> <span class="o">=</span> <span class="n">ConstituencyBasedGraphConstruction</span>
+        <span class="n">graph_type</span> <span class="o">=</span> <span class="s1">&#39;static&#39;</span>
+        <span class="n">dynamic_init_topology_builder</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_share&quot;</span><span class="p">][</span><span class="s2">&quot;graph_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;node_emb&quot;</span><span class="p">:</span>
+        <span class="n">topology_builder</span> <span class="o">=</span> <span class="n">NodeEmbeddingBasedGraphConstruction</span>
+        <span class="n">graph_type</span> <span class="o">=</span> <span class="s1">&#39;dynamic&#39;</span>
+        <span class="n">dynamic_init_topology_builder</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_share&quot;</span><span class="p">][</span><span class="s2">&quot;graph_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;node_emb_refined&quot;</span><span class="p">:</span>
+        <span class="n">topology_builder</span> <span class="o">=</span> <span class="n">NodeEmbeddingBasedRefinedGraphConstruction</span>
+        <span class="n">graph_type</span> <span class="o">=</span> <span class="s1">&#39;dynamic&#39;</span>
+        <span class="n">dynamic_init_graph_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_private&quot;</span><span class="p">][</span>
+            <span class="s2">&quot;dynamic_init_graph_type&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">dynamic_init_graph_type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">dynamic_init_graph_type</span> <span class="o">==</span> <span class="s1">&#39;line&#39;</span><span class="p">:</span>
+            <span class="n">dynamic_init_topology_builder</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">dynamic_init_graph_type</span> <span class="o">==</span> <span class="s1">&#39;dependency&#39;</span><span class="p">:</span>
+            <span class="n">dynamic_init_topology_builder</span> <span class="o">=</span> <span class="n">DependencyBasedGraphConstruction</span>
+        <span class="k">elif</span> <span class="n">dynamic_init_graph_type</span> <span class="o">==</span> <span class="s1">&#39;constituency&#39;</span><span class="p">:</span>
+            <span class="n">dynamic_init_topology_builder</span> <span class="o">=</span> <span class="n">ConstituencyBasedGraphConstruction</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Define your own dynamic_init_topology_builder&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Define your topology builder.&quot;</span><span class="p">)</span>
+
+
+    <span class="c1"># Call the TREC dataset API</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">JobsDataset</span><span class="p">(</span><span class="n">root_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_share&quot;</span><span class="p">][</span><span class="s2">&quot;root_dir&quot;</span><span class="p">],</span>
+                          <span class="n">pretrained_word_emb_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;pretrained_word_emb_name&quot;</span><span class="p">],</span>
+                          <span class="n">pretrained_word_emb_cache_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;pretrained_word_emb_cache_dir&quot;</span><span class="p">],</span>
+                          <span class="n">merge_strategy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_private&quot;</span><span class="p">][</span><span class="s2">&quot;merge_strategy&quot;</span><span class="p">],</span>
+                          <span class="n">edge_strategy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_private&quot;</span><span class="p">][</span><span class="s2">&quot;edge_strategy&quot;</span><span class="p">],</span>
+                          <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;seed&quot;</span><span class="p">],</span> <span class="n">word_emb_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;word_emb_size&quot;</span><span class="p">],</span>
+                          <span class="n">share_vocab</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_share&quot;</span><span class="p">][</span><span class="s2">&quot;share_vocab&quot;</span><span class="p">],</span>
+                          <span class="n">graph_type</span><span class="o">=</span><span class="n">graph_type</span><span class="p">,</span> <span class="n">topology_builder</span><span class="o">=</span><span class="n">topology_builder</span><span class="p">,</span>
+                          <span class="n">topology_subdir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_share&quot;</span><span class="p">][</span><span class="s2">&quot;topology_subdir&quot;</span><span class="p">],</span>
+                          <span class="n">thread_number</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_share&quot;</span><span class="p">][</span><span class="s2">&quot;thread_number&quot;</span><span class="p">],</span>
+                          <span class="n">dynamic_graph_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;graph_construction_args&quot;</span><span class="p">][</span><span class="s2">&quot;graph_construction_share&quot;</span><span class="p">][</span><span class="s2">&quot;graph_type&quot;</span><span class="p">],</span>
+                          <span class="n">dynamic_init_topology_builder</span><span class="o">=</span><span class="n">dynamic_init_topology_builder</span><span class="p">,</span> <span class="n">dynamic_init_topology_aux_args</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">train</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">],</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">vocab</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">vocab_model</span>
+
+<span class="k">def</span> <span class="nf">_build_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c1"># Call the Graph2Seq model API</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">Graph2Seq</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_build_loss_function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="c1"># Call the Graph2Seq loss API</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">Graph2SeqLoss</span><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">out_word_vocab</span><span class="o">.</span><span class="n">PAD</span><span class="p">,</span> <span class="n">use_coverage</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">use_coverage</span><span class="p">,</span> <span class="n">coverage_weight</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_build_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">_build_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">ExpressionAccuracy</span><span class="p">()]</span>
+
+<span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">max_score</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_best_epoch</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;epochs&quot;</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_lr</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">epoch</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="n">max_score</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Best model saved, epoch </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span><span class="s2">&quot;best.pth&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_best_epoch</span> <span class="o">=</span> <span class="n">epoch</span>
+            <span class="n">max_score</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_score</span><span class="p">,</span> <span class="n">score</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_condition</span><span class="p">(</span><span class="n">epoch</span><span class="p">):</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">max_score</span>
+
+<span class="k">def</span> <span class="nf">_stop_condition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">epoch</span> <span class="o">&gt;</span> <span class="n">patience</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_best_epoch</span>
+
+<span class="k">def</span> <span class="nf">_adjust_lr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">set_lr</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">decay_factor</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
+            <span class="n">group</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;lr&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">decay_factor</span>
+
+    <span class="n">epoch_diff</span> <span class="o">=</span> <span class="n">epoch</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;lr_start_decay_epoch&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">epoch_diff</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">epoch_diff</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;lr_decay_per_epoch&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;min_lr&quot;</span><span class="p">]:</span>
+            <span class="n">set_lr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;lr_decay_rate&quot;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;lr_decay_rate&quot;</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Learning rate adjusted: </span><span class="si">{:.5f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">]))</span>
+
+<span class="k">def</span> <span class="nf">train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">split</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Start training in split </span><span class="si">{}</span><span class="s2">, Epoch: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">split</span><span class="p">,</span> <span class="n">epoch</span><span class="p">))</span>
+    <span class="n">loss_collect</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">dataloader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_dataloader</span>
+    <span class="n">step_all_train</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+        <span class="n">graph</span><span class="p">,</span> <span class="n">tgt</span><span class="p">,</span> <span class="n">gt_str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;graph_data&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;tgt_seq&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;output_str&quot;</span><span class="p">]</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">tgt</span> <span class="o">=</span> <span class="n">tgt</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">oov_dict</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_copy</span><span class="p">:</span>
+            <span class="n">oov_dict</span><span class="p">,</span> <span class="n">tgt</span> <span class="o">=</span> <span class="n">prepare_ext_vocab</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab</span><span class="p">,</span> <span class="n">gt_str</span><span class="o">=</span><span class="n">gt_str</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="n">prob</span><span class="p">,</span> <span class="n">enc_attn_weights</span><span class="p">,</span> <span class="n">coverage_vectors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">tgt</span><span class="p">,</span> <span class="n">oov_dict</span><span class="o">=</span><span class="n">oov_dict</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">logits</span><span class="o">=</span><span class="n">prob</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">tgt</span><span class="p">,</span> <span class="n">enc_attn_weights</span><span class="o">=</span><span class="n">enc_attn_weights</span><span class="p">,</span> <span class="n">coverage_vectors</span><span class="o">=</span><span class="n">coverage_vectors</span><span class="p">)</span>
+        <span class="n">loss_collect</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;loss_display_step&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">step</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Epoch </span><span class="si">{}</span><span class="s2">: [</span><span class="si">{}</span><span class="s2"> / </span><span class="si">{}</span><span class="s2">] loss: </span><span class="si">{:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">step_all_train</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">loss_collect</span><span class="p">)))</span>
+            <span class="n">loss_collect</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;val&quot;</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">pred_collect</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">gt_collect</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">assert</span> <span class="n">split</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">]</span>
+    <span class="n">dataloader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_dataloader</span> <span class="k">if</span> <span class="n">split</span> <span class="o">==</span> <span class="s2">&quot;val&quot;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_dataloader</span>
+    <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+        <span class="n">graph</span><span class="p">,</span> <span class="n">tgt</span><span class="p">,</span> <span class="n">gt_str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;graph_data&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;tgt_seq&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;output_str&quot;</span><span class="p">]</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_copy</span><span class="p">:</span>
+            <span class="n">oov_dict</span> <span class="o">=</span> <span class="n">prepare_ext_vocab</span><span class="p">(</span><span class="n">batch_graph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span> <span class="n">vocab</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vocab</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">ref_dict</span> <span class="o">=</span> <span class="n">oov_dict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">oov_dict</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">ref_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">out_word_vocab</span>
+
+        <span class="n">prob</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">oov_dict</span><span class="o">=</span><span class="n">oov_dict</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">pred_str</span> <span class="o">=</span> <span class="n">wordid2str</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">ref_dict</span><span class="p">)</span>
+        <span class="n">pred_collect</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pred_str</span><span class="p">)</span>
+        <span class="n">gt_collect</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">gt_str</span><span class="p">)</span>
+
+    <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">calculate_scores</span><span class="p">(</span><span class="n">ground_truth</span><span class="o">=</span><span class="n">gt_collect</span><span class="p">,</span> <span class="n">predict</span><span class="o">=</span><span class="n">pred_collect</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluation accuracy in `</span><span class="si">{}</span><span class="s2">` split: </span><span class="si">{:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">split</span><span class="p">,</span> <span class="n">score</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">score</span>
+
+<span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+    <span class="n">pred_collect</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">gt_collect</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">dataloader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_dataloader</span>
+    <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+        <span class="n">graph</span><span class="p">,</span> <span class="n">tgt</span><span class="p">,</span> <span class="n">gt_str</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;graph_data&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;tgt_seq&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;output_str&quot;</span><span class="p">]</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_copy</span><span class="p">:</span>
+            <span class="n">oov_dict</span> <span class="o">=</span> <span class="n">prepare_ext_vocab</span><span class="p">(</span><span class="n">batch_graph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span> <span class="n">vocab</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vocab</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">ref_dict</span> <span class="o">=</span> <span class="n">oov_dict</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">oov_dict</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">ref_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">out_word_vocab</span>
+
+        <span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">batch_graph</span><span class="o">=</span><span class="n">graph</span><span class="p">,</span> <span class="n">oov_dict</span><span class="o">=</span><span class="n">oov_dict</span><span class="p">,</span> <span class="n">beam_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">pred_ids</span> <span class="o">=</span> <span class="n">pred</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># we just use the top-1</span>
+
+        <span class="n">pred_str</span> <span class="o">=</span> <span class="n">wordid2str</span><span class="p">(</span><span class="n">pred_ids</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">ref_dict</span><span class="p">)</span>
+
+        <span class="n">pred_collect</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pred_str</span><span class="p">)</span>
+        <span class="n">gt_collect</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">gt_str</span><span class="p">)</span>
+
+    <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">calculate_scores</span><span class="p">(</span><span class="n">ground_truth</span><span class="o">=</span><span class="n">gt_collect</span><span class="p">,</span> <span class="n">predict</span><span class="o">=</span><span class="n">pred_collect</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">score</span>
+
+<span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">):</span>
+    <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;checkpoint_save_path&quot;</span><span class="p">],</span> <span class="n">checkpoint_name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">save_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_name</span><span class="p">):</span>
+    <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;checkpoint_save_path&quot;</span><span class="p">],</span> <span class="n">checkpoint_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;checkpoint_save_path&quot;</span><span class="p">]):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt</span><span class="p">[</span><span class="s2">&quot;checkpoint_save_path&quot;</span><span class="p">],</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">checkpoint_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-the-model">
+<h2>Run the model<a class="headerlink" href="#run-the-model" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span> <span class="o">=</span> <span class="n">Jobs</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span>
+<span class="n">max_score</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+<span class="n">runner</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;best.pth&quot;</span><span class="p">)</span>
+<span class="n">test_score</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">translate</span><span class="p">()</span>
+</pre></div>
+</div>
+<pre class="literal-block">[ Using CPU ]
+Start training in split train, Epoch: 0
+Epoch 0: [10 / 21] loss: 3.938
+Epoch 0: [20 / 21] loss: 2.506
+Evaluation accuracy in <cite>test</cite> split: 0.000
+Best model saved, epoch 0
+Start training in split train, Epoch: 1
+Epoch 1: [10 / 21] loss: 1.845
+Epoch 1: [20 / 21] loss: 1.487
+Evaluation accuracy in <cite>test</cite> split: 0.000
+Best model saved, epoch 1
+Start training in split train, Epoch: 2
+Epoch 2: [10 / 21] loss: 1.198
+Epoch 2: [20 / 21] loss: 1.104
+Evaluation accuracy in <cite>test</cite> split: 0.100
+Best model saved, epoch 2
+......</pre>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="math_word_problem.html" class="btn btn-neutral float-right" title="Math Word Problem Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="text_classification.html" class="btn btn-neutral float-left" title="Text Classification Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

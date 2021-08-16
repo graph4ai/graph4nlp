@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Chapter 5.2 Standard Tree Decoder &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Chapter 6. Classification" href="../classification.html" />
+    <link rel="prev" title="Chapter 5.1 Standard RNN Decoder" href="stdrnndecoder.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../decoding.html">Chapter 5. Decoder</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../decoding.html#roadmap">Roadmap</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="stdrnndecoder.html">Chapter 5.1 Standard RNN Decoder</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Chapter 5.2 Standard Tree Decoder</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#implementation-details">Implementation details</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../decoding.html">Chapter 5. Decoder</a> &raquo;</li>
+        
+      <li>Chapter 5.2 Standard Tree Decoder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/guide/decoding/stdtreedecoder.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="chapter-5-2-standard-tree-decoder">
+<span id="std-tree-decoder"></span><h1>Chapter 5.2 Standard Tree Decoder<a class="headerlink" href="#chapter-5-2-standard-tree-decoder" title="Permalink to this headline">¶</a></h1>
+<p>The output of many NLP applications (i.e., semantic parsing, code generation, and math word problem) contain structural information. For example, the output in math word problem is a mathematical equation, which can be expressed naturally by the data structure of the tree. To model these kinds of outputs, tree decoders are widely adopted. Tree decoders can be divided into two main parts: <code class="docutils literal notranslate"><span class="pre">DFS</span></code> (depth-first search) based tree decoder, and <code class="docutils literal notranslate"><span class="pre">BFS</span></code> (breadth-first search) based tree decoder. We mainly implement <code class="docutils literal notranslate"><span class="pre">BFS</span></code> based tree decoder here. Specifically, we give a simple example on how <code class="docutils literal notranslate"><span class="pre">StdTreeDecoder</span></code> is initialized as follows,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.config</span> <span class="kn">import</span> <span class="n">get_basic_args</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.utils.config_utils</span> <span class="kn">import</span> <span class="n">update_values</span><span class="p">,</span> <span class="n">get_yaml_config</span>
+
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.datasets.jobs</span> <span class="kn">import</span> <span class="n">JobsDatasetForTree</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.utils.tree_utils</span> <span class="kn">import</span> <span class="n">Vocab</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.prediction.generation.TreeBasedDecoder</span> <span class="kn">import</span> <span class="n">StdTreeDecoder</span>
+
+<span class="c1"># get your vocab_model, batch_graph, and tgt_tree_batch</span>
+<span class="n">dec_word_emb</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">out_vocab</span><span class="o">.</span><span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                             <span class="n">out_vocab</span><span class="o">.</span><span class="n">embeddings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                             <span class="n">padding_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                             <span class="n">_weight</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">out_vocab</span><span class="o">.</span><span class="n">embeddings</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">())</span>
+
+<span class="n">decoder</span> <span class="o">=</span> <span class="n">StdTreeDecoder</span><span class="p">(</span><span class="n">attn_type</span><span class="o">=</span><span class="s2">&quot;uniform&quot;</span><span class="p">,</span> <span class="n">embeddings</span><span class="o">=</span><span class="n">dec_word_emb</span><span class="p">,</span> <span class="n">enc_hidden_size</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+                         <span class="n">dec_emb_size</span><span class="o">=</span><span class="n">out_vocab</span><span class="o">.</span><span class="n">embedding_dims</span><span class="p">,</span> <span class="n">dec_hidden_size</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+                         <span class="n">output_size</span><span class="o">=</span><span class="n">out_vocab</span><span class="o">.</span><span class="n">vocab_size</span><span class="p">,</span>
+                         <span class="n">criterion</span><span class="o">=</span><span class="n">nn</span><span class="o">.</span><span class="n">NLLLoss</span><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">),</span>
+                         <span class="n">teacher_force_ratio</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">use_copy</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_dec_seq_length</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                         <span class="n">max_dec_tree_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">tgt_vocab</span><span class="o">=</span><span class="n">out_vocab</span><span class="p">)</span>
+
+<span class="n">predicted</span> <span class="o">=</span> <span class="n">decoder</span><span class="p">(</span><span class="n">batch_graph</span><span class="o">=</span><span class="n">batch_graph</span><span class="p">,</span> <span class="n">tgt_tree_batch</span><span class="o">=</span><span class="n">tgt_tree_batch</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="implementation-details">
+<h2>Implementation details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="what-is-the-tree-decoding-process">
+<h3>What is the tree decoding process<a class="headerlink" href="#what-is-the-tree-decoding-process" title="Permalink to this headline">¶</a></h3>
+<p>In the BFS-based tree decoding approach, we represent all subtrees as non-terminal nodes. Then we divide the whole tree structure into multiple “sequences” from top to bottom according to the non-terminal nodes, which is shown in code below,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_dec_batch</span><span class="p">(</span><span class="n">dec_tree_batch</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">form_manager</span><span class="p">):</span>
+    <span class="n">queue_tree</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">queue_tree</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">queue_tree</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;tree&quot;</span><span class="p">:</span> <span class="n">dec_tree_batch</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;child_index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+
+    <span class="n">cur_index</span><span class="p">,</span> <span class="n">max_index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="n">dec_batch</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># max_index: the max number of sequence decoder in one batch</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">cur_index</span> <span class="o">&lt;=</span> <span class="n">max_index</span><span class="p">):</span>
+        <span class="n">max_w_len</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">batch_w_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">w_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">cur_index</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">queue_tree</span><span class="p">[</span><span class="n">i</span><span class="p">])):</span>
+                <span class="n">t</span> <span class="o">=</span> <span class="n">queue_tree</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">cur_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="s2">&quot;tree&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">ic</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">num_children</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">ic</span><span class="p">],</span> <span class="n">Tree</span><span class="p">):</span>
+                        <span class="n">w_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+                        <span class="n">queue_tree</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;tree&quot;</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">ic</span><span class="p">],</span> <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="n">cur_index</span><span class="p">,</span> <span class="s2">&quot;child_index&quot;</span><span class="p">:</span> <span class="n">ic</span> <span class="o">+</span> <span class="mi">1</span><span class="p">})</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">w_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="n">ic</span><span class="p">])</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">queue_tree</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">max_index</span><span class="p">:</span>
+                    <span class="n">max_index</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">queue_tree</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">w_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_w_len</span><span class="p">:</span>
+                <span class="n">max_w_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">w_list</span><span class="p">)</span>
+            <span class="n">batch_w_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w_list</span><span class="p">)</span>
+        <span class="n">dec_batch</span><span class="p">[</span><span class="n">cur_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">max_w_len</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+            <span class="n">w_list</span> <span class="o">=</span> <span class="n">batch_w_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">w_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">w_list</span><span class="p">)):</span>
+                    <span class="n">dec_batch</span><span class="p">[</span><span class="n">cur_index</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">w_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">cur_index</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">dec_batch</span><span class="p">[</span><span class="n">cur_index</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dec_batch</span><span class="p">[</span><span class="n">cur_index</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">form_manager</span><span class="o">.</span><span class="n">get_symbol_idx</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)</span>
+                <span class="n">dec_batch</span><span class="p">[</span><span class="n">cur_index</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="nb">len</span><span class="p">(</span><span class="n">w_list</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">dec_batch</span><span class="p">[</span><span class="n">cur_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_cuda</span><span class="p">(</span><span class="n">dec_batch</span><span class="p">[</span><span class="n">cur_index</span><span class="p">],</span> <span class="n">device</span><span class="p">)</span>
+        <span class="n">cur_index</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">dec_batch</span><span class="p">,</span> <span class="n">queue_tree</span><span class="p">,</span> <span class="n">max_index</span>
+</pre></div>
+</div>
+<p>We then use sequence decoding to generate the tree structure in order. And for each sequence decoding process, we will feed the embedding of its parent node and sibling node as auxiliary input.</p>
+<p>The figure below is an example for tree decoding process, where nodes like <code class="docutils literal notranslate"><span class="pre">S1</span></code> , <code class="docutils literal notranslate"><span class="pre">S2</span></code> stand for sub-tree nodes, and once a sub-tree node generated, decoder will start a new branch for a new descendant decoding process. The number stands for the order of different branching decoding processes.</p>
+<a class="reference internal image-reference" href="../../_images/tree_decoding.jpg"><img alt="../../_images/tree_decoding.jpg" src="../../_images/tree_decoding.jpg" style="height: 400px;" /></a>
+<p>And we give a rough code snippet about how tree decoding is completed.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cur_index</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">while</span> <span class="p">(</span><span class="n">cur_index</span> <span class="o">&lt;=</span> <span class="n">max_index</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">cur_index</span> <span class="o">&gt;</span> <span class="n">max_dec_tree_depth</span><span class="p">:</span>
+        <span class="k">break</span>
+    <span class="o">...</span>
+    <span class="c1"># get parent and sibling embeddings.</span>
+    <span class="c1"># do sequence decoding.</span>
+    <span class="o">...</span>
+
+    <span class="n">cur_index</span> <span class="o">=</span> <span class="n">cur_index</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">max_index</span></code> is the number of non-terminal nodes and <code class="docutils literal notranslate"><span class="pre">max_dec_tree_depth</span></code> is the maximum number of non-terminal nodes allowed.</p>
+</div>
+<div class="section" id="copy-and-separate-attention">
+<h3>Copy and separate attention<a class="headerlink" href="#copy-and-separate-attention" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">StdTreeDecoder</span></code> employ <code class="docutils literal notranslate"><span class="pre">copy</span></code> and <code class="docutils literal notranslate"><span class="pre">separate</span> <span class="pre">attention</span></code> mechanism to enhance the overall <code class="docutils literal notranslate"><span class="pre">Graph2Tree</span></code> model. We show how <code class="docutils literal notranslate"><span class="pre">copy</span></code> is used in <code class="docutils literal notranslate"><span class="pre">StdTreeDecoder</span></code> here. Both <code class="docutils literal notranslate"><span class="pre">StdTreeDecoder</span></code> and  <code class="docutils literal notranslate"><span class="pre">StdRNNDecoder</span></code> use <code class="docutils literal notranslate"><span class="pre">separate</span> <span class="pre">attention</span></code> mechanism, it has been explained in <a class="reference internal" href="stdrnndecoder.html#std-rnn-decoder"><span class="std std-ref">Chapter 5.1 Standard RNN Decoder</span></a>. So we will not go into detail here.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">copy</span></code> mechanism, it helps model to copy words directly from input, and computed as,
+<span class="math notranslate nohighlight">\(p(w) = p_{gen}  p_{softmax}(w) + (1 - p_{gen})  p_{copy}(w)\)</span>.</p>
+<p>We refer to the implement of <a class="reference external" href="https://arxiv.org/abs/1506.03134">pointer-network</a>. Technically, for a certain mini-batch graphdata, we firstly extend the original vocabulary to a full-vocabulary containing all words (including out-of-vocabulary (oov) words) in the mini-batch:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">oov_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">src_vocab</span><span class="p">)</span>
+<span class="n">token_matrix</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">batch_graph</span><span class="o">.</span><span class="n">node_attributes</span><span class="p">:</span>
+    <span class="n">node_token</span> <span class="o">=</span> <span class="n">n</span><span class="p">[</span><span class="s1">&#39;token&#39;</span><span class="p">]</span>
+    <span class="c1"># Pick out all out-of-vocabulary (oov) words in the mini-batch graphdata.</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="n">oov_dict</span><span class="o">.</span><span class="n">get_symbol_idx</span><span class="p">(</span>
+            <span class="n">node_token</span><span class="p">)</span> <span class="o">==</span> <span class="n">oov_dict</span><span class="o">.</span><span class="n">get_symbol_idx</span><span class="p">(</span><span class="n">oov_dict</span><span class="o">.</span><span class="n">unk_token</span><span class="p">):</span>
+        <span class="c1"># Add them into oov vocab model.</span>
+        <span class="n">oov_dict</span><span class="o">.</span><span class="n">add_symbol</span><span class="p">(</span><span class="n">node_token</span><span class="p">)</span>
+    <span class="n">token_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oov_dict</span><span class="o">.</span><span class="n">get_symbol_idx</span><span class="p">(</span><span class="n">node_token</span><span class="p">))</span>
+<span class="k">return</span> <span class="n">oov_dict</span>
+</pre></div>
+</div>
+<p>After that, the decoder learns the conditional probability of an output sequence with elements that are discrete tokens corresponding to positions in an input sequence. Code snippets as follows help with how it works.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_copy</span><span class="p">:</span>
+    <span class="n">pgen_collect</span> <span class="o">=</span> <span class="p">[</span><span class="n">dec_emb</span><span class="p">,</span> <span class="n">hidden</span><span class="p">,</span> <span class="n">attn_ptr</span><span class="p">]</span>
+
+    <span class="c1"># the probability of copying a word from the source</span>
+    <span class="n">prob_ptr</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ptr</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">pgen_collect</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+
+    <span class="c1"># the probability of generating a word over the standard softmax on vocabulary model.</span>
+    <span class="n">prob_gen</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">prob_ptr</span>
+    <span class="n">gen_output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">decoder_output</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">prob_gen</span> <span class="o">*</span> <span class="n">gen_output</span>
+    <span class="n">need_pad_length</span> <span class="o">=</span> <span class="n">oov_dict</span><span class="o">.</span><span class="n">get_vocab_size</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">get_vocab_size</span><span class="p">()</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">ret</span><span class="p">,</span> <span class="n">ret</span><span class="o">.</span><span class="n">new_zeros</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">need_pad_length</span><span class="p">))),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># attention scores</span>
+    <span class="n">ptr_output</span> <span class="o">=</span> <span class="n">dec_attn_scores</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">scatter_add_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">src_seq</span><span class="p">,</span> <span class="n">prob_ptr</span> <span class="o">*</span> <span class="n">ptr_output</span><span class="p">)</span>
+    <span class="n">decoder_output</span> <span class="o">=</span> <span class="n">output</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">decoder_output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">decoder_output</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The returned <code class="docutils literal notranslate"><span class="pre">decoder_output</span></code> is a distribution over the extend dictionary <code class="docutils literal notranslate"><span class="pre">oov_dict</span></code> if <code class="docutils literal notranslate"><span class="pre">copy</span></code> is adopted. Users can set <code class="docutils literal notranslate"><span class="pre">use_copy</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> to use this feature. And the oov vocabulary must be passed when utilizing it.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../classification.html" class="btn btn-neutral float-right" title="Chapter 6. Classification" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="stdrnndecoder.html" class="btn btn-neutral float-left" title="Chapter 5.1 Standard RNN Decoder" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

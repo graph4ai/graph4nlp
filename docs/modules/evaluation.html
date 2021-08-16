@@ -1,0 +1,433 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>graph4nlp.evaluation &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Text Classification Tutorial" href="../tutorial/text_classification.html" />
+    <link rel="prev" title="graph4nlp.loss" href="loss.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">graph4nlp.evaluation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#evaluation-metrics">Evaluation Metrics</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>graph4nlp.evaluation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/modules/evaluation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-graph4nlp.evaluation">
+<span id="graph4nlp-evaluation"></span><h1>graph4nlp.evaluation<a class="headerlink" href="#module-graph4nlp.evaluation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="evaluation-metrics">
+<h2>Evaluation Metrics<a class="headerlink" href="#evaluation-metrics" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="graph4nlp.evaluation.BLEU">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.evaluation.</code><code class="sig-name descname">BLEU</code><span class="sig-paren">(</span><em class="sig-param">n_grams</em>, <em class="sig-param">verbase=0</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.evaluation.BLEU" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The BLEU evaluation metric class.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_grams</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – The BLEU’s n_gram parameter. The results will be returned according             to the <code class="docutils literal notranslate"><span class="pre">n_grams</span></code> one-by-one.</p></li>
+<li><p><strong>verbase</strong> (<em>int</em><em>, </em><em>default = 0</em>) – The log indicator. If set to 0, it will output no logs.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.evaluation.BLEU.calculate_scores" title="graph4nlp.evaluation.BLEU.calculate_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_scores</span></code></a>(ground_truth, predict)</p></td>
+<td><p>The BLEU calculation function. It will compute the BLEU scores.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.evaluation.BLEU.calculate_scores">
+<code class="sig-name descname">calculate_scores</code><span class="sig-paren">(</span><em class="sig-param">ground_truth</em>, <em class="sig-param">predict</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.evaluation.BLEU.calculate_scores" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The BLEU calculation function. It will compute the BLEU scores.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ground_truth</strong> (<em>list</em><em>[</em><em>string</em><em>]</em>) – The ground truth (correct) target values. It is a list of strings.</p></li>
+<li><p><strong>predict</strong> (<em>list</em><em>[</em><em>string</em><em>]</em>) – The predicted target values. It is a list of strings.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>score</strong> (<em>list[float]</em>) – The list contains BLEU_n results according to <code class="docutils literal notranslate"><span class="pre">n_grams</span></code>.</p></li>
+<li><p><strong>scores</strong> (<em>list[list[float]]</em>) – The specific results for each needed BLEU_n metric.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.evaluation.CIDEr">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.evaluation.</code><code class="sig-name descname">CIDEr</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.evaluation.CIDEr" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The CIDEr evaluation metric class.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>df</strong> (<em>string</em>) – Parameter indicating document frequency.</p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.evaluation.CIDEr.calculate_scores" title="graph4nlp.evaluation.CIDEr.calculate_scores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_scores</span></code></a>(ground_truth, predict)</p></td>
+<td><p>The CIDEr calculation function. It will compute the CIDEr scores.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.evaluation.CIDEr.calculate_scores">
+<code class="sig-name descname">calculate_scores</code><span class="sig-paren">(</span><em class="sig-param">ground_truth</em>, <em class="sig-param">predict</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.evaluation.CIDEr.calculate_scores" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The CIDEr calculation function. It will compute the CIDEr scores.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ground_truth</strong> (<em>list</em><em>[</em><em>string</em><em>]</em>) – The ground truth (correct) target values. It is a list of strings.</p></li>
+<li><p><strong>predict</strong> (<em>list</em><em>[</em><em>string</em><em>]</em>) – The predicted target values. It is a list of strings.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>score</strong> (<em>float</em>) – The CIDEr value.</p></li>
+<li><p><strong>scores</strong> (<em>list[float]</em>) – The specific results for CIDEr metric.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.evaluation.METEOR">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.evaluation.</code><code class="sig-name descname">METEOR</code><a class="headerlink" href="#graph4nlp.evaluation.METEOR" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The METEOR evaluation metric class.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rubric:</strong> (<em>.</em>) – Methods:</p></li>
+<li><p><strong>autosummary::</strong> (<em>.</em>) – <dl class="field-list simple">
+<dt class="field-odd">toctree</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>calculate_scores</p>
+</p></li>
+<li><p><strong>.</strong> – !! processed by numpydoc !!</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="graph4nlp.evaluation.METEOR.calculate_scores">
+<code class="sig-name descname">calculate_scores</code><span class="sig-paren">(</span><em class="sig-param">ground_truth</em>, <em class="sig-param">predict</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.evaluation.METEOR.calculate_scores" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The METEOR calculation function. It will compute the METEOR scores.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ground_truth</strong> (<em>list</em><em>[</em><em>string</em><em>]</em>) – The ground truth (correct) target values. It is a list of strings.</p></li>
+<li><p><strong>predict</strong> (<em>list</em><em>[</em><em>string</em><em>]</em>) – The predicted target values. It is a list of strings.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>score</strong> (<em>float</em>) – The METEOR value.</p></li>
+<li><p><strong>scores</strong> (<em>list[float]</em>) – The specific results for METEOR metric.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.evaluation.ROUGE">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.evaluation.</code><code class="sig-name descname">ROUGE</code><a class="headerlink" href="#graph4nlp.evaluation.ROUGE" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The METEOR evaluation metric class.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rubric:</strong> (<em>.</em>) – Methods:</p></li>
+<li><p><strong>autosummary::</strong> (<em>.</em>) – <dl class="field-list simple">
+<dt class="field-odd">toctree</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>calculate_scores</p>
+</p></li>
+<li><p><strong>.</strong> – !! processed by numpydoc !!</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="graph4nlp.evaluation.ROUGE.calculate_scores">
+<code class="sig-name descname">calculate_scores</code><span class="sig-paren">(</span><em class="sig-param">ground_truth</em>, <em class="sig-param">predict</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.evaluation.ROUGE.calculate_scores" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The METEOR calculation function. It will compute the METEOR scores.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ground_truth</strong> (<em>list</em><em>[</em><em>string</em><em>]</em>) – The ground truth (correct) target values. It is a list of strings.</p></li>
+<li><p><strong>predict</strong> (<em>list</em><em>[</em><em>string</em><em>]</em>) – The predicted target values. It is a list of strings.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>score</strong> (<em>float</em>) – The METEOR value.</p></li>
+<li><p><strong>scores</strong> (<em>list[float]</em>) – The specific results for METEOR metric.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../tutorial/text_classification.html" class="btn btn-neutral float-right" title="Text Classification Tutorial" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="loss.html" class="btn btn-neutral float-left" title="graph4nlp.loss" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

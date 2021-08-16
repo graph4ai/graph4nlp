@@ -1,0 +1,399 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Chapter 7. Evaluations and Loss components &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="graph4nlp.data" href="../modules/data.html" />
+    <link rel="prev" title="Knowledge Graph Completion" href="classification/kgcompletion.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Chapter 7. Evaluations and Loss components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#evaluations">Evaluations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loss-components">Loss components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sequence-generation-loss">Sequence generation loss.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#knowledge-graph-loss">Knowledge Graph Loss</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#general-loss">General Loss</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Chapter 7. Evaluations and Loss components</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/guide/evaluation.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="chapter-7-evaluations-and-loss-components">
+<h1>Chapter 7. Evaluations and Loss components<a class="headerlink" href="#chapter-7-evaluations-and-loss-components" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://github.com/graph4ai/graph4nlp/fork"><img alt="https://img.shields.io/github/forks/graph4ai/graph4nlp?style=social" src="https://img.shields.io/github/forks/graph4ai/graph4nlp?style=social" /></a>
+<a class="reference external image-reference" href="https://github.com/graph4ai/graph4nlp"><img alt="https://img.shields.io/github/stars/graph4ai/graph4nlp?style=social" src="https://img.shields.io/github/stars/graph4ai/graph4nlp?style=social" /></a>
+<div class="section" id="evaluations">
+<h2>Evaluations<a class="headerlink" href="#evaluations" title="Permalink to this headline">¶</a></h2>
+<p>This part evolves the main evaluation metrics for various tasks. These metrics derive from the save base class and have the same interface for easy use.</p>
+<ol class="arabic simple">
+<li><p>For classification problems, we implement: precision, recall, F1 and accuracy metrics</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.evaluation.accuracy</span> <span class="kn">import</span> <span class="n">Accuracy</span>
+<span class="n">ground_truth</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+<span class="n">predict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+
+<span class="n">metric</span> <span class="o">=</span> <span class="n">Accuracy</span><span class="p">(</span><span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;precision&quot;</span><span class="p">,</span> <span class="s2">&quot;recall&quot;</span><span class="p">,</span> <span class="s2">&quot;F1&quot;</span><span class="p">,</span> <span class="s2">&quot;accuracy&quot;</span><span class="p">])</span>
+
+<span class="n">precision</span><span class="p">,</span> <span class="n">recall</span><span class="p">,</span> <span class="n">f1</span><span class="p">,</span> <span class="n">accuracy</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">calculate_scores</span><span class="p">(</span>
+        <span class="n">ground_truth</span><span class="o">=</span><span class="n">ground_truth</span><span class="p">,</span> <span class="n">predict</span><span class="o">=</span><span class="n">predict</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s2">&quot;micro&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>For generation tasks, we implement 6 metrics including: 1) BLEU (<a class="reference external" href="mailto:BLEU&#37;&#52;&#48;1-4">BLEU<span>&#64;</span>1-4</a>), 2), BLEUTranslation(SacreBLEU), 3)CIDEr, 4)METEOR, 5) ROUGE (ROUGE-L), 6)SummarizationRouge (implemented by pyrouge).</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.evaluation</span> <span class="kn">import</span> <span class="n">BLEU</span>
+
+<span class="n">bleu_metrics</span> <span class="o">=</span> <span class="n">BLEU</span><span class="p">(</span><span class="n">n_grams</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+
+<span class="n">prediction</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;I am a PHD student.&quot;</span><span class="p">,</span> <span class="s2">&quot;I am interested in Graph Neural Network.&quot;</span><span class="p">]</span>
+<span class="n">ground_truth</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;I am a student.&quot;</span><span class="p">,</span> <span class="s2">&quot;She is interested in Math.&quot;</span><span class="p">]</span>
+
+<span class="n">scores</span> <span class="o">=</span> <span class="n">bleu_metrics</span><span class="o">.</span><span class="n">calculate_scores</span><span class="p">(</span><span class="n">ground_truth</span><span class="o">=</span><span class="n">ground_truth</span><span class="p">,</span> <span class="n">predict</span><span class="o">=</span><span class="n">prediction</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="loss-components">
+<h2>Loss components<a class="headerlink" href="#loss-components" title="Permalink to this headline">¶</a></h2>
+<p>We have implemented several specific loss functions for various tasks.</p>
+<div class="section" id="sequence-generation-loss">
+<h3>Sequence generation loss.<a class="headerlink" href="#sequence-generation-loss" title="Permalink to this headline">¶</a></h3>
+<p>We have wrapped the cross-entropy loss and the coverage loss(optional) to calculate the final loss for various sequence generation tasks (e.g., graph2seq, seq2seq).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.loss.seq_generation_loss</span> <span class="kn">import</span> <span class="n">SeqGenerationLoss</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.models.graph2seq</span> <span class="kn">import</span> <span class="n">Graph2Seq</span>
+
+<span class="n">loss_function</span> <span class="o">=</span> <span class="n">SeqGenerationLoss</span><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_coverage</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">logits</span><span class="p">,</span> <span class="n">enc_attn_weights</span><span class="p">,</span> <span class="n">coverage_vectors</span> <span class="o">=</span> <span class="n">Graph2Seq</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span>
+<span class="n">graph2seq_loss</span> <span class="o">=</span> <span class="n">SeqGenerationLoss</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">tgt</span><span class="p">,</span> <span class="n">enc_attn_weights</span><span class="o">=</span><span class="n">enc_attn_weights</span><span class="p">,</span> <span class="n">coverage_vectors</span><span class="o">=</span><span class="n">coverage_vectors</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="knowledge-graph-loss">
+<h3>Knowledge Graph Loss<a class="headerlink" href="#knowledge-graph-loss" title="Permalink to this headline">¶</a></h3>
+<p>In the state-of-the-art KGE models, loss functions were designed according to various
+pointwise, pairwise and multi-class approaches. Refers to
+<a class="reference external" href="https://alammehwish.github.io/dl4kg-eswc/papers/paper%201.pdf">Loss Functions in Knowledge Graph Embedding Models</a></p>
+<p><strong>Pointwise Loss Function</strong></p>
+<p>1. <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.MSELoss.html">MSELoss</a>
+creates a criterion that measures the mean squared error (squared L2 norm)
+between each element in the input <span class="math notranslate nohighlight">\(x\)</span> and target <span class="math notranslate nohighlight">\(y\)</span>. It is the wrapper of <code class="docutils literal notranslate"><span class="pre">nn.MSELoss</span></code> in pytorch.</p>
+<p>2. <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.SoftMarginLoss.html">SOFTMARGINLOSS</a> Creates a criterion that optimizes a two-class classification
+logistic loss between input tensor <span class="math notranslate nohighlight">\(x\)</span> and target tensor <span class="math notranslate nohighlight">\(y\)</span>
+(containing 1 or -1). It is the wrapper of <code class="docutils literal notranslate"><span class="pre">nn.SoftMarginLoss</span></code> in pytorch.</p>
+<p>The number of positive and negative samples should be about the same, otherwise it’s easy to overfit.</p>
+<div class="math notranslate nohighlight">
+\[\text{loss}(x, y) = \sum_i \frac{\log(1 + \exp(-y[i]*x[i]))}{\text{x.nelement}()}\]</div>
+<p><strong>Pairwise Loss Function</strong></p>
+<p>1. <a class="reference external" href="https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SoftplusLoss.py">SoftplusLoss</a>
+refers to the paper <a class="reference external" href="https://www.aclweb.org/anthology/D18-2024.pdf">OpenKE: An Open Toolkit for Knowledge Embedding</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SoftplusLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adv_temperature</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SoftplusLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Softplus</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">adv_temperature</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adv_temperature</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">adv_temperature</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adv_temperature</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adv_flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adv_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_score</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">n_score</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">adv_temperature</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_score</span><span class="p">,</span> <span class="n">n_score</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adv_flag</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="o">-</span><span class="n">p_score</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_weights</span><span class="p">(</span><span class="n">n_score</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">n_score</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="o">-</span><span class="n">p_score</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">n_score</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>2. <a class="reference external" href="https://github.com/thunlp/OpenKE/blob/OpenKE-PyTorch/openke/module/loss/SigmoidLoss.py">SigmoidLoss</a>
+refers to the paper <a class="reference external" href="https://www.aclweb.org/anthology/D18-2024.pdf">OpenKE: An Open Toolkit for Knowledge Embedding</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">SigmoidLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adv_temperature</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SigmoidLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LogSigmoid</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">adv_temperature</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adv_temperature</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">adv_temperature</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adv_temperature</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adv_flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adv_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_score</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">n_score</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">adv_temperature</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_score</span><span class="p">,</span> <span class="n">n_score</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adv_flag</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">p_score</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_weights</span><span class="p">(</span><span class="n">n_score</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="o">-</span><span class="n">n_score</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="n">p_score</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="o">-</span><span class="n">n_score</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>The implementations of <code class="docutils literal notranslate"><span class="pre">SoftplusLoss</span></code> and <code class="docutils literal notranslate"><span class="pre">SigmoidLoss</span></code> refer to <a class="reference external" href="https://github.com/thunlp/OpenKE">OpenKE</a>.</p>
+<p><strong>Multi-Class Loss Function</strong></p>
+<p>1. <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.BCELoss.html">Binary Cross Entropy Loss</a>
+Creates a criterion that measures the Binary Cross Entropy between the target and the output. Note that the targets
+<span class="math notranslate nohighlight">\(y\)</span> should be numbers between 0 and 1. It is the wrapper of <code class="docutils literal notranslate"><span class="pre">nn.BCELoss</span></code> in pytorch.</p>
+<p>Next it is a simple how to use code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.loss.kg_loss</span> <span class="kn">import</span> <span class="n">KGLoss</span>
+
+<span class="n">loss_function</span> <span class="o">=</span> <span class="n">KGLoss</span><span class="p">(</span><span class="n">loss_type</span><span class="o">=</span><span class="s2">&quot;BCELoss&quot;</span><span class="p">)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">()</span>
+<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="nb">input</span><span class="p">),</span> <span class="n">target</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="general-loss">
+<h3>General Loss<a class="headerlink" href="#general-loss" title="Permalink to this headline">¶</a></h3>
+<p>It includes the most used loss functions containing:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">NLL</span></code> loss. It is the wrapper of <code class="docutils literal notranslate"><span class="pre">nn.NLLLoss</span></code> in pytorch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BCE</span></code> loss. It is the wrapper of <code class="docutils literal notranslate"><span class="pre">nn.BCELoss</span></code> in pytorch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">BCEWithLogits</span></code> loss. It is the wrapper of <code class="docutils literal notranslate"><span class="pre">nn.BCEWithLogitsLoss</span></code> in pytorch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MultiLabelMargin</span></code> loss. It is the wrapper of <code class="docutils literal notranslate"><span class="pre">nn.MultiLabelMarginLoss</span></code> in pytorch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SoftMargin</span></code> loss. It is the wrapper of <code class="docutils literal notranslate"><span class="pre">nn.SoftMargin</span></code> in pytorch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CrossEntropy</span></code> loss. It is the wrapper of <code class="docutils literal notranslate"><span class="pre">nn.CrossEntropy</span></code> in pytorch.</p></li>
+</ol>
+<p>Next it is a simple how to use code:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.loss.general_loss</span> <span class="kn">import</span> <span class="n">GeneralLoss</span>
+
+<span class="n">loss_function</span> <span class="o">=</span> <span class="n">GeneralLoss</span><span class="p">(</span><span class="n">loss_type</span><span class="o">=</span><span class="s2">&quot;CrossEntropy&quot;</span><span class="p">)</span>
+<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../modules/data.html" class="btn btn-neutral float-right" title="graph4nlp.data" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="classification/kgcompletion.html" class="btn btn-neutral float-left" title="Knowledge Graph Completion" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

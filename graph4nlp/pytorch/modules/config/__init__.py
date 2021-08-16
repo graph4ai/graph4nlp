@@ -9,7 +9,8 @@ def get_basic_args(graph_construction_name, graph_embedding_name, decoder_name):
     Parameters
     ----------
     graph_construction_name: str
-        The graph construction method name. Expected in ["dependency", "constituency", "node_emb", "node_emb_refined"].
+        The graph construction method name. Expected in ["dependency", "constituency", \
+            "node_emb", "node_emb_refined"].
     graph_embedding_name: str
         The graph embedding name. Expected in ["gcn", "gat", "graphsage", "ggnn"].
     decoder_name: str
@@ -32,9 +33,14 @@ def get_basic_args(graph_construction_name, graph_embedding_name, decoder_name):
     ret = {
         "graph_construction_args": graph_construction_args,
         "graph_embedding_args": graph_embedding_args,
-        "decoder_args": decoder_args
+        "decoder_args": decoder_args,
     }
     return ret
 
 
-__all__ = ["get_graph_construction_args", "get_graph_embedding_args", "get_decoder_args", "get_basic_args"]
+__all__ = [
+    "get_graph_construction_args",
+    "get_graph_embedding_args",
+    "get_decoder_args",
+    "get_basic_args",
+]
