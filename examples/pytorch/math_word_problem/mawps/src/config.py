@@ -9,7 +9,7 @@ def get_args():
     parser.add_argument(
         "--dataset_yaml",
         type=str,
-        default="examples/pytorch/math_word_problem/mawps/config/new_dynamic_graphsage_undirected.yaml",#noqa
+        default="examples/pytorch/math_word_problem/mawps/config/new_dynamic_graphsage_undirected.yaml",  # noqa
     )
 
     parser.add_argument("--learning-rate", type=float, default=1e-3)
