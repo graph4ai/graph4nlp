@@ -12,6 +12,7 @@ class GNNLayerBase(nn.Module):
     def forward(self, graph, node_feat):
         raise NotImplementedError('GNNLayerBase: Not Implemented.')
 
+
 class GNNBase(nn.Module):
     """Base class for GNN module.
     """

@@ -11,7 +11,13 @@ from torch.utils.data import DataLoader
 from graph4nlp.pytorch.datasets.cnn import CNNDataset
 from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
-from graph4nlp.pytorch.modules.graph_construction import *
+from graph4nlp.pytorch.modules.graph_construction import (
+    ConstituencyBasedGraphConstruction,
+    DependencyBasedGraphConstruction,
+    IEBasedGraphConstruction,
+    NodeEmbeddingBasedGraphConstruction,
+    NodeEmbeddingBasedRefinedGraphConstruction,
+)
 from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab

@@ -394,7 +394,8 @@ class GGNNLayer(GNNLayerBase):
     direction_option: str
         The direction option of GGNN ('undirected', 'bi_sep' or 'bi_fuse'). (Default: 'bi_fuse')
     num_layers: int
-        Number of GGNN layers. `num_layers` is set to any integer if the direction_option is 'undirected'.
+        Number of GGNN layers.
+        `num_layers` is set to any integer if the direction_option is 'undirected'.
         If the direction_option is 'bi_sep' or 'bi_fuse', `num_layers` will be set to 1.
     n_etypes: int
         Number of edge types. `n_etypes` can be set to any integer if the
