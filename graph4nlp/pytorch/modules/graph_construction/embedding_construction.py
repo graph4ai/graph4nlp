@@ -60,6 +60,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             - 'w2v_bert': use word2vec and BERT embeddings.
             - 'w2v_bert_bilstm': use word2vec and BERT embeddings, and apply BiLSTM encoders.
             - 'w2v_bert_bigru': use word2vec and BERT embeddings, and apply BiGRU encoders.
+        Note that if 'w2v' is not applied, `pretrained_word_emb_name` specified in Dataset APIs
+        will be superseded.
     hidden_size : int, optional
         The hidden size of RNN layer, default: ``None``.
     num_rnn_layers : int, optional
