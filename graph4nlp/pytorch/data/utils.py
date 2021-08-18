@@ -16,14 +16,16 @@ class EdgeNotFoundException(Exception):
 
 def int_to_list(x: Union[int, List[Any]]):
     if not (isinstance(x, list) or isinstance(x, int)):
-        raise TypeError('Input x should be int or list. Got {} instead.'.format(type(x)))
+        raise TypeError("Input x should be int or list. Got {} instead.".format(type(x)))
     # assert isinstance(x, list) or isinstance(x, int)
     return x if isinstance(x, list) else [x]
 
 
 def check_and_expand(x: list, y: list) -> Tuple[List[Any], List[Any]]:
     if not (isinstance(x, list) and isinstance(y, list)):
-        raise TypeError('Input x and y should be lists. Got {} and {} instead.'.format(type(x), type(y)))
+        raise TypeError(
+            "Input x and y should be lists. Got {} and {} instead.".format(type(x), type(y))
+        )
     # assert isinstance(x, list) and isinstance(y, list)
     max_len = max(len(x), len(y))
     if len(x) == len(y):
@@ -36,7 +38,9 @@ def check_and_expand(x: list, y: list) -> Tuple[List[Any], List[Any]]:
         return x, y
     else:
         raise ValueError(
-            'The two lists {} and {} cannot be automatically broadcasted to the same length.'.format(x, y))
+            "The two lists {} and {} cannot be automatically "
+            "broadcasted to the same length.".format(x, y)
+        )
 
 
 def slice_to_list(sl: slice, max_len: int) -> List[int]:
@@ -84,9 +88,19 @@ def entail_zero_padding(old_tensor: torch.Tensor, num_rows: int) -> torch.Tensor
         return None
 
     if len(old_tensor.shape) == 1:
-        return torch.cat((old_tensor, torch.zeros(num_rows).to(dtype=old_tensor.dtype, device=old_tensor.device)))
+        return torch.cat(
+            (old_tensor, torch.zeros(num_rows).to(dtype=old_tensor.dtype, device=old_tensor.device))
+        )
     else:
-        return torch.cat((old_tensor, torch.zeros((num_rows, *old_tensor.shape[1:])).to(dtype=old_tensor.dtype, device=old_tensor.device)), dim=0)
+        return torch.cat(
+            (
+                old_tensor,
+                torch.zeros((num_rows, *old_tensor.shape[1:])).to(
+                    dtype=old_tensor.dtype, device=old_tensor.device
+                ),
+            ),
+            dim=0,
+        )
 
 
 def reverse_index(l: List[Any], v: Any):
@@ -111,5 +125,5 @@ def reverse_index(l: List[Any], v: Any):
         If the element is not found in the list.
     """
     if v not in l:
-        raise ValueError('Given value v not found in the list')
+        raise ValueError("Given value v not found in the list")
     return len(l) - l[::-1].index(v) - 1
