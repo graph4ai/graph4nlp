@@ -213,7 +213,7 @@ class MathQA:
         return best_acc
 
     def eval(self, model, mode="val"):
-        from evaluation import convert_to_string, compute_tree_accuracy
+        from evaluation import compute_tree_accuracy
 
         model.eval()
         reference_list = []

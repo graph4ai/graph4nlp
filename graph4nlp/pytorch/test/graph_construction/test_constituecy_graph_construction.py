@@ -3,11 +3,9 @@ import numpy as np
 import torch
 from stanfordcorenlp import StanfordCoreNLP
 
-from ...data.data import GraphData
 from ...modules.graph_construction.constituency_graph_construction import (
     ConstituencyBasedGraphConstruction,
 )
-from ...modules.graph_construction.embedding_construction import EmbeddingConstruction
 from ...modules.utils.vocab_utils import VocabModel
 
 if __name__ == "__main__":
@@ -40,7 +38,8 @@ if __name__ == "__main__":
     # raise BaseException
 
     raw_data = "I love you. My motherland."
-    # raw_data = "James went to the corner-shop. He want to buy some (eggs), <milk> and bread for breakfast."
+    # raw_data = "James went to the corner-shop. He want to buy some (eggs),
+    #  <milk> and bread for breakfast."
     vocab_model = VocabModel(
         raw_data, max_word_vocab_size=None, min_word_vocab_freq=1, word_emb_size=300
     )
@@ -54,7 +53,9 @@ if __name__ == "__main__":
     nlp_parser = StanfordCoreNLP("http://localhost", port=9000, timeout=300000)
     print("syntactic parser ready\n-------------------")
 
-    # constituency_graph_gonstructor = ConstituencyBasedGraphConstruction(hidden_emb_size=128, embedding_style=embedding_styles, word_emb_size=300, vocab=vocab_model.word_vocab)
+    # constituency_graph_gonstructor = ConstituencyBasedGraphConstruction(
+    # hidden_emb_size=128, embedding_style=embedding_styles, 
+    # word_emb_size=300, vocab=vocab_model.word_vocab)
     # for sentence in raw_data:
     # output_graph = constituency_graph_gonstructor.forward(sentence[0], nlp_parser)
     output_graph = ConstituencyBasedGraphConstruction.topology(raw_data, nlp_parser)

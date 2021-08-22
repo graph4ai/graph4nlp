@@ -209,7 +209,8 @@ if __name__ == "__main__":
     )
     # Load train, val and test subsets
     train_size = len(jobs_dataset.split_ids["train"])
-    # Since the validation file is not present in this example, we use the 80% of the original training set as the
+    # Since the validation file is not present in this example, 
+    # we use the 80% of the original training set as the
     # real training set and the rest 20% as the validation set
     train_set = jobs_dataset[jobs_dataset.split_ids["train"][: int(0.8 * train_size)]]
     val_set = jobs_dataset[jobs_dataset.split_ids["train"][int(0.8 * train_size) :]]
