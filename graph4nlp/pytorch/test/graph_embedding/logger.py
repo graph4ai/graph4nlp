@@ -33,7 +33,7 @@ class Logger(object):
 
             best_result = torch.tensor(best_results)
 
-            print(f"All runs:")
+            print("All runs:")
             r = best_result[:, 0]
             print(f"Highest Train: {r.mean():.2f} ± {r.std():.2f}")
             r = best_result[:, 1]
