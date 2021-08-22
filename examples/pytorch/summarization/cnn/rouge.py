@@ -24,7 +24,7 @@ class SummarizationRouge(EvaluationMetricBase):
             self.dump_tmp(p, os.path.join("pred", str(cnt) + ".txt"))
             cnt += 1
         self.rouge.model_filename_pattern = "#ID#.txt"
-        self.rouge.system_filename_pattern = "(\d+).txt"
+        self.rouge.system_filename_pattern = r"(\d+).txt"
         self.rouge.model_dir = "gt"
         self.rouge.system_dir = "pred"
         rouge_results = self.rouge.convert_and_evaluate()
