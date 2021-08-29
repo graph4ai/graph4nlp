@@ -137,6 +137,12 @@ class VocabForAll:
         self.out_word_vocab = out_word_vocab
         self.share_vocab = share_vocab
 
+    def get_vocab_size(self):
+        if hasattr(self, "share_vocab"):
+            return self.share_vocab.vocab_size
+        else:
+            return self.in_word_vocab.vocab_size + self.out_word_vocab.vocab_size
+
 
 class Vocab:
     def __init__(
