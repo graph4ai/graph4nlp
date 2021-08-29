@@ -31,11 +31,11 @@ jobs:
       - name: isort
         run: |
           echo "Running isort"
-          isort -c -diff -sp .
-#       - name: black
-#         run: |
-#           echo "Running black"
-#           black -l 100 --check .
+          isort -c -sp .
+      - name: black
+        run: |
+          echo "Running black"
+          black -l 100 --check .
 #       - name: flake8
 #         run: |
 #           echo "Running flake8"
