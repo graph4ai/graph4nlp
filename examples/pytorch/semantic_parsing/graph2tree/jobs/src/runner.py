@@ -233,14 +233,12 @@ class Jobs:
                     batch_original_tree_list[0].split()
                 )
                 eval_vocab = self.tgt_vocab
-
             candidate = model.translate(
                 eval_input_graph,
                 oov_dict=oov_dict,
                 use_beam_search=True,
                 beam_size=self.opt["beam_size"],
             )
-
             candidate = [int(c) for c in candidate]
             num_left_paren = sum(1 for c in candidate if eval_vocab.idx2symbol[int(c)] == "(")
             num_right_paren = sum(1 for c in candidate if eval_vocab.idx2symbol[int(c)] == ")")
