@@ -31,7 +31,7 @@ jobs:
       - name: isort
         run: |
           echo "Running isort"
-          isort -c -diff ./examples/pytorch/summarization/cnn/test.py
+          isort -c ./examples/pytorch/summarization/cnn/test.py
           # isort -c -sp . -diff
 #       - name: black
 #         run: |
