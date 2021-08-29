@@ -31,7 +31,7 @@ jobs:
       - name: isort
         run: |
           echo "Running isort"
-          isort -c -sp . -diff
+          isort -c -sp .
 #       - name: black
 #         run: |
 #           echo "Running black"
