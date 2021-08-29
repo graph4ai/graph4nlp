@@ -160,7 +160,7 @@ class GGNNDistMult(torch.nn.Module):
         xavier_normal_(self.emb_rel.weight.data)
 
     def forward(self, e1, rel, kg_graph):
-        X = torch.LongTensor([i for i in range(self.num_entities)]).to(e1.device)
+        X = torch.LongTensor(list(i for i in range(self.num_entities))).to(e1.device)
 
         kg_graph.node_features["node_feat"] = self.emb_e(X)
         kg_graph = self.gnn(kg_graph)
@@ -205,7 +205,7 @@ class GCNDistMult(torch.nn.Module):
         xavier_normal_(self.emb_rel.weight.data)
 
     def forward(self, e1, rel, kg_graph=None):
-        X = torch.LongTensor([i for i in range(self.num_entities)]).to(e1.device)
+        X = torch.LongTensor(list(i for i in range(self.num_entities))).to(e1.device)
 
         kg_graph.node_features["node_feat"] = self.emb_e(X)
         kg_graph = self.gnn(kg_graph)
@@ -254,7 +254,7 @@ class GCNComplex(torch.nn.Module):
         xavier_normal_(self.emb_rel_img.weight.data)
 
     def forward(self, e1, rel, kg_graph=None):
-        X = torch.LongTensor([i for i in range(self.num_entities)]).to(e1.device)
+        X = torch.LongTensor(list(i for i in range(self.num_entities))).to(e1.device)
 
         kg_graph.node_features["node_feat"] = self.emb_e_real(X)
         kg_graph = self.gnn(kg_graph)
