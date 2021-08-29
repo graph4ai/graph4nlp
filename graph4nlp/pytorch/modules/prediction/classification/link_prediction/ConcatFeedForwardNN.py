@@ -23,9 +23,11 @@ class ConcatFeedForwardNN(LinkPredictionBase):
 
     """
 
-    def __init__(self, input_size, hidden_size, num_class, activation=nn.ReLU()):
+    def __init__(self, input_size, hidden_size, num_class, activation=None):
         super(ConcatFeedForwardNN, self).__init__()
 
+        if activation is None:
+            activation = nn.ReLU()
         self.classifier = ConcatFeedForwardNNLayer(input_size, num_class, hidden_size, activation)
 
     def forward(self, input_graph):
@@ -54,7 +56,7 @@ class ConcatFeedForwardNN(LinkPredictionBase):
 
         # add the edges and edge prediction logits into the graph
         num_node = node_emb.shape[0]
-        node_idx_list = [idx for idx in range(num_node)]
+        node_idx_list = list(range(num_node))
         src_idx = torch.tensor(node_idx_list).view(-1, 1).repeat(1, num_node).view(-1)
         dst_idx = torch.tensor(node_idx_list).view(1, -1).repeat(num_node, 1).view(-1)
 

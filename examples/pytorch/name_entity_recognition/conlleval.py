@@ -169,7 +169,7 @@ def get_result(
     nonO_correct_counts = sum(v for k, v in correct_counts.items() if k != "O")
     nonO_true_counts = sum(v for k, v in true_counts.items() if k != "O")
 
-    chunk_types = sorted(list(set(list(true_chunks) + list(pred_chunks))))
+    chunk_types = sorted(set(list(true_chunks) + list(pred_chunks)))
 
     # compute overall precision, recall and FB1 (default values are 0.0)
     prec, rec, f1 = calc_metrics(sum_correct_chunks, sum_pred_chunks, sum_true_chunks)
