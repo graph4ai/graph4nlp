@@ -13,20 +13,6 @@ from graph4nlp.pytorch.modules.graph_construction import (
     IEBasedGraphConstruction,
     NodeEmbeddingBasedGraphConstruction,
 )
-
-# from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
-# from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-# from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
-# from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
-# from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
-# from graph4nlp.pytorch.modules.prediction.classification.node_classification.BiLSTMFeedForwardNN
-# import (
-#    BiLSTMFeedForwardNN,
-# )
-# from graph4nlp.pytorch.modules.prediction.classification.node_classification.FeedForwardNN import
-# (
-#    FeedForwardNN,
-# )
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
 
 from conll import ConllDataset
@@ -40,14 +26,9 @@ from node_embedding_based_refined_graph_construction import (
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
 
-# from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-
-
 torch.multiprocessing.set_sharing_strategy("file_system")
 cudnn.benchmark = False
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
-# from torchcrf import CRF
 
 
 def all_to_cuda(data, device=None):
