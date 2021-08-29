@@ -53,7 +53,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
             attr = g.get_node_attrs(i)[i]
             self.vocab.word_vocab._add_words([attr["token"]])
 
-    def parsing(cls, raw_text_data):
+    def parsing(self, cls, raw_text_data):
         """
         Parameters
         ----------
@@ -168,7 +168,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
         parsed_results = cls.parsing(cls, raw_text_data=raw_text_data)
 
         sub_graphs = []
-        for sent_id, parsed_sent in enumerate(parsed_results):
+        for _, parsed_sent in enumerate(parsed_results):
             graph = cls._construct_static_graph(
                 parsed_sent, edge_strategy=edge_strategy, sequential_link=sequential_link
             )
@@ -244,7 +244,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
         ret_graph.node_attributes[head_node]["head"] = True
         ret_graph.node_attributes[tail_node]["tail"] = True
 
-        sequential_list = [i for i in range(node_num)]
+        sequential_list = list(range(node_num))
 
         if sequential_list and len(sequential_list) > 1:
             for st, ed in zip(sequential_list[:-1], sequential_list[1:]):

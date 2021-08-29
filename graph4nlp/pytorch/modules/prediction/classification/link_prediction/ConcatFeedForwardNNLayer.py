@@ -23,14 +23,15 @@ class ConcatFeedForwardNNLayer(LinkPredictionLayerBase):
 
     """
 
-    def __init__(self, input_size, hidden_size, num_class, activation=nn.ReLU()):
+    def __init__(self, input_size, hidden_size, num_class, activation = None):
         super(ConcatFeedForwardNNLayer, self).__init__()
 
         # build the linear module list
         self.activation = activation
         self.ffnn_all1 = nn.Linear(2 * input_size, hidden_size)
         self.ffnn_all2 = nn.Linear(hidden_size, num_class)
-
+        if activation is None:
+            activation == nn.ReLU()
     def forward(self, node_emb, edge_idx=None):
         r"""
         Forward functions to compute the logits tensor for node classification.
@@ -57,7 +58,7 @@ class ConcatFeedForwardNNLayer(LinkPredictionLayerBase):
         if edge_idx is None:
             # get the index list for all the node pairs
             num_node = node_emb.shape[0]
-            node_idx_list = [idx for idx in range(num_node)]
+            node_idx_list = list(range(num_node))
             src_idx = torch.tensor(node_idx_list).view(-1, 1).repeat(1, num_node).view(-1)
             dst_idx = torch.tensor(node_idx_list).view(1, -1).repeat(num_node, 1).view(-1)
         else:
