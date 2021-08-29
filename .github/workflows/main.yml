@@ -29,6 +29,7 @@ jobs:
           flake8 --version
       - name: check
         run: |
+          git branch
           ./dev/ci_lint.sh
 #       - name: isort
 #         run: |
