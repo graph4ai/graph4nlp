@@ -7,16 +7,11 @@ on:
     branches:
      - "develop"
 
-# Run linter with github actions for quick feedbacks.
-# Run macos tests with github actions. Linux (CPU & GPU) tests currently runs on CircleCI
 jobs:
   linter:
     runs-on: ubuntu-latest
-    # run on PRs, or commits to facebookresearch (not internal)
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: 'develop'
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
