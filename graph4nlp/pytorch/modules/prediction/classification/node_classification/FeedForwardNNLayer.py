@@ -27,10 +27,9 @@ class FeedForwardNNLayer(NodeClassifierLayerBase):
     def __init__(self, input_size, num_class, hidden_size, activation=None):
         super(FeedForwardNNLayer, self).__init__()
 
-
         if activation is None:
-            activation=nn.ReLU()
-            
+            activation = nn.ReLU()
+
         # build the linear module list
         module_seq = []
 
@@ -51,8 +50,6 @@ class FeedForwardNNLayer(NodeClassifierLayerBase):
         module_seq.append(("linear_end", nn.Linear(hidden_size[-1], num_class)))
 
         self.classifier = nn.Sequential(collections.OrderedDict(module_seq))
-
-
 
     def forward(self, node_emb, node_idx=None):
         r"""

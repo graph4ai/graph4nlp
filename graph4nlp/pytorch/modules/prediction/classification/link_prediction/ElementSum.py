@@ -23,9 +23,9 @@ class ElementSum(LinkPredictionBase):
 
     """
 
-    def __init__(self, input_size, hidden_size, num_class, activation = None):
+    def __init__(self, input_size, hidden_size, num_class, activation=None):
         super(ElementSum, self).__init__()
-        
+
         if activation is None:
             activation = nn.ReLU()
 

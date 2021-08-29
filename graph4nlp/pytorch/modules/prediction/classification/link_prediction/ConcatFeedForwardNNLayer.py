@@ -23,7 +23,7 @@ class ConcatFeedForwardNNLayer(LinkPredictionLayerBase):
 
     """
 
-    def __init__(self, input_size, hidden_size, num_class, activation = None):
+    def __init__(self, input_size, hidden_size, num_class, activation=None):
         super(ConcatFeedForwardNNLayer, self).__init__()
 
         # build the linear module list
@@ -31,7 +31,8 @@ class ConcatFeedForwardNNLayer(LinkPredictionLayerBase):
         self.ffnn_all1 = nn.Linear(2 * input_size, hidden_size)
         self.ffnn_all2 = nn.Linear(hidden_size, num_class)
         if activation is None:
-            activation == nn.ReLU()
+            activation = nn.ReLU()
+
     def forward(self, node_emb, edge_idx=None):
         r"""
         Forward functions to compute the logits tensor for node classification.

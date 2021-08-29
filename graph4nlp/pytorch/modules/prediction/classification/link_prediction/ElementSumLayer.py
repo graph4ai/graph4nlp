@@ -23,7 +23,7 @@ class ElementSumLayer(LinkPredictionLayerBase):
 
     """
 
-    def __init__(self, input_size, hidden_size, num_class, activation = None):
+    def __init__(self, input_size, hidden_size, num_class, activation=None):
         super(ElementSumLayer, self).__init__()
 
         # build the linear module list
