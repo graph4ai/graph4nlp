@@ -3,12 +3,13 @@ on:
   push:
     branches:
      - "develop"
-  pull_request:
-    branches:
-     - "develop"
+  # pull_request:
+  #   branches:
+  #    - "develop"
 jobs:
   docs:
     runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'graph4ai'}}
     steps:
     - name: Build
       uses: actions/checkout@v2
