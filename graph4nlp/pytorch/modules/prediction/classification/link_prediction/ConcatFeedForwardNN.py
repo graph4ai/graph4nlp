@@ -23,9 +23,11 @@ class ConcatFeedForwardNN(LinkPredictionBase):
 
     """
 
-    def __init__(self, input_size, hidden_size, num_class, activation=nn.ReLU()):
+    def __init__(self, input_size, hidden_size, num_class, activation=None):
         super(ConcatFeedForwardNN, self).__init__()
 
+        if activation is None:
+            activation = nn.ReLU()
         self.classifier = ConcatFeedForwardNNLayer(input_size, num_class, hidden_size, activation)
 
     def forward(self, input_graph):
