@@ -93,12 +93,12 @@ class MyTestCase(unittest.TestCase):
 
     def test_random(self):
         accuracy = Accuracy(metrics=["accuracy", "precision", "recall", "F1"])
-        for test_time in tqdm.tqdm(range(100)):
+        for _ in tqdm.tqdm(range(100)):
             length = random.randint(2, 1000000)
             n_labels = random.randint(2, 100000)
             ground_truth = []
             predict = []
-            for i in range(length):
+            for _ in range(length):
                 ground_truth.append(random.randint(0, n_labels - 1))
                 predict.append(random.randint(0, n_labels - 1))
             ground_truth = np.array(ground_truth)
@@ -130,13 +130,13 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(accuracy_graph4ai, accuracy_sklearn)
         print("random test 1 passed")
 
-        for test_time in tqdm.tqdm(range(100)):
+        for _ in tqdm.tqdm(range(100)):
             length = random.randint(2, 1000000)
             n_labels = random.randint(2, 100000)
             replace_ratio = random.random() / 1.5
             ground_truth = []
             predict = []
-            for i in range(length):
+            for _ in range(length):
                 ground_truth.append(random.randint(0, n_labels - 1))
                 if random.random() < replace_ratio:
                     predict.append(random.randint(0, n_labels - 1))

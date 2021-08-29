@@ -2,9 +2,7 @@ import copy
 import numpy as np
 import torch
 
-from ...data.data import GraphData
 from .padding_utils import pad_2d_vals_no_size
-from .vocab_utils import Vocab, VocabModel
 
 
 def prepare_ext_vocab(batch_graph, vocab, gt_str=None, device=None):
@@ -38,7 +36,6 @@ def prepare_ext_vocab(batch_graph, vocab, gt_str=None, device=None):
     unk_index = (
         (token_matrix == oov_dict.UNK).nonzero(as_tuple=False).squeeze(1).detach().cpu().numpy()
     )
-    # unk_token = batch_graph.node_attributes[unk_index.squeeze(1).detach().cpu().numpy().tolist()[:]]["token"]
     unk_token = [batch_graph.node_attributes[index]["token"] for index in unk_index]
     oov_dict._add_words(unk_token)
     token_matrix_oov = token_matrix.clone()
