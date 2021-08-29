@@ -282,6 +282,9 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 feat = batch_gd.split_features(feat)
 
         if self.seq_info_encode_layer is None and "seq_bert" not in self.word_emb_layers:
+            if isinstance(feat, list):
+                feat = torch.cat(feat, -1)
+
             batch_gd.batch_node_features["node_feat"] = feat
 
             return batch_gd
