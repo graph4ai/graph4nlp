@@ -27,14 +27,11 @@ jobs:
           python -m pip install flake8==3.8.1 flake8-bugbear flake8-comprehensions isort==4.3.21
           python -m pip install black==21.4b2
           flake8 --version
-      - name: check
+
+      - name: isort
         run: |
-          git branch
-          ./dev/ci_lint.sh
-#       - name: isort
-#         run: |
-#           echo "Running isort"
-#           isort -c -sp .
+          echo "Running isort"
+          isort -c -sp . -diff
 #       - name: black
 #         run: |
 #           echo "Running black"
