@@ -1,26 +1,27 @@
 import copy
 
 
-class Node():
+class Node:
     """
     Class for self-defined node data structure
-    
+
     ...
-    
+
     Attributes
     ----------
     word_ : (str)
         The text contained in this node.
-    
+
     type_ : (int)
         Node type in graph data structure, 0 for word nodes, 1 for constituency nodes, 2~n can be defined by other node types.
-    
+
     id_ : (int)
         Unique identifier for nodes.
 
     sentence_ : (int)
         To illustrate which sentence the node is related when multiple sentences included in a graph.
     """
+
     def __init__(self, word_, type_, id_, sentence_):
         # word: this node's text
         self.word = word_
@@ -38,15 +39,26 @@ class Node():
         self.sentence = sentence_
 
     def __str__(self):
-        return self.word + "_type_" + str(self.type) + "_id_" + str(
-            self.id) + "_head_" + str(self.head) + "_tail_" + str(
-                self.tail) + "_sentence_" + str(self.sentence)
+        return (
+            self.word
+            + "_type_"
+            + str(self.type)
+            + "_id_"
+            + str(self.id)
+            + "_head_"
+            + str(self.head)
+            + "_tail_"
+            + str(self.tail)
+            + "_sentence_"
+            + str(self.sentence)
+        )
 
 
-class UtilityFunctionsForGraph():
+class UtilityFunctionsForGraph:
     """
     A class for utility functions of graph operations.
     """
+
     @staticmethod
     def get_head_node(g, sentence_id):
         """Return the head node in a syntactic graph, to be used when we need to connect multiple graphs into one merged graph."""
