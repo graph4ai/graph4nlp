@@ -130,7 +130,7 @@ def sparse_mx_to_torch_sparse_tensor(sparse_mx):
     return torch.sparse.FloatTensor(indices, values, shape)
 
 
-def dropout_fn(x, drop_prob, shared_axes=[], training=False):
+def dropout_fn(x, drop_prob, shared_axes=None, training=False):
     """
     Apply dropout to input tensor.
     Parameters
@@ -147,7 +147,7 @@ def dropout_fn(x, drop_prob, shared_axes=[], training=False):
         return x
 
     sz = list(x.size())
-    for i in shared_axes:
+    for i in shared_axes or []:
         sz[i] = 1
     mask = x.new(*sz).bernoulli_(1.0 - drop_prob).div_(1.0 - drop_prob)
     mask = mask.expand_as(x)

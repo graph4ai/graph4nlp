@@ -135,7 +135,7 @@ class ModelHandler:
         with torch.no_grad():
             pred_collect = []
             gt_collect = []
-            for i, data in enumerate(dataloader):
+            for data in dataloader:
                 tgt = to_cuda(data["tgt_tensor"], self.config["device"])
                 data["graph_data"] = data["graph_data"].to(self.config["device"])
                 logits = self.model(data["graph_data"], require_loss=False)

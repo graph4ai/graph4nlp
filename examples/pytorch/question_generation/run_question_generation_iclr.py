@@ -338,7 +338,7 @@ class ModelHandler:
         with torch.no_grad():
             pred_collect = []
             gt_collect = []
-            for i, data in enumerate(dataloader):
+            for data in dataloader:
                 data = all_to_cuda(data, self.config["device"])
                 data["graph_data"] = data["graph_data"].to(self.config["device"])
 
