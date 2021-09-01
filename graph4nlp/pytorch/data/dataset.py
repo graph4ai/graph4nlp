@@ -555,7 +555,7 @@ class Dataset(torch.utils.data.Dataset):
                         processor_args=processor_args,
                         merge_strategy=merge_strategy,
                         edge_strategy=edge_strategy,
-                        verbase=False,
+                        verbose=False,
                     )
                     item.graph = graph
                 except Exception as msg:
@@ -642,7 +642,7 @@ class Dataset(torch.utils.data.Dataset):
                             processor_args=processor_args,
                             merge_strategy=merge_strategy,
                             edge_strategy=edge_strategy,
-                            verbase=False,
+                            verbose=False,
                             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
                         )
 

@@ -132,7 +132,7 @@ class ConllDataset(SequenceLabelingDataset):
                 "tokenizer": self.tokenizer,
                 "merge_strategy": self.merge_strategy,
                 "edge_strategy": self.edge_strategy,
-                "verbase": False,
+                "verbose": False,
                 "nlp_processor": processor,
                 "processor_args": processor_args,
             }
@@ -221,7 +221,7 @@ class ConllDataset(SequenceLabelingDataset):
                     "tokenizer": self.tokenizer,
                     "merge_strategy": self.merge_strategy,
                     "edge_strategy": self.edge_strategy,
-                    "verbase": False,
+                    "verbose": False,
                     "nlp_processor": processor,
                     "processor_args": processor_args,
                 }

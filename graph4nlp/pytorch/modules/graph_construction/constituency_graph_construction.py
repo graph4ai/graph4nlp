@@ -96,7 +96,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         sequential_link=3,
         top_down=False,
         prune=2,
-        verbase=True,
+        verbose=True,
     ):
         """topology This function generate a graph strcuture from a raw text data.
 
@@ -148,7 +148,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             ``1``: Prune pos nodes.
             ``2``: Prune nodes with both in-degree and out-degree of 1.
 
-        verbase : bool
+        verbose : bool
             A boolean option to decide whether to print out the graph construction process.
 
         Returns
@@ -208,7 +208,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         # for edge_item in ret_graph.get_all_edges():
         #     print(ret_graph.node_attributes[edge_item[0]]['token'], "->",
         #       ret_graph.node_attributes[edge_item[1]]['token'])
-        if verbase:
+        if verbose:
             print("--------------------------------------")
             for _edge in ret_graph.get_all_edges():
                 print(

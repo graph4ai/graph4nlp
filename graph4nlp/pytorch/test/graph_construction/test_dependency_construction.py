@@ -3,7 +3,6 @@ from stanfordcorenlp import StanfordCoreNLP
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
     DependencyBasedGraphConstruction,
 )
-from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 
 
 def test_dependency():
@@ -15,7 +14,7 @@ def test_dependency():
 
     processor_args = {
         "annotators": "ssplit,tokenize,depparse",
-        "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",
+        "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,normalizeOtherBrackets=false",  # noqa
         "tokenize.whitespace": True,
         "ssplit.isOneSentence": True,
         "outputFormat": "json",
@@ -27,7 +26,7 @@ def test_dependency():
         processor_args=processor_args,
         merge_strategy="tailhead",
         edge_strategy="heterogeneous",
-        verbase=1,
+        verbose=1,
     )
     pass
 

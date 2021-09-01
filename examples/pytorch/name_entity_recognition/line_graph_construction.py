@@ -39,7 +39,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
             fix_bert_emb=fix_word_emb,
         )
         self.vocab = vocab
-        self.verbase = 1
+        self.verbose = 1
 
     def add_vocab(self, g):
         """
@@ -115,7 +115,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
         split_hyphenated=False,
         normalize=False,
         sequential_link=True,
-        verbase=0,
+        verbose=0,
     ):
         """
             Graph building method.
@@ -156,14 +156,14 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
             Whether to convert bracket (`(`) to  -LRB-, and etc.
         sequential_link: bool, default=True
             Whether to link node tokens sequentially (note that it is bidirectional)
-        verbase: int, default=0
+        verbose: int, default=0
             Whether to output log infors. Set 1 to output more infos.
         Returns
         -------
         joint_graph: GraphData
             The merged graph data-structure.
         """
-        cls.verbase = verbase
+        cls.verbose = verbose
 
         parsed_results = cls.parsing(cls, raw_text_data=raw_text_data)
 
@@ -277,7 +277,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
         joint_graph: GraphData
             The merged graph structure.
         """
-        if cls.verbase > 0:
+        if cls.verbose > 0:
             print("sub_graph print")
             for i, s_g in enumerate(nx_graph_list):
                 print("-------------------------")
@@ -307,7 +307,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
                 edge_idx_old = s_g.edge_ids(src, tgt)[0]
                 g.add_edge(src + node_idx_off, tgt + node_idx_off)
                 edge_idx_new = g.edge_ids(src + node_idx_off, tgt + node_idx_off)[0]
-                if cls.verbase > 0:
+                if cls.verbose > 0:
                     print(edge_idx_new, edge_idx_old)
                     print(s_g.edge_attributes[edge_idx_old], "--------")
                 g.edge_attributes[edge_idx_new] = copy.deepcopy(s_g.edge_attributes[edge_idx_old])
@@ -347,7 +347,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
             for i in range(len(headtail_list) - 1):
                 src_list.append(headtail_list[i][1])
                 tgt_list.append(headtail_list[i + 1][0])
-            if cls.verbase > 0:
+            if cls.verbose > 0:
                 print("merged edges")
                 print("src list:", src_list)
                 print("tgt list:", tgt_list)
@@ -371,7 +371,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
             node_attrs["head"] = node_idx == head_g
             node_attrs["tail"] = node_idx == tail_g
 
-        if cls.verbase > 0:
+        if cls.verbose > 0:
             print("-----------------------------")
             print("merged graph")
             print("node_num: {}".format(g.get_node_num()))
