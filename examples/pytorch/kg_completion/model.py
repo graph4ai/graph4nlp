@@ -4,8 +4,6 @@ from torch.nn import functional as F
 from torch.nn.init import xavier_normal_
 
 from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-
-# Add your own model here
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 from graph4nlp.pytorch.modules.prediction.classification.kg_completion import ComplEx, DistMult
 
@@ -160,7 +158,7 @@ class GGNNDistMult(torch.nn.Module):
         xavier_normal_(self.emb_rel.weight.data)
 
     def forward(self, e1, rel, kg_graph):
-        X = torch.LongTensor([i for i in range(self.num_entities)]).to(e1.device)
+        X = torch.LongTensor(list(range(self.num_entities))).to(e1.device)
 
         kg_graph.node_features["node_feat"] = self.emb_e(X)
         kg_graph = self.gnn(kg_graph)
@@ -205,7 +203,7 @@ class GCNDistMult(torch.nn.Module):
         xavier_normal_(self.emb_rel.weight.data)
 
     def forward(self, e1, rel, kg_graph=None):
-        X = torch.LongTensor([i for i in range(self.num_entities)]).to(e1.device)
+        X = torch.LongTensor(list(range(self.num_entities))).to(e1.device)
 
         kg_graph.node_features["node_feat"] = self.emb_e(X)
         kg_graph = self.gnn(kg_graph)
@@ -254,7 +252,7 @@ class GCNComplex(torch.nn.Module):
         xavier_normal_(self.emb_rel_img.weight.data)
 
     def forward(self, e1, rel, kg_graph=None):
-        X = torch.LongTensor([i for i in range(self.num_entities)]).to(e1.device)
+        X = torch.LongTensor(list(range(self.num_entities))).to(e1.device)
 
         kg_graph.node_features["node_feat"] = self.emb_e_real(X)
         kg_graph = self.gnn(kg_graph)

@@ -113,7 +113,7 @@ class CiderScorer(object):
         """
         for refs in self.crefs:
             # refs, k ref captions of one image
-            for ngram in set([ngram for ref in refs for (ngram, count) in ref.items()]):
+            for ngram in set([ngram for ref in refs for (ngram, count) in ref.items()]):  # noqa
                 self.document_frequency[ngram] += 1
 
     def compute_cider(self, df_mode="corpus"):
@@ -160,7 +160,7 @@ class CiderScorer(object):
             val = np.array([0.0 for _ in range(self.n)])
             for n in range(self.n):
                 # ngram
-                for (ngram, count) in vec_hyp[n].items():
+                for (ngram, _) in vec_hyp[n].items():
                     # vrama91 : added clipping
                     val[n] += min(vec_hyp[n][ngram], vec_ref[n][ngram]) * vec_ref[n][ngram]
 

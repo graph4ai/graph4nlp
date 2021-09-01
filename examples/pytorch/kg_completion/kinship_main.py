@@ -204,7 +204,7 @@ def main(args, model_path):
     opt = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.l2)
     for epoch in range(args.epochs):
         model.train()
-        for i, str2var in enumerate(train_batcher):
+        for str2var in train_batcher:
             opt.zero_grad()
             e1 = str2var["e1"]
             rel = str2var["rel"]

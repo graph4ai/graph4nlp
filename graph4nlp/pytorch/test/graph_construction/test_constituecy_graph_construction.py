@@ -54,7 +54,7 @@ if __name__ == "__main__":
     print("syntactic parser ready\n-------------------")
 
     # constituency_graph_gonstructor = ConstituencyBasedGraphConstruction(
-    # hidden_emb_size=128, embedding_style=embedding_styles, 
+    # hidden_emb_size=128, embedding_style=embedding_styles,
     # word_emb_size=300, vocab=vocab_model.word_vocab)
     # for sentence in raw_data:
     # output_graph = constituency_graph_gonstructor.forward(sentence[0], nlp_parser)

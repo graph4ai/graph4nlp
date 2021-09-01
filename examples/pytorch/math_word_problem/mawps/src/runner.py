@@ -163,7 +163,7 @@ class Mawps:
     def train_epoch(self, epoch):
         loss_to_print = 0
         num_batch = len(self.train_data_loader)
-        for step, data in tqdm(
+        for _, data in tqdm(
             enumerate(self.train_data_loader),
             desc=f"Epoch {epoch:02d}",
             total=len(self.train_data_loader),
@@ -254,7 +254,7 @@ class Mawps:
             num_right_paren = sum(1 for c in candidate if eval_vocab.idx2symbol[int(c)] == ")")
             diff = num_left_paren - num_right_paren
             if diff > 0:
-                for i in range(diff):
+                for _ in range(diff):
                     candidate.append(self.test_data_loader.tgt_vocab.symbol2idx[")"])
             elif diff < 0:
                 candidate = candidate[:diff]

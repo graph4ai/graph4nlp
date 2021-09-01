@@ -36,7 +36,7 @@ for p in files:
 
 for p in files:
     with open(join(base_path, p)) as f:
-        for i, line in enumerate(f):
+        for line in f:
             e1, rel, e2 = line.split("\t")
             e1 = e1.strip()
             e2 = e2.strip()
@@ -83,7 +83,7 @@ for p in files:
 
 def write_training_graph(cases, graph, path):
     with open(path, "w") as f:
-        for i, key in enumerate(graph):
+        for key in graph:
             e1, rel = key
             # (Mike, fatherOf, John)
             # (John, fatherOf, Tom)
@@ -109,7 +109,7 @@ def write_evaluation_graph(cases, graph, path):
     with open(path, "w") as f:
         n1 = 0
         n2 = 0
-        for i, (e1, rel, e2) in enumerate(cases):
+        for e1, rel, e2 in cases:
             # (Mike, fatherOf) -> John
             # (John, fatherOf, Tom)
             rel_reverse = rel + "_reverse"

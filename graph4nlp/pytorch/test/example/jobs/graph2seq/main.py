@@ -27,7 +27,7 @@ class ExpressionAccuracy(EvaluationMetricBase):
             print("prediction: ", pred)
 
             if gt == pred:
-                correct += 1.
+                correct += 1.0
         return correct / len(ground_truth)
 
 
@@ -69,40 +69,53 @@ class Graph2seqLoss(nn.Module):
 
         prob_select = torch.gather(log_prob.view(batch_size * step, -1), 1, gt.view(-1, 1))
 
-        prob_select_masked = - torch.masked_select(prob_select, mask.view(-1, 1).byte())
+        prob_select_masked = -torch.masked_select(prob_select, mask.view(-1, 1).byte())
         loss = torch.mean(prob_select_masked)
         return loss
 
 
 class Graph2seq(nn.Module):
-    def __init__(self, vocab, hidden_size=300, direction_option='bi_sep', device='cpu'):
+    def __init__(self, vocab, hidden_size=300, direction_option="bi_sep", device="cpu"):
         super(Graph2seq, self).__init__()
 
-        use_cuda = (device == 'cuda')
+        use_cuda = device == "cuda"
         self.vocab = vocab
-        embedding_style = {'word_emb_type': 'w2v', 'node_edge_emb_strategy': "mean",
-                           'seq_info_encode_strategy': "bilstm"}
-        self.graph_topology = DependencyBasedGraphConstruction(embedding_style=embedding_style,
-                                                               vocab=vocab.in_word_vocab,
-                                                               hidden_size=hidden_size, dropout=0.2, use_cuda=use_cuda,
-                                                               fix_word_emb=False)
+        embedding_style = {
+            "word_emb_type": "w2v",
+            "node_edge_emb_strategy": "mean",
+            "seq_info_encode_strategy": "bilstm",
+        }
+        self.graph_topology = DependencyBasedGraphConstruction(
+            embedding_style=embedding_style,
+            vocab=vocab.in_word_vocab,
+            hidden_size=hidden_size,
+            dropout=0.2,
+            use_cuda=use_cuda,
+            fix_word_emb=False,
+        )
         self.gnn = None
         self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[0].word_emb_layer
-        self.gnn_encoder = GAT(2, hidden_size, hidden_size, hidden_size, [2, 1], direction_option=direction_option).to(
-            device)
-        self.seq_decoder = StdRNNDecoder(max_decoder_step=50,
-                                         decoder_input_size=2 * hidden_size if direction_option == 'bi_sep' else hidden_size,
-                                         decoder_hidden_size=hidden_size,
-                                         word_emb=self.word_emb, vocab=self.vocab.in_word_vocab,
-                                         attention_type="sep_diff_encoder_type", fuse_strategy="concatenate",
-                                         rnn_emb_input_size=hidden_size,
-                                         tgt_emb_as_output_layer=True, device=self.graph_topology.device).to(device)
+        self.gnn_encoder = GAT(
+            2, hidden_size, hidden_size, hidden_size, [2, 1], direction_option=direction_option
+        ).to(device)
+        self.seq_decoder = StdRNNDecoder(
+            max_decoder_step=50,
+            decoder_input_size=2 * hidden_size if direction_option == "bi_sep" else hidden_size,
+            decoder_hidden_size=hidden_size,
+            word_emb=self.word_emb,
+            vocab=self.vocab.in_word_vocab,
+            attention_type="sep_diff_encoder_type",
+            fuse_strategy="concatenate",
+            rnn_emb_input_size=hidden_size,
+            tgt_emb_as_output_layer=True,
+            device=self.graph_topology.device,
+        ).to(device)
         self.loss_calc = Graph2seqLoss(self.vocab.in_word_vocab)
 
     def forward(self, graph_list, tgt=None, require_loss=True):
         batch_graph = self.graph_topology(graph_list)
         batch_graph = self.gnn_encoder(batch_graph)
-        batch_graph.node_features['rnn_emb'] = batch_graph.node_features['node_feat']
+        batch_graph.node_features["rnn_emb"] = batch_graph.node_features["node_feat"]
 
         # down-task
         prob, _, _ = self.seq_decoder(from_batch(batch_graph), tgt_seq=tgt)
@@ -123,16 +136,23 @@ class Jobs:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dataset = JobsDataset(root_dir="graph4nlp/pytorch/test/dataset/jobs",
-                              topology_builder=DependencyBasedGraphConstruction,
-                              topology_subdir='DependencyGraph', share_vocab=True, val_split_ratio=0.2)
+        dataset = JobsDataset(
+            root_dir="graph4nlp/pytorch/test/dataset/jobs",
+            topology_builder=DependencyBasedGraphConstruction,
+            topology_subdir="DependencyGraph",
+            share_vocab=True,
+            val_split_ratio=0.2,
+        )
 
-        self.train_dataloader = DataLoader(dataset.train, batch_size=24, shuffle=True, num_workers=1,
-                                           collate_fn=dataset.collate_fn)
-        self.val_dataloader = DataLoader(dataset.val, batch_size=24, shuffle=True, num_workers=1,
-                                         collate_fn=dataset.collate_fn)
-        self.test_dataloader = DataLoader(dataset.test, batch_size=24, shuffle=True, num_workers=1,
-                                          collate_fn=dataset.collate_fn)
+        self.train_dataloader = DataLoader(
+            dataset.train, batch_size=24, shuffle=True, num_workers=1, collate_fn=dataset.collate_fn
+        )
+        self.val_dataloader = DataLoader(
+            dataset.val, batch_size=24, shuffle=True, num_workers=1, collate_fn=dataset.collate_fn
+        )
+        self.test_dataloader = DataLoader(
+            dataset.test, batch_size=24, shuffle=True, num_workers=1, collate_fn=dataset.collate_fn
+        )
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
@@ -161,7 +181,7 @@ class Jobs:
             if epoch > 4:
                 score = self.evaluate(self.val_dataloader)
                 if score > max_score:
-                    torch.save(self.model.state_dict(), 'best_model.pt')
+                    torch.save(self.model.state_dict(), "best_model.pt")
                 max_score = max(max_score, score)
         return max_score
 
@@ -188,11 +208,11 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--device', type=str, default='cpu')
+    parser.add_argument("--device", type=str, default="cpu")
     args = parser.parse_args()
     runner = Jobs(args)
     max_score = runner.train()
     print("Train finish, best score: {:.3f}".format(max_score))
-    runner.model.load_state_dict(torch.load('best_model.pt'))
+    runner.model.load_state_dict(torch.load("best_model.pt"))
     test_score = runner.evaluate(runner.test_dataloader)
     print("Test score: {:.3f}".format(test_score))

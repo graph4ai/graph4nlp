@@ -13,7 +13,7 @@ def load_data(dataset):
     for i in range(len(names)):
         """
         fix Pickle incompatibility of numpy arrays between Python 2 and 3
-        https://stackoverflow.com/questions/11305790/pickle-incompatibility-of-numpy-arrays-between-python-2-and-3
+        https://stackoverflow.com/questions/11305790/pickle-incompatibility-of-numpy-arrays-between-python-2-and-3  # noqa
         """
         with open("data/ind.{}.{}".format(dataset, names[i]), "rb") as rf:
             u = pkl._Unpickler(rf)

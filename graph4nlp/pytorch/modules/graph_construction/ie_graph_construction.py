@@ -228,7 +228,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             sent_dict["sentText"] = " ".join(sent_dict["tokenWords"])
             sentences.append(sent_dict)
 
-        for k, v in coref_dict["corefs"].items():
+        for _, v in coref_dict["corefs"].items():
             # v is a list of dict, each dict contains a str
             # v[0] contains 'original entity str'
             # v[1:] contain 'pron strs' refers to 'original entity str'
@@ -290,7 +290,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         # remove similar triples
         triples_rm_list = []
         for i, lst_i in enumerate(all_sent_triples_list[:-1]):
-            for j, lst_j in enumerate(all_sent_triples_list[i + 1 :]):
+            for lst_j in all_sent_triples_list[i + 1 :]:
                 str_i = " ".join(lst_i)
                 str_j = " ".join(lst_j)
                 if (
@@ -329,7 +329,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         # Each node may contains multiple tokens.
         node_idxs_list = []
         node_len_list = []
-        for node_id, node_dict in node_attributes.items():
+        for _, node_dict in node_attributes.items():
             node_word_idxs = []
             for token in node_dict["token"].split():
                 node_word_idxs.append(self.vocab.getIndex(token))
@@ -352,7 +352,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             # Each edge may contains multiple tokens.
             edge_idxs_list = []
             edge_len_list = []
-            for edge_id, edge_dict in edge_attributes.items():
+            for _, edge_dict in edge_attributes.items():
                 edge_word_idxs = []
                 for token in edge_dict["token"]:
                     edge_word_idxs.append(self.vocab.getIndex(token))

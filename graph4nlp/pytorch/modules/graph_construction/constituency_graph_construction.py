@@ -460,7 +460,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
     def _cut_line_node(cls, input_graph: GraphData):
         idx_to_be_deleted = []
         new_edges = []
-        for idx, n in enumerate(input_graph.node_attributes):
+        for idx, _ in enumerate(input_graph.node_attributes):
             edge_arr = input_graph.get_all_edges()
             cnt_in = 0
             cnt_out = 0
