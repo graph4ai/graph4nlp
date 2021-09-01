@@ -1,10 +1,9 @@
+import gc
+import time
 import matplotlib.pyplot as plt
+import pytest
 import torch
 import torch.nn as nn
-
-import gc
-import pytest
-import time
 
 from ...data.data import GraphData, from_batch, from_dgl, to_batch
 from ...data.utils import EdgeNotFoundException, SizeMismatchException
