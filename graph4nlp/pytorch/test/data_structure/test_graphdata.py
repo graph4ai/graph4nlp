@@ -1,9 +1,10 @@
 import gc
 import matplotlib.pyplot as plt
-import pytest
 import time
 import torch
 import torch.nn as nn
+
+import pytest
 
 from ...data.data import GraphData, from_batch, from_dgl, to_batch
 from ...data.utils import EdgeNotFoundException, SizeMismatchException
