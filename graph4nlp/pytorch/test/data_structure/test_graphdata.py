@@ -1,9 +1,10 @@
 import gc
 import time
 import matplotlib.pyplot as plt
-import pytest
 import torch
 import torch.nn as nn
+
+import pytest
 
 from ...data.data import GraphData, from_batch, from_dgl, to_batch
 from ...data.utils import EdgeNotFoundException, SizeMismatchException
@@ -65,7 +66,7 @@ def test_set_node_features_cpu():
     init_loss = -torch.nn.functional.cosine_similarity(
         embedding_layer(g.node_features["idx"]).sum(dim=-1), target, dim=0
     )
-    for i in range(100):
+    for _ in range(100):
         g.node_features["node_emb"] = embedding_layer(g.node_features["idx"])
         node_emb_sum = g.node_features["node_emb"].sum(dim=-1)
         loss = -torch.nn.functional.cosine_similarity(node_emb_sum, target, dim=0)
@@ -110,7 +111,7 @@ def test_set_node_features_gpu():
     init_loss = -torch.nn.functional.cosine_similarity(
         embedding_layer(g.node_features["idx"]).sum(dim=-1), target, dim=0
     )
-    for i in range(100):
+    for _ in range(100):
         g.node_features["node_emb"] = embedding_layer(g.node_features["idx"])
         node_emb_sum = g.node_features["node_emb"].sum(dim=-1)
         loss = -torch.nn.functional.cosine_similarity(node_emb_sum, target, dim=0)
@@ -191,7 +192,7 @@ def test_edge_features():
     init_loss = -torch.nn.functional.cosine_similarity(
         embedding_layer(g.edge_features["idx"]).sum(dim=-1), target, dim=0
     )
-    for i in range(100):
+    for _ in range(100):
         g.edge_features["edge_emb"] = embedding_layer(g.edge_features["idx"])
         node_emb_sum = g.edge_features["edge_emb"].sum(dim=-1)
         loss = -torch.nn.functional.cosine_similarity(node_emb_sum, target, dim=0)
@@ -322,7 +323,7 @@ def test_batch():
 
     target_batch_idx = []
     for i in range(5):
-        for j in range(10):
+        for _ in range(10):
             target_batch_idx.append(i)
 
     assert batch.batch == target_batch_idx
