@@ -45,7 +45,7 @@ import torch.optim as optim
 from dgl.data import MiniGCDataset
 from torch.utils.data import DataLoader
 
-from ...data.data import GraphData
+from ...data.data import from_dgl, to_batch
 from ...modules.graph_embedding.gat import GAT
 from ...modules.prediction.classification.graph_classification import FeedForwardNN
 
@@ -170,21 +170,21 @@ class GNNClassifier(nn.Module):
         )
 
     def forward(self, batched_graph):
-        # Use node degree as the initial node feature. For undirected graphs, the in-degree
-        # is the same as the out_degree.
-        node_feat = batched_graph.in_degrees().view(-1, 1).float()
-        batched_graph.ndata["node_feat"] = node_feat
-
-        batched_graph_data = GraphData()
-        batched_graph_data.from_dgl(batched_graph)
-        batched_graph_data = self.gnn(batched_graph_data)
-
-        batched_graph.ndata["node_emb"] = batched_graph_data.node_features["node_emb"]
-
+        batched_graph = self.gnn(batched_graph)
         batched_graph = self.clf(batched_graph)
         logits = batched_graph.graph_attributes["logits"]
 
         return logits
+
+
+def prepare_batched_graph(dgl_graph):
+    # Use node degree as the initial node feature. For undirected graphs,
+    # the in-degree is the same as the out_degree.
+    node_feat = dgl_graph.in_degrees().view(-1, 1).float()
+    dgl_graph.ndata["node_feat"] = node_feat
+    g_list = dgl.unbatch(dgl_graph)
+    bg = to_batch([from_dgl(g) for g in g_list])
+    return bg
 
 
 ###############################################################################
@@ -234,14 +234,16 @@ def main(args):
     epoch_losses = []
     for epoch in range(args.epochs):
         epoch_loss = 0
-        for iter, (bg, label) in enumerate(data_loader):
+        for bg, label in data_loader:
+            bg = prepare_batched_graph(bg)
             prediction = model(bg)
             loss = loss_func(prediction, label)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             epoch_loss += loss.detach().item()
-        epoch_loss /= iter + 1
+
+        epoch_loss /= len(data_loader)
         print("Epoch {}, loss {:.4f}".format(epoch, epoch_loss))
         epoch_losses.append(epoch_loss)
 
@@ -260,7 +262,7 @@ def main(args):
     model.eval()
     # Convert a list of tuples to two lists
     test_X, test_Y = map(list, zip(*testset))
-    test_bg = dgl.batch(test_X)
+    test_bg = prepare_batched_graph(dgl.batch(test_X))
     test_Y = torch.tensor(test_Y).float().view(-1, 1)
     probs_Y = torch.softmax(model(test_bg), 1)
     sampled_Y = torch.multinomial(probs_Y, 1)
@@ -290,8 +292,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--direction-option",
         type=str,
-        default="uni",
-        help="direction type (`uni`, `bi_fuse`, `bi_sep`)",
+        default="undirected",
+        help="direction type (`undirected`, `bi_fuse`, `bi_sep`)",
     )
     parser.add_argument("--num-heads", type=int, default=8, help="number of hidden attention heads")
     parser.add_argument(

@@ -11,7 +11,6 @@ from .base import GNNBase, GNNLayerBase
 
 
 class GAT(GNNBase):
-    # TODO: improve math descriptions bidirectional GNN.
     r"""Multi-layer Graph Attention Network (GAT).
     Support both `unidirectional GAT
     <https://arxiv.org/abs/1710.10903>`__ and bidirectional versions
@@ -46,7 +45,7 @@ class GAT(GNNBase):
         Number of heads per GAT layer. If ``int`` is given, all layers are forced to
         have the same number of heads.
     direction_option: str
-        Whether to use unidirectional (i.e., regular) or bidirectional (i.e., "bi_sep"
+        Whether to use unidirectional (i.e., regular "undirected") or bidirectional (i.e., "bi_sep"
         and "bi_fuse") versions.
         Default : ``'bi_sep'``.
     feat_drop : float, optional
@@ -188,7 +187,6 @@ class GAT(GNNBase):
 
 
 class GATLayer(GNNLayerBase):
-    # TODO: improve math descriptions bidirectional GNN.
     r"""Single-layer Graph Attention Network (GAT).
     Support both `unidirectional GAT
     <https://arxiv.org/abs/1710.10903>`__ and bidirectional versions
@@ -217,7 +215,7 @@ class GATLayer(GNNLayerBase):
     num_heads : int
         Number of heads in Multi-Head Attention.
     direction_option: str
-        Whether use unidirectional (i.e., regular) or bidirectional (i.e., `bi_sep`
+        Whether use unidirectional (i.e., regular "undirected") or bidirectional (i.e., `bi_sep`
         and `bi_fuse`) versions.
         Default: ``'bi_sep'``.
     feat_drop : float, optional
