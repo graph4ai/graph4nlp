@@ -403,7 +403,7 @@ class DecoderStrategy(StrategyBase):
         decoder_hidden = decoder_initial_state
 
         batch_results = []
-        for batch_idx in range(batch_size):
+        for _ in range(batch_size):
             single_graph_node_embedding = graph_node_embedding.expand(
                 self.beam_size, -1, -1
             ).contiguous()

@@ -60,7 +60,7 @@ class StackedElementProdLayer(LinkPredictionLayerBase):
         if edge_idx is None:
             # get the index list for all the node pairs
             num_node = node_emb[0].shape[0]
-            node_idx_list = [idx for idx in range(num_node)]
+            node_idx_list = [range(num_node)]
             src_idx = torch.tensor(node_idx_list).view(-1, 1).repeat(1, num_node).view(-1)
             dst_idx = torch.tensor(node_idx_list).view(1, -1).repeat(num_node, 1).view(-1)
         else:

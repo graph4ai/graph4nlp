@@ -551,7 +551,7 @@ class GGNN(GNNBase):
             feat_in = node_feats
             feat_out = node_feats
 
-            for i in range(self.num_layers):
+            for _ in range(self.num_layers):
                 feat_in = self.feat_drop(feat_in)
                 feat_out = self.feat_drop(feat_out)
                 h = self.models(dgl_graph, (feat_in, feat_out), etypes, edge_weight)

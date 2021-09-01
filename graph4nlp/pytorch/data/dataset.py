@@ -12,7 +12,6 @@ from nltk.tokenize import word_tokenize
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 
 from ..data.data import GraphData, to_batch
-from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.constituency_graph_construction import (
     ConstituencyBasedGraphConstruction,
 )

@@ -4,8 +4,6 @@ from torch.nn import functional as F
 from torch.nn.init import xavier_normal_
 
 from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-
-# Add your own model here
 from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
 from graph4nlp.pytorch.modules.prediction.classification.kg_completion import ComplEx, DistMult
 

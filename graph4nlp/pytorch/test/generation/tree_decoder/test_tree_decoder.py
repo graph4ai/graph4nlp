@@ -467,7 +467,7 @@ def test_tree_decoder(seed, save_every):
             )
             diff = num_left_paren - num_right_paren
             if diff > 0:
-                for i in range(diff):
+                for _ in range(diff):
                     candidate.append(test_data_loader.tgt_vocab.symbol2idx[")"])
             elif diff < 0:
                 candidate = candidate[:diff]

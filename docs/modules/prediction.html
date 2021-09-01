@@ -1350,7 +1350,7 @@ B_p + B_n == B * N.</p>
 <span id="link-prediction"></span><h3>Link Prediction<a class="headerlink" href="#module-graph4nlp.prediction.classification.link_prediction" title="Permalink to this headline">¶</a></h3>
 <dl class="class">
 <dt id="graph4nlp.prediction.classification.link_prediction.ConcatFeedForwardNN">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.link_prediction.</code><code class="sig-name descname">ConcatFeedForwardNN</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">activation=ReLU()</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.link_prediction.ConcatFeedForwardNN" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.link_prediction.</code><code class="sig-name descname">ConcatFeedForwardNN</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.link_prediction.ConcatFeedForwardNN" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specific class for link prediction task.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1528,7 +1528,7 @@ logit tensor shape is: [num_class]</p>
 
 <dl class="class">
 <dt id="graph4nlp.prediction.classification.link_prediction.ConcatFeedForwardNNLayer">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.link_prediction.</code><code class="sig-name descname">ConcatFeedForwardNNLayer</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">activation=ReLU()</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.link_prediction.ConcatFeedForwardNNLayer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.link_prediction.</code><code class="sig-name descname">ConcatFeedForwardNNLayer</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.link_prediction.ConcatFeedForwardNNLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specific class for link prediction task.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1713,7 +1713,7 @@ If full prediction is select (default),the order of predicted logits are like:</
 
 <dl class="class">
 <dt id="graph4nlp.prediction.classification.link_prediction.ElementSum">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.link_prediction.</code><code class="sig-name descname">ElementSum</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">activation=ReLU()</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.link_prediction.ElementSum" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.link_prediction.</code><code class="sig-name descname">ElementSum</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.link_prediction.ElementSum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specific class for link prediction task.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1891,7 +1891,7 @@ logit tensor shape is: [num_class]</p>
 
 <dl class="class">
 <dt id="graph4nlp.prediction.classification.link_prediction.ElementSumLayer">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.link_prediction.</code><code class="sig-name descname">ElementSumLayer</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">activation=ReLU()</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.link_prediction.ElementSumLayer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.link_prediction.</code><code class="sig-name descname">ElementSumLayer</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.link_prediction.ElementSumLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specific class for link prediction task.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2681,7 +2681,7 @@ Example: [1,3,5]</p>
 
 <dl class="class">
 <dt id="graph4nlp.prediction.classification.node_classification.FeedForwardNN">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.node_classification.</code><code class="sig-name descname">FeedForwardNN</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">activation=ReLU()</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.node_classification.FeedForwardNN" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.node_classification.</code><code class="sig-name descname">FeedForwardNN</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.node_classification.FeedForwardNN" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specific class for node classification task.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2859,7 +2859,7 @@ logit tensor shape is: [num_class]</p>
 
 <dl class="class">
 <dt id="graph4nlp.prediction.classification.node_classification.FeedForwardNNLayer">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.node_classification.</code><code class="sig-name descname">FeedForwardNNLayer</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">activation=ReLU()</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.node_classification.FeedForwardNNLayer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.prediction.classification.node_classification.</code><code class="sig-name descname">FeedForwardNNLayer</code><span class="sig-paren">(</span><em class="sig-param">input_size</em>, <em class="sig-param">num_class</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">activation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.prediction.classification.node_classification.FeedForwardNNLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specific class for node classification task.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

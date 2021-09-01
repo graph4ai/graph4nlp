@@ -197,7 +197,7 @@ class BleuScorer(object):
         elif option == "closest":
             reflen = min((abs(l - testlen), l) for l in reflens)[1]
         else:
-            assert False, "unsupported reflen option %s" % option
+            raise ValueError("unsupported reflen option %s" % option)
 
         return reflen
 
