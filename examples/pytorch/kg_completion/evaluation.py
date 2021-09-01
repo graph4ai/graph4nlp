@@ -19,7 +19,7 @@ def ranking_and_hits(model, dev_rank_batcher, vocab, name, kg_graph=None):
     ranks = []
     ranks_left = []
     ranks_right = []
-    for i in range(10):
+    for _ in range(10):
         hits_left.append([])
         hits_right.append([])
         hits.append([])
