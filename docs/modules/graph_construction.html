@@ -449,7 +449,7 @@ key, value
 
 <dl class="method">
 <dt id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.topology">
-<em class="property">classmethod </em><code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy</em>, <em class="sig-param">edge_strategy</em>, <em class="sig-param">sequential_link=True</em>, <em class="sig-param">verbase=0</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy</em>, <em class="sig-param">edge_strategy</em>, <em class="sig-param">sequential_link=True</em>, <em class="sig-param">verbose=0</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Graph building method.</p>
 </div></blockquote>
@@ -489,7 +489,7 @@ we will insert a node <code class="docutils literal notranslate"><span class="pr
 </dd>
 <dt><strong>sequential_link: bool, default=True</strong></dt><dd><p>Whether to link node tokens sequentially (note that it is bidirectional)</p>
 </dd>
-<dt><strong>verbase: int, default=0</strong></dt><dd><p>Whether to output log infors. Set 1 to output more infos.</p>
+<dt><strong>verbose: int, default=0</strong></dt><dd><p>Whether to output log infors. Set 1 to output more infos.</p>
 </dd>
 <dt><strong>Returns</strong></dt><dd></dd>
 <dt><strong>——-</strong></dt><dd></dd>
@@ -580,7 +580,7 @@ we will insert a node <code class="docutils literal notranslate"><span class="pr
 
 <dl class="method">
 <dt id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.topology">
-<em class="property">classmethod </em><code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy=None</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">sequential_link=3</em>, <em class="sig-param">top_down=False</em>, <em class="sig-param">prune=2</em>, <em class="sig-param">verbase=True</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy=None</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">sequential_link=3</em>, <em class="sig-param">top_down=False</em>, <em class="sig-param">prune=2</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
 <dd><p>topology This function generate a graph strcuture from a raw text data.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters</dt>
@@ -632,7 +632,7 @@ from leaf nodes to root nodes.</p>
 <code class="docutils literal notranslate"><span class="pre">1</span></code>: Prune pos nodes.
 <code class="docutils literal notranslate"><span class="pre">2</span></code>: Prune nodes with both in-degree and out-degree of 1.</p>
 </dd>
-<dt><strong>verbase</strong><span class="classifier">bool</span></dt><dd><p>A boolean option to decide whether to print out the graph construction process.</p>
+<dt><strong>verbose</strong><span class="classifier">bool</span></dt><dd><p>A boolean option to decide whether to print out the graph construction process.</p>
 </dd>
 </dl>
 </dd>
@@ -900,7 +900,7 @@ triple (src_ent, rel, tgt_ent).</p>
 
 <dl class="method">
 <dt id="graph4nlp.graph_construction.IEBasedGraphConstruction.topology">
-<em class="property">classmethod </em><code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy</em>, <em class="sig-param">edge_strategy</em>, <em class="sig-param">verbase=True</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy</em>, <em class="sig-param">edge_strategy</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.topology" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Graph building method.</p>
 </div></blockquote>
@@ -1390,7 +1390,7 @@ to get a list of tokens.</p>
 
 <dl class="method">
 <dt id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology">
-<em class="property">classmethod </em><code class="sig-name descname">init_topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">tokenizer=&lt;function word_tokenize&gt;</em>, <em class="sig-param">nlp_processor=None</em>, <em class="sig-param">processor_args=None</em>, <em class="sig-param">merge_strategy=None</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">verbase=False</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">init_topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">tokenizer=&lt;function word_tokenize&gt;</em>, <em class="sig-param">nlp_processor=None</em>, <em class="sig-param">processor_args=None</em>, <em class="sig-param">merge_strategy=None</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert raw text data to the initial graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1414,7 +1414,7 @@ be conducted on the input string to get a list of tokens.</p>
 <dt><strong>edge_strategy: str</strong></dt><dd><p>Strategy to process edge, depends on specific <code class="docutils literal notranslate"><span class="pre">dynamic_init_topology_builder</span></code>,
 default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
-<dt><strong>verbase: boolean</strong></dt><dd><p>verbase flag, default: <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<dt><strong>verbose: boolean</strong></dt><dd><p>verbose flag, default: <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd>
 <dt><strong>dynamic_init_topology_builder</strong><span class="classifier">class, optional</span></dt><dd><p>The initial graph topology builder, default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 </dd>
