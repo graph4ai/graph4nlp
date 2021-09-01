@@ -116,7 +116,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         processor_args=None,
         merge_strategy=None,
         edge_strategy=None,
-        verbase=False,
+        verbose=False,
         dynamic_init_topology_builder=None,
         dynamic_init_topology_aux_args=None,
     ):
@@ -143,8 +143,8 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         edge_strategy: str
             Strategy to process edge, depends on specific ``dynamic_init_topology_builder``,
             default: ``None``.
-        verbase: boolean
-            verbase flag, default: ``False``.
+        verbose: boolean
+            verbose flag, default: ``False``.
         dynamic_init_topology_builder : class, optional
             The initial graph topology builder, default: ``None``.
         dynamic_init_topology_aux_args : dict, optional
@@ -187,7 +187,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
                 processor_args=processor_args,
                 merge_strategy=merge_strategy,
                 edge_strategy=edge_strategy,
-                verbase=verbase,
+                verbose=verbose,
             )
         else:
             graph = dynamic_init_topology_builder.topology(

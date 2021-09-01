@@ -40,7 +40,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             rnn_dropout=rnn_dropout,
         )
         self.vocab = vocab
-        self.verbase = 1
+        self.verbose = 1
 
     def add_vocab(self, g):
         """
@@ -156,7 +156,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         processor_args,
         merge_strategy,
         edge_strategy,
-        verbase=True,
+        verbose=True,
     ):
         """
             Graph building method.
@@ -195,7 +195,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         graph: GraphData
             The merged graph data-structure.
         """
-        cls.verbase = verbase
+        cls.verbose = verbose
 
         if isinstance(processor_args, list):
             props_coref = processor_args[0]
@@ -315,7 +315,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
 
         graph = cls._construct_static_graph(parsed_results, edge_strategy=edge_strategy)
 
-        if cls.verbase:
+        if cls.verbose:
             for info in parsed_results["graph_content"]:
                 print(info)
 
