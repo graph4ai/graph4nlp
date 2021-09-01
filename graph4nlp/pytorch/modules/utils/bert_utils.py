@@ -27,7 +27,6 @@ def extract_bert_hidden_states(all_encoder_layers, bert_token_to_orig_map, weigh
     torch.Tensor
         The output BERT embeddings.
     """
-    # assert all_encoder_layers.requires_grad == False
     num_layers, batch_size, num_chunk, max_token_len, bert_dim = all_encoder_layers.shape
     out_features = torch.matmul(
         bert_token_to_orig_map.unsqueeze(0).transpose(-1, -2), all_encoder_layers
@@ -114,7 +113,6 @@ def convert_text_to_bert_features(text, bert_tokenizer, max_seq_length, doc_stri
             tokens=tokens,
             token_to_orig_map=token_to_orig_map,
             token_to_orig_map_matrix=token_to_orig_map_matrix,
-            # token_is_max_context=token_is_max_context,
             input_ids=input_ids,
             input_mask=input_mask,
             segment_ids=segment_ids,
@@ -160,7 +158,7 @@ def _check_is_max_context(doc_spans, cur_span_index, position):
     return cur_span_index == best_span_index
 
 
-class BertInputFeatures(object):
+class BertInputFeatures(object):  # noqa
     """A single set of BERT features of data."""
 
     def __init__(
@@ -169,7 +167,6 @@ class BertInputFeatures(object):
         tokens,
         token_to_orig_map,
         token_to_orig_map_matrix,
-        # token_is_max_context,
         input_ids,
         input_mask,
         segment_ids,
@@ -178,7 +175,6 @@ class BertInputFeatures(object):
         self.tokens = tokens
         self.token_to_orig_map = token_to_orig_map
         self.token_to_orig_map_matrix = token_to_orig_map_matrix
-        # self.token_is_max_context = token_is_max_context
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
