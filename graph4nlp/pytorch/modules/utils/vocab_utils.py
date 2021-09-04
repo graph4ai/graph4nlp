@@ -116,7 +116,7 @@ class VocabModel(object):
                 pretrained_word_emb_name=pretrained_word_emb_name,
                 pretrained_word_emb_url=pretrained_word_emb_url,
                 pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
-                pretrained_word_emb_dim=word_emb_size
+                pretrained_word_emb_dim=word_emb_size,
             )
             print("Using pretrained word embeddings")
         else:
@@ -273,7 +273,7 @@ class WordEmbModel(Vectors):
         pretrained_word_emb_name="840B",
         pretrained_word_emb_url=None,
         pretrained_word_emb_cache_dir=".vector_cache/",
-        pretrained_word_emb_dim=300
+        pretrained_word_emb_dim=300,
     ):
 
         if pretrained_word_emb_name in GloVe.url.keys() and pretrained_word_emb_url is None:
@@ -444,7 +444,7 @@ class Vocab(object):
             pretrained_word_emb_name=pretrained_word_emb_name,
             pretrained_word_emb_url=pretrained_word_emb_url,
             pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
-            pretrained_word_emb_dim=pretrained_word_emb_dim
+            pretrained_word_emb_dim=pretrained_word_emb_dim,
         )
 
         word_list = list(self.word2index.keys())
