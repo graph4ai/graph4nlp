@@ -53,7 +53,8 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
             attr = g.get_node_attrs(i)[i]
             self.vocab.word_vocab._add_words([attr["token"]])
 
-    def parsing(self, cls, raw_text_data):
+    @classmethod
+    def parsing(cls, raw_text_data):
         """
         Parameters
         ----------
@@ -165,7 +166,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
         """
         cls.verbose = verbose
 
-        parsed_results = cls.parsing(cls, raw_text_data=raw_text_data)
+        parsed_results = cls.parsing(raw_text_data=raw_text_data)
 
         sub_graphs = []
         for _, parsed_sent in enumerate(parsed_results):
