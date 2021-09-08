@@ -128,7 +128,7 @@ We provide a comprehensive collection of NLP applications, together with detaile
 | Machine translation        |              IWSLT14             |           GCN       | Dynamic                                      | BLEU-4             |             0.3212            |
 | Summarization              |             CNN(30k)             |           GCN       | Dependency                                   | ROUGE-1            |              26.4             |
 | Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.4                          |
-| Math word problem          | MAWPS  <br> MATHQA               | SAGE                | Dynamic                                      | Solution accuracy <br> Exact match  | 76.4<br>  61.07  |
+| Math word problem          |              MAWPS               | SAGE                | Dynamic                                      | Solution accuracy   | 76.4                    |
 
 ## Installation
 
