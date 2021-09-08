@@ -24,6 +24,8 @@ from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 
+from run_question_generation_iclr import QGModel  # noqa
+
 
 class ModelHandler:
     def __init__(self, config):

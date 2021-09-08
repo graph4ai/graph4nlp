@@ -402,10 +402,6 @@ class ModelHandler:
 
                 pred_collect.extend(pred_str)
                 gt_collect.extend(data["tgt_text"])
-                # print(pred_collect)
-                # print("=========")
-                # print(gt_collect)
-                # exit(0)
 
             scores = self.evaluate_predictions(gt_collect, pred_collect)
 
@@ -413,10 +409,11 @@ class ModelHandler:
 
     def test(self):
         # restored best saved model
-        self.stopper.load_checkpoint(self.model)
+        self.model = torch.load(
+            os.path.join(self.config["out_dir"], Constants._SAVED_WEIGHTS_FILE)
+        ).to(self.config["device"])
 
         t0 = time.time()
-        # scores = self.evaluate(self.test_dataloader)
         scores = self.translate(self.test_dataloader)
         dur = time.time() - t0
         format_str = "Test examples: {} | Time: {:.2f}s |  Test scores:".format(self.num_test, dur)
