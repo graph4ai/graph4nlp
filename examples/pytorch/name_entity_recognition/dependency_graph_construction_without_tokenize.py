@@ -63,7 +63,8 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             attr = g.get_node_attrs(i)[i]
             self.vocab.word_vocab._add_words([attr["token"]])
 
-    def parsing(self, cls, raw_text_data):
+    @classmethod
+    def parsing(cls, raw_text_data):
         """
         Parameters
         ----------
