@@ -122,7 +122,7 @@ We provide a comprehensive collection of NLP applications, together with detaile
 
 | Task                       |              Dataset             |   GNN    Model      | Graph construction                           | Evaluation         |          Performance          |
 |----------------------------|:--------------------------------:|:-------------------:|----------------------------------------------|--------------------|:-----------------------------:|
-| Text classification        | TRECT<br> CAirline<br> CNSST<br> |           GAT       | Dependency                                   |        Accuracy    | 0.948<br> 0.769<br> 0.538<br> |
+| Text classification        | TRECT<br> CAirline<br> CNSST<br> |           GAT       | Dependency<br> Constituency<br> Dependency<br> |      Accuracy    | 0.948<br> 0.785<br> 0.538<br> |
 | Semantic Parsing           |               JOBS               |           SAGE      | Constituency                                 | Execution accuracy |             0.936             |
 | Question generation        |               SQuAD             |           GGNN       | Dependency                                      | BLEU-4             |             0.15175	            |
 | Machine translation        |              IWSLT14             |           GCN       | Dynamic                                      | BLEU-4             |             0.3212            |
