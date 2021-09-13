@@ -127,7 +127,7 @@ We provide a comprehensive collection of NLP applications, together with detaile
 | Question generation        |               SQuAD             |           GGNN       | Dependency                                      | BLEU-4             |             0.15175	            |
 | Machine translation        |              IWSLT14             |           GCN       | Dynamic                                      | BLEU-4             |             0.3212            |
 | Summarization              |             CNN(30k)             |           GCN       | Dependency                                   | ROUGE-1            |              26.4             |
-| Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.4                          |
+| Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.0                          |
 | Math word problem          | MAWPS                        | SAGE                | Dynamic                                      | Solution accuracy   | 76.4  |
 
 ## Installation
