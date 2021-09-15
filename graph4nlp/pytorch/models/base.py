@@ -174,6 +174,8 @@ class Graph2XBase(nn.Module):
             else None
         )
 
+        self.graph_type = graph_type
+
     def _build_gnn_encoder(
         self,
         gnn,
@@ -253,6 +255,10 @@ class Graph2XBase(nn.Module):
 
     @abc.abstractmethod
     def __build_decoder(self):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def predict(self, raw_sentences):
         raise NotImplementedError()
 
     def save_checkpoint(self, save_path, checkpoint_name):

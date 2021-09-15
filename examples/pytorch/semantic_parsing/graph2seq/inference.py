@@ -2,7 +2,6 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-# os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (

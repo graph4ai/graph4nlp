@@ -252,6 +252,42 @@ class Graph2Seq(Graph2XBase):
             batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict
         )
 
+    def predict(self, raw_sentences, beam_size=1, use_copy=False, tokenizer=None, merge_strategy=None, edge_strategy=None, lower_case=True, port=9000, timeout=15000):
+        from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
+        from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+        from graph4nlp.pytorch.modules.utils.generic_utils import wordid2str
+        data_items = []
+        vocab_model = copy.deepcopy(self.vocab_model)
+        device = next(self.parameters()).device
+        for raw_sentence in raw_sentences:
+            data_item = Text2TextDataItem(input_text=raw_sentence, output_text=None, tokenizer=tokenizer)
+            if self.graph_type in ["dependency", "constituency", "ie"]:
+                graph_type = "static"
+
+            from graph4nlp.pytorch.modules.graph_construction import DependencyBasedGraphConstruction
+            data_item = Text2TextDataset._build_topology_process(data_items=[data_item], topology_builder=DependencyBasedGraphConstruction, # self.graph_topology, 
+                graph_type=graph_type, dynamic_graph_type=None, dynamic_init_topology_builder=None, merge_strategy=merge_strategy, edge_strategy=edge_strategy,
+                dynamic_init_topology_aux_args=None, lower_case=lower_case, port=port, timeout=timeout, tokenizer=tokenizer)  # only support static graph types
+            data_item = Text2TextDataset._vectorize_one_dataitem(data_item[0], self.vocab_model, use_ie=False) # not support IE
+            data_items.append(data_item)
+        collate_data = Text2TextDataset.collate_fn(data_items)
+        batch_graph = collate_data["graph_data"].to(device)
+        if use_copy:
+            oov_dict = prepare_ext_vocab(
+                batch_graph=batch_graph, vocab=vocab_model, device=device
+            )
+            ref_dict = oov_dict
+        else:
+            oov_dict = None
+            ref_dict = self.vocab.out_word_vocab
+                
+        ret = self.translate(batch_graph=batch_graph, beam_size=beam_size, oov_dict=oov_dict)
+
+        pred_ids = ret[:, 0, :]  # we just use the top-1
+
+        pred_str = wordid2str(pred_ids.detach().cpu(), ref_dict)
+        return pred_str
+
     @classmethod
     def from_args(cls, opt, vocab_model):
         """
