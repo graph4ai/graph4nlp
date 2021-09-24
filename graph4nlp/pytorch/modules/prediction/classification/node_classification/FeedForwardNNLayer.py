@@ -61,5 +61,5 @@ class FeedForwardNNLayer(NodeClassifierLayerBase):
         if node_idx == None:
             return self.classifier(node_emb)
         else:
-            new_emb_new = node_emb[th.tensor(node_idx), :]  # get the required node embeddings.
+            new_emb_new = node_emb[node_idx, :]  # get the required node embeddings.
             return self.classifier(new_emb_new)

@@ -1,39 +1,19 @@
-import numpy as np
+from typing import List
+
 import torch
+import tqdm
 from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
-import dgl
+from torch.utils.data.dataloader import DataLoader
+from torch.utils.data.dataset import TensorDataset
+from transformers import AutoModel, AutoTokenizer
 
+from ..utils.bert_utils import convert_text_to_bert_features, extract_bert_hidden_states
+from ..utils.generic_utils import dropout_fn
+from ..utils.padding_utils import pad_4d_vals_sparse, pad_4d_vals
 from ..utils.vocab_utils import Vocab
-from ..utils.generic_utils import to_cuda, dropout_fn, create_mask
-from ..utils.padding_utils import pad_4d_vals
-from ..utils.bert_utils import *
-from ...data.data import from_batch
+from ...data.data import from_batch, GraphData
 
-
-
-class EmbeddingConstructionBase(nn.Module):
-    """
-    Base class for (initial) graph embedding construction.
-
-    ...
-
-    Attributes
-    ----------
-    feat : dict
-        Raw features of graph nodes and/or edges.
-
-    Methods
-    -------
-    forward(raw_text_data)
-        Generate dynamic graph topology and embeddings.
-    """
-
-    def __init__(self):
-        super(EmbeddingConstructionBase, self).__init__()
-
-    def forward(self):
-        raise NotImplementedError()
 
 class EmbeddingConstructionBase(nn.Module):
     """Basic class for embedding construction.
@@ -41,7 +21,7 @@ class EmbeddingConstructionBase(nn.Module):
     def __init__(self):
         super(EmbeddingConstructionBase, self).__init__()
 
-    def forward(self):
+    def forward(self, x):
         """Compute initial node/edge embeddings.
 
         Raises
@@ -117,8 +97,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru')
     """
     def __init__(self,
-                    word_vocab,
-                    single_token_item,
+                    word_vocab=None,
+                    single_token_item=True,
                     emb_strategy='w2v_bilstm',
                     hidden_size=None,
                     num_rnn_layers=1,
@@ -135,7 +115,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         self.rnn_dropout = rnn_dropout
         self.single_token_item = single_token_item
 
-        assert emb_strategy in ('w2v', 'w2v_bilstm', 'w2v_bigru',
+        assert emb_strategy in ('w2v', 'w2v_bilstm', 'w2v_bigru', 'fastbert',
                         'bert', 'bert_bilstm', 'bert_bigru',
                         'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru'),\
             "emb_strategy must be one of ('w2v', 'w2v_bilstm', 'w2v_bigru', 'bert', 'bert_bilstm', 'bert_bigru', 'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru')"
@@ -182,9 +162,14 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             word_emb_size += word_vocab.embeddings.shape[1]
 
         if 'node_edge_bert' in word_emb_type:
-            self.word_emb_layers['node_edge_bert'] = BertEmbedding(name=bert_model_name,
-                                                            fix_emb=fix_bert_emb,
-                                                            lower_case=bert_lower_case)
+            if 'fast' in emb_strategy:
+                self.word_emb_layers['node_edge_bert'] = FastBertEmbedding(name=bert_model_name,
+                                                                fix_emb=fix_bert_emb,
+                                                                lower_case=bert_lower_case)
+            else:
+                self.word_emb_layers['node_edge_bert'] = BertEmbedding(name=bert_model_name,
+                                                                fix_emb=fix_bert_emb,
+                                                                lower_case=bert_lower_case)
             word_emb_size += self.word_emb_layers['node_edge_bert'].bert_model.config.hidden_size
 
         if 'seq_bert' in word_emb_type:
@@ -225,7 +210,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             self.seq_info_encode_layer = None
 
 
-    def forward(self, batch_gd):
+    def forward(self, batch_gd: GraphData):
         """Compute initial node/edge embeddings.
 
         Parameters
@@ -254,10 +239,29 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 feat.append(word_feat)
 
             if 'node_edge_bert' in self.word_emb_layers:
-                input_data = [batch_gd.node_attributes[i]['token'].strip().split(' ') for i in range(batch_gd.get_node_num())]
-                node_edge_bert_feat = self.word_emb_layers['node_edge_bert'](input_data)
+                if "input_ids" not in batch_gd.node_attributes[0]:
+                    # work with not-preprocessed data
+                    # tokenize if not already tokenized
+                    input_data = []
+                    for i in range(batch_gd.get_node_num()):
+                        if isinstance(batch_gd.node_attributes[i]['token'], list):
+                            input_data.append(batch_gd.node_attributes[i]['token'])
+                        else:
+                            input_data.append(batch_gd.node_attributes[i]['token'].strip().split(' '))
+
+                    input_dict = {"raw_text_data": input_data}
+
+                else:
+                    # work with pre-processed data
+                    input_dict = {
+                        key: [batch_gd.node_attributes[i][key] for i in range(batch_gd.get_node_num())]
+                        for key in ["input_ids", "input_mask"]
+                    }
+
+                node_edge_bert_feat = self.word_emb_layers['node_edge_bert'](**input_dict)
                 node_edge_bert_feat = dropout_fn(node_edge_bert_feat, self.bert_dropout, shared_axes=[-2], training=self.training)
-                feat.append(node_edge_bert_feat)
+                batch_gd.batch_node_features["node_feat"] = node_edge_bert_feat
+                return batch_gd
 
             if len(feat) > 0:
                 feat = torch.cat(feat, dim=-1)
@@ -268,11 +272,10 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
                 feat = batch_gd.split_features(feat)
 
-
         if self.seq_info_encode_layer is None and 'seq_bert' not in self.word_emb_layers:
             batch_gd.batch_node_features["node_feat"] = feat
-
             return batch_gd
+
         else: # single-token node graph
             new_feat = feat
             if 'seq_bert' in self.word_emb_layers:
@@ -351,6 +354,7 @@ class WordEmbedding(nn.Module):
             Word embedding matrix.
         """
         return self.word_emb_layer(input_tensor)
+
 
 class BertEmbedding(nn.Module):
     """Bert embedding class.
@@ -450,6 +454,233 @@ class BertEmbedding(nn.Module):
 
         return bert_xd_f
 
+
+class FastBertEmbedding(nn.Module):
+    """Bert embedding class.
+
+    Parameters
+    ----------
+    name : str, optional
+        BERT model name, default: ``'bert-base-uncased'``.
+    max_seq_len : int, optional
+        Maximal sequence length, default: ``500``.
+    doc_stride : int, optional
+        Chunking stride, default: ``250``.
+    fix_emb : boolean, optional
+        Specify whether to fix pretrained BERT embeddings, default: ``True``.
+    lower_case : boolean, optional
+        Specify whether to use lower case, default: ``True``.
+
+    """
+
+    GPU_BERT = 0
+
+    def __init__(self,
+                name='bert-base-uncased',
+                max_seq_len=500,
+                doc_stride=250,
+                fix_emb=True,
+                lower_case=True,
+                batch_size=256):
+        super().__init__()
+
+        # For long documents, we need GPU
+        assert torch.cuda.is_available() and torch.cuda.device_count() == 1, "CUDA has to be enabled, with 1 GPUS"
+
+        self.bert_max_seq_len = max_seq_len
+        self.bert_doc_stride = doc_stride
+        self.fix_emb = fix_emb
+        self.batch_size = batch_size
+
+        print('[ Using pretrained BERT embeddings ]')
+        self.bert_tokenizer = AutoTokenizer.from_pretrained(name, do_lower_case=lower_case)
+        self.bert_model = AutoModel.from_pretrained(name)
+        if fix_emb:
+            print('[ Fix BERT layers ]')
+            self.bert_model.eval()
+            for param in self.bert_model.parameters():
+                param.requires_grad = False
+        else:
+            print('[ Finetune BERT layers ]')
+            self.bert_model.train()
+
+        self.bert_model = self.bert_model.cuda(FastBertEmbedding.GPU_BERT)
+
+    def _forward_raw_text(self, raw_text_data):
+        # Return values
+        bert_xd_f = []
+
+        # gather data
+        docs_encoding_layers = []
+        docs_tokens_to_orig_map = []
+
+        # We'll go text by text to reduce memory footprint
+        for text in tqdm.tqdm(raw_text_data, desc="BERT"):
+            text: List[str]
+            bert_features = convert_text_to_bert_features(text, self.bert_tokenizer, self.bert_max_seq_len,
+                                                          self.bert_doc_stride)
+            num_chunks = len(bert_features)
+
+            doc_bert_xd = torch.zeros(size=(1, num_chunks, self.bert_max_seq_len), dtype=torch.long)
+            doc_bert_xd_mask = torch.zeros(size=(1, num_chunks, self.bert_max_seq_len), dtype=torch.long)
+
+            ex_token_to_orig_map = []
+            for j, bert_d in enumerate(bert_features):  # Chunk level
+                doc_bert_xd[0, j, :len(bert_d.input_ids)] = torch.LongTensor(bert_d.input_ids)
+                doc_bert_xd_mask[0, j, :len(bert_d.input_mask)] = torch.LongTensor(bert_d.input_mask)
+                ex_token_to_orig_map.append(bert_d.token_to_orig_map_matrix)
+
+            # bert_token_to_orig_map is sparse (on examples, density ~1e-5)
+            # bert_xd_orig_map NB_DOCS, MAX_NB_STRIDES, SEQ_LEN, MAX_DOC_LEN  (1-hot mapping token in stride / token in doc)
+            bert_token_to_orig_map = pad_4d_vals_sparse([ex_token_to_orig_map],
+                                                        1,
+                                                        num_chunks,
+                                                        self.bert_max_seq_len,
+                                                        len(text))
+
+            # Memory Management
+            del bert_features
+
+            # Submit to BERT in batches, to avoid OOM issues.
+            # 3 tensors
+            # bert_xd_orig_map NB_DOCS, MAX_NB_STRIDES, SEQ_LEN, MAX_DOC_LEN  (1-hot mapping token in stride / token in doc)
+            # bert_xd          NB_DOCS, MAX_NB_STRIDES, SEQ_LEN (token_ids)
+            # bert_xd_mask     NB_DOCS, MAX_NB_STRIDES, SEQ_LEN (attention mask)
+            # We go document per document, so NB_DOCS=1
+
+            # We'll cut in batches
+            doc_dataset = TensorDataset(torch.squeeze(doc_bert_xd, dim=0), torch.squeeze(doc_bert_xd_mask, dim=0))
+            doc_dataloader = DataLoader(
+                dataset=doc_dataset,
+                batch_size=self.batch_size,
+                pin_memory=True
+            )
+
+            doc_bert_token_to_orig_map = bert_token_to_orig_map[0].unsqueeze(0)
+            doc_bert_token_to_orig_map = doc_bert_token_to_orig_map.cuda(BertEmbedding.GPU_REDUCE)
+            docs_tokens_to_orig_map.append(doc_bert_token_to_orig_map)
+
+            doc_encoder_layers = []
+            for stride_batch_bert_xd, stride_batch_bert_xd_mask in doc_dataloader:
+                # Shape BATCH_SIZE, SEQ_LEN
+                stride_batch_bert_xd = stride_batch_bert_xd.cuda(BertEmbedding.GPU_BERT)
+                stride_batch_bert_xd_mask = stride_batch_bert_xd_mask.cuda(BertEmbedding.GPU_BERT)
+
+                encoder_outputs = self.bert_model(input_ids=stride_batch_bert_xd,
+                                                  attention_mask=stride_batch_bert_xd_mask,
+                                                  output_hidden_states=False,
+                                                  return_dict=True)
+
+                # Only consider the last hidden state
+                encoder_layers = encoder_outputs['last_hidden_state']
+                # encoder_layers = tensor BATCH_SIZE, SEQ_LEN, BERT_DIM
+                doc_encoder_layers.append(encoder_layers)
+
+            # Gather all data relevant to one single document
+
+            # Target shape is 1, MAX_NB_STRIDES, SEQ_LEN, BERT_DIM before stack
+            # shape after stack is NB_BERT_LAYERS, 1, MAX_NB_STRIDES, SEQ_LEN, BERT_DIM
+            # MAX_NB_STRIDES = sum of all BATCH_SIZES
+
+            # STEP 1 - for each BERT_LAYER, cat all the gathered hidden states:
+            #          shape of each is MAX_NB_STRIDES, SEQ_LEN, BERT_DIM
+            #          unsqueeze to add 1 as 1st dim -> 1, MAX_NB_STRIDES, SEQ_LEN, BERT_DIM
+            # STEP 2 - stack all to get shape NB_BERT_LAYERS, 1, MAX_NB_STRIDES, SEQ_LEN, BERT_DIM
+            all_encoder_layers = torch.cat(doc_encoder_layers).unsqueeze(0).cuda(BertEmbedding.GPU_REDUCE)
+            docs_encoding_layers.append(all_encoder_layers)
+
+            # Free Memory (cat and stack create lots of memcopy)
+            for layer in doc_encoder_layers:
+                layer.detach()
+            del doc_encoder_layers
+            torch.cuda.empty_cache()
+
+        for doc_encoder_layers, doc_bert_token_to_orig_map in zip(
+                tqdm.tqdm(docs_encoding_layers, desc="Post-Processing"), docs_tokens_to_orig_map):
+            doc_bert_xd_f = extract_bert_hidden_states(
+                doc_encoder_layers,
+                doc_bert_token_to_orig_map,
+                weighted_avg=True
+            )
+
+            bert_xd_f.append(doc_bert_xd_f.squeeze())
+
+        return torch.stack(bert_xd_f)
+
+    def _forward_tensors(self, docs_input_ids=None, docs_input_mask=None, docs_token_map=None):
+        """
+
+        """
+        seqs_input_ids = torch.cat(docs_input_ids, dim=0)
+        seqs_input_mask = torch.cat(docs_input_mask, dim=0)
+
+        docs_dataset = TensorDataset(seqs_input_ids, seqs_input_mask)
+        docs_dataloader = DataLoader(
+            dataset=docs_dataset,
+            batch_size=self.batch_size,
+            pin_memory=True,
+            prefetch_factor=2,
+        )
+
+        encoder_outputs = []
+        for batch_input_ids, batch_input_mask in tqdm.tqdm(docs_dataloader, desc="BERT Encoding"):
+            batch_input_ids = batch_input_ids.cuda()
+            batch_input_mask = batch_input_mask.cuda()
+            outputs = self.bert_model(input_ids=batch_input_ids,
+                                      attention_mask=batch_input_mask,
+                                      output_hidden_states=False,
+                                      return_dict=True)
+
+            # encoder_layers = tensor BATCH_SIZE, SEQ_LEN, BERT_DIM
+            encoder_outputs.append(outputs['last_hidden_state'].cpu())
+
+        # all embeddings in a 2-D tensor TOTAL_NUM_CHUNKS, BERT_DIN
+        sequences_embeddings = torch.cat(encoder_outputs, dim=0)
+
+        # Let's just grab the mean of all strides
+        # matrix NB_DOC, TOTAL_NUM_CHUNKS will map which sequence belongs to which document
+        num_docs = len(docs_input_ids)
+        num_sequences = seqs_input_ids.shape[0]
+        docs_chunks = torch.zeros(size=(num_docs, num_sequences))
+        offset = 0
+        for i, doc_input_ids in enumerate(docs_input_ids):
+            docs_chunks[i][offset: offset + doc_input_ids.shape[0]] = 1.0
+
+        # result is 2-D NB_DOCS, BERT_DIM
+        docs_embeddings = torch.matmul(docs_chunks, sequences_embeddings) / docs_chunks.sum(1).resize(num_docs, 1)
+        return docs_embeddings.unsqueeze(0)
+
+    def forward(self, **kwargs):
+        """Compute BERT embeddings for each word in text.
+
+        Parameters
+        ----------
+        raw_text_data : list
+            The raw text input data. Example: [['what', 'is', 'bert'], ['how', 'to', 'use', 'bert']].
+
+        input_ids:
+            List[2-D tensor NUM_CHUNKS, MAX_SEQ_LEN]
+        input_mask:
+            List[2-D tensor NUM_CHUNKS, MAX_SEQ_LEN]
+
+        NUM_CHUNKS will vary from one to the next
+
+        Returns
+        -------
+        torch.Tensor
+            BERT embedding matrix.
+        """
+
+        if "raw_text_data" in kwargs:
+            # We received raw text, we have to do all the pre-processing = BAD !!!
+            return self._forward_raw_text(kwargs["raw_text_data"])
+
+        else:
+            # We received tensors, ready to use
+            return self._forward_tensors(
+                docs_input_ids=kwargs["input_ids"],    # List[2-D tensor NUM_CHUNKS, MAX_SEQ_LEN]
+                docs_input_mask=kwargs["input_mask"],  # List[2-D tensor NUM_CHUNKS, MAX_SEQ_LEN]
+            )
 
 
 class MeanEmbedding(nn.Module):

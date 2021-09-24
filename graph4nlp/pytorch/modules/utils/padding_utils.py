@@ -1,4 +1,42 @@
 import numpy as np
+import torch
+
+from typing import List
+
+
+def pad_4d_vals_sparse(in_vals: List[List[List[np.ndarray]]],
+                       dim1: int, dim2: int, dim3: int, dim4: int) -> torch.Tensor:
+    """
+    Receives a list of lists of lists of ndarray, produces a sparse tensor of shape dim1, dim2, dim3, dim4
+    in_vals[0][0][0] is a ndarray of shape (NB_ELTS,).
+    Same as pad_4d_vals, but SPARSE. In the case of BertEmbeddings, the arrays are mostly made of zeros...
+    """
+    # Step 1 - build the indices of the non-zero elements
+    indices = [[], [], [], []]
+    nb_values = 0
+    for i in range(len(in_vals)):
+        for j in range(len(in_vals[i])):
+            for k in range(len(in_vals[i][j])):
+                array_ijk = in_vals[i][j][k]
+                nz = array_ijk.nonzero()
+                for m in nz[0]:
+                    indices[0].append(i)
+                    indices[1].append(j)
+                    indices[2].append(k)
+                    indices[3].append(m)
+                    nb_values += 1
+    indices_t = torch.LongTensor(indices)
+
+    # The values are only ONES
+    values = [1.0] * nb_values
+
+    out = torch.sparse_coo_tensor(
+        indices=indices_t,
+        values=values,
+        size=(dim1, dim2, dim3, dim4),
+        dtype=torch.float32
+    )
+    return out
 
 
 def make_batches(size, batch_size):

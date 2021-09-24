@@ -1,6 +1,12 @@
 from collections import defaultdict, namedtuple
+from dataclasses import dataclass
+
+from typing import Any, Dict, List
+
 import numpy as np
 import torch
+
+from transformers import PreTrainedTokenizerBase
 
 # When using the sliding window trick for long sequences,
 # we take the representation of each token with maximal context.
@@ -27,14 +33,67 @@ def extract_bert_hidden_states(all_encoder_layers, bert_token_to_orig_map, weigh
       The output BERT embeddings.
   """
   # assert all_encoder_layers.requires_grad == False
-  num_layers, batch_size, num_chunk, max_token_len, bert_dim = all_encoder_layers.shape
-  out_features = torch.matmul(bert_token_to_orig_map.unsqueeze(0).transpose(-1, -2), all_encoder_layers)
-  out_features = torch.sum(out_features, 2) / torch.clamp(torch.sum(bert_token_to_orig_map, (1, 2)), min=1).unsqueeze(-1).unsqueeze(0)
+  _, max_nb_strides, seq_len, bert_dim = all_encoder_layers.shape
+  _, _, _, max_doc_len = bert_token_to_orig_map.shape
+  gpu = all_encoder_layers.device
 
-  # Average through all layers
-  if not weighted_avg:
-    out_features = torch.mean(out_features, 0)
-  return out_features
+  # bert_token_to_orig_map        -> NB_DOCS, MAX_NB_STRIDES, SEQ_LEN, MAX_DOC_LEN
+  # bert_token_to_orig_map.unsqueeze(0).transpose(-1, -2) -> 1, NB_DOCS, MAX_NB_STRIDES, MAX_DOC_LEN, SEQ_LEN
+  # all_encoder_layers                                    -> NB_DOCS, MAX_NB_STRIDES, SEQ_LEN, BERT_DIM
+  # Now we have NB_DOCS = 1 (see batch process in embedding_construction.py) /
+
+  mapping = bert_token_to_orig_map.unsqueeze(0).transpose(-1, -2)
+  # mapping                  -> 1, 1, MAX_NB_STRIDES, MAX_DOC_LEN, SEQ_LEN
+  # all_encoder_layers       -> 1, MAX_NB_STRIDES, SEQ_LEN, BERT_DIM
+
+  # When mapping is sparse, it does not work (matmul supports 2-D sparse, not 5-D)
+  # We'll broadcast manually
+  out_features = torch.zeros(max_nb_strides, max_doc_len, bert_dim).cuda(device=gpu)
+  for stride in range(mapping.shape[2]):
+    out_features[stride, :, :] = torch.matmul(mapping[0][0][stride], all_encoder_layers[0][stride])
+
+  out_features = out_features.unsqueeze(0).unsqueeze(0)
+  # out_features  -> 1, 1, MAX_NB_STRIDES, MAX_DOC_LEN, BERT_DIM
+  # torch.sum(bert_token_to_orig_map, (1, 2)) does not work with sparse
+  # since bert_token_to_orig_map is full of 0 and 1, we have a workaround
+  out_features = torch.sum(out_features, 2) / torch.clamp(torch.sparse.sum(bert_token_to_orig_map, [1, 2]).to_dense(), min=1).unsqueeze(-1).unsqueeze(0)
+  result = out_features.cpu()
+
+  # Memory Management...
+  out_features.detach()
+  torch.cuda.empty_cache()
+
+  return result
+
+
+@dataclass
+class FastBertInputFeatures(object):
+  input_ids: np.ndarray     # 2-D NUM_STRIDES, MAX_SEQ_LEN
+  input_mask: np.ndarray    # 2-D NUM_STRIDES, MAX_SEQ_LEN
+
+
+def fast_convert_text_to_bert(text: str,
+                              bert_tokenizer: PreTrainedTokenizerBase,
+                              max_seq_length: int,
+                              doc_stride: int):
+  """
+  Helper function, but FASTer
+  """
+  encoding = bert_tokenizer(text=text,
+                            return_tensors="np",
+                            return_token_type_ids=False,
+                            return_attention_mask=True,
+                            verbose=False)
+
+  def _in_strides(a: np.ndarray) -> np.ndarray:
+    # extra padding for a smooth sliding window
+    a_padded = np.pad(a, (0, max_seq_length - a.shape[0] % doc_stride), mode='constant', constant_values=0)
+    a_strided = np.lib.stride_tricks.sliding_window_view(x=a_padded, window_shape=(max_seq_length,))[::doc_stride]
+    return a_strided
+
+  strides_input_ids, strides_input_mask = list(map(_in_strides, [encoding.input_ids[0], encoding.attention_mask[0]]))
+  return FastBertInputFeatures(input_ids=strides_input_ids, input_mask=strides_input_mask)
+
 
 def convert_text_to_bert_features(text, bert_tokenizer, max_seq_length, doc_stride):
   """Helper function to convert text to BERT features.
@@ -100,21 +159,26 @@ def convert_text_to_bert_features(text, bert_tokenizer, max_seq_length, doc_stri
     segment_ids.append(0)
 
     input_ids = bert_tokenizer.convert_tokens_to_ids(tokens)
+    curr_len = len(input_ids)
 
     # The mask has 1 for real tokens and 0 for padding tokens. Only real
     # tokens are attended to.
-    input_mask = [1] * len(input_ids)
+    input_mask = [1] * curr_len
+
+    # pad input_ids and mask to max_seq_length
+    input_ids += [0] * (max_seq_length - curr_len)
+    input_mask += [0] * (max_seq_length - curr_len)
 
     feature = BertInputFeatures(
-    doc_span_index=doc_span_index,
-    tokens=tokens,
-    token_to_orig_map=token_to_orig_map,
-    token_to_orig_map_matrix=token_to_orig_map_matrix,
-    # token_is_max_context=token_is_max_context,
-    input_ids=input_ids,
-    input_mask=input_mask,
-    segment_ids=segment_ids)
+      doc_span_index=doc_span_index,
+      tokens=tokens,
+      token_to_orig_map=token_to_orig_map,
+      token_to_orig_map_matrix=token_to_orig_map_matrix,
+      input_ids=input_ids,
+      input_mask=input_mask,
+      segment_ids=segment_ids)
     out_features.append(feature)
+
   return out_features
 
 
@@ -154,22 +218,13 @@ def _check_is_max_context(doc_spans, cur_span_index, position):
 
   return cur_span_index == best_span_index
 
+
+@dataclass
 class BertInputFeatures(object):
-    """A single set of BERT features of data."""
-    def __init__(self,
-                 doc_span_index,
-                 tokens,
-                 token_to_orig_map,
-                 token_to_orig_map_matrix,
-                 # token_is_max_context,
-                 input_ids,
-                 input_mask,
-                 segment_ids):
-        self.doc_span_index = doc_span_index
-        self.tokens = tokens
-        self.token_to_orig_map = token_to_orig_map
-        self.token_to_orig_map_matrix = token_to_orig_map_matrix
-        # self.token_is_max_context = token_is_max_context
-        self.input_ids = input_ids
-        self.input_mask = input_mask
-        self.segment_ids = segment_ids
+  doc_span_index: int
+  tokens: List[str]
+  token_to_orig_map: Dict[int, int]
+  token_to_orig_map_matrix: List[np.ndarray]
+  input_ids: List[int]
+  input_mask: List[int]
+  segment_ids: List[int]

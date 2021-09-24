@@ -174,7 +174,7 @@ class GraphData(object):
 
         return self.nodes[:].features
 
-    def get_node_features(self, nodes: int or slice) -> torch.Tensor:
+    def get_node_features(self, nodes: int or slice) -> dict:
         """
         Get the node feature dictionary of the `nodes`
 
@@ -193,7 +193,10 @@ class GraphData(object):
             if self._node_features[key] is None:
                 ret[key] = None
             else:
-                ret[key] = self._node_features[key][nodes]
+                if nodes == slice(None, None, None):
+                    ret[key] = self._node_features[key]
+                else:
+                    ret[key] = self._node_features[key][nodes]
         return ret
 
     def node_feature_names(self):
