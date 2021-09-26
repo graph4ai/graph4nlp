@@ -52,7 +52,8 @@
 </p>
 
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
-**06/05/2021:** The **v0.4.1 release**. Try it out!
+**09/26/2021:** The **v0.5.1 release**. Try it out!
+**06/05/2021:** The **v0.4.1 release**. 
 
 ## Quick tour
 
@@ -221,6 +222,7 @@ python setup.py install
 
 | Releases | Date       | Features                                                     |
 | -------- | ---------- | ------------------------------------------------------------ |
+| v0.5.1   | 2021-09-26 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 | v0.4.1   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
 ## New to Deep Learning on Graphs for NLP?
@@ -231,7 +233,7 @@ If you want to learn more on applying Deep Learning on Graphs techniques to NLP 
 - Documentation: [Docs](https://graph4ai.github.io/graph4nlp/)  
 - Graph4NLP Survey: [Graph4nlp survey](http://arxiv.org/abs/2106.06090)  
 - Graph4NLP Tutorials: 
-    - [Graph4NLP-NAACL'21, SIGIR'21, IJCAI'21, KDD'21]: https://dlg4nlp.github.io/tutorials.html
+    - [Graph4NLP-NAACL'21, SIGIR'21, IJCAI'21, KDD'21](https://dlg4nlp.github.io/tutorials.html)
     - [SyncedReview Invited Chinese talk](https://app6ca5octe2206.pc.xiaoe-tech.com/detail/v_60e832f8e4b0876c0c23c1a7/3?fromH5=true) ([video](https://pan.baidu.com/s/1Lltz_kx7ECDOTLecVC9E9w) (password: wppp), [slides](https://pan.baidu.com/s/1pmgX456Me_lu30VGDY3aaw) (password: flwv))  
 - Graph4NLP Demo: [Demo](https://github.com/graph4ai/graph4nlp_demo)
 - Graph4NLP Literature Review: [Literature Lists](https://github.com/graph4ai/graph4nlp_literature)  
