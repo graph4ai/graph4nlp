@@ -53,6 +53,7 @@
 
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
 **09/26/2021:** The **v0.5.1 release**. Try it out! <br>
+**09/01/2021:** Welcome to visit our **DLG4NLP website (https://dlg4nlp.github.io/index.html)** for various learning resources! <br>
 **06/05/2021:** The **v0.4.1 release**. 
 
 ## Quick tour
