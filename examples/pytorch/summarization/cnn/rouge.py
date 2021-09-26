@@ -1,8 +1,10 @@
-from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-import pyrouge
+import os
 import re
-import random, os
 import shutil
+
+from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
+
+import pyrouge
 
 
 class SummarizationRouge(EvaluationMetricBase):
@@ -11,7 +13,7 @@ class SummarizationRouge(EvaluationMetricBase):
         self.rouge = pyrouge.Rouge155()
 
     def calculate_scores(self, ground_truth, predict):
-        if os.path.exists('pred') and os.path.exists('gt'):
+        if os.path.exists("pred") and os.path.exists("gt"):
             shutil.rmtree("pred")
             shutil.rmtree("gt")
         os.makedirs("pred", exist_ok=False)
@@ -21,8 +23,8 @@ class SummarizationRouge(EvaluationMetricBase):
             self.dump_tmp(g, os.path.join("gt", str(cnt) + ".txt"))
             self.dump_tmp(p, os.path.join("pred", str(cnt) + ".txt"))
             cnt += 1
-        self.rouge.model_filename_pattern = '#ID#.txt'
-        self.rouge.system_filename_pattern = '(\d+).txt'
+        self.rouge.model_filename_pattern = "#ID#.txt"
+        self.rouge.system_filename_pattern = r"(\d+).txt"
         self.rouge.model_dir = "gt"
         self.rouge.system_dir = "pred"
         rouge_results = self.rouge.convert_and_evaluate()
@@ -30,9 +32,9 @@ class SummarizationRouge(EvaluationMetricBase):
         # dic = self.rouge.output_to_dict(rouge_results)
         # return dic
 
-
     def make_html_safe(self, s):
-        """Replace any angled brackets in string s to avoid interfering with HTML attention visualizer."""
+        """Replace any angled brackets in string s to avoid interfering with HTML
+        attention visualizer."""
         s = s.replace("<", "&lt;")
         s = s.replace(">", "&gt;")
         return s
@@ -44,6 +46,7 @@ class SummarizationRouge(EvaluationMetricBase):
         with open(path, "w") as f:
             f.write(output)
 
+
 def read_file(path):
     with open(path, "r") as f:
         content = f.readlines()
@@ -53,17 +56,18 @@ def read_file(path):
             continue
         if line.split()[-1] != "</t>":
             line += " . </t>"
-        sents = re.findall("<t>(.*?)</t>", line, flags=re.S|re.M)
+        sents = re.findall("<t>(.*?)</t>", line, flags=re.S | re.M)
         sen = [sent.strip() for sent in sents]
         ret.append(sen)
     return ret
+
 
 if __name__ == "__main__":
     # path = 'out/cnn/gcn_bi_fuse_l2_ckpt/'
     # gt_file = "out/cnn/gcn_bi_fuse_l2_ckpt/gcn_bi_fuse_l2_ckpt_bs15_gt.txt"
     # pred_file = "out/cnn/gcn_bi_fuse_l2_ckpt/gcn_bi_fuse_l2_ckpt_bs15_pred.txt"
 
-    path = 'examples/pytorch/summarization/cnn/text_cnn/'
+    path = "examples/pytorch/summarization/cnn/text_cnn/"
     gt_file = "examples/pytorch/summarization/cnn/text_cnn/test.output"
     pred_file = "examples/pytorch/summarization/cnn/text_cnn/test_pred.txt"
     gt_collect = read_file(gt_file)

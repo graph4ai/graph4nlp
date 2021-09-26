@@ -24,7 +24,7 @@ copyright = '2020, Graph4AI Group'
 author = 'Graph4AI Group'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.1.0'
+release = 'v0.4.1'
 
 
 # -- General configuration ---------------------------------------------------

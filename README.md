@@ -122,13 +122,15 @@ We provide a comprehensive collection of NLP applications, together with detaile
 
 | Task                       |              Dataset             |   GNN    Model      | Graph construction                           | Evaluation         |          Performance          |
 |----------------------------|:--------------------------------:|:-------------------:|----------------------------------------------|--------------------|:-----------------------------:|
-| Text classification        | TRECT<br> CAirline<br> CNSST<br> |           GAT       | Dependency                                   |        Accuracy    | 0.948<br> 0.769<br> 0.538<br> |
+| Text classification        | TRECT<br> CAirline<br> CNSST<br> |           GAT       | Dependency<br> Constituency<br> Dependency<br> |      Accuracy    | 0.948<br> 0.785<br> 0.538<br> |
 | Semantic Parsing           |               JOBS               |           SAGE      | Constituency                                 | Execution accuracy |             0.936             |
 | Question generation        |               SQuAD             |           GGNN       | Dependency                                      | BLEU-4             |             0.15175	            |
 | Machine translation        |              IWSLT14             |           GCN       | Dynamic                                      | BLEU-4             |             0.3212            |
 | Summarization              |             CNN(30k)             |           GCN       | Dependency                                   | ROUGE-1            |              26.4             |
 | Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.4                          |
 | Math word problem          |              MAWPS               | SAGE                | Dynamic                                      | Solution accuracy   | 76.4                    |
+| Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.0                          |
+| Math word problem          | MAWPS                        | SAGE                | Dynamic                                      | Solution accuracy   | 76.4  |
 
 ## Installation
 
@@ -229,8 +231,7 @@ If you want to learn more on applying Deep Learning on Graphs techniques to NLP 
 - Documentation: [Docs](https://graph4ai.github.io/graph4nlp/)  
 - Graph4NLP Survey: [Graph4nlp survey](http://arxiv.org/abs/2106.06090)  
 - Graph4NLP Tutorials: 
-    - [Graph4NLP-SIGIR'21](Video: [google drive](https://lnkd.in/ekx3qaJ), Slides: [google drive](https://lnkd.in/ekMx-m7))
-    - [Graph4NLP-NAACL'21](https://www.aclweb.org/anthology/2021.naacl-tutorials.3.pdf)(Slides: [google drive](https://drive.google.com/file/d/1_7cPySt9Pzfd6MaqNihD4FkKI0qzf-s4/view?usp=sharing), [baidu netdisk](https://pan.baidu.com/s/1QeWedhMgIBjBpK0EcgXYvQ)(drs1))
+    - [Graph4NLP-NAACL'21, SIGIR'21, IJCAI'21, KDD'21]: https://dlg4nlp.github.io/tutorials.html
     - [SyncedReview Invited Chinese talk](https://app6ca5octe2206.pc.xiaoe-tech.com/detail/v_60e832f8e4b0876c0c23c1a7/3?fromH5=true) ([video](https://pan.baidu.com/s/1Lltz_kx7ECDOTLecVC9E9w) (password: wppp), [slides](https://pan.baidu.com/s/1pmgX456Me_lu30VGDY3aaw) (password: flwv))  
 - Graph4NLP Demo: [Demo](https://github.com/graph4ai/graph4nlp_demo)
 - Graph4NLP Literature Review: [Literature Lists](https://github.com/graph4ai/graph4nlp_literature)  

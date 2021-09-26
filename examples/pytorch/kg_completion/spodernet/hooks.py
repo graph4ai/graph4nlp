@@ -1,12 +1,16 @@
+import datetime
 import numpy as np
 import scipy.stats
-import datetime
 
-from spodernet.interfaces import IAtIterEndObservable, IAtEpochEndObservable, IAtEpochStartObservable
-from spodernet.utils.util import Timer
-from spodernet.utils.global_config import Config, Backends
-
+from spodernet.interfaces import (
+    IAtEpochEndObservable,
+    IAtEpochStartObservable,
+    IAtIterEndObservable,
+)
+from spodernet.utils.global_config import Backends, Config
 from spodernet.utils.logger import Logger
+from spodernet.utils.util import Timer
+
 log = Logger('hooks.py.txt')
 
 class AbstractHook(IAtIterEndObservable, IAtEpochEndObservable):

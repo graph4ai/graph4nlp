@@ -1,19 +1,22 @@
-from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-from .base import GeneralLossBase
-import torch.nn as nn
 import torch
+import torch.nn as nn
+
+from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
+
+from .base import GeneralLossBase
 
 
 class CrossEntropyLoss(GeneralLossBase):
     """
        The cross-entropy with ``mask`` support.
        Technically, it is a wrapper of ``nn.NLLLoss``.
-    
+
     Parameters
     ----------
     vocab: Vocab
        The vocab for loss calculation.
     """
+
     def __init__(self, vocab: Vocab):
         super(CrossEntropyLoss, self).__init__()
         self.loss_func = nn.NLLLoss()
@@ -23,7 +26,6 @@ class CrossEntropyLoss(GeneralLossBase):
     def forward(self, logits, label):
         """
             The loss calculation.
-        
         Parameters
         ----------
         logits: torch.Tensor
@@ -48,6 +50,6 @@ class CrossEntropyLoss(GeneralLossBase):
 
         prob_select = torch.gather(log_prob.view(batch_size * step, -1), 1, label.view(-1, 1))
 
-        prob_select_masked = - torch.masked_select(prob_select, mask.view(-1, 1).bool())
+        prob_select_masked = -torch.masked_select(prob_select, mask.view(-1, 1).bool())
         loss = torch.mean(prob_select_masked)
         return loss

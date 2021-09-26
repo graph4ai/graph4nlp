@@ -1,0 +1,1107 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>graph4nlp.graph_embedding &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="graph4nlp.prediction" href="prediction.html" />
+    <link rel="prev" title="graph4nlp.graph_construction" href="graph_construction.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/construction.html">Chapter 3. Graph Construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">graph4nlp.graph_embedding</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#graph-neural-networks">Graph Neural Networks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>graph4nlp.graph_embedding</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/modules/graph_embedding.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-graph4nlp.graph_embedding">
+<span id="graph4nlp-graph-embedding"></span><h1>graph4nlp.graph_embedding<a class="headerlink" href="#module-graph4nlp.graph_embedding" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="graph-neural-networks">
+<h2>Graph Neural Networks<a class="headerlink" href="#graph-neural-networks" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="graph4nlp.graph_embedding.GAT">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_embedding.</code><code class="sig-name descname">GAT</code><span class="sig-paren">(</span><em class="sig-param">num_layers</em>, <em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">output_size</em>, <em class="sig-param">heads</em>, <em class="sig-param">direction_option='bi_sep'</em>, <em class="sig-param">feat_drop=0.0</em>, <em class="sig-param">attn_drop=0.0</em>, <em class="sig-param">negative_slope=0.2</em>, <em class="sig-param">residual=False</em>, <em class="sig-param">activation=None</em>, <em class="sig-param">allow_zero_in_degree=False</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_embedding.GAT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multi-layer Graph Attention Network (GAT).
+Support both <a class="reference external" href="https://arxiv.org/abs/1710.10903">unidirectional GAT</a> and bidirectional versions
+including <a class="reference external" href="https://arxiv.org/abs/1808.07624">GAT-BiSep</a> and
+<a class="reference external" href="https://arxiv.org/abs/1908.04942">GAT-BiFuse</a>.</p>
+<div class="math notranslate nohighlight">
+\[h_i^{(l+1)} = \sum_{j\in \mathcal{N}(i)} \alpha_{i,j} W^{(l)} h_j^{(l)}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\alpha_{ij}\)</span> is the attention score bewteen node <span class="math notranslate nohighlight">\(i\)</span> and
+node <span class="math notranslate nohighlight">\(j\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\alpha_{ij}^{l} &amp; = \mathrm{softmax_i} (e_{ij}^{l})
+e_{ij}^{l} &amp; = \mathrm{LeakyReLU}\left(\vec{a}^T [W h_{i} \| W h_{j}]\right)\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_layers: int</strong></dt><dd><p>Number of GAT layers.</p>
+</dd>
+<dt><strong>input_size</strong><span class="classifier">int, or pair of ints</span></dt><dd><p>Input feature size.
+If the layer is to be applied to a unidirectional bipartite graph, <code class="docutils literal notranslate"><span class="pre">input_size</span></code>
+specifies the input feature size on both the source and destination nodes.  If
+a scalar is given, the source and destination node feature size would take the
+same value.</p>
+</dd>
+<dt><strong>hidden_size: int or list of int</strong></dt><dd><p>Hidden size per GAT layer. If <code class="docutils literal notranslate"><span class="pre">int</span></code> is given, all layers are forced to have
+the same hidden size.</p>
+</dd>
+<dt><strong>output_size</strong><span class="classifier">int</span></dt><dd><p>Output feature size.</p>
+</dd>
+<dt><strong>heads</strong><span class="classifier">int or list of int</span></dt><dd><p>Number of heads per GAT layer. If <code class="docutils literal notranslate"><span class="pre">int</span></code> is given, all layers are forced to
+have the same number of heads.</p>
+</dd>
+<dt><strong>direction_option: str</strong></dt><dd><p>Whether to use unidirectional (i.e., regular “undirected”) or bidirectional (i.e., “bi_sep”
+and “bi_fuse”) versions.
+Default : <code class="docutils literal notranslate"><span class="pre">'bi_sep'</span></code>.</p>
+</dd>
+<dt><strong>feat_drop</strong><span class="classifier">float, optional</span></dt><dd><p>Dropout rate on feature, default: <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+</dd>
+<dt><strong>attn_drop</strong><span class="classifier">float, optional</span></dt><dd><p>Dropout rate on attention weight, default: <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+</dd>
+<dt><strong>negative_slope</strong><span class="classifier">float, optional</span></dt><dd><p>LeakyReLU angle of negative slope, default: <code class="docutils literal notranslate"><span class="pre">0.2</span></code>.</p>
+</dd>
+<dt><strong>residual</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, use residual connection.
+Default: <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+<dt><strong>activation</strong><span class="classifier">callable activation function/layer or None, optional.</span></dt><dd><p>If not None, applies an activation function to the updated node features.
+Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt><strong>allow_zero_in_degree</strong><span class="classifier">bool, optional</span></dt><dd><p>If there are 0-in-degree nodes in the graph, output for those nodes will be invalid
+since no message will be passed to those nodes. This is harmful for some applications
+causing silent performance regression. This module will raise a DGLError if it detects
+0-in-degree nodes in input graph. By setting <code class="docutils literal notranslate"><span class="pre">True</span></code>, it will suppress the check
+and let the users handle it by themselves. Defaults: <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_embedding.GAT.forward" title="graph4nlp.graph_embedding.GAT.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(graph)</p></td>
+<td><p>Compute multi-layer graph attention network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.graph_embedding.GAT.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">graph</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_embedding.GAT.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute multi-layer graph attention network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>graph</strong><span class="classifier">GraphData</span></dt><dd><p>The graph data containing topology and features.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>GraphData</dt><dd><p>The output graph data containing updated embeddings.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.graph_embedding.GGNN">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_embedding.</code><code class="sig-name descname">GGNN</code><span class="sig-paren">(</span><em class="sig-param">num_layers</em>, <em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">output_size</em>, <em class="sig-param">feat_drop=0.0</em>, <em class="sig-param">direction_option='bi_fuse'</em>, <em class="sig-param">n_etypes=1</em>, <em class="sig-param">bias=True</em>, <em class="sig-param">use_edge_weight=False</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_embedding.GGNN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multi-layered <a class="reference external" href="https://arxiv.org/pdf/1511.05493.pdf">Gated Graph Sequence Neural Networks</a>.
+Support both undirected (i.e., regular) and bidirectional
+(i.e., <cite>bi_sep</cite> and <cite>bi_fuse</cite>) versions.
+.. attribute:: num_layers</p>
+<blockquote>
+<div><p>Number of GGNN layers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="attribute">
+<dt id="graph4nlp.graph_embedding.GGNN.input_size">
+<code class="sig-name descname">input_size</code><a class="headerlink" href="#graph4nlp.graph_embedding.GGNN.input_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input feature size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="graph4nlp.graph_embedding.GGNN.hidden_size">
+<code class="sig-name descname">hidden_size</code><a class="headerlink" href="#graph4nlp.graph_embedding.GGNN.hidden_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Should be equal to output_size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="graph4nlp.graph_embedding.GGNN.output_size">
+<code class="sig-name descname">output_size</code><a class="headerlink" href="#graph4nlp.graph_embedding.GGNN.output_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output feature size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="graph4nlp.graph_embedding.GGNN.direction_option">
+<code class="sig-name descname">direction_option</code><a class="headerlink" href="#graph4nlp.graph_embedding.GGNN.direction_option" title="Permalink to this definition">¶</a></dt>
+<dd><p>The direction option of GGNN (‘undirected’, ‘bi_sep’ or ‘bi_fuse’).
+(Default: ‘bi_fuse’)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="graph4nlp.graph_embedding.GGNN.n_etypes">
+<code class="sig-name descname">n_etypes</code><a class="headerlink" href="#graph4nlp.graph_embedding.GGNN.n_etypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of edge types. n_etypes can be set to any integer if the
+direction_option is ‘undirected’.
+If the direction_option is ‘bi_sep’ or ‘bi_fuse’, n_etypes will be set to 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="graph4nlp.graph_embedding.GGNN.bias">
+<code class="sig-name descname">bias</code><a class="headerlink" href="#graph4nlp.graph_embedding.GGNN.bias" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True, adds a learnable bias to the output. (Default: True)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_embedding.GGNN.forward" title="graph4nlp.graph_embedding.GGNN.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(graph)</p></td>
+<td><p>Use GGNN compute node embeddings.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.graph_embedding.GGNN.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">graph: graph4nlp.pytorch.data.data.GraphData</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_embedding.GGNN.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use GGNN compute node embeddings.
+:param graph: The initial node features are stored in the node feature field</p>
+<blockquote>
+<div><p>named <cite>node_feat</cite>.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>input_graph</strong> – The computed node embedding tensors are stored in the node feature field
+named <cite>node_emb</cite>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>GraphData.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.graph_embedding.GraphSAGE">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_embedding.</code><code class="sig-name descname">GraphSAGE</code><span class="sig-paren">(</span><em class="sig-param">num_layers</em>, <em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">output_size</em>, <em class="sig-param">aggregator_type</em>, <em class="sig-param">direction_option='undirected'</em>, <em class="sig-param">feat_drop=0.0</em>, <em class="sig-param">bias=True</em>, <em class="sig-param">norm=None</em>, <em class="sig-param">activation=None</em>, <em class="sig-param">use_edge_weight=False</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_embedding.GraphSAGE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multi-layered <a class="reference external" href="https://arxiv.org/pdf/1706.02216.pdf">GraphSAGE Network</a>
+Support both unidirectional (i.e., regular) and bidirectional (i.e., <cite>bi_sep</cite> and <cite>bi_fuse</cite>)
+versions.</p>
+<div class="math notranslate nohighlight">
+\[h_{\mathcal{N}(i)}^{(l+1)} &amp; = \mathrm{aggregate}
+\left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
+h_{i}^{(l+1)} &amp; = \sigma \left(W \cdot \mathrm{concat}
+(h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
+h_{i}^{(l+1)} &amp; = \mathrm{norm}(h_{i}^{l})\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_layers: int</strong></dt><dd><p>Number of GraphSAGE layers.</p>
+</dd>
+<dt><strong>input_size</strong><span class="classifier">int, or pair of ints</span></dt><dd><p>Input feature size.
+If the layer is to be applied to a unidirectional bipartite graph, <code class="docutils literal notranslate"><span class="pre">input_size</span></code>
+specifies the input feature size on both the source and destination nodes.  If
+a scalar is given, the source and destination node feature size would take the
+same value.
+If aggregator type is <code class="docutils literal notranslate"><span class="pre">gcn</span></code>, the feature size of source and destination nodes
+are required to be the same.</p>
+</dd>
+<dt><strong>hidden_size: int list of int</strong></dt><dd><p>Hidden layer size.
+If a scalar is given, the sizes of all the hidden layers are the same.
+If a list of scalar is given, each element in the list is the size of each hidden layer.
+Example: [100,50]</p>
+</dd>
+<dt><strong>output_size</strong><span class="classifier">int</span></dt><dd><p>Output feature size. For the bisep version, the output size is 2*output_size</p>
+</dd>
+<dt><strong>direction_option: str</strong></dt><dd><p>Whether use unidirectional (i.e., regular) or bidirectional (i.e., <cite>bi_sep</cite> and <cite>bi_fuse</cite>)
+versions.</p>
+</dd>
+<dt><strong>feat_drop</strong><span class="classifier">float, optional</span></dt><dd><p>Dropout rate on feature, defaults: <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+</dd>
+<dt><strong>aggregator_type</strong><span class="classifier">str</span></dt><dd><p>Aggregator type to use (<code class="docutils literal notranslate"><span class="pre">mean</span></code>, <code class="docutils literal notranslate"><span class="pre">gcn</span></code>, <code class="docutils literal notranslate"><span class="pre">pool</span></code>, <code class="docutils literal notranslate"><span class="pre">lstm</span></code>).</p>
+</dd>
+<dt><strong>bias</strong><span class="classifier">bool</span></dt><dd><p>If True, adds a learnable bias to the output. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt><strong>norm</strong><span class="classifier">callable activation function/layer or None, optional</span></dt><dd><p>If not None, applies normalization to the updated node features.</p>
+</dd>
+<dt><strong>activation</strong><span class="classifier">callable activation function/layer or None, optional</span></dt><dd><p>If not None, applies an activation function to the updated node features.
+Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_embedding.GraphSAGE.forward" title="graph4nlp.graph_embedding.GraphSAGE.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(graph)</p></td>
+<td><p>Compute GraphSAGE layer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.graph_embedding.GraphSAGE.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">graph</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_embedding.GraphSAGE.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute GraphSAGE layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>graph</strong><span class="classifier">GraphData</span></dt><dd><p>The graph with node feature stored in the feature field named as
+“node_feat”.
+The node features are used for message passing.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>graph</strong><span class="classifier">GraphData</span></dt><dd><p>The graph with generated node embedding stored in the feature field
+named as “node_emb”.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graph4nlp.graph_embedding.GCN">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_embedding.</code><code class="sig-name descname">GCN</code><span class="sig-paren">(</span><em class="sig-param">num_layers</em>, <em class="sig-param">input_size</em>, <em class="sig-param">hidden_size</em>, <em class="sig-param">output_size</em>, <em class="sig-param">direction_option='bi_sep'</em>, <em class="sig-param">feat_drop=0.0</em>, <em class="sig-param">gcn_norm='both'</em>, <em class="sig-param">weight=True</em>, <em class="sig-param">bias=True</em>, <em class="sig-param">activation=None</em>, <em class="sig-param">allow_zero_in_degree=False</em>, <em class="sig-param">use_edge_weight=False</em>, <em class="sig-param">residual=True</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_embedding.GCN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multi-layer Graph Convolutional Networks (GCN).
+Support both <a class="reference external" href="https://arxiv.org/pdf/1609.02907">Unidirectional GCN</a> and bidirectional versions
+including <cite>GCN-BiSep</cite> and <cite>GCN-BiFuse</cite>.</p>
+<p>For the Unidirectional GCN,</p>
+<div class="math notranslate nohighlight">
+\[h_i^{(l+1)} = \sigma(b^{(l)} + \sum_{j\in\mathcal{N}(i)}\frac{1}{c_{ij}}h_j^{(l)}W^{(l)})\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathcal{N}(i)\)</span> is the set of neighbors of node <span class="math notranslate nohighlight">\(i\)</span>,
+<span class="math notranslate nohighlight">\(c_{ij}\)</span> is the product of the square root of node degrees
+(i.e.,  <span class="math notranslate nohighlight">\(c_{ij} = \sqrt{|\mathcal{N}(i)|}\sqrt{|\mathcal{N}(j)|}\)</span>),
+and <span class="math notranslate nohighlight">\(\sigma\)</span> is an activation function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_layers: int</strong></dt><dd><p>Number of GCN layers.</p>
+</dd>
+<dt><strong>input_size: int</strong></dt><dd><p>Input feature size of the first GCN layer.</p>
+</dd>
+<dt><strong>hidden_size: int</strong></dt><dd><p>Hidden size per GCN layer.</p>
+</dd>
+<dt><strong>output_size: int</strong></dt><dd><p>Output feature size of the final GCN layer.</p>
+</dd>
+<dt><strong>direction_option: str</strong></dt><dd><p>Whether to use unidirectional (i.e., regular) or bidirectional
+(i.e., “bi_sep” and “bi_fuse”) versions.
+Default : <code class="docutils literal notranslate"><span class="pre">'bi_sep'</span></code>.</p>
+</dd>
+<dt><strong>gcn_norm: str, optional</strong></dt><dd><p>How to apply the normalizer. If is <cite>‘right’</cite>, divide the aggregated messages
+by each node’s in-degrees, which is equivalent to averaging the received messages.
+If is <cite>‘none’</cite>, no normalization is applied. Default is <cite>‘both’</cite>,
+where the <span class="math notranslate nohighlight">\(c_{ij}\)</span> in the paper is applied.</p>
+</dd>
+<dt><strong>weight: bool, optional</strong></dt><dd><p>If True, apply a linear layer. Otherwise, aggregating the messages
+without a weight matrix.</p>
+</dd>
+<dt><strong>bias: bool, optional</strong></dt><dd><p>If True, adds a learnable bias to the output. Default: <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
+</dd>
+<dt><strong>activation: callable activation function/layer or None, optional</strong></dt><dd><p>If not None, applies an activation function to the updated node features.
+Default: <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</dd>
+<dt><strong>allow_zero_in_degree: bool, optional</strong></dt><dd></dd>
+<dt><strong>use_edge_weight: bool, optional</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_module</span></code>(name, module)</p></td>
+<td><p>Adds a child module to the current module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply</span></code>(fn)</p></td>
+<td><p>Applies <code class="docutils literal notranslate"><span class="pre">fn</span></code> recursively to every submodule (as returned by <code class="docutils literal notranslate"><span class="pre">.children()</span></code>) as well as self.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">bfloat16</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">buffers</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module buffers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cpu</span></code>()</p></td>
+<td><p>Moves all model parameters and buffers to the CPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the GPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">double</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">double</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">eval</span></code>()</p></td>
+<td><p>Sets the module in evaluation mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_repr</span></code>()</p></td>
+<td><p>Set the extra representation of the module</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">float</span></code> datatype.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_embedding.GCN.forward" title="graph4nlp.graph_embedding.GCN.forward"><code class="xref py py-obj docutils literal notranslate"><span class="pre">forward</span></code></a>(graph)</p></td>
+<td><p>Compute multi-layer graph convolutional networks.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_buffer</span></code>(target)</p></td>
+<td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
+<td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_submodule</span></code>(target)</p></td>
+<td><p>Returns the submodule given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
+<td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<td><p>Returns an iterator over all modules in the network.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<td><p>Returns an iterator over module parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<td><p>Adds a buffer to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<td><p>Registers a forward pre-hook on the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parameter</span></code>(name, param)</p></td>
+<td><p>Adds a parameter to the module.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">requires_grad_</span></code>([requires_grad])</p></td>
+<td><p>Change if autograd should record operations on parameters in this module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">share_memory</span></code>()</p></td>
+<td><p>See <code class="xref py py-meth docutils literal notranslate"><span class="pre">torch.Tensor.share_memory_()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<td><p>Returns a dictionary containing a whole state of the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
+<td><p>Moves and/or casts the parameters and buffers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_empty</span></code>(*, device)</p></td>
+<td><p>Moves the parameters and buffers to the specified device without copying storage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code>([mode])</p></td>
+<td><p>Sets the module in training mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">type</span></code>(dst_type)</p></td>
+<td><p>Casts all parameters and buffers to <code class="xref py py-attr docutils literal notranslate"><span class="pre">dst_type</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">xpu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the XPU.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_grad</span></code>([set_to_none])</p></td>
+<td><p>Sets gradients of all model parameters to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 55%" />
+<col style="width: 45%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>__call__</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.graph_embedding.GCN.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">graph</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_embedding.GCN.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute multi-layer graph convolutional networks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>graph</strong><span class="classifier">GraphData</span></dt><dd><p>The graph data containing topology and features.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>GraphData</dt><dd><p>The output graph data containing updated embeddings.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="prediction.html" class="btn btn-neutral float-right" title="graph4nlp.prediction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="graph_construction.html" class="btn btn-neutral float-left" title="graph4nlp.graph_construction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

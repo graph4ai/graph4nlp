@@ -1,18 +1,17 @@
 import os
 import pickle
 import re
+import warnings
 from collections import Counter
 from functools import lru_cache
-import warnings
-
 import numpy as np
-from nltk.tokenize import word_tokenize
 import torch
-from torchtext.vocab import Vectors, GloVe
+from nltk.tokenize import word_tokenize
+from torchtext.vocab import GloVe, Vectors
 
 from . import constants
 
-word_detector = re.compile('\w')
+word_detector = re.compile("\w")  # noqa
 
 
 class VocabModel(object):
@@ -33,13 +32,15 @@ class VocabModel(object):
         If it is set ``None``, we will randomly set the initial word embedding values.
     pretrained_word_emb_url: str optional, default: ``None``
         The url for downloading pretrained word embedding.
-        Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+        Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name``
+        as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
     target_pretrained_word_emb_name: str, optional, default=None
         The name of pretrained word embedding in ``torchtext`` for target language.
         If it is set ``None``, we will use ``pretrained_word_emb_name``.
     target_pretrained_word_emb_url: str optional, default: ``None``
         The url for downloading pretrained word embedding for target language.
-        Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+        Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name``
+        as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
     pretrained_word_emb_cache_dir: str, optional, default: ``".vector_cache/"``
         The path of directory saving the temporary word embedding file.
     word_emb_size: int, optional
@@ -66,82 +67,122 @@ class VocabModel(object):
     >>> print(vocab_model.word_vocab.get_vocab_size())
     """
 
-    def __init__(self, data_set=None,
-                 tokenizer=word_tokenize,
-                 lower_case=True,
-                 max_word_vocab_size=None,
-                 min_word_vocab_freq=1,
-                 pretrained_word_emb_name="840B",
-                 pretrained_word_emb_url=None,
-                 target_pretrained_word_emb_name=None,
-                 target_pretrained_word_emb_url=None,
-                 pretrained_word_emb_cache_dir=".vector_cache/",
-                #  pretrained_word_emb_file=None,
-                 word_emb_size=None,
-                 share_vocab=True):
+    def __init__(
+        self,
+        data_set=None,
+        tokenizer=word_tokenize,
+        lower_case=True,
+        max_word_vocab_size=None,
+        min_word_vocab_freq=1,
+        pretrained_word_emb_name="840B",
+        pretrained_word_emb_url=None,
+        target_pretrained_word_emb_name=None,
+        target_pretrained_word_emb_url=None,
+        pretrained_word_emb_cache_dir=".vector_cache/",
+        #  pretrained_word_emb_file=None,
+        word_emb_size=None,
+        share_vocab=True,
+    ):
         super(VocabModel, self).__init__()
         self.tokenizer = tokenizer
 
-        print('Building vocabs...')
-        all_words = VocabModel.collect_vocabs(data_set, self.tokenizer, lower_case=lower_case, share_vocab=share_vocab)
+        print("Building vocabs...")
+        all_words = VocabModel.collect_vocabs(
+            data_set, self.tokenizer, lower_case=lower_case, share_vocab=share_vocab
+        )
         # print('Number of words: {}'.format(len(all_words)))
         if share_vocab:
             in_all_words, out_all_words = all_words, None
             if pretrained_word_emb_name is not None and target_pretrained_word_emb_name is not None:
-                warnings.warn("Warning: share vocabulary for source and target language but use different pretrained word embeddings")
+                warnings.warn(
+                    "Warning: share vocabulary for source and target language but use different"
+                    "pretrained word embeddings"
+                )
         else:
             in_all_words, out_all_words = all_words
             if pretrained_word_emb_name is not None and target_pretrained_word_emb_name is None:
-                warnings.warn("Warning: use separate vocabularies for source and target language but same pretrained word embeddings")
+                warnings.warn(
+                    "Warning: use separate vocabularies for source and target language but same"
+                    "pretrained word embeddings"
+                )
 
         self.in_word_vocab = Vocab(lower_case=lower_case, tokenizer=self.tokenizer)
-        self.in_word_vocab.build_vocab(in_all_words, max_vocab_size=max_word_vocab_size, min_vocab_freq=min_word_vocab_freq)
+        self.in_word_vocab.build_vocab(
+            in_all_words, max_vocab_size=max_word_vocab_size, min_vocab_freq=min_word_vocab_freq
+        )
 
         if pretrained_word_emb_name is not None:
-            self.in_word_vocab.load_embeddings(pretrained_word_emb_name=pretrained_word_emb_name, pretrained_word_emb_url=pretrained_word_emb_url, 
-                                            pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir)
-            print('Using pretrained word embeddings')
+            self.in_word_vocab.load_embeddings(
+                pretrained_word_emb_name=pretrained_word_emb_name,
+                pretrained_word_emb_url=pretrained_word_emb_url,
+                pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
+                pretrained_word_emb_dim=word_emb_size,
+            )
+            print("Using pretrained word embeddings")
         else:
             self.in_word_vocab.randomize_embeddings(word_emb_size)
 
         if out_all_words is not None:
             self.out_word_vocab = Vocab(lower_case=lower_case, tokenizer=self.tokenizer)
-            self.out_word_vocab.build_vocab(out_all_words, max_vocab_size=max_word_vocab_size, min_vocab_freq=min_word_vocab_freq)
+            self.out_word_vocab.build_vocab(
+                out_all_words,
+                max_vocab_size=max_word_vocab_size,
+                min_vocab_freq=min_word_vocab_freq,
+            )
 
             if target_pretrained_word_emb_name is not None:
-                self.out_word_vocab.load_embeddings(pretrained_word_emb_name=target_pretrained_word_emb_name, pretrained_word_emb_url=target_pretrained_word_emb_url, 
-                                                pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir)
-                print('Using pretrained word embeddings')
+                self.out_word_vocab.load_embeddings(
+                    pretrained_word_emb_name=target_pretrained_word_emb_name,
+                    pretrained_word_emb_url=target_pretrained_word_emb_url,
+                    pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
+                    pretrained_word_emb_dim=word_emb_size,
+                )
+                print("Using pretrained word embeddings")
             elif pretrained_word_emb_name is not None:
-                self.out_word_vocab.load_embeddings(pretrained_word_emb_name=pretrained_word_emb_name, pretrained_word_emb_url=pretrained_word_emb_url, 
-                                                pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir)
-                print('Using pretrained word embeddings')
+                self.out_word_vocab.load_embeddings(
+                    pretrained_word_emb_name=pretrained_word_emb_name,
+                    pretrained_word_emb_url=pretrained_word_emb_url,
+                    pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
+                    pretrained_word_emb_dim=word_emb_size,
+                )
+                print("Using pretrained word embeddings")
             else:
                 self.out_word_vocab.randomize_embeddings(word_emb_size)
         else:
             self.out_word_vocab = self.in_word_vocab
 
         if share_vocab:
-            print('[ Initialized word embeddings: {} ]'.format(self.in_word_vocab.embeddings.shape))
+            print("[ Initialized word embeddings: {} ]".format(self.in_word_vocab.embeddings.shape))
         else:
-            print('[ Using separate word vocabs for input & output text ]')
-            print('[ Initialized input word embeddings: {} ]'.format(self.in_word_vocab.embeddings.shape))
-            print('[ Initialized output word embeddings: {} ]'.format(self.out_word_vocab.embeddings.shape))
+            print("[ Using separate word vocabs for input & output text ]")
+            print(
+                "[ Initialized input word embeddings: {} ]".format(
+                    self.in_word_vocab.embeddings.shape
+                )
+            )
+            print(
+                "[ Initialized output word embeddings: {} ]".format(
+                    self.out_word_vocab.embeddings.shape
+                )
+            )
 
     @classmethod
-    def build(cls, saved_vocab_file,
-              data_set=None,
-              tokenizer=word_tokenize,
-              lower_case=True,
-              max_word_vocab_size=None,
-              min_word_vocab_freq=1,
-              pretrained_word_emb_name="840B",
-              pretrained_word_emb_url=None,
-              target_pretrained_word_emb_name=None,
-              target_pretrained_word_emb_url=None,
-              pretrained_word_emb_cache_dir=".vector_cache/",
-              word_emb_size=None,
-              share_vocab=True):
+    def build(
+        cls,
+        saved_vocab_file,
+        data_set=None,
+        tokenizer=word_tokenize,
+        lower_case=True,
+        max_word_vocab_size=None,
+        min_word_vocab_freq=1,
+        pretrained_word_emb_name="840B",
+        pretrained_word_emb_url=None,
+        target_pretrained_word_emb_name=None,
+        target_pretrained_word_emb_url=None,
+        pretrained_word_emb_cache_dir=".vector_cache/",
+        word_emb_size=None,
+        share_vocab=True,
+    ):
         """Static method for loading a VocabModel from disk.
 
         Parameters:
@@ -161,13 +202,15 @@ class VocabModel(object):
             If it is set ``None``, we will randomly set the initial word embedding values.
         pretrained_word_emb_url: str optional, default: ``None``
             The url for downloading pretrained word embedding.
-            Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+            Note that we only prepare the default ``url`` for English with
+            ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
         target_pretrained_word_emb_name: str, optional, default=None
             The name of pretrained word embedding in ``torchtext`` for target language.
             If it is set ``None``, we will use ``pretrained_word_emb_name``.
         target_pretrained_word_emb_url: str optional, default: ``None``
             The url for downloading pretrained word embedding for target language.
-            Note that we only prepare the default ``url`` for English with ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
+            Note that we only prepare the default ``url`` for English with
+            ``pretrained_word_emb_name`` as ``"42B"``, ``"840B"``, 'twitter.27B' and '6B'.
         pretrained_word_emb_cache_dir: str, optional, default: ``".vector_cache/"``
             The path of directory saving the temporary word embedding file.
         word_emb_size: int, optional
@@ -181,24 +224,27 @@ class VocabModel(object):
             Loaded Vocabulary.
         """
         if os.path.exists(saved_vocab_file):
-            print('Loading pre-built vocab model stored in {}'.format(saved_vocab_file))
-            with open(saved_vocab_file, 'rb') as f:
+            print("Loading pre-built vocab model stored in {}".format(saved_vocab_file))
+            with open(saved_vocab_file, "rb") as f:
                 vocab_model = pickle.load(f)
 
         else:
-            vocab_model = cls(data_set=data_set, tokenizer=tokenizer,
-                              max_word_vocab_size=max_word_vocab_size,
-                              min_word_vocab_freq=min_word_vocab_freq,
-                              pretrained_word_emb_name=pretrained_word_emb_name,
-                              pretrained_word_emb_url=pretrained_word_emb_url,
-                              pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
-                              target_pretrained_word_emb_name=target_pretrained_word_emb_name,
-                              target_pretrained_word_emb_url=target_pretrained_word_emb_url,
-                              word_emb_size=word_emb_size,
-                              lower_case=lower_case,
-                              share_vocab=share_vocab)
-            print('Saving vocab model to {}'.format(saved_vocab_file))
-            pickle.dump(vocab_model, open(saved_vocab_file, 'wb'))
+            vocab_model = cls(
+                data_set=data_set,
+                tokenizer=tokenizer,
+                max_word_vocab_size=max_word_vocab_size,
+                min_word_vocab_freq=min_word_vocab_freq,
+                pretrained_word_emb_name=pretrained_word_emb_name,
+                pretrained_word_emb_url=pretrained_word_emb_url,
+                pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
+                target_pretrained_word_emb_name=target_pretrained_word_emb_name,
+                target_pretrained_word_emb_url=target_pretrained_word_emb_url,
+                word_emb_size=word_emb_size,
+                lower_case=lower_case,
+                share_vocab=share_vocab,
+            )
+            print("Saving vocab model to {}".format(saved_vocab_file))
+            pickle.dump(vocab_model, open(saved_vocab_file, "wb"))
 
         return vocab_model
 
@@ -222,11 +268,17 @@ class VocabModel(object):
 
 
 class WordEmbModel(Vectors):
-    def __init__(self, pretrained_word_emb_name="840B", pretrained_word_emb_url=None, pretrained_word_emb_cache_dir=".vector_cache/"):
-        
+    def __init__(
+        self,
+        pretrained_word_emb_name="840B",
+        pretrained_word_emb_url=None,
+        pretrained_word_emb_cache_dir=".vector_cache/",
+        pretrained_word_emb_dim=300,
+    ):
+
         if pretrained_word_emb_name in GloVe.url.keys() and pretrained_word_emb_url is None:
             url = GloVe.url[pretrained_word_emb_name]
-            name = 'glove.{}.{}d.txt'.format(pretrained_word_emb_name, str(300))
+            name = "glove.{}.{}d.txt".format(pretrained_word_emb_name, str(pretrained_word_emb_dim))
         else:
             url = pretrained_word_emb_url
             name = pretrained_word_emb_name
@@ -236,8 +288,14 @@ class WordEmbModel(Vectors):
         if token in self.stoi:
             return self.vectors[self.stoi[token]], True
         else:
-            return torch.Tensor(np.array(np.random.uniform(low=-0.08, high=0.08, size=(self.dim)),
-                                               dtype=np.float)), False
+            return (
+                torch.Tensor(
+                    np.array(
+                        np.random.uniform(low=-0.08, high=0.08, size=(self.dim)), dtype=np.float
+                    )
+                ),
+                False,
+            )
 
     def get_vecs_by_tokens(self, tokens, lower_case_backup=False):
         """Look up embedding vectors of tokens.
@@ -283,6 +341,7 @@ class WordEmbModel(Vectors):
         vecs = torch.stack(indices)
         return vecs[0] if to_reduce else vecs, hit, cnt
 
+
 class Vocab(object):
     """Vocab class.
 
@@ -299,6 +358,7 @@ class Vocab(object):
     >>> word_vocab.build_vocab({'i': 10, 'like': 5, 'nlp': 3})
     >>> print(word_vocab.get_vocab_size())
     """
+
     PAD = 0
     SOS = 1
     EOS = 2
@@ -307,6 +367,7 @@ class Vocab(object):
     sos_token = constants._SOS_TOKEN
     eos_token = constants._EOS_TOKEN
     unk_token = constants._UNK_TOKEN
+
     def __init__(self, lower_case=True, tokenizer=word_tokenize):
         super(Vocab, self).__init__()
         self.lower_case = lower_case
@@ -346,7 +407,9 @@ class Vocab(object):
 
     def _trim(self, max_vocab_size=None, min_vocab_freq=1):
         """Trim vocab"""
-        if min_vocab_freq <= 1 and (max_vocab_size is None or max_vocab_size >= len(self.word2index)):
+        if min_vocab_freq <= 1 and (
+            max_vocab_size is None or max_vocab_size >= len(self.word2index)
+        ):
             return
 
         ordered_words = sorted(((c, w) for (w, c) in self.word2count.items()), reverse=True)
@@ -359,7 +422,8 @@ class Vocab(object):
         self.word2count = Counter()
 
         for count, word in ordered_words:
-            if count < min_vocab_freq: break
+            if count < min_vocab_freq:
+                break
             if word not in self.word2index:
                 self.word2index[word] = len(self.index2word)
                 self.word2count[word] = count
@@ -367,17 +431,29 @@ class Vocab(object):
 
         assert len(self.word2index) == len(self.index2word)
 
-    def load_embeddings(self, pretrained_word_emb_name="840B", pretrained_word_emb_url=None, pretrained_word_emb_cache_dir=".vector_cache/", dtype=np.float32):
+    def load_embeddings(
+        self,
+        pretrained_word_emb_name="840B",
+        pretrained_word_emb_url=None,
+        pretrained_word_emb_cache_dir=".vector_cache/",
+        pretrained_word_emb_dim=300,
+        dtype=np.float32,
+    ):
         """Load pretrained word embeddings for initialization"""
-        word_model = WordEmbModel(pretrained_word_emb_name=pretrained_word_emb_name, 
-                                pretrained_word_emb_url=pretrained_word_emb_url, 
-                                pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir)
+        word_model = WordEmbModel(
+            pretrained_word_emb_name=pretrained_word_emb_name,
+            pretrained_word_emb_url=pretrained_word_emb_url,
+            pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
+            pretrained_word_emb_dim=pretrained_word_emb_dim,
+        )
 
         word_list = list(self.word2index.keys())
 
-        word_emb, hit, cnt = word_model.get_vecs_by_tokens(tokens=word_list, lower_case_backup=self.lower_case)
-        
-        print('Pretrained word embeddings hit ratio: {}'.format(hit / cnt))
+        word_emb, hit, cnt = word_model.get_vecs_by_tokens(
+            tokens=word_list, lower_case_backup=self.lower_case
+        )
+
+        print("Pretrained word embeddings hit ratio: {}".format(hit / cnt))
         self.embeddings = word_emb.numpy()
         self.embeddings[self.PAD] = np.zeros(word_model.dim)
 
@@ -385,7 +461,9 @@ class Vocab(object):
         """Use random word embeddings for initialization."""
         vocab_size = self.get_vocab_size()
         shape = (vocab_size, n_dims)
-        self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=shape), dtype=np.float32)
+        self.embeddings = np.array(
+            np.random.uniform(low=-scale, high=scale, size=shape), dtype=np.float32
+        )
         self.embeddings[self.PAD] = np.zeros(n_dims)
 
     def __getitem__(self, item):
@@ -399,10 +477,12 @@ class Vocab(object):
     @lru_cache(maxsize=None)
     def is_word(self, token_id: int) -> bool:
         """Return whether the token at `token_id` is a word; False for punctuations."""
-        if token_id < 4: return False
-        if token_id >= len(self): return True  # OOV is assumed to be words
+        if token_id < 4:
+            return False
+        if token_id >= len(self):
+            return True  # OOV is assumed to be words
         token_str = self.index2word[token_id]
-        if not word_detector.search(token_str) or token_str == '<P>':
+        if not word_detector.search(token_str) or token_str == "<P>":
             return False
         return True
 
@@ -417,8 +497,8 @@ class Vocab(object):
                 word = word.lower()
 
             ret = []
-            for x in word.replace('_',' ').split(' '):
-                if x == '':
+            for x in word.replace("_", " ").split(" "):
+                if x == "":
                     continue
                 ret.append(self.word2index.get(x, self.UNK))
 
@@ -437,7 +517,7 @@ class Vocab(object):
         for idx in seq:
             word = self.getWord(idx)
             sentence.append(word)
-        return ' '.join(sentence)
+        return " ".join(sentence)
 
     def to_index_sequence(self, sentence):
         sentence = sentence.strip()

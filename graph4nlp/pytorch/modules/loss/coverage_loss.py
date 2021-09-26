@@ -1,5 +1,6 @@
-from .base import GeneralLossBase
 import torch
+
+from .base import GeneralLossBase
 
 
 class CoverageLoss(GeneralLossBase):
@@ -10,6 +11,7 @@ class CoverageLoss(GeneralLossBase):
     cover_loss: float
         The weight for coverage loss.
     """
+
     def __init__(self, cover_loss):
         super(CoverageLoss, self).__init__()
         self.cover_loss = cover_loss
@@ -34,7 +36,10 @@ class CoverageLoss(GeneralLossBase):
         loss = 0
         for i in range(target_length):
             if coverage_vectors[i] is not None:
-                coverage_loss = torch.sum(
-                    torch.min(coverage_vectors[i], enc_attn_weights[i])) / coverage_vectors[-1].shape[0] * self.cover_loss
+                coverage_loss = (
+                    torch.sum(torch.min(coverage_vectors[i], enc_attn_weights[i]))
+                    / coverage_vectors[-1].shape[0]
+                    * self.cover_loss
+                )
                 loss += coverage_loss
         return loss / target_length

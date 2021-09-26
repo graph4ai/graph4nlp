@@ -1,17 +1,16 @@
-from os.path import join
-
+import json
 import os
 import shutil
-import json
 import zipfile
+from os.path import join
 import numpy as np
-
-from spodernet.preprocessing.vocab import Vocab
-from spodernet.utils.util import Timer
-from spodernet.preprocessing.processors import SaveLengthsToState
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from spodernet.preprocessing.processors import SaveLengthsToState
+from spodernet.preprocessing.vocab import Vocab
 from spodernet.utils.logger import Logger
+from spodernet.utils.util import Timer
+
 log = Logger('pipeline.py.txt')
 
 t = Timer()

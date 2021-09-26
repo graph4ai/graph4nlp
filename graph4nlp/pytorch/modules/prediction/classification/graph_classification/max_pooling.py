@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
-import dgl
 
-from ..base import PoolingBase
 from .....data.data import from_batch
+from ..base import PoolingBase
 
 
 class MaxPooling(PoolingBase):
@@ -12,6 +11,7 @@ class MaxPooling(PoolingBase):
     .. math::
         r^{(i)} = \max_{k=1}^{N_i}\left( x^{(i)}_k \right)
     """
+
     def __init__(self, dim=None, use_linear_proj=False):
         super(MaxPooling, self).__init__()
         if use_linear_proj:

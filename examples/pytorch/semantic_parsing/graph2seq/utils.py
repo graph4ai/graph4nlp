@@ -1,6 +1,8 @@
+import logging
+import torch
 import torchtext.vocab as vocab
+
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-import torch, logging
 
 
 def get_log(log_file):
@@ -17,14 +19,12 @@ def get_log(log_file):
     logger.addHandler(fh)
     return logger
 
-def get_glove_weights(vocabulary: Vocab, dim=300):
-    print(vocabulary.index2word)
 
-    glove = vocab.GloVe(name='6B', dim=dim)
+def get_glove_weights(vocabulary: Vocab, dim=300):
+    glove = vocab.GloVe(name="6B", dim=dim)
     vocab_size = vocabulary.get_vocab_size()
     weight = torch.randn(vocab_size, dim)
     for i, word in enumerate(vocabulary.index2word):
-        glove_index = glove.stoi.get(word)
         glove_rep = glove.get_vecs_by_tokens(word)
         weight[i, :] = glove_rep
     return weight

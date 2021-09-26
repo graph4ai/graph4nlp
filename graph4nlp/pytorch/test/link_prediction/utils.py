@@ -1,38 +1,35 @@
 import pickle as pkl
-
 import networkx as nx
 import numpy as np
 import scipy.sparse as sp
 import torch
-from sklearn.metrics import roc_auc_score, average_precision_score
+from sklearn.metrics import average_precision_score, roc_auc_score
 
 
 def load_data(dataset):
     # load the data: x, tx, allx, graph
-    names = ['x', 'tx', 'allx', 'graph']
+    names = ["x", "tx", "allx", "graph"]
     objects = []
     for i in range(len(names)):
-        '''
+        """
         fix Pickle incompatibility of numpy arrays between Python 2 and 3
-        https://stackoverflow.com/questions/11305790/pickle-incompatibility-of-numpy-arrays-between-python-2-and-3
-        '''
-        with open("data/ind.{}.{}".format(dataset, names[i]), 'rb') as rf:
+        https://stackoverflow.com/questions/11305790/pickle-incompatibility-of-numpy-arrays-between-python-2-and-3  # noqa
+        """
+        with open("data/ind.{}.{}".format(dataset, names[i]), "rb") as rf:
             u = pkl._Unpickler(rf)
-            u.encoding = 'latin1'
+            u.encoding = "latin1"
             cur_data = u.load()
             objects.append(cur_data)
         # objects.append(
         #     pkl.load(open("data/ind.{}.{}".format(dataset, names[i]), 'rb')))
     x, tx, allx, graph = tuple(objects)
-    test_idx_reorder = parse_index_file(
-        "data/ind.{}.test.index".format(dataset))
+    test_idx_reorder = parse_index_file("data/ind.{}.test.index".format(dataset))
     test_idx_range = np.sort(test_idx_reorder)
 
-    if dataset == 'citeseer':
+    if dataset == "citeseer":
         # Fix citeseer dataset (there are some isolated nodes in the graph)
         # Find isolated nodes, add them as zero-vecs into the right position
-        test_idx_range_full = range(
-            min(test_idx_reorder), max(test_idx_reorder) + 1)
+        test_idx_range_full = range(min(test_idx_reorder), max(test_idx_reorder) + 1)
         tx_extended = sp.lil_matrix((len(test_idx_range_full), x.shape[1]))
         tx_extended[test_idx_range - min(test_idx_range), :] = tx
         tx = tx_extended
@@ -63,7 +60,8 @@ def sparse_to_tuple(sparse_mx):
 
 def mask_test_edges(adj):
     # Function to build test set with 10% positive links
-    # NOTE: Splits are randomized and results might slightly deviate from reported numbers in the paper.
+    # NOTE: Splits are randomized and results might slightly deviate from reported numbers
+    # in the paper.
     # TODO: Clean up.
 
     # Remove diagonal elements
@@ -76,13 +74,13 @@ def mask_test_edges(adj):
     adj_tuple = sparse_to_tuple(adj_triu)
     edges = adj_tuple[0]
     edges_all = sparse_to_tuple(adj)[0]
-    num_test = int(np.floor(edges.shape[0] / 10.))
-    num_val = int(np.floor(edges.shape[0] / 20.))
+    num_test = int(np.floor(edges.shape[0] / 10.0))
+    num_val = int(np.floor(edges.shape[0] / 20.0))
 
     all_edge_idx = list(range(edges.shape[0]))
     np.random.shuffle(all_edge_idx)
     val_edge_idx = all_edge_idx[:num_val]
-    test_edge_idx = all_edge_idx[num_val:(num_val + num_test)]
+    test_edge_idx = all_edge_idx[num_val : (num_val + num_test)]
     test_edges = edges[test_edge_idx]
     val_edges = edges[val_edge_idx]
     train_edges = np.delete(edges, np.hstack([test_edge_idx, val_edge_idx]), axis=0)
@@ -156,8 +154,7 @@ def preprocess_graph(adj):
 def sparse_mx_to_torch_sparse_tensor(sparse_mx):
     """Convert a scipy sparse matrix to a torch sparse tensor."""
     sparse_mx = sparse_mx.tocoo().astype(np.float32)
-    indices = torch.from_numpy(
-        np.vstack((sparse_mx.row, sparse_mx.col)).astype(np.int64))
+    indices = torch.from_numpy(np.vstack((sparse_mx.row, sparse_mx.col)).astype(np.int64))
     values = torch.from_numpy(sparse_mx.data)
     shape = torch.Size(sparse_mx.shape)
     return torch.sparse.FloatTensor(indices, values, shape)
@@ -187,6 +184,7 @@ def sparse_mx_to_torch_sparse_tensor(sparse_mx):
 def get_roc_score(adj_rec, adj_orig, edges_pos, edges_neg):
     def sigmoid(x):
         return 1 / (1 + np.exp(-x))
+
     # Predict on test set of edges
 
     preds = []

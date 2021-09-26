@@ -1,0 +1,28 @@
+name: "Build and Deploy Documentation"
+on: 
+  push:
+    branches:
+     - "develop"
+  # pull_request:
+  #   branches:
+  #    - "develop"
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository_owner == 'graph4ai'}}
+    steps:
+    - name: Build
+      uses: actions/checkout@v2
+    - name: Build Docs
+      uses: ammaraskar/sphinx-action@master
+      with:
+        docs-folder: "docs/"
+        pre-build-command: "pip install sphinx_rtd_theme && pip install torchtext && pip install numpydoc && pip install graph4nlp"
+        build-command: "make html"
+    - name: Deploy GH page
+      uses: JamesIves/github-pages-deploy-action@3.4.2
+      with:
+        ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        branch: "develop"
+        FOLDER: docs/build/html
+        TARGET_FOLDER: docs/

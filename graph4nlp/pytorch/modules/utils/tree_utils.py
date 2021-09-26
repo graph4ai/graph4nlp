@@ -1,11 +1,8 @@
 from operator import itemgetter
-import pickle as pkl
-import torch
-from random import randint
 import numpy as np
-import copy
-from graph4nlp.pytorch.data.data import to_batch
-class Tree():
+
+
+class Tree:
     def __init__(self):
         self.parent = None
         self.num_children = 0
@@ -15,9 +12,9 @@ class Tree():
         ret = ""
         for child in self.children:
             if isinstance(child, type(self)):
-                ret += child.__str__(level+1)
+                ret += child.__str__(level + 1)
             else:
-                ret += "\t"*level + str(child) + "\n"
+                ret += "\t" * level + str(child) + "\n"
         return ret
 
     def add_child(self, c):
@@ -32,7 +29,7 @@ class Tree():
             if isinstance(self.children[i], Tree):
                 r_list.append("( " + self.children[i].to_string() + " )")
             else:
-                r_list.append(" "+str(self.children[i])+" ")
+                r_list.append(" " + str(self.children[i]) + " ")
         return "".join(r_list)
 
     def to_text(self, form_manager):
@@ -41,7 +38,7 @@ class Tree():
             if isinstance(self.children[i], Tree):
                 r_list.append("( " + self.children[i].to_text(form_manager) + " )")
             else:
-                r_list.append(" "+form_manager.get_idx_symbol(self.children[i])+" ")
+                r_list.append(" " + form_manager.get_idx_symbol(self.children[i]) + " ")
         return "".join(r_list)
 
     def to_list(self, tgt_vocab):
@@ -63,8 +60,7 @@ class Tree():
         head = 0
         while head < len(q):
             t = q[head]
-            exchangeable_symbol_idx_list = tgt_vocab.get_symbol_idx_for_list(
-                ['and', 'or'])
+            exchangeable_symbol_idx_list = tgt_vocab.get_symbol_idx_for_list(["and", "or"])
             if len(t.children) > 0 and (t.children[0] in exchangeable_symbol_idx_list):
                 k = []
                 for i in range(1, len(t.children)):
@@ -77,9 +73,8 @@ class Tree():
                 for key1 in k:
                     sorted_t_dict.append(t.children[key1[1]])
 
-                for i in range(t.num_children-1):
-                    t.children[i+1] = \
-                        sorted_t_dict[i]
+                for i in range(t.num_children - 1):
+                    t.children[i + 1] = sorted_t_dict[i]
             for i in range(len(t.children)):
                 if isinstance(t.children[i], Tree):
                     q.append(t.children[i])
@@ -101,7 +96,7 @@ class Tree():
                     else:
                         k[str(t.children[i]).strip()] = i
                 cnt_deleted = 0
-                for index in (list(range(len(t.children)))):
+                for index in list(range(len(t.children))):
                     if index not in ([item[1] for item in k.items()]):
                         t.children.pop(index - cnt_deleted)
                         t.num_children = t.num_children - 1
@@ -119,44 +114,54 @@ class Tree():
         level = 0
         left = -1
         for i in range(i_left, i_right):
-            if r_list[i] == tgt_vocab.get_symbol_idx('('):
+            if r_list[i] == tgt_vocab.get_symbol_idx("("):
                 if level == 0:
                     left = i
                 level = level + 1
-            elif r_list[i] == tgt_vocab.get_symbol_idx(')'):
+            elif r_list[i] == tgt_vocab.get_symbol_idx(")"):
                 level = level - 1
                 if level == 0:
-                    if i == left+1:
+                    if i == left + 1:
                         c = r_list[i]
                     else:
-                        c = Tree.convert_to_tree(
-                            r_list, left + 1, i, tgt_vocab)
+                        c = Tree.convert_to_tree(r_list, left + 1, i, tgt_vocab)
                     t.add_child(c)
             elif level == 0:
                 t.add_child(r_list[i])
         return t
 
-class VocabForAll():
+
+class VocabForAll:
     def __init__(self, in_word_vocab, out_word_vocab, share_vocab):
         self.in_word_vocab = in_word_vocab
         self.out_word_vocab = out_word_vocab
         self.share_vocab = share_vocab
 
-class Vocab():
-    def __init__(self, lower_case=True, 
-                       pretrained_word_emb_name=None, 
-                       pretrained_word_emb_url=None, 
-                       pretrained_word_emb_cache_dir=None,  
-                       embedding_dims=300):
+    def get_vocab_size(self):
+        if hasattr(self, "share_vocab"):
+            return self.share_vocab.vocab_size
+        else:
+            return self.in_word_vocab.vocab_size + self.out_word_vocab.vocab_size
+
+
+class Vocab:
+    def __init__(
+        self,
+        lower_case=True,
+        pretrained_word_emb_name=None,
+        pretrained_word_emb_url=None,
+        pretrained_word_emb_cache_dir=None,
+        embedding_dims=300,
+    ):
         self.symbol2idx = {}
         self.idx2symbol = {}
         self.vocab_size = 0
 
-        self.pad_token = '<PAD>'
-        self.start_token = '<START>'
-        self.end_token = '<END>'
-        self.unk_token = '<UNK>'
-        self.non_terminal_token = '<NON-TERMINAL>'
+        self.pad_token = "<PAD>"
+        self.start_token = "<START>"
+        self.end_token = "<END>"
+        self.unk_token = "<UNK>"
+        self.non_terminal_token = "<NON-TERMINAL>"
 
         self.add_symbol(self.pad_token)
         self.add_symbol(self.start_token)
@@ -194,19 +199,21 @@ class Vocab():
         print("loading vocabulary file: {}".format(fn))
         with open(fn, "r") as f:
             for line in f:
-                l_list = line.strip().split('\t')
+                l_list = line.strip().split("\t")
                 c = int(l_list[1])
                 if c >= min_freq:
                     self.add_symbol(l_list[0])
                 if self.vocab_size > max_vocab_size:
                     break
-        if self.pretrained_word_emb_name == 'None' or self.pretrained_word_emb_name is None:
+        if self.pretrained_word_emb_name == "None" or self.pretrained_word_emb_name is None:
             self.randomize_embeddings(self.embedding_dims)
         else:
             # print("loadding pretrained embedding file in {}".format(self.pretrained_embedding_fn))
-            self.load_embeddings(pretrained_word_emb_name=self.pretrained_word_emb_name, 
-                                 pretrained_word_emb_url=self.pretrained_word_emb_url, 
-                                 pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir)
+            self.load_embeddings(
+                pretrained_word_emb_name=self.pretrained_word_emb_name,
+                pretrained_word_emb_url=self.pretrained_word_emb_url,
+                pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
+            )
 
     def init_from_list(self, arr, min_freq=1, max_vocab_size=100000):
         for word_, c_ in arr:
@@ -214,13 +221,15 @@ class Vocab():
                 self.add_symbol(word_)
             if self.vocab_size > max_vocab_size:
                 break
-        if self.pretrained_word_emb_name == 'None' or self.pretrained_word_emb_name is None:
+        if self.pretrained_word_emb_name == "None" or self.pretrained_word_emb_name is None:
             self.randomize_embeddings(self.embedding_dims)
         else:
             # print("loadding pretrained embedding file in {}".format(self.pretrained_embedding_fn))
-            self.load_embeddings(pretrained_word_emb_name=self.pretrained_word_emb_name, 
-                                 pretrained_word_emb_url=self.pretrained_word_emb_url, 
-                                 pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir)
+            self.load_embeddings(
+                pretrained_word_emb_name=self.pretrained_word_emb_name,
+                pretrained_word_emb_url=self.pretrained_word_emb_url,
+                pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
+            )
 
     def get_symbol_idx_for_list(self, l):
         r = []
@@ -235,20 +244,28 @@ class Vocab():
             r.append(self.get_idx_symbol(l[i]))
         return r
 
-    def load_embeddings(self, pretrained_word_emb_name="840B", 
-                              pretrained_word_emb_url=None, 
-                              pretrained_word_emb_cache_dir=".vector_cache/", 
-                              dtype=np.float32):
+    def load_embeddings(
+        self,
+        pretrained_word_emb_name="840B",
+        pretrained_word_emb_url=None,
+        pretrained_word_emb_cache_dir=".vector_cache/",
+        dtype=np.float32,
+    ):
         """Load pretrained word embeddings for initialization"""
         from .vocab_utils import WordEmbModel
-        word_model = WordEmbModel(pretrained_word_emb_name=pretrained_word_emb_name, 
-                                pretrained_word_emb_url=pretrained_word_emb_url, 
-                                pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir)
+
+        word_model = WordEmbModel(
+            pretrained_word_emb_name=pretrained_word_emb_name,
+            pretrained_word_emb_url=pretrained_word_emb_url,
+            pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
+        )
 
         word_list = list(self.symbol2idx.keys())
 
-        word_emb, hit, cnt = word_model.get_vecs_by_tokens(tokens=word_list, lower_case_backup=self.lower_case)
-        
+        word_emb, hit, cnt = word_model.get_vecs_by_tokens(
+            tokens=word_list, lower_case_backup=self.lower_case
+        )
+
         self.embeddings = word_emb.numpy()
         self.embeddings[self.get_symbol_idx(self.pad_token)] = np.zeros(word_model.dim)
 
@@ -256,7 +273,9 @@ class Vocab():
         """Use random word embeddings for initialization."""
         vocab_size = self.vocab_size
         shape = (vocab_size, n_dims)
-        self.embeddings = np.array(np.random.uniform(low=-scale, high=scale, size=shape), dtype=np.float32)
+        self.embeddings = np.array(
+            np.random.uniform(low=-scale, high=scale, size=shape), dtype=np.float32
+        )
         self.embeddings[self.get_symbol_idx(self.pad_token)] = np.zeros(n_dims)
 
     def __getitem__(self, item):
@@ -266,6 +285,7 @@ class Vocab():
 
     def __len__(self):
         return self.vocab_size
+
 
 def to_cuda(x, device=None):
     if device:

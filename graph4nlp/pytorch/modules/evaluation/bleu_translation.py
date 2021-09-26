@@ -1,5 +1,6 @@
-from .base import EvaluationMetricBase
 import sacrebleu
+
+from .base import EvaluationMetricBase
 
 
 class BLEUTranslation(EvaluationMetricBase):
@@ -8,7 +9,8 @@ class BLEUTranslation(EvaluationMetricBase):
 
     def calculate_scores(self, ground_truth, predict):
         """
-            The standard BLEU calculation function for translation. It will compute the BLEU scores using sacrebleu tools.
+            The standard BLEU calculation function for translation. It will compute the BLEU \
+                scores using sacrebleu tools.
         Parameters
         ----------
         ground_truth: list[string]

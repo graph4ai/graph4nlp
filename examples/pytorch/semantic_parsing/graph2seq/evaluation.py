@@ -10,6 +10,5 @@ class ExpressionAccuracy(EvaluationMetricBase):
         assert len(ground_truth) == len(predict)
         for gt, pred in zip(ground_truth, predict):
             if gt == pred:
-                correct += 1.
+                correct += 1.0
         return correct / len(ground_truth)
-

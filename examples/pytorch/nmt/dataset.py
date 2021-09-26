@@ -1,45 +1,46 @@
-from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-import torch
-import os
-import json
-from stanfordcorenlp import StanfordCoreNLP
 import pickle
-import re
 import nltk
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
+import torch
 
+from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
+from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 
 
 class IWSLT14Dataset(Text2TextDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
-        return {'train': 'train.pkl', 'val': "val.pkl", 'test': 'test.pkl'}
+        if self.for_inference:
+            return {"test": "test.pkl"}
+        else:
+            return {"train": "train.pkl", "val": "val.pkl", "test": "test.pkl"}
 
     @property
     def processed_file_names(self):
         """At least 3 reserved keys should be fiiled: 'vocab', 'data' and 'split_ids'."""
-        return {'vocab': 'vocab.pt', 'data': 'data.pt'}
+        return {"vocab": "vocab.pt", "data": "data.pt"}
 
     def download(self):
-        # raise NotImplementedError(
-        #     'This dataset is now under test and cannot be downloaded. Please prepare the raw data yourself.')
-        return
-    
+        raise NotImplementedError(
+            "This dataset is now under test and cannot be downloaded. "
+            "Please prepare the raw data yourself."
+        )
+
     def parse_file(self, file_path) -> list:
         """
-        Read and parse the file specified by `file_path`. The file format is specified by each individual task-specific
+        Read and parse the file specified by `file_path`.
+        The file format is specified by each individual task-specific
         base class. Returns all the indices of data items in this file w.r.t. the whole dataset.
 
-        For Text2TextDataset, the format of the input file should contain lines of input, each line representing one
-        record of data. The input and output is separated by a tab(\t).
+        For Text2TextDataset, the format of the input file should contain lines of input,
+        each line representing one record of data. The input and output is separated by a tab(\t).
 
         Examples
         --------
         input: list job use languageid0 job ( ANS ) , language ( ANS , languageid0 )
 
-        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) , language ( ANS , languageid0 )"
+        DataItem: input_text="list job use languageid0", output_text="job ( ANS ) ,
+        language ( ANS , languageid0 )"
 
         Parameters
         ----------
@@ -52,7 +53,7 @@ class IWSLT14Dataset(Text2TextDataset):
             The indices of data items in the file w.r.t. the whole dataset.
         """
         data = []
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             lines = pickle.load(f)
         for line in lines:
             input, output = line
@@ -62,30 +63,40 @@ class IWSLT14Dataset(Text2TextDataset):
             output_len = len(output.split())
             if input_len > 50 or output_len > 50:
                 continue
-            data_item = Text2TextDataItem(input_text=input, output_text=output, tokenizer=self.tokenizer,
-                                            share_vocab=self.share_vocab)
+            data_item = Text2TextDataItem(
+                input_text=input,
+                output_text=output,
+                tokenizer=self.tokenizer,
+                share_vocab=self.share_vocab,
+            )
             data.append(data_item)
         return data
 
-    
-
-    def __init__(self, root_dir,
-                 topology_builder, topology_subdir,
-                 tokenizer=nltk.RegexpTokenizer(" ", gaps=True).tokenize,
-                 pretrained_word_emb_name=None,
-                 pretrained_word_emb_url=None,
-                 target_pretrained_word_emb_name=None,
-                 target_pretrained_word_emb_url=None,
-                 pretrained_word_emb_cache_dir=".vector_cache/",
-                 val_split_ratio=None,
-                 use_val_for_vocab=False,
-                 graph_type='static',
-                 merge_strategy="tailhead", edge_strategy=None,
-                 seed=None,
-                 word_emb_size=300, share_vocab=False,
-                 dynamic_graph_type=None,
-                 dynamic_init_topology_builder=None,
-                 dynamic_init_topology_aux_args=None):
+    def __init__(
+        self,
+        root_dir,
+        topology_builder,
+        topology_subdir,
+        tokenizer=nltk.RegexpTokenizer(" ", gaps=True).tokenize,
+        pretrained_word_emb_name=None,
+        pretrained_word_emb_url=None,
+        target_pretrained_word_emb_name=None,
+        target_pretrained_word_emb_url=None,
+        pretrained_word_emb_cache_dir=".vector_cache/",
+        val_split_ratio=None,
+        use_val_for_vocab=False,
+        graph_type="static",
+        merge_strategy="tailhead",
+        edge_strategy=None,
+        seed=None,
+        word_emb_size=300,
+        share_vocab=False,
+        dynamic_graph_type=None,
+        dynamic_init_topology_builder=None,
+        dynamic_init_topology_aux_args=None,
+        for_inference=False,
+        reused_vocab_model=None,
+    ):
         """
 
         Parameters
@@ -99,7 +110,8 @@ class IWSLT14Dataset(Text2TextDataset):
         graph_type: str, default='static'
             The graph type. Expected in ('static', 'dynamic')
         edge_strategy: str, default=None
-            The edge strategy. Expected in (None, 'homogeneous', 'as_node'). If set `None`, it will be 'homogeneous'.
+            The edge strategy. Expected in (None, 'homogeneous', 'as_node').
+            If set `None`, it will be 'homogeneous'.
         merge_strategy: str, default=None
             The strategy to merge sub-graphs. Expected in (None, 'tailhead', 'user_define').
             If set `None`, it will be 'tailhead'.
@@ -112,27 +124,38 @@ class IWSLT14Dataset(Text2TextDataset):
             The initial graph topology. It is only available when `graph_type` is set 'dynamic'.
             Expected in (None, 'dependency', 'constituency')
         """
-        # Initialize the dataset. If the preprocessed files are not found, then do the preprocessing and save them.
-        super(IWSLT14Dataset, self).__init__(root_dir=root_dir, topology_builder=topology_builder,
-                                            topology_subdir=topology_subdir, graph_type=graph_type,
-                                            edge_strategy=edge_strategy, merge_strategy=merge_strategy,
-                                            share_vocab=share_vocab,
-                                            pretrained_word_emb_name=pretrained_word_emb_name,
-                                            pretrained_word_emb_url=pretrained_word_emb_url,
-                                            target_pretrained_word_emb_name=target_pretrained_word_emb_name,
-                                            target_pretrained_word_emb_url=target_pretrained_word_emb_url,
-                                            pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
-                                            val_split_ratio=val_split_ratio, seed=seed, word_emb_size=word_emb_size,
-                                            tokenizer=tokenizer,
-                                            use_val_for_vocab=use_val_for_vocab,
-                                            dynamic_graph_type=dynamic_graph_type,
-                                            dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args)
+        # Initialize the dataset.
+        # If the preprocessed files are not found, then do the preprocessing and save them.
+        super(IWSLT14Dataset, self).__init__(
+            root_dir=root_dir,
+            topology_builder=topology_builder,
+            topology_subdir=topology_subdir,
+            graph_type=graph_type,
+            edge_strategy=edge_strategy,
+            merge_strategy=merge_strategy,
+            share_vocab=share_vocab,
+            pretrained_word_emb_name=pretrained_word_emb_name,
+            pretrained_word_emb_url=pretrained_word_emb_url,
+            target_pretrained_word_emb_name=target_pretrained_word_emb_name,
+            target_pretrained_word_emb_url=target_pretrained_word_emb_url,
+            pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
+            val_split_ratio=val_split_ratio,
+            seed=seed,
+            word_emb_size=word_emb_size,
+            tokenizer=tokenizer,
+            use_val_for_vocab=use_val_for_vocab,
+            dynamic_graph_type=dynamic_graph_type,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+            for_inference=for_inference,
+            reused_vocab_model=reused_vocab_model,
+        )
 
     @staticmethod
     def collate_fn(data_list):
         graph_data = [item.graph for item in data_list]
         from graph4nlp.pytorch.data.data import to_batch
+
         big_graph = to_batch(graph_data)
 
         output_numpy = [item.output_np for item in data_list]
@@ -140,9 +163,4 @@ class IWSLT14Dataset(Text2TextDataset):
         output_pad = pad_2d_vals_no_size(output_numpy)
 
         tgt_seq = torch.from_numpy(output_pad).long()
-        # return [graph_data, tgt_seq, output_str]
-        return {
-            "graph_data": big_graph,
-            "tgt_seq": tgt_seq,
-            "output_str": output_str
-        }
+        return {"graph_data": big_graph, "tgt_seq": tgt_seq, "output_str": output_str}

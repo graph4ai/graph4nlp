@@ -1,0 +1,15 @@
+[tool.black]
+line-length = 100
+exclude = '''
+(
+        examples/pytorch/kg_completion/spodernet
+        | graph4nlp/pytorch/test/kg_completion/src/spodernet
+        | docs
+        | imgs
+        | distribution
+        | dev
+        | .github
+        | .vector_cache
+        | setup.py
+)
+'''

@@ -8,15 +8,16 @@ class BLEU(EvaluationMetricBase):
     Parameters
     ----------
     n_grams: list[int]
-        The BLEU's n_gram parameter. The results will be returned according to the ``n_grams`` one-by-one.
-    verbase: int, default = 0
+        The BLEU's n_gram parameter. The results will be returned according \
+            to the ``n_grams`` one-by-one.
+    verbose: int, default = 0
         The log indicator. If set to 0, it will output no logs.
     """
 
-    def __init__(self, n_grams, verbase=0):
+    def __init__(self, n_grams, verbose=0):
         super(BLEU, self).__init__()
         max_gram = self._check_available(n_grams)
-        self.scorer = Bleu(max_gram, verbase=verbase)
+        self.scorer = Bleu(max_gram, verbose=verbose)
         self.metrics = n_grams
 
     def calculate_scores(self, ground_truth, predict):

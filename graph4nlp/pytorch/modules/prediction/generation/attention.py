@@ -3,7 +3,15 @@ import torch.nn as nn
 
 
 class Attention(nn.Module):
-    def __init__(self, query_size, memory_size, hidden_size, has_bias=False, dropout=0.2, attention_funtion="mlp"):
+    def __init__(
+        self,
+        query_size,
+        memory_size,
+        hidden_size,
+        has_bias=False,
+        dropout=0.2,
+        attention_funtion="mlp",
+    ):
         super(Attention, self).__init__()
         self.query_size = query_size
         self.memory_size = memory_size
@@ -12,11 +20,13 @@ class Attention(nn.Module):
         self.dropout = nn.Dropout(dropout)
         assert self.attn_type in ["mlp", "general", "dot"]
         if self.attn_type == "mlp":
-            self.query_in = nn.Linear(self.query_size, self.hidden_size, bias=True if has_bias else False)
+            self.query_in = nn.Linear(
+                self.query_size, self.hidden_size, bias=True if has_bias else False
+            )
             self.memory_in = nn.Linear(self.memory_size, self.hidden_size, bias=False)
         elif self.attn_type == "dot":
             if memory_size != query_size:
-                raise ValueError("Parameter \"memory_size\" must be equal to \"query_size\"")
+                raise ValueError('Parameter "memory_size" must be equal to "query_size"')
         elif self.attn_type == "general":
             self.query2memory = nn.Linear(query_size, memory_size, bias=False)
         self.out = nn.Linear(self.hidden_size, 1, bias=False)

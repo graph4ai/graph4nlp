@@ -1,19 +1,16 @@
-from collections import Counter
-
-import numpy as np
-import os
-import time
 import datetime
-import pickle
-import urllib
-import bashmagic
-import time
 import json
-
-from spodernet.utils.util import get_data_path, save_data, xavier_uniform_weight
+import os
+import pickle
+# import bashmagic
+import time
+import urllib
+from collections import Counter
 from os.path import join
+import numpy as np
 
-from spodernet.utils.util import Logger
+from spodernet.utils.util import Logger, get_data_path, save_data, xavier_uniform_weight
+
 log = Logger('vocab.py.txt')
 
 '''This models the vocabulary and token embeddings'''

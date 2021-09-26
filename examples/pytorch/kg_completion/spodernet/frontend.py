@@ -1,8 +1,8 @@
 from itertools import chain
 
-from spodernet.utils.global_config import Config, Backends
-
+from spodernet.utils.global_config import Backends, Config
 from spodernet.utils.logger import Logger
+
 log = Logger('frontend.py.txt')
 
 

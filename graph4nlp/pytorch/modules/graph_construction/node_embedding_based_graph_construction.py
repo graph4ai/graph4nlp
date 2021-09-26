@@ -1,14 +1,11 @@
-from nltk.tokenize import word_tokenize
 import torch
-from torch import nn
+from nltk.tokenize import word_tokenize
 
 from ...data.data import GraphData
-from .base import DynamicGraphConstructionBase
-from ..utils.generic_utils import normalize_adj, to_cuda
-# from ..utils.constants import VERY_SMALL_NUMBER
-from .utils import convert_adj_to_graph
-from ...data.data import to_batch
+from ..utils.generic_utils import normalize_adj
 from ..utils.vocab_utils import Vocab
+from .base import DynamicGraphConstructionBase
+from .utils import convert_adj_to_graph
 
 
 class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
@@ -19,17 +16,18 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
     word_vocab : Vocab
         The word vocabulary.
     embedding_styles : dict
-        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single token or multiple tokens.
+        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains
+        single token or multiple tokens.
         - ``emb_strategy`` : specify the embedding construction strategy.
         - ``num_rnn_layers``: specify the number of RNN layers.
         - ``bert_model_name``: specify the BERT model name.
         - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
     """
+
     def __init__(self, word_vocab, embedding_styles, **kwargs):
         super(NodeEmbeddingBasedGraphConstruction, self).__init__(
-                                                            word_vocab,
-                                                            embedding_styles,
-                                                            **kwargs)
+            word_vocab, embedding_styles, **kwargs
+        )
 
     def forward(self, batch_graphdata):
         """Compute graph topology and initial node embeddings.
@@ -63,17 +61,21 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             The constructed graph.
         """
         node_emb = graph.batch_node_features["node_feat"]
-        node_mask = (graph.batch_node_features["token_id"] != Vocab.PAD)
+        node_mask = graph.batch_node_features["token_id"] != Vocab.PAD
 
         raw_adj = self.compute_similarity_metric(node_emb, node_mask)
         raw_adj = self.sparsify_graph(raw_adj)
         graph_reg = self.compute_graph_regularization(raw_adj, node_emb)
 
-        if self.sim_metric_type in ('rbf_kernel', 'weighted_cosine'):
-            assert raw_adj.min().item() >= 0, 'adjacency matrix must be non-negative!'
-            adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-1, keepdim=True), min=torch.finfo(torch.float32).eps)
-            reverse_adj = raw_adj / torch.clamp(torch.sum(raw_adj, dim=-2, keepdim=True), min=torch.finfo(torch.float32).eps)
-        elif self.sim_metric_type == 'cosine':
+        if self.sim_metric_type in ("rbf_kernel", "weighted_cosine"):
+            assert raw_adj.min().item() >= 0, "adjacency matrix must be non-negative!"
+            adj = raw_adj / torch.clamp(
+                torch.sum(raw_adj, dim=-1, keepdim=True), min=torch.finfo(torch.float32).eps
+            )
+            reverse_adj = raw_adj / torch.clamp(
+                torch.sum(raw_adj, dim=-2, keepdim=True), min=torch.finfo(torch.float32).eps
+            )
+        elif self.sim_metric_type == "cosine":
             raw_adj = (raw_adj > 0).float()
             adj = normalize_adj(raw_adj)
             reverse_adj = adj
@@ -82,7 +84,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
             reverse_adj = torch.softmax(raw_adj, dim=-2)
 
         graph = convert_adj_to_graph(graph, adj, reverse_adj, 0)
-        graph.graph_attributes['graph_reg'] = graph_reg
+        graph.graph_attributes["graph_reg"] = graph_reg
 
         return graph
 
@@ -112,12 +114,14 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         elif isinstance(raw_text_data, (list, tuple)):
             token_list = raw_text_data
         else:
-            raise RuntimeError('raw_text_data must be str or list/tuple of str')
+            raise RuntimeError("raw_text_data must be str or list/tuple of str")
 
         graph = GraphData()
         graph.add_nodes(len(token_list))
 
         for idx in range(len(token_list)):
-            graph.node_attributes[idx]['token'] = token_list[idx].lower() if lower_case else token_list[idx]
+            graph.node_attributes[idx]["token"] = (
+                token_list[idx].lower() if lower_case else token_list[idx]
+            )
 
         return graph

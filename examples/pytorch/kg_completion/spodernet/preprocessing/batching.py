@@ -1,23 +1,30 @@
+import datetime
+import pickle
+import queue
+import threading
+import time
+from collections import namedtuple
+from os.path import exists, join
+import numpy as np
+
 from future import standard_library
+from spodernet.hooks import ETAHook
+from spodernet.interfaces import (
+    IAtBatchPreparedObservable,
+    IAtEpochEndObservable,
+    IAtEpochStartObservable,
+    IAtIterEndObservable,
+)
+from spodernet.preprocessing.processors import DictConverter
+from spodernet.utils.global_config import Backends, Config
+from spodernet.utils.logger import Logger
+from spodernet.utils.util import Timer, get_data_path, load_data
+
 standard_library.install_aliases()
 
-from os.path import join, exists
-import threading
-from collections import namedtuple
 
-import time
-import datetime
-import numpy as np
-import queue
-import pickle
 
-from spodernet.utils.util import get_data_path, load_data, Timer
-from spodernet.utils.global_config import Config, Backends
-from spodernet.hooks import ETAHook
-from spodernet.interfaces import IAtIterEndObservable, IAtEpochEndObservable, IAtEpochStartObservable, IAtBatchPreparedObservable
-from spodernet.preprocessing.processors import DictConverter
 
-from spodernet.utils.logger import Logger
 log = Logger('batching.py.txt')
 
 benchmark = False

@@ -4,13 +4,21 @@ Installation
 ```bash
 pip install spacy
 python -m spacy download en_core_web_sm
+pip install h5py
+pip install future
 ```
-+ Run the preprocessing script for WN18RR and Kinship: ```sh preprocess.sh```
-+ You can now run the model
+
++ This code refers [ConvE](https://github.com/TimDettmers/ConvE).
 
 How to run
 ----------
 
+#### Prepocess:
++ Run the preprocessing script for WN18RR and Kinship: 
+```bash
+sh examples/pytorch/kg_completion/preprocess.sh
+```
++ You can now run the model
 
 #### Run the model:
 

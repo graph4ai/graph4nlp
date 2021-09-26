@@ -1,5 +1,6 @@
-from torch import nn
 import torch
+from torch import nn
+
 from ..base import KGCompletionLayerBase
 
 
@@ -22,18 +23,12 @@ class DistMultLayer(KGCompletionLayerBase):
 
     """
 
-    def __init__(self,
-                 input_dropout=0.0,
-                 loss_name='BCELoss'):
+    def __init__(self, input_dropout=0.0, loss_name="BCELoss"):
         super(DistMultLayer, self).__init__()
         self.inp_drop = nn.Dropout(input_dropout)
         self.loss_name = loss_name
 
-    def forward(self,
-                e1_emb,
-                rel_emb,
-                all_node_emb,
-                multi_label=None):
+    def forward(self, e1_emb, rel_emb, all_node_emb, multi_label=None):
         r"""
 
         Parameters
@@ -78,11 +73,9 @@ class DistMultLayer(KGCompletionLayerBase):
         e1_emb = self.inp_drop(e1_emb)
         rel_emb = self.inp_drop(rel_emb)
 
-        logits = torch.mm(e1_emb * rel_emb,
-                          all_node_emb.weight.transpose(1, 0))
+        logits = torch.mm(e1_emb * rel_emb, all_node_emb.weight.transpose(1, 0))
 
-
-        if self.loss_name in ['SoftMarginLoss']:
+        if self.loss_name in ["SoftMarginLoss"]:
             # target labels are numbers selecting from -1 and 1.
             pred = torch.tanh(logits)
         else:
@@ -90,10 +83,10 @@ class DistMultLayer(KGCompletionLayerBase):
             pred = torch.sigmoid(logits)
 
         if multi_label is not None:
-            idxs_pos = torch.nonzero(multi_label == 1.)
+            idxs_pos = torch.nonzero(multi_label == 1.0)
             pred_pos = pred[idxs_pos[:, 0], idxs_pos[:, 1]]
 
-            idxs_neg = torch.nonzero(multi_label == 0.)
+            idxs_neg = torch.nonzero(multi_label == 0.0)
             pred_neg = pred[idxs_neg[:, 0], idxs_neg[:, 1]]
             return pred, pred_pos, pred_neg
         else:

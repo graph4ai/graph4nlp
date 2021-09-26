@@ -1,0 +1,435 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Dynamic Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Embedding Construction" href="embedding_construction.html" />
+    <link rel="prev" title="IE Graph Construction" href="iegraphconstruction.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Graph4NLP
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
+</ul>
+<p class="caption"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../construction.html">Chapter 3. Graph Construction</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../construction.html#roadmap">Roadmap</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dependencygraphconstruction.html">Dependency Graph Construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="constituency_graph_construction.html">Constituency Graph Construction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="iegraphconstruction.html">IE Graph Construction</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Dynamic Graph Construction</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dynamicgraphconstructionbase">DynamicGraphConstructionBase</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#node-embedding-based-dynamic-graph-construction">Node Embedding Based Dynamic Graph Construction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#node-embedding-based-refined-dynamic-graph-construction">Node Embedding Based Refined Dynamic Graph Construction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="embedding_construction.html">Embedding Construction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../gnn.html">Chapter 4. Graph Encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../decoding.html">Chapter 5. Decoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Module API references</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_construction.html">graph4nlp.graph_construction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/graph_embedding.html">graph4nlp.graph_embedding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/prediction.html">graph4nlp.prediction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/math_word_problem.html">Math Word Problem Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Graph4NLP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../construction.html">Chapter 3. Graph Construction</a> &raquo;</li>
+        
+      <li>Dynamic Graph Construction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/guide/construction/dynamic_graph_construction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dynamic-graph-construction">
+<span id="guide-dynamic-graph-construction"></span><h1>Dynamic Graph Construction<a class="headerlink" href="#dynamic-graph-construction" title="Permalink to this headline">¶</a></h1>
+<p>Unlike static graph construction which is performed during preprocessing,
+dynamic graph construction operates by jointly learning the graph structure
+and graph representation on the fly. The ultimate goal is to learn the
+optimized graph structures and representations with respect to certain
+downstream prediction task.
+As shown in the figure below, given a set of data points which can stand for
+various NLP elements such as words, sentences and documents, we first apply
+graph similarity metric learning which aims to capture the pair-wise
+node similarity and returns a fully-connected weighted graph.
+Then, we can optionally apply graph sparsification to obtain a sparse graph.
+When the initial graph topology is available, we can choose to combine the
+initial graph topology and the implicit learned graph topology to obtain a
+better graph topology for the downstream task.</p>
+<img alt="../../_images/dynamic_graph_overall.pdf" src="../../_images/dynamic_graph_overall.pdf" />
+<div class="section" id="dynamicgraphconstructionbase">
+<h2>DynamicGraphConstructionBase<a class="headerlink" href="#dynamicgraphconstructionbase" title="Permalink to this headline">¶</a></h2>
+<p>Before we introduce the two built-in dynamic graph construction classes, let’s
+first talk about <code class="docutils literal notranslate"><span class="pre">DynamicGraphConstructionBase</span></code> which is the base class
+for dynamic graph construction. This base class implements several important
+components shared by various dynamic graph construction approaches. We will
+introduce each of the components defined in the base class next.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">embedding</span></code> method aims to compute initial node embeddings which will be
+later used for dynamic graph construction. This method calls the <code class="docutils literal notranslate"><span class="pre">EmbeddingConstruction</span></code>
+instance which is initialized in <code class="docutils literal notranslate"><span class="pre">GraphConstructionBase</span></code> where <code class="docutils literal notranslate"><span class="pre">GraphConstructionBase</span></code>
+is the base class of all the graph construction classes including both static and dynamic ones.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">compute_similarity_metric</span></code> method aims to compute pair-wise node similarity in the node embedding
+space where the node embeddings are created by the above <code class="docutils literal notranslate"><span class="pre">embedding</span></code> method. The output of this method
+is a weighted adjacency matrix which is corresponding to a fully-connected graph.
+Various similarity metric functions such as <cite>weighted_cosine</cite>, <cite>attention</cite> and <cite>rbf_kernel</cite> are supported.
+Below is the implementation of this method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">compute_similarity_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_emb</span><span class="p">,</span> <span class="n">node_mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_metric_type</span> <span class="o">==</span> <span class="s1">&#39;attention&#39;</span><span class="p">:</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_sims</span><span class="p">)):</span>
+            <span class="n">node_vec_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_sims</span><span class="p">[</span><span class="n">_</span><span class="p">](</span><span class="n">node_emb</span><span class="p">))</span>
+            <span class="n">attention</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">node_vec_t</span><span class="p">,</span> <span class="n">node_vec_t</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+
+        <span class="n">attention</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_sims</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_metric_type</span> <span class="o">==</span> <span class="s1">&#39;weighted_cosine&#39;</span><span class="p">:</span>
+        <span class="n">expand_weight_tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">node_emb</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">expand_weight_tensor</span> <span class="o">=</span> <span class="n">expand_weight_tensor</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">node_vec_t</span> <span class="o">=</span> <span class="n">node_emb</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">expand_weight_tensor</span>
+        <span class="n">node_vec_norm</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">node_vec_t</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">node_vec_norm</span><span class="p">,</span> <span class="n">node_vec_norm</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_metric_type</span> <span class="o">==</span> <span class="s1">&#39;gat_attention&#39;</span><span class="p">:</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_sims1</span><span class="p">)):</span>
+            <span class="n">a_input1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_sims1</span><span class="p">[</span><span class="n">_</span><span class="p">](</span><span class="n">node_emb</span><span class="p">)</span>
+            <span class="n">a_input2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear_sims2</span><span class="p">[</span><span class="n">_</span><span class="p">](</span><span class="n">node_emb</span><span class="p">)</span>
+            <span class="n">attention</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">leakyrelu</span><span class="p">(</span><span class="n">a_input1</span> <span class="o">+</span> <span class="n">a_input2</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)))</span>
+
+        <span class="n">attention</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">attention</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_metric_type</span> <span class="o">==</span> <span class="s1">&#39;rbf_kernel&#39;</span><span class="p">:</span>
+        <span class="n">dist_weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_distance_matrix</span><span class="p">(</span><span class="n">node_emb</span><span class="p">,</span> <span class="n">dist_weight</span><span class="p">)</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">attention</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">precision_inv_dis</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_metric_type</span> <span class="o">==</span> <span class="s1">&#39;cosine&#39;</span><span class="p">:</span>
+        <span class="n">node_vec_norm</span> <span class="o">=</span> <span class="n">node_emb</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">node_emb</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">attention</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">node_vec_norm</span><span class="p">,</span> <span class="n">node_vec_norm</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">node_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">__version__</span> <span class="o">&lt;</span> <span class="s1">&#39;1.3.0&#39;</span><span class="p">:</span>
+            <span class="n">attention</span> <span class="o">=</span> <span class="n">attention</span><span class="o">.</span><span class="n">masked_fill_</span><span class="p">(</span><span class="o">~</span><span class="p">(</span><span class="n">node_mask</span> <span class="o">==</span> <span class="mf">1.</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_off_val</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">attention</span> <span class="o">=</span> <span class="n">attention</span><span class="o">.</span><span class="n">masked_fill_</span><span class="p">(</span><span class="o">~</span><span class="n">node_mask</span><span class="o">.</span><span class="n">bool</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_off_val</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">attention</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">sparsify_graph</span></code> method aims to obtain a sparse graph from the above fully-connected graph.
+Various graph sparsification options such as <cite>kNN sparsification</cite> and <cite>epsilon-neighborhood sparsification</cite>
+are supported. Below is the implementation of this method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">sparsify_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adj</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon_neigh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_epsilon_neighbourhood</span><span class="p">(</span><span class="n">adj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon_neigh</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_k_neigh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_knn_neighbourhood</span><span class="p">(</span><span class="n">adj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_k_neigh</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">adj</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">compute_graph_regularization</span></code> method aims to compute regularization terms for the learned graph topology.
+Various graph regularization losses such as <cite>smoothness</cite>, <cite>connectivity</cite> and <cite>sparsity</cite> are supported.
+Below is the implementation of this method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">compute_graph_regularization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adj</span><span class="p">,</span> <span class="n">node_feat</span><span class="p">):</span>
+    <span class="n">graph_reg</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothness_ratio</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">adj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">L</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">diagflat</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">adj</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="n">adj</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">graph_reg</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothness_ratio</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">node_feat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">node_feat</span><span class="p">[</span><span class="n">i</span><span class="p">])))</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">adj</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">connectivity_ratio</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">ones_vec</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">adj</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">adj</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">graph_reg</span> <span class="o">+=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">connectivity_ratio</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">ones_vec</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">adj</span><span class="p">,</span> <span class="n">ones_vec</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">VERY_SMALL_NUMBER</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">adj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">adj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparsity_ratio</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">graph_reg</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparsity_ratio</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">adj</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">adj</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">graph_reg</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="node-embedding-based-dynamic-graph-construction">
+<h2>Node Embedding Based Dynamic Graph Construction<a class="headerlink" href="#node-embedding-based-dynamic-graph-construction" title="Permalink to this headline">¶</a></h2>
+<p>For node embedding based dynamic graph construction, we aim to learn the graph structure from a set of node embeddings.
+The <code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedGraphConstruction</span></code> class inherits the <code class="docutils literal notranslate"><span class="pre">DynamicGraphConstructionBase</span></code> base class which implements
+several aforementioned important components (e.g., <code class="docutils literal notranslate"><span class="pre">compute_similarity_metric</span></code>, <code class="docutils literal notranslate"><span class="pre">sparsify_graph</span></code>).
+The <code class="docutils literal notranslate"><span class="pre">topology</span></code> method in <code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedGraphConstruction</span></code> implements the logic of learning a graph topology from
+initial node embeddings, as shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">topology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
+    <span class="n">node_emb</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">batch_node_features</span><span class="p">[</span><span class="s2">&quot;node_feat&quot;</span><span class="p">]</span>
+    <span class="n">node_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">batch_node_features</span><span class="p">[</span><span class="s2">&quot;token_id&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Vocab</span><span class="o">.</span><span class="n">PAD</span><span class="p">)</span>
+
+    <span class="n">raw_adj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_similarity_metric</span><span class="p">(</span><span class="n">node_emb</span><span class="p">,</span> <span class="n">node_mask</span><span class="p">)</span>
+    <span class="n">raw_adj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparsify_graph</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">)</span>
+    <span class="n">graph_reg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_graph_regularization</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">,</span> <span class="n">node_emb</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_metric_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;rbf_kernel&#39;</span><span class="p">,</span> <span class="s1">&#39;weighted_cosine&#39;</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">raw_adj</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;adjacency matrix must be non-negative!&#39;</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">raw_adj</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+        <span class="n">reverse_adj</span> <span class="o">=</span> <span class="n">raw_adj</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_metric_type</span> <span class="o">==</span> <span class="s1">&#39;cosine&#39;</span><span class="p">:</span>
+        <span class="n">raw_adj</span> <span class="o">=</span> <span class="p">(</span><span class="n">raw_adj</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">normalize_adj</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">)</span>
+        <span class="n">reverse_adj</span> <span class="o">=</span> <span class="n">adj</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">reverse_adj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">convert_adj_to_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">adj</span><span class="p">,</span> <span class="n">reverse_adj</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">graph_attributes</span><span class="p">[</span><span class="s1">&#39;graph_reg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_reg</span>
+
+    <span class="k">return</span> <span class="n">graph</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="node-embedding-based-refined-dynamic-graph-construction">
+<h2>Node Embedding Based Refined Dynamic Graph Construction<a class="headerlink" href="#node-embedding-based-refined-dynamic-graph-construction" title="Permalink to this headline">¶</a></h2>
+<p>Unlike the node embedding based metric learning, node embedding based refined graph metric
+learning in addition utilizes the intrinsic graph structure which potentially still carries
+rich and useful information regarding the optimal graph structure for the downstream task.
+It basically computes a linear combination of the normalized graph Laplacian of the intrinsic
+graph and the normalized adjacency matrix of the learned implicit graph.</p>
+<p><code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedRefinedGraphConstruction</span></code> class also inherits the <code class="docutils literal notranslate"><span class="pre">DynamicGraphConstructionBase</span></code> base class.
+The <code class="docutils literal notranslate"><span class="pre">topology</span></code> method in <code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedRefinedGraphConstruction</span></code> implements the logic of combining the initial
+graph topology and the learned implicit graph topology, as shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">topology</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">init_norm_adj</span><span class="p">):</span>
+    <span class="n">node_emb</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">batch_node_features</span><span class="p">[</span><span class="s2">&quot;node_feat&quot;</span><span class="p">]</span>
+    <span class="n">node_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">batch_node_features</span><span class="p">[</span><span class="s2">&quot;token_id&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">Vocab</span><span class="o">.</span><span class="n">PAD</span><span class="p">)</span>
+
+    <span class="n">raw_adj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_similarity_metric</span><span class="p">(</span><span class="n">node_emb</span><span class="p">,</span> <span class="n">node_mask</span><span class="p">)</span>
+    <span class="n">raw_adj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparsify_graph</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">)</span>
+    <span class="n">graph_reg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_graph_regularization</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">,</span> <span class="n">node_emb</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_metric_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;rbf_kernel&#39;</span><span class="p">,</span> <span class="s1">&#39;weighted_cosine&#39;</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">raw_adj</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;adjacency matrix must be non-negative!&#39;</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">raw_adj</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+        <span class="n">reverse_adj</span> <span class="o">=</span> <span class="n">raw_adj</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sim_metric_type</span> <span class="o">==</span> <span class="s1">&#39;cosine&#39;</span><span class="p">:</span>
+        <span class="n">raw_adj</span> <span class="o">=</span> <span class="p">(</span><span class="n">raw_adj</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">normalize_adj</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">)</span>
+        <span class="n">reverse_adj</span> <span class="o">=</span> <span class="n">adj</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">reverse_adj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">raw_adj</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_fusion</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">FloatTensor</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_fusion</span><span class="p">)</span> <span class="o">*</span> <span class="n">adj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_fusion</span> <span class="o">*</span> <span class="n">init_norm_adj</span><span class="p">)</span>
+        <span class="n">reverse_adj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">FloatTensor</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_fusion</span><span class="p">)</span> <span class="o">*</span> <span class="n">reverse_adj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_fusion</span> <span class="o">*</span> <span class="n">init_norm_adj</span><span class="p">)</span>
+
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">convert_adj_to_graph</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">adj</span><span class="p">,</span> <span class="n">reverse_adj</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">graph_attributes</span><span class="p">[</span><span class="s1">&#39;graph_reg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_reg</span>
+
+    <span class="k">return</span> <span class="n">graph</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="embedding_construction.html" class="btn btn-neutral float-right" title="Embedding Construction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="iegraphconstruction.html" class="btn btn-neutral float-left" title="IE Graph Construction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Graph4AI Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
