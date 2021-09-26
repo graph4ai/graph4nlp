@@ -52,7 +52,7 @@
 </p>
 
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
-**09/26/2021:** The **v0.5.1 release**. Try it out!
+**09/26/2021:** The **v0.5.1 release**. Try it out! <br>
 **06/05/2021:** The **v0.4.1 release**. 
 
 ## Quick tour
