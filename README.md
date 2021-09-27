@@ -223,8 +223,8 @@ python setup.py install
 
 | Releases | Date       | Features                                                     |
 | -------- | ---------- | ------------------------------------------------------------ |
-| v0.4.1   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 | v0.5.1   | 2021-09-26 | - Lint the codes <br /> - Support testing with users' own data <br /> - Fix the bug: The word embedding size was hard-coded in the 0.4.1 version. Now it is equal to "word_emb_size" parameter. <br /> - Fix the bug: The build_vocab() is called twice in the 0.4.1 version. <br /> - Fix the bug: The two main files of knowledge graph completion example missed the optional parameter "kg_graph" in ranking_and_hits() when resuming training the model. <br /> - Fix the bug: We have fixed the preprocessing path error in KGC readme. <br /> - Fix the bug: We have fixed embedding construction bug when setting emb_strategy to 'w2v'. |
+| v0.4.1   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
 ## New to Deep Learning on Graphs for NLP?
 
