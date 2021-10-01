@@ -1,3 +1,4 @@
+import warnings
 from typing import List
 
 import torch
@@ -108,17 +109,16 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                     bert_lower_case=True,
                     word_dropout=None,
                     bert_dropout=None,
-                    rnn_dropout=None):
+                    rnn_dropout=None,
+                    **kwargs):
         super(EmbeddingConstruction, self).__init__()
         self.word_dropout = word_dropout
         self.bert_dropout = bert_dropout
         self.rnn_dropout = rnn_dropout
         self.single_token_item = single_token_item
 
-        assert emb_strategy in ('w2v', 'w2v_bilstm', 'w2v_bigru', 'fastbert',
-                        'bert', 'bert_bilstm', 'bert_bigru',
-                        'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru'),\
-            "emb_strategy must be one of ('w2v', 'w2v_bilstm', 'w2v_bigru', 'bert', 'bert_bilstm', 'bert_bigru', 'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru')"
+        valid_emb_strageries = [x + y for x in ["w2v", "bert", "fastbert", "w2v_bert"] for y in ["", "_bilstm", "_bigru"]]
+        assert emb_strategy in valid_emb_strageries, f"emb_strategy must be one of {valid_emb_strageries}"
 
         word_emb_type = set()
         if single_token_item:
@@ -165,7 +165,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             if 'fast' in emb_strategy:
                 self.word_emb_layers['node_edge_bert'] = FastBertEmbedding(name=bert_model_name,
                                                                 fix_emb=fix_bert_emb,
-                                                                lower_case=bert_lower_case)
+                                                                lower_case=bert_lower_case,
+                                                                **kwargs)
             else:
                 self.word_emb_layers['node_edge_bert'] = BertEmbedding(name=bert_model_name,
                                                                 fix_emb=fix_bert_emb,
@@ -473,19 +474,18 @@ class FastBertEmbedding(nn.Module):
 
     """
 
-    GPU_BERT = 0
-
     def __init__(self,
                 name='bert-base-uncased',
                 max_seq_len=500,
                 doc_stride=250,
                 fix_emb=True,
                 lower_case=True,
-                batch_size=256):
+                batch_size=128,
+                **kwargs):
         super().__init__()
 
-        # For long documents, we need GPU
-        assert torch.cuda.is_available() and torch.cuda.device_count() == 1, "CUDA has to be enabled, with 1 GPUS"
+        print('[ FAST Bert Embeddings')
+        print(f'[ Model = {name}]')
 
         self.bert_max_seq_len = max_seq_len
         self.bert_doc_stride = doc_stride
@@ -498,15 +498,30 @@ class FastBertEmbedding(nn.Module):
         if fix_emb:
             print('[ Fix BERT layers ]')
             self.bert_model.eval()
-            for param in self.bert_model.parameters():
-                param.requires_grad = False
+            self.bert_model.requires_grad_(False)
         else:
             print('[ Finetune BERT layers ]')
             self.bert_model.train()
 
-        self.bert_model = self.bert_model.cuda(FastBertEmbedding.GPU_BERT)
+        if kwargs.get("device", None) == "cuda":
+            assert torch.cuda.is_available() and torch.cuda.device_count() == 1, "CUDA has to be enabled, with 1 GPUS"
+            device_str = f"cuda:0"
+            self.cuda = True
+        else:
+            device_str = "cpu"
+            self.cuda = False
+
+        self.device = torch.device(device_str)
+        self.bert_model = self.bert_model.to(self.device)
+
+    def _place_on_device(self, tensor: torch.Tensor) -> torch.Tensor:
+        return tensor.cuda() if self.cuda else tensor
 
     def _forward_raw_text(self, raw_text_data):
+        """
+        TODO: honestly, right now it's not a great code to run
+        """
+        warnings.warn("Better not to use raw text")
         # Return values
         bert_xd_f = []
 
@@ -563,7 +578,7 @@ class FastBertEmbedding(nn.Module):
             doc_encoder_layers = []
             for stride_batch_bert_xd, stride_batch_bert_xd_mask in doc_dataloader:
                 # Shape BATCH_SIZE, SEQ_LEN
-                stride_batch_bert_xd = stride_batch_bert_xd.cuda(BertEmbedding.GPU_BERT)
+                stride_batch_bert_xd = stride_batch_bert_xd.to(device=self.device)
                 stride_batch_bert_xd_mask = stride_batch_bert_xd_mask.cuda(BertEmbedding.GPU_BERT)
 
                 encoder_outputs = self.bert_model(input_ids=stride_batch_bert_xd,
@@ -607,7 +622,7 @@ class FastBertEmbedding(nn.Module):
 
         return torch.stack(bert_xd_f)
 
-    def _forward_tensors(self, docs_input_ids=None, docs_input_mask=None, docs_token_map=None):
+    def _forward_tensors(self, docs_input_ids: List[torch.Tensor], docs_input_mask: List[torch.Tensor]):
         """
 
         """
@@ -623,16 +638,16 @@ class FastBertEmbedding(nn.Module):
         )
 
         encoder_outputs = []
-        for batch_input_ids, batch_input_mask in tqdm.tqdm(docs_dataloader, desc="BERT Encoding"):
-            batch_input_ids = batch_input_ids.cuda()
-            batch_input_mask = batch_input_mask.cuda()
+        for batch_input_ids, batch_input_mask in docs_dataloader:
+            batch_input_ids = self._place_on_device(batch_input_ids)
+            batch_input_mask = self._place_on_device(batch_input_mask.to(device=self.device))
             outputs = self.bert_model(input_ids=batch_input_ids,
                                       attention_mask=batch_input_mask,
                                       output_hidden_states=False,
                                       return_dict=True)
 
             # encoder_layers = tensor BATCH_SIZE, SEQ_LEN, BERT_DIM
-            encoder_outputs.append(outputs['last_hidden_state'].cpu())
+            encoder_outputs.append(outputs['pooler_output'].cpu())
 
         # all embeddings in a 2-D tensor TOTAL_NUM_CHUNKS, BERT_DIN
         sequences_embeddings = torch.cat(encoder_outputs, dim=0)
@@ -645,13 +660,14 @@ class FastBertEmbedding(nn.Module):
         offset = 0
         for i, doc_input_ids in enumerate(docs_input_ids):
             docs_chunks[i][offset: offset + doc_input_ids.shape[0]] = 1.0
+            offset += doc_input_ids.shape[0]
 
         # result is 2-D NB_DOCS, BERT_DIM
         docs_embeddings = torch.matmul(docs_chunks, sequences_embeddings) / docs_chunks.sum(1).resize(num_docs, 1)
         return docs_embeddings.unsqueeze(0)
 
     def forward(self, **kwargs):
-        """Compute BERT embeddings for each word in text.
+        """Compute BERT embeddings for the text.
 
         Parameters
         ----------
