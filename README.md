@@ -52,11 +52,13 @@
 </p>
 
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
-**06/05/2021:** The **v0.4.1 release**. Try it out!
+**09/26/2021:** The **v0.5.1 release**. Try it out! <br>
+**09/01/2021:** Welcome to visit our **DLG4NLP website (https://dlg4nlp.github.io/index.html)** for various learning resources! <br>
+**06/05/2021:** The **v0.4.1 release**. 
 
 ## Quick tour
 
-***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (check out [Graph4NLP Documentation](http://saizhuo.wang/g4nlp/index.html)). Here is an example of how to use the [*Graph2seq*](http://saizhuo.wang/g4nlp/index.html) model (widely used in machine translation, question answering,
+***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (check out [Graph4NLP Documentation](https://graph4ai.github.io/graph4nlp/)). Here is an example of how to use the [*Graph2seq*](https://graph4ai.github.io/graph4nlp/) model (widely used in machine translation, question answering,
 semantic parsing, and various other NLP tasks that can be abstracted as graph-to-sequence problem and has shown superior
 performance).
 
@@ -127,6 +129,8 @@ We provide a comprehensive collection of NLP applications, together with detaile
 | Question generation        |               SQuAD             |           GGNN       | Dependency                                      | BLEU-4             |             0.15175	            |
 | Machine translation        |              IWSLT14             |           GCN       | Dynamic                                      | BLEU-4             |             0.3212            |
 | Summarization              |             CNN(30k)             |           GCN       | Dependency                                   | ROUGE-1            |              26.4             |
+| Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.4                          |
+| Math word problem          |              MAWPS               | SAGE                | Dynamic                                      | Solution accuracy   | 76.4                    |
 | Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.0                          |
 | Math word problem          | MAWPS                        | SAGE                | Dynamic                                      | Solution accuracy   | 76.4  |
 
@@ -219,17 +223,21 @@ python setup.py install
 
 | Releases | Date       | Features                                                     |
 | -------- | ---------- | ------------------------------------------------------------ |
+| v0.5.1   | 2021-09-26 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 | v0.4.1   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
 ## New to Deep Learning on Graphs for NLP?
 
-If you want to learn more on applying Deep Learning on Graphs techniques to NLP tasks, you can refer to our survey paper which provides an overview of this existing research direction. If you want detailed reference to our library, please refer to our docs.
+If you want to learn more on applying Deep Learning on Graphs techniques to NLP tasks, welcome to visit our DLG4NLP website (https://dlg4nlp.github.io/index.html) for various learning resources! You can refer to our survey paper which provides an overview of this existing research direction. If you want detailed reference to our library, please refer to our docs.
 
 <!-- [Docs]() | [Graph4nlp survey]() | [Related paper list]() | [Workshops]() -->
-- Documentation: [Docs](http://saizhuo.wang/g4nlp/index.html)  
+- Documentation: [Docs](https://graph4ai.github.io/graph4nlp/)  
 - Graph4NLP Survey: [Graph4nlp survey](http://arxiv.org/abs/2106.06090)  
-- Graph4NLP Tutorials: [Graph4NLP-NAACL'21](https://www.aclweb.org/anthology/2021.naacl-tutorials.3.pdf)(Slides: [google drive](https://drive.google.com/file/d/1_7cPySt9Pzfd6MaqNihD4FkKI0qzf-s4/view?usp=sharing), [baidu netdisk](https://pan.baidu.com/s/1QeWedhMgIBjBpK0EcgXYvQ)(drs1)), [Chinese talk](https://app6ca5octe2206.pc.xiaoe-tech.com/detail/v_60e832f8e4b0876c0c23c1a7/3?fromH5=true) ([video](https://pan.baidu.com/s/1Lltz_kx7ECDOTLecVC9E9w) (password: wppp), [slides](https://pan.baidu.com/s/1pmgX456Me_lu30VGDY3aaw) (password: flwv))
-- Graph4NLP Literature Review: [Literature Lists](https://github.com/graph4ai/graph4nlp_literature )  
+- Graph4NLP Tutorials: 
+    - [Graph4NLP-NAACL'21, SIGIR'21, IJCAI'21, KDD'21](https://dlg4nlp.github.io/tutorials.html)
+    - [SyncedReview Invited Chinese talk](https://app6ca5octe2206.pc.xiaoe-tech.com/detail/v_60e832f8e4b0876c0c23c1a7/3?fromH5=true) ([video](https://pan.baidu.com/s/1Lltz_kx7ECDOTLecVC9E9w) (password: wppp), [slides](https://pan.baidu.com/s/1pmgX456Me_lu30VGDY3aaw) (password: flwv))  
+- Graph4NLP Demo: [Demo](https://github.com/graph4ai/graph4nlp_demo)
+- Graph4NLP Literature Review: [Literature Lists](https://github.com/graph4ai/graph4nlp_literature)  
 - Graph4NLP Workshops : [Workshops](https://deep-learning-graphs.bitbucket.io/dlg-kdd21/index.html)  
 
 
