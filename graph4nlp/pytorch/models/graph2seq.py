@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
 from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
+from graph4nlp.pytorch.modules.utils.generic_utils import wordid2str
 
 from .base import Graph2XBase
 
@@ -251,6 +252,35 @@ class Graph2Seq(Graph2XBase):
         return self.encoder_decoder_beam_search(
             batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict
         )
+
+    def post_process(self, decode_results, vocab):
+        pred_ids = decode_results[:, 0, :]  # we just use the top-1
+
+        pred_str = wordid2str(pred_ids.detach().cpu(), vocab)
+        return pred_str
+
+    def decoding_forward(self, batch_graph, beam_size, topk=1, oov_dict=None):
+        """
+            Decoding with the support of beam_search.
+            Specifically, when ``beam_size`` is 1, it is equal to greedy search.
+        Parameters
+        ----------
+        batch_graph: GraphData
+            The graph input
+        beam_size: int
+            The beam width. When it is 1, the output is equal to greedy search's output.
+        topk: int, default=1
+            The number of decoded sequence to be reserved.
+            Usually, ``topk`` should be smaller or equal to ``beam_size``
+        oov_dict: VocabModel, default=None
+            The vocabulary for copy.
+
+        Returns
+        -------
+        results: torch.Tensor
+            The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes. # noqa
+        """
+        return self.translate(batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict)
 
     def predict(self, raw_sentences, beam_size=1, use_copy=False, tokenizer=None, merge_strategy=None, edge_strategy=None, lower_case=True, port=9000, timeout=15000):
         from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset

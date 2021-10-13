@@ -1,3 +1,6 @@
+import sys
+sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
+from nltk import tokenize
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -17,6 +20,8 @@ from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_g
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+
+from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper import GeneratorInferenceWrapper
 
 from args import get_args
 from evaluation import ExpressionAccuracy
@@ -50,19 +55,18 @@ class Jobs:
         self.model = Graph2Seq.load_checkpoint(self.opt["checkpoint_save_path"], "best.pt").to(
             self.device
         )
+        from nltk.tokenize import word_tokenize
+        self.inference_tool = GeneratorInferenceWrapper(cfg=self.opt, model=self.model, beam_size=3, lower_case=True, tokenizer=word_tokenize)
 
     @torch.no_grad()
     def translate(self):
         self.model.eval()
-        from nltk.tokenize import word_tokenize
-        print(self.opt)
-        ret = self.model.predict(raw_sentences=["list job on platformid0"], beam_size=3, use_copy=self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"],
-                            tokenizer=word_tokenize, merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["merge_strategy"], 
-                            edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"]["edge_strategy"])
+        ret = self.inference_tool.predict(raw_contents=["list job on platformid0"])
         print(ret)
 
 
 if __name__ == "__main__":
     opt = get_args()
+
     runner = Jobs(opt)
     runner.translate()
