@@ -6,6 +6,7 @@ from copy import copy, deepcopy
 from multiprocessing import Pool
 import numpy as np
 import stanfordcorenlp
+from torch import nn
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 
@@ -414,6 +415,8 @@ class Dataset(torch.utils.data.Dataset):
             data = torch.load(self.processed_file_paths["data"])
             self.test = data["test"]
         else:
+            if self.root == None:
+                return
             data = torch.load(self.processed_file_paths["data"])
             self.train = data["train"]
             self.test = data["test"]
@@ -742,6 +745,9 @@ class Dataset(torch.utils.data.Dataset):
         return self.vocab_model
 
     def _process(self):
+        print(self.root)
+        if self.root == None:
+            return
         if all(
             [
                 os.path.exists(processed_path)
@@ -842,15 +848,14 @@ class Text2TextDataset(Dataset):
                     raise RuntimeError("Define your own dynamic_init_topology_builder")
             else:
                 raise NotImplementedError("Define your topology builder.")
-            super(Text2TextDataset, self).__init__(
-                root=root_dir,
-                topology_builder=topology_builder,
-                topology_subdir=topology_subdir,
-                graph_type=static_or_dynamic,
-                share_vocab=share_vocab,
-                dynamic_init_topology_builder=dynamic_init_topology_builder,
-                **kwargs
-            )
+            self.static_or_dynamic = static_or_dynamic
+            super(Text2TextDataset, self).__init__(root=root_dir,
+                                                   topology_builder=topology_builder,
+                                                   topology_subdir=topology_subdir,
+                                                   graph_type=static_or_dynamic,
+                                                   share_vocab=share_vocab,
+                                                   dynamic_init_topology_builder=dynamic_init_topology_builder,
+                                                   **kwargs)
 
     def parse_file(self, file_path) -> list:
         """
