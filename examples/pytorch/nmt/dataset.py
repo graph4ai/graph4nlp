@@ -75,7 +75,6 @@ class IWSLT14Dataset(Text2TextDataset):
     def __init__(
         self,
         root_dir,
-        topology_builder,
         topology_subdir,
         tokenizer=nltk.RegexpTokenizer(" ", gaps=True).tokenize,
         pretrained_word_emb_name=None,
@@ -92,10 +91,10 @@ class IWSLT14Dataset(Text2TextDataset):
         word_emb_size=300,
         share_vocab=False,
         dynamic_graph_type=None,
-        dynamic_init_topology_builder=None,
         dynamic_init_topology_aux_args=None,
         for_inference=False,
         reused_vocab_model=None,
+        dynamic_init_graph_type=None,
     ):
         """
 
@@ -128,7 +127,6 @@ class IWSLT14Dataset(Text2TextDataset):
         # If the preprocessed files are not found, then do the preprocessing and save them.
         super(IWSLT14Dataset, self).__init__(
             root_dir=root_dir,
-            topology_builder=topology_builder,
             topology_subdir=topology_subdir,
             graph_type=graph_type,
             edge_strategy=edge_strategy,
@@ -145,10 +143,10 @@ class IWSLT14Dataset(Text2TextDataset):
             tokenizer=tokenizer,
             use_val_for_vocab=use_val_for_vocab,
             dynamic_graph_type=dynamic_graph_type,
-            dynamic_init_topology_builder=dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
+            dynamic_init_graph_type=dynamic_init_graph_type
         )
 
     @staticmethod
