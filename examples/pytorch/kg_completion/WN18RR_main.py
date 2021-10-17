@@ -164,7 +164,7 @@ def main(args, model_path):
     if args.model in ["ggnn_distmult", "gcn_distmult", "gcn_complex"]:
         graph_path = "examples/pytorch/kg_completion/{}/processed/KG_graph.pt".format(args.data)
         KG_graph = torch.load(graph_path)
-        if Config.cuda == True:
+        if Config.cuda is True:
             KG_graph = KG_graph.to("cuda")
         else:
             KG_graph = KG_graph.to("cpu")
@@ -180,7 +180,7 @@ def main(args, model_path):
     train_batcher.subscribe_to_start_of_epoch_event(eta)
     train_batcher.subscribe_to_events(LossHook("train", print_every_x_batches=args.log_interval))
 
-    if Config.cuda == True:
+    if Config.cuda is True:
         model.cuda()
 
     if args.resume:
