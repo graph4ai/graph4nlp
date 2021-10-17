@@ -12,6 +12,7 @@ from nltk.tokenize import word_tokenize
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 
 from ..data.data import GraphData, to_batch
+from ..modules.graph_construction.base import GraphConstructionBase
 from ..modules.graph_construction.constituency_graph_construction import (
     ConstituencyBasedGraphConstruction,
 )
@@ -19,6 +20,12 @@ from ..modules.graph_construction.dependency_graph_construction import (
     DependencyBasedGraphConstruction,
 )
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from ..modules.graph_construction.node_embedding_based_graph_construction import (
+    NodeEmbeddingBasedGraphConstruction,
+)
+from ..modules.graph_construction.node_embedding_based_refined_graph_construction import (
+    NodeEmbeddingBasedRefinedGraphConstruction,
+)
 from ..modules.utils.generic_utils import LabelModel
 from ..modules.utils.tree_utils import Tree
 from ..modules.utils.tree_utils import Vocab as VocabForTree
@@ -797,12 +804,56 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class Text2TextDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
+    def __init__(
+        self,
+        root_dir: str = None,
+        topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
+        topology_subdir: str = None,
+        graph_type: str = "none",
+        share_vocab=True,
+        dynamic_init_graph_type: str = "none",
+        **kwargs
+    ):
         self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
-        super(Text2TextDataset, self).__init__(
-            root_dir, topology_builder, topology_subdir, **kwargs
-        )
+        if graph_type == "none":
+            super(Text2TextDataset, self).__init__(
+                root_dir, topology_builder, topology_subdir, **kwargs
+            )
+        else:
+            # Set some default value
+            dynamic_init_topology_builder = None
+            static_or_dynamic: str = "static"
+            if graph_type == "dependency":
+                topology_builder = DependencyBasedGraphConstruction
+            elif graph_type == "constituency":
+                topology_builder = ConstituencyBasedGraphConstruction
+            elif graph_type == "node_emb":
+                topology_builder = NodeEmbeddingBasedGraphConstruction
+                static_or_dynamic = "dynamic"
+            elif graph_type == "node_emb_refined":
+                topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+                static_or_dynamic = "dynamic"
+                if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
+                    dynamic_init_topology_builder = None
+                elif dynamic_init_graph_type == "dependency":
+                    dynamic_init_topology_builder = DependencyBasedGraphConstruction
+                elif dynamic_init_graph_type == "constituency":
+                    dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+                else:
+                    # dynamic_init_topology_builder
+                    raise RuntimeError("Define your own dynamic_init_topology_builder")
+            else:
+                raise NotImplementedError("Define your topology builder.")
+            super(Text2TextDataset, self).__init__(
+                root=root_dir,
+                topology_builder=topology_builder,
+                topology_subdir=topology_subdir,
+                graph_type=static_or_dynamic,
+                share_vocab=share_vocab,
+                dynamic_init_topology_builder=dynamic_init_topology_builder,
+                **kwargs
+            )
 
     def parse_file(self, file_path) -> list:
         """
