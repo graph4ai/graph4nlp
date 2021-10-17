@@ -146,7 +146,7 @@ class IWSLT14Dataset(Text2TextDataset):
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
-            dynamic_init_graph_type=dynamic_init_graph_type
+            dynamic_init_graph_type=dynamic_init_graph_type,
         )
 
     @staticmethod

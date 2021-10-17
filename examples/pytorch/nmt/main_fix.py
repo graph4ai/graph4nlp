@@ -65,7 +65,7 @@ class NMT:
     def _build_dataloader(self):
         graph_type = self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
         dataset = IWSLT14Dataset(
-            root_dir='./data',
+            root_dir="./data",
             val_split_ratio=self.opt["val_split_ratio"],
             merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
                 "merge_strategy"
@@ -83,8 +83,9 @@ class NMT:
             dynamic_graph_type=self.opt["graph_construction_args"]["graph_construction_share"][
                 "graph_type"
             ],
-            dynamic_init_graph_type=self.opt["graph_construction_args"]["graph_construction_private"].get(
-                'dynamic_init_graph_type', None),
+            dynamic_init_graph_type=self.opt["graph_construction_args"][
+                "graph_construction_private"
+            ].get("dynamic_init_graph_type", None),
         )
 
         self.train_dataloader = DataLoader(

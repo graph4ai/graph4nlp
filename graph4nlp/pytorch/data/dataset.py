@@ -286,27 +286,27 @@ class Dataset(torch.utils.data.Dataset):
         raise NotImplementedError
 
     def __init__(
-            self,
-            root,
-            topology_builder,
-            topology_subdir,
-            tokenizer=word_tokenize,
-            lower_case=True,
-            pretrained_word_emb_name="840B",
-            pretrained_word_emb_url=None,
-            target_pretrained_word_emb_name=None,
-            target_pretrained_word_emb_url=None,
-            pretrained_word_emb_cache_dir=".vector_cache/",
-            max_word_vocab_size=None,
-            min_word_vocab_freq=1,
-            use_val_for_vocab=False,
-            seed=1234,
-            thread_number=4,
-            port=9000,
-            timeout=15000,
-            for_inference=False,
-            reused_vocab_model=None,
-            **kwargs
+        self,
+        root,
+        topology_builder,
+        topology_subdir,
+        tokenizer=word_tokenize,
+        lower_case=True,
+        pretrained_word_emb_name="840B",
+        pretrained_word_emb_url=None,
+        target_pretrained_word_emb_name=None,
+        target_pretrained_word_emb_url=None,
+        pretrained_word_emb_cache_dir=".vector_cache/",
+        max_word_vocab_size=None,
+        min_word_vocab_freq=1,
+        use_val_for_vocab=False,
+        seed=1234,
+        thread_number=4,
+        port=9000,
+        timeout=15000,
+        for_inference=False,
+        reused_vocab_model=None,
+        **kwargs
     ):
         """
 
@@ -490,18 +490,18 @@ class Dataset(torch.utils.data.Dataset):
 
     @staticmethod
     def _build_topology_process(
-            data_items,
-            topology_builder,
-            graph_type,
-            dynamic_graph_type,
-            dynamic_init_topology_builder,
-            merge_strategy,
-            edge_strategy,
-            dynamic_init_topology_aux_args,
-            lower_case,
-            tokenizer,
-            port,
-            timeout,
+        data_items,
+        topology_builder,
+        graph_type,
+        dynamic_graph_type,
+        dynamic_init_topology_builder,
+        merge_strategy,
+        edge_strategy,
+        dynamic_init_topology_aux_args,
+        lower_case,
+        tokenizer,
+        port,
+        timeout,
     ):
 
         ret = []
@@ -515,7 +515,7 @@ class Dataset(torch.utils.data.Dataset):
                 props_coref = {
                     "annotators": "tokenize, ssplit, pos, lemma, ner, parse, coref",
                     "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,"
-                                        "normalizeOtherBrackets=true",
+                    "normalizeOtherBrackets=true",
                     "tokenize.whitespace": False,
                     "ssplit.isOneSentence": False,
                     "outputFormat": "json",
@@ -523,7 +523,7 @@ class Dataset(torch.utils.data.Dataset):
                 props_openie = {
                     "annotators": "tokenize, ssplit, pos, ner, parse, openie",
                     "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,"
-                                        "normalizeOtherBrackets=true",
+                    "normalizeOtherBrackets=true",
                     "tokenize.whitespace": False,
                     "ssplit.isOneSentence": False,
                     "outputFormat": "json",
@@ -534,7 +534,7 @@ class Dataset(torch.utils.data.Dataset):
                 processor_args = {
                     "annotators": "ssplit,tokenize,depparse",
                     "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,"
-                                        "normalizeOtherBrackets=false",
+                    "normalizeOtherBrackets=false",
                     "tokenize.whitespace": True,
                     "ssplit.isOneSentence": True,
                     "outputFormat": "json",
@@ -543,7 +543,7 @@ class Dataset(torch.utils.data.Dataset):
                 processor_args = {
                     "annotators": "tokenize,ssplit,pos,parse",
                     "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,"
-                                        "normalizeOtherBrackets=false",
+                    "normalizeOtherBrackets=false",
                     "tokenize.whitespace": True,
                     "ssplit.isOneSentence": False,
                     "outputFormat": "json",
@@ -581,9 +581,9 @@ class Dataset(torch.utils.data.Dataset):
                     ret.append(item)
             elif dynamic_graph_type == "node_emb_refined":
                 if dynamic_init_topology_builder in (
-                        IEBasedGraphConstruction,
-                        DependencyBasedGraphConstruction,
-                        ConstituencyBasedGraphConstruction,
+                    IEBasedGraphConstruction,
+                    DependencyBasedGraphConstruction,
+                    ConstituencyBasedGraphConstruction,
                 ):
                     print("Connecting to stanfordcorenlp server...")
                     processor = stanfordcorenlp.StanfordCoreNLP(
@@ -594,8 +594,8 @@ class Dataset(torch.utils.data.Dataset):
                         props_coref = {
                             "annotators": "tokenize, ssplit, pos, lemma, ner, parse, coref",
                             "tokenize.options": "splitHyphenated=true,"
-                                                "normalizeParentheses=true,"
-                                                "normalizeOtherBrackets=true",
+                            "normalizeParentheses=true,"
+                            "normalizeOtherBrackets=true",
                             "tokenize.whitespace": False,
                             "ssplit.isOneSentence": False,
                             "outputFormat": "json",
@@ -603,8 +603,8 @@ class Dataset(torch.utils.data.Dataset):
                         props_openie = {
                             "annotators": "tokenize, ssplit, pos, ner, parse, openie",
                             "tokenize.options": "splitHyphenated=true,"
-                                                "normalizeParentheses=true,"
-                                                "normalizeOtherBrackets=true",
+                            "normalizeParentheses=true,"
+                            "normalizeOtherBrackets=true",
                             "tokenize.whitespace": False,
                             "ssplit.isOneSentence": False,
                             "outputFormat": "json",
@@ -615,8 +615,8 @@ class Dataset(torch.utils.data.Dataset):
                         processor_args = {
                             "annotators": "ssplit,tokenize,depparse",
                             "tokenize.options": "splitHyphenated=false,"
-                                                "normalizeParentheses=false,"
-                                                "normalizeOtherBrackets=false",
+                            "normalizeParentheses=false,"
+                            "normalizeOtherBrackets=false",
                             "tokenize.whitespace": False,
                             "ssplit.isOneSentence": False,
                             "outputFormat": "json",
@@ -625,8 +625,8 @@ class Dataset(torch.utils.data.Dataset):
                         processor_args = {
                             "annotators": "tokenize,ssplit,pos,parse",
                             "tokenize.options": "splitHyphenated=true,"
-                                                "normalizeParentheses=true,"
-                                                "normalizeOtherBrackets=true",
+                            "normalizeParentheses=true,"
+                            "normalizeOtherBrackets=true",
                             "tokenize.whitespace": False,
                             "ssplit.isOneSentence": False,
                             "outputFormat": "json",
@@ -749,10 +749,10 @@ class Dataset(torch.utils.data.Dataset):
 
     def _process(self):
         if all(
-                [
-                    os.path.exists(processed_path)
-                    for processed_path in self.processed_file_paths.values()
-                ]
+            [
+                os.path.exists(processed_path)
+                for processed_path in self.processed_file_paths.values()
+            ]
         ):
             if "val_split_ratio" in self.__dict__:
                 UserWarning(
@@ -762,13 +762,13 @@ class Dataset(torch.utils.data.Dataset):
                 )
             return
         if self.for_inference and all(
-                [
-                    (
-                            os.path.exists(processed_path)
-                            or self.processed_file_names["data"] not in processed_path
-                    )
-                    for processed_path in self.processed_file_paths.values()
-                ]
+            [
+                (
+                    os.path.exists(processed_path)
+                    or self.processed_file_names["data"] not in processed_path
+                )
+                for processed_path in self.processed_file_paths.values()
+            ]
         ):
             return
 
@@ -804,33 +804,34 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class Text2TextDataset(Dataset):
-    def __init__(self,
-                 root_dir: str = None,
-                 topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
-                 topology_subdir: str = None,
-                 graph_type: str = 'none',
-                 share_vocab=True,
-                 dynamic_init_graph_type: str = 'none',
-                 **kwargs):
+    def __init__(
+        self,
+        root_dir: str = None,
+        topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
+        topology_subdir: str = None,
+        graph_type: str = "none",
+        share_vocab=True,
+        dynamic_init_graph_type: str = "none",
+        **kwargs
+    ):
         self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
-        if graph_type == 'none':
-            super(Text2TextDataset, self).__init__(root_dir,
-                                                   topology_builder,
-                                                   topology_subdir,
-                                                   **kwargs)
+        if graph_type == "none":
+            super(Text2TextDataset, self).__init__(
+                root_dir, topology_builder, topology_subdir, **kwargs
+            )
         else:
             # Set some default value
             dynamic_init_topology_builder = None
-            static_or_dynamic: str = 'static'
-            if (graph_type == "dependency"):
+            static_or_dynamic: str = "static"
+            if graph_type == "dependency":
                 topology_builder = DependencyBasedGraphConstruction
-            elif (graph_type == "constituency"):
+            elif graph_type == "constituency":
                 topology_builder = ConstituencyBasedGraphConstruction
-            elif (graph_type == "node_emb"):
+            elif graph_type == "node_emb":
                 topology_builder = NodeEmbeddingBasedGraphConstruction
                 static_or_dynamic = "dynamic"
-            elif (graph_type == "node_emb_refined"):
+            elif graph_type == "node_emb_refined":
                 topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
                 static_or_dynamic = "dynamic"
                 if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
@@ -844,13 +845,15 @@ class Text2TextDataset(Dataset):
                     raise RuntimeError("Define your own dynamic_init_topology_builder")
             else:
                 raise NotImplementedError("Define your topology builder.")
-            super(Text2TextDataset, self).__init__(root=root_dir,
-                                                   topology_builder=topology_builder,
-                                                   topology_subdir=topology_subdir,
-                                                   graph_type=static_or_dynamic,
-                                                   share_vocab=share_vocab,
-                                                   dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                                   **kwargs)
+            super(Text2TextDataset, self).__init__(
+                root=root_dir,
+                topology_builder=topology_builder,
+                topology_subdir=topology_subdir,
+                graph_type=static_or_dynamic,
+                share_vocab=share_vocab,
+                dynamic_init_topology_builder=dynamic_init_topology_builder,
+                **kwargs
+            )
 
     def parse_file(self, file_path) -> list:
         """
