@@ -20,7 +20,8 @@ from ..modules.graph_construction.dependency_graph_construction import (
     DependencyBasedGraphConstruction,
 )
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
-from ..modules.graph_construction.node_embedding_based_graph_construction import NodeEmbeddingBasedGraphConstruction
+from ..modules.graph_construction.node_embedding_based_graph_construction import \
+    NodeEmbeddingBasedGraphConstruction
 from ..modules.graph_construction.node_embedding_based_refined_graph_construction import \
     NodeEmbeddingBasedRefinedGraphConstruction
 from ..modules.utils.generic_utils import LabelModel
@@ -812,7 +813,10 @@ class Text2TextDataset(Dataset):
         self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
         if graph_type == 'none':
-            super(Text2TextDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+            super(Text2TextDataset, self).__init__(root_dir,
+                                                   topology_builder,
+                                                   topology_subdir,
+                                                   **kwargs)
         else:
             # Set some default value
             dynamic_init_topology_builder = None
