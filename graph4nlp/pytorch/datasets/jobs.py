@@ -125,7 +125,7 @@ class JobsDatasetForTree(TextToTreeDataset):
     def __init__(
         self,
         root_dir,
-        topology_builder,
+        # topology_builder,
         topology_subdir,
         #  pretrained_word_emb_file=None,
         pretrained_word_emb_name="6B",
@@ -138,7 +138,7 @@ class JobsDatasetForTree(TextToTreeDataset):
         word_emb_size=300,
         share_vocab=True,
         dynamic_graph_type=None,
-        dynamic_init_topology_builder=None,
+        # dynamic_init_topology_builder=None,
         dynamic_init_topology_aux_args=None,
         enc_emb_size=300,
         dec_emb_size=300,
@@ -147,6 +147,7 @@ class JobsDatasetForTree(TextToTreeDataset):
         max_word_vocab_size=100000,
         for_inference=False,
         reused_vocab_model=None,
+        dynamic_init_graph_type=None,
     ):
         """
 
@@ -179,7 +180,7 @@ class JobsDatasetForTree(TextToTreeDataset):
         # then do the preprocessing and save them.
         super(JobsDatasetForTree, self).__init__(
             root_dir=root_dir,
-            topology_builder=topology_builder,
+            # topology_builder=topology_builder,
             topology_subdir=topology_subdir,
             graph_type=graph_type,
             edge_strategy=edge_strategy,
@@ -189,7 +190,7 @@ class JobsDatasetForTree(TextToTreeDataset):
             val_split_ratio=val_split_ratio,
             word_emb_size=word_emb_size,
             dynamic_graph_type=dynamic_graph_type,
-            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            # dynamic_init_topology_builder=dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
             enc_emb_size=enc_emb_size,
             dec_emb_size=dec_emb_size,
@@ -198,6 +199,7 @@ class JobsDatasetForTree(TextToTreeDataset):
             max_word_vocab_size=max_word_vocab_size,
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
+            dynamic_init_graph_type=dynamic_init_graph_type,
         )
 
 
