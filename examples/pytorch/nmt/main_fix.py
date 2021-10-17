@@ -1,20 +1,20 @@
 import os
 import resource
-
 import numpy as np
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from args import get_args
-from build_model import get_model
-from dataset import IWSLT14Dataset
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.evaluation import BLEU
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
+
+from args import get_args
+from build_model import get_model
+from dataset import IWSLT14Dataset
 from utils import WarmupCosineSchedule, get_log, wordid2str
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
