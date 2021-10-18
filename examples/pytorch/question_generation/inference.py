@@ -38,7 +38,9 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        graph_type = self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
+        graph_type = self.config["graph_construction_args"]["graph_construction_share"][
+            "graph_type"
+        ]
         dataset = SQuADDataset(
             root_dir=self.config["graph_construction_args"]["graph_construction_share"]["root_dir"],
             pretrained_word_emb_name=self.config["pretrained_word_emb_name"],
@@ -60,9 +62,9 @@ class ModelHandler:
             dynamic_graph_type=self.config["graph_construction_args"]["graph_construction_share"][
                 "graph_type"
             ],
-            dynamic_init_graph_type = self.config[
-                "graph_construction_args"
-            ]["graph_construction_private"].get("dynamic_init_graph_type", None),
+            dynamic_init_graph_type=self.config["graph_construction_args"][
+                "graph_construction_private"
+            ].get("dynamic_init_graph_type", None),
             dynamic_init_topology_aux_args={"dummy_param": 0},
             thread_number=self.config["graph_construction_args"]["graph_construction_share"][
                 "thread_number"
