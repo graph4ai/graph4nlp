@@ -10,18 +10,6 @@ from tqdm import tqdm
 
 from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
-    ConstituencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
-    DependencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
-    NodeEmbeddingBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
 from graph4nlp.pytorch.modules.utils.tree_utils import Tree
 
 warnings.filterwarnings("ignore")
@@ -61,13 +49,15 @@ class Mawps:
             "edge_strategy": self.opt["graph_construction_args"]["graph_construction_private"][
                 "edge_strategy"
             ],
-            "graph_type": self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"],
-            "dynamic_graph_type": self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"],
+            "graph_type": self.opt["graph_construction_args"]["graph_construction_share"][
+                "graph_type"],
+            "dynamic_graph_type": self.opt["graph_construction_args"][
+                "graph_construction_share"]["graph_type"],
             "share_vocab": self.use_share_vocab,
             "enc_emb_size": self.opt["graph_construction_args"]["node_embedding"]["input_size"],
             "dec_emb_size": self.opt["decoder_args"]["rnn_decoder_share"]["input_size"],
-            "dynamic_init_graph_type": self.opt["graph_construction_args"]["graph_construction_private"].get(
-                'dynamic_init_graph_type', None),
+            "dynamic_init_graph_type": self.opt["graph_construction_args"][
+                "graph_construction_private"].get('dynamic_init_graph_type', None),
             "min_word_vocab_freq": self.opt["min_freq"],
             "pretrained_word_emb_name": self.opt["pretrained_word_emb_name"],
             "pretrained_word_emb_url": self.opt["pretrained_word_emb_url"],

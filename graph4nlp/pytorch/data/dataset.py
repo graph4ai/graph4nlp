@@ -958,7 +958,9 @@ class TextToTreeDataset(Dataset):
         self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
         if graph_type == 'none':
-            super(TextToTreeDataset, self).__init__(root_dir, topology_builder, topology_subdir, **kwargs)
+            super(TextToTreeDataset, self).__init__(
+                root_dir, topology_builder, topology_subdir, **kwargs
+                )
         else:
             dynamic_init_topology_builder = None
             static_or_dynamic: str = 'static'
@@ -983,13 +985,14 @@ class TextToTreeDataset(Dataset):
                     raise RuntimeError("Define your own dynamic_init_topology_builder")
             else:
                 raise NotImplementedError("Define your topology builder.")
-            super(TextToTreeDataset, self).__init__(root=root_dir,
-                                                   topology_builder=topology_builder,
-                                                   topology_subdir=topology_subdir,
-                                                   graph_type=static_or_dynamic,
-                                                   share_vocab=share_vocab,
-                                                   dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                                   **kwargs)
+            super(TextToTreeDataset, self).__init__(
+                root=root_dir,
+                topology_builder=topology_builder,
+                topology_subdir=topology_subdir,
+                graph_type=static_or_dynamic,
+                share_vocab=share_vocab,
+                dynamic_init_topology_builder=dynamic_init_topology_builder,
+                **kwargs)
 
     def parse_file(self, file_path) -> list:
         """
