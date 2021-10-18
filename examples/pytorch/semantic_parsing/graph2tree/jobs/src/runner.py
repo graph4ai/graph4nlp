@@ -45,19 +45,23 @@ class Jobs:
             "root_dir": self.data_dir,
             "word_emb_size": self.opt["graph_construction_args"]["node_embedding"]["input_size"],
             "topology_subdir": self.opt["graph_construction_args"]["graph_construction_share"][
-                "topology_subdir"],
+                "topology_subdir"
+            ],
             "edge_strategy": self.opt["graph_construction_args"]["graph_construction_private"][
                 "edge_strategy"
             ],
             "graph_type": self.opt["graph_construction_args"]["graph_construction_share"][
-                "graph_type"],
-            "dynamic_graph_type": self.opt["graph_construction_args"][
-                "graph_construction_share"]["graph_type"],
+                "graph_type"
+            ],
+            "dynamic_graph_type": self.opt["graph_construction_args"]["graph_construction_share"][
+                "graph_type"
+            ],
             "share_vocab": self.use_share_vocab,
             "enc_emb_size": self.opt["graph_construction_args"]["node_embedding"]["input_size"],
             "dec_emb_size": self.opt["decoder_args"]["rnn_decoder_share"]["input_size"],
             "dynamic_init_graph_type": self.opt["graph_construction_args"][
-                "graph_construction_private"].get('dynamic_init_graph_type', None),
+                "graph_construction_private"
+            ].get("dynamic_init_graph_type", None),
             "min_word_vocab_freq": self.opt["min_freq"],
             "pretrained_word_emb_name": self.opt["pretrained_word_emb_name"],
             "pretrained_word_emb_url": self.opt["pretrained_word_emb_url"],

@@ -956,31 +956,33 @@ class Text2TextDataset(Dataset):
 
 
 class TextToTreeDataset(Dataset):
-    def __init__(self,
-                 root_dir,
-                 topology_subdir,
-                 graph_type,
-                 dynamic_init_graph_type,
-                 share_vocab=True,
-                 topology_builder=None,
-                 **kwargs):
+    def __init__(
+        self,
+        root_dir,
+        topology_subdir,
+        graph_type,
+        dynamic_init_graph_type,
+        share_vocab=True,
+        topology_builder=None,
+        **kwargs
+    ):
         self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
-        if graph_type == 'none':
+        if graph_type == "none":
             super(TextToTreeDataset, self).__init__(
                 root_dir, topology_builder, topology_subdir, **kwargs
-                )
+            )
         else:
             dynamic_init_topology_builder = None
-            static_or_dynamic: str = 'static'
-            if (graph_type == "dependency"):
+            static_or_dynamic: str = "static"
+            if graph_type == "dependency":
                 topology_builder = DependencyBasedGraphConstruction
-            elif (graph_type == "constituency"):
+            elif graph_type == "constituency":
                 topology_builder = ConstituencyBasedGraphConstruction
-            elif (graph_type == "node_emb"):
+            elif graph_type == "node_emb":
                 topology_builder = NodeEmbeddingBasedGraphConstruction
                 static_or_dynamic = "dynamic"
-            elif (graph_type == "node_emb_refined"):
+            elif graph_type == "node_emb_refined":
                 topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
                 static_or_dynamic = "dynamic"
                 if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
@@ -1001,7 +1003,8 @@ class TextToTreeDataset(Dataset):
                 graph_type=static_or_dynamic,
                 share_vocab=share_vocab,
                 dynamic_init_topology_builder=dynamic_init_topology_builder,
-                **kwargs)
+                **kwargs
+            )
 
     def parse_file(self, file_path) -> list:
         """
