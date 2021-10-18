@@ -164,7 +164,10 @@ def main(args, model_path):
     if args.model in ["ggnn_distmult", "gcn_distmult", "gcn_complex"]:
         graph_path = "examples/pytorch/kg_completion/{}/processed/KG_graph.pt".format(args.data)
         KG_graph = torch.load(graph_path)
-        KG_graph = KG_graph.to("cuda")
+        if Config.cuda is True:
+            KG_graph = KG_graph.to("cuda")
+        else:
+            KG_graph = KG_graph.to("cpu")
     else:
         KG_graph = None
 
@@ -177,7 +180,9 @@ def main(args, model_path):
     train_batcher.subscribe_to_start_of_epoch_event(eta)
     train_batcher.subscribe_to_events(LossHook("train", print_every_x_batches=args.log_interval))
 
-    model.cuda()
+    if Config.cuda is True:
+        model.cuda()
+
     if args.resume:
         model_params = torch.load(model_path)
         print(model)
@@ -248,7 +253,7 @@ if __name__ == "__main__":
         help="input batch size for testing/validation (default: 128)",
     )
     parser.add_argument(
-        "--epochs", type=int, default=1000, help="number of epochs to train (default: 1000)"
+        "--epochs", type=int, default=100, help="number of epochs to train (default: 1000)"
     )
     parser.add_argument("--lr", type=float, default=0.003, help="learning rate (default: 0.003)")
     parser.add_argument(
@@ -366,7 +371,7 @@ if __name__ == "__main__":
 
     # parse console parameters and set global variables
     Config.backend = "pytorch"
-    Config.cuda = True
+    Config.cuda = False
     Config.embedding_dim = args.embedding_dim
     # Logger.GLOBAL_LOG_LEVEL = LogLevel.DEBUG
 
