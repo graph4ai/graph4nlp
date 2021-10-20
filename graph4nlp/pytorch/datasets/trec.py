@@ -22,29 +22,26 @@ class TrecDataset(Text2LabelDataset):
     def __init__(
         self,
         root_dir,
-        topology_builder=None,
         topology_subdir=None,
-        graph_type="static",
+        graph_type="none",
         pretrained_word_emb_name="840B",
         pretrained_word_emb_url=None,
         pretrained_word_emb_cache_dir=None,
         edge_strategy=None,
-        merge_strategy="tailhead",
         max_word_vocab_size=None,
         min_word_vocab_freq=1,
         word_emb_size=None,
         for_inference=None,
         reused_vocab_model=None,
         reused_label_model=None,
+        dynamic_init_graph_type=None,
         **kwargs
     ):
         super(TrecDataset, self).__init__(
             root_dir=root_dir,
-            topology_builder=topology_builder,
             topology_subdir=topology_subdir,
             graph_type=graph_type,
             edge_strategy=edge_strategy,
-            merge_strategy=merge_strategy,
             max_word_vocab_size=max_word_vocab_size,
             min_word_vocab_freq=min_word_vocab_freq,
             pretrained_word_emb_name=pretrained_word_emb_name,
@@ -54,5 +51,6 @@ class TrecDataset(Text2LabelDataset):
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
             reused_label_model=reused_label_model,
+            dynamic_init_graph_type=dynamic_init_graph_type,
             **kwargs
         )

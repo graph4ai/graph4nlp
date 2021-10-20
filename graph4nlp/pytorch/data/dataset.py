@@ -1107,11 +1107,61 @@ class TextToTreeDataset(Dataset):
 
 
 class Text2LabelDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, **kwargs):
+    def __init__(
+        self,
+        root_dir: str = None,
+        topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
+        topology_subdir: str = None,
+        graph_type: str = "none",
+        dynamic_init_graph_type: str = None,
+        **kwargs
+    ):
         self.data_item_type = Text2LabelDataItem
-        super(Text2LabelDataset, self).__init__(
-            root_dir, topology_builder, topology_subdir, **kwargs
-        )
+        if graph_type == "none":
+            super(Text2LabelDataset, self).__init__(
+                root_dir, topology_builder, topology_subdir, **kwargs
+            )
+        else:
+            # Set some default value
+            dynamic_init_topology_builder = None
+            static_or_dynamic: str = "static"
+            merge_strategy = "tailhead"
+            if graph_type == "dependency":
+                topology_builder = DependencyBasedGraphConstruction
+            elif graph_type == "constituency":
+                topology_builder = ConstituencyBasedGraphConstruction
+            elif graph_type == "ie":
+                topology_builder = IEBasedGraphConstruction
+                merge_strategy = "global"
+            elif graph_type == "node_emb":
+                topology_builder = NodeEmbeddingBasedGraphConstruction
+                merge_strategy = None
+                static_or_dynamic = "dynamic"
+            elif graph_type == "node_emb_refined":
+                topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+                static_or_dynamic = "dynamic"
+                if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
+                    dynamic_init_topology_builder = None
+                elif dynamic_init_graph_type == "dependency":
+                    dynamic_init_topology_builder = DependencyBasedGraphConstruction
+                elif dynamic_init_graph_type == "constituency":
+                    dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+                elif dynamic_init_graph_type == "ie":
+                    dynamic_init_topology_builder = IEBasedGraphConstruction
+                    merge_strategy = "global"
+                else:
+                    raise RuntimeError("Define your own dynamic_init_topology_builder")
+            else:
+                raise NotImplementedError("Define your topology builder.")
+            super(Text2LabelDataset, self).__init__(
+                root=root_dir,
+                topology_builder=topology_builder,
+                topology_subdir=topology_subdir,
+                graph_type=static_or_dynamic,
+                dynamic_init_topology_builder=dynamic_init_topology_builder,
+                merge_strategy=merge_strategy,
+                **kwargs
+            )
 
     def parse_file(self, file_path) -> list:
         """

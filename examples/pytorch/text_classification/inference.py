@@ -11,13 +11,6 @@ from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.trec import TrecDataset
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
-from graph4nlp.pytorch.modules.graph_construction import (
-    ConstituencyBasedGraphConstruction,
-    DependencyBasedGraphConstruction,
-    IEBasedGraphConstruction,
-    NodeEmbeddingBasedGraphConstruction,
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
 from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
@@ -47,43 +40,6 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dynamic_init_topology_builder = None
-        if self.config["graph_type"] == "dependency":
-            topology_builder = DependencyBasedGraphConstruction
-            graph_type = "static"
-            merge_strategy = "tailhead"
-        elif self.config["graph_type"] == "constituency":
-            topology_builder = ConstituencyBasedGraphConstruction
-            graph_type = "static"
-            merge_strategy = "tailhead"
-        elif self.config["graph_type"] == "ie":
-            topology_builder = IEBasedGraphConstruction
-            graph_type = "static"
-            merge_strategy = "global"
-        elif self.config["graph_type"] == "node_emb":
-            topology_builder = NodeEmbeddingBasedGraphConstruction
-            graph_type = "dynamic"
-            merge_strategy = None
-        elif self.config["graph_type"] == "node_emb_refined":
-            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-            graph_type = "dynamic"
-            merge_strategy = "tailhead"
-
-            if self.config["init_graph_type"] == "line":
-                dynamic_init_topology_builder = None
-            elif self.config["init_graph_type"] == "dependency":
-                dynamic_init_topology_builder = DependencyBasedGraphConstruction
-            elif self.config["init_graph_type"] == "constituency":
-                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-            elif self.config["init_graph_type"] == "ie":
-                merge_strategy = "global"
-                dynamic_init_topology_builder = IEBasedGraphConstruction
-            else:
-                # dynamic_init_topology_builder
-                raise RuntimeError("Define your own dynamic_init_topology_builder")
-        else:
-            raise RuntimeError("Unknown graph_type: {}".format(self.config["graph_type"]))
-
         topology_subdir = "{}_graph".format(self.config["graph_type"])
         if self.config["graph_type"] == "node_emb_refined":
             topology_subdir += "_{}".format(self.config["init_graph_type"])
@@ -94,19 +50,17 @@ class ModelHandler:
             pretrained_word_emb_cache_dir=self.config.get(
                 "pretrained_word_emb_cache_dir", ".vector_cache"
             ),
-            merge_strategy=merge_strategy,
             seed=self.config["seed"],
             thread_number=4,
             port=9000,
             timeout=15000,
             word_emb_size=300,
-            graph_type=graph_type,
-            topology_builder=topology_builder,
+            graph_type=self.config["graph_type"],
             topology_subdir=topology_subdir,
             dynamic_graph_type=self.config["graph_type"]
             if self.config["graph_type"] in ("node_emb", "node_emb_refined")
             else None,
-            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_graph_type=self.config["init_graph_type"],
             dynamic_init_topology_aux_args={"dummy_param": 0},
             for_inference=True,
             reused_vocab_model=self.model.vocab,
