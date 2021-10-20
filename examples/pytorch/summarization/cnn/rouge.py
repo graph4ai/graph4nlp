@@ -63,7 +63,7 @@ def read_file(path):
 
 
 if __name__ == "__main__":
-    path = 'out/cnn/gcn_bi_fuse_l2_ckpt_new/'
+    path = "out/cnn/gcn_bi_fuse_l2_ckpt_new/"
     gt_file = "out/cnn/gcn_bi_fuse_l2_ckpt_new/gcn_bi_fuse_l2_ckpt_new_bs3_gt.txt"
     pred_file = "out/cnn/gcn_bi_fuse_l2_ckpt_new/gcn_bi_fuse_l2_ckpt_new_bs3_pred.txt"
 
