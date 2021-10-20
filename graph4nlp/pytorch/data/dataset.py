@@ -956,12 +956,55 @@ class Text2TextDataset(Dataset):
 
 
 class TextToTreeDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
+    def __init__(
+        self,
+        root_dir,
+        topology_subdir,
+        graph_type,
+        dynamic_init_graph_type,
+        share_vocab=True,
+        topology_builder=None,
+        **kwargs
+    ):
         self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
-        super(TextToTreeDataset, self).__init__(
-            root_dir, topology_builder, topology_subdir, **kwargs
-        )
+        if graph_type == "none":
+            super(TextToTreeDataset, self).__init__(
+                root_dir, topology_builder, topology_subdir, **kwargs
+            )
+        else:
+            dynamic_init_topology_builder = None
+            static_or_dynamic: str = "static"
+            if graph_type == "dependency":
+                topology_builder = DependencyBasedGraphConstruction
+            elif graph_type == "constituency":
+                topology_builder = ConstituencyBasedGraphConstruction
+            elif graph_type == "node_emb":
+                topology_builder = NodeEmbeddingBasedGraphConstruction
+                static_or_dynamic = "dynamic"
+            elif graph_type == "node_emb_refined":
+                topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+                static_or_dynamic = "dynamic"
+                if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
+                    dynamic_init_topology_builder = None
+                elif dynamic_init_graph_type == "dependency":
+                    dynamic_init_topology_builder = DependencyBasedGraphConstruction
+                elif dynamic_init_graph_type == "constituency":
+                    dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+                else:
+                    # dynamic_init_topology_builder
+                    raise RuntimeError("Define your own dynamic_init_topology_builder")
+            else:
+                raise NotImplementedError("Define your topology builder.")
+            super(TextToTreeDataset, self).__init__(
+                root=root_dir,
+                topology_builder=topology_builder,
+                topology_subdir=topology_subdir,
+                graph_type=static_or_dynamic,
+                share_vocab=share_vocab,
+                dynamic_init_topology_builder=dynamic_init_topology_builder,
+                **kwargs
+            )
 
     def parse_file(self, file_path) -> list:
         """
