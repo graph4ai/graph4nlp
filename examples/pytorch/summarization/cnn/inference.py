@@ -11,13 +11,6 @@ from torch.utils.data import DataLoader
 from graph4nlp.pytorch.datasets.cnn import CNNDataset
 from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
-from graph4nlp.pytorch.modules.graph_construction import (
-    ConstituencyBasedGraphConstruction,
-    DependencyBasedGraphConstruction,
-    IEBasedGraphConstruction,
-    NodeEmbeddingBasedGraphConstruction,
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
 from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
@@ -27,7 +20,7 @@ from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
 
 from .main import SumModel
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
 def all_to_cuda(data, device=None):
@@ -68,78 +61,27 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        if (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
-            == "dependency"
-        ):
-            topology_builder = DependencyBasedGraphConstruction
-            graph_type = "static"
-            dynamic_init_topology_builder = None
-        elif (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
-            == "constituency"
-        ):
-            topology_builder = ConstituencyBasedGraphConstruction
-            graph_type = "static"
-            dynamic_init_topology_builder = None
-        elif (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"] == "ie"
-        ):
-            topology_builder = IEBasedGraphConstruction
-            graph_type = "static"
-            dynamic_init_topology_builder = None
-        elif (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
-            == "triples"
-        ):
-            topology_builder = None
-            graph_type = "static"
-            dynamic_init_topology_builder = None
-        elif (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
-            == "node_emb"
-        ):
-            topology_builder = NodeEmbeddingBasedGraphConstruction
-            graph_type = "dynamic"
-            dynamic_init_topology_builder = None
-        elif (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
-            == "node_emb_refined"
-        ):
-            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-            graph_type = "dynamic"
-            dynamic_init_graph_type = self.config[
-                "graph_construction_args"
-            ].graph_construction_private.dynamic_init_graph_type
-            if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
-                dynamic_init_topology_builder = None
-            elif dynamic_init_graph_type == "dependency":
-                dynamic_init_topology_builder = DependencyBasedGraphConstruction
-            elif dynamic_init_graph_type == "constituency":
-                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-            else:
-                raise RuntimeError("Define your own dynamic_init_topology_builder")
-        else:
-            raise NotImplementedError("Define your topology builder.")
 
         para_dic = {
             "root_dir": self.config["graph_construction_args"]["graph_construction_share"][
                 "root_dir"
             ],
             "word_emb_size": self.config["word_emb_size"],
-            "topology_builder": topology_builder,
+            # "topology_builder": topology_builder,
             "topology_subdir": self.config["graph_construction_args"]["graph_construction_share"][
                 "topology_subdir"
             ],
             "edge_strategy": self.config["graph_construction_args"]["graph_construction_private"][
                 "edge_strategy"
             ],
-            "graph_type": graph_type,
+            "graph_type": self.config["graph_construction_args"]["graph_construction_share"][
+                "graph_type"
+            ],
             "dynamic_graph_type": self.config["graph_construction_args"][
                 "graph_construction_share"
             ]["graph_type"],
             "share_vocab": self.config["share_vocab"],
-            "dynamic_init_topology_builder": dynamic_init_topology_builder,
+            # "dynamic_init_topology_builder": dynamic_init_topology_builder,
             "min_word_vocab_freq": self.config["min_word_freq"],
             # 'pretrained_word_emb_name': self.config["pretrained_word_emb_name"],
             # 'pretrained_word_emb_url': self.config["pretrained_word_emb_url"],
