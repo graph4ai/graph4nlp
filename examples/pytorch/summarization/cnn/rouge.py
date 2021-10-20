@@ -63,13 +63,13 @@ def read_file(path):
 
 
 if __name__ == "__main__":
-    # path = 'out/cnn/gcn_bi_fuse_l2_ckpt/'
-    # gt_file = "out/cnn/gcn_bi_fuse_l2_ckpt/gcn_bi_fuse_l2_ckpt_bs15_gt.txt"
-    # pred_file = "out/cnn/gcn_bi_fuse_l2_ckpt/gcn_bi_fuse_l2_ckpt_bs15_pred.txt"
+    path = 'out/cnn/gcn_bi_fuse_l2_ckpt_new/'
+    gt_file = "out/cnn/gcn_bi_fuse_l2_ckpt_new/gcn_bi_fuse_l2_ckpt_new_bs3_gt.txt"
+    pred_file = "out/cnn/gcn_bi_fuse_l2_ckpt_new/gcn_bi_fuse_l2_ckpt_new_bs3_pred.txt"
 
-    path = "examples/pytorch/summarization/cnn/text_cnn/"
-    gt_file = "examples/pytorch/summarization/cnn/text_cnn/test.output"
-    pred_file = "examples/pytorch/summarization/cnn/text_cnn/test_pred.txt"
+    # path = "examples/pytorch/summarization/cnn/text_cnn/"
+    # gt_file = "examples/pytorch/summarization/cnn/text_cnn/test.output"
+    # pred_file = "examples/pytorch/summarization/cnn/text_cnn/test_pred.txt"
     gt_collect = read_file(gt_file)
     pred_collect = read_file(pred_file)
     assert len(gt_collect) == len(pred_collect)

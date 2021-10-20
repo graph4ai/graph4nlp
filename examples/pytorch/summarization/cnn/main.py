@@ -14,13 +14,6 @@ from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
-from graph4nlp.pytorch.modules.graph_construction import (
-    ConstituencyBasedGraphConstruction,
-    DependencyBasedGraphConstruction,
-    IEBasedGraphConstruction,
-    NodeEmbeddingBasedGraphConstruction,
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
 from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
 from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
@@ -29,7 +22,7 @@ from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 def all_to_cuda(data, device=None):
@@ -120,60 +113,9 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        if (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
-            == "dependency"
-        ):
-            topology_builder = DependencyBasedGraphConstruction
-            graph_type = "static"
-            dynamic_init_topology_builder = None
-        elif (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
-            == "constituency"
-        ):
-            topology_builder = ConstituencyBasedGraphConstruction
-            graph_type = "static"
-            dynamic_init_topology_builder = None
-        elif (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"] == "ie"
-        ):
-            topology_builder = IEBasedGraphConstruction
-            graph_type = "static"
-            dynamic_init_topology_builder = None
-        elif (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
-            == "triples"
-        ):
-            topology_builder = None
-            graph_type = "static"
-            dynamic_init_topology_builder = None
-        elif (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
-            == "node_emb"
-        ):
-            topology_builder = NodeEmbeddingBasedGraphConstruction
-            graph_type = "dynamic"
-            dynamic_init_topology_builder = None
-        elif (
-            self.config["graph_construction_args"]["graph_construction_share"]["graph_type"]
-            == "node_emb_refined"
-        ):
-            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-            graph_type = "dynamic"
-            dynamic_init_graph_type = self.config[
-                "graph_construction_args"
-            ].graph_construction_private.dynamic_init_graph_type
-            if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
-                dynamic_init_topology_builder = None
-            elif dynamic_init_graph_type == "dependency":
-                dynamic_init_topology_builder = DependencyBasedGraphConstruction
-            elif dynamic_init_graph_type == "constituency":
-                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-            else:
-                raise RuntimeError("Define your own dynamic_init_topology_builder")
-        else:
-            raise NotImplementedError("Define your topology builder.")
-
+        graph_type = self.config["graph_construction_args"]["graph_construction_share"][
+            "graph_type"
+        ]
         dataset = CNNDataset(
             root_dir=self.config["graph_construction_args"]["graph_construction_share"]["root_dir"],
             merge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
@@ -189,17 +131,15 @@ class ModelHandler:
             lower_case=self.config["vocab_lower_case"],
             seed=self.config["seed"],
             graph_type=graph_type,
-            topology_builder=topology_builder,
             topology_subdir=self.config["graph_construction_args"]["graph_construction_share"][
                 "topology_subdir"
             ],
             dynamic_graph_type=self.config["graph_construction_args"]["graph_construction_share"][
                 "graph_type"
             ],
-            dynamic_init_topology_builder=dynamic_init_topology_builder,
             dynamic_init_topology_aux_args={"dummy_param": 0},
             thread_number=35,
-            port=9000,
+            port=9100,
             timeout=15000,
             tokenizer=None,
         )
