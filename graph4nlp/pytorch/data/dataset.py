@@ -489,7 +489,7 @@ class Dataset(torch.utils.data.Dataset):
                 self.train = old_train_set[:new_train_length]
 
     @staticmethod
-    def _build_topology_process( 
+    def _build_topology_process(
         data_items,
         topology_builder,
         graph_type,
@@ -826,13 +826,13 @@ class Text2TextDataset(Dataset):
             static_or_dynamic: str = "static"
             if graph_type == "dependency":
                 if topology_builder is None:
-                   topology_builder = DependencyBasedGraphConstruction
+                    topology_builder = DependencyBasedGraphConstruction
             elif graph_type == "constituency":
                 if topology_builder is None:
-                   topology_builder = ConstituencyBasedGraphConstruction
+                    topology_builder = ConstituencyBasedGraphConstruction
             elif graph_type == "node_emb":
                 if topology_builder is None:
-                   topology_builder = NodeEmbeddingBasedGraphConstruction
+                    topology_builder = NodeEmbeddingBasedGraphConstruction
                 static_or_dynamic = "dynamic"
             elif graph_type == "node_emb_refined":
                 topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
@@ -1352,11 +1352,11 @@ class SequenceLabelingDataset(Dataset):
         root_dir: str = None,
         topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
-        tag_types: list = [], 
+        tag_types: str = None,
         graph_type: str = "none",
         dynamic_init_graph_type: str = None,
         **kwargs
-        ):
+    ):
         self.data_item_type = SequenceLabelingDataItem
         self.tag_types = tag_types
         if graph_type == "none":
@@ -1394,7 +1394,7 @@ class SequenceLabelingDataset(Dataset):
                 else:
                     raise RuntimeError("Define your own dynamic_init_topology_builder")
             else:
-                raise NotImplementedError("Define your topology builder.")                   
+                raise NotImplementedError("Define your topology builder.")
             super(Text2LabelDataset, self).__init__(
                 root=root_dir,
                 topology_builder=topology_builder,
