@@ -75,7 +75,7 @@ class InferenceWrapperBase(nn.Module):
         ]
 
         self.dataset = dataset(
-            graph_type=self.graph_type,
+            graph_name=self.graph_type,
             dynamic_init_graph_type=self.dynamic_init_graph_type,
             topology_builder=topology_builder,
             dynamic_init_topology_builder=dynamic_init_topology_builder,

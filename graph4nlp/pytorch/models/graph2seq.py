@@ -280,7 +280,9 @@ class Graph2Seq(Graph2XBase):
         results: torch.Tensor
             The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes. # noqa
         """
-        return self.translate(batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict)
+        return self.translate(
+            batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict
+        )
 
     @classmethod
     def from_args(cls, opt, vocab_model):

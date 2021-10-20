@@ -5,12 +5,26 @@ from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
+from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
+    ConstituencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
+    NodeEmbeddingBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
+    NodeEmbeddingBasedRefinedGraphConstruction,
+)
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
 from args import get_args
 from build_model import get_model
 from evaluation import ExpressionAccuracy
 from utils import get_log, wordid2str
+
+# os.environ["CUDA_VISIBLE_DEVICES"] = "4"
 
 
 class Jobs:
@@ -52,6 +66,48 @@ class Jobs:
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
+        if (
+            self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
+            == "dependency"
+        ):
+            topology_builder = DependencyBasedGraphConstruction
+            graph_type = "static"
+            dynamic_init_topology_builder = None
+        elif (
+            self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
+            == "constituency"
+        ):
+            topology_builder = ConstituencyBasedGraphConstruction
+            graph_type = "static"
+            dynamic_init_topology_builder = None
+        elif (
+            self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
+            == "node_emb"
+        ):
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+            graph_type = "dynamic"
+            dynamic_init_topology_builder = None
+        elif (
+            self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
+            == "node_emb_refined"
+        ):
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            graph_type = "dynamic"
+            dynamic_init_graph_type = self.opt["graph_construction_args"][
+                "graph_construction_private"
+            ]["dynamic_init_graph_type"]
+            if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
+                dynamic_init_topology_builder = None
+            elif dynamic_init_graph_type == "dependency":
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif dynamic_init_graph_type == "constituency":
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            else:
+                # dynamic_init_topology_builder
+                raise RuntimeError("Define your own dynamic_init_topology_builder")
+        else:
+            raise NotImplementedError("Define your topology builder.")
+
         dataset = JobsDataset(
             root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
             #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
@@ -70,12 +126,8 @@ class Jobs:
             share_vocab=self.opt["graph_construction_args"]["graph_construction_share"][
                 "share_vocab"
             ],
-            graph_name=self.opt["graph_construction_args"]["graph_construction_share"][
-                "graph_type"
-            ],
-            dynamic_init_graph_type=self.opt["graph_construction_args"][
-                "graph_construction_private"
-            ].get("dynamic_init_graph_type", None),
+            graph_type=graph_type,
+            topology_builder=topology_builder,
             topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
                 "topology_subdir"
             ],
@@ -83,6 +135,11 @@ class Jobs:
                 "thread_number"
             ],
             port=self.opt["graph_construction_args"]["graph_construction_share"]["port"],
+            dynamic_graph_type=self.opt["graph_construction_args"]["graph_construction_share"][
+                "graph_type"
+            ],
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=None,
         )
 
         self.train_dataloader = DataLoader(

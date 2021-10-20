@@ -494,8 +494,8 @@ class Dataset(torch.utils.data.Dataset):
         return self._build_topology_process(
             data_items=data_items,
             topology_builder=self.topology_builder,
-            graph_type=self.graph_type,
-            dynamic_graph_type=self.graph_type,
+            static_or_dynamic=self.static_or_dynamic,
+            dynamic_graph_type=self.graph_name,
             dynamic_init_topology_builder=self.dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=None,  # TODO: self.dynamic_init_topology_builder
             merge_strategy=self.merge_strategy,
@@ -510,7 +510,7 @@ class Dataset(torch.utils.data.Dataset):
     def _build_topology_process(
         data_items,
         topology_builder,
-        graph_type,
+        static_or_dynamic,
         dynamic_graph_type,
         dynamic_init_topology_builder,
         merge_strategy,
@@ -521,9 +521,10 @@ class Dataset(torch.utils.data.Dataset):
         port,
         timeout,
     ):
-
+        if static_or_dynamic not in ["static", "dynamic"]:
+            raise ValueError("Argument: ``static_or_dynamic`` must be ``static`` or ``dynamic``")
         ret = []
-        if graph_type == "static":
+        if static_or_dynamic == "static":
             print("Connecting to stanfordcorenlp server...")
             processor = stanfordcorenlp.StanfordCoreNLP(
                 "http://localhost", port=port, timeout=timeout
@@ -591,7 +592,7 @@ class Dataset(torch.utils.data.Dataset):
                     warnings.warn(RuntimeWarning(msg))
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
-        elif graph_type == "dynamic":
+        elif static_or_dynamic == "dynamic":
             if dynamic_graph_type == "node_emb":
                 for item in data_items:
                     graph = topology_builder.init_topology(
@@ -706,7 +707,7 @@ class Dataset(torch.utils.data.Dataset):
                 args=(
                     data_items[start_index:end_index],
                     self.topology_builder,
-                    self.graph_type,
+                    self.static_or_dynamic,
                     self.dynamic_graph_type,
                     self.dynamic_init_topology_builder,
                     self.merge_strategy,
@@ -823,7 +824,9 @@ class Text2TextDataset(Dataset):
     def __init__(
         self,
         root_dir: str = None,
-        graph_type: str = None,
+        graph_type: str = None,  # deprecated
+        static_or_dynamic: str = "static",
+        graph_name: str = None,
         topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
         dynamic_init_graph_type: str = None,
@@ -834,10 +837,37 @@ class Text2TextDataset(Dataset):
     ):
         self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
-        if graph_type is None:
-            super(Text2TextDataset, self).__init__(
-                root_dir, topology_builder, topology_subdir, **kwargs
-            )
+        if graph_name is None:
+            if graph_type is not None:
+                warnings.warn(
+                    "``graph_type`` argument in dataset class is deprecated and will be \
+                        removed in the next version. Please use ``static_or_dynamic`` instead."
+                )
+                if static_or_dynamic is not None and graph_type != static_or_dynamic:
+                    raise ValueError("``graph_type`` must be equal to ``static_or_dynamic``")
+                super(Text2TextDataset, self).__init__(
+                    root_dir,
+                    topology_builder,
+                    topology_subdir,
+                    graph_name=graph_name,
+                    dynamic_init_topology_builder=dynamic_init_topology_builder,
+                    dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+                    share_vocab=share_vocab,
+                    static_or_dynamic=graph_type,
+                    **kwargs
+                )
+            else:
+                super(Text2TextDataset, self).__init__(
+                    root_dir,
+                    topology_builder,
+                    topology_subdir,
+                    graph_name=graph_name,
+                    dynamic_init_topology_builder=dynamic_init_topology_builder,
+                    dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+                    share_vocab=share_vocab,
+                    static_or_dynamic=static_or_dynamic,
+                    **kwargs
+                )
         else:
             # Set some default value
             dynamic_init_topology_builder = None
@@ -870,11 +900,13 @@ class Text2TextDataset(Dataset):
             self.static_or_dynamic = static_or_dynamic
             super(Text2TextDataset, self).__init__(
                 root=root_dir,
+                graph_name=graph_name,
                 topology_builder=topology_builder,
                 topology_subdir=topology_subdir,
-                graph_type=static_or_dynamic,
+                static_or_dynamic=static_or_dynamic,
                 share_vocab=share_vocab,
                 dynamic_init_topology_builder=dynamic_init_topology_builder,
+                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
                 **kwargs
             )
 

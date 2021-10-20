@@ -1,31 +1,12 @@
-import sys
-sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
-from nltk import tokenize
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
 
-from graph4nlp.pytorch.datasets.jobs import JobsDataset
+from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper import (
+    GeneratorInferenceWrapper,
+)
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
-    ConstituencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
-    DependencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
-    NodeEmbeddingBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
-
-from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper import GeneratorInferenceWrapper
 
 from args import get_args
-from evaluation import ExpressionAccuracy
-from utils import get_log, wordid2str
 
 
 class Jobs:
@@ -56,7 +37,10 @@ class Jobs:
             self.device
         )
         from nltk.tokenize import word_tokenize
-        self.inference_tool = GeneratorInferenceWrapper(cfg=self.opt, model=self.model, beam_size=3, lower_case=True, tokenizer=word_tokenize)
+
+        self.inference_tool = GeneratorInferenceWrapper(
+            cfg=self.opt, model=self.model, beam_size=3, lower_case=True, tokenizer=word_tokenize
+        )
 
     @torch.no_grad()
     def translate(self):
