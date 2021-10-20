@@ -8,11 +8,7 @@ from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
-from graph4nlp.pytorch.modules.graph_construction import (
-    ConstituencyBasedGraphConstruction,
-    IEBasedGraphConstruction,
-    NodeEmbeddingBasedGraphConstruction,
-)
+
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
 
 from conll import ConllDataset
