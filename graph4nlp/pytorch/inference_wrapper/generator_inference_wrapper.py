@@ -6,8 +6,22 @@ from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import wordid2str
 
 
+class InferenceWrapperBase(nn.Module):
+
+    def __init__(self, cfg, model,
+                topology_builder=None, 
+                beam_size=3, lower_case=True, tokenizer=None):
+        super().__init__()
+
+    def preprocess(self, ):
+        pass
+        
+
+
 class GeneratorInferenceWrapper(nn.Module):
-    def __init__(self, cfg, model, beam_size=3, lower_case=True, tokenizer=None):
+    def __init__(self, cfg, model,
+                topology_builder=None,
+                beam_size=3, lower_case=True, tokenizer=None):
         super().__init__()
         # cfg is expected to be fixed
         # TODO: lower_case and tokenizer should be removed
@@ -34,12 +48,20 @@ class GeneratorInferenceWrapper(nn.Module):
         use_ie = self.graph_type == "ie"
         for raw_sentence in raw_contents:
             data_item = Text2TextDataItem(input_text=raw_sentence, output_text=None, tokenizer=self.tokenizer)
-            data_item = dataset._build_topology_process(data_items=[data_item], topology_builder=dataset.topology_builder,
-                graph_type=dataset.static_or_dynamic, dynamic_graph_type=self.graph_type, dynamic_init_topology_builder=dataset.dynamic_init_topology_builder, merge_strategy=self.merge_strategy, edge_strategy=self.edge_strategy,
+            data_item = dataset.process(data_items=[data_item], merge_strategy=self.merge_strategy, edge_strategy=self.edge_strategy,
                 dynamic_init_topology_aux_args=None, lower_case=self.lower_case, port=self.port, timeout=self.timeout, tokenizer=self.tokenizer)
+
+
+            # data_item = dataset._build_topology_process(data_items=[data_item], topology_builder=dataset.topology_builder,
+            #     graph_type=dataset.static_or_dynamic, dynamic_graph_type=self.graph_type, dynamic_init_topology_builder=dataset.dynamic_init_topology_builder, merge_strategy=self.merge_strategy, edge_strategy=self.edge_strategy,
+            #     dynamic_init_topology_aux_args=None, lower_case=self.lower_case, port=self.port, timeout=self.timeout, tokenizer=self.tokenizer)
             
             data_item = Text2TextDataset._vectorize_one_dataitem(data_item[0], self.vocab_model, use_ie=use_ie)
             data_items.append(data_item)
+
+
+
+
         collate_data = Text2TextDataset.collate_fn(data_items)
         batch_graph = collate_data["graph_data"].to(device)
 
