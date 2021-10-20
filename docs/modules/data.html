@@ -1057,7 +1057,7 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.TextToTreeDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">TextToTreeDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.TextToTreeDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">TextToTreeDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">graph_type</em>, <em class="sig-param">dynamic_init_graph_type</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.TextToTreeDataset" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1252,7 +1252,7 @@ input and output is separated by a tab( ).</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.DoubleText2TextDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">DoubleText2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">DoubleText2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir: str = None</em>, <em class="sig-param">topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">graph_type: str = 'none'</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">dynamic_init_graph_type: str = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
