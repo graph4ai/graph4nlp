@@ -67,6 +67,5 @@ class Jobs:
 
 if __name__ == "__main__":
     opt = get_args()
-
     runner = Jobs(opt)
     runner.translate()

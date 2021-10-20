@@ -2,11 +2,10 @@ import abc
 import os
 import warnings
 from collections import Counter
-from copy import copy, deepcopy
+from copy import deepcopy
 from multiprocessing import Pool
 import numpy as np
 import stanfordcorenlp
-from torch import nn
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 
@@ -415,7 +414,7 @@ class Dataset(torch.utils.data.Dataset):
             data = torch.load(self.processed_file_paths["data"])
             self.test = data["test"]
         else:
-            if self.root == None:
+            if self.root is None:
                 return
             data = torch.load(self.processed_file_paths["data"])
             self.train = data["train"]
@@ -491,6 +490,21 @@ class Dataset(torch.utils.data.Dataset):
                 self.val = old_train_set[new_train_length:]
                 self.train = old_train_set[:new_train_length]
 
+    def process_data_items(self, data_items):
+        return self._build_topology_process(
+            data_items=data_items,
+            topology_builder=self.topology_builder,
+            graph_type=self.graph_type,
+            dynamic_graph_type=self.graph_type,
+            dynamic_init_topology_builder=self.dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=None,  # TODO: self.dynamic_init_topology_builder
+            merge_strategy=self.merge_strategy,
+            edge_strategy=self.edge_strategy,
+            lower_case=self.lower_case,
+            tokenizer=self.tokenizer,
+            port=self.port,
+            timeout=self.timeout,
+        )
 
     @staticmethod
     def _build_topology_process(
@@ -534,7 +548,9 @@ class Dataset(torch.utils.data.Dataset):
                     "openie.triple.strict": "true",
                 }
                 processor_args = [props_coref, props_openie]
-            elif topology_builder == DependencyBasedGraphConstruction or isinstance(topology_builder, DependencyBasedGraphConstruction):
+            elif topology_builder == DependencyBasedGraphConstruction or isinstance(
+                topology_builder, DependencyBasedGraphConstruction
+            ):
                 processor_args = {
                     "annotators": "ssplit,tokenize,depparse",
                     "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,"
@@ -746,8 +762,7 @@ class Dataset(torch.utils.data.Dataset):
         return self.vocab_model
 
     def _process(self):
-        print(self.root)
-        if self.root == None:
+        if self.root is None:
             return
         if all(
             [
@@ -808,16 +823,18 @@ class Text2TextDataset(Dataset):
     def __init__(
         self,
         root_dir: str = None,
+        graph_type: str = None,
         topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
-        graph_type: str = "none",
+        dynamic_init_graph_type: str = None,
+        dynamic_init_topology_builder: GraphConstructionBase = None,
+        dynamic_init_topology_aux_args=None,  # TODO: ?
         share_vocab=True,
-        dynamic_init_graph_type: str = "none",
         **kwargs
     ):
         self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
-        if graph_type == "none":
+        if graph_type is None:
             super(Text2TextDataset, self).__init__(
                 root_dir, topology_builder, topology_subdir, **kwargs
             )
@@ -848,15 +865,18 @@ class Text2TextDataset(Dataset):
                     # dynamic_init_topology_builder
                     raise RuntimeError("Define your own dynamic_init_topology_builder")
             else:
-                raise NotImplementedError("Define your topology builder.")
+                dynamic_init_topology_builder = default_dynamic_init_topology_builder
+
             self.static_or_dynamic = static_or_dynamic
-            super(Text2TextDataset, self).__init__(root=root_dir,
-                                                   topology_builder=topology_builder,
-                                                   topology_subdir=topology_subdir,
-                                                   graph_type=static_or_dynamic,
-                                                   share_vocab=share_vocab,
-                                                   dynamic_init_topology_builder=dynamic_init_topology_builder,
-                                                   **kwargs)
+            super(Text2TextDataset, self).__init__(
+                root=root_dir,
+                topology_builder=topology_builder,
+                topology_subdir=topology_subdir,
+                graph_type=static_or_dynamic,
+                share_vocab=share_vocab,
+                dynamic_init_topology_builder=dynamic_init_topology_builder,
+                **kwargs
+            )
 
     def parse_file(self, file_path) -> list:
         """
@@ -899,10 +919,10 @@ class Text2TextDataset(Dataset):
                 )
                 data.append(data_item)
         return data
-    
+
     @classmethod
     def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie=False):
-        
+
         item = deepcopy(data_item)
         graph: GraphData = item.graph
         token_matrix = []
@@ -950,14 +970,16 @@ class Text2TextDataset(Dataset):
         else:
             use_ie = False
         for idx in range(len(data_items)):
-            data_items[idx] = self._vectorize_one_dataitem(data_items[idx], self.vocab_model, use_ie=use_ie)
+            data_items[idx] = self._vectorize_one_dataitem(
+                data_items[idx], self.vocab_model, use_ie=use_ie
+            )
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
         graph_list = [item.graph for item in data_list]
         graph_data = to_batch(graph_list)
 
-        if isinstance(data_list[0].output_text, str): # has ground truth
+        if isinstance(data_list[0].output_text, str):  # has ground truth
             output_numpy = [deepcopy(item.output_np) for item in data_list]
             output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
             output_pad = pad_2d_vals_no_size(output_numpy)
@@ -977,27 +999,38 @@ class TextToTreeDataset(Dataset):
         dynamic_init_graph_type,
         share_vocab=True,
         topology_builder=None,
+        dynamic_init_topology_builder=None,
         **kwargs
     ):
         self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
-        if graph_type == "none":
+        if graph_type is None:
             super(TextToTreeDataset, self).__init__(
                 root_dir, topology_builder, topology_subdir, **kwargs
             )
         else:
-            dynamic_init_topology_builder = None
-            static_or_dynamic: str = "static"
-            if graph_type == "dependency":
-                topology_builder = DependencyBasedGraphConstruction
-            elif graph_type == "constituency":
-                topology_builder = ConstituencyBasedGraphConstruction
-            elif graph_type == "node_emb":
-                topology_builder = NodeEmbeddingBasedGraphConstruction
-                static_or_dynamic = "dynamic"
-            elif graph_type == "node_emb_refined":
-                topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-                static_or_dynamic = "dynamic"
+            default_topology_builder = topology_builder
+            default_dynamic_init_topology_builder = dynamic_init_topology_builder
+            if default_topology_builder is None:
+                # Set some default value
+                static_or_dynamic: str = "static"
+                if graph_type == "dependency":
+                    topology_builder = DependencyBasedGraphConstruction
+                elif graph_type == "constituency":
+                    topology_builder = ConstituencyBasedGraphConstruction
+                elif graph_type == "node_emb":
+                    topology_builder = NodeEmbeddingBasedGraphConstruction
+                    static_or_dynamic = "dynamic"
+                elif graph_type == "node_emb_refined":
+                    topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+                    static_or_dynamic = "dynamic"
+                else:
+                    raise NotImplementedError("Define your topology builder.")
+            else:
+                topology_builder = default_topology_builder
+
+            if default_dynamic_init_topology_builder is None:
+                # set default value for default_dynamic_init_topology_builder
                 if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
                     dynamic_init_topology_builder = None
                 elif dynamic_init_graph_type == "dependency":
@@ -1008,7 +1041,8 @@ class TextToTreeDataset(Dataset):
                     # dynamic_init_topology_builder
                     raise RuntimeError("Define your own dynamic_init_topology_builder")
             else:
-                raise NotImplementedError("Define your topology builder.")
+                dynamic_init_topology_builder = default_dynamic_init_topology_builder
+
             super(TextToTreeDataset, self).__init__(
                 root=root_dir,
                 topology_builder=topology_builder,
@@ -1168,54 +1202,61 @@ class Text2LabelDataset(Dataset):
         root_dir: str = None,
         topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
-        graph_type: str = "none",
+        graph_type: str = None,
         dynamic_init_graph_type: str = None,
+        dynamic_init_topology_builder: GraphConstructionBase = None,
         **kwargs
     ):
         self.data_item_type = Text2LabelDataItem
-        if graph_type == "none":
+        if graph_type is None:
             super(Text2LabelDataset, self).__init__(
                 root_dir, topology_builder, topology_subdir, **kwargs
             )
         else:
-            # Set some default value
-            dynamic_init_topology_builder = None
-            static_or_dynamic: str = "static"
-            merge_strategy = "tailhead"
-            if graph_type == "dependency":
-                topology_builder = DependencyBasedGraphConstruction
-            elif graph_type == "constituency":
-                topology_builder = ConstituencyBasedGraphConstruction
-            elif graph_type == "ie":
-                topology_builder = IEBasedGraphConstruction
-                merge_strategy = "global"
-            elif graph_type == "node_emb":
-                topology_builder = NodeEmbeddingBasedGraphConstruction
-                merge_strategy = None
-                static_or_dynamic = "dynamic"
-            elif graph_type == "node_emb_refined":
-                topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-                static_or_dynamic = "dynamic"
+            default_topology_builder = topology_builder
+            default_dynamic_init_topology_builder = dynamic_init_topology_builder
+            if default_topology_builder is None:
+                # Set some default value
+                static_or_dynamic: str = "static"
+                if graph_type == "dependency":
+                    topology_builder = DependencyBasedGraphConstruction
+                elif graph_type == "constituency":
+                    topology_builder = ConstituencyBasedGraphConstruction
+                elif graph_type == "ie":
+                    topology_builder = IEBasedGraphConstruction
+                elif graph_type == "node_emb":
+                    topology_builder = NodeEmbeddingBasedGraphConstruction
+                    static_or_dynamic = "dynamic"
+                elif graph_type == "node_emb_refined":
+                    topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+                    static_or_dynamic = "dynamic"
+                else:
+                    raise NotImplementedError("Define your topology builder.")
+            else:
+                topology_builder = default_topology_builder
+
+            if default_dynamic_init_topology_builder is None:
+                # set default value for default_dynamic_init_topology_builder
                 if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
                     dynamic_init_topology_builder = None
                 elif dynamic_init_graph_type == "dependency":
                     dynamic_init_topology_builder = DependencyBasedGraphConstruction
                 elif dynamic_init_graph_type == "constituency":
                     dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-                elif dynamic_init_graph_type == "ie":
-                    dynamic_init_topology_builder = IEBasedGraphConstruction
-                    merge_strategy = "global"
+                elif graph_type == "ie":
+                    topology_builder = IEBasedGraphConstruction
                 else:
+                    # dynamic_init_topology_builder
                     raise RuntimeError("Define your own dynamic_init_topology_builder")
             else:
-                raise NotImplementedError("Define your topology builder.")
+                dynamic_init_topology_builder = default_dynamic_init_topology_builder
+
             super(Text2LabelDataset, self).__init__(
                 root=root_dir,
                 topology_builder=topology_builder,
                 topology_subdir=topology_subdir,
                 graph_type=static_or_dynamic,
                 dynamic_init_topology_builder=dynamic_init_topology_builder,
-                merge_strategy=merge_strategy,
                 **kwargs
             )
 
@@ -1315,41 +1356,58 @@ class DoubleText2TextDataset(Dataset):
         root_dir: str = None,
         topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
-        graph_type: str = "none",
+        graph_type: str = None,
         share_vocab=True,
         dynamic_init_graph_type: str = None,
+        dynamic_init_topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
         **kwargs
     ):
         self.data_item_type = DoubleText2TextDataItem
         self.share_vocab = share_vocab
-        if graph_type == "none":
+        if graph_type is None:
             super(DoubleText2TextDataset, self).__init__(
                 root_dir, topology_builder, topology_subdir, **kwargs
             )
         else:
             # Set some default value
-            dynamic_init_topology_builder = None
-            static_or_dynamic: str = "static"
-            if graph_type == "dependency":
-                topology_builder = DependencyBasedGraphConstruction
-            elif graph_type == "constituency":
-                topology_builder = ConstituencyBasedGraphConstruction
-            elif graph_type == "node_emb":
-                topology_builder = NodeEmbeddingBasedGraphConstruction
-                static_or_dynamic = "dynamic"
-            elif graph_type == "node_emb_refined":
-                topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-                static_or_dynamic = "dynamic"
+            default_topology_builder = topology_builder
+            default_dynamic_init_topology_builder = dynamic_init_topology_builder
+            if default_topology_builder is None:
+                # Set some default value
+                static_or_dynamic: str = "static"
+                if graph_type == "dependency":
+                    topology_builder = DependencyBasedGraphConstruction
+                elif graph_type == "constituency":
+                    topology_builder = ConstituencyBasedGraphConstruction
+                elif graph_type == "ie":
+                    topology_builder = IEBasedGraphConstruction
+                elif graph_type == "node_emb":
+                    topology_builder = NodeEmbeddingBasedGraphConstruction
+                    static_or_dynamic = "dynamic"
+                elif graph_type == "node_emb_refined":
+                    topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+                    static_or_dynamic = "dynamic"
+                else:
+                    raise NotImplementedError("Define your topology builder.")
+            else:
+                topology_builder = default_topology_builder
+
+            if default_dynamic_init_topology_builder is None:
+                # set default value for default_dynamic_init_topology_builder
                 if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
                     dynamic_init_topology_builder = None
                 elif dynamic_init_graph_type == "dependency":
                     dynamic_init_topology_builder = DependencyBasedGraphConstruction
                 elif dynamic_init_graph_type == "constituency":
                     dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+                elif graph_type == "ie":
+                    topology_builder = IEBasedGraphConstruction
                 else:
+                    # dynamic_init_topology_builder
                     raise RuntimeError("Define your own dynamic_init_topology_builder")
             else:
-                raise NotImplementedError("Define your topology builder.")
+                dynamic_init_topology_builder = default_dynamic_init_topology_builder
+
             super(DoubleText2TextDataset, self).__init__(
                 root=root_dir,
                 topology_builder=topology_builder,
