@@ -495,7 +495,7 @@ class Dataset(torch.utils.data.Dataset):
             data_items=data_items,
             topology_builder=self.topology_builder,
             static_or_dynamic=self.static_or_dynamic,
-            dynamic_graph_type=self.graph_name,
+            graph_name=self.graph_name,
             dynamic_init_topology_builder=self.dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=None,  # TODO: self.dynamic_init_topology_builder
             merge_strategy=self.merge_strategy,
@@ -511,7 +511,7 @@ class Dataset(torch.utils.data.Dataset):
         data_items,
         topology_builder,
         static_or_dynamic,
-        dynamic_graph_type,
+        graph_name,
         dynamic_init_topology_builder,
         merge_strategy,
         edge_strategy,
@@ -570,7 +570,7 @@ class Dataset(torch.utils.data.Dataset):
                     "outputFormat": "json",
                 }
             else:
-                raise NotImplementedError
+                raise NotImplementedError("unknown static graph type: {}".format(graph_name))
             print("CoreNLP server connected.")
             pop_idxs = []
             for cnt, item in enumerate(data_items):
@@ -593,14 +593,14 @@ class Dataset(torch.utils.data.Dataset):
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
         elif static_or_dynamic == "dynamic":
-            if dynamic_graph_type == "node_emb":
+            if graph_name == "node_emb":
                 for item in data_items:
                     graph = topology_builder.init_topology(
                         item.input_text, lower_case=lower_case, tokenizer=tokenizer
                     )
                     item.graph = graph
                     ret.append(item)
-            elif dynamic_graph_type == "node_emb_refined":
+            elif graph_name == "node_emb_refined":
                 if dynamic_init_topology_builder in (
                     IEBasedGraphConstruction,
                     DependencyBasedGraphConstruction,
@@ -682,7 +682,7 @@ class Dataset(torch.utils.data.Dataset):
                     ret.append(item)
                 ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
             else:
-                raise RuntimeError("Unknown dynamic_graph_type: {}".format(dynamic_graph_type))
+                raise RuntimeError("Unknown dynamic_graph_type: {}".format(graph_name))
 
         else:
             raise NotImplementedError("Currently only static and dynamic are supported!")
@@ -708,7 +708,7 @@ class Dataset(torch.utils.data.Dataset):
                     data_items[start_index:end_index],
                     self.topology_builder,
                     self.static_or_dynamic,
-                    self.dynamic_graph_type,
+                    self.graph_name,
                     self.dynamic_init_topology_builder,
                     self.merge_strategy,
                     self.edge_strategy,
@@ -845,11 +845,18 @@ class Text2TextDataset(Dataset):
                 )
                 if static_or_dynamic is not None and graph_type != static_or_dynamic:
                     raise ValueError("``graph_type`` must be equal to ``static_or_dynamic``")
+
+                if kwargs.get("dynamic_graph_type", None) is not None:
+                    warnings.warn(
+                        "``dynamic_graph_type`` argument in dataset class is deprecated and will be \
+                        removed in the next version. Please use ``graph_name`` instead."
+                    )
+
                 super(Text2TextDataset, self).__init__(
                     root_dir,
                     topology_builder,
                     topology_subdir,
-                    graph_name=graph_name,
+                    graph_name=kwargs.get("dynamic_graph_type", None),
                     dynamic_init_topology_builder=dynamic_init_topology_builder,
                     dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
                     share_vocab=share_vocab,
