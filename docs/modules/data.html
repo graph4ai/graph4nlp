@@ -895,6 +895,20 @@ element in the dataset got shuffled and is not ‘c’.</p>
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.Dataset.build_topology">
 <code class="sig-name descname">build_topology</code><span class="sig-paren">(</span><em class="sig-param">data_items</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Dataset.build_topology" title="Permalink to this definition">¶</a></dt>
@@ -1009,6 +1023,20 @@ subset (e.g. train, val and test).</p>
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.Text2TextDataset.collate_fn">
 <em class="property">static </em><code class="sig-name descname">collate_fn</code><span class="sig-paren">(</span><em class="sig-param">data_list: [&lt;class 'graph4nlp.pytorch.data.dataset.Text2TextDataItem'&gt;]</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TextDataset.collate_fn" title="Permalink to this definition">¶</a></dt>
@@ -1099,6 +1127,20 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.TextToTreeDataset.vectorization" title="graph4nlp.data.dataset.TextToTreeDataset.vectorization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vectorization</span></code></a>(data_items)</p></td>
 <td><p>For tree decoder we also need the vectorize the tree output.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -1200,6 +1242,20 @@ language ( ANS , languageid0 )”</p>
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.Text2LabelDataset.build_vocab">
 <code class="sig-name descname">build_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2LabelDataset.build_vocab" title="Permalink to this definition">¶</a></dt>
@@ -1297,6 +1353,20 @@ input and output is separated by a tab( ).</p>
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.DoubleText2TextDataset.collate_fn">
 <em class="property">static </em><code class="sig-name descname">collate_fn</code><span class="sig-paren">(</span><em class="sig-param">data_list: [&lt;class 'graph4nlp.pytorch.data.dataset.Text2TextDataItem'&gt;]</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset.collate_fn" title="Permalink to this definition">¶</a></dt>
@@ -1347,7 +1417,7 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.SequenceLabelingDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">SequenceLabelingDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">tag_types</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.SequenceLabelingDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">SequenceLabelingDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir: str = None</em>, <em class="sig-param">topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">tag_types: str = None</em>, <em class="sig-param">graph_type: str = 'none'</em>, <em class="sig-param">dynamic_init_graph_type: str = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.SequenceLabelingDataset" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1389,6 +1459,20 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.SequenceLabelingDataset.vectorization" title="graph4nlp.data.dataset.SequenceLabelingDataset.vectorization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vectorization</span></code></a>(data_items)</p></td>
 <td><p>Convert tokens to indices which can be processed by downstream models.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -1510,6 +1594,20 @@ element in the dataset got shuffled and is not ‘c’.</p>
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt>
 <code class="sig-name descname">build_topology</code><span class="sig-paren">(</span><em class="sig-param">data_items</em><span class="sig-paren">)</span></dt>
@@ -1624,6 +1722,20 @@ subset (e.g. train, val and test).</p>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.Text2LabelDataset.vectorization" title="graph4nlp.data.dataset.Text2LabelDataset.vectorization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vectorization</span></code></a>(data_items)</p></td>
 <td><p>Convert tokens to indices which can be processed by downstream models.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<td></td>
 </tr>
 </tbody>
 </table>
