@@ -823,58 +823,37 @@ class Dataset(torch.utils.data.Dataset):
 class Text2TextDataset(Dataset):
     def __init__(
         self,
+        graph_name: str,
         root_dir: str = None,
-        graph_type: str = None,  # deprecated
-        static_or_dynamic: str = "static",
-        graph_name: str = None,
+        static_or_dynamic: str = None,
         topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
-        dynamic_init_graph_type: str = None,
+        dynamic_init_graph_name: str = None,
         dynamic_init_topology_builder: GraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,  # TODO: ?
         share_vocab=True,
         **kwargs
     ):
+        if kwargs.get("graph_type", None) is not None:
+            raise ValueError("The argument ``graph_type`` is disgarded. Please use ``static_or_dynamic`` instead." )
         self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
-        if graph_name is None:
-            if graph_type is not None:
-                warnings.warn(
-                    "``graph_type`` argument in dataset class is deprecated and will be \
-                        removed in the next version. Please use ``static_or_dynamic`` instead."
-                )
-                if static_or_dynamic is not None and graph_type != static_or_dynamic:
-                    raise ValueError("``graph_type`` must be equal to ``static_or_dynamic``")
 
-                if kwargs.get("dynamic_graph_type", None) is not None:
-                    warnings.warn(
-                        "``dynamic_graph_type`` argument in dataset class is deprecated and will be \
-                        removed in the next version. Please use ``graph_name`` instead."
-                    )
-
-                super(Text2TextDataset, self).__init__(
-                    root_dir,
-                    topology_builder,
-                    topology_subdir,
-                    graph_name=kwargs.get("dynamic_graph_type", None),
-                    dynamic_init_topology_builder=dynamic_init_topology_builder,
-                    dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-                    share_vocab=share_vocab,
-                    static_or_dynamic=graph_type,
-                    **kwargs
-                )
-            else:
-                super(Text2TextDataset, self).__init__(
-                    root_dir,
-                    topology_builder,
-                    topology_subdir,
-                    graph_name=graph_name,
-                    dynamic_init_topology_builder=dynamic_init_topology_builder,
-                    dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-                    share_vocab=share_vocab,
-                    static_or_dynamic=static_or_dynamic,
-                    **kwargs
-                )
+        if graph_name == "dependency":
+            topology_builder = DependencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "constituency":
+            topology_builder = ConstituencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "ie":
+            topology_builder = IEBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "node_emb":
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+            static_or_dynamic = "dynamic"
+        elif graph_name == "node_emb_refined":
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            static_or_dynamic = "dynamic"
         else:
             # Set some default value
             dynamic_init_topology_builder = None
@@ -902,20 +881,22 @@ class Text2TextDataset(Dataset):
                     # dynamic_init_topology_builder
                     raise RuntimeError("Define your own dynamic_init_topology_builder")
             else:
-                dynamic_init_topology_builder = default_dynamic_init_topology_builder
+                # dynamic_init_topology_builder
+                if dynamic_init_topology_builder is None:
+                    raise ValueError("``dynamic_init_topology_builder`` can't be None if ``dynamic_init_graph_name`` is defined by user.")
 
-            self.static_or_dynamic = static_or_dynamic
-            super(Text2TextDataset, self).__init__(
-                root=root_dir,
-                graph_name=graph_name,
-                topology_builder=topology_builder,
-                topology_subdir=topology_subdir,
-                static_or_dynamic=static_or_dynamic,
-                share_vocab=share_vocab,
-                dynamic_init_topology_builder=dynamic_init_topology_builder,
-                dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-                **kwargs
-            )
+        self.static_or_dynamic = static_or_dynamic
+        super(Text2TextDataset, self).__init__(
+            root=root_dir,
+            graph_name=graph_name,
+            topology_builder=topology_builder,
+            topology_subdir=topology_subdir,
+            static_or_dynamic=static_or_dynamic,
+            share_vocab=share_vocab,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+            **kwargs
+        )
 
     def parse_file(self, file_path) -> list:
         """

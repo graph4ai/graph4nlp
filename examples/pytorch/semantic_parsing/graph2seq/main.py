@@ -1,3 +1,5 @@
+import sys
+sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
 import numpy as np
 import torch
 import torch.optim as optim
@@ -73,7 +75,7 @@ class Jobs:
             graph_name=self.opt["graph_construction_args"]["graph_construction_share"][
                 "graph_type"
             ],
-            dynamic_init_graph_type=self.opt["graph_construction_args"][
+            dynamic_init_graph_name=self.opt["graph_construction_args"][
                 "graph_construction_private"
             ].get("dynamic_init_graph_type", None),
             topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][

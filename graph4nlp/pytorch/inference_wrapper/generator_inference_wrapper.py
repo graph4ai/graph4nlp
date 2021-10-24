@@ -1,4 +1,7 @@
 import copy
+import math
+from logging import warning
+import warnings
 
 from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
@@ -68,38 +71,56 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         self.vocab_model = model.vocab_model
         self.use_copy = self.cfg["decoder_args"]["rnn_decoder_share"]["use_copy"]
 
-    def predict(self, raw_contents: list):
+    def predict(self, raw_contents: list, batch_size=1):
         """
             Do the inference.
         Parameters
         ----------
         raw_contents: list
             The raw inputs. Example: ["sentence1", "sentence2"]
-
+        batch_size: int, default=1
+            The batch size of the inference.
         Returns
         -------
         Inference_results: object
             It will be the post-processed results. Examples: ["output1", "output2"]
         """
         # step 1: construct graph
-        data_items = []
-        vocab_model = copy.deepcopy(self.vocab_model)
-        device = next(self.parameters()).device
-        data_items = self.preprocess(raw_contents=raw_contents)
+        if len(raw_contents) == 0:
+            warnings.warn("The input ``raw_contents`` is empty.")
+            return []
 
-        collate_data = self.dataset.collate_fn(data_items)
-        batch_graph = collate_data["graph_data"].to(device)
+        if batch_size <= 0:
+            raise ValueError("``batch_size`` should be > 0")
+        
+        if len(raw_contents) < batch_size:
+            batch_size = len(raw_contents)
+        
+        ret_collect = []
+        
+        for i in range(math.ceil(len(raw_contents) / batch_size)):
+            data_collect = raw_contents[i*batch_size:(i+1)*batch_size]
 
-        # forward
-        if self.use_copy:
-            oov_dict = prepare_ext_vocab(batch_graph=batch_graph, vocab=vocab_model, device=device)
-            ref_dict = oov_dict
-        else:
-            oov_dict = None
-            ref_dict = self.vocab.out_word_vocab
+            data_items = []
+            vocab_model = copy.deepcopy(self.vocab_model)
+            device = next(self.parameters()).device
+            data_items = self.preprocess(raw_contents=data_collect)
 
-        ret = self.model.inference_forward(
-            batch_graph=batch_graph, beam_size=self.beam_size, oov_dict=oov_dict
-        )
+            collate_data = self.dataset.collate_fn(data_items)
+            batch_graph = collate_data["graph_data"].to(device)
 
-        return self.model.post_process(decode_results=ret, vocab=ref_dict)
+            # forward
+            if self.use_copy:
+                oov_dict = prepare_ext_vocab(batch_graph=batch_graph, vocab=vocab_model, device=device)
+                ref_dict = oov_dict
+            else:
+                oov_dict = None
+                ref_dict = self.vocab.out_word_vocab
+
+            ret = self.model.inference_forward(
+                batch_graph=batch_graph, beam_size=self.beam_size, oov_dict=oov_dict
+            )
+            ret = self.model.post_process(decode_results=ret, vocab=ref_dict)
+            ret_collect.extend(ret)
+
+        return ret_collect

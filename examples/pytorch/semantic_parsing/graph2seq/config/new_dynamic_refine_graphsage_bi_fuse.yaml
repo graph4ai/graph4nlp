@@ -4,7 +4,7 @@ decoder_name: "stdrnn"
 
 graph_construction_args:
   graph_construction_share:
-    graph_type: 'node_emb'
+    graph_name: 'node_emb'
     root_dir: "examples/pytorch/semantic_parsing/graph2seq/jobs"
     topology_subdir: 'NodeEmbGraphRefined'
     thread_number: 4
@@ -12,7 +12,7 @@ graph_construction_args:
     timeout: 15000
 
   graph_construction_private:
-    dynamic_init_graph_type: 'dependency'
+    dynamic_init_graph_name: 'dependency'
     lower_case: true
     edge_strategy: 'homogeneous'
     merge_strategy: 'tailhead'

@@ -86,7 +86,7 @@ class InferenceWrapperBase(nn.Module):
         )
         self.data_item_class = data_item
 
-    def preprocess(self, raw_contents):
+    def preprocess(self, raw_contents: list):
         processed_data_items = []
         use_ie = self.graph_type == "ie"  # hard code
         for raw_sentence in raw_contents:

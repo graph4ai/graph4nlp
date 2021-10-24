@@ -1,5 +1,5 @@
 graph_construction_share:
-  graph_type: 'dependency'
+  graph_name: 'dependency'
   root_dir: null
   topology_subdir: 'DependencyGraph'
   share_vocab: true

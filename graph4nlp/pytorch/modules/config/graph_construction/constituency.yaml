@@ -1,5 +1,5 @@
 graph_construction_share:
-  graph_type: 'constituency'
+  graph_name: 'constituency'
   root_dir: null
   topology_subdir: 'ConstituencyGraph'
   share_vocab: true
