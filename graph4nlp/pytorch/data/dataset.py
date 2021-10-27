@@ -894,31 +894,19 @@ class Text2TextDataset(Dataset):
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             static_or_dynamic = "dynamic"
         else:
-            # Set some default value
-            dynamic_init_topology_builder = None
-            static_or_dynamic: str = "static"
-            if graph_type == "dependency":
-                if topology_builder is None:
-                    topology_builder = DependencyBasedGraphConstruction
-            elif graph_type == "constituency":
-                if topology_builder is None:
-                    topology_builder = ConstituencyBasedGraphConstruction
-            elif graph_type == "node_emb":
-                if topology_builder is None:
-                    topology_builder = NodeEmbeddingBasedGraphConstruction
-                static_or_dynamic = "dynamic"
-            elif graph_type == "node_emb_refined":
-                topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-                static_or_dynamic = "dynamic"
-                if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
-                    dynamic_init_topology_builder = None
-                elif dynamic_init_graph_type == "dependency":
-                    dynamic_init_topology_builder = DependencyBasedGraphConstruction
-                elif dynamic_init_graph_type == "constituency":
-                    dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-                else:
-                    # dynamic_init_topology_builder
-                    raise RuntimeError("Define your own dynamic_init_topology_builder")
+            print("Your are customizing the graph construction method.")
+            if topology_builder is None:
+                raise ValueError("``topology_builder`` can't be None if graph is defined by user.")
+            if static_or_dynamic is None:
+                raise ValueError("``static_or_dynamic`` can't be None if graph is defined by user.")
+
+        if static_or_dynamic == "dynamic":
+            if dynamic_init_graph_name is None or dynamic_init_graph_name == "line":
+                dynamic_init_topology_builder = None
+            elif dynamic_init_graph_name == "dependency":
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif dynamic_init_graph_name == "constituency":
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             else:
                 # dynamic_init_topology_builder
                 if dynamic_init_topology_builder is None:
