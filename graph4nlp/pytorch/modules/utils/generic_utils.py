@@ -234,3 +234,18 @@ class LabelModel(object):
             pickle.dump(label_model, open(saved_label_file, "wb"))
 
         return label_model
+
+
+def wordid2str(word_ids, vocab):
+    ret = []
+    assert len(word_ids.shape) == 2, print(word_ids.shape)
+    for i in range(word_ids.shape[0]):
+        id_list = word_ids[i, :]
+        ret_inst = []
+        for j in range(id_list.shape[0]):
+            if id_list[j] == vocab.EOS or id_list[j] == vocab.PAD:
+                break
+            token = vocab.getWord(id_list[j])
+            ret_inst.append(token)
+        ret.append(" ".join(ret_inst))
+    return ret

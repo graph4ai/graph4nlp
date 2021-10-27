@@ -4,7 +4,7 @@ decoder_name: "stdrnn"
 
 graph_construction_args:
   graph_construction_share:
-    graph_type: 'dependency'
+    graph_name: 'dependency'
     root_dir: "examples/pytorch/semantic_parsing/graph2seq/jobs"
     topology_subdir: 'DependencyGraph'
     share_vocab: true

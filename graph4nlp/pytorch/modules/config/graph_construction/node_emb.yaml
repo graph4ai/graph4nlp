@@ -1,5 +1,5 @@
 graph_construction_share:
-  graph_type: 'node_emb'
+  graph_name: 'node_emb'
   root_dir: null
   topology_subdir: 'NodeEmbGraph'
   share_vocab: true
