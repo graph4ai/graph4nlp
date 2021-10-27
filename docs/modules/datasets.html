@@ -102,10 +102,53 @@
 <h2>All Datasets<a class="headerlink" href="#all-datasets" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="graph4nlp.datasets.JobsDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">JobsDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">pretrained_word_emb_name='6B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">graph_type='static'</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">thread_number=1</em>, <em class="sig-param">port=9000</em>, <em class="sig-param">dynamic_graph_type=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">for_inference=None</em>, <em class="sig-param">reused_vocab_model=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.JobsDataset" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
-<dd class="field-odd"><dl class="simple">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">JobsDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">graph_name</em>, <em class="sig-param">static_or_dynamic='static'</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">dynamic_init_graph_name=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">pretrained_word_emb_name='6B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">thread_number=1</em>, <em class="sig-param">port=9000</em>, <em class="sig-param">for_inference=None</em>, <em class="sig-param">reused_vocab_model=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.JobsDataset" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>root_dir: str</strong></dt><dd><p>The path of dataset.</p>
+</dd>
+<dt><strong>graph_name: str</strong></dt><dd><p>The name of graph construction method. E.g., “dependency”.
+Note that if it is in the provided graph names (i.e., “dependency”,                 “constituency”, “ie”, “node_emb”, “node_emb_refine”), the following                 parameters are set by default and users can’t modify them:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">topology_builder</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">static_or_dynamic</span></code></p></li>
+</ol>
+</div></blockquote>
+<p>If you need to customize your graph construction method, you should rename the                 <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+</dd>
+<dt><strong>topology_builder: GraphConstructionBase, default=None</strong></dt><dd><p>The graph construction class.</p>
+</dd>
+<dt><strong>topology_subdir: str</strong></dt><dd><p>The directory name of processed path.</p>
+</dd>
+<dt><strong>static_or_dynamic: str, default=’static’</strong></dt><dd><p>The graph type. Expected in (‘static’, ‘dynamic’)</p>
+</dd>
+<dt><strong>edge_strategy: str, default=None</strong></dt><dd><p>The edge strategy. Expected in (None, ‘homogeneous’, ‘as_node’).
+If set <cite>None</cite>, it will be ‘homogeneous’.</p>
+</dd>
+<dt><strong>merge_strategy: str, default=None</strong></dt><dd><p>The strategy to merge sub-graphs. Expected in (None, ‘tailhead’, ‘user_define’).
+If set <cite>None</cite>, it will be ‘tailhead’.</p>
+</dd>
+<dt><strong>share_vocab: bool, default=False</strong></dt><dd><p>Whether to share the input vocabulary with the output vocabulary.</p>
+</dd>
+<dt><strong>dynamic_init_graph_name: str, default=None</strong></dt><dd><p>The graph name of the initial graph. Expected in (None, “line”, “dependency”,                 “constituency”).
+Note that if it is in the provided graph names (i.e., “line”, “dependency”,                 “constituency”), the following parameters are set by default and users                 can’t modify them:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dynamic_init_topology_builder</span></code></p></li>
+</ol>
+</div></blockquote>
+<p>If you need to customize your graph construction method, you should rename the                 <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+</dd>
+<dt><strong>dynamic_init_topology_builder: GraphConstructionBase</strong></dt><dd><p>The graph construction class.</p>
+</dd>
+<dt><strong>dynamic_init_topology_aux_args: None,</strong></dt><dd><p>TBD.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>processed_dir</strong></dt><dd></dd>
 <dt><a class="reference internal" href="#graph4nlp.datasets.JobsDataset.processed_file_names" title="graph4nlp.datasets.JobsDataset.processed_file_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">processed_file_names</span></code></a></dt><dd><p>At least 3 reserved keys should be fiiled: ‘vocab’, ‘data’ and ‘split_ids’.</p>
 </dd>
@@ -155,10 +198,13 @@
 <col style="width: 23%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -248,10 +294,13 @@
 <col style="width: 23%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -341,10 +390,13 @@
 <col style="width: 23%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -434,10 +486,13 @@
 <col style="width: 23%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -527,10 +582,13 @@
 <col style="width: 23%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
 <td></td>
 </tr>
 </tbody>
@@ -620,10 +678,13 @@
 <col style="width: 23%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
 <td></td>
 </tr>
-<tr class="row-even"><td><p><strong>register_function</strong></p></td>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
 <td></td>
 </tr>
 </tbody>
