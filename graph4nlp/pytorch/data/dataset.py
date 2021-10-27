@@ -821,6 +821,42 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class Text2TextDataset(Dataset):
+    """
+        The dataset for text-to-text applications.
+    Parameters
+    ----------
+    graph_name: str
+        The name of graph construction method. E.g., "dependency".
+        Note that if it is in the provided graph names (i.e., "dependency", \
+            "constituency", "ie", "node_emb", "node_emb_refine"), the following \
+            parameters are set by default and users can't modify them:
+            1. ``topology_builder``
+            2. ``static_or_dynamic``
+        If you need to customize your graph construction method, you should rename the \
+            ``graph_name`` and set the parameters above.
+    root_dir: str, default=None
+        The path of dataset.
+    topology_builder: GraphConstructionBase, default=None
+        The graph construction class.
+    topology_subdir: str
+        The directory name of processed path.
+    static_or_dynamic: str, default='static'
+        The graph type. Expected in ('static', 'dynamic')
+    dynamic_init_graph_name: str, default=None
+        The graph name of the initial graph. Expected in (None, "line", \
+            "dependency", "constituency").
+        Note that if it is in the provided graph names (i.e., "line", "dependency", \
+            "constituency"), the following parameters are set by default and users \
+            can't modify them:
+            1. ``dynamic_init_topology_builder``
+        If you need to customize your graph construction method, you should rename the \
+            ``graph_name`` and set the parameters above.
+    dynamic_init_topology_builder: GraphConstructionBase
+        The graph construction class.
+    dynamic_init_topology_aux_args: None,
+        TBD.
+    """
+
     def __init__(
         self,
         graph_name: str,
@@ -830,12 +866,15 @@ class Text2TextDataset(Dataset):
         topology_subdir: str = None,
         dynamic_init_graph_name: str = None,
         dynamic_init_topology_builder: GraphConstructionBase = None,
-        dynamic_init_topology_aux_args=None,  # TODO: ?
+        dynamic_init_topology_aux_args=None,  # TODO
         share_vocab=True,
         **kwargs
     ):
         if kwargs.get("graph_type", None) is not None:
-            raise ValueError("The argument ``graph_type`` is disgarded. Please use ``static_or_dynamic`` instead." )
+            raise ValueError(
+                "The argument ``graph_type`` is disgarded. \
+                    Please use ``static_or_dynamic`` instead."
+            )
         self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
 
@@ -883,7 +922,10 @@ class Text2TextDataset(Dataset):
             else:
                 # dynamic_init_topology_builder
                 if dynamic_init_topology_builder is None:
-                    raise ValueError("``dynamic_init_topology_builder`` can't be None if ``dynamic_init_graph_name`` is defined by user.")
+                    raise ValueError(
+                        "``dynamic_init_topology_builder`` can't be None \
+                            if ``dynamic_init_graph_name`` is defined by user."
+                    )
 
         self.static_or_dynamic = static_or_dynamic
         super(Text2TextDataset, self).__init__(

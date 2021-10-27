@@ -1,6 +1,5 @@
 import copy
 import math
-from logging import warning
 import warnings
 
 from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
@@ -92,14 +91,14 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
 
         if batch_size <= 0:
             raise ValueError("``batch_size`` should be > 0")
-        
+
         if len(raw_contents) < batch_size:
             batch_size = len(raw_contents)
-        
+
         ret_collect = []
-        
+
         for i in range(math.ceil(len(raw_contents) / batch_size)):
-            data_collect = raw_contents[i*batch_size:(i+1)*batch_size]
+            data_collect = raw_contents[i * batch_size : (i + 1) * batch_size]
 
             data_items = []
             vocab_model = copy.deepcopy(self.vocab_model)
@@ -111,7 +110,9 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
 
             # forward
             if self.use_copy:
-                oov_dict = prepare_ext_vocab(batch_graph=batch_graph, vocab=vocab_model, device=device)
+                oov_dict = prepare_ext_vocab(
+                    batch_graph=batch_graph, vocab=vocab_model, device=device
+                )
                 ref_dict = oov_dict
             else:
                 oov_dict = None

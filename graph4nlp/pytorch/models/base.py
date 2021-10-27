@@ -30,7 +30,7 @@ class Graph2XBase(nn.Module):
         self,
         vocab_model,
         embedding_style,
-        graph_type,
+        graph_name,
         emb_input_size,
         emb_hidden_size,
         gnn,
@@ -51,7 +51,7 @@ class Graph2XBase(nn.Module):
         super(Graph2XBase, self).__init__()
         self.vocab_model = vocab_model
         self._build_embedding_encoder(
-            graph_type=graph_type,
+            graph_name=graph_name,
             embedding_style=embedding_style,
             vocab_model=vocab_model,
             emb_input_size=emb_input_size,
@@ -77,7 +77,7 @@ class Graph2XBase(nn.Module):
 
     def _build_embedding_encoder(
         self,
-        graph_type,
+        graph_name,
         embedding_style,
         vocab_model,
         emb_input_size,
@@ -98,10 +98,10 @@ class Graph2XBase(nn.Module):
         **kwargs
     ):
 
-        if not isinstance(graph_type, str):
-            raise ValueError("graph_type parameter should be str")
+        if not isinstance(graph_name, str):
+            raise ValueError("graph_name parameter should be str")
 
-        if graph_type == "dependency":
+        if graph_name == "dependency":
             self.graph_topology = DependencyBasedGraphConstruction(
                 embedding_style=embedding_style,
                 vocab=vocab_model.in_word_vocab,
@@ -111,7 +111,7 @@ class Graph2XBase(nn.Module):
                 fix_word_emb=emb_fix_word_emb,
                 fix_bert_emb=emb_fix_bert_emb,
             )
-        elif graph_type == "constituency":
+        elif graph_name == "constituency":
             self.graph_topology = ConstituencyBasedGraphConstruction(
                 embedding_style=embedding_style,
                 vocab=vocab_model.in_word_vocab,
@@ -120,7 +120,7 @@ class Graph2XBase(nn.Module):
                 rnn_dropout=emb_rnn_dropout,
                 fix_word_emb=emb_fix_word_emb,
             )
-        elif graph_type == "ie":
+        elif graph_name == "ie":
             self.graph_topology = IEBasedGraphConstruction(
                 embedding_style=embedding_style,
                 vocab=vocab_model.in_word_vocab,
@@ -129,7 +129,7 @@ class Graph2XBase(nn.Module):
                 rnn_dropout=emb_rnn_dropout,
                 fix_word_emb=emb_fix_word_emb,
             )
-        elif graph_type == "node_emb":
+        elif graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
                 vocab_model.in_word_vocab,
                 embedding_style,
@@ -147,7 +147,7 @@ class Graph2XBase(nn.Module):
                 word_dropout=emb_word_dropout,
                 rnn_dropout=emb_rnn_dropout,
             )
-        elif graph_type == "node_emb_refined":
+        elif graph_name == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
                 vocab_model.in_word_vocab,
                 embedding_style,
@@ -174,7 +174,7 @@ class Graph2XBase(nn.Module):
             else None
         )
 
-        self.graph_type = graph_type
+        self.graph_name = graph_name
 
     def _build_gnn_encoder(
         self,

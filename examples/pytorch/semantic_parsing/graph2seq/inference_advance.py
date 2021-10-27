@@ -1,28 +1,15 @@
 """
     The advanced inference code.
     In this file, we will run the inference by writing the whole inference pipeline.
-    Compared with the inference.py, it is more efficient. It will save the graphs during inference, which support multi-processing when converting the raw inputs to graphs.
+    Compared with the inference.py, it is more efficient. It will save the graphs \
+        during inference, which support multi-processing when converting the raw inputs to graphs.
 """
-import sys
-sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
-    ConstituencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
-    DependencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
-    NodeEmbeddingBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
 from args import get_args
@@ -67,50 +54,49 @@ class Jobs:
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
-            dataset = JobsDataset(
-                root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
-                #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
-                pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-                pretrained_word_emb_url=self.opt["pretrained_word_emb_url"],
-                pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
-                #   val_split_ratio=self.opt["val_split_ratio"],
-                merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
-                    "merge_strategy"
-                ],
-                edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
-                    "edge_strategy"
-                ],
-                seed=self.opt["seed"],
-                word_emb_size=self.opt["word_emb_size"],
-                share_vocab=self.opt["graph_construction_args"]["graph_construction_share"][
-                    "share_vocab"
-                ],
-                graph_name=self.opt["graph_construction_args"]["graph_construction_share"][
-                    "graph_type"
-                ],
-                dynamic_init_graph_name=self.opt["graph_construction_args"][
-                    "graph_construction_private"
-                ].get("dynamic_init_graph_type", None),
-                topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
-                    "topology_subdir"
-                ],
-                thread_number=self.opt["graph_construction_args"]["graph_construction_share"][
-                    "thread_number"
-                ],
-                port=self.opt["graph_construction_args"]["graph_construction_share"]["port"],
-                for_inference=True,
-                reused_vocab_model=self.model.vocab_model
-            )
+        dataset = JobsDataset(
+            root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
+            #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
+            pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
+            pretrained_word_emb_url=self.opt["pretrained_word_emb_url"],
+            pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
+            #   val_split_ratio=self.opt["val_split_ratio"],
+            merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
+                "merge_strategy"
+            ],
+            edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
+                "edge_strategy"
+            ],
+            seed=self.opt["seed"],
+            word_emb_size=self.opt["word_emb_size"],
+            share_vocab=self.opt["graph_construction_args"]["graph_construction_share"][
+                "share_vocab"
+            ],
+            graph_name=self.opt["graph_construction_args"]["graph_construction_share"][
+                "graph_name"
+            ],
+            dynamic_init_graph_name=self.opt["graph_construction_args"][
+                "graph_construction_private"
+            ].get("dynamic_init_graph_type", None),
+            topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
+                "topology_subdir"
+            ],
+            thread_number=self.opt["graph_construction_args"]["graph_construction_share"][
+                "thread_number"
+            ],
+            port=self.opt["graph_construction_args"]["graph_construction_share"]["port"],
+            for_inference=True,
+            reused_vocab_model=self.model.vocab_model,
+        )
 
-
-            self.test_dataloader = DataLoader(
-                dataset.test,
-                batch_size=self.opt["batch_size"],
-                shuffle=False,
-                num_workers=self.opt["num_works"],
-                collate_fn=dataset.collate_fn,
-            )
-            self.vocab = dataset.vocab_model
+        self.test_dataloader = DataLoader(
+            dataset.test,
+            batch_size=self.opt["batch_size"],
+            shuffle=False,
+            num_workers=self.opt["num_works"],
+            collate_fn=dataset.collate_fn,
+        )
+        self.vocab = dataset.vocab_model
 
     def _build_model(self):
         self.model = Graph2Seq.load_checkpoint(self.opt["checkpoint_save_path"], "best.pt").to(

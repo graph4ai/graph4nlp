@@ -1,12 +1,12 @@
 """
     The inference code.
-    In this file, we will run the inference by using the prediction API in the GeneratorInferenceWrapper.
+    In this file, we will run the inference by using the prediction API \
+        in the GeneratorInferenceWrapper.
     The GeneratorInferenceWrapper takes the raw inputs and produce the outputs.
 """
-import sys
-sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
 import numpy as np
 import torch
+from nltk.tokenize import word_tokenize
 
 from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper import (
     GeneratorInferenceWrapper,
@@ -43,7 +43,6 @@ class Jobs:
         self.model = Graph2Seq.load_checkpoint(self.opt["checkpoint_save_path"], "best.pt").to(
             self.device
         )
-        from nltk.tokenize import word_tokenize
 
         self.inference_tool = GeneratorInferenceWrapper(
             cfg=self.opt, model=self.model, beam_size=3, lower_case=True, tokenizer=word_tokenize

@@ -33,7 +33,7 @@ class Graph2Seq(Graph2XBase):
     ----------
     vocab_model: VocabModel
         The vocabulary.
-    graph_type: str
+    graph_name: str
         The graph type. Excepted in ["dependency", "constituency", "node_emb", "node_emb_refined"].
     gnn: str
         The graph neural network's name. Expected in ["gcn", "gat", "graphsage", "ggnn"]
@@ -45,7 +45,7 @@ class Graph2Seq(Graph2XBase):
         emb_input_size,
         emb_hidden_size,
         embedding_style,
-        graph_type,
+        graph_name,
         gnn_direction_option,
         gnn_input_size,
         gnn_hidden_size,
@@ -78,7 +78,7 @@ class Graph2Seq(Graph2XBase):
             vocab_model=vocab_model,
             emb_input_size=emb_input_size,
             emb_hidden_size=emb_hidden_size,
-            graph_type=graph_type,
+            graph_name=graph_name,
             gnn_direction_option=gnn_direction_option,
             gnn=gnn,
             gnn_num_layers=gnn_num_layers,
@@ -347,5 +347,5 @@ class Graph2Seq(Graph2XBase):
         ret.pop("embedding_style")
         emb_ret = {"emb_" + key: value for key, value in ret.items()}
         emb_ret["embedding_style"] = args["embedding_style"]
-        emb_ret["graph_type"] = opt["graph_construction_name"]
+        emb_ret["graph_name"] = opt["graph_construction_name"]
         return emb_ret

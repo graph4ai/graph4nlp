@@ -8,6 +8,50 @@ dataset_root = "../test/dataset/jobs"
 
 
 class JobsDataset(Text2TextDataset):
+    """
+
+        Parameters
+        ----------
+        root_dir: str
+            The path of dataset.
+        graph_name: str
+            The name of graph construction method. E.g., "dependency".
+            Note that if it is in the provided graph names (i.e., "dependency", \
+                "constituency", "ie", "node_emb", "node_emb_refine"), the following \
+                parameters are set by default and users can't modify them:
+                1. ``topology_builder``
+                2. ``static_or_dynamic``
+            If you need to customize your graph construction method, you should rename the \
+                ``graph_name`` and set the parameters above.
+        topology_builder: GraphConstructionBase, default=None
+            The graph construction class.
+        topology_subdir: str
+            The directory name of processed path.
+        static_or_dynamic: str, default='static'
+            The graph type. Expected in ('static', 'dynamic')
+        edge_strategy: str, default=None
+            The edge strategy. Expected in (None, 'homogeneous', 'as_node').
+            If set `None`, it will be 'homogeneous'.
+        merge_strategy: str, default=None
+            The strategy to merge sub-graphs. Expected in (None, 'tailhead', 'user_define').
+            If set `None`, it will be 'tailhead'.
+        share_vocab: bool, default=False
+            Whether to share the input vocabulary with the output vocabulary.
+        dynamic_init_graph_name: str, default=None
+            The graph name of the initial graph. Expected in (None, "line", "dependency", \
+                "constituency").
+            Note that if it is in the provided graph names (i.e., "line", "dependency", \
+                "constituency"), the following parameters are set by default and users \
+                can't modify them:
+                1. ``dynamic_init_topology_builder``
+            If you need to customize your graph construction method, you should rename the \
+                ``graph_name`` and set the parameters above.
+        dynamic_init_topology_builder: GraphConstructionBase
+            The graph construction class.
+        dynamic_init_topology_aux_args: None,
+            TBD.
+        """
+
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
@@ -28,7 +72,7 @@ class JobsDataset(Text2TextDataset):
         self,
         root_dir,
         topology_subdir,
-        graph_name=None,
+        graph_name,
         static_or_dynamic="static",
         topology_builder=None,
         merge_strategy="tailhead",
@@ -48,33 +92,6 @@ class JobsDataset(Text2TextDataset):
         for_inference=None,
         reused_vocab_model=None,
     ):
-        """
-
-        Parameters
-        ----------
-        root_dir: str
-            The path of dataset.
-        topology_builder: GraphConstructionBase
-            The graph construction class.
-        topology_subdir: str
-            The directory name of processed path.
-        graph_type: str, default='static'
-            The graph type. Expected in ('static', 'dynamic')
-        edge_strategy: str, default=None
-            The edge strategy. Expected in (None, 'homogeneous', 'as_node').
-            If set `None`, it will be 'homogeneous'.
-        merge_strategy: str, default=None
-            The strategy to merge sub-graphs. Expected in (None, 'tailhead', 'user_define').
-            If set `None`, it will be 'tailhead'.
-        share_vocab: bool, default=False
-            Whether to share the input vocabulary with the output vocabulary.
-        dynamic_graph_type: str, default=None
-            The dynamic graph type. It is only available when `graph_type` is set 'dynamic'.
-            Expected in (None, 'node_emb', 'node_emb_refined').
-        init_graph_type: str, default=None
-            The initial graph topology. It is only available when `graph_type` is set 'dynamic'.
-            Expected in (None, 'dependency', 'constituency')
-        """
         # Initialize the dataset. If the preprocessed files are not found,
         # then do the preprocessing and save them.
         super(JobsDataset, self).__init__(
