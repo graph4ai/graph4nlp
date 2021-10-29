@@ -1,9 +1,7 @@
-import copy
 import math
 import warnings
 
 from graph4nlp.pytorch.data.dataset import Text2LabelDataItem, Text2LabelDataset
-from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
 from .base import InferenceWrapperBase
 
@@ -97,7 +95,6 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             data_collect = raw_contents[i * batch_size : (i + 1) * batch_size]
 
             data_items = []
-            vocab_model = copy.deepcopy(self.vocab_model)
             device = next(self.parameters()).device
             data_items = self.preprocess(raw_contents=data_collect)
 
