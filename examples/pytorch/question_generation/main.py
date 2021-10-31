@@ -76,6 +76,8 @@ class QGModel(nn.Module):
             ),
             rnn_dropout=config["graph_construction_args"]["node_embedding"]["rnn_dropout"],
         )
+        self.graph_name = self.g2s.graph_name
+        self.vocab_model = self.g2s.vocab_model
 
     def encode_init_node_feature(self, data):
         # graph embedding construction
@@ -108,6 +110,15 @@ class QGModel(nn.Module):
         else:
             return prob
 
+    def inference_forward(self, data, beam_size, topk=1, oov_dict=None):
+        batch_gd = self.encode_init_node_feature(data)
+        return self.g2s.encoder_decoder_beam_search(
+            batch_graph=batch_gd, beam_size=beam_size, topk=topk, oov_dict=oov_dict
+        )
+
+    def post_process(self, decode_results, vocab):
+        return self.g2s.post_process(decode_results, vocab)
+
 
 class ModelHandler:
     def __init__(self, config):
@@ -127,11 +138,18 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        graph_type = self.config["graph_construction_args"]["graph_construction_share"][
-            "graph_type"
-        ]
         dataset = SQuADDataset(
             root_dir=self.config["graph_construction_args"]["graph_construction_share"]["root_dir"],
+            topology_subdir=self.config["graph_construction_args"]["graph_construction_share"][
+                "topology_subdir"
+            ],
+            graph_name=self.config["graph_construction_args"]["graph_construction_share"][
+                "graph_name"
+            ],
+            dynamic_init_graph_name=self.config["graph_construction_args"][
+                "graph_construction_private"
+            ].get("dynamic_init_graph_type", None),
+            dynamic_init_topology_aux_args={"dummy_param": 0},
             pretrained_word_emb_name=self.config["pretrained_word_emb_name"],
             merge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
                 "merge_strategy"
@@ -144,28 +162,12 @@ class ModelHandler:
             word_emb_size=self.config["word_emb_size"],
             share_vocab=self.config["share_vocab"],
             seed=self.config["seed"],
-            graph_type=graph_type,
-            topology_subdir=self.config["graph_construction_args"]["graph_construction_share"][
-                "topology_subdir"
-            ],
-            dynamic_graph_type=self.config["graph_construction_args"]["graph_construction_share"][
-                "graph_type"
-            ],
-            dynamic_init_graph_type=self.config["graph_construction_args"][
-                "graph_construction_private"
-            ].get("dynamic_init_graph_type", None),
-            dynamic_init_topology_aux_args={"dummy_param": 0},
             thread_number=self.config["graph_construction_args"]["graph_construction_share"][
                 "thread_number"
             ],
             port=self.config["graph_construction_args"]["graph_construction_share"]["port"],
             timeout=self.config["graph_construction_args"]["graph_construction_share"]["timeout"],
         )
-
-        # TODO: use small ratio of the data (Test only)
-        dataset.train = dataset.train
-        dataset.val = dataset.val
-        dataset.test = dataset.test
 
         self.train_dataloader = DataLoader(
             dataset.train,
