@@ -109,15 +109,15 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             # forward
             ret = self.model.inference_forward(batch_graph=batch_graph)
             ret = self.model.post_process(logits_results=ret)
-            
-            #map index to label
+
+            # map index to label
             if len(ret.shape()) == 1:
                 labels = [self.classification_label[index] for index in ret]
             elif len(ret.shape()) == 2:
-                labels=[]
+                labels = []
                 for index_l in ret:
                     labels.append([self.classification_label[index] for index in index_l])
-            
+
             label_collect.extend(labels)
 
         return label_collect
