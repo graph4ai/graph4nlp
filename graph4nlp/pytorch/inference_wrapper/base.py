@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from graph4nlp.pytorch.data.dataset import DataItem, Dataset, word_tokenize
+from graph4nlp.pytorch.data.dataset import DataItem, Dataset, DoubleText2TextDataItem, word_tokenize
 from graph4nlp.pytorch.modules.graph_construction.base import GraphConstructionBase
 
 
@@ -85,16 +85,30 @@ class InferenceWrapperBase(nn.Module):
             edge_strategy=self.edge_strategy,
         )
         self.data_item_class = data_item
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     def preprocess(self, raw_contents: list):
         processed_data_items = []
         use_ie = self.graph_name == "ie"  # hard code
         for raw_sentence in raw_contents:
-            data_item = self.data_item_class(
-                input_text=raw_sentence, output_text=None, tokenizer=self.tokenizer
-            )
-            data_item = self.dataset.process_data_items(data_items=[data_item])
+            if self.data_item_class == DoubleText2TextDataItem:
+                assert isinstance(
+                    raw_sentence, (tuple, list)
+                ), "Expect two inputs for DoubleText2TextDataItem, only one found."
+                data_item = self.data_item_class(
+                    input_text=raw_sentence[0],
+                    input_text2=raw_sentence[1],
+                    output_text=None,
+                    tokenizer=self.tokenizer,
+                    share_vocab=self.share_vocab,
+                )
+            else:
+                data_item = self.data_item_class(
+                    input_text=raw_sentence, output_text=None, tokenizer=self.tokenizer
+                )
 
+            data_item = self.dataset.process_data_items(data_items=[data_item])
             data_item = self.dataset._vectorize_one_dataitem(
                 data_item[0], self.vocab_model, use_ie=use_ie
             )
