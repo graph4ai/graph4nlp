@@ -1,3 +1,9 @@
+"""
+    The inference code.
+    In this file, we will run the inference by using the prediction API \
+        in the GeneratorInferenceWrapper.
+    The GeneratorInferenceWrapper takes the raw inputs and produce the outputs.
+"""
 import argparse
 import os
 import numpy as np
@@ -48,23 +54,26 @@ class ModelHandler:
     def _build_model(self):
         self.model = SumModel.load_checkpoint(self.stopper.save_model_path)
         self.model.graph_type = self.config["graph_construction_args"]["graph_construction_share"][
-            "graph_name"]
+            "graph_name"
+        ]
         self.model.vocab_model = self.model.vocab
 
         self.inference_tool = GeneratorInferenceWrapper(
-            cfg=self.config, model=self.model, beam_size=3,
-            lower_case=True, tokenizer=word_tokenize
+            cfg=self.config, model=self.model, beam_size=3, lower_case=True, tokenizer=word_tokenize
         )
 
     @torch.no_grad()
     def translate(self):
         self.model.eval()
-        ret = self.inference_tool.predict(raw_contents=[
-            """PARIS , France -LRB- CNN -RRB- -- Interpol is chasing more than 200 leads on
+        ret = self.inference_tool.predict(
+            raw_contents=[
+                """PARIS , France -LRB- CNN -RRB- -- Interpol is chasing more than 200 leads on
             the potential identity of a pedophile suspected of molesting young boys , just
             one day after launching a global manhunt . Interpol has launched a global appeal
-            to find this man , accused of abusing young boys ."""],
-            batch_size=1)
+            to find this man , accused of abusing young boys ."""
+            ],
+            batch_size=1,
+        )
         print(ret)
 
 

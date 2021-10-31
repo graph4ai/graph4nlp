@@ -48,7 +48,8 @@ class SumModel(nn.Module):
         self.g2s = Graph2Seq.from_args(config, self.vocab)
 
         self.graph_type = self.config["graph_construction_args"]["graph_construction_share"][
-            "graph_name"]
+            "graph_name"
+        ]
 
         if "w2v" in self.g2s.graph_topology.embedding_layer.word_emb_layers:
             self.word_emb = self.g2s.graph_topology.embedding_layer.word_emb_layers[
@@ -94,8 +95,9 @@ class SumModel(nn.Module):
             return prob
 
     def inference_forward(self, batch_graph, beam_size, oov_dict):
-        return self.g2s.inference_forward(batch_graph=batch_graph, beam_size=beam_size,
-                                          oov_dict=oov_dict)
+        return self.g2s.inference_forward(
+            batch_graph=batch_graph, beam_size=beam_size, oov_dict=oov_dict
+        )
 
     def post_process(self, decode_results, vocab):
         return self.g2s.post_process(decode_results=decode_results, vocab=vocab)

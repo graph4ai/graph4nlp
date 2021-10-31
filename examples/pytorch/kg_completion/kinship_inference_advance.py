@@ -1,3 +1,9 @@
+"""
+    The advanced inference code.
+    In this file, we will run the inference by writing the whole inference pipeline.
+    Compared with the inference.py, it is more efficient. It will save the graphs \
+        during inference, which support multi-processing when converting the raw inputs to graphs.
+"""
 import argparse
 import numpy as np
 import torch
@@ -54,7 +60,7 @@ def main(args, model_path):
         else:
             KG_graph = KG_graph.to("cpu")
     else:
-        raise RuntimeError('Unknown model {}'.format(args.model))
+        raise RuntimeError("Unknown model {}".format(args.model))
 
     if Config.cuda is True:
         model.cuda()
