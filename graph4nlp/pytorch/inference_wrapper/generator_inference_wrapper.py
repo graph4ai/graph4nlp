@@ -30,7 +30,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         model: nn.Module
             The model checkpoint.
             The model must support the following attributes:
-                model.graph_type: str,
+                model.graph_name: str,
                     The graph type, eg: "dependency".
             The model must support the following api:
                 model.inference_forward(batch_graph, **kwargs)
@@ -46,11 +46,11 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             The data_item class.
         topology_builder: GraphConstructionBase, default=None
             The initial graph topology builder. We will set the default topology builder \
-                 for you if it is ``None`` according to ``graph_type`` in ``cfg``.
+                 for you if it is ``None`` according to ``graph_name`` in ``cfg``.
         dynamic_init_topology_builder: GraphConstructionBase, default=None
             The dynamic initial graph topology builder. We will set the default topology \
                  builder for you if it is ``None`` according to \
-                 ``dynamic_init_graph_type`` in ``cfg``.
+                 ``dynamic_init_graph_name`` in ``cfg``.
         lower_case: bool, default=True
         tokenizer: function, default=nltk.word_tokenize
         beam_size: int, default=3
