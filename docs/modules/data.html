@@ -1352,10 +1352,42 @@ input and output is separated by a tab( ).</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.DoubleText2TextDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">DoubleText2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir: str = None</em>, <em class="sig-param">topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">graph_type: str = None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">dynamic_init_graph_type: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
-<dd class="field-odd"><dl class="simple">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">DoubleText2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>The dataset for double-text-to-text applications.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>graph_name</strong> (<em>str</em>) – <p>The name of graph construction method. E.g., “dependency”.
+Note that if it is in the provided graph names (i.e., “dependency”,             “constituency”, “ie”, “node_emb”, “node_emb_refine”), the following             parameters are set by default and users can’t modify them:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">topology_builder</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">static_or_dynamic</span></code></p></li>
+</ol>
+</div></blockquote>
+<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+</p></li>
+<li><p><strong>root_dir</strong> (<em>str</em><em>, </em><em>default=None</em>) – The path of dataset.</p></li>
+<li><p><strong>topology_builder</strong> (<em>GraphConstructionBase</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
+<li><p><strong>topology_subdir</strong> (<em>str</em>) – The directory name of processed path.</p></li>
+<li><p><strong>static_or_dynamic</strong> (<em>str</em><em>, </em><em>default='static'</em>) – The graph type. Expected in (‘static’, ‘dynamic’)</p></li>
+<li><p><strong>dynamic_init_graph_name</strong> (<em>str</em><em>, </em><em>default=None</em>) – <p>The graph name of the initial graph. Expected in (None, “line”,             “dependency”, “constituency”).
+Note that if it is in the provided graph names (i.e., “line”, “dependency”,             “constituency”), the following parameters are set by default and users             can’t modify them:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dynamic_init_topology_builder</span></code></p></li>
+</ol>
+</div></blockquote>
+<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+</p></li>
+<li><p><strong>dynamic_init_topology_builder</strong> (<em>GraphConstructionBase</em>) – The graph construction class.</p></li>
+<li><p><strong>dynamic_init_topology_aux_args</strong> (<em>None</em><em>,</em>) – TBD.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>processed_dir</strong></dt><dd></dd>
 <dt><strong>processed_file_names</strong></dt><dd></dd>
 <dt><strong>processed_file_paths</strong></dt><dd></dd>
@@ -1416,7 +1448,7 @@ input and output is separated by a tab( ).</p>
 </table>
 <dl class="method">
 <dt id="graph4nlp.data.dataset.DoubleText2TextDataset.collate_fn">
-<em class="property">static </em><code class="sig-name descname">collate_fn</code><span class="sig-paren">(</span><em class="sig-param">data_list: [&lt;class 'graph4nlp.pytorch.data.dataset.Text2TextDataItem'&gt;]</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset.collate_fn" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">collate_fn</code><span class="sig-paren">(</span><em class="sig-param">data_list: [&lt;class 'graph4nlp.pytorch.data.dataset.DoubleText2TextDataItem'&gt;]</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset.collate_fn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Takes a list of data and convert it to a batch of data.</p>
 </dd></dl>
 
