@@ -2,8 +2,13 @@ import copy
 import math
 import warnings
 
-from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
+from graph4nlp.pytorch.data.dataset import (
+    DoubleText2TextDataItem,
+    Text2TextDataItem,
+    Text2TextDataset,
+)
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 
 from .base import InferenceWrapperBase
 
@@ -18,8 +23,10 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         topology_builder=None,
         dynamic_topology_builder=None,
         beam_size=3,
+        topk=1,
         lower_case=True,
         tokenizer=None,
+        share_vocab=True,
     ):
         """
             The inference wrapper for generation tasks.
@@ -64,6 +71,8 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             tokenizer=tokenizer,
             dataset=dataset,
             data_item=data_item,
+            share_vocab=share_vocab,
+            topk=topk,
         )
 
         self.beam_size = beam_size
@@ -106,10 +115,15 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             data_items = self.preprocess(raw_contents=data_collect)
 
             collate_data = self.dataset.collate_fn(data_items)
-            batch_graph = collate_data["graph_data"].to(device)
+            collate_data = all_to_cuda(collate_data, device)
 
             # forward
             if self.use_copy:
+                if self.data_item_class == DoubleText2TextDataItem:
+                    batch_graph = collate_data["graph_data"]
+                else:
+                    batch_graph = collate_data
+
                 oov_dict = prepare_ext_vocab(
                     batch_graph=batch_graph, vocab=vocab_model, device=device
                 )
@@ -119,7 +133,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
                 ref_dict = self.vocab.out_word_vocab
 
             ret = self.model.inference_forward(
-                batch_graph=batch_graph, beam_size=self.beam_size, oov_dict=oov_dict
+                collate_data, self.beam_size, topk=self.topk, oov_dict=oov_dict
             )
             ret = self.model.post_process(decode_results=ret, vocab=ref_dict)
             ret_collect.extend(ret)
