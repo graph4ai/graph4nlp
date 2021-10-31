@@ -6,7 +6,7 @@ from graph4nlp.pytorch.data.dataset import Text2LabelDataItem, Text2LabelDataset
 from .base import InferenceWrapperBase
 
 
-class GeneratorInferenceWrapper(InferenceWrapperBase):
+class ClassifierInferenceWrapper(InferenceWrapperBase):
     def __init__(
         self,
         cfg,
@@ -17,6 +17,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         dynamic_topology_builder=None,
         lower_case=True,
         tokenizer=None,
+        classification_label=None,
     ):
         """
             The inference wrapper for classification tasks.
@@ -37,6 +38,8 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             The inference wrapper will do the pipeline as follows:
                 1. model.inference_forward()
                 2. model.post_process()
+            The output of the model.post_process should be the vector or matrix \
+                to contain the index of the class
         dataset: Dataset,
             The dataset class.
         data_item: DataItem,
@@ -50,6 +53,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
                  ``dynamic_init_graph_type`` in ``cfg``.
         lower_case: bool, default=True
         tokenizer: function, default=nltk.word_tokenize
+        classification_label: the label tags which maps the classifier index
         """
         super().__init__(
             cfg=cfg,
@@ -63,6 +67,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         )
 
         self.vocab_model = model.vocab_model
+        self.classification_label = classification_label
 
     def predict(self, raw_contents: list, batch_size=1):
         """
@@ -89,7 +94,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         if len(raw_contents) < batch_size:
             batch_size = len(raw_contents)
 
-        ret_collect = []
+        label_collect = []
 
         for i in range(math.ceil(len(raw_contents) / batch_size)):
             data_collect = raw_contents[i * batch_size : (i + 1) * batch_size]
@@ -104,6 +109,15 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             # forward
             ret = self.model.inference_forward(batch_graph=batch_graph)
             ret = self.model.post_process(logits_results=ret)
-            ret_collect.extend(ret)
+            
+            #map index to label
+            if len(ret.shape()) == 1:
+                labels = [self.classification_label[index] for index in ret]
+            elif len(ret.shape()) == 2:
+                labels=[]
+                for index_l in ret:
+                    labels.append([self.classification_label[index] for index in index_l])
+            
+            label_collect.extend(labels)
 
-        return ret_collect
+        return label_collect
