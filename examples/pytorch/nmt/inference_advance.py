@@ -1,5 +1,3 @@
-import sys
-sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
 import os
 import resource
 import numpy as np
@@ -70,7 +68,9 @@ class NMT:
             seed=self.opt["seed"],
             word_emb_size=self.opt["word_emb_size"],
             share_vocab=self.opt["share_vocab"],
-            graph_name=self.opt["graph_construction_args"]["graph_construction_share"]["graph_name"],
+            graph_name=self.opt["graph_construction_args"]["graph_construction_share"][
+                "graph_name"
+            ],
             topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
                 "topology_subdir"
             ],

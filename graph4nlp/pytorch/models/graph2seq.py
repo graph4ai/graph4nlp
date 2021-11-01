@@ -259,14 +259,15 @@ class Graph2Seq(Graph2XBase):
         pred_str = wordid2str(pred_ids.detach().cpu(), vocab)
         return pred_str
 
-    def inference_forward(self, batch_graph, beam_size, topk=1, oov_dict=None):
+    def inference_forward(self, inference_args: dict, beam_size, topk=1, oov_dict=None):
         """
             Decoding with the support of beam_search.
             Specifically, when ``beam_size`` is 1, it is equal to greedy search.
         Parameters
         ----------
-        batch_graph: GraphData
-            The graph input
+        inference_args: dict
+            The dict contains the arguments for the forward calculation pipeline during inference.
+            For most cases, it must contains a batch graph with key ``graph_data``.
         beam_size: int
             The beam width. When it is 1, the output is equal to greedy search's output.
         topk: int, default=1
@@ -281,7 +282,10 @@ class Graph2Seq(Graph2XBase):
             The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes. # noqa
         """
         return self.translate(
-            batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict
+            batch_graph=inference_args["graph_data"],
+            beam_size=beam_size,
+            topk=topk,
+            oov_dict=oov_dict,
         )
 
     @classmethod

@@ -95,7 +95,7 @@ class IWSLT14Dataset(Text2TextDataset):
         share_vocab=False,
         for_inference=False,
         reused_vocab_model=None,
-        lower_case=True
+        lower_case=True,
     ):
         """
 
@@ -148,7 +148,7 @@ class IWSLT14Dataset(Text2TextDataset):
             reused_vocab_model=reused_vocab_model,
             dynamic_init_graph_name=dynamic_init_graph_name,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
-            lower_case=lower_case
+            lower_case=lower_case,
         )
 
     @staticmethod

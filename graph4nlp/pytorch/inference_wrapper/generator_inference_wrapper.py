@@ -3,11 +3,7 @@ import math
 import warnings
 import torch
 
-from graph4nlp.pytorch.data.dataset import (
-    DoubleText2TextDataItem,
-    Text2TextDataItem,
-    Text2TextDataset,
-)
+from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 
@@ -28,7 +24,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         lower_case=True,
         tokenizer=None,
         share_vocab=True,
-        **kwargs
+        **kwargs,
     ):
         """
             The inference wrapper for generation tasks.
@@ -76,7 +72,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             beam_size=beam_size,
             topk=topk,
             share_vocab=share_vocab,
-            **kwargs
+            **kwargs,
         )
 
         self.vocab_model = model.vocab_model
@@ -119,21 +115,19 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             data_items = self.preprocess(raw_contents=data_collect)
 
             collate_data = self.dataset.collate_fn(data_items)
-            batch_graph = collate_data["graph_data"]
-            batch_graph = batch_graph.to(device)
+            collate_data = all_to_cuda(collate_data, device)
 
             # forward
             if self.use_copy:
                 oov_dict = prepare_ext_vocab(
-                    batch_graph=batch_graph, vocab=vocab_model, device=device
+                    batch_graph=collate_data["graph_data"], vocab=vocab_model, device=device
                 )
                 ref_dict = oov_dict
             else:
                 oov_dict = None
                 ref_dict = self.vocab_model.out_word_vocab
-
             ret = self.model.inference_forward(
-                batch_graph, self.beam_size, topk=self.topk, oov_dict=oov_dict
+                collate_data, self.beam_size, topk=self.topk, oov_dict=oov_dict
             )
             ret = self.model.post_process(decode_results=ret, vocab=ref_dict)
             ret_collect.extend(ret)

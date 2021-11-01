@@ -1,6 +1,4 @@
 import os
-import sys
-sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
 import resource
 import numpy as np
 import torch
@@ -11,18 +9,6 @@ from torch.utils.tensorboard import SummaryWriter
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.evaluation import BLEU
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
-    ConstituencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
-    DependencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
-    NodeEmbeddingBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
 
 from args import get_args
 from build_model import get_model
@@ -87,10 +73,12 @@ class NMT:
             seed=self.opt["seed"],
             word_emb_size=self.opt["word_emb_size"],
             share_vocab=self.opt["share_vocab"],
-            graph_name=self.opt["graph_construction_args"]["graph_construction_share"]["graph_name"],
+            graph_name=self.opt["graph_construction_args"]["graph_construction_share"][
+                "graph_name"
+            ],
             topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
                 "topology_subdir"
-            ]
+            ],
         )
 
         self.train_dataloader = DataLoader(
