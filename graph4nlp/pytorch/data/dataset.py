@@ -1651,14 +1651,14 @@ class DoubleText2TextDataset(Dataset):
 class SequenceLabelingDataset(Dataset):
     def __init__(
         self,
-        graph_name: str,        
+        graph_name: str,
         root_dir: str = None,
         static_or_dynamic: str = None,
         topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
         tag_types: str = None,
         dynamic_init_graph_name: str = None,
-        dynamic_init_topology_builder: GraphConstructionBase = None,        
+        dynamic_init_topology_builder: GraphConstructionBase = None,
         **kwargs
     ):
         if kwargs.get("graph_type", None) is not None:
@@ -1709,14 +1709,14 @@ class SequenceLabelingDataset(Dataset):
 
         self.static_or_dynamic = static_or_dynamic
         super(SequenceLabelingDataset, self).__init__(
-                root=root_dir,
-                graph_name=graph_name,
-                topology_builder=topology_builder,
-                topology_subdir=topology_subdir,
-                static_or_dynamic=static_or_dynamic,
-                dynamic_init_topology_builder=dynamic_init_topology_builder,
-                **kwargs
-            )
+            root=root_dir,
+            graph_name=graph_name,
+            topology_builder=topology_builder,
+            topology_subdir=topology_subdir,
+            static_or_dynamic=static_or_dynamic,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            **kwargs
+        )
 
     def parse_file(self, file_path) -> list:
         """
@@ -1753,12 +1753,12 @@ class SequenceLabelingDataset(Dataset):
                     input.append(line.strip().split(" ")[0])
                     output.append(line.strip().split(" ")[-1])
                     if line[0] == "." and len(input) >= 2:
-                            data_item = SequenceLabelingDataItem(
-                                input_text=input, output_tags=output, tokenizer=self.tokenizer
-                            )
-                            data.append(data_item)
-                            input = []
-                            output = []
+                        data_item = SequenceLabelingDataItem(
+                            input_text=input, output_tags=output, tokenizer=self.tokenizer
+                        )
+                        data.append(data_item)
+                        input = []
+                        output = []
 
         return data
 
@@ -1801,14 +1801,14 @@ class SequenceLabelingDataset(Dataset):
             tgt_tag_id = [self.tag_types.index(tgt_.strip()) for tgt_ in tgt]
 
             tgt_tag_id = torch.tensor(tgt_tag_id)
-            item.output_id = tgt_tag_id 
+            item.output_id = tgt_tag_id
 
     @staticmethod
     def collate_fn(data_list: [SequenceLabelingDataItem]):
 
         graph_list = [item.graph for item in data_list]
         graph_data = to_batch(graph_list)
-        
+
         if data_list[0].output_id is not None:  # has ground truth
             tgt_tag = [deepcopy(item.output_id) for item in data_list]
         else:
