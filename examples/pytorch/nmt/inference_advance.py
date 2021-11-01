@@ -1,6 +1,5 @@
 import sys
 sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
-from graph4nlp.pytorch.data.dataset import Text2TextDataItem
 import os
 import resource
 import numpy as np
@@ -29,8 +28,6 @@ from utils import get_log, wordid2str
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 
-from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper import GeneratorInferenceWrapper
-import nltk
 
 class NMT:
     def __init__(self, opt):
@@ -155,18 +152,7 @@ class NMT:
 
 if __name__ == "__main__":
     opt = get_args()
-    if opt["use_gpu"] != 0 and torch.cuda.is_available():
-        print("[ Using CUDA ]")
-        device = torch.device("cuda" if opt["gpu"] < 0 else "cuda:%d" % opt["gpu"])
-    else:
-        print("[ Using CPU ]")
-        device = torch.device("cpu")
-    model = Graph2Seq.load_checkpoint(
-            os.path.join("examples/pytorch/nmt/save", opt["name"]), "best.pth"
-        ).to(device)
-
-    wrapper = GeneratorInferenceWrapper(cfg=opt, model=model, dataset=IWSLT14Dataset, data_item=Text2TextDataItem,
-        beam_size=3, lower_case=True, tokenizer=nltk.RegexpTokenizer(" ", gaps=True).tokenize)
-    
-    output = wrapper.predict(raw_contents=['wissen sie , eines der großen vern@@ ü@@ gen beim reisen und eine der freu@@ den bei der eth@@ no@@ graph@@ ischen forschung ist , gemeinsam mit den menschen zu leben , die sich noch an die alten tage erinnern können . die ihre vergangenheit noch immer im wind spüren , sie auf vom regen ge@@ gl@@ ä@@ t@@ teten st@@ einen berü@@ hren , sie in den bit@@ teren blä@@ ttern der pflanzen schme@@ cken .'], batch_size=1)
-    print(output)    
+    runner = NMT(opt)
+    runner.logger.info("------ Running Training ----------")
+    runner.logger.info("\tRunner name: {}".format(opt["name"]))
+    runner.translate()

@@ -75,7 +75,9 @@ class IWSLT14Dataset(Text2TextDataset):
     def __init__(
         self,
         root_dir,
+        graph_name,
         topology_subdir,
+        dynamic_init_graph_name=None,
         tokenizer=nltk.RegexpTokenizer(" ", gaps=True).tokenize,
         pretrained_word_emb_name=None,
         pretrained_word_emb_url=None,
@@ -84,17 +86,13 @@ class IWSLT14Dataset(Text2TextDataset):
         pretrained_word_emb_cache_dir=".vector_cache/",
         val_split_ratio=None,
         use_val_for_vocab=False,
-        graph_type="static",
         merge_strategy="tailhead",
         edge_strategy=None,
         seed=None,
         word_emb_size=300,
         share_vocab=False,
-        dynamic_graph_type=None,
-        dynamic_init_topology_aux_args=None,
         for_inference=False,
         reused_vocab_model=None,
-        dynamic_init_graph_type=None,
     ):
         """
 
@@ -128,7 +126,7 @@ class IWSLT14Dataset(Text2TextDataset):
         super(IWSLT14Dataset, self).__init__(
             root_dir=root_dir,
             topology_subdir=topology_subdir,
-            graph_type=graph_type,
+            graph_name=graph_name,
             edge_strategy=edge_strategy,
             merge_strategy=merge_strategy,
             share_vocab=share_vocab,
@@ -142,11 +140,9 @@ class IWSLT14Dataset(Text2TextDataset):
             word_emb_size=word_emb_size,
             tokenizer=tokenizer,
             use_val_for_vocab=use_val_for_vocab,
-            dynamic_graph_type=dynamic_graph_type,
-            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
-            dynamic_init_graph_type=dynamic_init_graph_type,
+            dynamic_init_graph_name=dynamic_init_graph_name,
         )
 
     @staticmethod
