@@ -1,6 +1,7 @@
 import copy
 import math
 import warnings
+import torch
 
 from graph4nlp.pytorch.data.dataset import (
     DoubleText2TextDataItem,
@@ -81,6 +82,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         self.vocab_model = model.vocab_model
         self.use_copy = self.cfg["decoder_args"]["rnn_decoder_share"]["use_copy"]
 
+    @torch.no_grad()
     def predict(self, raw_contents: list, batch_size=1):
         """
             Do the inference.
@@ -117,25 +119,21 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             data_items = self.preprocess(raw_contents=data_collect)
 
             collate_data = self.dataset.collate_fn(data_items)
-            collate_data = all_to_cuda(collate_data, device)
+            batch_graph = collate_data["graph_data"]
+            batch_graph = batch_graph.to(device)
 
             # forward
             if self.use_copy:
-                if self.data_item_class == DoubleText2TextDataItem:
-                    batch_graph = collate_data["graph_data"]
-                else:
-                    batch_graph = collate_data
-
                 oov_dict = prepare_ext_vocab(
                     batch_graph=batch_graph, vocab=vocab_model, device=device
                 )
                 ref_dict = oov_dict
             else:
                 oov_dict = None
-                ref_dict = self.vocab.out_word_vocab
+                ref_dict = self.vocab_model.out_word_vocab
 
             ret = self.model.inference_forward(
-                collate_data, self.beam_size, topk=self.topk, oov_dict=oov_dict
+                batch_graph, self.beam_size, topk=self.topk, oov_dict=oov_dict
             )
             ret = self.model.post_process(decode_results=ret, vocab=ref_dict)
             ret_collect.extend(ret)

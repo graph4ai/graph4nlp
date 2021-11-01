@@ -20,11 +20,11 @@ class IWSLT14Dataset(Text2TextDataset):
         """At least 3 reserved keys should be fiiled: 'vocab', 'data' and 'split_ids'."""
         return {"vocab": "vocab.pt", "data": "data.pt"}
 
-    def download(self):
-        raise NotImplementedError(
-            "This dataset is now under test and cannot be downloaded. "
-            "Please prepare the raw data yourself."
-        )
+    # def download(self):
+    #     raise NotImplementedError(
+    #         "This dataset is now under test and cannot be downloaded. "
+    #         "Please prepare the raw data yourself."
+    #     )
 
     def parse_file(self, file_path) -> list:
         """
@@ -74,10 +74,12 @@ class IWSLT14Dataset(Text2TextDataset):
 
     def __init__(
         self,
-        root_dir,
         graph_name,
-        topology_subdir,
+        root_dir=None,
+        topology_subdir=None,
+        topology_builder=None,
         dynamic_init_graph_name=None,
+        dynamic_init_topology_builder=None,
         tokenizer=nltk.RegexpTokenizer(" ", gaps=True).tokenize,
         pretrained_word_emb_name=None,
         pretrained_word_emb_url=None,
@@ -93,6 +95,7 @@ class IWSLT14Dataset(Text2TextDataset):
         share_vocab=False,
         for_inference=False,
         reused_vocab_model=None,
+        lower_case=True
     ):
         """
 
@@ -127,6 +130,7 @@ class IWSLT14Dataset(Text2TextDataset):
             root_dir=root_dir,
             topology_subdir=topology_subdir,
             graph_name=graph_name,
+            topology_builder=topology_builder,
             edge_strategy=edge_strategy,
             merge_strategy=merge_strategy,
             share_vocab=share_vocab,
@@ -143,6 +147,8 @@ class IWSLT14Dataset(Text2TextDataset):
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
             dynamic_init_graph_name=dynamic_init_graph_name,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            lower_case=lower_case
         )
 
     @staticmethod
@@ -151,10 +157,13 @@ class IWSLT14Dataset(Text2TextDataset):
         from graph4nlp.pytorch.data.data import to_batch
 
         big_graph = to_batch(graph_data)
+        if isinstance(data_list[0].output_text, str):  # has ground truth
+            output_numpy = [item.output_np for item in data_list]
+            output_str = [item.output_text.lower().strip() for item in data_list]
+            output_pad = pad_2d_vals_no_size(output_numpy)
 
-        output_numpy = [item.output_np for item in data_list]
-        output_str = [item.output_text.lower().strip() for item in data_list]
-        output_pad = pad_2d_vals_no_size(output_numpy)
-
-        tgt_seq = torch.from_numpy(output_pad).long()
+            tgt_seq = torch.from_numpy(output_pad).long()
+        else:
+            output_str = []
+            tgt_seq = None
         return {"graph_data": big_graph, "tgt_seq": tgt_seq, "output_str": output_str}

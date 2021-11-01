@@ -9,18 +9,6 @@ from torch.utils.tensorboard import SummaryWriter
 
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.evaluation import BLEU
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
-    ConstituencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
-    DependencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
-    NodeEmbeddingBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
 
 from args import get_args
 from dataset import IWSLT14Dataset
