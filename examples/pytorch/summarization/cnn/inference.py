@@ -53,9 +53,6 @@ class ModelHandler:
 
     def _build_model(self):
         self.model = SumModel.load_checkpoint(self.stopper.save_model_path)
-        self.model.graph_type = self.config["graph_construction_args"]["graph_construction_share"][
-            "graph_name"
-        ]
         self.model.vocab_model = self.model.vocab
 
         self.inference_tool = GeneratorInferenceWrapper(

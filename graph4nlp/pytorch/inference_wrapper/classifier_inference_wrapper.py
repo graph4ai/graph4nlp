@@ -1,36 +1,26 @@
-import copy
 import math
 import warnings
 
-from graph4nlp.pytorch.data.dataset import (
-    DoubleText2TextDataItem,
-    Text2TextDataItem,
-    Text2TextDataset,
-)
-from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
-from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
+from graph4nlp.pytorch.data.dataset import Text2LabelDataItem, Text2LabelDataset
 
 from .base import InferenceWrapperBase
 
 
-class GeneratorInferenceWrapper(InferenceWrapperBase):
+class ClassifierInferenceWrapper(InferenceWrapperBase):
     def __init__(
         self,
         cfg,
         model,
-        dataset=Text2TextDataset,
-        data_item=Text2TextDataItem,
+        dataset=Text2LabelDataset,
+        data_item=Text2LabelDataItem,
         topology_builder=None,
         dynamic_topology_builder=None,
-        beam_size=3,
-        topk=1,
         lower_case=True,
         tokenizer=None,
-        share_vocab=True,
-        **kwargs
+        classification_label=None,
     ):
         """
-            The inference wrapper for generation tasks.
+            The inference wrapper for classification tasks.
         Parameters
         ----------
         cfg: dict
@@ -39,7 +29,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             The model checkpoint.
             The model must support the following attributes:
                 model.graph_name: str,
-                    The graph type, eg: "dependency".
+                    The graph name, eg: "dependency".
             The model must support the following api:
                 model.inference_forward(batch_graph, **kwargs)
                     It is the forward process during inference.
@@ -48,6 +38,8 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             The inference wrapper will do the pipeline as follows:
                 1. model.inference_forward()
                 2. model.post_process()
+            The output of the model.post_process should be the vector or matrix \
+                to contain the index of the class
         dataset: Dataset,
             The dataset class.
         data_item: DataItem,
@@ -61,7 +53,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
                  ``dynamic_init_graph_name`` in ``cfg``.
         lower_case: bool, default=True
         tokenizer: function, default=nltk.word_tokenize
-        beam_size: int, default=3
+        classification_label: the label tags which maps the classifier index
         """
         super().__init__(
             cfg=cfg,
@@ -72,14 +64,10 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             tokenizer=tokenizer,
             dataset=dataset,
             data_item=data_item,
-            beam_size=beam_size,
-            topk=topk,
-            share_vocab=share_vocab,
-            **kwargs
         )
 
         self.vocab_model = model.vocab_model
-        self.use_copy = self.cfg["decoder_args"]["rnn_decoder_share"]["use_copy"]
+        self.classification_label = classification_label
 
     def predict(self, raw_contents: list, batch_size=1):
         """
@@ -106,38 +94,30 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         if len(raw_contents) < batch_size:
             batch_size = len(raw_contents)
 
-        ret_collect = []
+        label_collect = []
 
         for i in range(math.ceil(len(raw_contents) / batch_size)):
             data_collect = raw_contents[i * batch_size : (i + 1) * batch_size]
 
             data_items = []
-            vocab_model = copy.deepcopy(self.vocab_model)
             device = next(self.parameters()).device
             data_items = self.preprocess(raw_contents=data_collect)
 
             collate_data = self.dataset.collate_fn(data_items)
-            collate_data = all_to_cuda(collate_data, device)
+            batch_graph = collate_data["graph_data"].to(device)
 
             # forward
-            if self.use_copy:
-                if self.data_item_class == DoubleText2TextDataItem:
-                    batch_graph = collate_data["graph_data"]
-                else:
-                    batch_graph = collate_data
+            ret = self.model.inference_forward(batch_graph=batch_graph)
+            ret = self.model.post_process(logits_results=ret)
 
-                oov_dict = prepare_ext_vocab(
-                    batch_graph=batch_graph, vocab=vocab_model, device=device
-                )
-                ref_dict = oov_dict
-            else:
-                oov_dict = None
-                ref_dict = self.vocab.out_word_vocab
+            # map index to label
+            if len(ret.shape()) == 1:
+                labels = [self.classification_label[index] for index in ret]
+            elif len(ret.shape()) == 2:
+                labels = []
+                for index_l in ret:
+                    labels.append([self.classification_label[index] for index in index_l])
 
-            ret = self.model.inference_forward(
-                collate_data, self.beam_size, topk=self.topk, oov_dict=oov_dict
-            )
-            ret = self.model.post_process(decode_results=ret, vocab=ref_dict)
-            ret_collect.extend(ret)
+            label_collect.extend(labels)
 
-        return ret_collect
+        return label_collect

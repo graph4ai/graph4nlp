@@ -22,7 +22,7 @@ from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 def all_to_cuda(data, device=None):
@@ -47,7 +47,7 @@ class SumModel(nn.Module):
         # build Graph2Seq model
         self.g2s = Graph2Seq.from_args(config, self.vocab)
 
-        self.graph_type = self.config["graph_construction_args"]["graph_construction_share"][
+        self.graph_name = self.config["graph_construction_args"]["graph_construction_share"][
             "graph_name"
         ]
 

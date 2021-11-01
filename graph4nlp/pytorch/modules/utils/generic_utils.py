@@ -75,6 +75,18 @@ def to_cuda(x, device=None):
     return x
 
 
+def all_to_cuda(data, device=None):
+    if isinstance(data, torch.Tensor):
+        data = to_cuda(data, device)
+    elif isinstance(data, (list, dict)):
+        keys = range(len(data)) if isinstance(data, list) else data.keys()
+        for k in keys:
+            if isinstance(data[k], torch.Tensor):
+                data[k] = to_cuda(data[k], device)
+
+    return data
+
+
 def create_mask(x, N, device=None):
     if isinstance(x, torch.Tensor):
         x = x.data
