@@ -32,7 +32,14 @@ Then run:
 python examples/pytorch/kg_completion/kinship_main.py --data kinship --model ggnn_distmult
 python examples/pytorch/kg_completion/WN18RR_main.py --data WN18RR --model gcn_distmult --lr 0.005
 ```
-
+If you want to load the saved model and continue to train the model:
+```bash
+python examples/pytorch/kg_completion/kinship_main.py --data kinship --model ggnn_distmult --resume
+```
+If you want to test the model:
+```bash
+python examples/pytorch/kg_completion/kinship_inference_advance.py --data kinship --model ggnn_distmult
+```
 Results on kinship
 ------------------
 
