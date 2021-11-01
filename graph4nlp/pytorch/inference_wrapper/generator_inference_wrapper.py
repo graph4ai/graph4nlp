@@ -1,12 +1,9 @@
 import copy
 import math
 import warnings
+import torch
 
-from graph4nlp.pytorch.data.dataset import (
-    DoubleText2TextDataItem,
-    Text2TextDataItem,
-    Text2TextDataset,
-)
+from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 
@@ -27,7 +24,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         lower_case=True,
         tokenizer=None,
         share_vocab=True,
-        **kwargs
+        **kwargs,
     ):
         """
             The inference wrapper for generation tasks.
@@ -75,12 +72,13 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             beam_size=beam_size,
             topk=topk,
             share_vocab=share_vocab,
-            **kwargs
+            **kwargs,
         )
 
         self.vocab_model = model.vocab_model
         self.use_copy = self.cfg["decoder_args"]["rnn_decoder_share"]["use_copy"]
 
+    @torch.no_grad()
     def predict(self, raw_contents: list, batch_size=1):
         """
             Do the inference.
@@ -121,19 +119,13 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
 
             # forward
             if self.use_copy:
-                if self.data_item_class == DoubleText2TextDataItem:
-                    batch_graph = collate_data["graph_data"]
-                else:
-                    batch_graph = collate_data
-
                 oov_dict = prepare_ext_vocab(
-                    batch_graph=batch_graph, vocab=vocab_model, device=device
+                    batch_graph=collate_data["graph_data"], vocab=vocab_model, device=device
                 )
                 ref_dict = oov_dict
             else:
                 oov_dict = None
-                ref_dict = self.vocab.out_word_vocab
-
+                ref_dict = self.vocab_model.out_word_vocab
             ret = self.model.inference_forward(
                 collate_data, self.beam_size, topk=self.topk, oov_dict=oov_dict
             )
