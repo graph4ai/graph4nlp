@@ -17,7 +17,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
         dynamic_topology_builder=None,
         lower_case=True,
         tokenizer=None,
-        classification_label=None,
+        label_names=None,
     ):
         """
             The inference wrapper for classification tasks.
@@ -66,8 +66,8 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             data_item=data_item,
         )
 
+        self.label_names = label_names
         self.vocab_model = model.vocab_model
-        self.classification_label = classification_label
 
     def predict(self, raw_contents: list, batch_size=1):
         """
@@ -94,7 +94,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
         if len(raw_contents) < batch_size:
             batch_size = len(raw_contents)
 
-        label_collect = []
+        ret_collect = []
 
         for i in range(math.ceil(len(raw_contents) / batch_size)):
             data_collect = raw_contents[i * batch_size : (i + 1) * batch_size]
@@ -107,17 +107,17 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             batch_graph = collate_data["graph_data"].to(device)
 
             # forward
-            ret = self.model.inference_forward(batch_graph=batch_graph)
-            ret = self.model.post_process(logits_results=ret)
+            ret = self.model.inference_forward(graph=batch_graph)
+            ret = self.model.post_process(logits=ret, label_names=self.label_names)
 
             # map index to label
-            if len(ret.shape()) == 1:
-                labels = [self.classification_label[index] for index in ret]
-            elif len(ret.shape()) == 2:
-                labels = []
-                for index_l in ret:
-                    labels.append([self.classification_label[index] for index in index_l])
+            # if len(ret.shape()) == 1:
+            #    labels = [self.classification_label[index] for index in ret]
+            # elif len(ret.shape()) == 2:
+            #    labels = []
+            #    for index_l in ret:
+            #        labels.append([self.classification_label[index] for index in index_l])
 
-            label_collect.extend(labels)
+            ret_collect.extend(ret)
 
-        return label_collect
+        return ret_collect

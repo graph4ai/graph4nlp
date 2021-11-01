@@ -1,0 +1,36 @@
+graph_construction_name: "line_graph"
+graph_embedding_name: "graphsage"
+decoder_name: "stdrnn"
+
+graph_construction_args:
+  graph_construction_share:
+    graph_name: 'line_graph'
+    root_dir: 'examples/pytorch/name_entity_recognition/conll'
+    topology_subdir: 'LineGraph'
+    thread_number: 10
+    port: 9000
+    timeout: 15000
+
+  graph_construction_private:
+    edge_strategy: 'homogeneous'
+    merge_strategy: 'tailhead'
+    sequential_link: true
+    as_node: false
+
+  node_embedding:
+    input_size: 300
+    hidden_size: 300
+    word_dropout: 0.2
+    rnn_dropout: 0.3
+    fix_bert_emb: false
+    fix_word_emb: true
+    embedding_style:
+      single_token_item: true
+      emb_strategy: "w2v_bilstm"
+      num_rnn_layers: 1
+      bert_model_name: null
+      bert_lower_case: null
+
+
+
+

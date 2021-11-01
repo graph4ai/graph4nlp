@@ -107,7 +107,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             batch_size = len(raw_contents)
 
         ret_collect = []
-
+ 
         for i in range(math.ceil(len(raw_contents) / batch_size)):
             data_collect = raw_contents[i * batch_size : (i + 1) * batch_size]
 
