@@ -306,7 +306,7 @@ class Dataset(torch.utils.data.Dataset):
         timeout=15000,
         for_inference=False,
         reused_vocab_model=None,
-        **kwargs
+        **kwargs,
     ):
         """
 
@@ -868,7 +868,7 @@ class Text2TextDataset(Dataset):
         dynamic_init_topology_builder: GraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,  # TODO
         share_vocab=True,
-        **kwargs
+        **kwargs,
     ):
         if kwargs.get("graph_type", None) is not None:
             raise ValueError(
@@ -925,7 +925,7 @@ class Text2TextDataset(Dataset):
             share_vocab=share_vocab,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-            **kwargs
+            **kwargs,
         )
 
     def parse_file(self, file_path) -> list:
@@ -1109,7 +1109,7 @@ class TextToTreeDataset(Dataset):
             share_vocab=share_vocab,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-            **kwargs
+            **kwargs,
         )
 
     def parse_file(self, file_path) -> list:
@@ -1238,7 +1238,7 @@ class TextToTreeDataset(Dataset):
                 tgt_list, 0, len(tgt_list), self.vocab_model.out_word_vocab
             )
             item.output_tree = output_tree
-    
+
     @classmethod
     def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie=False):
         item = deepcopy(data_item)
@@ -1251,7 +1251,7 @@ class TextToTreeDataset(Dataset):
             token_matrix.append([node_token_id])
         token_matrix = torch.tensor(token_matrix, dtype=torch.long)
         graph.node_features["token_id"] = token_matrix
-        
+
         if isinstance(item.output_text, str):
             tgt = item.output_text
             tgt_list = vocab_model.out_word_vocab.get_symbol_idx_for_list(tgt.split())
@@ -1286,7 +1286,7 @@ class Text2LabelDataset(Dataset):
         graph_type: str = None,
         dynamic_init_graph_type: str = None,
         dynamic_init_topology_builder: GraphConstructionBase = None,
-        **kwargs
+        **kwargs,
     ):
         self.data_item_type = Text2LabelDataItem
         if graph_type is None:
@@ -1338,7 +1338,7 @@ class Text2LabelDataset(Dataset):
                 topology_subdir=topology_subdir,
                 graph_type=static_or_dynamic,
                 dynamic_init_topology_builder=dynamic_init_topology_builder,
-                **kwargs
+                **kwargs,
             )
 
     def parse_file(self, file_path) -> list:
@@ -1479,7 +1479,7 @@ class DoubleText2TextDataset(Dataset):
         dynamic_init_topology_builder: GraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,  # TODO
         share_vocab=True,
-        **kwargs
+        **kwargs,
     ):
         if kwargs.get("graph_type", None) is not None:
             raise ValueError(
@@ -1536,7 +1536,7 @@ class DoubleText2TextDataset(Dataset):
             share_vocab=share_vocab,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-            **kwargs
+            **kwargs,
         )
 
     def parse_file(self, file_path) -> list:
@@ -1688,7 +1688,7 @@ class SequenceLabelingDataset(Dataset):
         tag_types: str = None,
         graph_type: str = "none",
         dynamic_init_graph_type: str = None,
-        **kwargs
+        **kwargs,
     ):
         self.data_item_type = SequenceLabelingDataItem
         self.tag_types = tag_types
@@ -1735,7 +1735,7 @@ class SequenceLabelingDataset(Dataset):
                 graph_type=static_or_dynamic,
                 dynamic_init_topology_builder=dynamic_init_topology_builder,
                 merge_strategy=merge_strategy,
-                **kwargs
+                **kwargs,
             )
 
     def parse_file(self, file_path) -> list:

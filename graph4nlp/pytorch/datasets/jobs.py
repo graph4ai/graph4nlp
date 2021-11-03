@@ -218,7 +218,7 @@ class JobsDatasetForTree(TextToTreeDataset):
             tokenizer=tokenizer,
             max_word_vocab_size=max_word_vocab_size,
             for_inference=for_inference,
-            reused_vocab_model=reused_vocab_model
+            reused_vocab_model=reused_vocab_model,
         )
 
 

@@ -4,7 +4,6 @@ import warnings
 import torch
 
 from graph4nlp.pytorch.data.dataset import Text2TreeDataItem, TextToTreeDataset
-from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 
 from .base import InferenceWrapperBase
@@ -134,7 +133,9 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
 
             # forward
             if self.use_copy:
-                oov_dict = self.prepare_ext_vocab(collate_data["graph_data"], vocab_model.in_word_vocab, device)
+                oov_dict = self.prepare_ext_vocab(
+                    collate_data["graph_data"], vocab_model.in_word_vocab, device
+                )
                 ref_dict = oov_dict
             else:
                 oov_dict = None
@@ -145,5 +146,4 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             )
             ret = self.model.post_process(decode_results=ret, vocab=ref_dict)
             ret_collect.extend(ret)
-
         return ret_collect

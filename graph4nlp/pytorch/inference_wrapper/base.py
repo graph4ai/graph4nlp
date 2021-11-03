@@ -1,6 +1,12 @@
 import torch.nn as nn
 
-from graph4nlp.pytorch.data.dataset import DataItem, Dataset, DoubleText2TextDataItem, word_tokenize, Text2TreeDataItem
+from graph4nlp.pytorch.data.dataset import (
+    DataItem,
+    Dataset,
+    DoubleText2TextDataItem,
+    Text2TreeDataItem,
+    word_tokenize,
+)
 from graph4nlp.pytorch.modules.graph_construction.base import GraphConstructionBase
 
 
@@ -106,10 +112,10 @@ class InferenceWrapperBase(nn.Module):
                 )
             elif self.data_item_class == Text2TreeDataItem:
                 data_item = self.data_item_class(
-                    input_text=raw_sentence, 
+                    input_text=raw_sentence,
                     output_text=None,
                     output_tree=None,
-                    tokenizer=self.tokenizer
+                    tokenizer=self.tokenizer,
                 )
 
             else:

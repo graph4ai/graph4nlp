@@ -332,7 +332,10 @@ class Graph2Tree(Graph2XBase):
             The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes. # noqa
         """
         return self.translate(
-            input_graph=batch_graph["graph_data"], use_beam_search=(beam_size>1), beam_size=beam_size, oov_dict=oov_dict
+            input_graph=batch_graph["graph_data"],
+            use_beam_search=(beam_size > 1),
+            beam_size=beam_size,
+            oov_dict=oov_dict,
         )
 
     @classmethod
