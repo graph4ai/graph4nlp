@@ -26,7 +26,7 @@ class Graph2Tree(Graph2XBase):
     ----------
     vocab_model: VocabModel
         The vocabulary.
-    graph_type: str
+    graph_name: str
         The graph type. Excepted in ["dependency", "constituency", "node_emb", "node_emb_refined"].
     gnn: str
         The graph neural network type. Expected in ["gcn", "gat", "graphsage", "ggnn"]
@@ -38,7 +38,7 @@ class Graph2Tree(Graph2XBase):
         self,
         vocab_model,
         embedding_style,
-        graph_type,
+        graph_name,
         # embedding
         emb_input_size,
         emb_hidden_size,
@@ -73,7 +73,7 @@ class Graph2Tree(Graph2XBase):
             vocab_model=vocab_model,
             emb_input_size=emb_input_size,
             emb_hidden_size=emb_hidden_size,
-            graph_type=graph_type,
+            graph_name=graph_name,
             gnn_direction_option=gnn_direction_option,
             gnn=gnn,
             gnn_num_layers=gnn_num_layers,
@@ -305,6 +305,36 @@ class Graph2Tree(Graph2XBase):
                     else:
                         init.uniform_(param, -init_weight, init_weight)
 
+    def post_process(self, decode_results, vocab):
+        candidate = [int(c) for c in decode_results]
+        pred_str = " ".join(self.tgt_vocab.get_idx_symbol_for_list(candidate))
+        return pred_str
+
+    def inference_forward(self, batch_graph, beam_size, topk=1, oov_dict=None):
+        """
+            Decoding with the support of beam_search.
+            Specifically, when ``beam_size`` is 1, it is equal to greedy search.
+        Parameters
+        ----------
+        batch_graph: GraphData
+            The graph input
+        beam_size: int
+            The beam width. When it is 1, the output is equal to greedy search's output.
+        topk: int, default=1
+            The number of decoded output to be reserved.
+            Usually, ``topk`` should be smaller or equal to ``beam_size``
+        oov_dict: VocabModel, default=None
+            The vocabulary for copy.
+
+        Returns
+        -------
+        results: torch.Tensor
+            The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes. # noqa
+        """
+        return self.translate(
+            batch_graph=batch_graph, beam_size=beam_size, oov_dict=oov_dict
+        )
+
     @classmethod
     def from_args(cls, opt, vocab_model):
         """
@@ -368,5 +398,5 @@ class Graph2Tree(Graph2XBase):
         ret.pop("embedding_style")
         emb_ret = {"emb_" + key: value for key, value in ret.items()}
         emb_ret["embedding_style"] = args["embedding_style"]
-        emb_ret["graph_type"] = opt["graph_construction_name"]
+        emb_ret["graph_name"] = opt["graph_construction_name"]
         return emb_ret
