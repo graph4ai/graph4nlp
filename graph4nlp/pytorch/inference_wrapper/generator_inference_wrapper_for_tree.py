@@ -1,9 +1,11 @@
 import copy
 import math
-import torch
 import warnings
+import torch
 
 from graph4nlp.pytorch.data.dataset import Text2TreeDataItem, TextToTreeDataset
+from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 
 from .base import InferenceWrapperBase
 
@@ -18,8 +20,11 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         topology_builder=None,
         dynamic_topology_builder=None,
         beam_size=3,
+        topk=1,
         lower_case=True,
         tokenizer=None,
+        share_vocab=True,
+        **kwargs,
     ):
         """
             The inference wrapper for generation tasks.
@@ -30,7 +35,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         model: nn.Module
             The model checkpoint.
             The model must support the following attributes:
-                model.graph_type: str,
+                model.graph_name: str,
                     The graph type, eg: "dependency".
             The model must support the following api:
                 model.inference_forward(batch_graph, **kwargs)
@@ -46,11 +51,11 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             The data_item class.
         topology_builder: GraphConstructionBase, default=None
             The initial graph topology builder. We will set the default topology builder \
-                 for you if it is ``None`` according to ``graph_type`` in ``cfg``.
+                 for you if it is ``None`` according to ``graph_name`` in ``cfg``.
         dynamic_init_topology_builder: GraphConstructionBase, default=None
             The dynamic initial graph topology builder. We will set the default topology \
                  builder for you if it is ``None`` according to \
-                 ``dynamic_init_graph_type`` in ``cfg``.
+                 ``dynamic_init_graph_name`` in ``cfg``.
         lower_case: bool, default=True
         tokenizer: function, default=nltk.word_tokenize
         beam_size: int, default=3
@@ -64,13 +69,16 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             tokenizer=tokenizer,
             dataset=dataset,
             data_item=data_item,
+            beam_size=beam_size,
+            topk=topk,
+            share_vocab=share_vocab,
+            **kwargs,
         )
 
-        self.beam_size = beam_size
         self.vocab_model = model.vocab_model
         self.use_copy = self.cfg["decoder_args"]["rnn_decoder_share"]["use_copy"]
 
-    def prepare_ext_vocab(self, batch_graph, src_vocab):
+    def prepare_ext_vocab(self, batch_graph, src_vocab, device):
         oov_dict = copy.deepcopy(src_vocab)
         token_matrix = []
         for n in batch_graph.node_attributes:
@@ -81,10 +89,11 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
                 oov_dict.add_symbol(node_token)
             token_matrix.append(oov_dict.get_symbol_idx(node_token))
         batch_graph.node_features["token_id_oov"] = torch.tensor(token_matrix, dtype=torch.long).to(
-            self.device
+            device
         )
         return oov_dict
 
+    @torch.no_grad()
     def predict(self, raw_contents: list, batch_size=1):
         """
             Do the inference.
@@ -121,20 +130,18 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             data_items = self.preprocess(raw_contents=data_collect)
 
             collate_data = self.dataset.collate_fn(data_items)
-            batch_graph = collate_data["graph_data"].to(device)
+            collate_data = all_to_cuda(collate_data, device)
 
             # forward
             if self.use_copy:
-                oov_dict = prepare_ext_vocab(
-                    batch_graph=batch_graph, vocab=vocab_model.out_word_vocab
-                )
+                oov_dict = self.prepare_ext_vocab(collate_data["graph_data"], vocab_model.in_word_vocab, device)
                 ref_dict = oov_dict
             else:
                 oov_dict = None
-                ref_dict = vocab_model.out_word_vocab
-
+                ref_dict = self.vocab_model.out_word_vocab
+            # print(collate_data)
             ret = self.model.inference_forward(
-                batch_graph=batch_graph, beam_size=self.beam_size, oov_dict=oov_dict
+                collate_data, self.beam_size, topk=self.topk, oov_dict=oov_dict
             )
             ret = self.model.post_process(decode_results=ret, vocab=ref_dict)
             ret_collect.extend(ret)

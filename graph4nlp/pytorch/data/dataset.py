@@ -1043,11 +1043,11 @@ class Text2TextDataset(Dataset):
 class TextToTreeDataset(Dataset):
     def __init__(
         self,
-        root_dir,
-        topology_subdir,
-        graph_name,
-        static_or_dynamic,
-        dynamic_init_graph_name,
+        graph_name: str,
+        root_dir: str = None,
+        topology_subdir: str = None,
+        static_or_dynamic: str = None,
+        dynamic_init_graph_name: str = None,
         share_vocab=True,
         topology_builder=None,
         dynamic_init_topology_builder=None,
@@ -1241,7 +1241,8 @@ class TextToTreeDataset(Dataset):
     
     @classmethod
     def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie=False):
-        graph: GraphData = data_item.graph
+        item = deepcopy(data_item)
+        graph: GraphData = item.graph
         token_matrix = []
         for node_idx in range(graph.get_node_num()):
             node_token = graph.node_attributes[node_idx]["token"]
@@ -1250,13 +1251,15 @@ class TextToTreeDataset(Dataset):
             token_matrix.append([node_token_id])
         token_matrix = torch.tensor(token_matrix, dtype=torch.long)
         graph.node_features["token_id"] = token_matrix
-
-        tgt = data_item.output_text
-        tgt_list = vocab_model.out_word_vocab.get_symbol_idx_for_list(tgt.split())
-        output_tree = Tree.convert_to_tree(
-            tgt_list, 0, len(tgt_list), vocab_model.out_word_vocab
-        )
-        item.output_tree = output_tree
+        
+        if isinstance(item.output_text, str):
+            tgt = item.output_text
+            tgt_list = vocab_model.out_word_vocab.get_symbol_idx_for_list(tgt.split())
+            output_tree = Tree.convert_to_tree(
+                tgt_list, 0, len(tgt_list), vocab_model.out_word_vocab
+            )
+            item.output_tree = output_tree
+        return item
 
     @staticmethod
     def collate_fn(data_list: [Text2TreeDataItem]):
