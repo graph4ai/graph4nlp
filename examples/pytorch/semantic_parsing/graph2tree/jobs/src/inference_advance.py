@@ -1,3 +1,9 @@
+"""
+    The advanced inference code.
+    In this file, we will run the inference by writing the whole inference pipeline.
+    Compared with the inference.py, it is more efficient. It will save the graphs \
+        during inference, which support multi-processing when converting the raw inputs to graphs.
+"""
 import copy
 import random
 import time
