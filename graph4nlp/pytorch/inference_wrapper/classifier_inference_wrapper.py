@@ -14,7 +14,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
         dataset=Text2LabelDataset,
         data_item=Text2LabelDataItem,
         topology_builder=None,
-        dynamic_topology_builder=None,
+        dynamic_init_topology_builder=None,
         lower_case=True,
         tokenizer=None,
         label_names=None,
