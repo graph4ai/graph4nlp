@@ -36,10 +36,13 @@ class TextClassifier(nn.Module):
     def __init__(self, vocab, label_model, config):
         super(TextClassifier, self).__init__()
         self.config = config
-        self.vocab = vocab
+        self.vocab_model = vocab
         self.label_model = label_model
+        self.graph_name = self.config["graph_construction_args"]["graph_construction_share"][
+            "graph_name"
+        ]
         embedding_style = {
-            "single_token_item": True if config["graph_type"] != "ie" else False,
+            "single_token_item": True if self.graph_name != "ie" else False,
             "emb_strategy": config.get("emb_strategy", "w2v_bilstm"),
             "num_rnn_layers": 1,
             "bert_model_name": config.get("bert_model_name", "bert-base-uncased"),
@@ -47,11 +50,11 @@ class TextClassifier(nn.Module):
         }
 
         assert not (
-            config["graph_type"] in ("node_emb", "node_emb_refined") and config["gnn"] == "gat"
+            self.graph_name in ("node_emb", "node_emb_refined") and config["gnn"] == "gat"
         ), "dynamic graph construction does not support GAT"
 
         use_edge_weight = False
-        if config["graph_type"] == "dependency":
+        if self.graph_name == "dependency":
             self.graph_topology = DependencyBasedGraphConstruction(
                 embedding_style=embedding_style,
                 vocab=vocab.in_word_vocab,
@@ -61,7 +64,7 @@ class TextClassifier(nn.Module):
                 fix_word_emb=not config["no_fix_word_emb"],
                 fix_bert_emb=not config.get("no_fix_bert_emb", False),
             )
-        elif config["graph_type"] == "constituency":
+        elif self.graph_name == "constituency":
             self.graph_topology = ConstituencyBasedGraphConstruction(
                 embedding_style=embedding_style,
                 vocab=vocab.in_word_vocab,
@@ -71,7 +74,7 @@ class TextClassifier(nn.Module):
                 fix_word_emb=not config["no_fix_word_emb"],
                 fix_bert_emb=not config.get("no_fix_bert_emb", False),
             )
-        elif config["graph_type"] == "ie":
+        elif self.graph_name == "ie":
             self.graph_topology = IEBasedGraphConstruction(
                 embedding_style=embedding_style,
                 vocab=vocab.in_word_vocab,
@@ -81,7 +84,7 @@ class TextClassifier(nn.Module):
                 fix_word_emb=not config["no_fix_word_emb"],
                 fix_bert_emb=not config.get("no_fix_bert_emb", False),
             )
-        elif config["graph_type"] == "node_emb":
+        elif self.graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
                 vocab.in_word_vocab,
                 embedding_style,
@@ -100,7 +103,7 @@ class TextClassifier(nn.Module):
                 rnn_dropout=config["rnn_dropout"],
             )
             use_edge_weight = True
-        elif config["graph_type"] == "node_emb_refined":
+        elif self.graph_name == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
                 vocab.in_word_vocab,
                 embedding_style,
@@ -121,7 +124,7 @@ class TextClassifier(nn.Module):
             )
             use_edge_weight = True
         else:
-            raise RuntimeError("Unknown graph_type: {}".format(config["graph_type"]))
+            raise RuntimeError("Unknown graph_name: {}".format(self.graph_name))
 
         if "w2v" in self.graph_topology.embedding_layer.word_emb_layers:
             self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[
@@ -129,9 +132,9 @@ class TextClassifier(nn.Module):
             ].word_emb_layer
         else:
             self.word_emb = WordEmbedding(
-                self.vocab.in_word_vocab.embeddings.shape[0],
-                self.vocab.in_word_vocab.embeddings.shape[1],
-                pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
+                self.vocab_model.in_word_vocab.embeddings.shape[0],
+                self.vocab_model.in_word_vocab.embeddings.shape[1],
+                pretrained_word_emb=self.vocab_model.in_word_vocab.embeddings,
                 fix_emb=not config["no_fix_word_emb"],
             ).word_emb_layer
 
@@ -211,6 +214,18 @@ class TextClassifier(nn.Module):
         else:
             return logits
 
+    def inference_forward(self, graph):
+        return self.forward(graph, require_loss=False)
+
+    def post_process(self, logits, label_names):
+        logits_list = []
+
+        for idx in range(len(logits)):
+            logits_list.append(logits[idx].cpu().clone().numpy())
+
+        pred_tags = [label_names[pred.argmax()] for pred in logits_list]
+        return pred_tags
+
     @classmethod
     def load_checkpoint(cls, model_path):
         """The API to load the model.
@@ -243,30 +258,34 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        topology_subdir = "{}_graph".format(self.config["graph_type"])
-        if self.config["graph_type"] == "node_emb_refined":
-            topology_subdir += "_{}".format(self.config["init_graph_type"])
+        self.graph_name = self.config["graph_construction_args"]["graph_construction_share"][
+            "graph_name"
+        ]
+        topology_subdir = "{}_graph".format(self.graph_name)
+        if self.graph_name == "node_emb_refined":
+            topology_subdir += "_{}".format(self.config["dynamic_init_graph_name"])
 
         dataset = TrecDataset(
-            root_dir=self.config.get("root_dir", "examples/pytorch/text_classification/data/trec"),
-            pretrained_word_emb_name=self.config.get("pretrained_word_emb_name", "840B"),
-            pretrained_word_emb_cache_dir=self.config.get(
-                "pretrained_word_emb_cache_dir", ".vector_cache"
-            ),
-            seed=self.config["seed"],
-            thread_number=4,
-            port=9000,
-            timeout=15000,
-            word_emb_size=300,
-            graph_type=self.config["graph_type"],
+            root_dir=self.config["graph_construction_args"]["graph_construction_share"]["root_dir"],
             topology_subdir=topology_subdir,
-            dynamic_graph_type=self.config["graph_type"]
-            if self.config["graph_type"] in ("node_emb", "node_emb_refined")
-            else None,
-            dynamic_init_graph_type=self.config["init_graph_type"],
+            graph_name=self.graph_name,
+            dynamic_init_graph_name=self.config["dynamic_init_graph_name"],
             dynamic_init_topology_aux_args={"dummy_param": 0},
-            for_inference=False,
-            reused_vocab_model=None,
+            pretrained_word_emb_name=self.config["pretrained_word_emb_name"],
+            merge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
+                "merge_strategy"
+            ],
+            edge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
+                "edge_strategy"
+            ],
+            min_word_vocab_freq=self.config.get("min_word_freq", 1),
+            word_emb_size=self.config.get("word_emb_size", 300),
+            seed=self.config["seed"],
+            thread_number=self.config["graph_construction_args"]["graph_construction_share"][
+                "thread_number"
+            ],
+            port=self.config["graph_construction_args"]["graph_construction_share"]["port"],
+            timeout=self.config["graph_construction_args"]["graph_construction_share"]["timeout"],
             reused_label_model=None,
         )
 
@@ -293,7 +312,7 @@ class ModelHandler:
             num_workers=self.config["num_workers"],
             collate_fn=dataset.collate_fn,
         )
-        self.vocab = dataset.vocab_model
+        self.vocab_model = dataset.vocab_model
         self.label_model = dataset.label_model
         self.config["num_classes"] = self.label_model.num_classes
         self.num_train = len(dataset.train)
@@ -311,7 +330,7 @@ class ModelHandler:
         )
 
     def _build_model(self):
-        self.model = TextClassifier(self.vocab, self.label_model, self.config).to(
+        self.model = TextClassifier(self.vocab_model, self.label_model, self.config).to(
             self.config["device"]
         )
 

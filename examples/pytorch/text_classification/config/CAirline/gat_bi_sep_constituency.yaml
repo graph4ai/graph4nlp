@@ -6,10 +6,10 @@ out_dir: 'examples/pytorch/text_classification/out/CAirline/gat_bi_sep_constitue
 
 emb_strategy: 'bert_bilstm'
 # Graph construction
-graph_type: 'constituency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
+graph_name: 'constituency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
 
 # Dynamic graph construction
-init_graph_type: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
+dynamic_init_graph_name: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
 gl_metric_type: null # similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', 'rbf_kernel', 'cosine')
 gl_epsilon: null # epsilon for graph sparsification
 gl_top_k: null # top k for graph sparsification

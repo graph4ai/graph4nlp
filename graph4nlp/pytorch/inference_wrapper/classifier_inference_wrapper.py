@@ -104,6 +104,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             data_items = self.preprocess(raw_contents=data_collect)
 
             collate_data = self.dataset.collate_fn(data_items)
+
             batch_graph = collate_data["graph_data"].to(device)
 
             # forward

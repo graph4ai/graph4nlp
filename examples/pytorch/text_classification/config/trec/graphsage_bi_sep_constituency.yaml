@@ -6,10 +6,23 @@ out_dir: 'out/trec/graphsage_bi_sep_constituency_ckpt'
 
 
 # Graph construction
-graph_type: 'constituency' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
+graph_construction_args:
+  graph_construction_share:
+    graph_name: 'constituency'
+    root_dir: 'examples/pytorch/text_classification/data/trec'
+    # topology_subdir: 'dependency_graph'
+    thread_number: 10
+    port: 9000
+    timeout: 15000
+
+  graph_construction_private:
+    edge_strategy: 'homogeneous'
+    merge_strategy: 'tailhead'
+    sequential_link: true
+    as_node: false
 
 # Dynamic graph construction
-init_graph_type: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
+dynamic_init_graph_name: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
 gl_metric_type: null # similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', 'rbf_kernel', 'cosine')
 gl_epsilon: null # epsilon for graph sparsification
 gl_top_k: null # top k for graph sparsification
