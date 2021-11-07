@@ -45,13 +45,19 @@ class ModelHandler:
         ]
         topology_subdir = "{}_graph".format(self.graph_name)
         if self.graph_name == "node_emb_refined":
-            topology_subdir += "_{}".format(self.config["dynamic_init_graph_name"])
+            topology_subdir += "_{}".format(
+                self.config["graph_construction_args"]["graph_construction_private"][
+                    "dynamic_init_graph_name"
+                ]
+            )
 
         dataset = TrecDataset(
             root_dir=self.config["graph_construction_args"]["graph_construction_share"]["root_dir"],
             topology_subdir=topology_subdir,
             graph_name=self.graph_name,
-            dynamic_init_graph_name=self.config["dynamic_init_graph_name"],
+            dynamic_init_graph_name=self.config["graph_construction_args"][
+                "graph_construction_private"
+            ]["dynamic_init_graph_name"],
             dynamic_init_topology_aux_args={"dummy_param": 0},
             pretrained_word_emb_name=self.config["pretrained_word_emb_name"],
             merge_strategy=self.config["graph_construction_args"]["graph_construction_private"][

@@ -5,10 +5,23 @@ out_dir: 'examples/pytorch/text_classification/out/CAirline/graphsage_bi_sep_nod
 
 emb_strategy: 'bert_bilstm'
 # Graph construction
-graph_name: 'node_emb_refined' # graph construction type ('dependency', 'constituency', 'ie', 'node_emb', 'node_emb_refined')
+graph_construction_args:
+  graph_construction_share:
+    graph_name: 'node_emb_refined'
+    root_dir: 'examples/pytorch/text_classification/data/trec'
+    # topology_subdir: 'dependency_graph'
+    thread_number: 10
+    port: 9000
+    timeout: 15000
+
+  graph_construction_private:
+    edge_strategy: 'homogeneous'
+    merge_strategy: 'tailhead'
+    sequential_link: true
+    as_node: false
+    dynamic_init_graph_name: 'dependency' # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
 
 # Dynamic graph construction
-dynamic_init_graph_name: 'dependency' # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
 gl_metric_type: 'weighted_cosine' # similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', 'rbf_kernel', 'cosine')
 gl_epsilon: 0.6 # epsilon for graph sparsification
 gl_top_k: null # top k for graph sparsification

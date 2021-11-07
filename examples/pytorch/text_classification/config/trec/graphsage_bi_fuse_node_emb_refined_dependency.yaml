@@ -20,11 +20,12 @@ graph_construction_args:
     merge_strategy: 'tailhead'
     sequential_link: true
     as_node: false
+    dynamic_init_graph_name: 'dependency' # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
+
 
 
 
 # Dynamic graph construction
-dynamic_init_graph_name: 'dependency' # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
 gl_metric_type: 'weighted_cosine' # similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', 'rbf_kernel', 'cosine')
 gl_epsilon: 0.6 # epsilon for graph sparsification
 gl_top_k: null # top k for graph sparsification
