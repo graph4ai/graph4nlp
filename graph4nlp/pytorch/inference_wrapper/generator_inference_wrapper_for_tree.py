@@ -3,8 +3,7 @@ import math
 import warnings
 import torch
 
-from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
-from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+from graph4nlp.pytorch.data.dataset import Text2TreeDataItem, TextToTreeDataset
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 
 from .base import InferenceWrapperBase
@@ -15,8 +14,8 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         self,
         cfg,
         model,
-        dataset=Text2TextDataset,
-        data_item=Text2TextDataItem,
+        dataset=TextToTreeDataset,
+        data_item=Text2TreeDataItem,
         topology_builder=None,
         dynamic_topology_builder=None,
         beam_size=3,
@@ -78,6 +77,21 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         self.vocab_model = model.vocab_model
         self.use_copy = self.cfg["decoder_args"]["rnn_decoder_share"]["use_copy"]
 
+    def prepare_ext_vocab(self, batch_graph, src_vocab, device):
+        oov_dict = copy.deepcopy(src_vocab)
+        token_matrix = []
+        for n in batch_graph.node_attributes:
+            node_token = n["token"]
+            if (n.get("type") is None or n.get("type") == 0) and oov_dict.get_symbol_idx(
+                node_token
+            ) == oov_dict.get_symbol_idx(oov_dict.unk_token):
+                oov_dict.add_symbol(node_token)
+            token_matrix.append(oov_dict.get_symbol_idx(node_token))
+        batch_graph.node_features["token_id_oov"] = torch.tensor(token_matrix, dtype=torch.long).to(
+            device
+        )
+        return oov_dict
+
     @torch.no_grad()
     def predict(self, raw_contents: list, batch_size=1):
         """
@@ -119,17 +133,17 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
 
             # forward
             if self.use_copy:
-                oov_dict = prepare_ext_vocab(
-                    batch_graph=collate_data["graph_data"], vocab=vocab_model, device=device
+                oov_dict = self.prepare_ext_vocab(
+                    collate_data["graph_data"], vocab_model.in_word_vocab, device
                 )
                 ref_dict = oov_dict
             else:
                 oov_dict = None
                 ref_dict = self.vocab_model.out_word_vocab
+            # print(collate_data)
             ret = self.model.inference_forward(
                 collate_data, self.beam_size, topk=self.topk, oov_dict=oov_dict
             )
             ret = self.model.post_process(decode_results=ret, vocab=ref_dict)
             ret_collect.extend(ret)
-
         return ret_collect

@@ -47,6 +47,10 @@ class SumModel(nn.Module):
         # build Graph2Seq model
         self.g2s = Graph2Seq.from_args(config, self.vocab)
 
+        self.graph_name = self.config["graph_construction_args"]["graph_construction_share"][
+            "graph_name"
+        ]
+
         if "w2v" in self.g2s.graph_topology.embedding_layer.word_emb_layers:
             self.word_emb = self.g2s.graph_topology.embedding_layer.word_emb_layers[
                 "w2v"
@@ -90,6 +94,14 @@ class SumModel(nn.Module):
             )
             return prob
 
+    def inference_forward(self, batch_graph, beam_size, oov_dict):
+        return self.g2s.inference_forward(
+            batch_graph=batch_graph, beam_size=beam_size, oov_dict=oov_dict
+        )
+
+    def post_process(self, decode_results, vocab):
+        return self.g2s.post_process(decode_results=decode_results, vocab=vocab)
+
     @classmethod
     def load_checkpoint(cls, model_path):
         return torch.load(model_path)
@@ -113,9 +125,6 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        graph_type = self.config["graph_construction_args"]["graph_construction_share"][
-            "graph_type"
-        ]
         dataset = CNNDataset(
             root_dir=self.config["graph_construction_args"]["graph_construction_share"]["root_dir"],
             merge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
@@ -130,14 +139,12 @@ class ModelHandler:
             share_vocab=self.config["share_vocab"],
             lower_case=self.config["vocab_lower_case"],
             seed=self.config["seed"],
-            graph_type=graph_type,
             topology_subdir=self.config["graph_construction_args"]["graph_construction_share"][
                 "topology_subdir"
             ],
-            dynamic_graph_type=self.config["graph_construction_args"]["graph_construction_share"][
-                "graph_type"
+            graph_name=self.config["graph_construction_args"]["graph_construction_share"][
+                "graph_name"
             ],
-            dynamic_init_topology_aux_args={"dummy_param": 0},
             thread_number=35,
             port=9100,
             timeout=15000,

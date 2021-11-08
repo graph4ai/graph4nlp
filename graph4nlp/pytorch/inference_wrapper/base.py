@@ -1,6 +1,12 @@
 import torch.nn as nn
 
-from graph4nlp.pytorch.data.dataset import DataItem, Dataset, DoubleText2TextDataItem, word_tokenize
+from graph4nlp.pytorch.data.dataset import (
+    DataItem,
+    Dataset,
+    DoubleText2TextDataItem,
+    Text2TreeDataItem,
+    word_tokenize,
+)
 from graph4nlp.pytorch.modules.graph_construction.base import GraphConstructionBase
 
 
@@ -75,6 +81,7 @@ class InferenceWrapperBase(nn.Module):
         ]
 
         self.dataset = dataset(
+            port=self.port,
             graph_name=self.graph_name,
             dynamic_init_graph_name=self.dynamic_init_graph_name,
             topology_builder=topology_builder,
@@ -103,6 +110,14 @@ class InferenceWrapperBase(nn.Module):
                     tokenizer=self.tokenizer,
                     share_vocab=self.share_vocab,
                 )
+            elif self.data_item_class == Text2TreeDataItem:
+                data_item = self.data_item_class(
+                    input_text=raw_sentence,
+                    output_text=None,
+                    output_tree=None,
+                    tokenizer=self.tokenizer,
+                )
+
             else:
                 data_item = self.data_item_class(input_text=raw_sentence, tokenizer=self.tokenizer)
 
