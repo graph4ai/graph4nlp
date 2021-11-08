@@ -17,7 +17,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         dataset=TextToTreeDataset,
         data_item=Text2TreeDataItem,
         topology_builder=None,
-        dynamic_topology_builder=None,
+        dynamic_init_topology_builder=None,
         beam_size=3,
         topk=1,
         lower_case=True,
@@ -49,12 +49,13 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         data_item: DataItem,
             The data_item class.
         topology_builder: GraphConstructionBase, default=None
-            The initial graph topology builder. We will set the default topology builder \
-                 for you if it is ``None`` according to ``graph_name`` in ``cfg``.
+            The initial graph topology builder. It is used to custermize your own graph\
+                 construction method. We will set the default topology builder for you \
+                 if it is ``None`` according to ``graph_name`` in ``cfg``.
         dynamic_init_topology_builder: GraphConstructionBase, default=None
-            The dynamic initial graph topology builder. We will set the default topology \
-                 builder for you if it is ``None`` according to \
-                 ``dynamic_init_graph_name`` in ``cfg``.
+            The dynamic initial graph topology builder. It is used to custermize your own \
+                graph construction method. We will set the default topology builder for you\
+                if it is ``None`` according to ``dynamic_init_graph_name`` in ``cfg``.
         lower_case: bool, default=True
         tokenizer: function, default=nltk.word_tokenize
         beam_size: int, default=3
@@ -63,7 +64,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
             cfg=cfg,
             model=model,
             topology_builder=topology_builder,
-            dynamic_init_topology_builder=dynamic_topology_builder,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
             lower_case=lower_case,
             tokenizer=tokenizer,
             dataset=dataset,
