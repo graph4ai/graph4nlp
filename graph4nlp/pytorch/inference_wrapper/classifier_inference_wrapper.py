@@ -2,6 +2,7 @@ import math
 import warnings
 
 from graph4nlp.pytorch.data.dataset import Text2LabelDataItem, Text2LabelDataset
+from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 
 from .base import InferenceWrapperBase
 
@@ -59,7 +60,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             cfg=cfg,
             model=model,
             topology_builder=topology_builder,
-            dynamic_init_topology_builder=dynamic_topology_builder,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
             lower_case=lower_case,
             tokenizer=tokenizer,
             dataset=dataset,
@@ -104,19 +105,11 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             data_items = self.preprocess(raw_contents=data_collect)
 
             collate_data = self.dataset.collate_fn(data_items)
-            batch_graph = collate_data["graph_data"].to(device)
+            collate_data = all_to_cuda(collate_data, device)
 
             # forward
-            ret = self.model.inference_forward(graph=batch_graph)
+            ret = self.model.inference_forward(collate_data)
             ret = self.model.post_process(logits=ret, label_names=self.label_names)
-
-            # map index to label
-            # if len(ret.shape()) == 1:
-            #    labels = [self.classification_label[index] for index in ret]
-            # elif len(ret.shape()) == 2:
-            #    labels = []
-            #    for index_l in ret:
-            #        labels.append([self.classification_label[index] for index in index_l])
 
             ret_collect.extend(ret)
 

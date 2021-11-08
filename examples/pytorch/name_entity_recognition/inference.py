@@ -110,7 +110,6 @@ class Conll:
             dataset=ConllDataset_inference,
             data_item=SequenceLabelingDataItem,
             topology_builder=LineBasedGraphConstruction,
-            dynamic_topology_builder=LineBasedGraphConstruction,
             lower_case=True,
             tokenizer=None,
         )
@@ -118,7 +117,7 @@ class Conll:
     def predict(self):
         self.model.eval()
         ret = self.inference_tool.predict(
-            raw_contents=[["there", "is", "a", "list", "of", "jobs"]], batch_size=1
+            raw_contents=["there is a list of jobs", "good morning"], batch_size=1
         )
         print(ret)
 
@@ -126,7 +125,7 @@ class Conll:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NER")
     parser.add_argument("--gpu", type=int, default=0, help="which GPU to use.")
-    parser.add_argument("--epochs", type=int, default=150, help="number of training epochs")
+    parser.add_argument("--epochs", type=int, default=2, help="number of training epochs")
     parser.add_argument(
         "--direction_option",
         type=str,

@@ -220,7 +220,7 @@ class SequenceLabelingDataItem(DataItem):
         input_tokens = []
         for i in range(g.get_node_num()):
             if self.tokenizer is None:
-                tokenized_token = self.output_text.strip().split(" ")
+                tokenized_token = g.node_attributes[i]["token"].strip().split()
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]["token"])
 
@@ -1735,9 +1735,9 @@ class SequenceLabelingDataset(Dataset):
 
         Examples
         --------
-        "EU       I-ORG "
+        "EU       I-ORG
          rejects  O
-         German   I-MISC
+         German   I-MISC"
 
         Parameters
         ----------
