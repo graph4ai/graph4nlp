@@ -1690,7 +1690,7 @@ class SequenceLabelingDataset(Dataset):
         tag_types: str = None,
         dynamic_init_graph_name: str = None,
         dynamic_init_topology_builder: GraphConstructionBase = None,
-        **kwargs
+        **kwargs,
     ):
         if kwargs.get("graph_type", None) is not None:
             raise ValueError(
@@ -1747,9 +1747,8 @@ class SequenceLabelingDataset(Dataset):
             topology_subdir=topology_subdir,
             static_or_dynamic=static_or_dynamic,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
-            **kwargs
+            **kwargs,
         )
-
 
     def parse_file(self, file_path) -> list:
         """
