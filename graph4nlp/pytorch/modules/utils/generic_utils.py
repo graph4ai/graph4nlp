@@ -8,6 +8,8 @@ import yaml
 from scipy import sparse
 from sklearn import preprocessing
 
+from graph4nlp.pytorch.data.data import GraphData
+
 
 def get_config(config_path="config.yml"):
     with open(config_path, "r") as setting:
@@ -76,14 +78,13 @@ def to_cuda(x, device=None):
 
 
 def all_to_cuda(data, device=None):
-    if isinstance(data, torch.Tensor):
+    if isinstance(data, torch.Tensor) or isinstance(data, GraphData):
         data = to_cuda(data, device)
     elif isinstance(data, (list, dict)):
         keys = range(len(data)) if isinstance(data, list) else data.keys()
         for k in keys:
-            if isinstance(data[k], torch.Tensor):
+            if isinstance(data[k], torch.Tensor) or isinstance(data[k], GraphData):
                 data[k] = to_cuda(data[k], device)
-
     return data
 
 

@@ -336,8 +336,9 @@ class Word2tag(nn.Module):
             loss = None
             return pred_index, self.loss
 
-    def inference_forward(self, graph):
-        return self.forward(graph, tgt=None, require_loss=False)[0]
+    def inference_forward(self, collate_data):
+        batch_graph = collate_data["graph_data"].to(self.device)
+        return self.forward(batch_graph, tgt=None, require_loss=False)[0]
 
     def post_process(self, logits, label_names):
         logits_list = []

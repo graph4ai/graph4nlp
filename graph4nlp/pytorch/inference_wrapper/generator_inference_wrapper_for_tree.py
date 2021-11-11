@@ -1,27 +1,32 @@
+import copy
 import math
 import warnings
+import torch
 
-from graph4nlp.pytorch.data.dataset import Text2LabelDataItem, Text2LabelDataset
+from graph4nlp.pytorch.data.dataset import Text2TreeDataItem, TextToTreeDataset
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 
 from .base import InferenceWrapperBase
 
 
-class ClassifierInferenceWrapper(InferenceWrapperBase):
+class GeneratorInferenceWrapper(InferenceWrapperBase):
     def __init__(
         self,
         cfg,
         model,
-        dataset=Text2LabelDataset,
-        data_item=Text2LabelDataItem,
+        dataset=TextToTreeDataset,
+        data_item=Text2TreeDataItem,
         topology_builder=None,
-        dynamic_init_topology_builder=None,
+        dynamic_topology_builder=None,
+        beam_size=3,
+        topk=1,
         lower_case=True,
         tokenizer=None,
-        label_names=None,
+        share_vocab=True,
+        **kwargs,
     ):
         """
-            The inference wrapper for classification tasks.
+            The inference wrapper for generation tasks.
         Parameters
         ----------
         cfg: dict
@@ -30,7 +35,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             The model checkpoint.
             The model must support the following attributes:
                 model.graph_name: str,
-                    The graph name, eg: "dependency".
+                    The graph type, eg: "dependency".
             The model must support the following api:
                 model.inference_forward(batch_graph, **kwargs)
                     It is the forward process during inference.
@@ -39,8 +44,6 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             The inference wrapper will do the pipeline as follows:
                 1. model.inference_forward()
                 2. model.post_process()
-            The output of the model.post_process should be the vector or matrix \
-                to contain the index of the class
         dataset: Dataset,
             The dataset class.
         data_item: DataItem,
@@ -54,22 +57,42 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
                  ``dynamic_init_graph_name`` in ``cfg``.
         lower_case: bool, default=True
         tokenizer: function, default=nltk.word_tokenize
-        classification_label: the label tags which maps the classifier index
+        beam_size: int, default=3
         """
         super().__init__(
             cfg=cfg,
             model=model,
             topology_builder=topology_builder,
-            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_builder=dynamic_topology_builder,
             lower_case=lower_case,
             tokenizer=tokenizer,
             dataset=dataset,
             data_item=data_item,
+            beam_size=beam_size,
+            topk=topk,
+            share_vocab=share_vocab,
+            **kwargs,
         )
 
-        self.label_names = label_names
         self.vocab_model = model.vocab_model
+        self.use_copy = self.cfg["decoder_args"]["rnn_decoder_share"]["use_copy"]
 
+    def prepare_ext_vocab(self, batch_graph, src_vocab, device):
+        oov_dict = copy.deepcopy(src_vocab)
+        token_matrix = []
+        for n in batch_graph.node_attributes:
+            node_token = n["token"]
+            if (n.get("type") is None or n.get("type") == 0) and oov_dict.get_symbol_idx(
+                node_token
+            ) == oov_dict.get_symbol_idx(oov_dict.unk_token):
+                oov_dict.add_symbol(node_token)
+            token_matrix.append(oov_dict.get_symbol_idx(node_token))
+        batch_graph.node_features["token_id_oov"] = torch.tensor(token_matrix, dtype=torch.long).to(
+            device
+        )
+        return oov_dict
+
+    @torch.no_grad()
     def predict(self, raw_contents: list, batch_size=1):
         """
             Do the inference.
@@ -101,6 +124,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             data_collect = raw_contents[i * batch_size : (i + 1) * batch_size]
 
             data_items = []
+            vocab_model = copy.deepcopy(self.vocab_model)
             device = next(self.parameters()).device
             data_items = self.preprocess(raw_contents=data_collect)
 
@@ -108,9 +132,18 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             collate_data = all_to_cuda(collate_data, device)
 
             # forward
-            ret = self.model.inference_forward(collate_data)
-            ret = self.model.post_process(logits=ret, label_names=self.label_names)
-
+            if self.use_copy:
+                oov_dict = self.prepare_ext_vocab(
+                    collate_data["graph_data"], vocab_model.in_word_vocab, device
+                )
+                ref_dict = oov_dict
+            else:
+                oov_dict = None
+                ref_dict = self.vocab_model.out_word_vocab
+            # print(collate_data)
+            ret = self.model.inference_forward(
+                collate_data, self.beam_size, topk=self.topk, oov_dict=oov_dict
+            )
+            ret = self.model.post_process(decode_results=ret, vocab=ref_dict)
             ret_collect.extend(ret)
-
         return ret_collect

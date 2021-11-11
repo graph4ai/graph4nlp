@@ -1,7 +1,7 @@
 graph_construction_name: "dependency"
 graph_embedding_name: "gcn"
 decoder_name: "stdrnn"
-#out_dir: "out/cnn/gcn_uni_l2_wornn_wocopy_ckpt"
+
 out_dir: "out/cnn/gcn_bi_sep_l2_ckpt"
 model_type: 'gcn'
 
@@ -9,7 +9,7 @@ vocab_lower_case: true
 
 graph_construction_args:
   graph_construction_share:
-    graph_type: 'dependency'
+    graph_name: 'dependency'
     root_dir: 'examples/pytorch/summarization/cnn'
     topology_subdir: 'DependencyGraph'
     thread_number: 4
@@ -59,8 +59,8 @@ decoder_args:
     input_size: 300
     hidden_size: 512
     rnn_emb_input_size: 300
-    use_copy: false
-    use_coverage: false
+    use_copy: true
+    use_coverage: true
     graph_pooling_strategy: null
     attention_type: "sep_diff_encoder_type"
     fuse_strategy: "concatenate"
