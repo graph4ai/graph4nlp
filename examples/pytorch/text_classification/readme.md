@@ -4,16 +4,21 @@ Text classification results
 How to run
 ----------
 
+
+
+#### Train the model:
 ```python
-python examples/pytorch/text_classification/run_text_classifier.py -config examples/pytorch/text_classification/config/trec/ggnn_bi_fuse_constituency.yaml
-python examples/pytorch/text_classification/run_text_classifier.py -config examples/pytorch/text_classification/config/CAirline/gat_bi_sep_dependency.yaml
+python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec/XYZ.yaml
 ```
 
-Run the model with grid search:
-
+#### Run inference:
 ```python
-python examples/pytorch/text_classification/run_text_classifier.py -config examples/pytorch/text_classification/config/trec_finetune/XYZ.yaml --grid_search
+python -m examples.pytorch.text_classification.inference_advance -config examples/pytorch/text_classification/config/trec/XYZ.yaml
 ```
+
+
+
+
 
 
 TREC Results
