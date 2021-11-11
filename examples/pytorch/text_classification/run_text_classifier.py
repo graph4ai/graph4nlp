@@ -214,8 +214,8 @@ class TextClassifier(nn.Module):
         else:
             return logits
 
-    def inference_forward(self, graph):
-        return self.forward(graph, require_loss=False)
+    def inference_forward(self, collate_data):
+        return self.forward(collate_data["graph_data"], require_loss=False)
 
     def post_process(self, logits, label_names):
         logits_list = []

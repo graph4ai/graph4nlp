@@ -1324,7 +1324,7 @@ class Text2LabelDataset(Dataset):
         dynamic_init_graph_name: str = None,
         dynamic_init_topology_builder: GraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,  # TODO
-        **kwargs
+        **kwargs,
     ):
         if kwargs.get("graph_type", None) is not None:
             raise ValueError(
@@ -1380,7 +1380,7 @@ class Text2LabelDataset(Dataset):
             static_or_dynamic=static_or_dynamic,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-            **kwargs
+            **kwargs,
         )
 
     def parse_file(self, file_path) -> list:
