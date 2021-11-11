@@ -47,11 +47,13 @@ class InferenceWrapperBase(nn.Module):
         data_item: DataItem,
             The data_item class.
         topology_builder: GraphConstructionBase, default=None
-            The initial graph topology builder. We will set the default topology builder for you
-                if it is ``None`` according to ``graph_name`` in ``cfg``.
+            The initial graph topology builder. It is used to custermize your own graph\
+                 construction method. We will set the default topology builder for you \
+                 if it is ``None`` according to ``graph_name`` in ``cfg``.
         dynamic_init_topology_builder: GraphConstructionBase, default=None
-            The dynamic initial graph topology builder. We will set the default topology builder
-                for you if it is ``None`` according to ``dynamic_init_graph_name`` in ``cfg``.
+            The dynamic initial graph topology builder. It is used to custermize your own \
+                graph construction method. We will set the default topology builder for you\
+                if it is ``None`` according to ``dynamic_init_graph_name`` in ``cfg``.
         lower_case: bool, default=True
             TBD: move it to template
         tokenizer: function, default=nltk.word_tokenize
