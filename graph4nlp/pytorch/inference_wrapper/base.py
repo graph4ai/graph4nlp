@@ -121,9 +121,7 @@ class InferenceWrapperBase(nn.Module):
                 )
 
             else:
-                data_item = self.data_item_class(
-                    input_text=raw_sentence, output_text=None, tokenizer=self.tokenizer
-                )
+                data_item = self.data_item_class(input_text=raw_sentence, tokenizer=self.tokenizer)
 
             data_item = self.dataset.process_data_items(data_items=[data_item])
             data_item = self.dataset._vectorize_one_dataitem(

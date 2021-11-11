@@ -205,7 +205,7 @@ class DoubleText2TextDataItem(DataItem):
 
 
 class SequenceLabelingDataItem(DataItem):
-    def __init__(self, input_text, output_tags, tokenizer):
+    def __init__(self, input_text, tokenizer, output_tags=None):
         super(SequenceLabelingDataItem, self).__init__(input_text, tokenizer)
         self.output_tag = output_tags
 
@@ -220,7 +220,7 @@ class SequenceLabelingDataItem(DataItem):
         input_tokens = []
         for i in range(g.get_node_num()):
             if self.tokenizer is None:
-                tokenized_token = self.output_text.strip().split(" ")
+                tokenized_token = g.node_attributes[i]["token"].strip().split()
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]["token"])
 
@@ -1682,61 +1682,73 @@ class DoubleText2TextDataset(Dataset):
 class SequenceLabelingDataset(Dataset):
     def __init__(
         self,
+        graph_name: str,
         root_dir: str = None,
+        static_or_dynamic: str = None,
         topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
         tag_types: str = None,
-        graph_type: str = "none",
-        dynamic_init_graph_type: str = None,
+        dynamic_init_graph_name: str = None,
+        dynamic_init_topology_builder: GraphConstructionBase = None,
         **kwargs,
     ):
+        if kwargs.get("graph_type", None) is not None:
+            raise ValueError(
+                "The argument ``graph_type`` is disgarded. \
+                    Please use ``static_or_dynamic`` instead."
+            )
+
         self.data_item_type = SequenceLabelingDataItem
         self.tag_types = tag_types
-        if graph_type == "none":
-            super(Text2LabelDataset, self).__init__(
-                root_dir, topology_builder, topology_subdir, **kwargs
-            )
+
+        if graph_name == "dependency":
+            topology_builder = DependencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "constituency":
+            topology_builder = ConstituencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "ie":
+            topology_builder = IEBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "node_emb":
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+            static_or_dynamic = "dynamic"
+        elif graph_name == "node_emb_refined":
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            static_or_dynamic = "dynamic"
         else:
-            # Set some default value
-            dynamic_init_topology_builder = None
-            static_or_dynamic: str = "static"
-            merge_strategy = "tailhead"
-            if graph_type == "dependency":
-                topology_builder = DependencyBasedGraphConstruction
-            elif graph_type == "constituency":
-                topology_builder = ConstituencyBasedGraphConstruction
-            elif graph_type == "ie":
-                topology_builder = IEBasedGraphConstruction
-                merge_strategy = "global"
-            elif graph_type == "node_emb":
-                topology_builder = NodeEmbeddingBasedGraphConstruction
-                merge_strategy = None
-                static_or_dynamic = "dynamic"
-            elif graph_type == "node_emb_refined":
-                topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-                static_or_dynamic = "dynamic"
-                if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
-                    dynamic_init_topology_builder = None
-                elif dynamic_init_graph_type == "dependency":
-                    dynamic_init_topology_builder = DependencyBasedGraphConstruction
-                elif dynamic_init_graph_type == "constituency":
-                    dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-                elif dynamic_init_graph_type == "ie":
-                    dynamic_init_topology_builder = IEBasedGraphConstruction
-                    merge_strategy = "global"
-                else:
-                    raise RuntimeError("Define your own dynamic_init_topology_builder")
+            print("Your are customizing the graph construction method.")
+            if topology_builder is None:
+                raise ValueError("``topology_builder`` can't be None if graph is defined by user.")
+            if static_or_dynamic is None:
+                raise ValueError("``static_or_dynamic`` can't be None if graph is defined by user.")
+
+        if static_or_dynamic == "dynamic":
+            if dynamic_init_graph_name is None or dynamic_init_graph_name == "line":
+                dynamic_init_topology_builder = None
+            elif dynamic_init_graph_name == "dependency":
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif dynamic_init_graph_name == "constituency":
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             else:
-                raise NotImplementedError("Define your topology builder.")
-            super(Text2LabelDataset, self).__init__(
-                root=root_dir,
-                topology_builder=topology_builder,
-                topology_subdir=topology_subdir,
-                graph_type=static_or_dynamic,
-                dynamic_init_topology_builder=dynamic_init_topology_builder,
-                merge_strategy=merge_strategy,
-                **kwargs,
-            )
+
+                # dynamic_init_topology_builder
+                if dynamic_init_topology_builder is None:
+                    raise ValueError(
+                        "``dynamic_init_topology_builder`` can't be None \
+                            if ``dynamic_init_graph_name`` is defined by user."
+                    )
+
+        self.static_or_dynamic = static_or_dynamic
+        super(SequenceLabelingDataset, self).__init__(
+            root=root_dir,
+            graph_name=graph_name,
+            topology_builder=topology_builder,
+            topology_subdir=topology_subdir,
+            static_or_dynamic=static_or_dynamic,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            **kwargs,
+        )
 
     def parse_file(self, file_path) -> list:
         """
@@ -1755,9 +1767,9 @@ class SequenceLabelingDataset(Dataset):
 
         Examples
         --------
-        "EU       I-ORG "
+        "EU       I-ORG
          rejects  O
-         German   I-MISC
+         German   I-MISC"
 
         Parameters
         ----------
@@ -1770,19 +1782,15 @@ class SequenceLabelingDataset(Dataset):
             lines = f.readlines()
             for line in lines:
                 if len(line) > 1 and line[0] != "-":
-                    if line[0] != ".":
-                        input.append(line.strip().split(" ")[0])
-                        output.append(line.strip().split(" ")[-1])
-                    if line[0] == ".":
-                        input.append(line.strip().split(" ")[0])
-                        output.append(line.strip().split(" ")[-1])
-                        if len(input) >= 2:
-                            data_item = SequenceLabelingDataItem(
-                                input_text=input, output_tags=output, tokenizer=self.tokenizer
-                            )
-                            data.append(data_item)
-                            input = []
-                            output = []
+                    input.append(line.strip().split(" ")[0])
+                    output.append(line.strip().split(" ")[-1])
+                    if line[0] == "." and len(input) >= 2:
+                        data_item = SequenceLabelingDataItem(
+                            input_text=input, output_tags=output, tokenizer=self.tokenizer
+                        )
+                        data.append(data_item)
+                        input = []
+                        output = []
 
         return data
 
@@ -1832,7 +1840,11 @@ class SequenceLabelingDataset(Dataset):
 
         graph_list = [item.graph for item in data_list]
         graph_data = to_batch(graph_list)
-        tgt_tag = [deepcopy(item.output_id) for item in data_list]
+
+        if data_list[0].output_id is not None:  # has ground truth
+            tgt_tag = [deepcopy(item.output_id) for item in data_list]
+        else:
+            tgt_tag = []
 
         return {"graph_data": graph_data, "tgt_tag": tgt_tag}
 
