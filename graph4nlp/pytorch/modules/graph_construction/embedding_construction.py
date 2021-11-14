@@ -1,3 +1,4 @@
+import math
 import torch
 from torch import nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
@@ -641,3 +642,107 @@ class RNNEmbedding(nn.Module):
         restore_packed_h_t = dropout_fn(restore_packed_h_t, self.dropout, training=self.training)
 
         return restore_hh, restore_packed_h_t
+
+
+class TransformerEmbedding(nn.Module):
+    """Transformer embedding class: apply the positional embeddings and transformer encoders to a sequence of word embeddings.
+    """
+    def __init__(
+        self,
+        hidden_size: int,
+        num_heads: int = 8,
+        num_layers: int = 6,
+        layer_norm = None,
+        dropout: float = 0.5):
+        super().__init__()
+        self.dropout = dropout
+        self.num_layers = num_layers
+
+        self.pos_encoder = PositionalEncoding(hidden_size, dropout)
+        encoder_layer = nn.TransformerEncoderLayer(hidden_size, num_heads)
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers, norm=layer_norm)
+
+        self.init_weights()
+        
+    def init_weights(self) -> None:
+        initrange = 0.1
+        self.transformer_encoder.weight.data.uniform_(-initrange, initrange)
+
+    #TODO: x_len may not be necessary.
+    def forward(self, x, x_len, batch_first=True):
+        """Apply the Transformer encoder to a sequence of word embeddings.
+
+        Parameters
+        ----------
+        x : torch.Tensor
+            The word embedding sequence.
+        x_len : torch.LongTensor
+            The input sequence length.
+
+        Returns
+        -------
+        torch.Tensor, shape: [batch_size, max_length, hidden_dim]
+            The hidden states at every time step.
+        """
+        
+        if x.dim == 3:
+            if batch_first:
+                # The input tensor is batch first, make it not to comply with position encoder.
+                x = torch.transpose(x, 0, 1)
+        elif x.dim == 2:
+            # Not likely since we get batch node features.
+            print("Single sequence comes in. Batchify it")
+            x = torch.unsqueeze(x, 1)
+        else:
+            print('Unrecognized input')
+        
+
+        x = x * math.sqrt(self.hidden_size)
+        x = self.pos_encoder(x)
+        # TODO: Add masks here
+        out = self.transformer_encoder(x)
+
+        # Make the tensor batch_first again.
+        if batch_first:
+            out = torch.transpose(out, 0, 1)
+        
+        return out
+
+class PositionalEncoding(nn.Module):
+    """ A positional encoding implementation from https://pytorch.org/tutorials/beginner/transformer_tutorial.html
+
+    Parameters
+    ----------
+    hidden_size: int
+        the size of the embedding
+    dropout: float
+        the dropout rate
+    max_len: int
+        the maximum length of the sequence.
+
+    """
+    def __init__(
+        self, 
+        hidden_size: int, 
+        dropout: float = 0.1, 
+        max_len: int = 500):
+
+        super().__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        position = torch.arange(max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, hidden_size, 2) * (-math.log(10000.0) / hidden_size))
+        pe = torch.zeros(max_len, 1, hidden_size)
+        pe[:, 0, 0::2] = torch.sin(position * div_term)
+        pe[:, 0, 1::2] = torch.cos(position * div_term)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        """
+        Parameters
+        ----------
+        x: Tensor, shape [seq_len, batch_size, embedding_dim]
+        The input features.
+        """
+        x = x + self.pe[:x.size(0)]
+        return self.dropout(x)
