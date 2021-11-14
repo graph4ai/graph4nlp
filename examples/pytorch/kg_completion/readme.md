@@ -8,8 +8,6 @@ pip install h5py
 pip install future
 ```
 
-+ This code refers [ConvE](https://github.com/TimDettmers/ConvE).
-
 How to run
 ----------
 
@@ -26,17 +24,17 @@ If you run the task for the first time, remember to set `preprocess: True ` in t
 
 Then run:
 ```bash
-python examples/pytorch/kg_completion/kinship_main_g4n.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
+python examples/pytorch/kg_completion/main.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
 ```
 
 If you want to evaluate the saved model, run:
 ```bash
-python examples/pytorch/kg_completion/kinship_inference_advance_g4n.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
+python examples/pytorch/kg_completion/inference_advance.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
 ```
 
 If you want to test the model with a single example:
 ```bash
-python examples/pytorch/kg_completion/kinship_inference_g4n.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
+python examples/pytorch/kg_completion/inference.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
 ```
 Results on kinship
 ------------------
