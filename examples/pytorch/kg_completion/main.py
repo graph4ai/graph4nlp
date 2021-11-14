@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 from torch.utils.data import DataLoader
 
-from .model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
+from model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 
