@@ -3,7 +3,7 @@ import argparse
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
-from examples.pytorch.kg_completion.main import KGC
+from main import KGC
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 from graph4nlp.pytorch.data.dataset import KGCompletionDataItem, KGCompletionDataset
