@@ -1,5 +1,6 @@
-import torch.nn as nn
 import json
+import torch.nn as nn
+
 from graph4nlp.pytorch.data.dataset import (
     DataItem,
     Dataset,
@@ -115,8 +116,14 @@ class InferenceWrapperBase(nn.Module):
                 )
             elif self.data_item_class == KGCompletionDataItem:
                 line = json.loads(raw_sentence)
-                e1, rel, e2, rel_eval, e2_multi1, e2_multi2 = \
-                    line['e1'], line['rel'], line['e2'], line['rel_eval'], line['e2_multi1'], line['e2_multi2']
+                e1, rel, e2, rel_eval, e2_multi1, e2_multi2 = (
+                    line["e1"],
+                    line["rel"],
+                    line["e2"],
+                    line["rel_eval"],
+                    line["e2_multi1"],
+                    line["e2_multi2"],
+                )
                 data_item = self.data_item_class(
                     e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=self.tokenizer
                 )

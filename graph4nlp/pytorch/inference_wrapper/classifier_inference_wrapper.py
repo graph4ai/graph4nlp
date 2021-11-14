@@ -114,10 +114,14 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
                 ret = self.model.post_process(logits=ret, label_names=self.label_names)
             else:
                 ret = self.model.inference_forward(collate_data, KG_graph)
-                ret = self.model.post_process(logits=ret, e2=collate_data['e2_tensor'])
-                print('e1 = {}, rel = {}, pred e2 = {}'.format(data_items[0].e1,
-                                                               data_items[0].rel,
-                                                               self.vocab_model.in_word_vocab.getWord(ret)))
+                ret = self.model.post_process(logits=ret, e2=collate_data["e2_tensor"])
+                print(
+                    "e1 = {}, rel = {}, pred e2 = {}".format(
+                        data_items[0].e1,
+                        data_items[0].rel,
+                        self.vocab_model.in_word_vocab.getWord(ret),
+                    )
+                )
                 ret = [ret]
 
             ret_collect.extend(ret)

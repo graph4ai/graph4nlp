@@ -1,6 +1,6 @@
 import abc
-import os
 import json
+import os
 import warnings
 from collections import Counter
 from copy import deepcopy
@@ -1931,7 +1931,9 @@ class SequenceLabelingDataset(Dataset):
 
 
 class KGCompletionDataItem(DataItem):
-    def __init__(self, e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=None, share_vocab=False):
+    def __init__(
+        self, e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=None, share_vocab=False
+    ):
         super(KGCompletionDataItem, self).__init__(e1, tokenizer=tokenizer)
         self.e1 = e1
         self.rel = rel
@@ -1976,11 +1978,7 @@ class KGCompletionDataItem(DataItem):
 
 class KGCompletionDataset(Dataset):
     def __init__(
-        self,
-        root_dir: str = None,
-        topology_builder = None,
-        topology_subdir: str = None,
-        **kwargs
+        self, root_dir: str = None, topology_builder=None, topology_subdir: str = None, **kwargs
     ):
         self.data_item_type = DataItem
         super(KGCompletionDataset, self).__init__(
@@ -2041,8 +2039,14 @@ class KGCompletionDataset(Dataset):
         with open(file_path, "r", encoding="utf-8") as f:
             for line in f:
                 line = json.loads(line)
-                e1, rel, e2, rel_eval, e2_multi1, e2_multi2 = \
-                    line['e1'], line['rel'], line['e2'], line['rel_eval'], line['e2_multi1'], line['e2_multi2']
+                e1, rel, e2, rel_eval, e2_multi1, e2_multi2 = (
+                    line["e1"],
+                    line["rel"],
+                    line["e2"],
+                    line["rel_eval"],
+                    line["e2_multi1"],
+                    line["e2_multi2"],
+                )
                 data_item = KGCompletionDataItem(
                     e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=self.tokenizer
                 )
@@ -2082,13 +2086,17 @@ class KGCompletionDataset(Dataset):
             item.rel_np = np.array([self.vocab_model.out_word_vocab.getIndex(item.rel)])
             item.rel_eval_np = np.array([self.vocab_model.out_word_vocab.getIndex(item.rel_eval)])
 
-            index1 = [[0]*len(e2_multi1), e2_multi1]
-            value1  = [1]*len(e2_multi1)
-            item.e2_multi1_binary = torch.sparse_coo_tensor(index1, value1, (1, len(self.vocab_model.in_word_vocab)))
+            index1 = [[0] * len(e2_multi1), e2_multi1]
+            value1 = [1] * len(e2_multi1)
+            item.e2_multi1_binary = torch.sparse_coo_tensor(
+                index1, value1, (1, len(self.vocab_model.in_word_vocab))
+            )
 
             index2 = [[0] * len(e2_multi2), e2_multi2]
             value2 = [1] * len(e2_multi2)
-            item.e2_multi2_binary = torch.sparse_coo_tensor(index2, value2, (1, len(self.vocab_model.in_word_vocab)))
+            item.e2_multi2_binary = torch.sparse_coo_tensor(
+                index2, value2, (1, len(self.vocab_model.in_word_vocab))
+            )
 
     def process_data_items(self, data_items):
         return data_items
@@ -2108,11 +2116,15 @@ class KGCompletionDataset(Dataset):
 
         index1 = [[0] * len(e2_multi1), e2_multi1]
         value1 = [1] * len(e2_multi1)
-        item.e2_multi1_binary = torch.sparse_coo_tensor(index1, value1, (1, len(vocab_model.in_word_vocab)))
+        item.e2_multi1_binary = torch.sparse_coo_tensor(
+            index1, value1, (1, len(vocab_model.in_word_vocab))
+        )
 
         index2 = [[0] * len(e2_multi2), e2_multi2]
         value2 = [1] * len(e2_multi2)
-        item.e2_multi2_binary = torch.sparse_coo_tensor(index2, value2, (1, len(vocab_model.in_word_vocab)))
+        item.e2_multi2_binary = torch.sparse_coo_tensor(
+            index2, value2, (1, len(vocab_model.in_word_vocab))
+        )
 
         return item
 
@@ -2135,10 +2147,19 @@ class KGCompletionDataset(Dataset):
         e2_multi2 = torch.LongTensor(pad_2d_vals_no_size(e2_multi2))
         e2_multi2_binary = torch.cat([item.e2_multi2_binary.to_dense() for item in data_list])
 
-        return {"e1": e1, "e2": e2, "rel": rel, "e2_multi1":e2_multi1, "e2_multi2":e2_multi2,
-                "e1_tensor": e1_tensor, "rel_tensor": rel_tensor, "e2_multi1_binary": e2_multi1_binary,
-                "e2_tensor": e2_tensor, "rel_eval_tensor": rel_eval_tensor, "e2_multi2_binary": e2_multi2_binary,
-                }
+        return {
+            "e1": e1,
+            "e2": e2,
+            "rel": rel,
+            "e2_multi1": e2_multi1,
+            "e2_multi2": e2_multi2,
+            "e1_tensor": e1_tensor,
+            "rel_tensor": rel_tensor,
+            "e2_multi1_binary": e2_multi1_binary,
+            "e2_tensor": e2_tensor,
+            "rel_eval_tensor": rel_eval_tensor,
+            "e2_multi2_binary": e2_multi2_binary,
+        }
 
 
 __all__ = [

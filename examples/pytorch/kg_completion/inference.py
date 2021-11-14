@@ -1,15 +1,18 @@
-import os
 import argparse
+import os
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
-from main import KGC
-from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config
-from graph4nlp.pytorch.datasets.kinship import KinshipDataset
+
 from graph4nlp.pytorch.data.dataset import KGCompletionDataItem, KGCompletionDataset
+from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 from graph4nlp.pytorch.inference_wrapper.classifier_inference_wrapper import (
     ClassifierInferenceWrapper,
 )
+from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config
+
+from main import KGC
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 np.set_printoptions(precision=3)
@@ -41,13 +44,13 @@ def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=No
         rel_reverse = str2var["rel_eval_tensor"]
         e2_multi1 = str2var["e2_multi1"].float()
         e2_multi2 = str2var["e2_multi2"].float()
-        if cfg['cuda']:
-            e1 = e1.to('cuda')
-            e2 = e2.to('cuda')
-            rel = rel.to('cuda')
-            rel_reverse = rel_reverse.to('cuda')
-            e2_multi1 = e2_multi1.to('cuda')
-            e2_multi2 = e2_multi2.to('cuda')
+        if cfg["cuda"]:
+            e1 = e1.to("cuda")
+            e2 = e2.to("cuda")
+            rel = rel.to("cuda")
+            rel_reverse = rel_reverse.to("cuda")
+            e2_multi1 = e2_multi1.to("cuda")
+            e2_multi2 = e2_multi2.to("cuda")
 
         pred1 = model.forward(e1, rel, kg_graph)
         pred2 = model.forward(e2, rel_reverse, kg_graph)
@@ -119,18 +122,22 @@ def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=No
 
 
 def main(cfg, model_path):
-    dataset = KinshipDataset(root_dir='examples/pytorch/kg_completion/data/{}'.format(cfg['dataset']),
-                             topology_subdir='kgc')
+    dataset = KinshipDataset(
+        root_dir="examples/pytorch/kg_completion/data/{}".format(cfg["dataset"]),
+        topology_subdir="kgc",
+    )
     # data = []
     # rows = []
     # columns = []
     num_entities = len(dataset.vocab_model.in_word_vocab)
     num_relations = len(dataset.vocab_model.out_word_vocab)
 
-    graph_path = "examples/pytorch/kg_completion/data/{}/processed/kgc/KG_graph.pt".format(cfg['dataset'])
+    graph_path = "examples/pytorch/kg_completion/data/{}/processed/kgc/" "KG_graph.pt".format(
+        cfg["dataset"]
+    )
     KG_graph = torch.load(graph_path)
 
-    if cfg['cuda'] is True:
+    if cfg["cuda"] is True:
         KG_graph = KG_graph.to("cuda")
     else:
         KG_graph = KG_graph.to("cpu")
@@ -152,14 +159,30 @@ def main(cfg, model_path):
         lower_case=True,
     )
 
-    if cfg['cuda'] is True:
+    if cfg["cuda"] is True:
         model.cuda()
 
     # for kinship
-    raw_contents = ['{"e1": "person84", "e2": "person85", "rel": "term21", "rel_eval": "term21_reverse", "e2_multi1": "person85", "e2_multi2": "person84 person55 person74 person57 person66 person96"}']
+    raw_contents = [
+        '{"e1": "person84", "e2": "person85", "rel": "term21",'
+        ' "rel_eval": "term21_reverse", "e2_multi1": "person85",'
+        ' "e2_multi2": "person84 person55 person74 person57'
+        ' person66 person96"}'
+    ]
     # for wn18rr
-    # raw_contents = ['{"e1": "12400489", "e2": "12651821", "rel": "_hypernym", "rel_eval": "_hypernym_reverse", "e2_multi1": "12651821", "e2_multi2": "12333053 12300840 12332218 12717644 12774641 12190869 11693981 12766043 12333771 12400924 12644902 12628986 12629666 12745564 12641413 12651611 12333530 12366675 12775717 12707781 11706761 12765846 12327528 12345280 12640607 12648045 12370174 12400720 12400489 12625003 12771192 12399132 12633638 12648196 12744387 12636224 12744850 12761284 12373100 12667406 12638218 12742290 12745386 12743352"}']
-    inference_tool.predict(raw_contents=raw_contents, batch_size=cfg['test_batch_size'], KG_graph=KG_graph)
+    # raw_contents = ['{"e1": "12400489", "e2": "12651821",
+    #  "rel": "_hypernym", "rel_eval": "_hypernym_reverse",
+    #  "e2_multi1": "12651821", "e2_multi2": "12333053 12300840 12332218
+    #  12717644 12774641 12190869 11693981 12766043 12333771 12400924
+    #  12644902 12628986 12629666 12745564 12641413 12651611 12333530
+    #  12366675 12775717 12707781 11706761 12765846 12327528 12345280
+    #  12640607 12648045 12370174 12400720 12400489 12625003 12771192
+    #  12399132 12633638 12648196 12744387 12636224 12744850 12761284
+    #  12373100 12667406 12638218 12742290 12745386 12743352"}']
+    inference_tool.predict(
+        raw_contents=raw_contents, batch_size=cfg["test_batch_size"], KG_graph=KG_graph
+    )
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -176,14 +199,16 @@ if __name__ == "__main__":
     cfg = get_args()
     task_args = get_yaml_config(cfg["task_config"])
 
-    task_args['cuda'] = True
+    task_args["cuda"] = True
 
-    model_name = "{2}_{0}_{1}".format(task_args['input_drop'], task_args['hidden_drop'], task_args['model'])
+    model_name = "{2}_{0}_{1}".format(
+        task_args["input_drop"], task_args["hidden_drop"], task_args["model"]
+    )
     model_path = "examples/pytorch/kg_completion/saved_models/{0}_{1}.model".format(
-        task_args['dataset'], model_name
+        task_args["dataset"], model_name
     )
 
     print(model_path)
 
-    torch.manual_seed(task_args['seed'])
+    torch.manual_seed(task_args["seed"])
     main(task_args, model_path)

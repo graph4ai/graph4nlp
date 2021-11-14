@@ -1,14 +1,15 @@
-import os
 import argparse
+import os
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.backends.cudnn as cudnn
+import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
-from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset
+from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config
+
+from model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
@@ -23,19 +24,19 @@ class KGC(nn.Module):
         self.cfg = cfg
         self.num_entities = num_entities
         self.num_relations = num_relations
-        if cfg['model'] is None:
+        if cfg["model"] is None:
             model = ConvE(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg['model'] == "conve":
+        elif cfg["model"] == "conve":
             model = ConvE(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg['model'] == "distmult":
+        elif cfg["model"] == "distmult":
             model = Distmult(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg['model'] == "complex":
+        elif cfg["model"] == "complex":
             model = Complex(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg['model'] == "ggnn_distmult":
+        elif cfg["model"] == "ggnn_distmult":
             model = GGNNDistMult(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg['model'] == "gcn_distmult":
+        elif cfg["model"] == "gcn_distmult":
             model = GCNDistMult(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg['model'] == "gcn_complex":
+        elif cfg["model"] == "gcn_complex":
             model = GCNComplex(argparse.Namespace(**cfg), num_entities, num_relations)
         else:
             raise Exception("Unknown model type!")
@@ -54,18 +55,19 @@ class KGC(nn.Module):
     def inference_forward(self, collate_data, KG_graph):
         e1_tensor = collate_data["e1_tensor"]
         rel_tensor = collate_data["rel_tensor"]
-        if self.cfg['cuda']:
-            e1_tensor = e1_tensor.to('cuda')
-            rel_tensor = rel_tensor.to('cuda')
+        if self.cfg["cuda"]:
+            e1_tensor = e1_tensor.to("cuda")
+            rel_tensor = rel_tensor.to("cuda")
         return self.model(e1_tensor, rel_tensor, KG_graph)
 
     def post_process(self, logits_results, e2=None):
         max_values, argsort1 = torch.sort(logits_results, 1, descending=True)
         rank1 = np.where(argsort1.cpu().numpy()[0] == e2[0, 0].item())[0][0]
 
-        print('rank = {}'.format(rank1+1))
+        print("rank = {}".format(rank1 + 1))
 
         return argsort1[:, 0].item()
+
 
 def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=None):
     print("")
@@ -91,13 +93,13 @@ def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=No
         rel_reverse = str2var["rel_eval_tensor"]
         e2_multi1 = str2var["e2_multi1"].float()
         e2_multi2 = str2var["e2_multi2"].float()
-        if cfg['cuda']:
-            e1 = e1.to('cuda')
-            e2 = e2.to('cuda')
-            rel = rel.to('cuda')
-            rel_reverse = rel_reverse.to('cuda')
-            e2_multi1 = e2_multi1.to('cuda')
-            e2_multi2 = e2_multi2.to('cuda')
+        if cfg["cuda"]:
+            e1 = e1.to("cuda")
+            e2 = e2.to("cuda")
+            rel = rel.to("cuda")
+            rel_reverse = rel_reverse.to("cuda")
+            e2_multi1 = e2_multi1.to("cuda")
+            e2_multi2 = e2_multi2.to("cuda")
 
         pred1 = model(e1, rel, kg_graph)
         pred2 = model(e2, rel_reverse, kg_graph)
@@ -169,52 +171,37 @@ def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=No
 
 
 def main(cfg, model_path):
-    dataset = KinshipDataset(root_dir='examples/pytorch/kg_completion/data/{}'.format(cfg['dataset']),
-                             topology_subdir='kgc')
+    dataset = KinshipDataset(
+        root_dir="examples/pytorch/kg_completion/data/{}".format(cfg["dataset"]),
+        topology_subdir="kgc",
+    )
 
-    train_dataloader = DataLoader(
-        dataset.train,
-        batch_size=cfg['batch_size'],
-        shuffle=True,
-        num_workers=0,
-        # num_workers=args.loader_threads,
-        collate_fn=dataset.collate_fn,
-    )
-    val_dataloader = DataLoader(
-        dataset.val,
-        batch_size=cfg['batch_size'],
-        shuffle=False,
-        num_workers=0,
-        # num_workers=args.loader_threads,
-        collate_fn=dataset.collate_fn,
-    )
     test_dataloader = DataLoader(
         dataset.test,
-        batch_size=cfg['batch_size'],
+        batch_size=cfg["batch_size"],
         shuffle=False,
         num_workers=0,
         # num_workers=args.loader_threads,
         collate_fn=dataset.collate_fn,
     )
 
-    data = []
-    rows = []
-    columns = []
     num_entities = len(dataset.vocab_model.in_word_vocab)
     num_relations = len(dataset.vocab_model.out_word_vocab)
 
-    graph_path = "examples/pytorch/kg_completion/data/{}/processed/kgc/KG_graph.pt".format(cfg['dataset'])
+    graph_path = "examples/pytorch/kg_completion/data/{}/processed/kgc/" "KG_graph.pt".format(
+        cfg["dataset"]
+    )
     KG_graph = torch.load(graph_path)
 
-    if cfg['cuda'] is True:
+    if cfg["cuda"] is True:
         KG_graph = KG_graph.to("cuda")
     else:
         KG_graph = KG_graph.to("cpu")
 
     model = KGC(cfg, num_entities, num_relations)
 
-    if cfg['cuda'] is True:
-        model.to('cuda')
+    if cfg["cuda"] is True:
+        model.to("cuda")
 
     model_params = torch.load(model_path)
     print(model)
@@ -226,7 +213,9 @@ def main(cfg, model_path):
     print(np.array(total_param_size).sum())
     model.load_state_dict(model_params)
     model.eval()
-    ranking_and_hits_this(cfg, model, test_dataloader, dataset.vocab_model, "test_evaluation", kg_graph=KG_graph)
+    ranking_and_hits_this(
+        cfg, model, test_dataloader, dataset.vocab_model, "test_evaluation", kg_graph=KG_graph
+    )
 
 
 def get_args():
@@ -244,12 +233,14 @@ if __name__ == "__main__":
     cfg = get_args()
     task_args = get_yaml_config(cfg["task_config"])
 
-    task_args['cuda'] = True
+    task_args["cuda"] = True
 
-    model_name = "{2}_{0}_{1}".format(task_args['input_drop'], task_args['hidden_drop'], task_args['model'])
+    model_name = "{2}_{0}_{1}".format(
+        task_args["input_drop"], task_args["hidden_drop"], task_args["model"]
+    )
     model_path = "examples/pytorch/kg_completion/saved_models/{0}_{1}.model".format(
-        task_args['dataset'], model_name
+        task_args["dataset"], model_name
     )
 
-    torch.manual_seed(task_args['seed'])
+    torch.manual_seed(task_args["seed"])
     main(task_args, model_path)
