@@ -55,6 +55,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             - 'w2v': use word2vec embeddings.
             - 'w2v_bilstm': use word2vec embeddings, and apply BiLSTM encoders.
             - 'w2v_bigru': use word2vec embeddings, and apply BiGRU encoders.
+            - 'w2v_transformer': use word2vec embeddings, and apply Transformer encoders.
             - 'bert': use BERT embeddings.
             - 'bert_bilstm': use BERT embeddings, and apply BiLSTM encoders.
             - 'bert_bigru': use BERT embeddings, and apply BiGRU encoders.
@@ -117,6 +118,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         emb_strategy="w2v_bilstm",
         hidden_size=None,
         num_rnn_layers=1,
+        num_transformer_layers=6,
+        num_attention_headers=8,
         fix_word_emb=True,
         fix_bert_emb=True,
         bert_model_name="bert-base-uncased",
@@ -124,6 +127,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         word_dropout=None,
         bert_dropout=None,
         rnn_dropout=None,
+        transformer_dropout=None,
     ):
         super(EmbeddingConstruction, self).__init__()
         self.word_dropout = word_dropout
@@ -141,6 +145,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             "w2v_bert",
             "w2v_bert_bilstm",
             "w2v_bert_bigru",
+            "w2v_transformer",
         ), "emb_strategy must be one of ('w2v', 'w2v_bilstm', 'w2v_bigru', 'bert', 'bert_bilstm', "
         "'bert_bigru', 'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru')"
 
@@ -157,6 +162,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 seq_info_encode_strategy = "bilstm"
             elif "bigru" in emb_strategy:
                 seq_info_encode_strategy = "bigru"
+            elif "transformer" in emb_strategy:
+                seq_info_encode_strategy = "transformer"
             else:
                 seq_info_encode_strategy = "none"
         else:
@@ -171,6 +178,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 node_edge_emb_strategy = "bilstm"
             elif "bigru" in emb_strategy:
                 node_edge_emb_strategy = "bigru"
+            elif "transformer" in emb_strategy:
+                node_edge_emb_strategy = "transformer"
             else:
                 node_edge_emb_strategy = "mean"
 
@@ -206,6 +215,13 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 dropout=rnn_dropout,
             )
             rnn_input_size = hidden_size
+        elif node_edge_emb_strategy == "transformer":
+            self.node_edge_emb_layer = TransformerEmbedding(
+                hidden_size=word_emb_size,
+                num_heads=num_attention_headers,
+                num_layers=num_transformer_layers,
+                dropout=transformer_dropout
+            )
         elif node_edge_emb_strategy == "mean":
             self.node_edge_emb_layer = MeanEmbedding()
             rnn_input_size = word_emb_size
@@ -225,7 +241,14 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 rnn_type="lstm" if seq_info_encode_strategy == "bilstm" else "gru",
                 dropout=rnn_dropout,
             )
-
+        elif seq_info_encode_strategy == "transformer":
+            self.output_size = rnn_input_size
+            self.seq_info_encode_layer = TransformerEmbedding(
+                hidden_size=word_emb_size,
+                num_heads=num_attention_headers,
+                num_layers=num_transformer_layers,
+                dropout=transformer_dropout
+            )
         else:
             self.output_size = rnn_input_size
             self.seq_info_encode_layer = None
