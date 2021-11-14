@@ -4,7 +4,7 @@ decoder_name: "stdtree"
 
 graph_construction_args:
   graph_construction_share:
-    graph_type: 'constituency'
+    graph_name: 'constituency'
     root_dir: "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data"
     topology_subdir: 'ConstituencyGraph'
     thread_number: 4

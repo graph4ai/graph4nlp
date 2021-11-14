@@ -3,7 +3,7 @@ import argparse
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
-from examples.pytorch.kg_completion.kinship_main_g4n import KGC
+from examples.pytorch.kg_completion.main import KGC
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 from graph4nlp.pytorch.data.dataset import KGCompletionDataItem, KGCompletionDataset
@@ -156,9 +156,9 @@ def main(cfg, model_path):
         model.cuda()
 
     # for kinship
-    # raw_contents = ['{"e1": "person84", "e2": "person85", "rel": "term21", "rel_eval": "term21_reverse", "e2_multi1": "person85", "e2_multi2": "person84 person55 person74 person57 person66 person96"}']
+    raw_contents = ['{"e1": "person84", "e2": "person85", "rel": "term21", "rel_eval": "term21_reverse", "e2_multi1": "person85", "e2_multi2": "person84 person55 person74 person57 person66 person96"}']
     # for wn18rr
-    raw_contents = ['{"e1": "12400489", "e2": "12651821", "rel": "_hypernym", "rel_eval": "_hypernym_reverse", "e2_multi1": "12651821", "e2_multi2": "12333053 12300840 12332218 12717644 12774641 12190869 11693981 12766043 12333771 12400924 12644902 12628986 12629666 12745564 12641413 12651611 12333530 12366675 12775717 12707781 11706761 12765846 12327528 12345280 12640607 12648045 12370174 12400720 12400489 12625003 12771192 12399132 12633638 12648196 12744387 12636224 12744850 12761284 12373100 12667406 12638218 12742290 12745386 12743352"}']
+    # raw_contents = ['{"e1": "12400489", "e2": "12651821", "rel": "_hypernym", "rel_eval": "_hypernym_reverse", "e2_multi1": "12651821", "e2_multi2": "12333053 12300840 12332218 12717644 12774641 12190869 11693981 12766043 12333771 12400924 12644902 12628986 12629666 12745564 12641413 12651611 12333530 12366675 12775717 12707781 11706761 12765846 12327528 12345280 12640607 12648045 12370174 12400720 12400489 12625003 12771192 12399132 12633638 12648196 12744387 12636224 12744850 12761284 12373100 12667406 12638218 12742290 12745386 12743352"}']
     inference_tool.predict(raw_contents=raw_contents, batch_size=cfg['test_batch_size'], KG_graph=KG_graph)
 
 def get_args():

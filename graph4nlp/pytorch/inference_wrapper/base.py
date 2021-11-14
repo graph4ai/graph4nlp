@@ -1,6 +1,13 @@
 import torch.nn as nn
 import json
-from graph4nlp.pytorch.data.dataset import DataItem, Dataset, DoubleText2TextDataItem, word_tokenize, KGCompletionDataItem
+from graph4nlp.pytorch.data.dataset import (
+    DataItem,
+    Dataset,
+    DoubleText2TextDataItem,
+    KGCompletionDataItem,
+    Text2TreeDataItem,
+    word_tokenize,
+)
 from graph4nlp.pytorch.modules.graph_construction.base import GraphConstructionBase
 
 
@@ -41,11 +48,13 @@ class InferenceWrapperBase(nn.Module):
         data_item: DataItem,
             The data_item class.
         topology_builder: GraphConstructionBase, default=None
-            The initial graph topology builder. We will set the default topology builder for you
-                if it is ``None`` according to ``graph_name`` in ``cfg``.
+            The initial graph topology builder. It is used to custermize your own graph\
+                 construction method. We will set the default topology builder for you \
+                 if it is ``None`` according to ``graph_name`` in ``cfg``.
         dynamic_init_topology_builder: GraphConstructionBase, default=None
-            The dynamic initial graph topology builder. We will set the default topology builder
-                for you if it is ``None`` according to ``dynamic_init_graph_name`` in ``cfg``.
+            The dynamic initial graph topology builder. It is used to custermize your own \
+                graph construction method. We will set the default topology builder for you\
+                if it is ``None`` according to ``dynamic_init_graph_name`` in ``cfg``.
         lower_case: bool, default=True
             TBD: move it to template
         tokenizer: function, default=nltk.word_tokenize
@@ -111,10 +120,16 @@ class InferenceWrapperBase(nn.Module):
                 data_item = self.data_item_class(
                     e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=self.tokenizer
                 )
-            else:
+            elif self.data_item_class == Text2TreeDataItem:
                 data_item = self.data_item_class(
-                    input_text=raw_sentence, output_text=None, tokenizer=self.tokenizer
+                    input_text=raw_sentence,
+                    output_text=None,
+                    output_tree=None,
+                    tokenizer=self.tokenizer,
                 )
+
+            else:
+                data_item = self.data_item_class(input_text=raw_sentence, tokenizer=self.tokenizer)
 
             data_item = self.dataset.process_data_items(data_items=[data_item])
             data_item = self.dataset._vectorize_one_dataitem(

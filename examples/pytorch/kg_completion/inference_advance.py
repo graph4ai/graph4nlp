@@ -10,7 +10,7 @@ from .model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMu
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 np.set_printoptions(precision=3)
 
@@ -65,7 +65,6 @@ class KGC(nn.Module):
 
         print('rank = {}'.format(rank1+1))
 
-        # argsort1 = argsort1.cpu().numpy()
         return argsort1[:, 0].item()
 
 def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=None):
@@ -204,33 +203,8 @@ def main(cfg, model_path):
     num_entities = len(dataset.vocab_model.in_word_vocab)
     num_relations = len(dataset.vocab_model.out_word_vocab)
 
-    if cfg['preprocess']:
-        for i, str2var in enumerate(train_dataloader):
-            print("batch number:", i)
-            for j in range(str2var["e1"].shape[0]):
-                for k in range(str2var["e2_multi1"][j].shape[0]):
-                    if str2var["e2_multi1"][j][k] != 0:
-                        data.append(str2var["rel"][j].tolist()[0])
-                        rows.append(str2var["e1"][j].tolist()[0])
-                        columns.append(str2var["e2_multi1"][j][k].tolist())
-                    else:
-                        break
-
-        from graph4nlp.pytorch.data.data import GraphData
-
-        KG_graph = GraphData()
-        KG_graph.add_nodes(num_entities)
-        for e1, rel, e2 in zip(rows, data, columns):
-            KG_graph.add_edge(e1, e2)
-            eid = KG_graph.edge_ids(e1, e2)[0]
-            KG_graph.edge_attributes[eid]["token"] = rel
-
-        torch.save(
-            KG_graph, "examples/pytorch/kg_completion/data/{}/processed/kgc/KG_graph.pt".format(cfg['dataset'])
-        )
-    else:
-        graph_path = "examples/pytorch/kg_completion/data/{}/processed/kgc/KG_graph.pt".format(cfg['dataset'])
-        KG_graph = torch.load(graph_path)
+    graph_path = "examples/pytorch/kg_completion/data/{}/processed/kgc/KG_graph.pt".format(cfg['dataset'])
+    KG_graph = torch.load(graph_path)
 
     if cfg['cuda'] is True:
         KG_graph = KG_graph.to("cuda")
@@ -242,66 +216,17 @@ def main(cfg, model_path):
     if cfg['cuda'] is True:
         model.to('cuda')
 
-    if cfg['resume']:
-        model_params = torch.load(model_path)
-        print(model)
-        total_param_size = []
-        params = [(key, value.size(), value.numel()) for key, value in model_params.items()]
-        for key, size, count in params:
-            total_param_size.append(count)
-            print(key, size, count)
-        print(np.array(total_param_size).sum())
-        model.load_state_dict(model_params)
-        model.eval()
-        ranking_and_hits_this(cfg, model, test_dataloader, dataset.vocab_model, "test_evaluation", kg_graph=KG_graph)
-        ranking_and_hits_this(cfg, model, val_dataloader, dataset.vocab_model, "dev_evaluation", kg_graph=KG_graph)
-    else:
-        model.init()
-
+    model_params = torch.load(model_path)
+    print(model)
     total_param_size = []
-    params = [value.numel() for value in model.parameters()]
-    print(params)
-    print(np.sum(params))
-
-    best_mrr = 0
-
-    opt = torch.optim.Adam(model.parameters(), lr=cfg['lr'], weight_decay=cfg['l2'])
-    for epoch in range(cfg['epochs']):
-        model.train()
-        for str2var in train_dataloader:
-            opt.zero_grad()
-            e1_tensor = str2var["e1_tensor"]
-            rel_tensor = str2var["rel_tensor"]
-            e2_multi = str2var["e2_multi1_binary"].float()
-            if cfg['cuda']:
-                e1_tensor = e1_tensor.to('cuda')
-                rel_tensor = rel_tensor.to('cuda')
-                e2_multi = e2_multi.to('cuda')
-            # label smoothing
-            e2_multi = ((1.0 - cfg['label_smoothing']) * e2_multi) + (1.0 / e2_multi.size(1))
-
-            pred = model(e1_tensor, rel_tensor, KG_graph)
-            loss = model.loss(pred, e2_multi)
-            loss.backward()
-            opt.step()
-
-            # train_batcher.state.loss = loss.cpu()
-
-        model.eval()
-        with torch.no_grad():
-            if epoch % 2 == 0 and epoch > 0:
-                dev_mrr = ranking_and_hits_this(
-                    cfg, model, val_dataloader, dataset.vocab_model, "dev_evaluation", kg_graph=KG_graph
-                )
-                if dev_mrr > best_mrr:
-                    best_mrr = dev_mrr
-                    print("saving best model to {0}".format(model_path))
-                    torch.save(model.state_dict(), model_path)
-            if epoch % 2 == 0:
-                if epoch > 0:
-                    ranking_and_hits_this(
-                        cfg, model, test_dataloader, dataset.vocab_model, "test_evaluation", kg_graph=KG_graph
-                    )
+    params = [(key, value.size(), value.numel()) for key, value in model_params.items()]
+    for key, size, count in params:
+        total_param_size.append(count)
+        print(key, size, count)
+    print(np.array(total_param_size).sum())
+    model.load_state_dict(model_params)
+    model.eval()
+    ranking_and_hits_this(cfg, model, test_dataloader, dataset.vocab_model, "test_evaluation", kg_graph=KG_graph)
 
 
 def get_args():
@@ -316,10 +241,8 @@ def get_args():
 
 
 if __name__ == "__main__":
-
     cfg = get_args()
     task_args = get_yaml_config(cfg["task_config"])
-
 
     task_args['cuda'] = True
 

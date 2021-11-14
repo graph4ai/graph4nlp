@@ -50,18 +50,16 @@ class Jobs:
             "edge_strategy": self.opt["graph_construction_args"]["graph_construction_private"][
                 "edge_strategy"
             ],
-            "graph_type": self.opt["graph_construction_args"]["graph_construction_share"][
-                "graph_type"
+            "graph_name": self.opt["graph_construction_args"]["graph_construction_share"][
+                "graph_name"
             ],
-            "dynamic_graph_type": self.opt["graph_construction_args"]["graph_construction_share"][
-                "graph_type"
-            ],
+            "static_or_dynamic": "static",
             "share_vocab": self.use_share_vocab,
             "enc_emb_size": self.opt["graph_construction_args"]["node_embedding"]["input_size"],
             "dec_emb_size": self.opt["decoder_args"]["rnn_decoder_share"]["input_size"],
-            "dynamic_init_graph_type": self.opt["graph_construction_args"][
+            "dynamic_init_graph_name": self.opt["graph_construction_args"][
                 "graph_construction_private"
-            ].get("dynamic_init_graph_type", None),
+            ].get("dynamic_init_graph_name", None),
             "min_word_vocab_freq": self.opt["min_freq"],
             "pretrained_word_emb_name": self.opt["pretrained_word_emb_name"],
             "pretrained_word_emb_url": self.opt["pretrained_word_emb_url"],
@@ -159,7 +157,7 @@ class Jobs:
         for epoch in range(1, self.opt["max_epochs"] + 1):
             self.model.train()
             self.train_epoch(epoch)
-            if epoch >= 5:
+            if epoch >= 5 and epoch % 10 == 0:
                 val_acc = self.eval(self.model)
                 if val_acc > best_acc:
                     best_acc = val_acc

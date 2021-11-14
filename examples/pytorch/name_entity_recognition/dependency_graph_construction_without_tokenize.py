@@ -64,7 +64,7 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             self.vocab.word_vocab._add_words([attr["token"]])
 
     @classmethod
-    def parsing(cls, raw_text_data):
+    def parsing(cls, raw_text_data, tokenizer=None):
         """
         Parameters
         ----------
@@ -80,7 +80,7 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
                 'token': str
                     word token
                 'position_id': int
-                    the word's position id in original sentence. eg: I am a dog.
+                    the word's position id in original sentence. eg: It is a dog.
                     position_id: 0, 1, 2, 3
                 'id': int,
                     the node token's id which will be used in GraphData
@@ -95,6 +95,11 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
                 'tgt': int
                     The target node ``id``
         """
+        if isinstance(raw_text_data, str):
+            if tokenizer is None:
+                raw_text_data = raw_text_data.split(" ")
+            else:
+                raw_text_data = tokenizer(raw_text_data)
         parsed_results = []
         # for sent_id in range(len(raw_text_data)):
         parsed_sent = {}

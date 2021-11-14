@@ -31,7 +31,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # from torchcrf import CRF
 
 
-def logits2tag(logits):
+def logits2index(logits):
     _, pred = torch.max(logits, dim=-1)
     # print(pred.size())
     return pred
@@ -64,29 +64,34 @@ class SentenceBiLSTMCRF(nn.Module):
             self.dropout_tag(F.elu(self.linear1(self.dropout_rnn_out(batch_emb))))
         )
 
-        tgt = torch.cat(tgt_tags)
         logits = batch_graph.node_features["logits"][:, :]  # [batch*sentence*num_nodes,num_lable]
-        loss = self.nll_loss(self.logsoftmax(logits), tgt)
-        pred_tags = logits2tag(logits)
+        if tgt_tags is None:
+            loss = 0
+        else:
+            tgt = torch.cat(tgt_tags)
+            loss = self.nll_loss(self.logsoftmax(logits), tgt)
 
-        return loss, pred_tags
+        return loss, logits
 
 
 class Word2tag(nn.Module):
     def __init__(self, vocab, args, device=None):
         super(Word2tag, self).__init__()
         self.vocab = vocab
+        self.vocab_model = vocab
+
         self.device = device
+        self.graph_name = args.graph_name
 
         embedding_style = {
-            "single_token_item": True if args.graph_type != "ie" else False,
+            "single_token_item": True if args.graph_name != "ie" else False,
             "emb_strategy": "w2v_bilstm",
             "num_rnn_layers": 1,
             "bert_model_name": "bert-base-uncased",
             "bert_lower_case": True,
         }
 
-        if args.graph_type == "line_graph":
+        if args.graph_name == "line_graph":
             if args.gnn_type == "ggnn":
                 self.graph_topology = LineBasedGraphConstruction(
                     embedding_style=embedding_style,
@@ -109,7 +114,7 @@ class Word2tag(nn.Module):
                     fix_word_emb=not args.no_fix_word_emb,
                     fix_bert_emb=not args.no_fix_bert_emb,
                 )
-        if args.graph_type == "dependency_graph":
+        if args.graph_name == "dependency_graph":
             if args.gnn_type == "ggnn":
                 self.graph_topology = DependencyBasedGraphConstruction_without_tokenizer(
                     embedding_style=embedding_style,
@@ -132,7 +137,7 @@ class Word2tag(nn.Module):
                     fix_word_emb=not args.no_fix_word_emb,
                     fix_bert_emb=not args.no_fix_bert_emb,
                 )
-        if args.graph_type == "node_emb":
+        if args.graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
                 vocab.in_word_vocab,
                 embedding_style,
@@ -153,7 +158,7 @@ class Word2tag(nn.Module):
                 use_edge_weight=True,
             )
 
-        if args.graph_type == "node_emb_refined":
+        if args.graph_name == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
                 vocab.in_word_vocab,
                 embedding_style,
@@ -321,14 +326,28 @@ class Word2tag(nn.Module):
             batch_graph = self.gnn(batch_graph)
 
         # down-task
-        loss, pred = self.bilstmcrf(batch_graph, tgt)
+        loss, logits = self.bilstmcrf(batch_graph, tgt)
+        pred_index = logits2index(logits)
         self.loss = loss
 
         if require_loss is True:
-            return pred, self.loss
+            return pred_index, self.loss
         else:
             loss = None
-            return pred, self.loss
+            return pred_index, self.loss
+
+    def inference_forward(self, collate_data):
+        batch_graph = collate_data["graph_data"].to(self.device)
+        return self.forward(batch_graph, tgt=None, require_loss=False)[0]
+
+    def post_process(self, logits, label_names):
+        logits_list = []
+        # tgt_list = []
+
+        for idx in range(len(logits)):
+            logits_list.append(logits[idx].cpu().clone().numpy())
+        pred_tags = [label_names[int(pred)] for pred in logits_list]
+        return pred_tags
 
     def save_checkpoint(self, save_path, checkpoint_name):
         """
