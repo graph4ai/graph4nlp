@@ -164,10 +164,11 @@ def main(cfg, model_path):
 
     # for kinship
     raw_contents = [
-        '{"e1": "person84", "e2": "person85", "rel": "term21",'
+        ('{"e1": "person84", "e2": "person85", "rel": "term21",'
         ' "rel_eval": "term21_reverse", "e2_multi1": "person85",'
         ' "e2_multi2": "person84 person55 person74 person57'
-        ' person66 person96"}'
+        ' person66 person96"}',
+         KG_graph)
     ]
     # for wn18rr
     # raw_contents = ['{"e1": "12400489", "e2": "12651821",
@@ -180,7 +181,7 @@ def main(cfg, model_path):
     #  12399132 12633638 12648196 12744387 12636224 12744850 12761284
     #  12373100 12667406 12638218 12742290 12745386 12743352"}']
     inference_tool.predict(
-        raw_contents=raw_contents, batch_size=cfg["test_batch_size"], KG_graph=KG_graph
+        raw_contents=raw_contents, batch_size=cfg["test_batch_size"]
     )
 
 

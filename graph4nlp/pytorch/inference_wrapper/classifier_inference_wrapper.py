@@ -71,7 +71,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
         self.label_names = label_names
         self.vocab_model = model.vocab_model
 
-    def predict(self, raw_contents: list, batch_size=1, KG_graph=None):
+    def predict(self, raw_contents: list, batch_size=1):
         """
             Do the inference.
         Parameters
@@ -109,10 +109,8 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             collate_data = all_to_cuda(collate_data, device)
 
             # forward
-            if KG_graph is None:
-                ret = self.model.inference_forward(collate_data)
-                ret = self.model.post_process(logits=ret, label_names=self.label_names)
-            else:
+            if isinstance(data_collect[i], tuple):
+                KG_graph = data_collect[i][1]
                 ret = self.model.inference_forward(collate_data, KG_graph)
                 ret = self.model.post_process(logits=ret, e2=collate_data["e2_tensor"])
                 print(
@@ -123,6 +121,9 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
                     )
                 )
                 ret = [ret]
+            else:
+                ret = self.model.inference_forward(collate_data)
+                ret = self.model.post_process(logits=ret, label_names=self.label_names)
 
             ret_collect.extend(ret)
 

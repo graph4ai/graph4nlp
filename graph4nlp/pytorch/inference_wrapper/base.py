@@ -115,7 +115,8 @@ class InferenceWrapperBase(nn.Module):
                     share_vocab=self.share_vocab,
                 )
             elif self.data_item_class == KGCompletionDataItem:
-                line = json.loads(raw_sentence)
+                assert isinstance(raw_sentence, tuple)
+                line = json.loads(raw_sentence[0])
                 e1, rel, e2, rel_eval, e2_multi1, e2_multi2 = (
                     line["e1"],
                     line["rel"],
