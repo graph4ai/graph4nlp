@@ -22,23 +22,21 @@ sh examples/pytorch/kg_completion/preprocess.sh
 
 #### Run the model:
 
-If you run the task for the first time, run with:
-```bash
-python examples/pytorch/kg_completion/kinship_main.py --data kinship --model ggnn_distmult --preprocess
-python examples/pytorch/kg_completion/WN18RR_main.py --data WN18RR --model gcn_distmult --lr 0.005 --preprocess
-```
+If you run the task for the first time, remember to set `preprocess: True ` in the config file.
+
 Then run:
 ```bash
-python examples/pytorch/kg_completion/kinship_main.py --data kinship --model ggnn_distmult
-python examples/pytorch/kg_completion/WN18RR_main.py --data WN18RR --model gcn_distmult --lr 0.005
+python examples/pytorch/kg_completion/kinship_main_g4n.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
 ```
-If you want to load the saved model and continue to train the model:
+
+If you want to evaluate the saved model, run:
 ```bash
-python examples/pytorch/kg_completion/kinship_main.py --data kinship --model ggnn_distmult --resume
+python examples/pytorch/kg_completion/kinship_inference_advance_g4n.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
 ```
-If you want to test the model:
+
+If you want to test the model with a single example:
 ```bash
-python examples/pytorch/kg_completion/kinship_inference_advance.py --data kinship --model ggnn_distmult
+python examples/pytorch/kg_completion/kinship_inference_g4n.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
 ```
 Results on kinship
 ------------------

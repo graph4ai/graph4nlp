@@ -1,6 +1,6 @@
 import torch.nn as nn
-
-from graph4nlp.pytorch.data.dataset import DataItem, Dataset, DoubleText2TextDataItem, word_tokenize
+import json
+from graph4nlp.pytorch.data.dataset import DataItem, Dataset, DoubleText2TextDataItem, word_tokenize, KGCompletionDataItem
 from graph4nlp.pytorch.modules.graph_construction.base import GraphConstructionBase
 
 
@@ -103,6 +103,13 @@ class InferenceWrapperBase(nn.Module):
                     output_text=None,
                     tokenizer=self.tokenizer,
                     share_vocab=self.share_vocab,
+                )
+            elif self.data_item_class == KGCompletionDataItem:
+                line = json.loads(raw_sentence)
+                e1, rel, e2, rel_eval, e2_multi1, e2_multi2 = \
+                    line['e1'], line['rel'], line['e2'], line['rel_eval'], line['e2_multi1'], line['e2_multi2']
+                data_item = self.data_item_class(
+                    e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=self.tokenizer
                 )
             else:
                 data_item = self.data_item_class(
