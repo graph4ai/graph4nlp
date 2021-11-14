@@ -115,10 +115,10 @@ class Conll:
         )
 
     def predict(self):
-        '''The input of the self.inference_tool.predict() is a list of sentence.
+        """The input of the self.inference_tool.predict() is a list of sentence.
         The default tokenizer is based on white space (if tokenizer is None).
         The user can also customize their own tokenizer in defining the \
-            ClassifierInferenceWrapper.'''
+            ClassifierInferenceWrapper."""
         self.model.eval()
         ret = self.inference_tool.predict(
             raw_contents=["there is a list of jobs", "good morning"], batch_size=1
