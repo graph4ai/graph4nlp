@@ -155,7 +155,7 @@ class Mawps:
             ground_truth_list.append(data["original_dec_tree_batch"][0])
 
         # If the file for inference have meaningful ground truth,
-        # we calculate a exact match score for the result.
+        # we calculate a solution match score for the result.
         if all(DUMMY_STR not in i for i in ground_truth_list):
             print(
                 "Solution match score: {0:.2f}%".format(
