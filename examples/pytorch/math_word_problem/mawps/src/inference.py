@@ -9,7 +9,7 @@ import warnings
 import numpy as np
 import torch
 
-from graph4nlp.pytorch.datasets.jobs import tokenize_jobs
+from graph4nlp.pytorch.datasets.mawps import tokenize_mawps
 from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper_for_tree import (
     GeneratorInferenceWrapper,
 )
@@ -20,9 +20,9 @@ from config import get_args
 warnings.filterwarnings("ignore")
 
 
-class Jobs:
+class Mawps:
     def __init__(self, opt=None):
-        super(Jobs, self).__init__()
+        super(Mawps, self).__init__()
         self.opt = opt
 
         seed = self.opt["seed"]
@@ -42,17 +42,22 @@ class Jobs:
         )
 
         self.inference_tool = GeneratorInferenceWrapper(
-            cfg=self.opt, model=self.model, beam_size=2, lower_case=True, tokenizer=tokenize_jobs
+            cfg=self.opt, model=self.model, beam_size=2, lower_case=True, tokenizer=tokenize_mawps
         )
 
     @torch.no_grad()
     def translate(self):
         self.model.eval()
-        ret = self.inference_tool.predict(raw_contents=["list job on platformid0"], batch_size=1)
+        ret = self.inference_tool.predict(
+            raw_contents=[
+                "2 dogs are barking . 1 more dogs start to bark . how many dogs are barking"
+            ],
+            batch_size=1,
+        )
         print(ret)
 
 
 if __name__ == "__main__":
     opt = get_args()
-    runner = Jobs(opt)
+    runner = Mawps(opt)
     runner.translate()

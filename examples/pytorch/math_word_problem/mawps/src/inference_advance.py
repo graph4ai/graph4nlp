@@ -1,3 +1,9 @@
+"""
+    The advanced inference code.
+    In this file, we will run the inference by writing the whole inference pipeline.
+    Compared with the inference.py, it is more efficient. It will save the graphs \
+        during inference, which support multi-processing when converting the raw inputs to graphs.
+"""
 import copy
 import random
 import time
@@ -8,20 +14,12 @@ from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
-    ConstituencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
-    DependencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
-    NodeEmbeddingBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
+
+from evaluation import SolutionMatch
 
 warnings.filterwarnings("ignore")
+
+DUMMY_STR = "<TBD>"
 
 
 class Mawps:
@@ -46,57 +44,27 @@ class Mawps:
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
         self._build_model()
         self._build_dataloader()
+        self._build_evaluation()
 
     def _build_dataloader(self):
-        graph_type = self.opt["graph_construction_args"]["graph_construction_share"]["graph_type"]
-        enc_emb_size = self.opt["graph_construction_args"]["node_embedding"]["input_size"]
-        tgt_emb_size = self.opt["decoder_args"]["rnn_decoder_share"]["input_size"]
-        topology_subdir = self.opt["graph_construction_args"]["graph_construction_share"][
-            "topology_subdir"
-        ]
-        dynamic_init_topology_builder = None
-
-        if graph_type == "dependency":
-            my_topology_builder = DependencyBasedGraphConstruction
-            my_graph_type = "static"
-        elif graph_type == "constituency":
-            my_topology_builder = DependencyBasedGraphConstruction
-            my_graph_type = "static"
-        elif graph_type == "node_emb":
-            my_topology_builder = NodeEmbeddingBasedGraphConstruction
-            my_graph_type = "dynamic"
-        elif graph_type == "node_emb_refined":
-            my_topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-            my_graph_type = "dynamic"
-            dynamic_init_graph_type = self.opt["graph_construction_args"][
-                "graph_construction_private"
-            ]["dynamic_init_graph_type"]
-            if dynamic_init_graph_type is None or dynamic_init_graph_type == "line":
-                dynamic_init_topology_builder = None
-            elif dynamic_init_graph_type == "dependency":
-                dynamic_init_topology_builder = DependencyBasedGraphConstruction
-            elif dynamic_init_graph_type == "constituency":
-                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-            else:
-                # dynamic_init_topology_builder
-                raise RuntimeError("Define your own dynamic_init_topology_builder")
-        else:
-            raise NotImplementedError
-
         para_dic = {
             "root_dir": self.data_dir,
-            "word_emb_size": enc_emb_size,
-            "topology_builder": my_topology_builder,
-            "topology_subdir": topology_subdir,
+            "word_emb_size": self.opt["graph_construction_args"]["node_embedding"]["input_size"],
+            "topology_subdir": self.opt["graph_construction_args"]["graph_construction_share"][
+                "topology_subdir"
+            ],
             "edge_strategy": self.opt["graph_construction_args"]["graph_construction_private"][
                 "edge_strategy"
             ],
-            "graph_type": my_graph_type,
-            "dynamic_graph_type": graph_type,
+            "graph_name": self.opt["graph_construction_args"]["graph_construction_share"][
+                "graph_name"
+            ],
             "share_vocab": self.use_share_vocab,
-            "enc_emb_size": enc_emb_size,
-            "dec_emb_size": tgt_emb_size,
-            "dynamic_init_topology_builder": dynamic_init_topology_builder,
+            "enc_emb_size": self.opt["graph_construction_args"]["node_embedding"]["input_size"],
+            "dec_emb_size": self.opt["decoder_args"]["rnn_decoder_share"]["input_size"],
+            "dynamic_init_graph_name": self.opt["graph_construction_args"][
+                "graph_construction_private"
+            ].get("dynamic_init_graph_name", None),
             "min_word_vocab_freq": self.opt["min_freq"],
             "pretrained_word_emb_name": self.opt["pretrained_word_emb_name"],
             "pretrained_word_emb_url": self.opt["pretrained_word_emb_url"],
@@ -142,8 +110,14 @@ class Mawps:
         )
         return oov_dict
 
+    def _build_evaluation(self):
+        self.evaluation_metric = SolutionMatch()
+
     def infer(self):
         self.model.eval()
+        pred_list = []
+        ground_truth_list = []
+
         for data in self.inference_data_loader:
             eval_input_graph, _, _ = (
                 data["graph_data"],
@@ -172,8 +146,22 @@ class Mawps:
             )
 
             candidate = [int(c) for c in candidate]
-            print(" ".join(x["token"] for x in eval_input_graph.node_attributes))
-            print(" ".join(self.model.tgt_vocab.get_idx_symbol_for_list(candidate)) + "\n")
+            input_str = " ".join(x["token"] for x in eval_input_graph.node_attributes)
+            pred_str = " ".join(self.model.tgt_vocab.get_idx_symbol_for_list(candidate))
+            print(input_str)
+            print(pred_str + "\n")
+
+            pred_list.append(pred_str)
+            ground_truth_list.append(data["original_dec_tree_batch"][0])
+
+        # If the file for inference have meaningful ground truth,
+        # we calculate a solution match score for the result.
+        if all(DUMMY_STR not in i for i in ground_truth_list):
+            print(
+                "Solution match score: {0:.2f}%".format(
+                    self.evaluation_metric.calculate_scores(ground_truth_list, pred_list)
+                )
+            )
 
 
 if __name__ == "__main__":
