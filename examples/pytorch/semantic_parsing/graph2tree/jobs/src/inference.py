@@ -47,9 +47,7 @@ class Jobs:
     @torch.no_grad()
     def translate(self):
         self.model.eval()
-        input_str = input("please input your question:")
-        # ret = self.inference_tool.predict(raw_contents=["list job on platformid0"], batch_size=1)
-        ret = self.inference_tool.predict(raw_contents=[input_str], batch_size=1)
+        ret = self.inference_tool.predict(raw_contents=["list job on platformid0"], batch_size=1)
         ret = "".join(ret)
         print(ret)
 

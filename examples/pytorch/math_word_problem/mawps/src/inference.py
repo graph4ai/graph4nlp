@@ -47,9 +47,7 @@ class Mawps:
     @torch.no_grad()
     def translate(self):
         self.model.eval()
-        # input_str = input("please input your question:")
         ret = self.inference_tool.predict(raw_contents=["2 dogs are barking . 1 more dogs start to bark . how many dogs are barking"], batch_size=1)
-        # ret = self.inference_tool.predict(raw_contents=[input_str], batch_size=1)
         ret = "".join(ret)
         print(ret)
 
