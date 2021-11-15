@@ -15,6 +15,7 @@ class ExactMatch(EvaluationMetricBase):
                 correct += 1.0
         return correct / len(ground_truth)
 
+
 def convert_to_string(idx_list, form_manager):
     w_list = []
     for i in range(len(idx_list)):

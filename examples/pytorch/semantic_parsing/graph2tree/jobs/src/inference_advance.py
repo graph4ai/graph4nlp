@@ -21,6 +21,7 @@ warnings.filterwarnings("ignore")
 
 DUMMY_STR = "<TBD>"
 
+
 class Jobs:
     def __init__(self, opt=None):
         super(Jobs, self).__init__()
@@ -149,19 +150,17 @@ class Jobs:
             input_str = " ".join(x["token"] for x in eval_input_graph.node_attributes)
             pred_str = " ".join(self.model.tgt_vocab.get_idx_symbol_for_list(candidate))
             print(input_str)
-            print(pred_str+'\n')
+            print(pred_str + "\n")
 
             pred_list.append(pred_str)
-            ground_truth_list.append(data['original_dec_tree_batch'][0])
+            ground_truth_list.append(data["original_dec_tree_batch"][0])
 
-        # If the file for inference have meaningful ground truth, we calculate a exact match score for the result.
+        # If the file for inference have meaningful ground truth,
+        # we calculate a exact match score for the result.
         if all(DUMMY_STR not in i for i in ground_truth_list):
             print(
                 "Exact match score: {0:.2f}%".format(
-                    self.evaluation_metric.calculate_scores(
-                        ground_truth_list, 
-                        pred_list
-                    )
+                    self.evaluation_metric.calculate_scores(ground_truth_list, pred_list)
                 )
             )
 

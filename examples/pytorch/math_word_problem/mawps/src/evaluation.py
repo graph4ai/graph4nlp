@@ -1,6 +1,7 @@
+from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
+
 import sympy
 from sympy.parsing.sympy_parser import parse_expr
-from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 
 
 class SolutionMatch(EvaluationMetricBase):
@@ -32,15 +33,16 @@ class SolutionMatch(EvaluationMetricBase):
                     eq2.append(parse_expr(s2[1]))
                     res1 = sympy.solve(sympy.Eq(eq1[0], eq1[1]), x)
                     res2 = sympy.solve(sympy.Eq(eq2[0], eq2[1]), x)
-    
+
                     if not res1 or not res2:
                         result = False
-                    result = (res1[0] == res2[0])
+                    result = res1[0] == res2[0]
                 except BaseException:
                     result = False
             if result:
                 correct += 1.0
         return correct / len(ground_truth)
+
 
 def convert_to_string(idx_list, form_manager):
     w_list = []
