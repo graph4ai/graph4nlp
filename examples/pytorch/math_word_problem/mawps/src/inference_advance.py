@@ -15,7 +15,11 @@ from torch.utils.data import DataLoader
 from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 
+from evaluation import SolutionMatch
+
 warnings.filterwarnings("ignore")
+
+DUMMY_STR = "<TBD>"
 
 
 class Mawps:
@@ -40,6 +44,7 @@ class Mawps:
         self.data_dir = self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"]
         self._build_model()
         self._build_dataloader()
+        self._build_evaluation()
 
     def _build_dataloader(self):
         para_dic = {
@@ -54,7 +59,6 @@ class Mawps:
             "graph_name": self.opt["graph_construction_args"]["graph_construction_share"][
                 "graph_name"
             ],
-            "static_or_dynamic": "static",
             "share_vocab": self.use_share_vocab,
             "enc_emb_size": self.opt["graph_construction_args"]["node_embedding"]["input_size"],
             "dec_emb_size": self.opt["decoder_args"]["rnn_decoder_share"]["input_size"],
@@ -106,8 +110,14 @@ class Mawps:
         )
         return oov_dict
 
+    def _build_evaluation(self):
+        self.evaluation_metric = SolutionMatch()
+
     def infer(self):
         self.model.eval()
+        pred_list = []
+        ground_truth_list = []
+
         for data in self.inference_data_loader:
             eval_input_graph, _, _ = (
                 data["graph_data"],
@@ -136,8 +146,24 @@ class Mawps:
             )
 
             candidate = [int(c) for c in candidate]
-            print(" ".join(x["token"] for x in eval_input_graph.node_attributes))
-            print(" ".join(self.model.tgt_vocab.get_idx_symbol_for_list(candidate)) + "\n")
+            input_str = " ".join(x["token"] for x in eval_input_graph.node_attributes)
+            pred_str = " ".join(self.model.tgt_vocab.get_idx_symbol_for_list(candidate))
+            print(input_str)
+            print(pred_str+'\n')
+
+            pred_list.append(pred_str)
+            ground_truth_list.append(data['original_dec_tree_batch'][0])
+
+        # If the file for inference have meaningful ground truth, we calculate a exact match score for the result.
+        if all(DUMMY_STR not in i for i in ground_truth_list):
+            print(
+                "Solution match score: {0:.2f}%".format(
+                    self.evaluation_metric.calculate_scores(
+                        ground_truth_list, 
+                        pred_list
+                    )
+                )
+            )
 
 
 if __name__ == "__main__":

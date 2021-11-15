@@ -49,7 +49,6 @@ class Jobs:
     def translate(self):
         self.model.eval()
         ret = self.inference_tool.predict(raw_contents=["list job on platformid0"], batch_size=1)
-        ret = "".join(ret)
         print(ret)
 
 

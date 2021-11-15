@@ -1,3 +1,20 @@
+from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
+
+
+class ExactMatch(EvaluationMetricBase):
+    def __init__(self):
+        super(ExactMatch, self).__init__()
+
+    def calculate_scores(self, ground_truth, predict):
+        correct = 0
+        assert len(ground_truth) == len(predict)
+        for gt, pred in zip(ground_truth, predict):
+            gt = gt.strip()
+            pred = pred.strip()
+            if gt == pred:
+                correct += 1.0
+        return correct / len(ground_truth)
+
 def convert_to_string(idx_list, form_manager):
     w_list = []
     for i in range(len(idx_list)):

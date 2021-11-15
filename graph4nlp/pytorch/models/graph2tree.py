@@ -308,7 +308,7 @@ class Graph2Tree(Graph2XBase):
     def post_process(self, decode_results, vocab):
         candidate = [int(c) for c in decode_results]
         pred_str = " ".join(self.tgt_vocab.get_idx_symbol_for_list(candidate))
-        return pred_str
+        return [pred_str]
 
     def inference_forward(self, batch_graph, beam_size, topk=1, oov_dict=None):
         """

@@ -54,7 +54,6 @@ class Mawps:
             ],
             batch_size=1,
         )
-        ret = "".join(ret)
         print(ret)
 
 
