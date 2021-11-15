@@ -14,18 +14,6 @@ from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
-    ConstituencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
-    DependencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
-    NodeEmbeddingBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
 
 warnings.filterwarnings("ignore")
 

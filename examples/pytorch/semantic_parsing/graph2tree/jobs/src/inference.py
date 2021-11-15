@@ -5,9 +5,9 @@
     The GeneratorInferenceWrapper takes the raw inputs and produce the outputs.
 """
 import random
+import warnings
 import numpy as np
 import torch
-import warnings
 
 from graph4nlp.pytorch.datasets.jobs import tokenize_jobs
 from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper_for_tree import (
@@ -18,6 +18,7 @@ from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from config import get_args
 
 warnings.filterwarnings("ignore")
+
 
 class Jobs:
     def __init__(self, opt=None):

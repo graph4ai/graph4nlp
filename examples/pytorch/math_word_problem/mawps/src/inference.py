@@ -5,9 +5,9 @@
     The GeneratorInferenceWrapper takes the raw inputs and produce the outputs.
 """
 import random
+import warnings
 import numpy as np
 import torch
-import warnings
 
 from graph4nlp.pytorch.datasets.mawps import tokenize_mawps
 from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper_for_tree import (
@@ -18,6 +18,7 @@ from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from config import get_args
 
 warnings.filterwarnings("ignore")
+
 
 class Mawps:
     def __init__(self, opt=None):
@@ -47,7 +48,12 @@ class Mawps:
     @torch.no_grad()
     def translate(self):
         self.model.eval()
-        ret = self.inference_tool.predict(raw_contents=["2 dogs are barking . 1 more dogs start to bark . how many dogs are barking"], batch_size=1)
+        ret = self.inference_tool.predict(
+            raw_contents=[
+                "2 dogs are barking . 1 more dogs start to bark . how many dogs are barking"
+            ],
+            batch_size=1,
+        )
         ret = "".join(ret)
         print(ret)
 
