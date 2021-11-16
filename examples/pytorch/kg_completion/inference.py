@@ -167,7 +167,6 @@ def main(cfg, model_path):
         (
             '{"e1": "person84", "e2": "person85", "rel": "term21", '
             '"rel_eval": "term21_reverse", "e2_multi1": "person85",'
-          
             '"e2_multi2": "person84 person55 person74 person57 '
             'person66 person96"}',
             KG_graph,
