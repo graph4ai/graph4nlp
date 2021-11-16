@@ -1,4 +1,5 @@
 import abc
+import json
 import os
 import warnings
 from collections import Counter
@@ -1929,6 +1930,238 @@ class SequenceLabelingDataset(Dataset):
         return {"graph_data": graph_data, "tgt_tag": tgt_tag}
 
 
+class KGCompletionDataItem(DataItem):
+    def __init__(
+        self, e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=None, share_vocab=False
+    ):
+        super(KGCompletionDataItem, self).__init__(e1, tokenizer=tokenizer)
+        self.e1 = e1
+        self.rel = rel
+        self.e2 = e2
+        self.rel_eval = rel_eval
+        self.e2_multi1 = e2_multi1
+        self.e2_multi2 = e2_multi2
+        self.share_vocab = share_vocab
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens (for entity) and output tokens (for relation)
+        """
+
+        input_tokens = []
+        if self.tokenizer is None:
+            input_tokens.extend(self.e1.strip().split(" "))
+            input_tokens.extend(self.e2.strip().split(" "))
+            input_tokens.extend(self.e2_multi1.strip().split(" "))
+            input_tokens.extend(self.e2_multi2.strip().split(" "))
+        else:
+            input_tokens.extend(self.tokenizer(self.e1))
+            input_tokens.extend(self.tokenizer(self.e2))
+            input_tokens.extend(self.tokenizer(self.e2_multi1))
+            input_tokens.extend(self.tokenizer(self.e2_multi2))
+
+        output_tokens = []
+        if self.tokenizer is None:
+            output_tokens.extend(self.rel.strip().split(" "))
+            output_tokens.extend(self.rel_eval.strip().split(" "))
+        else:
+            output_tokens.extend(self.tokenizer(self.rel))
+            output_tokens.extend(self.tokenizer(self.rel_eval))
+
+        if self.share_vocab:
+            return input_tokens + output_tokens
+        else:
+            return input_tokens, output_tokens
+
+
+class KGCompletionDataset(Dataset):
+    def __init__(
+        self, root_dir: str = None, topology_builder=None, topology_subdir: str = None, **kwargs
+    ):
+        self.data_item_type = DataItem
+        super(KGCompletionDataset, self).__init__(
+            root_dir, topology_builder, topology_subdir, **kwargs
+        )
+
+    def read_raw_data(self):
+        if self.for_inference:
+            self.test = self.parse_file(self.raw_file_paths["test"])
+            return
+        self.train = self.parse_file(self.raw_file_paths["train"])
+        self.test = self.parse_file(self.raw_file_paths["test"])
+        if "val" in self.raw_file_paths.keys():
+            self.val = self.parse_file(self.raw_file_paths["val"])
+        elif "val_split_ratio" in self.__dict__:
+            if self.val_split_ratio > 0:
+                new_train_length = int((1 - self.val_split_ratio) * len(self.train))
+                import random
+
+                random.seed(self.seed)
+                old_train_set = self.train
+                random.shuffle(old_train_set)
+                self.val = old_train_set[new_train_length:]
+                self.train = old_train_set[:new_train_length]
+
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format
+        is specified by each individual task-specific base class. Returns
+        all the indices of data items in this file w.r.t. the whole dataset.
+
+        For KGCompletionDataset, the format of the input file should contain
+        lines of input, each line representing one record of data.
+
+        Examples
+        --------
+        input:
+        {"e1": "person100", "e2": "None", "rel": "term6", "rel_eval": "None",
+        "e2_multi1": "person90 person80 person59 person82 person63 person77
+        person85 person83 person56", "e2_multi2": "None"}
+
+        DataItem: e1="person100"
+                  e2="None"
+                  rel="term6"
+                  ...
+
+        Parameters
+        ----------
+        file_path: str
+            The path of the input file.
+
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
+        """
+        data = []
+        with open(file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = json.loads(line)
+                e1, rel, e2, rel_eval, e2_multi1, e2_multi2 = (
+                    line["e1"],
+                    line["rel"],
+                    line["e2"],
+                    line["rel_eval"],
+                    line["e2_multi1"],
+                    line["e2_multi2"],
+                )
+                data_item = KGCompletionDataItem(
+                    e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=self.tokenizer
+                )
+                data.append(data_item)
+
+        return data
+
+    def build_topology(self, data_items):
+        return data_items
+
+    def build_vocab(self):
+        data_for_vocab = self.train
+
+        self.vocab_model = VocabModel.build(
+            saved_vocab_file=self.processed_file_paths["vocab"],
+            data_set=data_for_vocab,
+            tokenizer=self.tokenizer,
+            lower_case=self.lower_case,
+            max_word_vocab_size=self.max_word_vocab_size,
+            min_word_vocab_freq=self.min_word_vocab_freq,
+            pretrained_word_emb_name=self.pretrained_word_emb_name,
+            pretrained_word_emb_url=self.pretrained_word_emb_url,
+            pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
+            word_emb_size=self.word_emb_size,
+            share_vocab=False,
+        )
+
+    def vectorization(self, data_items):
+        for item in data_items:
+            e2_multi1 = self.vocab_model.in_word_vocab.to_index_sequence(item.e2_multi1)
+            e2_multi2 = self.vocab_model.in_word_vocab.to_index_sequence(item.e2_multi2)
+
+            item.e1_np = np.array([self.vocab_model.in_word_vocab.getIndex(item.e1)])
+            item.e2_np = np.array([self.vocab_model.in_word_vocab.getIndex(item.e2)])
+            item.e2_multi1_np = np.array(e2_multi1)
+            item.e2_multi2_np = np.array(e2_multi2)
+            item.rel_np = np.array([self.vocab_model.out_word_vocab.getIndex(item.rel)])
+            item.rel_eval_np = np.array([self.vocab_model.out_word_vocab.getIndex(item.rel_eval)])
+
+            index1 = [[0] * len(e2_multi1), e2_multi1]
+            value1 = [1] * len(e2_multi1)
+            item.e2_multi1_binary = torch.sparse_coo_tensor(
+                index1, value1, (1, len(self.vocab_model.in_word_vocab))
+            )
+
+            index2 = [[0] * len(e2_multi2), e2_multi2]
+            value2 = [1] * len(e2_multi2)
+            item.e2_multi2_binary = torch.sparse_coo_tensor(
+                index2, value2, (1, len(self.vocab_model.in_word_vocab))
+            )
+
+    def process_data_items(self, data_items):
+        return data_items
+
+    @classmethod
+    def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie):
+        item = deepcopy(data_item)
+        e2_multi1 = vocab_model.in_word_vocab.to_index_sequence(item.e2_multi1)
+        e2_multi2 = vocab_model.in_word_vocab.to_index_sequence(item.e2_multi2)
+
+        item.e1_np = np.array([vocab_model.in_word_vocab.getIndex(item.e1)])
+        item.e2_np = np.array([vocab_model.in_word_vocab.getIndex(item.e2)])
+        item.e2_multi1_np = np.array(e2_multi1)
+        item.e2_multi2_np = np.array(e2_multi2)
+        item.rel_np = np.array([vocab_model.out_word_vocab.getIndex(item.rel)])
+        item.rel_eval_np = np.array([vocab_model.out_word_vocab.getIndex(item.rel_eval)])
+
+        index1 = [[0] * len(e2_multi1), e2_multi1]
+        value1 = [1] * len(e2_multi1)
+        item.e2_multi1_binary = torch.sparse_coo_tensor(
+            index1, value1, (1, len(vocab_model.in_word_vocab))
+        )
+
+        index2 = [[0] * len(e2_multi2), e2_multi2]
+        value2 = [1] * len(e2_multi2)
+        item.e2_multi2_binary = torch.sparse_coo_tensor(
+            index2, value2, (1, len(vocab_model.in_word_vocab))
+        )
+
+        return item
+
+    @staticmethod
+    def collate_fn(data_list: [KGCompletionDataItem]):
+        e1 = np.array([item.e1_np for item in data_list])
+        e2 = np.array([item.e2_np for item in data_list])
+        rel = np.array([item.rel_np for item in data_list])
+        rel_eval = np.array([item.rel_eval_np for item in data_list])
+        e2_multi1 = [item.e2_multi1_np for item in data_list]
+        e2_multi2 = [item.e2_multi2_np for item in data_list]
+
+        e1_tensor = torch.LongTensor(e1)
+        rel_tensor = torch.LongTensor(rel)
+        e2_multi1 = torch.LongTensor(pad_2d_vals_no_size(e2_multi1))
+        e2_multi1_binary = torch.cat([item.e2_multi1_binary.to_dense() for item in data_list])
+
+        e2_tensor = torch.LongTensor(e2)
+        rel_eval_tensor = torch.LongTensor(rel_eval)
+        e2_multi2 = torch.LongTensor(pad_2d_vals_no_size(e2_multi2))
+        e2_multi2_binary = torch.cat([item.e2_multi2_binary.to_dense() for item in data_list])
+
+        return {
+            "e1": e1,
+            "e2": e2,
+            "rel": rel,
+            "e2_multi1": e2_multi1,
+            "e2_multi2": e2_multi2,
+            "e1_tensor": e1_tensor,
+            "rel_tensor": rel_tensor,
+            "e2_multi1_binary": e2_multi1_binary,
+            "e2_tensor": e2_tensor,
+            "rel_eval_tensor": rel_eval_tensor,
+            "e2_multi2_binary": e2_multi2_binary,
+        }
+
+
 __all__ = [
     "DataItem",
     "Text2TextDataItem",
@@ -1943,4 +2176,6 @@ __all__ = [
     "Text2LabelDataset",
     "DoubleText2TextDataset",
     "SequenceLabelingDataset",
+    "KGCompletionDataItem",
+    "KGCompletionDataset",
 ]

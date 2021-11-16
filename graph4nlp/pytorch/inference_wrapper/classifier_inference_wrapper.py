@@ -109,8 +109,21 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             collate_data = all_to_cuda(collate_data, device)
 
             # forward
-            ret = self.model.inference_forward(collate_data)
-            ret = self.model.post_process(logits=ret, label_names=self.label_names)
+            if isinstance(data_collect[i], tuple):
+                KG_graph = data_collect[i][1]
+                ret = self.model.inference_forward(collate_data, KG_graph)
+                ret = self.model.post_process(logits=ret, e2=collate_data["e2_tensor"])
+                print(
+                    "e1 = {}, rel = {}, pred e2 = {}".format(
+                        data_items[0].e1,
+                        data_items[0].rel,
+                        self.vocab_model.in_word_vocab.getWord(ret),
+                    )
+                )
+                ret = [ret]
+            else:
+                ret = self.model.inference_forward(collate_data)
+                ret = self.model.post_process(logits=ret, label_names=self.label_names)
 
             ret_collect.extend(ret)
 
