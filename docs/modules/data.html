@@ -1634,6 +1634,148 @@ German   I-MISC”</p>
 
 </dd></dl>
 
+<dl class="class">
+<dt id="graph4nlp.data.dataset.KGCompletionDataset">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">KGCompletionDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir: str = None</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.KGCompletionDataset" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>processed_dir</strong></dt><dd></dd>
+<dt><strong>processed_file_names</strong></dt><dd></dd>
+<dt><strong>processed_file_paths</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_dir</span></code></dt><dd><p>The directory where the raw data is stored.</p>
+</dd>
+<dt><strong>raw_file_names</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_file_paths</span></code></dt><dd><p>The paths to raw files.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.KGCompletionDataset.build_topology" title="graph4nlp.data.dataset.KGCompletionDataset.build_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_topology</span></code></a>(data_items)</p></td>
+<td><p>Build graph topology for each item in the dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.KGCompletionDataset.build_vocab" title="graph4nlp.data.dataset.KGCompletionDataset.build_vocab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_vocab</span></code></a>()</p></td>
+<td><p>Build the vocabulary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.KGCompletionDataset.collate_fn" title="graph4nlp.data.dataset.KGCompletionDataset.collate_fn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collate_fn</span></code></a>(data_list)</p></td>
+<td><p>Takes a list of data and convert it to a batch of data.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">download</span></code>()</p></td>
+<td><p>Download the raw data from the Internet.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.KGCompletionDataset.parse_file" title="graph4nlp.data.dataset.KGCompletionDataset.parse_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_file</span></code></a>(file_path)</p></td>
+<td><p>Read and parse the file specified by <cite>file_path</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.KGCompletionDataset.read_raw_data" title="graph4nlp.data.dataset.KGCompletionDataset.read_raw_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_raw_data</span></code></a>()</p></td>
+<td><p>Read raw data from the disk and put them in a dictionary (<cite>self.data</cite>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.KGCompletionDataset.vectorization" title="graph4nlp.data.dataset.KGCompletionDataset.vectorization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vectorization</span></code></a>(data_items)</p></td>
+<td><p>Convert tokens to indices which can be processed by downstream models.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.data.dataset.KGCompletionDataset.build_topology">
+<code class="sig-name descname">build_topology</code><span class="sig-paren">(</span><em class="sig-param">data_items</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.KGCompletionDataset.build_topology" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build graph topology for each item in the dataset. The generated graph
+is bound to the <cite>graph</cite> attribute of the DataItem.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.data.dataset.KGCompletionDataset.build_vocab">
+<code class="sig-name descname">build_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.KGCompletionDataset.build_vocab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>,
+use both training set and validation set for building
+the vocabulary. Otherwise only the training set is used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.data.dataset.KGCompletionDataset.collate_fn">
+<em class="property">static </em><code class="sig-name descname">collate_fn</code><span class="sig-paren">(</span><em class="sig-param">data_list: [&lt;class 'graph4nlp.pytorch.data.dataset.KGCompletionDataItem'&gt;]</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.KGCompletionDataset.collate_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of data and convert it to a batch of data.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.data.dataset.KGCompletionDataset.parse_file">
+<code class="sig-name descname">parse_file</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#graph4nlp.data.dataset.KGCompletionDataset.parse_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format
+is specified by each individual task-specific base class. Returns
+all the indices of data items in this file w.r.t. the whole dataset.</p>
+<p>For KGCompletionDataset, the format of the input file should contain
+lines of input, each line representing one record of data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>file_path: str</strong></dt><dd><p>The path of the input file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>list</dt><dd><p>The indices of data items in the file w.r.t. the whole dataset.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>input:
+{“e1”: “person100”, “e2”: “None”, “rel”: “term6”, “rel_eval”: “None”,
+“e2_multi1”: “person90 person80 person59 person82 person63 person77
+person85 person83 person56”, “e2_multi2”: “None”}</p>
+<dl class="simple">
+<dt>DataItem: e1=”person100”</dt><dd><p>e2=”None”
+rel=”term6”
+…</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.data.dataset.KGCompletionDataset.read_raw_data">
+<code class="sig-name descname">read_raw_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.KGCompletionDataset.read_raw_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read raw data from the disk and put them in a dictionary (<cite>self.data</cite>).
+The raw data file should be organized as the format defined in <cite>self.parse_file()</cite> method.</p>
+<p>This function calls <cite>self.parse_file()</cite> repeatedly and pass the file paths in
+<cite>self.raw_file_names</cite> once at a time.</p>
+<p>This function builds <cite>self.data</cite> which is a dict of {int (index): DataItem},
+where the id represents the index of the DataItem w.r.t. the whole dataset.</p>
+<p>This function also builds the <cite>self.split_ids</cite> dictionary whose keys correspond to
+those of self.raw_file_names defined by the user, indicating the indices of each
+subset (e.g. train, val and test).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.data.dataset.KGCompletionDataset.vectorization">
+<code class="sig-name descname">vectorization</code><span class="sig-paren">(</span><em class="sig-param">data_items</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.KGCompletionDataset.vectorization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert tokens to indices which can be processed by downstream models.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="base-dataset-class">
 <h2>Base Dataset Class<a class="headerlink" href="#base-dataset-class" title="Permalink to this headline">¶</a></h2>

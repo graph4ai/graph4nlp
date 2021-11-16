@@ -152,15 +152,21 @@
 </li>
       <li><a href="modules/prediction.html#graph4nlp.prediction.classification.node_classification.BiLSTMFeedForwardNNLayer">BiLSTMFeedForwardNNLayer (class in graph4nlp.prediction.classification.node_classification)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules/evaluation.html#graph4nlp.evaluation.BLEU">BLEU (class in graph4nlp.evaluation)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules/data.html#graph4nlp.data.dataset.Dataset.build_topology">build_topology() (graph4nlp.data.dataset.Dataset method)</a>, <a href="modules/data.html#graph4nlp.data.dataset.Dataset.build_topology">[1]</a>
+
+      <ul>
+        <li><a href="modules/data.html#graph4nlp.data.dataset.KGCompletionDataset.build_topology">(graph4nlp.data.dataset.KGCompletionDataset method)</a>
 </li>
+      </ul></li>
       <li><a href="modules/data.html#graph4nlp.data.dataset.Dataset.build_vocab">build_vocab() (graph4nlp.data.dataset.Dataset method)</a>, <a href="modules/data.html#graph4nlp.data.dataset.Dataset.build_vocab">[1]</a>
 
       <ul>
+        <li><a href="modules/data.html#graph4nlp.data.dataset.KGCompletionDataset.build_vocab">(graph4nlp.data.dataset.KGCompletionDataset method)</a>
+</li>
         <li><a href="modules/data.html#graph4nlp.data.dataset.SequenceLabelingDataset.build_vocab">(graph4nlp.data.dataset.SequenceLabelingDataset method)</a>
 </li>
         <li><a href="modules/data.html#graph4nlp.data.dataset.Text2LabelDataset.build_vocab">(graph4nlp.data.dataset.Text2LabelDataset method)</a>, <a href="modules/data.html#graph4nlp.data.dataset.Text2LabelDataset.build_vocab">[1]</a>
@@ -190,6 +196,8 @@
 
       <ul>
         <li><a href="modules/data.html#graph4nlp.data.dataset.DoubleText2TextDataset.collate_fn">(graph4nlp.data.dataset.DoubleText2TextDataset static method)</a>
+</li>
+        <li><a href="modules/data.html#graph4nlp.data.dataset.KGCompletionDataset.collate_fn">(graph4nlp.data.dataset.KGCompletionDataset static method)</a>
 </li>
         <li><a href="modules/data.html#graph4nlp.data.dataset.SequenceLabelingDataset.collate_fn">(graph4nlp.data.dataset.SequenceLabelingDataset static method)</a>
 </li>
@@ -252,6 +260,8 @@
         <li><a href="modules/datasets.html#graph4nlp.datasets.JobsDataset.download">(graph4nlp.datasets.JobsDataset method)</a>
 </li>
         <li><a href="modules/datasets.html#graph4nlp.datasets.JobsDatasetForTree.download">(graph4nlp.datasets.JobsDatasetForTree method)</a>
+</li>
+        <li><a href="modules/datasets.html#graph4nlp.datasets.KinshipDataset.download">(graph4nlp.datasets.KinshipDataset method)</a>
 </li>
         <li><a href="modules/datasets.html#graph4nlp.datasets.MawpsDatasetForTree.download">(graph4nlp.datasets.MawpsDatasetForTree method)</a>
 </li>
@@ -484,7 +494,13 @@
 <h2 id="K">K</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules/data.html#graph4nlp.data.dataset.KGCompletionDataset">KGCompletionDataset (class in graph4nlp.data.dataset)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules/loss.html#graph4nlp.loss.KGLoss">KGLoss (class in graph4nlp.loss)</a>
+</li>
+      <li><a href="modules/datasets.html#graph4nlp.datasets.KinshipDataset">KinshipDataset (class in graph4nlp.datasets)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -539,6 +555,8 @@
       <ul>
         <li><a href="modules/data.html#graph4nlp.data.dataset.DoubleText2TextDataset.parse_file">(graph4nlp.data.dataset.DoubleText2TextDataset method)</a>
 </li>
+        <li><a href="modules/data.html#graph4nlp.data.dataset.KGCompletionDataset.parse_file">(graph4nlp.data.dataset.KGCompletionDataset method)</a>
+</li>
         <li><a href="modules/data.html#graph4nlp.data.dataset.SequenceLabelingDataset.parse_file">(graph4nlp.data.dataset.SequenceLabelingDataset method)</a>
 </li>
         <li><a href="modules/data.html#graph4nlp.data.dataset.Text2LabelDataset.parse_file">(graph4nlp.data.dataset.Text2LabelDataset method)</a>, <a href="modules/data.html#graph4nlp.data.dataset.Text2LabelDataset.parse_file">[1]</a>
@@ -565,6 +583,8 @@
 </li>
         <li><a href="modules/datasets.html#graph4nlp.datasets.JobsDatasetForTree.processed_file_names">(graph4nlp.datasets.JobsDatasetForTree property)</a>
 </li>
+        <li><a href="modules/datasets.html#graph4nlp.datasets.KinshipDataset.processed_file_names">(graph4nlp.datasets.KinshipDataset property)</a>
+</li>
         <li><a href="modules/datasets.html#graph4nlp.datasets.MawpsDatasetForTree.processed_file_names">(graph4nlp.datasets.MawpsDatasetForTree property)</a>
 </li>
         <li><a href="modules/datasets.html#graph4nlp.datasets.SQuADDataset.processed_file_names">(graph4nlp.datasets.SQuADDataset property)</a>
@@ -579,13 +599,19 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules/data.html#graph4nlp.data.dataset.Dataset.raw_dir">raw_dir() (graph4nlp.data.dataset.Dataset property)</a>, <a href="modules/data.html#graph4nlp.data.dataset.Dataset.raw_dir">[1]</a>
+
+      <ul>
+        <li><a href="modules/datasets.html#graph4nlp.datasets.KinshipDataset.raw_dir">(graph4nlp.datasets.KinshipDataset property)</a>
 </li>
+      </ul></li>
       <li><a href="modules/datasets.html#graph4nlp.datasets.GeoDatasetForTree.raw_file_names">raw_file_names() (graph4nlp.datasets.GeoDatasetForTree property)</a>
 
       <ul>
         <li><a href="modules/datasets.html#graph4nlp.datasets.JobsDataset.raw_file_names">(graph4nlp.datasets.JobsDataset property)</a>
 </li>
         <li><a href="modules/datasets.html#graph4nlp.datasets.JobsDatasetForTree.raw_file_names">(graph4nlp.datasets.JobsDatasetForTree property)</a>
+</li>
+        <li><a href="modules/datasets.html#graph4nlp.datasets.KinshipDataset.raw_file_names">(graph4nlp.datasets.KinshipDataset property)</a>
 </li>
         <li><a href="modules/datasets.html#graph4nlp.datasets.MawpsDatasetForTree.raw_file_names">(graph4nlp.datasets.MawpsDatasetForTree property)</a>
 </li>
@@ -599,7 +625,11 @@
       <li><a href="modules/data.html#graph4nlp.data.dataset.Dataset.raw_file_paths">raw_file_paths() (graph4nlp.data.dataset.Dataset property)</a>, <a href="modules/data.html#graph4nlp.data.dataset.Dataset.raw_file_paths">[1]</a>
 </li>
       <li><a href="modules/data.html#graph4nlp.data.dataset.Dataset.read_raw_data">read_raw_data() (graph4nlp.data.dataset.Dataset method)</a>, <a href="modules/data.html#graph4nlp.data.dataset.Dataset.read_raw_data">[1]</a>
+
+      <ul>
+        <li><a href="modules/data.html#graph4nlp.data.dataset.KGCompletionDataset.read_raw_data">(graph4nlp.data.dataset.KGCompletionDataset method)</a>
 </li>
+      </ul></li>
       <li><a href="modules/data.html#graph4nlp.data.data.GraphData.remove_all_edges">remove_all_edges() (graph4nlp.data.data.GraphData method)</a>
 </li>
       <li><a href="modules/evaluation.html#graph4nlp.evaluation.ROUGE">ROUGE (class in graph4nlp.evaluation)</a>
@@ -678,6 +708,8 @@
 
       <ul>
         <li><a href="modules/data.html#graph4nlp.data.dataset.DoubleText2TextDataset.vectorization">(graph4nlp.data.dataset.DoubleText2TextDataset method)</a>
+</li>
+        <li><a href="modules/data.html#graph4nlp.data.dataset.KGCompletionDataset.vectorization">(graph4nlp.data.dataset.KGCompletionDataset method)</a>
 </li>
         <li><a href="modules/data.html#graph4nlp.data.dataset.SequenceLabelingDataset.vectorization">(graph4nlp.data.dataset.SequenceLabelingDataset method)</a>
 </li>
