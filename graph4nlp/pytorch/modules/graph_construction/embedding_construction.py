@@ -119,7 +119,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         hidden_size=None,
         num_rnn_layers=1,
         num_transformer_layers=6,
-        num_attention_headers=8,
+        num_attention_headers=2,
         fix_word_emb=True,
         fix_bert_emb=True,
         bert_model_name="bert-base-uncased",
@@ -222,6 +222,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 num_layers=num_transformer_layers,
                 dropout=transformer_dropout
             )
+            rnn_input_size = hidden_size
         elif node_edge_emb_strategy == "mean":
             self.node_edge_emb_layer = MeanEmbedding()
             rnn_input_size = word_emb_size
@@ -335,6 +336,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             rnn_state = self.seq_info_encode_layer(
                 new_feat, torch.LongTensor(batch_gd._batch_num_nodes).to(batch_gd.device)
             )
+            
             if isinstance(rnn_state, (tuple, list)):
                 rnn_state = rnn_state[0]
 
@@ -678,14 +680,15 @@ class TransformerEmbedding(nn.Module):
         layer_norm = None,
         dropout: float = 0.5):
         super().__init__()
+
         self.dropout = dropout
         self.num_layers = num_layers
-
+        self.hidden_size = hidden_size
         self.pos_encoder = PositionalEncoding(hidden_size, dropout)
         encoder_layer = nn.TransformerEncoderLayer(hidden_size, num_heads)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers, norm=layer_norm)
 
-        self.init_weights()
+        # self.init_weights()
         
     def init_weights(self) -> None:
         initrange = 0.1
@@ -707,12 +710,11 @@ class TransformerEmbedding(nn.Module):
         torch.Tensor, shape: [batch_size, max_length, hidden_dim]
             The hidden states at every time step.
         """
-        
-        if x.dim == 3:
+        if x.dim() == 3:
             if batch_first:
                 # The input tensor is batch first, make it not to comply with position encoder.
                 x = torch.transpose(x, 0, 1)
-        elif x.dim == 2:
+        elif x.dim() == 2:
             # Not likely since we get batch node features.
             print("Single sequence comes in. Batchify it")
             x = torch.unsqueeze(x, 1)
@@ -729,7 +731,7 @@ class TransformerEmbedding(nn.Module):
         if batch_first:
             out = torch.transpose(out, 0, 1)
         
-        return out
+        return out, out[:, -1, :]
 
 class PositionalEncoding(nn.Module):
     """ A positional encoding implementation from https://pytorch.org/tutorials/beginner/transformer_tutorial.html
