@@ -118,7 +118,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         emb_strategy="w2v_bilstm",
         hidden_size=None,
         num_rnn_layers=1,
-        num_transformer_layers=6,
+        num_transformer_layers=2,
         num_attention_headers=2,
         fix_word_emb=True,
         fix_bert_emb=True,
@@ -127,7 +127,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         word_dropout=None,
         bert_dropout=None,
         rnn_dropout=None,
-        transformer_dropout=None,
+        transformer_dropout=0.1,
     ):
         super(EmbeddingConstruction, self).__init__()
         self.word_dropout = word_dropout
