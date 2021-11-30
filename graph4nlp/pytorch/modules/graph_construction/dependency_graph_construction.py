@@ -19,22 +19,9 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
     def __init__(
         self,
-        embedding_style,
         vocab,
-        hidden_size=300,
-        fix_word_emb=True,
-        fix_bert_emb=True,
-        word_dropout=None,
-        rnn_dropout=None,
     ):
         super(DependencyBasedGraphConstruction, self).__init__(
-            word_vocab=vocab,
-            embedding_styles=embedding_style,
-            hidden_size=hidden_size,
-            fix_word_emb=fix_word_emb,
-            fix_bert_emb=fix_bert_emb,
-            word_dropout=word_dropout,
-            rnn_dropout=rnn_dropout,
         )
         self.vocab = vocab
         self.verbose = 1
@@ -410,5 +397,4 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         return g
 
     def forward(self, batch_graphdata: list):
-        batch_graphdata = self.embedding_layer(batch_graphdata)
-        return batch_graphdata
+        raise RuntimeError("This interface is removed.")

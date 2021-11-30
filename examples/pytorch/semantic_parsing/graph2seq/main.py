@@ -1,3 +1,5 @@
+import sys
+sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
 import numpy as np
 import torch
 import torch.optim as optim

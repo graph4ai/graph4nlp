@@ -223,7 +223,7 @@ class Graph2Seq(Graph2XBase):
             It is used for calculating coverage loss.
             The coverage vector.
         """
-        batch_graph = self.graph_topology(batch_graph)
+        batch_graph = self.graph_initializer(batch_graph)
         return self.encoder_decoder(batch_graph=batch_graph, oov_dict=oov_dict, tgt_seq=tgt_seq)
 
     def translate(self, batch_graph, beam_size, topk=1, oov_dict=None):
@@ -303,11 +303,11 @@ class Graph2Seq(Graph2XBase):
         -------
         model: Graph2Seq
         """
-        emb_args = cls._get_node_embedding_params(opt)
+        initializer_args = cls._get_node_initializer_params(opt)
         gnn_args = cls._get_gnn_params(opt)
         dec_args = cls._get_decoder_params(opt)
 
-        args = copy.deepcopy(emb_args)
+        args = copy.deepcopy(initializer_args)
         args.update(gnn_args)
         args.update(dec_args)
         args["share_vocab"] = opt["graph_construction_args"]["graph_construction_share"][
@@ -345,8 +345,8 @@ class Graph2Seq(Graph2XBase):
         return ret
 
     @staticmethod
-    def _get_node_embedding_params(opt):
-        args = opt["graph_construction_args"]["node_embedding"]
+    def _get_node_initializer_params(opt):
+        args = opt["graph_initialization_args"]["node_embedding"]
         ret: dict = copy.deepcopy(args)
         ret.pop("embedding_style")
         emb_ret = {"emb_" + key: value for key, value in ret.items()}

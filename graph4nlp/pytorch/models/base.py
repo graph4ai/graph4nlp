@@ -3,6 +3,9 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from graph4nlp.pytorch.modules.graph_initialization.dependency_graph_initialization import DependencyBasedGraphInitialization
+
+## TODO: deprecated, must be removed
 
 from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
     ConstituencyBasedGraphConstruction,
@@ -102,75 +105,78 @@ class Graph2XBase(nn.Module):
             raise ValueError("graph_name parameter should be str")
 
         if graph_name == "dependency":
-            self.graph_topology = DependencyBasedGraphConstruction(
+            self.graph_initializer = DependencyBasedGraphInitialization(
+                word_vocab=vocab_model.in_word_vocab,
                 embedding_style=embedding_style,
-                vocab=vocab_model.in_word_vocab,
                 hidden_size=emb_hidden_size,
                 word_dropout=emb_word_dropout,
                 rnn_dropout=emb_rnn_dropout,
                 fix_word_emb=emb_fix_word_emb,
                 fix_bert_emb=emb_fix_bert_emb,
-            )
-        elif graph_name == "constituency":
-            self.graph_topology = ConstituencyBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab_model.in_word_vocab,
-                hidden_size=emb_hidden_size,
-                word_dropout=emb_word_dropout,
-                rnn_dropout=emb_rnn_dropout,
-                fix_word_emb=emb_fix_word_emb,
-            )
-        elif graph_name == "ie":
-            self.graph_topology = IEBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab_model.in_word_vocab,
-                hidden_size=emb_hidden_size,
-                word_dropout=emb_word_dropout,
-                rnn_dropout=emb_rnn_dropout,
-                fix_word_emb=emb_fix_word_emb,
-            )
-        elif graph_name == "node_emb":
-            self.graph_topology = NodeEmbeddingBasedGraphConstruction(
-                vocab_model.in_word_vocab,
-                embedding_style,
-                sim_metric_type=emb_sim_metric_type,
-                num_heads=emb_num_heads,
-                top_k_neigh=emb_top_k_neigh,
-                epsilon_neigh=emb_epsilon_neigh,
-                smoothness_ratio=emb_smoothness_ratio,
-                connectivity_ratio=emb_connectivity_ratio,
-                sparsity_ratio=emb_sparsity_ratio,
-                input_size=emb_input_size,
-                hidden_size=emb_hidden_size,
-                fix_word_emb=emb_fix_word_emb,
-                fix_bert_emb=emb_fix_bert_emb,
-                word_dropout=emb_word_dropout,
-                rnn_dropout=emb_rnn_dropout,
-            )
-        elif graph_name == "node_emb_refined":
-            self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
-                vocab_model.in_word_vocab,
-                embedding_style,
-                emb_alpha_fusion,
-                sim_metric_type=emb_sim_metric_type,
-                num_heads=emb_num_heads,
-                top_k_neigh=emb_top_k_neigh,
-                epsilon_neigh=emb_epsilon_neigh,
-                smoothness_ratio=emb_smoothness_ratio,
-                connectivity_ratio=emb_connectivity_ratio,
-                sparsity_ratio=emb_sparsity_ratio,
-                input_size=emb_input_size,
-                hidden_size=emb_hidden_size,
-                fix_word_emb=emb_fix_word_emb,
-                fix_bert_emb=emb_fix_bert_emb,
-                word_dropout=emb_word_dropout,
-                rnn_dropout=emb_rnn_dropout,
             )
         else:
-            raise NotImplementedError()
+            raise NotImplementedError("TODO") ## TODO
+        #
+        # elif graph_name == "constituency":
+        #     self.graph_topology = ConstituencyBasedGraphConstruction(
+        #         embedding_style=embedding_style,
+        #         vocab=vocab_model.in_word_vocab,
+        #         hidden_size=emb_hidden_size,
+        #         word_dropout=emb_word_dropout,
+        #         rnn_dropout=emb_rnn_dropout,
+        #         fix_word_emb=emb_fix_word_emb,
+        #     )
+        # elif graph_name == "ie":
+        #     self.graph_topology = IEBasedGraphConstruction(
+        #         embedding_style=embedding_style,
+        #         vocab=vocab_model.in_word_vocab,
+        #         hidden_size=emb_hidden_size,
+        #         word_dropout=emb_word_dropout,
+        #         rnn_dropout=emb_rnn_dropout,
+        #         fix_word_emb=emb_fix_word_emb,
+        #     )
+        # elif graph_name == "node_emb":
+        #     self.graph_topology = NodeEmbeddingBasedGraphConstruction(
+        #         vocab_model.in_word_vocab,
+        #         embedding_style,
+        #         sim_metric_type=emb_sim_metric_type,
+        #         num_heads=emb_num_heads,
+        #         top_k_neigh=emb_top_k_neigh,
+        #         epsilon_neigh=emb_epsilon_neigh,
+        #         smoothness_ratio=emb_smoothness_ratio,
+        #         connectivity_ratio=emb_connectivity_ratio,
+        #         sparsity_ratio=emb_sparsity_ratio,
+        #         input_size=emb_input_size,
+        #         hidden_size=emb_hidden_size,
+        #         fix_word_emb=emb_fix_word_emb,
+        #         fix_bert_emb=emb_fix_bert_emb,
+        #         word_dropout=emb_word_dropout,
+        #         rnn_dropout=emb_rnn_dropout,
+        #     )
+        # elif graph_name == "node_emb_refined":
+        #     self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
+        #         vocab_model.in_word_vocab,
+        #         embedding_style,
+        #         emb_alpha_fusion,
+        #         sim_metric_type=emb_sim_metric_type,
+        #         num_heads=emb_num_heads,
+        #         top_k_neigh=emb_top_k_neigh,
+        #         epsilon_neigh=emb_epsilon_neigh,
+        #         smoothness_ratio=emb_smoothness_ratio,
+        #         connectivity_ratio=emb_connectivity_ratio,
+        #         sparsity_ratio=emb_sparsity_ratio,
+        #         input_size=emb_input_size,
+        #         hidden_size=emb_hidden_size,
+        #         fix_word_emb=emb_fix_word_emb,
+        #         fix_bert_emb=emb_fix_bert_emb,
+        #         word_dropout=emb_word_dropout,
+        #         rnn_dropout=emb_rnn_dropout,
+        #     )
+        # else:
+        #     raise NotImplementedError()
         self.enc_word_emb = (
-            self.graph_topology.embedding_layer.word_emb_layers["w2v"]
-            if "w2v" in self.graph_topology.embedding_layer.word_emb_layers
+            self.graph_initializer.embedding_layer.word_emb_layers["w2v"]
+            if "w2v" in self.graph_initializer.embedding_layer.word_emb_layers
             else None
         )
 
