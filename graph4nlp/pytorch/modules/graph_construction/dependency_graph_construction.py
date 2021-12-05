@@ -11,13 +11,11 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
 
     Parameters
     ----------
-    embedding_style: dict
-        Specify embedding styles including ``single_token_item``, ``emb_strategy``, ``num_rnn_layers``, ``bert_model_name`` and ``bert_lower_case``. # noqa
     vocab: VocabModel
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(
+    def __init__( ## @ShenKai: remove deprecated arguments such as ``embedding_style``
         self,
         vocab,
     ):
@@ -133,7 +131,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         return parsed_results
 
     @classmethod
-    def static_topology(
+    def static_topology( ## @ShenKai: rename topology --> static_topology
         cls,
         raw_text_data,
         nlp_processor,

@@ -4,8 +4,6 @@
     Compared with the inference.py, it is more efficient. It will save the graphs \
         during inference, which support multi-processing when converting the raw inputs to graphs.
 """
-import sys
-sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
 import numpy as np
 import torch
 from torch.utils.data import DataLoader

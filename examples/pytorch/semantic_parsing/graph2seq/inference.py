@@ -4,8 +4,6 @@
         in the GeneratorInferenceWrapper.
     The GeneratorInferenceWrapper takes the raw inputs and produce the outputs.
 """
-import sys
-sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
 import numpy as np
 import torch
 from nltk.tokenize import word_tokenize

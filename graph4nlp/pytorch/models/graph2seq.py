@@ -224,6 +224,8 @@ class Graph2Seq(Graph2XBase):
             The coverage vector.
         """
         batch_graph = self.graph_initializer(batch_graph)
+        # TODO: dynamic graph construction
+
         return self.encoder_decoder(batch_graph=batch_graph, oov_dict=oov_dict, tgt_seq=tgt_seq)
 
     def translate(self, batch_graph, beam_size, topk=1, oov_dict=None):

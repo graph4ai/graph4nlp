@@ -104,7 +104,7 @@ class Graph2XBase(nn.Module):
         if not isinstance(graph_name, str):
             raise ValueError("graph_name parameter should be str")
 
-        self.graph_initializer = GraphEmbeddingInitialization(
+        self.graph_initializer = GraphEmbeddingInitialization( ## @ShenKai: new graph initializer
             word_vocab=vocab_model.in_word_vocab,
             embedding_style=embedding_style,
             hidden_size=emb_hidden_size,
@@ -116,7 +116,7 @@ class Graph2XBase(nn.Module):
         ## @yu: TODO: add dynamic graph construction here
 
         #
-        # elif graph_name == "constituency":
+        # elif graph_name == "constituency": @ShenKai: remove
         #     self.graph_topology = ConstituencyBasedGraphConstruction(
         #         embedding_style=embedding_style,
         #         vocab=vocab_model.in_word_vocab,

@@ -8,7 +8,7 @@ from ..utils.constants import INF, VERY_SMALL_NUMBER
 from ..utils.generic_utils import normalize_adj, sparse_mx_to_torch_sparse_tensor
 
 
-class GraphConstructionBase:
+class GraphConstructionBase: ## @ShenKai: this base should be removed
     """Base class for graph construction.
 
     Parameters
@@ -53,7 +53,7 @@ class GraphConstructionBase:
         raise NotImplementedError()
 
 
-class StaticGraphConstructionBase:
+class StaticGraphConstructionBase: ## @ShenKai: static graph construction should inherit this branch
     """
     Base class for static graph construction.
     """
