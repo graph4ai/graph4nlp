@@ -24,47 +24,47 @@ Run with following:
 #### Cora
 
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option undirected --early-stop --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=cora --gpu=0 --direction-option undirected --early-stop --num-etypes 1
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option bi_sep --early-stop --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=cora --gpu=0 --direction-option bi_sep --early-stop --num-etypes 1
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=cora --gpu=0 --direction-option bi_fuse --early-stop --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=cora --gpu=0 --direction-option bi_fuse --early-stop --num-etypes 1
 ```
 
 #### Citeseer
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=citeseer --gpu=0 --direction-option undirected --early-stop --num-hidden 3703 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=citeseer --gpu=0 --direction-option undirected --early-stop --num-hidden 3703 --num-etypes 1
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=citeseer --gpu=0 --direction-option bi_sep --early-stop --num-hidden 3703 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=citeseer --gpu=0 --direction-option bi_sep --early-stop --num-hidden 3703 --num-etypes 1
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=citeseer --gpu=0 --direction-option bi_fuse --early-stop --num-hidden 3703 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=citeseer --gpu=0 --direction-option bi_fuse --early-stop --num-hidden 3703 --num-etypes 1
 ```
 
 #### Pubmed
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=pubmed --gpu=0 --direction-option undirected --weight-decay=0.001 --early-stop --num-hidden 500 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=pubmed --gpu=0 --direction-option undirected --weight-decay=0.001 --early-stop --num-hidden 500 --num-etypes 1
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=pubmed --gpu=0 --direction-option bi_sep --weight-decay=0.001 --early-stop --num-hidden 500 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=pubmed --gpu=0 --direction-option bi_sep --weight-decay=0.001 --early-stop --num-hidden 500 --num-etypes 1
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=pubmed --gpu=0 --direction-option bi_fuse --weight-decay=0.001 --early-stop --num-hidden 500 --num-etypes 1
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=pubmed --gpu=0 --direction-option bi_fuse --weight-decay=0.001 --early-stop --num-hidden 500 --num-etypes 1
 ```
 
 #### ogbn-arxiv
 
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=ogbn-arxiv --gpu=0 --direction-option undirected --early-stop --num-hidden 128
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=ogbn-arxiv --gpu=0 --direction-option undirected --early-stop --num-hidden 128
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=ogbn-arxiv --gpu=0 --direction-option bi_sep --early-stop --num-hidden 128
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=ogbn-arxiv --gpu=0 --direction-option bi_sep --early-stop --num-hidden 128
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_ggnn --dataset=ogbn-arxiv --gpu=0 --direction-option bi_fuse --early-stop --num-hidden 128
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_ggnn --dataset=ogbn-arxiv --gpu=0 --direction-option bi_fuse --early-stop --num-hidden 128
 ```
 Results
 -------

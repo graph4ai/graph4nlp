@@ -248,7 +248,7 @@ class Graph2Seq(Graph2XBase):
             The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes. # noqa
         """
 
-        batch_graph = self.graph_topology(batch_graph)
+        batch_graph = self.graph_initializer(batch_graph)
         return self.encoder_decoder_beam_search(
             batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict
         )

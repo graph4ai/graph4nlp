@@ -53,33 +53,10 @@ class GraphConstructionBase:
         raise NotImplementedError()
 
 
-class StaticGraphConstructionBase(GraphConstructionBase):
+class StaticGraphConstructionBase:
     """
     Base class for static graph construction.
-
-    Parameters
-    ----------
-    word_vocab : Vocab
-        The word vocabulary.
-    embedding_styles : dict
-        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains single
-        token or multiple tokens.
-        - ``emb_strategy`` : specify the embedding construction strategy.
-        - ``num_rnn_layers``: specify the number of RNN layers.
-        - ``bert_model_name``: specify the BERT model name.
-        - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
-    hidden_size : int, optional
-        The hidden size of RNN layer, default: ``None``.
-    fix_word_emb : boolean, optional
-        Specify whether to fix pretrained word embeddings, default: ``True``.
-    fix_bert_emb : boolean, optional
-        Specify whether to fix pretrained BERT embeddings, default: ``True``.
-    word_dropout : float, optional
-        Dropout ratio for word embedding, default: ``None``.
-    rnn_dropout : float, optional
-        Dropout ratio for RNN embedding, default: ``None``.
     """
-
     def __init__(self):
         super(StaticGraphConstructionBase, self).__init__()
 
@@ -91,7 +68,7 @@ class StaticGraphConstructionBase(GraphConstructionBase):
         raise NotImplementedError()
 
     @classmethod
-    def topology(cls, **kwargs):
+    def static_topology(cls, **kwargs):
         raise NotImplementedError()
 
     @classmethod

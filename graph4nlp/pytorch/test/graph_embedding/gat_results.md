@@ -24,47 +24,47 @@ Run with following:
 #### Cora
 
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=cora --gpu=0 --direction-option undirected
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=cora --gpu=0 --direction-option undirected
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=cora --gpu=0 --direction-option bi_sep
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=cora --gpu=0 --direction-option bi_sep
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=cora --gpu=0 --direction-option bi_fuse
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=cora --gpu=0 --direction-option bi_fuse
 ```
 
 #### Citeseer
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=citeseer --gpu=0 --early-stop  --direction-option uni
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=citeseer --gpu=0 --early-stop  --direction-option uni
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=citeseer --gpu=0 --early-stop  --direction-option bi_sep
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=citeseer --gpu=0 --early-stop  --direction-option bi_sep
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=citeseer --gpu=0 --early-stop  --direction-option bi_fuse
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=citeseer --gpu=0 --early-stop  --direction-option bi_fuse
 ```
 
 #### Pubmed
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=pubmed --gpu=0 --num-out-heads=8 --weight-decay=0.001 --early-stop  --direction-option uni
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=pubmed --gpu=0 --num-out-heads=8 --weight-decay=0.001 --early-stop  --direction-option uni
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=pubmed --gpu=0 --num-out-heads=8 --weight-decay=0.001 --early-stop  --direction-option bi_sep
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=pubmed --gpu=0 --num-out-heads=8 --weight-decay=0.001 --early-stop  --direction-option bi_sep
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=pubmed --gpu=0 --num-out-heads=8 --weight-decay=0.001 --early-stop  --direction-option bi_fuse
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=pubmed --gpu=0 --num-out-heads=8 --weight-decay=0.001 --early-stop  --direction-option bi_fuse
 ```
 
 #### ogbn-arxiv
 
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option uni
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option uni
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option bi_sep
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option bi_sep
 ```
 ```bash
-python -m graph4nlp.pytorch.test.graph_embedding.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option bi_fuse
+python -m graph4nlp.pytorch.test.graph_embedding_learning.run_gat --dataset=ogbn-arxiv --gpu=0 --early-stop --direction-option bi_fuse
 ```
 
 Results

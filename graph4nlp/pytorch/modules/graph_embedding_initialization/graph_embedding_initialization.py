@@ -1,34 +1,32 @@
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from graph4nlp.pytorch.modules.graph_initialization.embedding_construction import EmbeddingConstruction
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import EmbeddingConstruction
 from abc import abstractmethod
 from graph4nlp.pytorch.data.data import GraphData
 
 
-class GraphInitializationBase(nn.Module):
+class GraphEmbeddingInitialization(nn.Module):
     def __init__(self, word_vocab,
-                 embedding_styles,
+                 embedding_style,
                  hidden_size=None,
                  fix_word_emb=True,
                  fix_bert_emb=True,
                  word_dropout=None,
                  rnn_dropout=None,):
-        super(GraphInitializationBase, self).__init__()
+        super(GraphEmbeddingInitialization, self).__init__()
         self.embedding_layer = EmbeddingConstruction(
             word_vocab,
-            embedding_styles["single_token_item"],
-            emb_strategy=embedding_styles["emb_strategy"],
+            embedding_style["single_token_item"],
+            emb_strategy=embedding_style["emb_strategy"],
             hidden_size=hidden_size,
-            num_rnn_layers=embedding_styles.get("num_rnn_layers", 1),
+            num_rnn_layers=embedding_style.get("num_rnn_layers", 1),
             fix_word_emb=fix_word_emb,
             fix_bert_emb=fix_bert_emb,
-            bert_model_name=embedding_styles.get("bert_model_name", "bert-base-uncased"),
-            bert_lower_case=embedding_styles.get("bert_lower_case", True),
+            bert_model_name=embedding_style.get("bert_model_name", "bert-base-uncased"),
+            bert_lower_case=embedding_style.get("bert_lower_case", True),
             word_dropout=word_dropout,
             rnn_dropout=rnn_dropout,
         )
 
     @abstractmethod
     def forward(self, graph_data: GraphData):
-        pass
+        return self.embedding_layer(graph_data)

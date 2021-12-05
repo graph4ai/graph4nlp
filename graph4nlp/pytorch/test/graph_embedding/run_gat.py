@@ -22,7 +22,7 @@ from dgl.data import load_data
 from graph4nlp.pytorch.modules.utils.logger import Logger
 
 from ...data.data import GraphData
-from ...modules.graph_embedding.gat import GAT
+from ...modules.graph_embedding_learning.gat import GAT
 from ...modules.utils.generic_utils import get_config, grid, print_config
 from .utils import EarlyStopping
 

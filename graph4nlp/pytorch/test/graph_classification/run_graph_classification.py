@@ -46,7 +46,7 @@ from dgl.data import MiniGCDataset
 from torch.utils.data import DataLoader
 
 from ...data.data import from_dgl, to_batch
-from ...modules.graph_embedding.gat import GAT
+from ...modules.graph_embedding_learning.gat import GAT
 from ...modules.prediction.classification.graph_classification import FeedForwardNN
 
 # import matplotlib.pyplot as plt

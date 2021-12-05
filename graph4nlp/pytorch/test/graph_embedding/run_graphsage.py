@@ -11,7 +11,7 @@ from dgl import DGLGraph
 from dgl.data import load_data, register_data_args
 
 from ...data.data import GraphData
-from ...modules.graph_embedding.graphsage import GraphSAGE
+from ...modules.graph_embedding_learning.graphsage import GraphSAGE
 from .utils import EarlyStopping
 
 

@@ -578,7 +578,7 @@ class Dataset(torch.utils.data.Dataset):
                 if cnt % 1000 == 0:
                     print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
                 try:
-                    graph = topology_builder.topology(
+                    graph = topology_builder.static_topology(
                         raw_text_data=item.input_text,
                         nlp_processor=processor,
                         processor_args=processor_args,

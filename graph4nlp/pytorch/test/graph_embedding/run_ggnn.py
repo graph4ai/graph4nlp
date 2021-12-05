@@ -12,7 +12,7 @@ from dgl import DGLGraph
 from dgl.data import load_data, register_data_args
 
 from ...data.data import GraphData
-from ...modules.graph_embedding.ggnn import GGNN
+from ...modules.graph_embedding_learning.ggnn import GGNN
 from .utils import EarlyStopping
 
 

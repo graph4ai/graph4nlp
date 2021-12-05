@@ -133,7 +133,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         return parsed_results
 
     @classmethod
-    def topology(
+    def static_topology(
         cls,
         raw_text_data,
         nlp_processor,

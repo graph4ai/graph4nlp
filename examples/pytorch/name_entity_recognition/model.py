@@ -10,10 +10,10 @@ from graph4nlp.pytorch.modules.graph_construction.embedding_construction import 
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
 )
-from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
-from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
-from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding_learning.gat import GAT
+from graph4nlp.pytorch.modules.graph_embedding_learning.gcn import GCN
+from graph4nlp.pytorch.modules.graph_embedding_learning.ggnn import GGNN
+from graph4nlp.pytorch.modules.graph_embedding_learning.graphsage import GraphSAGE
 from graph4nlp.pytorch.modules.prediction.classification.node_classification import (
     BiLSTMFeedForwardNN,
 )

@@ -107,7 +107,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         return graph
 
     @classmethod
-    def init_topology(
+    def init_topology( ## static_topology
         cls,
         raw_text_data,
         lower_case=True,

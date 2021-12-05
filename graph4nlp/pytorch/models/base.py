@@ -3,7 +3,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from graph4nlp.pytorch.modules.graph_initialization.dependency_graph_initialization import DependencyBasedGraphInitialization
+from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_initialization import GraphEmbeddingInitialization
 
 ## TODO: deprecated, must be removed
 
@@ -22,10 +22,10 @@ from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_con
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
-from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
-from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
-from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding_learning.gat import GAT
+from graph4nlp.pytorch.modules.graph_embedding_learning.gcn import GCN
+from graph4nlp.pytorch.modules.graph_embedding_learning.ggnn import GGNN
+from graph4nlp.pytorch.modules.graph_embedding_learning.graphsage import GraphSAGE
 
 
 class Graph2XBase(nn.Module):
@@ -104,18 +104,17 @@ class Graph2XBase(nn.Module):
         if not isinstance(graph_name, str):
             raise ValueError("graph_name parameter should be str")
 
-        if graph_name == "dependency":
-            self.graph_initializer = DependencyBasedGraphInitialization(
-                word_vocab=vocab_model.in_word_vocab,
-                embedding_style=embedding_style,
-                hidden_size=emb_hidden_size,
-                word_dropout=emb_word_dropout,
-                rnn_dropout=emb_rnn_dropout,
-                fix_word_emb=emb_fix_word_emb,
-                fix_bert_emb=emb_fix_bert_emb,
-            )
-        else:
-            raise NotImplementedError("TODO") ## TODO
+        self.graph_initializer = GraphEmbeddingInitialization(
+            word_vocab=vocab_model.in_word_vocab,
+            embedding_style=embedding_style,
+            hidden_size=emb_hidden_size,
+            word_dropout=emb_word_dropout,
+            rnn_dropout=emb_rnn_dropout,
+            fix_word_emb=emb_fix_word_emb,
+            fix_bert_emb=emb_fix_bert_emb,
+        )
+        ## @yu: TODO: add dynamic graph construction here
+
         #
         # elif graph_name == "constituency":
         #     self.graph_topology = ConstituencyBasedGraphConstruction(
