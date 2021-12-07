@@ -1,25 +1,19 @@
-from nltk.tokenize import word_tokenize
-
-import torch
-import logging
-
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import EmbeddingConstruction
-from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
-from graph4nlp.pytorch.modules.utils.config_utils import update_values, get_yaml_config
-
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
-
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
-from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab, VocabModel
-from graph4nlp.pytorch.data.dataset import Text2LabelDataItem, Text2LabelDataset
-from graph4nlp.pytorch.data.data import GraphData, to_batch
+from graph4nlp.pytorch.modules.config import get_basic_args
+from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
+    DependencyBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_construction.embedding_construction import (
+    EmbeddingConstruction,
+)
+from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
 
 if __name__ == "__main__":
     raw_text_data = ["i like nlp", "same here", "i like graph", "same here"]
 
-    # data_set = [Text2LabelDataItem(input_text=x, output_label=[0, 1], tokenizer=word_tokenize) for x in raw_text_data]
+    # data_set = [Text2LabelDataItem(input_text=x, output_label=[0, 1],
+    #  tokenizer=word_tokenize) for x in raw_text_data]
 
     # vocab_model = VocabModel(
     #     data_set=raw_text_data, max_word_vocab_size=None, min_word_vocab_freq=1, word_emb_size=300
@@ -37,7 +31,9 @@ if __name__ == "__main__":
     # word_vocab.build_vocab({'i': 2, 'like': 2, 'nlp': 1, 'same': 2, 'here':2, 'graph': 1})
     # print(word_vocab.get_vocab_size())
     # word_vocab.load_embeddings()
-    # emb_constructor = EmbeddingConstruction(word_vocab, single_token_item=False, emb_strategy='w2v_transformer', rnn_dropout=0.1, transformer_dropout=0.1, hidden_size=300)
+    # emb_constructor = EmbeddingConstruction(word_vocab,
+    # single_token_item=False, emb_strategy='w2v_transformer', rnn_dropout=0.1,
+    # transformer_dropout=0.1, hidden_size=300)
 
     # processed_data_items = []
     # dataset = Text2LabelDataset(
@@ -61,21 +57,41 @@ if __name__ == "__main__":
     #         data_item[0], dataset.vocab_model, use_ie=False
     #     )
     #     processed_data_items.append(data_item)
-    
+
     # collate_data = dataset.collate_fn(processed_data_items)
 
-    dataset = JobsDataset(root_dir='graph4nlp/pytorch/test/dataset/jobs',
-                        #    port=9000,
-                           topology_builder=DependencyBasedGraphConstruction,
-                           graph_name='dependency',
-                           topology_subdir='DependencyGraph') 
-    
-    emb_constructor_transformer = EmbeddingConstruction(dataset.vocab_model.in_word_vocab, single_token_item=False, emb_strategy='w2v_transformer', rnn_dropout=0.1, transformer_dropout=0.1, hidden_size=300)
+    dataset = JobsDataset(
+        root_dir="graph4nlp/pytorch/test/dataset/jobs",
+        #    port=9000,
+        topology_builder=DependencyBasedGraphConstruction,
+        graph_name="dependency",
+        topology_subdir="DependencyGraph",
+    )
 
-    emb_constructor_bilstm = EmbeddingConstruction(dataset.vocab_model.in_word_vocab, single_token_item=False, emb_strategy='w2v_bilstm', rnn_dropout=0.1, transformer_dropout=0.1, hidden_size=300)
+    emb_constructor_transformer = EmbeddingConstruction(
+        dataset.vocab_model.in_word_vocab,
+        single_token_item=False,
+        emb_strategy="w2v_transformer",
+        rnn_dropout=0.1,
+        transformer_dropout=0.1,
+        hidden_size=300,
+    )
 
-    user_args = get_yaml_config("examples/pytorch/semantic_parsing/graph2seq/config/dependency_gcn_bi_sep_demo.yaml")
-    args = get_basic_args(graph_construction_name="node_emb", graph_embedding_name="gat", decoder_name="stdrnn")
+    emb_constructor_bilstm = EmbeddingConstruction(
+        dataset.vocab_model.in_word_vocab,
+        single_token_item=False,
+        emb_strategy="w2v_bilstm",
+        rnn_dropout=0.1,
+        transformer_dropout=0.1,
+        hidden_size=300,
+    )
+
+    user_args = get_yaml_config(
+        "examples/pytorch/semantic_parsing/graph2seq/config/dependency_gcn_bi_sep_demo.yaml"
+    )
+    args = get_basic_args(
+        graph_construction_name="node_emb", graph_embedding_name="gat", decoder_name="stdrnn"
+    )
     update_values(to_args=args, from_args_list=[user_args])
     graph2seq = Graph2Seq.from_args(args, dataset.vocab_model)
 
