@@ -220,7 +220,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 hidden_size=word_emb_size,
                 num_heads=num_attention_headers,
                 num_layers=num_transformer_layers,
-                dropout=transformer_dropout
+                dropout=transformer_dropout,
             )
             rnn_input_size = hidden_size
         elif node_edge_emb_strategy == "mean":
@@ -248,7 +248,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 hidden_size=word_emb_size,
                 num_heads=num_attention_headers,
                 num_layers=num_transformer_layers,
-                dropout=transformer_dropout
+                dropout=transformer_dropout,
             )
         else:
             self.output_size = rnn_input_size
@@ -336,7 +336,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             rnn_state = self.seq_info_encode_layer(
                 new_feat, torch.LongTensor(batch_gd._batch_num_nodes).to(batch_gd.device)
             )
-            
+
             if isinstance(rnn_state, (tuple, list)):
                 rnn_state = rnn_state[0]
 
@@ -670,15 +670,17 @@ class RNNEmbedding(nn.Module):
 
 
 class TransformerEmbedding(nn.Module):
-    """Transformer embedding class: apply the positional embeddings and transformer encoders to a sequence of word embeddings.
-    """
+    """Transformer embedding class: apply the positional embeddings and
+     transformer encoders to a sequence of word embeddings."""
+
     def __init__(
         self,
         hidden_size: int,
         num_heads: int = 8,
         num_layers: int = 6,
-        layer_norm = None,
-        dropout: float = 0.5):
+        layer_norm=None,
+        dropout: float = 0.5,
+    ):
         super().__init__()
 
         self.dropout = dropout
@@ -686,15 +688,17 @@ class TransformerEmbedding(nn.Module):
         self.hidden_size = hidden_size
         self.pos_encoder = PositionalEncoding(hidden_size, dropout)
         encoder_layer = nn.TransformerEncoderLayer(hidden_size, num_heads)
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers, norm=layer_norm)
+        self.transformer_encoder = nn.TransformerEncoder(
+            encoder_layer, num_layers=num_layers, norm=layer_norm
+        )
 
         # self.init_weights()
-        
+
     def init_weights(self) -> None:
         initrange = 0.1
         self.transformer_encoder.weight.data.uniform_(-initrange, initrange)
 
-    #TODO: x_len may not be necessary.
+    # TODO: x_len may not be necessary.
     def forward(self, x, x_len, batch_first=True):
         """Apply the Transformer encoder to a sequence of word embeddings.
 
@@ -719,8 +723,7 @@ class TransformerEmbedding(nn.Module):
             print("Single sequence comes in. Batchify it")
             x = torch.unsqueeze(x, 1)
         else:
-            print('Unrecognized input')
-        
+            print("Unrecognized input")
 
         x = x * math.sqrt(self.hidden_size)
         x = self.pos_encoder(x)
@@ -730,11 +733,13 @@ class TransformerEmbedding(nn.Module):
         # Make the tensor batch_first again.
         if batch_first:
             out = torch.transpose(out, 0, 1)
-        
+
         return out, out[:, -1, :]
 
+
 class PositionalEncoding(nn.Module):
-    """ A positional encoding implementation from https://pytorch.org/tutorials/beginner/transformer_tutorial.html
+    """A positional encoding implementation from
+    https://pytorch.org/tutorials/beginner/transformer_tutorial.html
 
     Parameters
     ----------
@@ -746,11 +751,8 @@ class PositionalEncoding(nn.Module):
         the maximum length of the sequence.
 
     """
-    def __init__(
-        self, 
-        hidden_size: int, 
-        dropout: float = 0.1, 
-        max_len: int = 500):
+
+    def __init__(self, hidden_size: int, dropout: float = 0.1, max_len: int = 500):
 
         super().__init__()
         self.dropout = nn.Dropout(p=dropout)
@@ -760,7 +762,7 @@ class PositionalEncoding(nn.Module):
         pe = torch.zeros(max_len, 1, hidden_size)
         pe[:, 0, 0::2] = torch.sin(position * div_term)
         pe[:, 0, 1::2] = torch.cos(position * div_term)
-        self.register_buffer('pe', pe)
+        self.register_buffer("pe", pe)
 
     def forward(self, x):
         """
@@ -769,5 +771,5 @@ class PositionalEncoding(nn.Module):
         x: Tensor, shape [seq_len, batch_size, embedding_dim]
         The input features.
         """
-        x = x + self.pe[:x.size(0)]
+        x = x + self.pe[: x.size(0)]
         return self.dropout(x)
