@@ -671,7 +671,7 @@ class RNNEmbedding(nn.Module):
 
 class TransformerEmbedding(nn.Module):
     """Transformer embedding class: apply the positional embeddings and
-     transformer encoders to a sequence of word embeddings."""
+    transformer encoders to a sequence of word embeddings."""
 
     def __init__(
         self,
