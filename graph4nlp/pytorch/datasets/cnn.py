@@ -100,7 +100,7 @@ class CNNDataset(Text2TextDataset):
         data = []
         with open(file_path, "r") as f:
             examples = json.load(f)
-            for example_dict in examples:
+            for example_dict in examples[:10000]:
                 input = " ".join(" ".join(example_dict["article"]).split()[:400]).lower()
                 output = " ".join(
                     " ".join(

@@ -4,9 +4,9 @@ from ....modules.utils.config_utils import get_yaml_config
 
 str2yaml = {
     "dependency": "dependency.yaml",
+    "ie": "ie_graph_construction.yaml",
     ## TODO
     # "constituency": "constituency.yaml",
-    # "ie": "ie_graph_construction.yaml",
     # "node_emb": "node_emb.yaml",
     # "node_emb_refined": "node_emb_refine.yaml",
 }
