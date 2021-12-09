@@ -1,8 +1,8 @@
 import json
 import torch
 
-from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
+from ...data.data import GraphData
+from .base import StaticGraphConstructionBase
 
 
 class IEBasedGraphConstruction(StaticGraphConstructionBase):
@@ -21,24 +21,9 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
 
     def __init__(
         self,
-        embedding_style,
-        vocab,
-        hidden_size=300,
-        fix_word_emb=True,
-        fix_bert_emb=True,
-        word_dropout=None,
-        rnn_dropout=None,
-        device=None,
+        vocab
     ):
-        super(IEBasedGraphConstruction, self).__init__(
-            word_vocab=vocab,
-            embedding_styles=embedding_style,
-            hidden_size=hidden_size,
-            fix_word_emb=fix_word_emb,
-            fix_bert_emb=fix_bert_emb,
-            word_dropout=word_dropout,
-            rnn_dropout=rnn_dropout,
-        )
+        super(IEBasedGraphConstruction, self).__init__()
         self.vocab = vocab
         self.verbose = 1
 
@@ -141,7 +126,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                 if triple_info_1_2 not in parsed_results["graph_content"]:
                     parsed_results["graph_content"].append(triple_info_1_2)
             else:
-                raise NotImplementedError()
+                raise NotImplementedError("Not Implemented Edge Strategy: {}.".format(edge_strategy))
 
         parsed_results["node_num"] = len(graph_nodes)
         parsed_results["graph_nodes"] = graph_nodes
@@ -149,7 +134,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         return parsed_results
 
     @classmethod
-    def topology(
+    def static_topology(
         cls,
         raw_text_data,
         nlp_processor,
@@ -321,57 +306,6 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
 
         return graph
 
-    def embedding(self, graph: GraphData):
-        node_attributes = graph.node_attributes
-        edge_attributes = graph.edge_attributes
-
-        # Build embedding(initial feature vector) for graph nodes.
-        # Each node may contains multiple tokens.
-        node_idxs_list = []
-        node_len_list = []
-        for _, node_dict in node_attributes.items():
-            node_word_idxs = []
-            for token in node_dict["token"].split():
-                node_word_idxs.append(self.vocab.getIndex(token))
-            node_idxs_list.append(node_word_idxs)
-            node_len_list.append(len(node_word_idxs))
-        max_size = max(node_len_list)
-        node_idxs_list = [x + [self.vocab.PAD] * (max_size - len(x)) for x in node_idxs_list]
-        node_idxs_tensor = torch.LongTensor(node_idxs_list)
-        # if self.embedding_layer.node_edge_emb_strategy == 'mean':
-        #     node_len_tensor = torch.LongTensor(node_len_list).view(-1, 1)
-        # else:
-        node_len_tensor = torch.LongTensor(node_len_list)
-        num_nodes = torch.LongTensor([len(node_len_list)])
-        node_feat = self.embedding_layer(node_idxs_tensor, node_len_tensor, num_nodes)
-        graph.node_features["node_feat"] = node_feat
-
-        if "token" in edge_attributes[0].keys():
-            # If edge information is stored in `edge_attributes`,
-            # build embedding(initial feature vector) for graph edges.
-            # Each edge may contains multiple tokens.
-            edge_idxs_list = []
-            edge_len_list = []
-            for _, edge_dict in edge_attributes.items():
-                edge_word_idxs = []
-                for token in edge_dict["token"]:
-                    edge_word_idxs.append(self.vocab.getIndex(token))
-                edge_idxs_list.append(edge_word_idxs)
-                edge_len_list.append(len(edge_word_idxs))
-
-            max_size = max(edge_len_list)
-            edge_idxs_list = [x + [self.vocab.PAD] * (max_size - len(x)) for x in edge_idxs_list]
-            edge_idxs_tensor = torch.LongTensor(edge_idxs_list)
-            # if self.embedding_layer.node_edge_emb_strategy == 'mean':
-            #     edge_len_tensor = torch.LongTensor(edge_len_list).view(-1, 1)
-            # else:
-            edge_len_tensor = torch.LongTensor(edge_len_list)
-            num_edges = torch.LongTensor([len(edge_len_list)])
-            edge_feat = self.embedding_layer(edge_idxs_tensor, edge_len_tensor, num_edges)
-            graph.edge_features["edge_feat"] = edge_feat
-
-        return graph
-
     @classmethod
     def _construct_static_graph(cls, parsed_object, edge_strategy=None):
         """
@@ -475,8 +409,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         elif merge_strategy is None:
             return []
         else:
-            raise NotImplementedError()
+            raise NotImplementedError("Not Implemented Merge Strategy: {}.".format(merge_strategy))
 
     def forward(self, batch_graphdata: list):
-        batch_graphdata = self.embedding_layer(batch_graphdata)
-        return batch_graphdata
+        raise RuntimeError("This interface is removed.")

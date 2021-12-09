@@ -22,7 +22,7 @@ from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 
 def all_to_cuda(data, device=None):
@@ -51,8 +51,8 @@ class SumModel(nn.Module):
             "graph_name"
         ]
 
-        if "w2v" in self.g2s.graph_topology.embedding_layer.word_emb_layers:
-            self.word_emb = self.g2s.graph_topology.embedding_layer.word_emb_layers[
+        if "w2v" in self.g2s.graph_initializer.embedding_layer.word_emb_layers:
+            self.word_emb = self.g2s.graph_initializer.embedding_layer.word_emb_layers[
                 "w2v"
             ].word_emb_layer
         else:
@@ -145,9 +145,15 @@ class ModelHandler:
             graph_name=self.config["graph_construction_args"]["graph_construction_share"][
                 "graph_name"
             ],
-            thread_number=35,
-            port=9100,
-            timeout=15000,
+            thread_number=self.config["graph_construction_args"]["graph_construction_share"][
+                "thread_number"
+            ],
+            port=self.config["graph_construction_args"]["graph_construction_share"][
+                "port"
+            ],
+            timeout=self.config["graph_construction_args"]["graph_construction_share"][
+                "timeout"
+            ],
             tokenizer=None,
         )
 
@@ -388,7 +394,7 @@ class ModelHandler:
 
     def test(self):
         # restored best saved model
-        self.stopper.load_checkpoint(self.model)
+        self.model.load_checkpoint(self.stopper.save_model_path)
 
         t0 = time.time()
         scores = self.translate(self.test_dataloader)
