@@ -12,11 +12,9 @@ def get_graph_initialization_args():
         The template dict.
         The structure is shown as follows:
         {
-            node_embedding: {
-                                input_size: 300,
-                                ...,
-                                embedding_style: {single_token_item: True, ...}
-                            }
+            input_size: 300,
+            ...,
+            embedding_style: {single_token_item: True, ...}
         }
         The ``node_embedding`` contains all the parameters for node embedding.
             Specifically, it contains ``embedding_style`` which for embedding style.
