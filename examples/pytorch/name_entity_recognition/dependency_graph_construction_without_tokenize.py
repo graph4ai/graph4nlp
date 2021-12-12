@@ -30,23 +30,9 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
 
     def __init__(
         self,
-        embedding_style,
         vocab,
-        hidden_size=300,
-        fix_word_emb=True,
-        fix_bert_emb=True,
-        word_dropout=None,
-        rnn_dropout=None,
-        device=None,
     ):
         super(DependencyBasedGraphConstruction_without_tokenizer, self).__init__(
-            word_vocab=vocab,
-            embedding_styles=embedding_style,
-            hidden_size=hidden_size,
-            fix_word_emb=fix_word_emb,
-            fix_bert_emb=fix_bert_emb,
-            word_dropout=word_dropout,
-            rnn_dropout=rnn_dropout,
         )
         self.vocab = vocab
         self.verbose = 1
@@ -160,7 +146,7 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         return parsed_results
 
     @classmethod
-    def topology(
+    def static_topology(
         cls,
         raw_text_data,
         auxiliary_args,
