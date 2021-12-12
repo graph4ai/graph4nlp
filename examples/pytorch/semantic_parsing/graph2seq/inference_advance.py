@@ -12,9 +12,9 @@ from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
-from args import get_args
-from evaluation import ExpressionAccuracy
-from utils import get_log, wordid2str
+from .args import get_args
+from .evaluation import ExpressionAccuracy
+from .utils import get_log, wordid2str
 
 
 class Jobs:

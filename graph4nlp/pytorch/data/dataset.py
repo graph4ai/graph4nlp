@@ -5,15 +5,17 @@ import warnings
 from collections import Counter
 from copy import deepcopy
 from multiprocessing import Pool
+from typing import Union
 import numpy as np
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
-
 from ..data.data import GraphData, to_batch
-from ..modules.graph_construction.base import GraphConstructionBase
+from ..modules.graph_construction.base import (
+    DynamicGraphConstructionBase,
+    StaticGraphConstructionBase,
+)
 from ..modules.graph_construction.constituency_graph_construction import (
     ConstituencyBasedGraphConstruction,
 )
@@ -28,6 +30,7 @@ from ..modules.graph_construction.node_embedding_based_refined_graph_constructio
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
 from ..modules.utils.generic_utils import LabelModel
+from ..modules.utils.padding_utils import pad_2d_vals_no_size
 from ..modules.utils.tree_utils import Tree
 from ..modules.utils.tree_utils import Vocab as VocabForTree
 from ..modules.utils.tree_utils import VocabForAll
@@ -315,7 +318,7 @@ class Dataset(torch.utils.data.Dataset):
         ----------
         root: str
             The path of the data root.
-        topology_builder: GraphConstructionBase
+        topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase]
             The initial graph topology builder.
         topology_subdir: str
             The name of the data folder.
@@ -498,7 +501,7 @@ class Dataset(torch.utils.data.Dataset):
             static_or_dynamic=self.static_or_dynamic,
             graph_name=self.graph_name,
             dynamic_init_topology_builder=self.dynamic_init_topology_builder,
-            dynamic_init_topology_aux_args=None,  # TODO: self.dynamic_init_topology_builder
+            dynamic_init_topology_aux_args=None,
             merge_strategy=self.merge_strategy,
             edge_strategy=self.edge_strategy,
             lower_case=self.lower_case,
@@ -837,7 +840,7 @@ class Text2TextDataset(Dataset):
             ``graph_name`` and set the parameters above.
     root_dir: str, default=None
         The path of dataset.
-    topology_builder: GraphConstructionBase, default=None
+    topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
         The graph construction class.
     topology_subdir: str
         The directory name of processed path.
@@ -852,7 +855,7 @@ class Text2TextDataset(Dataset):
             1. ``dynamic_init_topology_builder``
         If you need to customize your graph construction method, you should rename the \
             ``graph_name`` and set the parameters above.
-    dynamic_init_topology_builder: GraphConstructionBase
+    dynamic_init_topology_builder: StaticGraphConstructionBase
         The graph construction class.
     dynamic_init_topology_aux_args: None,
         TBD.
@@ -863,11 +866,13 @@ class Text2TextDataset(Dataset):
         graph_name: str,
         root_dir: str = None,
         static_or_dynamic: str = None,
-        topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
+        topology_builder: Union[
+            StaticGraphConstructionBase, DynamicGraphConstructionBase
+        ] = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
         dynamic_init_graph_name: str = None,
-        dynamic_init_topology_builder: GraphConstructionBase = None,
-        dynamic_init_topology_aux_args=None,  # TODO
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
+        dynamic_init_topology_aux_args=None,
         share_vocab=True,
         **kwargs,
     ):
@@ -909,7 +914,6 @@ class Text2TextDataset(Dataset):
             elif dynamic_init_graph_name == "constituency":
                 dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             else:
-                # dynamic_init_topology_builder
                 if dynamic_init_topology_builder is None:
                     raise ValueError(
                         "``dynamic_init_topology_builder`` can't be None \
@@ -1093,7 +1097,6 @@ class TextToTreeDataset(Dataset):
             elif dynamic_init_graph_name == "constituency":
                 dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             else:
-                # dynamic_init_topology_builder
                 if dynamic_init_topology_builder is None:
                     raise ValueError(
                         "``dynamic_init_topology_builder`` can't be None \
@@ -1294,7 +1297,7 @@ class Text2LabelDataset(Dataset):
             ``graph_name`` and set the parameters above.
     root_dir: str, default=None
         The path of dataset.
-    topology_builder: GraphConstructionBase, default=None
+    topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
         The graph construction class.
     topology_subdir: str
         The directory name of processed path.
@@ -1309,7 +1312,7 @@ class Text2LabelDataset(Dataset):
             1. ``dynamic_init_topology_builder``
         If you need to customize your graph construction method, you should rename the \
             ``graph_name`` and set the parameters above.
-    dynamic_init_topology_builder: GraphConstructionBase
+    dynamic_init_topology_builder: StaticGraphConstructionBase
         The graph construction class.
     dynamic_init_topology_aux_args: None,
         TBD.
@@ -1320,11 +1323,13 @@ class Text2LabelDataset(Dataset):
         graph_name: str,
         root_dir: str = None,
         static_or_dynamic: str = None,
-        topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
+        topology_builder: Union[
+            StaticGraphConstructionBase, DynamicGraphConstructionBase
+        ] = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
         dynamic_init_graph_name: str = None,
-        dynamic_init_topology_builder: GraphConstructionBase = None,
-        dynamic_init_topology_aux_args=None,  # TODO
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
+        dynamic_init_topology_aux_args=None,
         **kwargs,
     ):
         if kwargs.get("graph_type", None) is not None:
@@ -1365,7 +1370,6 @@ class Text2LabelDataset(Dataset):
             elif dynamic_init_graph_name == "ie":
                 topology_builder = IEBasedGraphConstruction
             else:
-                # dynamic_init_topology_builder
                 if dynamic_init_topology_builder is None:
                     raise ValueError(
                         "``dynamic_init_topology_builder`` can't be None \
@@ -1528,7 +1532,7 @@ class DoubleText2TextDataset(Dataset):
             ``graph_name`` and set the parameters above.
     root_dir: str, default=None
         The path of dataset.
-    topology_builder: GraphConstructionBase, default=None
+    topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
         The graph construction class.
     topology_subdir: str
         The directory name of processed path.
@@ -1543,7 +1547,7 @@ class DoubleText2TextDataset(Dataset):
             1. ``dynamic_init_topology_builder``
         If you need to customize your graph construction method, you should rename the \
             ``graph_name`` and set the parameters above.
-    dynamic_init_topology_builder: GraphConstructionBase
+    dynamic_init_topology_builder: StaticGraphConstructionBase
         The graph construction class.
     dynamic_init_topology_aux_args: None,
         TBD.
@@ -1554,11 +1558,13 @@ class DoubleText2TextDataset(Dataset):
         graph_name: str,
         root_dir: str = None,
         static_or_dynamic: str = None,
-        topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
+        topology_builder: Union[
+            StaticGraphConstructionBase, DynamicGraphConstructionBase
+        ] = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
         dynamic_init_graph_name: str = None,
-        dynamic_init_topology_builder: GraphConstructionBase = None,
-        dynamic_init_topology_aux_args=None,  # TODO
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
+        dynamic_init_topology_aux_args=None,
         share_vocab=True,
         **kwargs,
     ):
@@ -1600,7 +1606,6 @@ class DoubleText2TextDataset(Dataset):
             elif dynamic_init_graph_name == "constituency":
                 dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             else:
-                # dynamic_init_topology_builder
                 if dynamic_init_topology_builder is None:
                     raise ValueError(
                         "``dynamic_init_topology_builder`` can't be None \
@@ -1766,11 +1771,13 @@ class SequenceLabelingDataset(Dataset):
         graph_name: str,
         root_dir: str = None,
         static_or_dynamic: str = None,
-        topology_builder: GraphConstructionBase = DependencyBasedGraphConstruction,
+        topology_builder: Union[
+            StaticGraphConstructionBase, DynamicGraphConstructionBase
+        ] = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
         tag_types: str = None,
         dynamic_init_graph_name: str = None,
-        dynamic_init_topology_builder: GraphConstructionBase = None,
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         **kwargs,
     ):
         if kwargs.get("graph_type", None) is not None:
@@ -1812,8 +1819,6 @@ class SequenceLabelingDataset(Dataset):
             elif dynamic_init_graph_name == "constituency":
                 dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             else:
-
-                # dynamic_init_topology_builder
                 if dynamic_init_topology_builder is None:
                     raise ValueError(
                         "``dynamic_init_topology_builder`` can't be None \

@@ -1,7 +1,9 @@
 import copy
 import torch.nn.functional as F
 
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
+    WordEmbedding,
+)
 from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.utils.generic_utils import wordid2str
@@ -224,7 +226,8 @@ class Graph2Seq(Graph2XBase):
             The coverage vector.
         """
         batch_graph = self.graph_initializer(batch_graph)
-        # TODO: dynamic graph construction
+        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+            batch_graph = self.graph_topology.dynamic_topology(batch_graph)
 
         return self.encoder_decoder(batch_graph=batch_graph, oov_dict=oov_dict, tgt_seq=tgt_seq)
 
@@ -251,6 +254,9 @@ class Graph2Seq(Graph2XBase):
         """
 
         batch_graph = self.graph_initializer(batch_graph)
+        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+            batch_graph = self.graph_topology.dynamic_topology(batch_graph)
+
         return self.encoder_decoder_beam_search(
             batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict
         )
@@ -348,8 +354,11 @@ class Graph2Seq(Graph2XBase):
 
     @staticmethod
     def _get_node_initializer_params(opt):
+        # Dynamic graph construction related params are stored here
+        init_args = opt["graph_construction_args"]["node_embedding"]
+        ret: dict = copy.deepcopy(init_args)
         args = opt["graph_initialization_args"]["node_embedding"]
-        ret: dict = copy.deepcopy(args)
+        ret.update(args)
         ret.pop("embedding_style")
         emb_ret = {"emb_" + key: value for key, value in ret.items()}
         emb_ret["embedding_style"] = args["embedding_style"]
