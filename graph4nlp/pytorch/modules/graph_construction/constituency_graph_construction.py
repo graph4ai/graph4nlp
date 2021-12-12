@@ -43,10 +43,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         Generate graph topology and embeddings.
     """
 
-    def __init__(
-        self,
-        vocab
-    ):
+    def __init__(self, vocab):
         super(ConstituencyBasedGraphConstruction, self).__init__()
         self.vocab = vocab
 
