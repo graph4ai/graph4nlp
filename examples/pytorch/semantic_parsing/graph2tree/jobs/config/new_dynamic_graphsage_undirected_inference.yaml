@@ -17,6 +17,7 @@ graph_construction_args:
     sequential_link: true
     as_node: false
 
+graph_initialization_args:
   node_embedding:
     input_size: 300
     hidden_size: 300

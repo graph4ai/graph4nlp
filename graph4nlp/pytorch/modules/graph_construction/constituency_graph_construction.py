@@ -45,23 +45,9 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
 
     def __init__(
         self,
-        embedding_style,
-        vocab,
-        hidden_size,
-        fix_word_emb=True,
-        fix_bert_emb=True,
-        word_dropout=None,
-        rnn_dropout=None,
+        vocab
     ):
-        super(ConstituencyBasedGraphConstruction, self).__init__(
-            word_vocab=vocab,
-            embedding_styles=embedding_style,
-            hidden_size=hidden_size,
-            fix_word_emb=fix_word_emb,
-            fix_bert_emb=fix_bert_emb,
-            word_dropout=word_dropout,
-            rnn_dropout=rnn_dropout,
-        )
+        super(ConstituencyBasedGraphConstruction, self).__init__()
         self.vocab = vocab
 
     @classmethod
@@ -86,7 +72,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         return parsed_output
 
     @classmethod
-    def topology(
+    def static_topology(
         cls,
         raw_text_data,
         nlp_processor,
@@ -493,5 +479,4 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         return res_graph
 
     def forward(self, batch_graphdata: list):
-        batch_graphdata = self.embedding_layer(batch_graphdata)
-        return batch_graphdata
+        raise RuntimeError("This interface is removed.")
