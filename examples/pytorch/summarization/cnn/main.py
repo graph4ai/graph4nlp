@@ -94,9 +94,9 @@ class SumModel(nn.Module):
             )
             return prob
 
-    def inference_forward(self, batch_graph, beam_size, oov_dict):
+    def inference_forward(self, batch_graph, beam_size, topk, oov_dict):
         return self.g2s.inference_forward(
-            batch_graph=batch_graph, beam_size=beam_size, oov_dict=oov_dict
+            batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict
         )
 
     def post_process(self, decode_results, vocab):
