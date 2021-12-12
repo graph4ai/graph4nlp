@@ -116,6 +116,7 @@ class Graph2XBase(nn.Module):
             fix_bert_emb=emb_fix_bert_emb,
         )
 
+        # Yu: dynamic graph modification
         if graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
                 sim_metric_type=emb_sim_metric_type,

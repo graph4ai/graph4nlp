@@ -226,6 +226,7 @@ class Graph2Seq(Graph2XBase):
             The coverage vector.
         """
         batch_graph = self.graph_initializer(batch_graph)
+        # Yu: dynamic graph modification
         if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
             batch_graph = self.graph_topology.dynamic_topology(batch_graph)
 
