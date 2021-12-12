@@ -22,8 +22,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
         self,
         vocab,
     ):
-        super(LineBasedGraphConstruction, self).__init__(
-        )
+        super(LineBasedGraphConstruction, self).__init__()
         self.vocab = vocab
         self.verbose = 1
 

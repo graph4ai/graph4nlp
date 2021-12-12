@@ -32,8 +32,7 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         self,
         vocab,
     ):
-        super(DependencyBasedGraphConstruction_without_tokenizer, self).__init__(
-        )
+        super(DependencyBasedGraphConstruction_without_tokenizer, self).__init__()
         self.vocab = vocab
         self.verbose = 1
 
