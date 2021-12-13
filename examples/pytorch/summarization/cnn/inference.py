@@ -21,7 +21,7 @@ from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 
 from .main import SumModel
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 
 def all_to_cuda(data, device=None):

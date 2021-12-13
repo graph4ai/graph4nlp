@@ -1,4 +1,5 @@
 import json
+from typing import Union
 import torch.nn as nn
 
 from graph4nlp.pytorch.data.dataset import (
@@ -9,7 +10,7 @@ from graph4nlp.pytorch.data.dataset import (
     Text2TreeDataItem,
     word_tokenize,
 )
-from graph4nlp.pytorch.modules.graph_construction.base import GraphConstructionBase
+from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase, DynamicGraphConstructionBase
 
 
 class InferenceWrapperBase(nn.Module):
@@ -19,8 +20,8 @@ class InferenceWrapperBase(nn.Module):
         model: nn.Module,
         dataset: Dataset,
         data_item: DataItem,
-        topology_builder: GraphConstructionBase = None,
-        dynamic_init_topology_builder: GraphConstructionBase = None,
+        topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase] = None,
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         lower_case: bool = True,
         tokenizer=word_tokenize,
         **kwargs
@@ -48,11 +49,11 @@ class InferenceWrapperBase(nn.Module):
             The dataset class.
         data_item: DataItem,
             The data_item class.
-        topology_builder: GraphConstructionBase, default=None
+        topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
             The initial graph topology builder. It is used to custermize your own graph\
                  construction method. We will set the default topology builder for you \
                  if it is ``None`` according to ``graph_name`` in ``cfg``.
-        dynamic_init_topology_builder: GraphConstructionBase, default=None
+        dynamic_init_topology_builder: StaticGraphConstructionBase, default=None
             The dynamic initial graph topology builder. It is used to custermize your own \
                 graph construction method. We will set the default topology builder for you\
                 if it is ``None`` according to ``dynamic_init_graph_name`` in ``cfg``.
