@@ -3,7 +3,7 @@ import math
 import warnings
 import torch
 
-from graph4nlp.pytorch.data.dataset import Text2TreeDataItem, TextToTreeDataset
+from graph4nlp.pytorch.data.dataset import Text2TreeDataItem, Text2TreeDataset
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 
 from .base import InferenceWrapperBase
@@ -14,7 +14,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         self,
         cfg,
         model,
-        dataset=TextToTreeDataset,
+        dataset=Text2TreeDataset,
         data_item=Text2TreeDataItem,
         topology_builder=None,
         dynamic_init_topology_builder=None,
