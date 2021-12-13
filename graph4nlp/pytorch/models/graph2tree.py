@@ -134,6 +134,8 @@ class Graph2Tree(Graph2XBase):
 
     def forward(self, batch_graph, tgt_tree_batch, oov_dict=None):
         batch_graph = self.graph_initializer(batch_graph)
+        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+            batch_graph = self.graph_topology.dynamic_topology(batch_graph)
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features["node_feat"]
 
@@ -146,6 +148,9 @@ class Graph2Tree(Graph2XBase):
         prev_h = torch.zeros((1, self.dec_hidden_size), requires_grad=False)
 
         batch_graph = self.graph_initializer(input_graph)
+        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+            batch_graph = self.graph_topology.dynamic_topology(batch_graph)
+
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features["node_feat"]
 
@@ -396,8 +401,11 @@ class Graph2Tree(Graph2XBase):
 
     @staticmethod
     def _get_node_initializer_params(opt):
-        args = opt["graph_initialization_args"]["node_embedding"]
-        ret: dict = copy.deepcopy(args)
+        # Dynamic graph construction related params are stored here
+        init_args = opt["graph_construction_args"]['graph_construction_private']
+        ret: dict = copy.deepcopy(init_args)
+        args = opt["graph_initialization_args"]
+        ret.update(args)
         ret.pop("embedding_style")
         emb_ret = {"emb_" + key: value for key, value in ret.items()}
         emb_ret["embedding_style"] = args["embedding_style"]

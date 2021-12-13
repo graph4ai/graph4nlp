@@ -1045,18 +1045,20 @@ class Text2TextDataset(Dataset):
         return {"graph_data": graph_data, "tgt_seq": tgt_seq, "output_str": output_str}
 
 
-class TextToTreeDataset(Dataset):
+class Text2TreeDataset(Dataset):
     def __init__(
         self,
         graph_name: str,
         root_dir: str = None,
-        topology_subdir: str = None,
         static_or_dynamic: str = None,
+        topology_builder: Union[
+            StaticGraphConstructionBase, DynamicGraphConstructionBase
+        ] = DependencyBasedGraphConstruction,
+        topology_subdir: str = None,
         dynamic_init_graph_name: str = None,
-        share_vocab=True,
-        topology_builder=None,
-        dynamic_init_topology_builder=None,
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,
+        share_vocab=True,
         **kwargs,
     ):
         if kwargs.get("graph_type", None) is not None:
@@ -1104,7 +1106,7 @@ class TextToTreeDataset(Dataset):
                     )
 
         self.static_or_dynamic = static_or_dynamic
-        super(TextToTreeDataset, self).__init__(
+        super(Text2TreeDataset, self).__init__(
             root=root_dir,
             graph_name=graph_name,
             topology_builder=topology_builder,
@@ -2177,7 +2179,7 @@ __all__ = [
     "SequenceLabelingDataItem",
     "Dataset",
     "Text2TextDataset",
-    "TextToTreeDataset",
+    "Text2TreeDataset",
     "Text2LabelDataset",
     "DoubleText2TextDataset",
     "SequenceLabelingDataset",

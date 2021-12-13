@@ -1,4 +1,4 @@
-from graph4nlp.pytorch.data.dataset import Text2TextDataset, TextToTreeDataset
+from graph4nlp.pytorch.data.dataset import Text2TextDataset, Text2TreeDataset
 
 from ..modules.graph_construction.dependency_graph_construction import (
     DependencyBasedGraphConstruction,
@@ -123,7 +123,7 @@ def tokenize_jobs(str_input):
     return str_input.strip().split()
 
 
-class JobsDatasetForTree(TextToTreeDataset):
+class JobsDatasetForTree(Text2TreeDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
