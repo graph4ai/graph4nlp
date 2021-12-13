@@ -3,29 +3,31 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_initialization import GraphEmbeddingInitialization
 
-## TODO: deprecated, must be removed
-
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
-    ConstituencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
-    DependencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import (
-    IEBasedGraphConstruction,
-)
+# from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
+#     ConstituencyBasedGraphConstruction,
+# )
+# from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
+#     DependencyBasedGraphConstruction,
+# )
+# from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import (
+#     IEBasedGraphConstruction,
+# )
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
 )
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
+from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_initialization import (  # noqa
+    GraphEmbeddingInitialization,
+)
 from graph4nlp.pytorch.modules.graph_embedding_learning.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding_learning.gcn import GCN
 from graph4nlp.pytorch.modules.graph_embedding_learning.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding_learning.graphsage import GraphSAGE
+
+# TODO: deprecated, must be removed
 
 
 class Graph2XBase(nn.Module):
@@ -104,7 +106,7 @@ class Graph2XBase(nn.Module):
         if not isinstance(graph_name, str):
             raise ValueError("graph_name parameter should be str")
 
-        self.graph_initializer = GraphEmbeddingInitialization( ## @ShenKai: new graph initializer
+        self.graph_initializer = GraphEmbeddingInitialization(  # @ShenKai: new graph initializer
             word_vocab=vocab_model.in_word_vocab,
             embedding_style=embedding_style,
             hidden_size=emb_hidden_size,
@@ -113,7 +115,33 @@ class Graph2XBase(nn.Module):
             fix_word_emb=emb_fix_word_emb,
             fix_bert_emb=emb_fix_bert_emb,
         )
-        ## @yu: TODO: add dynamic graph construction here
+
+        # Yu: dynamic graph modification
+        if graph_name == "node_emb":
+            self.graph_topology = NodeEmbeddingBasedGraphConstruction(
+                sim_metric_type=emb_sim_metric_type,
+                num_heads=emb_num_heads,
+                top_k_neigh=emb_top_k_neigh,
+                epsilon_neigh=emb_epsilon_neigh,
+                smoothness_ratio=emb_smoothness_ratio,
+                connectivity_ratio=emb_connectivity_ratio,
+                sparsity_ratio=emb_sparsity_ratio,
+                input_size=emb_input_size,
+                hidden_size=emb_hidden_size,
+            )
+        elif graph_name == "node_emb_refined":
+            self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
+                emb_alpha_fusion,
+                sim_metric_type=emb_sim_metric_type,
+                num_heads=emb_num_heads,
+                top_k_neigh=emb_top_k_neigh,
+                epsilon_neigh=emb_epsilon_neigh,
+                smoothness_ratio=emb_smoothness_ratio,
+                connectivity_ratio=emb_connectivity_ratio,
+                sparsity_ratio=emb_sparsity_ratio,
+                input_size=emb_input_size,
+                hidden_size=emb_hidden_size,
+            )
 
         #
         # elif graph_name == "constituency": @ShenKai: remove
@@ -178,7 +206,6 @@ class Graph2XBase(nn.Module):
             if "w2v" in self.graph_initializer.embedding_layer.word_emb_layers
             else None
         )
-
         self.graph_name = graph_name
 
     def _build_gnn_encoder(
