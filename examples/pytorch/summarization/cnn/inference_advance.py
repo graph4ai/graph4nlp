@@ -78,9 +78,15 @@ class ModelHandler:
             ],
             "share_vocab": self.config["share_vocab"],
             "min_word_vocab_freq": self.config["min_word_freq"],
-            "thread_number": 35,
-            "port": 9000,
-            "timeout": 15000,
+            "thread_number": self.config["graph_construction_args"]["graph_construction_share"][
+                "thread_number"
+            ],
+            "port": self.config["graph_construction_args"]["graph_construction_share"][
+                "port"
+            ],
+            "timeout": self.config["graph_construction_args"]["graph_construction_share"][
+                "timeout"
+            ],
             "tokenizer": None,
             "for_inference": 1,
             "reused_vocab_model": self.model.vocab,
@@ -142,7 +148,7 @@ class ModelHandler:
                 else:
                     oov_dict = None
                     ref_dict = self.vocab.out_word_vocab
-                batch_graph = self.model.g2s.graph_topology(data["graph_data"])
+                batch_graph = self.model.g2s.graph_initializer(data["graph_data"])
                 prob = self.model.g2s.encoder_decoder_beam_search(
                     batch_graph, self.config["beam_size"], topk=1, oov_dict=oov_dict
                 )
