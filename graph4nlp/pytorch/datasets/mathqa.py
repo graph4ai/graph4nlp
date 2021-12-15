@@ -1,11 +1,11 @@
-from graph4nlp.pytorch.data.dataset import TextToTreeDataset
+from graph4nlp.pytorch.data.dataset import Text2TreeDataset
 
 
 def tokenize_mathqa(str_input):
     return str_input.strip().split()
 
 
-class MathQADatasetForTree(TextToTreeDataset):
+class MathQADatasetForTree(Text2TreeDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""

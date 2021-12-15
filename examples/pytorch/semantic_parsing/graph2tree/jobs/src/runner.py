@@ -43,7 +43,7 @@ class Jobs:
     def _build_dataloader(self):
         para_dic = {
             "root_dir": self.data_dir,
-            "word_emb_size": self.opt["graph_construction_args"]["node_embedding"]["input_size"],
+            "word_emb_size": self.opt["graph_initialization_args"]["input_size"],
             "topology_subdir": self.opt["graph_construction_args"]["graph_construction_share"][
                 "topology_subdir"
             ],
@@ -53,9 +53,8 @@ class Jobs:
             "graph_name": self.opt["graph_construction_args"]["graph_construction_share"][
                 "graph_name"
             ],
-            "static_or_dynamic": "static",
             "share_vocab": self.use_share_vocab,
-            "enc_emb_size": self.opt["graph_construction_args"]["node_embedding"]["input_size"],
+            "enc_emb_size": self.opt["graph_initialization_args"]["input_size"],
             "dec_emb_size": self.opt["decoder_args"]["rnn_decoder_share"]["input_size"],
             "dynamic_init_graph_name": self.opt["graph_construction_args"][
                 "graph_construction_private"
