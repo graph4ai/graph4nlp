@@ -7,10 +7,14 @@ from graph4nlp.pytorch.data.dataset import (
     Dataset,
     DoubleText2TextDataItem,
     KGCompletionDataItem,
+    Text2LabelDataItem,
     Text2TreeDataItem,
     word_tokenize,
 )
-from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase, DynamicGraphConstructionBase
+from graph4nlp.pytorch.modules.graph_construction.base import (
+    DynamicGraphConstructionBase,
+    StaticGraphConstructionBase,
+)
 
 
 class InferenceWrapperBase(nn.Module):
@@ -49,7 +53,7 @@ class InferenceWrapperBase(nn.Module):
             The dataset class.
         data_item: DataItem,
             The data_item class.
-        topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
+        topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None # noqa
             The initial graph topology builder. It is used to custermize your own graph\
                  construction method. We will set the default topology builder for you \
                  if it is ``None`` according to ``graph_name`` in ``cfg``.
@@ -136,9 +140,12 @@ class InferenceWrapperBase(nn.Module):
                     output_tree=None,
                     tokenizer=self.tokenizer,
                 )
-
+            elif self.data_item_class == Text2LabelDataItem:
+                data_item = self.data_item_class(input_text=raw_sentence, tokenizer=self.tokenizer)
             else:
-                data_item = self.data_item_class(input_text=raw_sentence, tokenizer=self.tokenizer, output_text=None)
+                data_item = self.data_item_class(
+                    input_text=raw_sentence, tokenizer=self.tokenizer, output_text=None
+                )
 
             data_item = self.dataset.process_data_items(data_items=[data_item])
             data_item = self.dataset._vectorize_one_dataitem(

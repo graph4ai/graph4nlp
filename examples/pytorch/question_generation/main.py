@@ -17,7 +17,9 @@ from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.modules.evaluation import BLEU, METEOR, ROUGE
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
+    WordEmbedding,
+)
 from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
@@ -37,8 +39,8 @@ class QGModel(nn.Module):
         # build Graph2Seq model
         self.g2s = Graph2Seq.from_args(config, self.vocab)
 
-        if "w2v" in self.g2s.graph_topology.embedding_layer.word_emb_layers:
-            self.word_emb = self.g2s.graph_topology.embedding_layer.word_emb_layers[
+        if "w2v" in self.g2s.graph_initializer.embedding_layer.word_emb_layers:
+            self.word_emb = self.g2s.graph_initializer.embedding_layer.word_emb_layers[
                 "w2v"
             ].word_emb_layer
         else:
@@ -60,7 +62,7 @@ class QGModel(nn.Module):
         #   with the customized passage-answer alignment embedding construction layer
         # TODO: delete the default layer and clear the memory
         embedding_styles = config["graph_construction_args"]["node_embedding"]["embedding_style"]
-        self.g2s.graph_topology.embedding_layer = FusedEmbeddingConstruction(
+        self.g2s.graph_initializer.embedding_layer = FusedEmbeddingConstruction(
             self.vocab.in_word_vocab,
             embedding_styles["single_token_item"],
             emb_strategy=embedding_styles["emb_strategy"],
@@ -80,9 +82,8 @@ class QGModel(nn.Module):
         self.vocab_model = self.g2s.vocab_model
 
     def encode_init_node_feature(self, data):
-        # graph embedding construction
-        batch_gd = self.g2s.graph_topology.embedding_layer(data)
-
+        # graph embedding initialization
+        batch_gd = self.g2s.graph_initializer.embedding_layer(data)
         return batch_gd
 
     def forward(self, data, oov_dict=None, require_loss=True):
