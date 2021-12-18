@@ -356,7 +356,7 @@ class Graph2Seq(Graph2XBase):
     @staticmethod
     def _get_node_initializer_params(opt):
         # Dynamic graph construction related params are stored here
-        init_args = opt["graph_construction_args"]['graph_construction_private']
+        init_args = opt["graph_construction_args"]["graph_construction_private"]
         ret: dict = copy.deepcopy(init_args)
         args = opt["graph_initialization_args"]
         ret.update(args)

@@ -15,12 +15,11 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__( ## @ShenKai: remove deprecated arguments such as ``embedding_style``
+    def __init__(
         self,
         vocab,
     ):
-        super(DependencyBasedGraphConstruction, self).__init__(
-        )
+        super(DependencyBasedGraphConstruction, self).__init__()
         self.vocab = vocab
         self.verbose = 1
 
@@ -131,7 +130,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         return parsed_results
 
     @classmethod
-    def static_topology( ## @ShenKai: rename topology --> static_topology
+    def static_topology(
         cls,
         raw_text_data,
         nlp_processor,

@@ -1,5 +1,4 @@
 import json
-import torch
 
 from ...data.data import GraphData
 from .base import StaticGraphConstructionBase
@@ -19,10 +18,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         Vocabulary including all words appeared in graphs.
     """
 
-    def __init__(
-        self,
-        vocab
-    ):
+    def __init__(self, vocab):
         super(IEBasedGraphConstruction, self).__init__()
         self.vocab = vocab
         self.verbose = 1
@@ -126,7 +122,9 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                 if triple_info_1_2 not in parsed_results["graph_content"]:
                     parsed_results["graph_content"].append(triple_info_1_2)
             else:
-                raise NotImplementedError("Not Implemented Edge Strategy: {}.".format(edge_strategy))
+                raise NotImplementedError(
+                    "Not Implemented Edge Strategy: {}.".format(edge_strategy)
+                )
 
         parsed_results["node_num"] = len(graph_nodes)
         parsed_results["graph_nodes"] = graph_nodes

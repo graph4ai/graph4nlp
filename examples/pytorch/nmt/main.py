@@ -213,6 +213,7 @@ class NMT:
         symbol = "@@ "
         return str_with_subword.replace(symbol, "").strip()
 
+    @torch.no_grad()
     def evaluate(self, epoch, split="val"):
         self.model.eval()
         pred_collect = []

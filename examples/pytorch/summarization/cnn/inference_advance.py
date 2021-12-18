@@ -81,9 +81,7 @@ class ModelHandler:
             "thread_number": self.config["graph_construction_args"]["graph_construction_share"][
                 "thread_number"
             ],
-            "port": self.config["graph_construction_args"]["graph_construction_share"][
-                "port"
-            ],
+            "port": self.config["graph_construction_args"]["graph_construction_share"]["port"],
             "timeout": self.config["graph_construction_args"]["graph_construction_share"][
                 "timeout"
             ],

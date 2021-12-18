@@ -18,21 +18,6 @@ graph_construction_args:
     merge_strategy: 'tailhead'
     sequential_link: true
     as_node: false
-
-  node_embedding:
-    input_size: 300
-    hidden_size: 300
-    word_dropout: 0.2
-    rnn_dropout: 0.3
-    fix_bert_emb: false
-    fix_word_emb: false
-    embedding_style:
-      single_token_item: true
-      emb_strategy: "w2v_bilstm"
-      num_rnn_layers: 1
-      bert_model_name: null
-      bert_lower_case: null
-
     sim_metric_type: 'weighted_cosine'
     num_heads: 1
     top_k_neigh: null
@@ -40,6 +25,19 @@ graph_construction_args:
     smoothness_ratio: 0.1
     connectivity_ratio: 0.05
     sparsity_ratio: 0.1
+graph_initialization_args:
+  input_size: 300
+  hidden_size: 300
+  word_dropout: 0.2
+  rnn_dropout: 0.3
+  fix_bert_emb: false
+  fix_word_emb: false
+  embedding_style:
+    single_token_item: true
+    emb_strategy: "w2v_bilstm"
+    num_rnn_layers: 1
+    bert_model_name: null
+    bert_lower_case: null
 
 graph_embedding_args:
   graph_embedding_share:
