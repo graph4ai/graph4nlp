@@ -2082,34 +2082,14 @@ class KGCompletionDataset(Dataset):
         )
 
     def vectorization(self, data_items):
-        for item in data_items:
-            e2_multi1 = self.vocab_model.in_word_vocab.to_index_sequence(item.e2_multi1)
-            e2_multi2 = self.vocab_model.in_word_vocab.to_index_sequence(item.e2_multi2)
-
-            item.e1_np = np.array([self.vocab_model.in_word_vocab.getIndex(item.e1)])
-            item.e2_np = np.array([self.vocab_model.in_word_vocab.getIndex(item.e2)])
-            item.e2_multi1_np = np.array(e2_multi1)
-            item.e2_multi2_np = np.array(e2_multi2)
-            item.rel_np = np.array([self.vocab_model.out_word_vocab.getIndex(item.rel)])
-            item.rel_eval_np = np.array([self.vocab_model.out_word_vocab.getIndex(item.rel_eval)])
-
-            index1 = [[0] * len(e2_multi1), e2_multi1]
-            value1 = [1] * len(e2_multi1)
-            item.e2_multi1_binary = torch.sparse_coo_tensor(
-                index1, value1, (1, len(self.vocab_model.in_word_vocab))
-            )
-
-            index2 = [[0] * len(e2_multi2), e2_multi2]
-            value2 = [1] * len(e2_multi2)
-            item.e2_multi2_binary = torch.sparse_coo_tensor(
-                index2, value2, (1, len(self.vocab_model.in_word_vocab))
-            )
+        for idx in range(len(data_items)):
+            data_items[idx] = self._vectorize_one_dataitem(data_items[idx], self.vocab_model)
 
     def process_data_items(self, data_items):
         return data_items
 
     @classmethod
-    def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie):
+    def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie=False):
         item = deepcopy(data_item)
         e2_multi1 = vocab_model.in_word_vocab.to_index_sequence(item.e2_multi1)
         e2_multi2 = vocab_model.in_word_vocab.to_index_sequence(item.e2_multi2)

@@ -53,7 +53,8 @@ class InferenceWrapperBase(nn.Module):
             The dataset class.
         data_item: DataItem,
             The data_item class.
-        topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None # noqa
+        topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], \
+                            default=None
             The initial graph topology builder. It is used to custermize your own graph\
                  construction method. We will set the default topology builder for you \
                  if it is ``None`` according to ``graph_name`` in ``cfg``.

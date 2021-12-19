@@ -1,17 +1,23 @@
-import torch.nn as nn
-from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import EmbeddingConstruction
 from abc import abstractmethod
+import torch.nn as nn
+
 from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
+    EmbeddingConstruction,
+)
 
 
 class GraphEmbeddingInitialization(nn.Module):
-    def __init__(self, word_vocab,
-                 embedding_style,
-                 hidden_size=None,
-                 fix_word_emb=True,
-                 fix_bert_emb=True,
-                 word_dropout=None,
-                 rnn_dropout=None,):
+    def __init__(
+        self,
+        word_vocab,
+        embedding_style,
+        hidden_size=None,
+        fix_word_emb=True,
+        fix_bert_emb=True,
+        word_dropout=None,
+        rnn_dropout=None,
+    ):
         super(GraphEmbeddingInitialization, self).__init__()
         self.embedding_layer = EmbeddingConstruction(
             word_vocab,

@@ -22,7 +22,7 @@ from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 
 def all_to_cuda(data, device=None):
@@ -148,12 +148,8 @@ class ModelHandler:
             thread_number=self.config["graph_construction_args"]["graph_construction_share"][
                 "thread_number"
             ],
-            port=self.config["graph_construction_args"]["graph_construction_share"][
-                "port"
-            ],
-            timeout=self.config["graph_construction_args"]["graph_construction_share"][
-                "timeout"
-            ],
+            port=self.config["graph_construction_args"]["graph_construction_share"]["port"],
+            timeout=self.config["graph_construction_args"]["graph_construction_share"]["timeout"],
             tokenizer=None,
         )
 
@@ -200,7 +196,6 @@ class ModelHandler:
     def _build_model(self):
         # self.model = Graph2Seq.from_args(self.config, self.vocab, self.config['device'])
         self.model = SumModel(self.vocab, self.config).to(self.config["device"])
-        self.logger.write(str(self.model))
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
