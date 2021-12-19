@@ -22,6 +22,8 @@ graph_initialization_args:
   hidden_size: 300
   word_dropout: 0.2
   rnn_dropout: 0.3
+  # word_dropout: 0.1
+  # rnn_dropout: 0.1
   fix_bert_emb: false
   fix_word_emb: false
   embedding_style:
