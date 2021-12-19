@@ -1,0 +1,76 @@
+# Data
+dataset: 'trec'
+val_split_ratio: 0.2 # validation set split ratio (default: 0.2)
+pretrained_word_emb_name: '840B'
+out_dir: 'out/trec/gat_bi_fuse_dependency_ckpt'
+
+
+# Graph construction
+graph_construction_args:
+  graph_construction_share:
+    graph_name: 'dependency'
+    root_dir: 'examples/pytorch/text_classification/data/trec'
+    # topology_subdir: 'dependency_graph'
+    thread_number: 10
+    port: 9000
+    timeout: 15000
+
+  graph_construction_private:
+    edge_strategy: 'homogeneous'
+    merge_strategy: 'tailhead'
+    sequential_link: true
+    as_node: false
+    dynamic_init_graph_name: null # initial graph construction type ('line', 'dependency', 'constituency', 'ie')
+
+
+
+# Dynamic graph construction
+gl_metric_type: null # similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', 'rbf_kernel', 'cosine')
+gl_epsilon: null # epsilon for graph sparsification
+gl_top_k: null # top k for graph sparsification
+gl_num_heads: 1 # num of heads for dynamic graph construction
+gl_num_hidden: 300 # number of hidden units for dynamic graph construction
+gl_smoothness_ratio: null # smoothness ratio for graph regularization loss
+gl_sparsity_ratio: null # sparsity ratio for graph regularization loss
+gl_connectivity_ratio: null # connectivity ratio for graph regularization loss
+init_adj_alpha: 0.8 # alpha ratio for combining initial graph adjacency matrix
+
+
+# Graph embedding construction
+word_dropout: 0.4 # word embedding dropout
+rnn_dropout: 0.1 # RNN dropout
+no_fix_word_emb: false # Not fix pretrained word embeddings (default: false)
+emb_strategy: 'w2v_bilstm'
+
+# GNN
+gnn: 'gat'
+gnn_direction_option: 'bi_fuse' # GNN direction type ('undirected', 'bi_sep', 'bi_fuse')
+gnn_num_layers: 1 # number of GNN layers
+num_hidden: 300 # number of hidden units
+graph_pooling: 'avg_pool' # graph pooling ('avg_pool', 'max_pool')
+max_pool_linear_proj: false # use linear projectioni for max pooling
+gnn_dropout: 0.6 # 0.6 # GNN input feature dropout
+
+# GAT
+gat_attn_dropout: 0.3 # 0.3 # GAT attention dropout
+gat_negative_slope: 0.1 # 0.1 # the negative slope of leaky relu
+gat_num_heads: 1 # 1 # number of hidden attention heads
+gat_num_out_heads: 2 # 2 # number of output attention heads
+gat_residual: false # use gat_residual connection
+# GraphSAGE
+graphsage_aggreagte_type: null # graphsage aggreagte type ('mean', 'gcn', 'pool', 'lstm')
+
+
+# Training
+seed: 1234
+batch_size: 50 # batch size
+epochs: 500 # number of maximal training epochs
+patience: 10
+lr: 0.001 # learning rate
+lr_patience: 2
+lr_reduce_factor: 0.5
+num_workers: 8 # number of data loader workers
+
+
+gpu: -1
+no_cuda: false

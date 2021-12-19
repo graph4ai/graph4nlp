@@ -76,17 +76,6 @@ CUDA 11.0 ``pip install graph4nlp-cu110``
 Installation for KGC
 ~~~~~~~~~~~~~~~~~~~~
 
-
--  Download the default English model used by **spaCy**, which is
-   installed in the previous step
-
-.. code:: bash
-
-   pip install spacy
-   python -m spacy download en_core_web_sm
-   pip install h5py
-   pip install future
-
 -  Run the preprocessing script for WN18RR and Kinship:
    ``sh kg_completion/preprocess.sh``
 
@@ -97,158 +86,279 @@ Import packages
 
 .. code:: python
 
-    import torch
-    import numpy as np
-    import torch.backends.cudnn as cudnn
-    
-    from evaluation import ranking_and_hits
-    from model import ConvE, Distmult, Complex, GGNNDistMult, GCNDistMult, GCNComplex
-    
-    from spodernet.preprocessing.pipeline import DatasetStreamer
-    from spodernet.preprocessing.processors import JsonLoaderProcessors, Tokenizer, AddToVocab, SaveLengthsToState, StreamToHDF5, SaveMaxLengthsToState, CustomTokenizer
-    from spodernet.preprocessing.processors import ConvertTokenToIdx, ApplyFunction, ToLower, DictKey2ListMapper, ApplyFunction, StreamToBatch
-    from spodernet.utils.global_config import Config, Backends
-    from spodernet.utils.logger import Logger, LogLevel
-    from spodernet.preprocessing.batching import StreamBatcher
-    from spodernet.preprocessing.pipeline import Pipeline
-    from spodernet.preprocessing.processors import TargetIdx2MultiTarget
-    from spodernet.hooks import LossHook, ETAHook
-    from spodernet.utils.util import Timer
-    from spodernet.preprocessing.processors import TargetIdx2MultiTarget
     import argparse
+    import os
+    import numpy as np
+    import torch
+    import torch.backends.cudnn as cudnn
+    import torch.nn as nn
+    from torch.utils.data import DataLoader
+
+    from graph4nlp.pytorch.datasets.kinship import KinshipDataset
+    from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config
+
+    from model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
     
     np.set_printoptions(precision=3)
     cudnn.benchmark = True
 
-Data Preprocessing
-------------------
-
-This part we follow the implementaion of `ConvE <https://github.com/TimDettmers/ConvE>`_ to ensure the speed of processing data.
-
-.. code:: python
-
-    ''' Preprocess knowledge graph using spodernet. '''
-    def preprocess(dataset_name, delete_data=False):
-        full_path = 'data/{0}/e1rel_to_e2_full.json'.format(dataset_name)
-        train_path = 'data/{0}/e1rel_to_e2_train.json'.format(dataset_name)
-        dev_ranking_path = 'data/{0}/e1rel_to_e2_ranking_dev.json'.format(dataset_name)
-        test_ranking_path = 'data/{0}/e1rel_to_e2_ranking_test.json'.format(dataset_name)
-    
-        keys2keys = {}
-        keys2keys['e1'] = 'e1' # entities
-        keys2keys['rel'] = 'rel' # relations
-        keys2keys['rel_eval'] = 'rel' # relations
-        keys2keys['e2'] = 'e1' # entities
-        keys2keys['e2_multi1'] = 'e1' # entity
-        keys2keys['e2_multi2'] = 'e1' # entity
-        input_keys = ['e1', 'rel', 'rel_eval', 'e2', 'e2_multi1', 'e2_multi2']
-        d = DatasetStreamer(input_keys)
-        d.add_stream_processor(JsonLoaderProcessors())
-        d.add_stream_processor(DictKey2ListMapper(input_keys))
-    
-        # process full vocabulary and save it to disk
-        d.set_path(full_path)
-        p = Pipeline(args.data, delete_data, keys=input_keys, skip_transformation=True)
-        p.add_sent_processor(ToLower())
-        p.add_sent_processor(CustomTokenizer(lambda x: x.split(' ')),keys=['e2_multi1', 'e2_multi2'])
-        p.add_token_processor(AddToVocab())
-        p.execute(d)
-        p.save_vocabs()
-    
-    
-        # process train, dev and test sets and save them to hdf5
-        p.skip_transformation = False
-        for path, name in zip([train_path, dev_ranking_path, test_ranking_path], ['train', 'dev_ranking', 'test_ranking']):
-            d.set_path(path)
-            p.clear_processors()
-            p.add_sent_processor(ToLower())
-            p.add_sent_processor(CustomTokenizer(lambda x: x.split(' ')),keys=['e2_multi1', 'e2_multi2'])
-            p.add_post_processor(ConvertTokenToIdx(keys2keys=keys2keys), keys=['e1', 'rel', 'rel_eval', 'e2', 'e2_multi1', 'e2_multi2'])
-            p.add_post_processor(StreamToHDF5(name, samples_per_file=1000, keys=input_keys))
-            p.execute(d)
 
 Build Model
 -----------
 
 .. code:: python
 
-    def main(args, model_path):
-        if args.preprocess:
-            preprocess(args.data, delete_data=True)
-        input_keys = ['e1', 'rel', 'rel_eval', 'e2', 'e2_multi1', 'e2_multi2']
-        p = Pipeline(args.data, keys=input_keys)
-        p.load_vocabs()
-        vocab = p.state['vocab']
-    
-        train_batcher = StreamBatcher(args.data, 'train', args.batch_size, randomize=True, keys=input_keys, loader_threads=args.loader_threads)
-        dev_rank_batcher = StreamBatcher(args.data, 'dev_ranking', args.test_batch_size, randomize=False, loader_threads=args.loader_threads, keys=input_keys)
-        test_rank_batcher = StreamBatcher(args.data, 'test_ranking', args.test_batch_size, randomize=False, loader_threads=args.loader_threads, keys=input_keys)
-    
-    
+    class KGC(nn.Module):
+        def __init__(self, cfg, num_entities, num_relations):
+            super(KGC, self).__init__()
+            self.cfg = cfg
+            self.num_entities = num_entities
+            self.num_relations = num_relations
+            if cfg["model"] is None:
+                model = ConvE(argparse.Namespace(**cfg), num_entities, num_relations)
+            elif cfg["model"] == "conve":
+                model = ConvE(argparse.Namespace(**cfg), num_entities, num_relations)
+            elif cfg["model"] == "distmult":
+                model = Distmult(argparse.Namespace(**cfg), num_entities, num_relations)
+            elif cfg["model"] == "complex":
+                model = Complex(argparse.Namespace(**cfg), num_entities, num_relations)
+            elif cfg["model"] == "ggnn_distmult":
+                model = GGNNDistMult(argparse.Namespace(**cfg), num_entities, num_relations)
+            elif cfg["model"] == "gcn_distmult":
+                model = GCNDistMult(argparse.Namespace(**cfg), num_entities, num_relations)
+            elif cfg["model"] == "gcn_complex":
+                model = GCNComplex(argparse.Namespace(**cfg), num_entities, num_relations)
+            else:
+                raise Exception("Unknown model type!")
+
+            self.model = model
+
+        def init(self):
+            return self.model.init()
+
+        def forward(self, e1_tensor, rel_tensor, KG_graph):
+            return self.model(e1_tensor, rel_tensor, KG_graph)
+
+        def loss(self, pred, e2_multi):
+            return self.model.loss(pred, e2_multi)
+
+        def inference_forward(self, collate_data, KG_graph):
+            e1_tensor = collate_data["e1_tensor"]
+            rel_tensor = collate_data["rel_tensor"]
+            if self.cfg["cuda"]:
+                e1_tensor = e1_tensor.to("cuda")
+                rel_tensor = rel_tensor.to("cuda")
+            return self.model(e1_tensor, rel_tensor, KG_graph)
+
+        def post_process(self, logits, e2=None):
+            max_values, argsort1 = torch.sort(logits, 1, descending=True)
+            rank1 = np.where(argsort1.cpu().numpy()[0] == e2[0, 0].item())[0][0]
+
+            print("ground truth e2 rank = {}".format(rank1 + 1))
+
+            # argsort1 = argsort1.cpu().numpy()
+            return argsort1[:, 0].item()
+
+
+Define Evaluation for KG Completion
+-----------------------------------
+
+This part we follow the implementaion of `ConvE <https://github.com/TimDettmers/ConvE>`_.
+
+.. code:: python
+
+    def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=None):
+        print("")
+        print("-" * 50)
+        print(name)
+        print("-" * 50)
+        print("")
+        hits_left = []
+        hits_right = []
+        hits = []
+        ranks = []
+        ranks_left = []
+        ranks_right = []
+        for _ in range(10):
+            hits_left.append([])
+            hits_right.append([])
+            hits.append([])
+
+        for i, str2var in enumerate(dev_rank_batcher):
+            e1 = str2var["e1_tensor"]
+            e2 = str2var["e2_tensor"]
+            rel = str2var["rel_tensor"]
+            rel_reverse = str2var["rel_eval_tensor"]
+            e2_multi1 = str2var["e2_multi1"].float()
+            e2_multi2 = str2var["e2_multi2"].float()
+            if cfg["cuda"]:
+                e1 = e1.to("cuda")
+                e2 = e2.to("cuda")
+                rel = rel.to("cuda")
+                rel_reverse = rel_reverse.to("cuda")
+                e2_multi1 = e2_multi1.to("cuda")
+                e2_multi2 = e2_multi2.to("cuda")
+
+            pred1 = model(e1, rel, kg_graph)
+            pred2 = model(e2, rel_reverse, kg_graph)
+            pred1, pred2 = pred1.data, pred2.data
+            e1, e2 = e1.data, e2.data
+            e2_multi1, e2_multi2 = e2_multi1.data, e2_multi2.data
+            for i in range(e1.shape[0]):
+                # these filters contain ALL labels
+                filter1 = e2_multi1[i].long()
+                filter2 = e2_multi2[i].long()
+
+                # save the prediction that is relevant
+                target_value1 = pred1[i, e2[i, 0].item()].item()
+                target_value2 = pred2[i, e1[i, 0].item()].item()
+                # zero all known cases (this are not interesting)
+                # this corresponds to the filtered setting
+                pred1[i][filter1] = 0.0
+                pred2[i][filter2] = 0.0
+                # write base the saved values
+                pred1[i][e2[i]] = target_value1
+                pred2[i][e1[i]] = target_value2
+
+            # sort and rank
+            max_values, argsort1 = torch.sort(pred1, 1, descending=True)
+            max_values, argsort2 = torch.sort(pred2, 1, descending=True)
+
+            argsort1 = argsort1.cpu().numpy()
+            argsort2 = argsort2.cpu().numpy()
+            for i in range(e1.shape[0]):
+                # find the rank of the target entities
+                rank1 = np.where(argsort1[i] == e2[i, 0].item())[0][0]
+                rank2 = np.where(argsort2[i] == e1[i, 0].item())[0][0]
+                # rank+1, since the lowest rank is rank 1 not rank 0
+                ranks.append(rank1 + 1)
+                ranks_left.append(rank1 + 1)
+                ranks.append(rank2 + 1)
+                ranks_right.append(rank2 + 1)
+
+                # this could be done more elegantly, but here you go
+                for hits_level in range(10):
+                    if rank1 <= hits_level:
+                        hits[hits_level].append(1.0)
+                        hits_left[hits_level].append(1.0)
+                    else:
+                        hits[hits_level].append(0.0)
+                        hits_left[hits_level].append(0.0)
+
+                    if rank2 <= hits_level:
+                        hits[hits_level].append(1.0)
+                        hits_right[hits_level].append(1.0)
+                    else:
+                        hits[hits_level].append(0.0)
+                        hits_right[hits_level].append(0.0)
+
+            # dev_rank_batcher.state.loss = [0]
+
+        for i in range(10):
+            print("Hits left @{0}: {1}".format(i + 1, np.mean(hits_left[i])))
+            print("Hits right @{0}: {1}".format(i + 1, np.mean(hits_right[i])))
+            print("Hits @{0}: {1}".format(i + 1, np.mean(hits[i])))
+        print("Mean rank left: {0}".format(np.mean(ranks_left)))
+        print("Mean rank right: {0}".format(np.mean(ranks_right)))
+        print("Mean rank: {0}".format(np.mean(ranks)))
+        print("Mean reciprocal rank left: {0}".format(np.mean(1.0 / np.array(ranks_left))))
+        print("Mean reciprocal rank right: {0}".format(np.mean(1.0 / np.array(ranks_right))))
+        print("Mean reciprocal rank: {0}".format(np.mean(1.0 / np.array(ranks))))
+
+        return np.mean(1.0 / np.array(ranks))
+
+
+Define Main()
+------------
+
+Next, let’s build a main() function which will do a bunch of things including setting up dataset, dataloader, whole KG,
+model, optimizer, evaluation metrics, train/val/test loops, and so on.
+
+In particular, users need to set the ``preprocess`` field in config file to be ``True`` if they run the code
+for the first time to build the whole KG.
+
+Users can set ``resume`` field in config file to be ``True`` to load a pre-trained model.
+
+.. code:: python
+
+    def main(cfg, model_path):
+        dataset = KinshipDataset(
+            root_dir="examples/pytorch/kg_completion/data/{}".format(cfg["dataset"]),
+            topology_subdir="kgc",
+        )
+
+        train_dataloader = DataLoader(
+            dataset.train,
+            batch_size=cfg["batch_size"],
+            shuffle=True,
+            num_workers=cfg['loader_threads'],
+            collate_fn=dataset.collate_fn,
+        )
+        val_dataloader = DataLoader(
+            dataset.val,
+            batch_size=cfg["batch_size"],
+            shuffle=False,
+            num_workers=cfg['loader_threads'],
+            collate_fn=dataset.collate_fn,
+        )
+        test_dataloader = DataLoader(
+            dataset.test,
+            batch_size=cfg["batch_size"],
+            shuffle=False,
+            num_workers=cfg['loader_threads'],
+            collate_fn=dataset.collate_fn,
+        )
+
         data = []
         rows = []
         columns = []
-        num_entities = vocab['e1'].num_token
-        num_relations = vocab['rel'].num_token
-    
-        if args.preprocess:
-            for i, str2var in enumerate(train_batcher):
+        num_entities = len(dataset.vocab_model.in_word_vocab)
+        num_relations = len(dataset.vocab_model.out_word_vocab)
+
+        if cfg["preprocess"]:
+            for i, str2var in enumerate(train_dataloader):
                 print("batch number:", i)
-                for j in range(str2var['e1'].shape[0]):
-                    for k in range(str2var['e2_multi1'][j].shape[0]):
-                        if str2var['e2_multi1'][j][k] != 0:
-                            data.append(str2var['rel'][j].cpu().tolist()[0])
-                            rows.append(str2var['e1'][j].cpu().tolist()[0])
-                            columns.append(str2var['e2_multi1'][j][k].cpu().tolist())
+                for j in range(str2var["e1"].shape[0]):
+                    for k in range(str2var["e2_multi1"][j].shape[0]):
+                        if str2var["e2_multi1"][j][k] != 0:
+                            data.append(str2var["rel"][j].tolist()[0])
+                            rows.append(str2var["e1"][j].tolist()[0])
+                            columns.append(str2var["e2_multi1"][j][k].tolist())
                         else:
                             break
-    
-            from graph4nlp.pytorch.data.data import GraphData, to_batch
+
+            from graph4nlp.pytorch.data.data import GraphData
+
             KG_graph = GraphData()
             KG_graph.add_nodes(num_entities)
             for e1, rel, e2 in zip(rows, data, columns):
                 KG_graph.add_edge(e1, e2)
                 eid = KG_graph.edge_ids(e1, e2)[0]
-                KG_graph.edge_attributes[eid]['token'] = rel
-    
-            torch.save(KG_graph, '{}/processed/KG_graph.pt'.format(args.data))
-            return
-    
-    
-        if args.model is None:
-            model = ConvE(args, vocab['e1'].num_token, vocab['rel'].num_token)
-        elif args.model == 'conve':
-            model = ConvE(args, vocab['e1'].num_token, vocab['rel'].num_token)
-        elif args.model == 'distmult':
-            model = Distmult(args, vocab['e1'].num_token, vocab['rel'].num_token)
-        elif args.model == 'complex':
-            model = Complex(args, vocab['e1'].num_token, vocab['rel'].num_token)
-        elif args.model == 'ggnn_distmult':
-            model = GGNNDistMult(args, vocab['e1'].num_token, vocab['rel'].num_token)
-        elif args.model == 'gcn_distmult':
-            model = GCNDistMult(args, vocab['e1'].num_token, vocab['rel'].num_token)
-        elif args.model == 'gcn_complex':
-            model = GCNComplex(args, vocab['e1'].num_token, vocab['rel'].num_token)
+                KG_graph.edge_attributes[eid]["token"] = rel
+
+            torch.save(
+                KG_graph,
+                "examples/pytorch/kg_completion/data/{}/processed/kgc/KG_graph.pt".format(
+                    cfg["dataset"]
+                ),
+            )
         else:
-            raise Exception("Unknown model!")
-    
-        if args.model in ['ggnn_distmult', 'gcn_distmult', 'gcn_complex']:
-            graph_path = '{}/processed/KG_graph.pt'.format(args.data)
+            graph_path = "examples/pytorch/kg_completion/data/{}/processed/kgc/" "KG_graph.pt".format(
+                cfg["dataset"]
+            )
             KG_graph = torch.load(graph_path)
-            if Config.cuda:
-                KG_graph = KG_graph.to('cuda')
+
+        if cfg["cuda"] is True:
+            KG_graph = KG_graph.to("cuda")
         else:
-            KG_graph = None
-    
-        train_batcher.at_batch_prepared_observers.insert(1,TargetIdx2MultiTarget(num_entities, 'e2_multi1', 'e2_multi1_binary'))
-    
-        eta = ETAHook('train', print_every_x_batches=args.log_interval)
-        train_batcher.subscribe_to_events(eta)
-        train_batcher.subscribe_to_start_of_epoch_event(eta)
-        train_batcher.subscribe_to_events(LossHook('train', print_every_x_batches=args.log_interval))
-        if Config.cuda:
-            model.cuda()
-        if args.resume:
+            KG_graph = KG_graph.to("cpu")
+
+        model = KGC(cfg, num_entities, num_relations)
+
+        if cfg["cuda"] is True:
+            model.to("cuda")
+
+        if cfg["resume"]:
             model_params = torch.load(model_path)
             print(model)
             total_param_size = []
@@ -259,108 +369,84 @@ Build Model
             print(np.array(total_param_size).sum())
             model.load_state_dict(model_params)
             model.eval()
-            ranking_and_hits(model, test_rank_batcher, vocab, 'test_evaluation', kg_graph=KG_graph)
-            ranking_and_hits(model, dev_rank_batcher, vocab, 'dev_evaluation', kg_graph=KG_graph)
+            ranking_and_hits_this(
+                cfg, model, test_dataloader, dataset.vocab_model, "test_evaluation", kg_graph=KG_graph
+            )
+            ranking_and_hits_this(
+                cfg, model, val_dataloader, dataset.vocab_model, "dev_evaluation", kg_graph=KG_graph
+            )
         else:
             model.init()
-    
-        total_param_size = []
-        params = [value.numel() for value in model.parameters()]
-        print(params)
-        print(np.sum(params))
-    
+
         best_mrr = 0
-    
-        opt = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.l2)
-        for epoch in range(args.epochs):
+
+        opt = torch.optim.Adam(model.parameters(), lr=cfg["lr"], weight_decay=cfg["l2"])
+        for epoch in range(cfg["epochs"]):
             model.train()
-            for i, str2var in enumerate(train_batcher):
+            for str2var in train_dataloader:
                 opt.zero_grad()
-                e1 = str2var['e1']
-                rel = str2var['rel']
-                e2_multi = str2var['e2_multi1_binary'].float()
+                e1_tensor = str2var["e1_tensor"]
+                rel_tensor = str2var["rel_tensor"]
+                e2_multi = str2var["e2_multi1_binary"].float()
+                if cfg["cuda"]:
+                    e1_tensor = e1_tensor.to("cuda")
+                    rel_tensor = rel_tensor.to("cuda")
+                    e2_multi = e2_multi.to("cuda")
                 # label smoothing
-                e2_multi = ((1.0-args.label_smoothing)*e2_multi) + (1.0/e2_multi.size(1))
-    
-                pred = model.forward(e1, rel, KG_graph)
+                e2_multi = ((1.0 - cfg["label_smoothing"]) * e2_multi) + (1.0 / e2_multi.size(1))
+
+                pred = model(e1_tensor, rel_tensor, KG_graph)
                 loss = model.loss(pred, e2_multi)
                 loss.backward()
                 opt.step()
-    
-                train_batcher.state.loss = loss.cpu()
-    
+
+                # train_batcher.state.loss = loss.cpu()
+
             model.eval()
             with torch.no_grad():
                 if epoch % 2 == 0 and epoch > 0:
-                    dev_mrr = ranking_and_hits(model, dev_rank_batcher, vocab, 'dev_evaluation', kg_graph=KG_graph)
+                    dev_mrr = ranking_and_hits_this(
+                        cfg,
+                        model,
+                        val_dataloader,
+                        dataset.vocab_model,
+                        "dev_evaluation",
+                        kg_graph=KG_graph,
+                    )
                     if dev_mrr > best_mrr:
                         best_mrr = dev_mrr
-                        print('saving best model to {0}'.format(model_path))
+                        print("saving best model to {0}".format(model_path))
                         torch.save(model.state_dict(), model_path)
                 if epoch % 2 == 0:
                     if epoch > 0:
-                        ranking_and_hits(model, test_rank_batcher, vocab, 'test_evaluation', kg_graph=KG_graph)
+                        ranking_and_hits_this(
+                            cfg,
+                            model,
+                            test_dataloader,
+                            dataset.vocab_model,
+                            "test_evaluation",
+                            kg_graph=KG_graph,
+                        )
 
-Config Setup
-------------
-
-.. code:: python
-
-    parser = argparse.ArgumentParser(description='Link prediction for knowledge graphs')
-    parser.add_argument('--batch-size', type=int, default=128, help='input batch size for training (default: 128)')
-    parser.add_argument('--test-batch-size', type=int, default=128, help='input batch size for testing/validation (default: 128)')
-    parser.add_argument('--epochs', type=int, default=1000, help='number of epochs to train (default: 1000)')
-    parser.add_argument('--lr', type=float, default=0.003, help='learning rate (default: 0.003)')
-    parser.add_argument('--seed', type=int, default=1234, metavar='S', help='random seed (default: 17)')
-    parser.add_argument('--log-interval', type=int, default=100, help='how many batches to wait before logging training status')
-    parser.add_argument('--data', type=str, default='kinship', help='Dataset to use: {FB15k-237, YAGO3-10, WN18RR, umls, nations, kinship}, default: FB15k-237')
-    parser.add_argument('--l2', type=float, default=0.0, help='Weight decay value to use in the optimizer. Default: 0.0')
-    parser.add_argument('--model', type=str, default='ggnn_distmult', help='Choose from: {conve, distmult, complex}')
-    parser.add_argument('--direction_option', type=str, default='undirected', help='Choose from: {undirected, bi_sep, bi_fuse}')
-    parser.add_argument('--embedding-dim', type=int, default=200, help='The embedding dimension (1D). Default: 200')
-    parser.add_argument('--embedding-shape1', type=int, default=20, help='The first dimension of the reshaped 2D embedding. The second dimension is infered. Default: 20')
-    parser.add_argument('--hidden-drop', type=float, default=0.25, help='Dropout for the hidden layer. Default: 0.3.')
-    parser.add_argument('--input-drop', type=float, default=0.2, help='Dropout for the input embeddings. Default: 0.2.')
-    parser.add_argument('--feat-drop', type=float, default=0.2, help='Dropout for the convolutional features. Default: 0.2.')
-    parser.add_argument('--lr-decay', type=float, default=0.995, help='Decay the learning rate by this factor every epoch. Default: 0.995')
-    parser.add_argument('--loader-threads', type=int, default=4, help='How many loader threads to use for the batch loaders. Default: 4')
-    parser.add_argument('--preprocess', action='store_true', help='Preprocess the dataset. Needs to be executed only once. Default: 4')
-    parser.add_argument('--resume', action='store_true', help='Resume a model.')
-    parser.add_argument('--use-bias', action='store_true', help='Use a bias in the convolutional layer. Default: True')
-    parser.add_argument('--label-smoothing', type=float, default=0.1, help='Label smoothing value to use. Default: 0.1')
-    parser.add_argument('--hidden-size', type=int, default=9728, help='The side of the hidden layer. The required size changes with the size of the embeddings. Default: 9728 (embedding size 200).')
-    
-    parser.add_argument('--channels', type=int, default=200, help='The side of the hidden layer. The required size changes with the size of the embeddings. Default: 9728 (embedding size 200).')
-    parser.add_argument('--kernel_size', type=int, default=5, help='The side of the hidden layer. The required size changes with the size of the embeddings. Default: 9728 (embedding size 200).')
-
-
-If you run the task for the first time, run with:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Run the model
+-------------
 
 .. code:: python
 
-    args = parser.parse_args(args=['--data', 'kinship', '--model', 'ggnn_distmult', '--preprocess'])
+    cfg = get_args()
+    task_args = get_yaml_config(cfg["task_config"])
 
-    # parse console parameters and set global variables
-    Config.backend = 'pytorch'
-    Config.cuda = False
-    Config.embedding_dim = args.embedding_dim
-    
-    model_name = '{2}_{0}_{1}'.format(args.input_drop, args.hidden_drop, args.model)
-    model_path = 'saved_models/{0}_{1}.model'.format(args.data, model_name)
-    
-    torch.manual_seed(args.seed)
+    task_args["cuda"] = True
 
-    main(args, model_path)
+    model_name = "{2}_{3}_{0}_{1}".format(
+        task_args["input_drop"], task_args["hidden_drop"], task_args["model"], task_args["direction_option"]
+    )
+    model_path = "examples/pytorch/kg_completion/saved_models/{0}_{1}.model".format(
+        task_args["dataset"], model_name
+    )
 
-
-After preprocess the kinship data, then run:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code:: python
-
-    args = parser.parse_args(args=['--data', 'kinship', '--model', 'ggnn_distmult'])
-    main(args, model_path)
+    torch.manual_seed(task_args["seed"])
+    main(task_args, model_path)
 
 
 Results on kinship
