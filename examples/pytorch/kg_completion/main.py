@@ -8,10 +8,11 @@ from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config
+from graph4nlp.pytorch.modules.utils.logger import Logger
 
-from model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
+from .model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 np.set_printoptions(precision=3)
 
@@ -70,12 +71,18 @@ class KGC(nn.Module):
         return argsort1[:, 0].item()
 
 
-def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=None):
+def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=None, logger=None):
     print("")
     print("-" * 50)
     print(name)
     print("-" * 50)
     print("")
+    if logger is not None:
+        logger.write("")
+        logger.write("-" * 50)
+        logger.write(name)
+        logger.write("-" * 50)
+        logger.write("")
     hits_left = []
     hits_right = []
     hits = []
@@ -168,6 +175,18 @@ def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=No
     print("Mean reciprocal rank right: {0}".format(np.mean(1.0 / np.array(ranks_right))))
     print("Mean reciprocal rank: {0}".format(np.mean(1.0 / np.array(ranks))))
 
+    if logger is not None:
+        for i in [0, 9]:
+            logger.write("Hits left @{0}: {1}".format(i + 1, np.mean(hits_left[i])))
+            logger.write("Hits right @{0}: {1}".format(i + 1, np.mean(hits_right[i])))
+            logger.write("Hits @{0}: {1}".format(i + 1, np.mean(hits[i])))
+        logger.write("Mean rank left: {0}".format(np.mean(ranks_left)))
+        logger.write("Mean rank right: {0}".format(np.mean(ranks_right)))
+        logger.write("Mean rank: {0}".format(np.mean(ranks)))
+        logger.write("Mean reciprocal rank left: {0}".format(np.mean(1.0 / np.array(ranks_left))))
+        logger.write("Mean reciprocal rank right: {0}".format(np.mean(1.0 / np.array(ranks_right))))
+        logger.write("Mean reciprocal rank: {0}".format(np.mean(1.0 / np.array(ranks))))
+
     return np.mean(1.0 / np.array(ranks))
 
 
@@ -177,28 +196,34 @@ def main(cfg, model_path):
         topology_subdir="kgc",
     )
 
+    cfg["out_dir"] = cfg["out_dir"] + "_{}_{}".format(cfg['model'], cfg['direction_option'])
+
+    logger = Logger(
+        cfg["out_dir"],
+        config={k: v for k, v in cfg.items() if k != "device"},
+        overwrite=True,
+    )
+    logger.write(cfg["out_dir"])
+
     train_dataloader = DataLoader(
         dataset.train,
         batch_size=cfg["batch_size"],
         shuffle=True,
-        num_workers=0,
-        # num_workers=args.loader_threads,
+        num_workers=cfg['loader_threads'],
         collate_fn=dataset.collate_fn,
     )
     val_dataloader = DataLoader(
         dataset.val,
         batch_size=cfg["batch_size"],
         shuffle=False,
-        num_workers=0,
-        # num_workers=args.loader_threads,
+        num_workers=cfg['loader_threads'],
         collate_fn=dataset.collate_fn,
     )
     test_dataloader = DataLoader(
         dataset.test,
         batch_size=cfg["batch_size"],
         shuffle=False,
-        num_workers=0,
-        # num_workers=args.loader_threads,
+        num_workers=cfg['loader_threads'],
         collate_fn=dataset.collate_fn,
     )
 
@@ -263,18 +288,18 @@ def main(cfg, model_path):
         model.load_state_dict(model_params)
         model.eval()
         ranking_and_hits_this(
-            cfg, model, test_dataloader, dataset.vocab_model, "test_evaluation", kg_graph=KG_graph
+            cfg, model, test_dataloader, dataset.vocab_model, "test_evaluation", kg_graph=KG_graph, logger=logger
         )
         ranking_and_hits_this(
-            cfg, model, val_dataloader, dataset.vocab_model, "dev_evaluation", kg_graph=KG_graph
+            cfg, model, val_dataloader, dataset.vocab_model, "dev_evaluation", kg_graph=KG_graph, logger=logger
         )
     else:
         model.init()
 
-    total_param_size = []
-    params = [value.numel() for value in model.parameters()]
-    print(params)
-    print(np.sum(params))
+    # total_param_size = []
+    # params = [value.numel() for value in model.parameters()]
+    # print(params)
+    # print(np.sum(params))
 
     best_mrr = 0
 
@@ -310,6 +335,7 @@ def main(cfg, model_path):
                     dataset.vocab_model,
                     "dev_evaluation",
                     kg_graph=KG_graph,
+                    logger=logger
                 )
                 if dev_mrr > best_mrr:
                     best_mrr = dev_mrr
@@ -324,6 +350,7 @@ def main(cfg, model_path):
                         dataset.vocab_model,
                         "test_evaluation",
                         kg_graph=KG_graph,
+                        logger=logger
                     )
 
 
@@ -345,8 +372,8 @@ if __name__ == "__main__":
 
     task_args["cuda"] = True
 
-    model_name = "{2}_{0}_{1}".format(
-        task_args["input_drop"], task_args["hidden_drop"], task_args["model"]
+    model_name = "{2}_{3}_{0}_{1}".format(
+        task_args["input_drop"], task_args["hidden_drop"], task_args["model"], task_args["direction_option"]
     )
     model_path = "examples/pytorch/kg_completion/saved_models/{0}_{1}.model".format(
         task_args["dataset"], model_name
