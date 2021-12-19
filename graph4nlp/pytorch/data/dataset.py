@@ -206,9 +206,9 @@ class DoubleText2TextDataItem(DataItem):
 
 
 class SequenceLabelingDataItem(DataItem):
-    def __init__(self, input_text, tokenizer, output_tags=None):
+    def __init__(self, input_text, tokenizer, output_text=None):
         super(SequenceLabelingDataItem, self).__init__(input_text, tokenizer)
-        self.output_tag = output_tags
+        self.output_tag = output_text
 
     def extract(self):
         """
@@ -1867,7 +1867,7 @@ class SequenceLabelingDataset(Dataset):
                     output.append(line.strip().split(" ")[-1])
                     if line[0] == "." and len(input) >= 2:
                         data_item = SequenceLabelingDataItem(
-                            input_text=input, output_tags=output, tokenizer=self.tokenizer
+                            input_text=input, output_text=output, tokenizer=self.tokenizer
                         )
                         data.append(data_item)
                         input = []

@@ -102,7 +102,7 @@ class ConllDataset(SequenceLabelingDataset):
                     "outputFormat": "json",
                 }
                 for item in data_items:
-                    graph = self.topology_builder.topology(
+                    graph = self.topology_builder.static_topology(
                         raw_text_data=item.input_text,
                         auxiliary_args=self.depedency_topology_aux_args,
                     )
@@ -119,7 +119,7 @@ class ConllDataset(SequenceLabelingDataset):
                     "outputFormat": "json",
                 }
                 for item in data_items:
-                    graph = self.topology_builder.topology(
+                    graph = self.topology_builder.static_topology(
                         raw_text_data=item.input_text,
                         merge_strategy=self.merge_strategy,
                         edge_strategy=self.edge_strategy,
@@ -297,7 +297,7 @@ class ConllDataset_inference(SequenceLabelingDataset):
                     "outputFormat": "json",
                 }
                 for item in data_items:
-                    graph = self.topology_builder.topology(
+                    graph = self.topology_builder.static_topology(
                         raw_text_data=item.input_text,
                         auxiliary_args=self.depedency_topology_aux_args,
                     )
@@ -314,7 +314,7 @@ class ConllDataset_inference(SequenceLabelingDataset):
                     "outputFormat": "json",
                 }
                 for item in data_items:
-                    graph = self.topology_builder.topology(
+                    graph = self.topology_builder.static_topology(
                         raw_text_data=item.input_text,
                         merge_strategy=self.merge_strategy,
                         edge_strategy=self.edge_strategy,
