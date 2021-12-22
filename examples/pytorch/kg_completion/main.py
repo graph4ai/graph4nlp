@@ -196,7 +196,7 @@ def main(cfg, model_path):
         topology_subdir="kgc",
     )
 
-    cfg["out_dir"] = cfg["out_dir"] + "_{}_{}".format(cfg['model'], cfg['direction_option'])
+    cfg["out_dir"] = cfg["out_dir"] + "_{}_{}".format(cfg["model"], cfg["direction_option"])
 
     logger = Logger(
         cfg["out_dir"],
@@ -209,21 +209,21 @@ def main(cfg, model_path):
         dataset.train,
         batch_size=cfg["batch_size"],
         shuffle=True,
-        num_workers=cfg['loader_threads'],
+        num_workers=cfg["loader_threads"],
         collate_fn=dataset.collate_fn,
     )
     val_dataloader = DataLoader(
         dataset.val,
         batch_size=cfg["batch_size"],
         shuffle=False,
-        num_workers=cfg['loader_threads'],
+        num_workers=cfg["loader_threads"],
         collate_fn=dataset.collate_fn,
     )
     test_dataloader = DataLoader(
         dataset.test,
         batch_size=cfg["batch_size"],
         shuffle=False,
-        num_workers=cfg['loader_threads'],
+        num_workers=cfg["loader_threads"],
         collate_fn=dataset.collate_fn,
     )
 
@@ -288,10 +288,22 @@ def main(cfg, model_path):
         model.load_state_dict(model_params)
         model.eval()
         ranking_and_hits_this(
-            cfg, model, test_dataloader, dataset.vocab_model, "test_evaluation", kg_graph=KG_graph, logger=logger
+            cfg,
+            model,
+            test_dataloader,
+            dataset.vocab_model,
+            "test_evaluation",
+            kg_graph=KG_graph,
+            logger=logger,
         )
         ranking_and_hits_this(
-            cfg, model, val_dataloader, dataset.vocab_model, "dev_evaluation", kg_graph=KG_graph, logger=logger
+            cfg,
+            model,
+            val_dataloader,
+            dataset.vocab_model,
+            "dev_evaluation",
+            kg_graph=KG_graph,
+            logger=logger,
         )
     else:
         model.init()
@@ -335,7 +347,7 @@ def main(cfg, model_path):
                     dataset.vocab_model,
                     "dev_evaluation",
                     kg_graph=KG_graph,
-                    logger=logger
+                    logger=logger,
                 )
                 if dev_mrr > best_mrr:
                     best_mrr = dev_mrr
@@ -350,7 +362,7 @@ def main(cfg, model_path):
                         dataset.vocab_model,
                         "test_evaluation",
                         kg_graph=KG_graph,
-                        logger=logger
+                        logger=logger,
                     )
 
 
@@ -373,7 +385,10 @@ if __name__ == "__main__":
     task_args["cuda"] = True
 
     model_name = "{2}_{3}_{0}_{1}".format(
-        task_args["input_drop"], task_args["hidden_drop"], task_args["model"], task_args["direction_option"]
+        task_args["input_drop"],
+        task_args["hidden_drop"],
+        task_args["model"],
+        task_args["direction_option"],
     )
     model_path = "examples/pytorch/kg_completion/saved_models/{0}_{1}.model".format(
         task_args["dataset"], model_name

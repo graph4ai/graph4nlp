@@ -236,7 +236,10 @@ if __name__ == "__main__":
     task_args["cuda"] = True
 
     model_name = "{2}_{3}_{0}_{1}".format(
-        task_args["input_drop"], task_args["hidden_drop"], task_args["model"], task_args["direction_option"]
+        task_args["input_drop"],
+        task_args["hidden_drop"],
+        task_args["model"],
+        task_args["direction_option"],
     )
     model_path = "examples/pytorch/kg_completion/saved_models/{0}_{1}.model".format(
         task_args["dataset"], model_name

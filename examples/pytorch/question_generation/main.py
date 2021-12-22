@@ -73,9 +73,7 @@ class QGModel(nn.Module):
             bert_model_name=embedding_styles.get("bert_model_name", "bert-base-uncased"),
             bert_lower_case=embedding_styles.get("bert_lower_case", True),
             word_dropout=config["graph_initialization_args"]["word_dropout"],
-            bert_dropout=config["graph_initialization_args"].get(
-                "bert_dropout", None
-            ),
+            bert_dropout=config["graph_initialization_args"].get("bert_dropout", None),
             rnn_dropout=config["graph_initialization_args"]["rnn_dropout"],
         )
         self.graph_name = self.g2s.graph_name
