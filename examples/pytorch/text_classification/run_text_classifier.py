@@ -15,14 +15,16 @@ from torch.utils.data import DataLoader
 from graph4nlp.pytorch.datasets.trec import TrecDataset
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
 from graph4nlp.pytorch.modules.graph_construction import (
-    ConstituencyBasedGraphConstruction,
-    DependencyBasedGraphConstruction,
-    IEBasedGraphConstruction,
     NodeEmbeddingBasedGraphConstruction,
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
-from graph4nlp.pytorch.modules.graph_embedding import GAT, GGNN, GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
+    WordEmbedding,
+)
+from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_initialization import (  # noqa
+    GraphEmbeddingInitialization,
+)
+from graph4nlp.pytorch.modules.graph_embedding_learning import GAT, GGNN, GraphSAGE
 from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
 from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
 from graph4nlp.pytorch.modules.utils import constants as Constants
@@ -41,6 +43,10 @@ class TextClassifier(nn.Module):
         self.graph_name = self.config["graph_construction_args"]["graph_construction_share"][
             "graph_name"
         ]
+        assert not (
+            self.graph_name in ("node_emb", "node_emb_refined") and config["gnn"] == "gat"
+        ), "dynamic graph construction does not support GAT"
+
         embedding_style = {
             "single_token_item": True if self.graph_name != "ie" else False,
             "emb_strategy": config.get("emb_strategy", "w2v_bilstm"),
@@ -49,45 +55,19 @@ class TextClassifier(nn.Module):
             "bert_lower_case": True,
         }
 
-        assert not (
-            self.graph_name in ("node_emb", "node_emb_refined") and config["gnn"] == "gat"
-        ), "dynamic graph construction does not support GAT"
+        self.graph_initializer = GraphEmbeddingInitialization(
+            word_vocab=self.vocab_model.in_word_vocab,
+            embedding_style=embedding_style,
+            hidden_size=config["num_hidden"],
+            word_dropout=config["word_dropout"],
+            rnn_dropout=config["rnn_dropout"],
+            fix_word_emb=not config["no_fix_word_emb"],
+            fix_bert_emb=not config.get("no_fix_bert_emb", False),
+        )
 
         use_edge_weight = False
-        if self.graph_name == "dependency":
-            self.graph_topology = DependencyBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab.in_word_vocab,
-                hidden_size=config["num_hidden"],
-                word_dropout=config["word_dropout"],
-                rnn_dropout=config["rnn_dropout"],
-                fix_word_emb=not config["no_fix_word_emb"],
-                fix_bert_emb=not config.get("no_fix_bert_emb", False),
-            )
-        elif self.graph_name == "constituency":
-            self.graph_topology = ConstituencyBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab.in_word_vocab,
-                hidden_size=config["num_hidden"],
-                word_dropout=config["word_dropout"],
-                rnn_dropout=config["rnn_dropout"],
-                fix_word_emb=not config["no_fix_word_emb"],
-                fix_bert_emb=not config.get("no_fix_bert_emb", False),
-            )
-        elif self.graph_name == "ie":
-            self.graph_topology = IEBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab.in_word_vocab,
-                hidden_size=config["num_hidden"],
-                word_dropout=config["word_dropout"],
-                rnn_dropout=config["rnn_dropout"],
-                fix_word_emb=not config["no_fix_word_emb"],
-                fix_bert_emb=not config.get("no_fix_bert_emb", False),
-            )
-        elif self.graph_name == "node_emb":
+        if self.graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
-                vocab.in_word_vocab,
-                embedding_style,
                 sim_metric_type=config["gl_metric_type"],
                 num_heads=config["gl_num_heads"],
                 top_k_neigh=config["gl_top_k"],
@@ -97,16 +77,10 @@ class TextClassifier(nn.Module):
                 sparsity_ratio=config["gl_sparsity_ratio"],
                 input_size=config["num_hidden"],
                 hidden_size=config["gl_num_hidden"],
-                fix_word_emb=not config["no_fix_word_emb"],
-                fix_bert_emb=not config.get("no_fix_bert_emb", False),
-                word_dropout=config["word_dropout"],
-                rnn_dropout=config["rnn_dropout"],
             )
             use_edge_weight = True
         elif self.graph_name == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
-                vocab.in_word_vocab,
-                embedding_style,
                 config["init_adj_alpha"],
                 sim_metric_type=config["gl_metric_type"],
                 num_heads=config["gl_num_heads"],
@@ -117,17 +91,11 @@ class TextClassifier(nn.Module):
                 sparsity_ratio=config["gl_sparsity_ratio"],
                 input_size=config["num_hidden"],
                 hidden_size=config["gl_num_hidden"],
-                fix_word_emb=not config["no_fix_word_emb"],
-                fix_bert_emb=not config.get("no_fix_bert_emb", False),
-                word_dropout=config["word_dropout"],
-                rnn_dropout=config["rnn_dropout"],
             )
             use_edge_weight = True
-        else:
-            raise RuntimeError("Unknown graph_name: {}".format(self.graph_name))
 
-        if "w2v" in self.graph_topology.embedding_layer.word_emb_layers:
-            self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[
+        if "w2v" in self.graph_initializer.embedding_layer.word_emb_layers:
+            self.word_emb = self.graph_initializer.embedding_layer.word_emb_layers[
                 "w2v"
             ].word_emb_layer
         else:
@@ -198,8 +166,12 @@ class TextClassifier(nn.Module):
         self.loss = GeneralLoss("CrossEntropy")
 
     def forward(self, graph_list, tgt=None, require_loss=True):
-        # graph embedding construction
-        batch_gd = self.graph_topology(graph_list)
+        # graph embedding initialization
+        batch_gd = self.graph_initializer(graph_list)
+
+        # run dynamic graph construction if turned on
+        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+            batch_gd = self.graph_topology.dynamic_topology(batch_gd)
 
         # run GNN
         self.gnn(batch_gd)

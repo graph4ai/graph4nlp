@@ -7,6 +7,7 @@ from graph4nlp.pytorch.data.dataset import (
     Dataset,
     DoubleText2TextDataItem,
     KGCompletionDataItem,
+    Text2LabelDataItem,
     Text2TreeDataItem,
     word_tokenize,
 )
@@ -140,7 +141,8 @@ class InferenceWrapperBase(nn.Module):
                     output_tree=None,
                     tokenizer=self.tokenizer,
                 )
-
+            elif self.data_item_class == Text2LabelDataItem:
+                data_item = self.data_item_class(input_text=raw_sentence, tokenizer=self.tokenizer)
             else:
                 data_item = self.data_item_class(
                     input_text=raw_sentence, tokenizer=self.tokenizer, output_text=None

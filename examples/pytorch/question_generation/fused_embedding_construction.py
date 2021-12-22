@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from graph4nlp.pytorch.data.data import from_batch
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import (
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
     BertEmbedding,
     EmbeddingConstructionBase,
     RNNEmbedding,
