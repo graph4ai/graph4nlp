@@ -130,8 +130,6 @@ class Graph2XBase(nn.Module):
                 input_size=emb_input_size,
                 hidden_size=emb_hidden_size,
             )
-        else:
-            raise NotImplementedError()
 
         self.enc_word_emb = (
             self.graph_initializer.embedding_layer.word_emb_layers["w2v"]

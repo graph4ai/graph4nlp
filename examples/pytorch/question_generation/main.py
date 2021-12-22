@@ -48,7 +48,7 @@ class QGModel(nn.Module):
                 self.vocab.in_word_vocab.embeddings.shape[0],
                 self.vocab.in_word_vocab.embeddings.shape[1],
                 pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
-                fix_emb=config["graph_construction_args"]["node_embedding"]["fix_word_emb"],
+                fix_emb=config["graph_initialization_args"]["fix_word_emb"],
             ).word_emb_layer
         self.g2s.seq_decoder.tgt_emb = self.word_emb
 
@@ -61,29 +61,29 @@ class QGModel(nn.Module):
         # Replace the default embedding construction layer
         #   with the customized passage-answer alignment embedding construction layer
         # TODO: delete the default layer and clear the memory
-        embedding_styles = config["graph_construction_args"]["node_embedding"]["embedding_style"]
+        embedding_styles = config["graph_initialization_args"]["embedding_style"]
         self.g2s.graph_initializer.embedding_layer = FusedEmbeddingConstruction(
             self.vocab.in_word_vocab,
             embedding_styles["single_token_item"],
             emb_strategy=embedding_styles["emb_strategy"],
-            hidden_size=config["graph_construction_args"]["node_embedding"]["hidden_size"],
+            hidden_size=config["graph_initialization_args"]["hidden_size"],
             num_rnn_layers=embedding_styles.get("num_rnn_layers", 1),
-            fix_word_emb=config["graph_construction_args"]["node_embedding"]["fix_word_emb"],
-            fix_bert_emb=config["graph_construction_args"]["node_embedding"]["fix_bert_emb"],
+            fix_word_emb=config["graph_initialization_args"]["fix_word_emb"],
+            fix_bert_emb=config["graph_initialization_args"]["fix_bert_emb"],
             bert_model_name=embedding_styles.get("bert_model_name", "bert-base-uncased"),
             bert_lower_case=embedding_styles.get("bert_lower_case", True),
-            word_dropout=config["graph_construction_args"]["node_embedding"]["word_dropout"],
-            bert_dropout=config["graph_construction_args"]["node_embedding"].get(
+            word_dropout=config["graph_initialization_args"]["word_dropout"],
+            bert_dropout=config["graph_initialization_args"].get(
                 "bert_dropout", None
             ),
-            rnn_dropout=config["graph_construction_args"]["node_embedding"]["rnn_dropout"],
+            rnn_dropout=config["graph_initialization_args"]["rnn_dropout"],
         )
         self.graph_name = self.g2s.graph_name
         self.vocab_model = self.g2s.vocab_model
 
     def encode_init_node_feature(self, data):
         # graph embedding initialization
-        batch_gd = self.g2s.graph_initializer.embedding_layer(data)
+        batch_gd = self.g2s.graph_initializer(data)
         return batch_gd
 
     def forward(self, data, oov_dict=None, require_loss=True):

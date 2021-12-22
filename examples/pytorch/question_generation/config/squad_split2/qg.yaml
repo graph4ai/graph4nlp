@@ -15,18 +15,18 @@ n_samples: null
 
 word_dropout: 0.4 # word embedding dropout
 enc_rnn_dropout: 0.3 # Encoder RNN dropout
-coverage_loss_ratio: 0.3 # coverage loss ratio
+coverage_loss_ratio: 0 # coverage loss ratio
 
 
 # Training
 seed: 1234
-batch_size: 80 # batch size
+batch_size: 50 # batch size
 epochs: 100 # number of maximal training epochs
 grad_clipping: 10
 early_stop_metric: 'BLEU_4'
 patience: 30
-lr: 0.001 # learning rate
-lr_patience: 3
+lr: 0.0007 # learning rate
+lr_patience: 10
 lr_reduce_factor: 0.7
 num_workers: 10 # number of data loader workers
 
