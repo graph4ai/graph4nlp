@@ -22,8 +22,6 @@ from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-
 
 def all_to_cuda(data, device=None):
     if isinstance(data, torch.Tensor):
