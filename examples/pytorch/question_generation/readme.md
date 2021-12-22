@@ -23,9 +23,14 @@ How to run
   python -m examples.pytorch.question_generation.main -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
 ```
 
-#### Run inference:
+#### Run inference advance:
 ```python
   python -m examples.pytorch.question_generation.inference_advance -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
+```
+
+#### Run inference:
+```python
+  python -m examples.pytorch.question_generation.inference -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
 ```
 
 
