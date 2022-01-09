@@ -6,9 +6,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
+    WordEmbedding,
+)
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_initialization import (  # noqa
+    GraphEmbeddingInitialization,
 )
 from graph4nlp.pytorch.modules.graph_embedding_learning.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding_learning.gcn import GCN
@@ -91,56 +96,20 @@ class Word2tag(nn.Module):
             "bert_lower_case": True,
         }
 
-        if args.graph_name == "line_graph":
-            if args.gnn_type == "ggnn":
-                self.graph_topology = LineBasedGraphConstruction(
-                    embedding_style=embedding_style,
-                    vocab=vocab.in_word_vocab,
-                    hidden_size=int(args.init_hidden_size / 2),
-                    rnn_dropout=None,
-                    word_dropout=args.word_dropout,
-                    device=self.device,
-                    fix_word_emb=not args.no_fix_word_emb,
-                    fix_bert_emb=not args.no_fix_bert_emb,
-                )
-            else:
-                self.graph_topology = LineBasedGraphConstruction(
-                    embedding_style=embedding_style,
-                    vocab=vocab.in_word_vocab,
-                    hidden_size=args.init_hidden_size,
-                    rnn_dropout=None,
-                    word_dropout=args.word_dropout,
-                    device=self.device,
-                    fix_word_emb=not args.no_fix_word_emb,
-                    fix_bert_emb=not args.no_fix_bert_emb,
-                )
-        if args.graph_name == "dependency_graph":
-            if args.gnn_type == "ggnn":
-                self.graph_topology = DependencyBasedGraphConstruction_without_tokenizer(
-                    embedding_style=embedding_style,
-                    vocab=vocab.in_word_vocab,
-                    hidden_size=int(args.init_hidden_size / 2),
-                    rnn_dropout=None,
-                    word_dropout=args.word_dropout,
-                    device=self.device,
-                    fix_word_emb=not args.no_fix_word_emb,
-                    fix_bert_emb=not args.no_fix_bert_emb,
-                )
-            else:
-                self.graph_topology = DependencyBasedGraphConstruction_without_tokenizer(
-                    embedding_style=embedding_style,
-                    vocab=vocab.in_word_vocab,
-                    hidden_size=args.init_hidden_size,
-                    rnn_dropout=None,
-                    word_dropout=args.word_dropout,
-                    device=self.device,
-                    fix_word_emb=not args.no_fix_word_emb,
-                    fix_bert_emb=not args.no_fix_bert_emb,
-                )
+
+
+        self.graph_initializer = GraphEmbeddingInitialization(  
+            word_vocab=self.vocab_model.in_word_vocab,
+            embedding_style=embedding_style,
+            hidden_size=args.init_hidden_size,
+            word_dropout=args.word_dropout,
+            rnn_dropout=None,
+            fix_word_emb=not args.no_fix_word_emb,
+            fix_bert_emb=not args.no_fix_word_emb,
+        )        
+
         if args.graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
-                vocab.in_word_vocab,
-                embedding_style,
                 sim_metric_type=args.gl_metric_type,
                 num_heads=args.gl_num_heads,
                 top_k_neigh=args.gl_top_k,
@@ -160,8 +129,6 @@ class Word2tag(nn.Module):
 
         if args.graph_name == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
-                vocab.in_word_vocab,
-                embedding_style,
                 args.init_adj_alpha,
                 sim_metric_type=args.gl_metric_type,
                 num_heads=args.gl_num_heads,
@@ -179,8 +146,8 @@ class Word2tag(nn.Module):
                 use_edge_weight=True,
             )
 
-        if "w2v" in self.graph_topology.embedding_layer.word_emb_layers:
-            self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[
+        if "w2v" in self.graph_initializer.embedding_layer.word_emb_layers:
+            self.word_emb = self.graph_initializer.embedding_layer.word_emb_layers[
                 "w2v"
             ].word_emb_layer
         else:
@@ -304,7 +271,7 @@ class Word2tag(nn.Module):
                 )
 
     def forward(self, graph, tgt=None, require_loss=True):
-        batch_graph = self.graph_topology(graph)
+        batch_graph = self.graph_initializer(graph)
 
         if self.use_gnn is False:
             batch_graph.node_features["node_emb"] = batch_graph.node_features["node_feat"]

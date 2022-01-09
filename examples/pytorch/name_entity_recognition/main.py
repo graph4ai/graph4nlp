@@ -263,7 +263,7 @@ class Conll:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NER")
-    parser.add_argument("--gpu", type=int, default=0, help="which GPU to use.")
+    parser.add_argument("--gpu", type=int, default=-1, help="which GPU to use.")
     parser.add_argument("--epochs", type=int, default=5, help="number of training epochs")
     parser.add_argument(
         "--direction_option",
@@ -311,7 +311,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--init_graph_name",
         type=str,
-        default="line",
+        default="dependency",
         help="initial graph construction type ('line', 'dependency', 'constituency', 'ie')",
     )
     parser.add_argument(

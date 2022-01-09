@@ -2,7 +2,7 @@ import copy
 import json
 
 from ...data.data import GraphData
-from .base import StaticGraphConstructionBase
+from .base import StaticGraphConstructionBase 
 
 
 class DependencyBasedGraphConstruction(StaticGraphConstructionBase):

@@ -70,6 +70,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
 
         self.label_names = label_names
         self.vocab_model = model.vocab_model
+        self.data_item = data_item
 
     def predict(self, raw_contents: list, batch_size=1):
         """
@@ -109,7 +110,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             collate_data = all_to_cuda(collate_data, device)
 
             # forward
-            if isinstance(data_collect[i], tuple):
+            if self.data_item == 'KGCompletionDataItem':
                 KG_graph = data_collect[i][1]
                 ret = self.model.inference_forward(collate_data, KG_graph)
                 ret = self.model.post_process(logits=ret, e2=collate_data["e2_tensor"])
