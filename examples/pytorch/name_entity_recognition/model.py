@@ -98,7 +98,7 @@ class Word2tag(nn.Module):
 
 
 
-        self.graph_initializer = GraphEmbeddingInitialization(  # @ShenKai: new graph initializer
+        self.graph_initializer = GraphEmbeddingInitialization(  
             word_vocab=self.vocab_model.in_word_vocab,
             embedding_style=embedding_style,
             hidden_size=args.init_hidden_size,
@@ -108,52 +108,6 @@ class Word2tag(nn.Module):
             fix_bert_emb=not args.no_fix_word_emb,
         )        
 
-        #if args.graph_name == "line_graph":
-        #    if args.gnn_type == "ggnn":
-        #        self.graph_topology = LineBasedGraphConstruction(
-        #            embedding_style=embedding_style,
-        #            vocab=vocab.in_word_vocab,
-        #            hidden_size=int(args.init_hidden_size / 2),
-        #            rnn_dropout=None,
-        #            word_dropout=args.word_dropout,
-        #            device=self.device,
-        #            fix_word_emb=not args.no_fix_word_emb,
-        #            fix_bert_emb=not args.no_fix_word_emb,
-        #        )
-        #    else:
-        #        self.graph_topology = LineBasedGraphConstruction(
-        #            embedding_style=embedding_style,
-        #            vocab=vocab.in_word_vocab,
-        #            hidden_size=args.init_hidden_size,
-        #            rnn_dropout=None,
-        #            word_dropout=args.word_dropout,
-        #            device=self.device,
-        #            fix_word_emb=not args.no_fix_word_emb,
-        #            fix_bert_emb=not args.no_fix_bert_emb,
-        #        )
-        #if args.graph_name == "dependency_graph":
-        #    if args.gnn_type == "ggnn":
-        #        self.graph_topology = DependencyBasedGraphConstruction_without_tokenizer(
-        #            embedding_style=embedding_style,
-        #            vocab=vocab.in_word_vocab,
-        #            hidden_size=int(args.init_hidden_size / 2),
-        #            rnn_dropout=None,
-        #            word_dropout=args.word_dropout,
-        #            device=self.device,
-        #            fix_word_emb=not args.no_fix_word_emb,
-        #            fix_bert_emb=not args.no_fix_bert_emb,
-        #        )
-        #    else:
-        #        self.graph_topology = DependencyBasedGraphConstruction_without_tokenizer(
-        #            embedding_style=embedding_style,
-        #            vocab=vocab.in_word_vocab,
-        #            hidden_size=args.init_hidden_size,
-        #            rnn_dropout=None,
-        #            word_dropout=args.word_dropout,
-        #            device=self.device,
-        #            fix_word_emb=not args.no_fix_word_emb,
-        #            fix_bert_emb=not args.no_fix_bert_emb,
-        #        )
         if args.graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
                 sim_metric_type=args.gl_metric_type,
