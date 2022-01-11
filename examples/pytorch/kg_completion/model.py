@@ -3,8 +3,8 @@ from torch.nn import Parameter
 from torch.nn import functional as F
 from torch.nn.init import xavier_normal_
 
-from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
+from graph4nlp.pytorch.modules.graph_embedding_learning.gcn import GCN
+from graph4nlp.pytorch.modules.graph_embedding_learning.ggnn import GGNN
 from graph4nlp.pytorch.modules.prediction.classification.kg_completion import ComplEx, DistMult
 
 

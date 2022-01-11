@@ -1,0 +1,72 @@
+graph_construction_name: "ie"
+graph_embedding_name: "gcn"
+decoder_name: "stdrnn"
+
+out_dir: "out/cnn/gcn_bi_fuse_ie_ckpt"
+model_type: 'gcn'
+
+vocab_lower_case: true
+
+graph_construction_args:
+  graph_construction_share:
+    graph_name: "ie"
+    root_dir: "examples/pytorch/summarization/cnn"
+    topology_subdir: 'IEGraph_3w'
+    thread_number: 35
+    port: 9100
+    timeout: 15000
+
+  graph_construction_private:
+    edge_strategy: "as_node"
+    merge_strategy: null
+    sequential_link: true
+    as_node: false
+
+graph_initialization_args:
+  input_size: 300
+  hidden_size: 300
+  word_dropout: 0.2
+  rnn_dropout: 0.3
+  fix_bert_emb: false
+  fix_word_emb: false
+  embedding_style:
+    single_token_item: false
+    emb_strategy: "w2v_bilstm"
+    num_rnn_layers: 1
+    bert_model_name: null
+    bert_lower_case: null
+
+graph_embedding_args:
+  graph_embedding_share:
+    num_layers: 3
+    input_size: 300
+    hidden_size: 300
+    output_size: 300
+    direction_option: "bi_fuse"
+    feat_drop: 0.2
+
+  graph_embedding_private:
+    gcn_norm: 'both'
+    weight: true
+    bias: true
+    activation: null
+    allow_zero_in_degree: false
+    use_edge_weight: false
+
+decoder_args:
+  rnn_decoder_share:
+    rnn_type: "lstm"
+    input_size: 300
+    hidden_size: 512
+    rnn_emb_input_size: 300
+    use_copy: false
+    use_coverage: false
+    graph_pooling_strategy: "max"
+    attention_type: "sep_diff_encoder_type"
+    fuse_strategy: "concatenate"
+    dropout: 0.3
+
+  rnn_decoder_private:
+    max_decoder_step: 100
+    node_type_num: null
+    tgt_emb_as_output_layer: true

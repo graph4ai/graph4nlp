@@ -16,54 +16,22 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
 
     Parameters
     ----------
-    word_vocab : Vocab
-        The word vocabulary.
-    embedding_styles : dict
-        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains
-         single token or multiple tokens.
-        - ``emb_strategy`` : specify the embedding construction strategy.
-        - ``num_rnn_layers``: specify the number of RNN layers.
-        - ``bert_model_name``: specify the BERT model name.
-        - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
     alpha_fusion : float
         Specify the fusion value for combining initial and learned adjacency matrices.
     """
 
-    def __init__(self, word_vocab, embedding_styles, alpha_fusion, **kwargs):
-        super(NodeEmbeddingBasedRefinedGraphConstruction, self).__init__(
-            word_vocab, embedding_styles, **kwargs
-        )
+    def __init__(self, alpha_fusion, **kwargs):
+        super(NodeEmbeddingBasedRefinedGraphConstruction, self).__init__(**kwargs)
         assert 0 <= alpha_fusion <= 1, "alpha_fusion should be a `float` number between 0 and 1"
         self.alpha_fusion = alpha_fusion
 
-    def forward(self, batch_graphdata):
-        """Compute graph topology and initial node embeddings.
-
-        Parameters
-        ----------
-        batch_graphdata : GraphData
-            The input graph data.
-
-        Returns
-        -------
-        GraphData
-            The constructed batched graph.
-        """
-        init_norm_adj = self._get_normalized_init_adj(batch_graphdata)
-        batch_graphdata = self.embedding(batch_graphdata)
-        batch_graphdata = self.topology(batch_graphdata, init_norm_adj)
-
-        return batch_graphdata
-
-    def topology(self, graph, init_norm_adj):
+    def dynamic_topology(self, graph):
         """Compute graph topology.
 
         Parameters
         ----------
         graph : GraphData
             The input graph data.
-        init_norm_adj : torch.sparse.FloatTensor
-            The initial init_norm_adj adjacency matrix.
 
         Returns
         -------
@@ -94,6 +62,9 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             reverse_adj = torch.softmax(raw_adj, dim=-2)
 
         if self.alpha_fusion is not None:
+            # Compute the symmetric normalized Laplacian matrix of the input graph
+            init_norm_adj = self._get_normalized_init_adj(graph)
+
             adj = torch.sparse.FloatTensor.add(
                 (1 - self.alpha_fusion) * adj, self.alpha_fusion * init_norm_adj
             )

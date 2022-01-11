@@ -18,9 +18,9 @@ from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
 
-from .main import SumModel
+from main import SumModel
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 
 def all_to_cuda(data, device=None):
@@ -78,9 +78,13 @@ class ModelHandler:
             ],
             "share_vocab": self.config["share_vocab"],
             "min_word_vocab_freq": self.config["min_word_freq"],
-            "thread_number": 35,
-            "port": 9000,
-            "timeout": 15000,
+            "thread_number": self.config["graph_construction_args"]["graph_construction_share"][
+                "thread_number"
+            ],
+            "port": self.config["graph_construction_args"]["graph_construction_share"]["port"],
+            "timeout": self.config["graph_construction_args"]["graph_construction_share"][
+                "timeout"
+            ],
             "tokenizer": None,
             "for_inference": 1,
             "reused_vocab_model": self.model.vocab,
@@ -104,7 +108,7 @@ class ModelHandler:
 
     def _build_model(self):
         self.model = SumModel.load_checkpoint(self.stopper.save_model_path)
-        self.logger.write(str(self.model))
+        # self.logger.write(str(self.model))
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -142,7 +146,7 @@ class ModelHandler:
                 else:
                     oov_dict = None
                     ref_dict = self.vocab.out_word_vocab
-                batch_graph = self.model.g2s.graph_topology(data["graph_data"])
+                batch_graph = self.model.g2s.graph_initializer(data["graph_data"])
                 prob = self.model.g2s.encoder_decoder_beam_search(
                     batch_graph, self.config["beam_size"], topk=1, oov_dict=oov_dict
                 )

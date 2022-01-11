@@ -1,11 +1,11 @@
-from graph4nlp.pytorch.data.dataset import TextToTreeDataset
+from graph4nlp.pytorch.data.dataset import Text2TreeDataset
 
 
 def tokenize_mathqa(str_input):
     return str_input.strip().split()
 
 
-class MathQADatasetForTree(TextToTreeDataset):
+class MathQADatasetForTree(Text2TreeDataset):
     @property
     def raw_file_names(self):
         """3 reserved keys: 'train', 'val' (optional), 'test'. Represent the split of dataset."""
@@ -27,19 +27,21 @@ class MathQADatasetForTree(TextToTreeDataset):
         root_dir,
         # topology_builder,
         topology_subdir,
+        graph_name,
+        static_or_dynamic="static",
+        topology_builder=None,
+        merge_strategy="tailhead",
+        edge_strategy=None,
+        dynamic_init_graph_name=None,
+        dynamic_init_topology_builder=None,
+        dynamic_init_topology_aux_args=None,
         #  pretrained_word_emb_file=None,
         pretrained_word_emb_name="6B",
         pretrained_word_emb_url=None,
         pretrained_word_emb_cache_dir=None,
         val_split_ratio=0,
-        graph_type="static",
-        merge_strategy="tailhead",
-        edge_strategy=None,
         word_emb_size=300,
         share_vocab=True,
-        dynamic_graph_type=None,
-        # dynamic_init_topology_builder=None,
-        dynamic_init_topology_aux_args=None,
         enc_emb_size=300,
         dec_emb_size=300,
         min_word_vocab_freq=1,
@@ -47,7 +49,6 @@ class MathQADatasetForTree(TextToTreeDataset):
         max_word_vocab_size=100000,
         for_inference=False,
         reused_vocab_model=None,
-        dynamic_init_graph_type=None,
     ):
         """
 
@@ -82,15 +83,16 @@ class MathQADatasetForTree(TextToTreeDataset):
             root_dir=root_dir,
             # topology_builder=topology_builder,
             topology_subdir=topology_subdir,
-            graph_type=graph_type,
+            graph_name=graph_name,
+            static_or_dynamic=static_or_dynamic,
             edge_strategy=edge_strategy,
             merge_strategy=merge_strategy,
             share_vocab=share_vocab,
             pretrained_word_emb_name=pretrained_word_emb_name,
             val_split_ratio=val_split_ratio,
             word_emb_size=word_emb_size,
-            dynamic_graph_type=dynamic_graph_type,
-            # dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_graph_name=dynamic_init_graph_name,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
             enc_emb_size=enc_emb_size,
             dec_emb_size=dec_emb_size,
@@ -99,5 +101,4 @@ class MathQADatasetForTree(TextToTreeDataset):
             max_word_vocab_size=max_word_vocab_size,
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
-            dynamic_init_graph_type=dynamic_init_graph_type,
         )

@@ -22,8 +22,6 @@ from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
-
 
 def all_to_cuda(data, device=None):
     if isinstance(data, torch.Tensor):
@@ -51,8 +49,8 @@ class SumModel(nn.Module):
             "graph_name"
         ]
 
-        if "w2v" in self.g2s.graph_topology.embedding_layer.word_emb_layers:
-            self.word_emb = self.g2s.graph_topology.embedding_layer.word_emb_layers[
+        if "w2v" in self.g2s.graph_initializer.embedding_layer.word_emb_layers:
+            self.word_emb = self.g2s.graph_initializer.embedding_layer.word_emb_layers[
                 "w2v"
             ].word_emb_layer
         else:
@@ -94,9 +92,9 @@ class SumModel(nn.Module):
             )
             return prob
 
-    def inference_forward(self, batch_graph, beam_size, oov_dict):
+    def inference_forward(self, batch_graph, beam_size, topk, oov_dict):
         return self.g2s.inference_forward(
-            batch_graph=batch_graph, beam_size=beam_size, oov_dict=oov_dict
+            batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict
         )
 
     def post_process(self, decode_results, vocab):
@@ -145,9 +143,11 @@ class ModelHandler:
             graph_name=self.config["graph_construction_args"]["graph_construction_share"][
                 "graph_name"
             ],
-            thread_number=35,
-            port=9100,
-            timeout=15000,
+            thread_number=self.config["graph_construction_args"]["graph_construction_share"][
+                "thread_number"
+            ],
+            port=self.config["graph_construction_args"]["graph_construction_share"]["port"],
+            timeout=self.config["graph_construction_args"]["graph_construction_share"]["timeout"],
             tokenizer=None,
         )
 
@@ -194,7 +194,6 @@ class ModelHandler:
     def _build_model(self):
         # self.model = Graph2Seq.from_args(self.config, self.vocab, self.config['device'])
         self.model = SumModel(self.vocab, self.config).to(self.config["device"])
-        # self.logger.write(str(self.model))
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]

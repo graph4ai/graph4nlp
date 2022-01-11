@@ -4,25 +4,19 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction import (
-    ConstituencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
-    DependencyBasedGraphConstruction,
-)
-from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import (
-    IEBasedGraphConstruction,
-)
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
 )
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_graph_construction import (  # noqa
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
-from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
-from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
-from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_initialization import (  # noqa
+    GraphEmbeddingInitialization,
+)
+from graph4nlp.pytorch.modules.graph_embedding_learning.gat import GAT
+from graph4nlp.pytorch.modules.graph_embedding_learning.gcn import GCN
+from graph4nlp.pytorch.modules.graph_embedding_learning.ggnn import GGNN
+from graph4nlp.pytorch.modules.graph_embedding_learning.graphsage import GraphSAGE
 
 
 class Graph2XBase(nn.Module):
@@ -101,38 +95,18 @@ class Graph2XBase(nn.Module):
         if not isinstance(graph_name, str):
             raise ValueError("graph_name parameter should be str")
 
-        if graph_name == "dependency":
-            self.graph_topology = DependencyBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab_model.in_word_vocab,
-                hidden_size=emb_hidden_size,
-                word_dropout=emb_word_dropout,
-                rnn_dropout=emb_rnn_dropout,
-                fix_word_emb=emb_fix_word_emb,
-                fix_bert_emb=emb_fix_bert_emb,
-            )
-        elif graph_name == "constituency":
-            self.graph_topology = ConstituencyBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab_model.in_word_vocab,
-                hidden_size=emb_hidden_size,
-                word_dropout=emb_word_dropout,
-                rnn_dropout=emb_rnn_dropout,
-                fix_word_emb=emb_fix_word_emb,
-            )
-        elif graph_name == "ie":
-            self.graph_topology = IEBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab_model.in_word_vocab,
-                hidden_size=emb_hidden_size,
-                word_dropout=emb_word_dropout,
-                rnn_dropout=emb_rnn_dropout,
-                fix_word_emb=emb_fix_word_emb,
-            )
-        elif graph_name == "node_emb":
+        self.graph_initializer = GraphEmbeddingInitialization(
+            word_vocab=vocab_model.in_word_vocab,
+            embedding_style=embedding_style,
+            hidden_size=emb_hidden_size,
+            word_dropout=emb_word_dropout,
+            rnn_dropout=emb_rnn_dropout,
+            fix_word_emb=emb_fix_word_emb,
+            fix_bert_emb=emb_fix_bert_emb,
+        )
+
+        if graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
-                vocab_model.in_word_vocab,
-                embedding_style,
                 sim_metric_type=emb_sim_metric_type,
                 num_heads=emb_num_heads,
                 top_k_neigh=emb_top_k_neigh,
@@ -142,15 +116,9 @@ class Graph2XBase(nn.Module):
                 sparsity_ratio=emb_sparsity_ratio,
                 input_size=emb_input_size,
                 hidden_size=emb_hidden_size,
-                fix_word_emb=emb_fix_word_emb,
-                fix_bert_emb=emb_fix_bert_emb,
-                word_dropout=emb_word_dropout,
-                rnn_dropout=emb_rnn_dropout,
             )
         elif graph_name == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
-                vocab_model.in_word_vocab,
-                embedding_style,
                 emb_alpha_fusion,
                 sim_metric_type=emb_sim_metric_type,
                 num_heads=emb_num_heads,
@@ -161,19 +129,13 @@ class Graph2XBase(nn.Module):
                 sparsity_ratio=emb_sparsity_ratio,
                 input_size=emb_input_size,
                 hidden_size=emb_hidden_size,
-                fix_word_emb=emb_fix_word_emb,
-                fix_bert_emb=emb_fix_bert_emb,
-                word_dropout=emb_word_dropout,
-                rnn_dropout=emb_rnn_dropout,
             )
-        else:
-            raise NotImplementedError()
+
         self.enc_word_emb = (
-            self.graph_topology.embedding_layer.word_emb_layers["w2v"]
-            if "w2v" in self.graph_topology.embedding_layer.word_emb_layers
+            self.graph_initializer.embedding_layer.word_emb_layers["w2v"]
+            if "w2v" in self.graph_initializer.embedding_layer.word_emb_layers
             else None
         )
-
         self.graph_name = graph_name
 
     def _build_gnn_encoder(

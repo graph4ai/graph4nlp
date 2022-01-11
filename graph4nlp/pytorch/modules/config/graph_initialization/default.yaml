@@ -1,0 +1,13 @@
+
+input_size: 300
+hidden_size: 300
+word_dropout: 0.0
+rnn_dropout: 0.0
+fix_bert_emb: false
+fix_word_emb: false
+embedding_style:
+  single_token_item: true
+  emb_strategy: "w2v_bilstm"
+  num_rnn_layers: 1
+  bert_model_name: null
+  bert_lower_case: null

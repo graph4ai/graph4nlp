@@ -1,7 +1,9 @@
 import copy
 import torch.nn.functional as F
 
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
+    WordEmbedding,
+)
 from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.utils.generic_utils import wordid2str
@@ -223,7 +225,11 @@ class Graph2Seq(Graph2XBase):
             It is used for calculating coverage loss.
             The coverage vector.
         """
-        batch_graph = self.graph_topology(batch_graph)
+        batch_graph = self.graph_initializer(batch_graph)
+        # Yu: dynamic graph modification
+        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+            batch_graph = self.graph_topology.dynamic_topology(batch_graph)
+
         return self.encoder_decoder(batch_graph=batch_graph, oov_dict=oov_dict, tgt_seq=tgt_seq)
 
     def translate(self, batch_graph, beam_size, topk=1, oov_dict=None):
@@ -248,7 +254,10 @@ class Graph2Seq(Graph2XBase):
             The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes. # noqa
         """
 
-        batch_graph = self.graph_topology(batch_graph)
+        batch_graph = self.graph_initializer(batch_graph)
+        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+            batch_graph = self.graph_topology.dynamic_topology(batch_graph)
+
         return self.encoder_decoder_beam_search(
             batch_graph=batch_graph, beam_size=beam_size, topk=topk, oov_dict=oov_dict
         )
@@ -303,11 +312,11 @@ class Graph2Seq(Graph2XBase):
         -------
         model: Graph2Seq
         """
-        emb_args = cls._get_node_embedding_params(opt)
+        initializer_args = cls._get_node_initializer_params(opt)
         gnn_args = cls._get_gnn_params(opt)
         dec_args = cls._get_decoder_params(opt)
 
-        args = copy.deepcopy(emb_args)
+        args = copy.deepcopy(initializer_args)
         args.update(gnn_args)
         args.update(dec_args)
         args["share_vocab"] = opt["graph_construction_args"]["graph_construction_share"][
@@ -345,9 +354,12 @@ class Graph2Seq(Graph2XBase):
         return ret
 
     @staticmethod
-    def _get_node_embedding_params(opt):
-        args = opt["graph_construction_args"]["node_embedding"]
-        ret: dict = copy.deepcopy(args)
+    def _get_node_initializer_params(opt):
+        # Dynamic graph construction related params are stored here
+        init_args = opt["graph_construction_args"]["graph_construction_private"]
+        ret: dict = copy.deepcopy(init_args)
+        args = opt["graph_initialization_args"]
+        ret.update(args)
         ret.pop("embedding_style")
         emb_ret = {"emb_" + key: value for key, value in ret.items()}
         emb_ret["embedding_style"] = args["embedding_style"]

@@ -1,5 +1,6 @@
 # Data
 dataset: 'WN18RR'
+out_dir: "out/kgc/WN18RR"
 
 # Preprocessing
 top_word_vocab: 70000
@@ -27,11 +28,12 @@ lr_patience: 2
 lr_reduce_factor: 0.5
 num_workers: 0 # number of data loader workers
 l2: 0.0
-model: 'conve' # distmult
+model: 'gcn_complex' # distmult, gcn_complex
 use_bias: False
+loader_threads: 4
 
 # GNN
-direction_option: undirected # Choose from: {undirected, bi_sep, bi_fuse}
+direction_option: 'bi_sep' # Choose from: {undirected, bi_sep, bi_fuse}
 embedding_dim: 200
 embedding_shape1: 20
 hidden_drop: 0.25
@@ -60,5 +62,5 @@ graph_construction_args:
     edge_strategy: null
 
   graph_construction_share:
-    port: 9000
+    port: 9100
     timeout: 300000
