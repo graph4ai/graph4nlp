@@ -110,7 +110,7 @@ class ClassifierInferenceWrapper(InferenceWrapperBase):
             collate_data = all_to_cuda(collate_data, device)
 
             # forward
-            if self.data_item == 'KGCompletionDataItem':
+            if self.data_item == "KGCompletionDataItem":
                 KG_graph = data_collect[i][1]
                 ret = self.model.inference_forward(collate_data, KG_graph)
                 ret = self.model.post_process(logits=ret, e2=collate_data["e2_tensor"])
