@@ -6,11 +6,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
-from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
-    WordEmbedding,
-)
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
+)
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
+    WordEmbedding,
 )
 from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_initialization import (  # noqa
     GraphEmbeddingInitialization,
@@ -22,11 +22,6 @@ from graph4nlp.pytorch.modules.graph_embedding_learning.graphsage import GraphSA
 from graph4nlp.pytorch.modules.prediction.classification.node_classification import (
     BiLSTMFeedForwardNN,
 )
-
-from dependency_graph_construction_without_tokenize import (
-    DependencyBasedGraphConstruction_without_tokenizer,
-)
-from line_graph_construction import LineBasedGraphConstruction
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 cudnn.benchmark = False
@@ -96,9 +91,7 @@ class Word2tag(nn.Module):
             "bert_lower_case": True,
         }
 
-
-
-        self.graph_initializer = GraphEmbeddingInitialization(  
+        self.graph_initializer = GraphEmbeddingInitialization(
             word_vocab=self.vocab_model.in_word_vocab,
             embedding_style=embedding_style,
             hidden_size=args.init_hidden_size,
@@ -106,7 +99,7 @@ class Word2tag(nn.Module):
             rnn_dropout=None,
             fix_word_emb=not args.no_fix_word_emb,
             fix_bert_emb=not args.no_fix_word_emb,
-        )        
+        )
 
         if args.graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
