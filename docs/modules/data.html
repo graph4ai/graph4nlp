@@ -981,7 +981,7 @@ subset (e.g. train, val and test).</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.Text2TextDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TextDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TextDataset" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>The dataset for text-to-text applications.</p>
 </div></blockquote>
@@ -999,7 +999,7 @@ Note that if it is in the provided graph names (i.e., “dependency”,         
 <p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
 </p></li>
 <li><p><strong>root_dir</strong> (<em>str</em><em>, </em><em>default=None</em>) – The path of dataset.</p></li>
-<li><p><strong>topology_builder</strong> (<em>GraphConstructionBase</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
+<li><p><strong>topology_builder</strong> (<em>Union</em><em>[</em><em>StaticGraphConstructionBase</em><em>, </em><em>DynamicGraphConstructionBase</em><em>]</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
 <li><p><strong>topology_subdir</strong> (<em>str</em>) – The directory name of processed path.</p></li>
 <li><p><strong>static_or_dynamic</strong> (<em>str</em><em>, </em><em>default='static'</em>) – The graph type. Expected in (‘static’, ‘dynamic’)</p></li>
 <li><p><strong>dynamic_init_graph_name</strong> (<em>str</em><em>, </em><em>default=None</em>) – <p>The graph name of the initial graph. Expected in (None, “line”,             “dependency”, “constituency”).
@@ -1011,7 +1011,7 @@ Note that if it is in the provided graph names (i.e., “line”, “dependency�
 </div></blockquote>
 <p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
 </p></li>
-<li><p><strong>dynamic_init_topology_builder</strong> (<em>GraphConstructionBase</em>) – The graph construction class.</p></li>
+<li><p><strong>dynamic_init_topology_builder</strong> (<em>StaticGraphConstructionBase</em>) – The graph construction class.</p></li>
 <li><p><strong>dynamic_init_topology_aux_args</strong> (<em>None</em><em>,</em>) – TBD.</p></li>
 </ul>
 </dd>
@@ -1122,8 +1122,8 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="graph4nlp.data.dataset.TextToTreeDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">TextToTreeDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.TextToTreeDataset" title="Permalink to this definition">¶</a></dt>
+<dt id="graph4nlp.data.dataset.Text2TreeDataset">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2TreeDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TreeDataset" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1148,22 +1148,22 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_topology</span></code>(data_items)</p></td>
 <td><p>Build graph topology for each item in the dataset.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.TextToTreeDataset.build_vocab" title="graph4nlp.data.dataset.TextToTreeDataset.build_vocab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_vocab</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.Text2TreeDataset.build_vocab" title="graph4nlp.data.dataset.Text2TreeDataset.build_vocab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_vocab</span></code></a>()</p></td>
 <td><p>Build the vocabulary.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.TextToTreeDataset.collate_fn" title="graph4nlp.data.dataset.TextToTreeDataset.collate_fn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collate_fn</span></code></a>(data_list)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.Text2TreeDataset.collate_fn" title="graph4nlp.data.dataset.Text2TreeDataset.collate_fn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collate_fn</span></code></a>(data_list)</p></td>
 <td><p>Takes a list of data and convert it to a batch of data.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">download</span></code>()</p></td>
 <td><p>Download the raw data from the Internet.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.TextToTreeDataset.parse_file" title="graph4nlp.data.dataset.TextToTreeDataset.parse_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_file</span></code></a>(file_path)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.Text2TreeDataset.parse_file" title="graph4nlp.data.dataset.Text2TreeDataset.parse_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_file</span></code></a>(file_path)</p></td>
 <td><p>Read and parse the file specified by <cite>file_path</cite>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_raw_data</span></code>()</p></td>
 <td><p>Read raw data from the disk and put them in a dictionary (<cite>self.data</cite>).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.TextToTreeDataset.vectorization" title="graph4nlp.data.dataset.TextToTreeDataset.vectorization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vectorization</span></code></a>(data_items)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.data.dataset.Text2TreeDataset.vectorization" title="graph4nlp.data.dataset.Text2TreeDataset.vectorization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vectorization</span></code></a>(data_items)</p></td>
 <td><p>For tree decoder we also need the vectorize the tree output.</p></td>
 </tr>
 </tbody>
@@ -1186,22 +1186,22 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 </tbody>
 </table>
 <dl class="method">
-<dt id="graph4nlp.data.dataset.TextToTreeDataset.build_vocab">
-<code class="sig-name descname">build_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.TextToTreeDataset.build_vocab" title="Permalink to this definition">¶</a></dt>
+<dt id="graph4nlp.data.dataset.Text2TreeDataset.build_vocab">
+<code class="sig-name descname">build_vocab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TreeDataset.build_vocab" title="Permalink to this definition">¶</a></dt>
 <dd><p>Build the vocabulary. If <cite>self.use_val_for_vocab</cite> is <cite>True</cite>,
 use both training set and validation set for building
 the vocabulary. Otherwise only the training set is used.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="graph4nlp.data.dataset.TextToTreeDataset.collate_fn">
-<em class="property">static </em><code class="sig-name descname">collate_fn</code><span class="sig-paren">(</span><em class="sig-param">data_list: [&lt;class 'graph4nlp.pytorch.data.dataset.Text2TreeDataItem'&gt;]</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.TextToTreeDataset.collate_fn" title="Permalink to this definition">¶</a></dt>
+<dt id="graph4nlp.data.dataset.Text2TreeDataset.collate_fn">
+<em class="property">static </em><code class="sig-name descname">collate_fn</code><span class="sig-paren">(</span><em class="sig-param">data_list: [&lt;class 'graph4nlp.pytorch.data.dataset.Text2TreeDataItem'&gt;]</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TreeDataset.collate_fn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Takes a list of data and convert it to a batch of data.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="graph4nlp.data.dataset.TextToTreeDataset.parse_file">
-<code class="sig-name descname">parse_file</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#graph4nlp.data.dataset.TextToTreeDataset.parse_file" title="Permalink to this definition">¶</a></dt>
+<dt id="graph4nlp.data.dataset.Text2TreeDataset.parse_file">
+<code class="sig-name descname">parse_file</code><span class="sig-paren">(</span><em class="sig-param">file_path</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#graph4nlp.data.dataset.Text2TreeDataset.parse_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read and parse the file specified by <cite>file_path</cite>. The file format is specified by
 each individual task-specific base class. Returns all the indices of data items
 in this file w.r.t. the whole dataset.</p>
@@ -1229,8 +1229,8 @@ language ( ANS , languageid0 )”</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="graph4nlp.data.dataset.TextToTreeDataset.vectorization">
-<code class="sig-name descname">vectorization</code><span class="sig-paren">(</span><em class="sig-param">data_items</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.TextToTreeDataset.vectorization" title="Permalink to this definition">¶</a></dt>
+<dt id="graph4nlp.data.dataset.Text2TreeDataset.vectorization">
+<code class="sig-name descname">vectorization</code><span class="sig-paren">(</span><em class="sig-param">data_items</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TreeDataset.vectorization" title="Permalink to this definition">¶</a></dt>
 <dd><p>For tree decoder we also need the vectorize the tree output.</p>
 </dd></dl>
 
@@ -1238,7 +1238,7 @@ language ( ANS , languageid0 )”</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.Text2LabelDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2LabelDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2LabelDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2LabelDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2LabelDataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>The dataset for text-to-label applications.
 :param graph_name: The name of graph construction method. E.g., “dependency”.</p>
 <blockquote>
@@ -1255,7 +1255,7 @@ language ( ANS , languageid0 )”</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>root_dir</strong> (<em>str</em><em>, </em><em>default=None</em>) – The path of dataset.</p></li>
-<li><p><strong>topology_builder</strong> (<em>GraphConstructionBase</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
+<li><p><strong>topology_builder</strong> (<em>Union</em><em>[</em><em>StaticGraphConstructionBase</em><em>, </em><em>DynamicGraphConstructionBase</em><em>]</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
 <li><p><strong>topology_subdir</strong> (<em>str</em>) – The directory name of processed path.</p></li>
 <li><p><strong>static_or_dynamic</strong> (<em>str</em><em>, </em><em>default='static'</em>) – The graph type. Expected in (‘static’, ‘dynamic’)</p></li>
 <li><p><strong>dynamic_init_graph_name</strong> (<em>str</em><em>, </em><em>default=None</em>) – <p>The graph name of the initial graph. Expected in (None, “line”,             “dependency”, “constituency”).
@@ -1267,7 +1267,7 @@ Note that if it is in the provided graph names (i.e., “line”, “dependency�
 </div></blockquote>
 <p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
 </p></li>
-<li><p><strong>dynamic_init_topology_builder</strong> (<em>GraphConstructionBase</em>) – The graph construction class.</p></li>
+<li><p><strong>dynamic_init_topology_builder</strong> (<em>StaticGraphConstructionBase</em>) – The graph construction class.</p></li>
 <li><p><strong>dynamic_init_topology_aux_args</strong> (<em>None</em><em>,</em>) – TBD.</p></li>
 </ul>
 </dd>
@@ -1383,7 +1383,7 @@ input and output is separated by a tab( ).</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.DoubleText2TextDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">DoubleText2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">DoubleText2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>The dataset for double-text-to-text applications.</p>
 </div></blockquote>
@@ -1401,7 +1401,7 @@ Note that if it is in the provided graph names (i.e., “dependency”,         
 <p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
 </p></li>
 <li><p><strong>root_dir</strong> (<em>str</em><em>, </em><em>default=None</em>) – The path of dataset.</p></li>
-<li><p><strong>topology_builder</strong> (<em>GraphConstructionBase</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
+<li><p><strong>topology_builder</strong> (<em>Union</em><em>[</em><em>StaticGraphConstructionBase</em><em>, </em><em>DynamicGraphConstructionBase</em><em>]</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
 <li><p><strong>topology_subdir</strong> (<em>str</em>) – The directory name of processed path.</p></li>
 <li><p><strong>static_or_dynamic</strong> (<em>str</em><em>, </em><em>default='static'</em>) – The graph type. Expected in (‘static’, ‘dynamic’)</p></li>
 <li><p><strong>dynamic_init_graph_name</strong> (<em>str</em><em>, </em><em>default=None</em>) – <p>The graph name of the initial graph. Expected in (None, “line”,             “dependency”, “constituency”).
@@ -1413,7 +1413,7 @@ Note that if it is in the provided graph names (i.e., “line”, “dependency�
 </div></blockquote>
 <p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
 </p></li>
-<li><p><strong>dynamic_init_topology_builder</strong> (<em>GraphConstructionBase</em>) – The graph construction class.</p></li>
+<li><p><strong>dynamic_init_topology_builder</strong> (<em>StaticGraphConstructionBase</em>) – The graph construction class.</p></li>
 <li><p><strong>dynamic_init_topology_aux_args</strong> (<em>None</em><em>,</em>) – TBD.</p></li>
 </ul>
 </dd>
@@ -1527,7 +1527,7 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.SequenceLabelingDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">SequenceLabelingDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">tag_types: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.SequenceLabelingDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">SequenceLabelingDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">tag_types: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.SequenceLabelingDataset" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1938,7 +1938,7 @@ subset (e.g. train, val and test).</p>
 <h2>Task Level Dataset Base Class<a class="headerlink" href="#task-level-dataset-base-class" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt>
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2LabelDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.GraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2LabelDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span></dt>
 <dd><p>The dataset for text-to-label applications.
 :param graph_name: The name of graph construction method. E.g., “dependency”.</p>
 <blockquote>
@@ -1955,7 +1955,7 @@ subset (e.g. train, val and test).</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>root_dir</strong> (<em>str</em><em>, </em><em>default=None</em>) – The path of dataset.</p></li>
-<li><p><strong>topology_builder</strong> (<em>GraphConstructionBase</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
+<li><p><strong>topology_builder</strong> (<em>Union</em><em>[</em><em>StaticGraphConstructionBase</em><em>, </em><em>DynamicGraphConstructionBase</em><em>]</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
 <li><p><strong>topology_subdir</strong> (<em>str</em>) – The directory name of processed path.</p></li>
 <li><p><strong>static_or_dynamic</strong> (<em>str</em><em>, </em><em>default='static'</em>) – The graph type. Expected in (‘static’, ‘dynamic’)</p></li>
 <li><p><strong>dynamic_init_graph_name</strong> (<em>str</em><em>, </em><em>default=None</em>) – <p>The graph name of the initial graph. Expected in (None, “line”,             “dependency”, “constituency”).
@@ -1967,7 +1967,7 @@ Note that if it is in the provided graph names (i.e., “line”, “dependency�
 </div></blockquote>
 <p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
 </p></li>
-<li><p><strong>dynamic_init_topology_builder</strong> (<em>GraphConstructionBase</em>) – The graph construction class.</p></li>
+<li><p><strong>dynamic_init_topology_builder</strong> (<em>StaticGraphConstructionBase</em>) – The graph construction class.</p></li>
 <li><p><strong>dynamic_init_topology_aux_args</strong> (<em>None</em><em>,</em>) – TBD.</p></li>
 </ul>
 </dd>
