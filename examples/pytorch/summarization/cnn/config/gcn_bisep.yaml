@@ -1,7 +1,7 @@
 graph_construction_name: "dependency"
 graph_embedding_name: "gcn"
 decoder_name: "stdrnn"
-#out_dir: "out/cnn/gcn_uni_l2_wornn_wocopy_ckpt"
+
 out_dir: "out/cnn/gcn_bi_sep_l2_ckpt"
 model_type: 'gcn'
 
@@ -9,7 +9,7 @@ vocab_lower_case: true
 
 graph_construction_args:
   graph_construction_share:
-    graph_type: 'dependency'
+    graph_name: 'dependency'
     root_dir: 'examples/pytorch/summarization/cnn'
     topology_subdir: 'DependencyGraph'
     thread_number: 4
@@ -22,19 +22,19 @@ graph_construction_args:
     sequential_link: true
     as_node: false
 
-  node_embedding:
-    input_size: 300
-    hidden_size: 300
-    word_dropout: 0.2
-    rnn_dropout: 0.3
-    fix_bert_emb: false
-    fix_word_emb: false
-    embedding_style:
-      single_token_item: true
-      emb_strategy: "w2v_bilstm"
-      num_rnn_layers: 1
-      bert_model_name: null
-      bert_lower_case: null
+graph_initialization_args:
+  input_size: 300
+  hidden_size: 300
+  word_dropout: 0.2
+  rnn_dropout: 0.3
+  fix_bert_emb: false
+  fix_word_emb: false
+  embedding_style:
+    single_token_item: true
+    emb_strategy: "w2v_bilstm"
+    num_rnn_layers: 1
+    bert_model_name: null
+    bert_lower_case: null
 
 graph_embedding_args:
   graph_embedding_share:
@@ -59,8 +59,8 @@ decoder_args:
     input_size: 300
     hidden_size: 512
     rnn_emb_input_size: 300
-    use_copy: false
-    use_coverage: false
+    use_copy: true
+    use_coverage: true
     graph_pooling_strategy: null
     attention_type: "sep_diff_encoder_type"
     fuse_strategy: "concatenate"
@@ -74,4 +74,4 @@ decoder_args:
 
 
 
-# screen -S gcn_sep python -m examples.pytorch.summarization.cnn.main -g2s_config examples/pytorch/summarization/cnn/config/gcn_bisep.yaml -task_config examples/pytorch/summarization/cnn/config/cnn.yaml
+# screen -S gcn_sep python -m examples.pytorch.summarization.cnn.main -g2s_config examples/pytorch/summarization/cnn/config/gcn_bisep.yaml -task_config examples/pytorch/summarization/cnn/config/lcsts.yaml

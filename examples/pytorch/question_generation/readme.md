@@ -18,10 +18,21 @@ How to run
 ```
 
 
-#### Run the model:
+#### Train the model:
 ```python
- python examples/pytorch/question_generation/run_question_generation_iclr.py   -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
+  python -m examples.pytorch.question_generation.main -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
 ```
+
+#### Run inference advance:
+```python
+  python -m examples.pytorch.question_generation.inference_advance -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
+```
+
+#### Run inference:
+```python
+  python -m examples.pytorch.question_generation.inference -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
+```
+
 
 Note: 
 1) `XYZ.yaml` should be replaced by the exact g2s config file such as `new_dependency_ggnn.yaml`.

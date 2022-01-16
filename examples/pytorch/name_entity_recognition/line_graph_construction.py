@@ -20,24 +20,9 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
 
     def __init__(
         self,
-        embedding_style,
         vocab,
-        hidden_size=300,
-        fix_word_emb=True,
-        fix_bert_emb=True,
-        word_dropout=None,
-        rnn_dropout=None,
-        device=None,
     ):
-        super(LineBasedGraphConstruction, self).__init__(
-            word_vocab=vocab,
-            embedding_styles=embedding_style,
-            word_dropout=word_dropout,
-            rnn_dropout=rnn_dropout,
-            hidden_size=hidden_size,
-            fix_word_emb=fix_word_emb,
-            fix_bert_emb=fix_word_emb,
-        )
+        super(LineBasedGraphConstruction, self).__init__()
         self.vocab = vocab
         self.verbose = 1
 
@@ -54,11 +39,14 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
             self.vocab.word_vocab._add_words([attr["token"]])
 
     @classmethod
-    def parsing(cls, raw_text_data):
+    def parsing(cls, raw_text_data, tokenizer=None):
         """
         Parameters
         ----------
-        raw_text_data: list of of word tokens
+        raw_text_data: list of of word tokens or string of sequence
+        tokenizer: the tokenizer will be used if raw_text_data is a str; if None, use the default \
+            tokenizoer will be used. The output of the required tokenizer should be a list \
+            of tokens.
         Returns
         -------
         parsed_results: list of dict
@@ -85,6 +73,11 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
                 'tgt': int
                     The target node ``id``
         """
+        if isinstance(raw_text_data, str):
+            if tokenizer is None:
+                raw_text_data = raw_text_data.split(" ")
+            else:
+                raw_text_data = tokenizer(raw_text_data)
         parsed_results = []
         # for sent_id in range(len(raw_text_data)):
         parsed_sent = {}
@@ -106,7 +99,7 @@ class LineBasedGraphConstruction(StaticGraphConstructionBase):
         return parsed_results
 
     @classmethod
-    def topology(
+    def static_topology(
         cls,
         raw_text_data,
         nlp_processor,

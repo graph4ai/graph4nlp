@@ -1,5 +1,5 @@
 graph_construction_share:
-  graph_type: 'dependency'
+  graph_name: 'dependency'
   root_dir: null
   topology_subdir: 'DependencyGraph'
   share_vocab: true
@@ -22,18 +22,3 @@ graph_construction_private:
   #   is_oneSentence: true # Whether to regard the inputs as one sentence
   #   port: 9000
   #   timeout: 15000
-
-
-node_embedding:
-  input_size: 300
-  hidden_size: 300
-  word_dropout: 0.0
-  rnn_dropout: 0.0
-  fix_bert_emb: false
-  fix_word_emb: false
-  embedding_style:
-    single_token_item: true
-    emb_strategy: "w2v_bilstm"
-    num_rnn_layers: 1
-    bert_model_name: null
-    bert_lower_case: null

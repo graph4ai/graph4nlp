@@ -26,7 +26,7 @@ class Graph2Tree(Graph2XBase):
     ----------
     vocab_model: VocabModel
         The vocabulary.
-    graph_type: str
+    graph_name: str
         The graph type. Excepted in ["dependency", "constituency", "node_emb", "node_emb_refined"].
     gnn: str
         The graph neural network type. Expected in ["gcn", "gat", "graphsage", "ggnn"]
@@ -38,7 +38,7 @@ class Graph2Tree(Graph2XBase):
         self,
         vocab_model,
         embedding_style,
-        graph_type,
+        graph_name,
         # embedding
         emb_input_size,
         emb_hidden_size,
@@ -73,7 +73,7 @@ class Graph2Tree(Graph2XBase):
             vocab_model=vocab_model,
             emb_input_size=emb_input_size,
             emb_hidden_size=emb_hidden_size,
-            graph_type=graph_type,
+            graph_name=graph_name,
             gnn_direction_option=gnn_direction_option,
             gnn=gnn,
             gnn_num_layers=gnn_num_layers,
@@ -133,7 +133,9 @@ class Graph2Tree(Graph2XBase):
         )
 
     def forward(self, batch_graph, tgt_tree_batch, oov_dict=None):
-        batch_graph = self.graph_topology(batch_graph)
+        batch_graph = self.graph_initializer(batch_graph)
+        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+            batch_graph = self.graph_topology.dynamic_topology(batch_graph)
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features["node_feat"]
 
@@ -145,7 +147,10 @@ class Graph2Tree(Graph2XBase):
         prev_c = torch.zeros((1, self.dec_hidden_size), requires_grad=False)
         prev_h = torch.zeros((1, self.dec_hidden_size), requires_grad=False)
 
-        batch_graph = self.graph_topology(input_graph)
+        batch_graph = self.graph_initializer(input_graph)
+        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+            batch_graph = self.graph_topology.dynamic_topology(batch_graph)
+
         batch_graph = self.gnn_encoder(batch_graph)
         batch_graph.node_features["rnn_emb"] = batch_graph.node_features["node_feat"]
 
@@ -305,6 +310,39 @@ class Graph2Tree(Graph2XBase):
                     else:
                         init.uniform_(param, -init_weight, init_weight)
 
+    def post_process(self, decode_results, vocab):
+        candidate = [int(c) for c in decode_results]
+        pred_str = " ".join(self.tgt_vocab.get_idx_symbol_for_list(candidate))
+        return [pred_str]
+
+    def inference_forward(self, batch_graph, beam_size, topk=1, oov_dict=None):
+        """
+            Decoding with the support of beam_search.
+            Specifically, when ``beam_size`` is 1, it is equal to greedy search.
+        Parameters
+        ----------
+        batch_graph: GraphData
+            The graph input
+        beam_size: int
+            The beam width. When it is 1, the output is equal to greedy search's output.
+        topk: int, default=1
+            The number of decoded output to be reserved.
+            Usually, ``topk`` should be smaller or equal to ``beam_size``
+        oov_dict: VocabModel, default=None
+            The vocabulary for copy.
+
+        Returns
+        -------
+        results: torch.Tensor
+            The results with the shape of ``[batch_size, topk, max_decoder_step]`` containing the word indexes. # noqa
+        """
+        return self.translate(
+            input_graph=batch_graph["graph_data"],
+            use_beam_search=(beam_size > 1),
+            beam_size=beam_size,
+            oov_dict=oov_dict,
+        )
+
     @classmethod
     def from_args(cls, opt, vocab_model):
         """
@@ -320,11 +358,11 @@ class Graph2Tree(Graph2XBase):
         -------
         model: Graph2Tree
         """
-        emb_args = cls._get_node_embedding_params(opt)
+        initializer_args = cls._get_node_initializer_params(opt)
         gnn_args = cls._get_gnn_params(opt)
         dec_args = cls._get_decoder_params(opt)
 
-        args = copy.deepcopy(emb_args)
+        args = copy.deepcopy(initializer_args)
         args.update(gnn_args)
         args.update(dec_args)
         args["share_vocab"] = opt["graph_construction_args"]["graph_construction_share"][
@@ -362,11 +400,14 @@ class Graph2Tree(Graph2XBase):
         return ret
 
     @staticmethod
-    def _get_node_embedding_params(opt):
-        args = opt["graph_construction_args"]["node_embedding"]
-        ret: dict = copy.deepcopy(args)
+    def _get_node_initializer_params(opt):
+        # Dynamic graph construction related params are stored here
+        init_args = opt["graph_construction_args"]["graph_construction_private"]
+        ret: dict = copy.deepcopy(init_args)
+        args = opt["graph_initialization_args"]
+        ret.update(args)
         ret.pop("embedding_style")
         emb_ret = {"emb_" + key: value for key, value in ret.items()}
         emb_ret["embedding_style"] = args["embedding_style"]
-        emb_ret["graph_type"] = opt["graph_construction_name"]
+        emb_ret["graph_name"] = opt["graph_construction_name"]
         return emb_ret

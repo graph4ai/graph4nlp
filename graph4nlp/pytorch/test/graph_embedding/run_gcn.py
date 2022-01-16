@@ -21,7 +21,7 @@ from dgl import DGLGraph
 from dgl.data import load_data
 
 from ...data.data import GraphData
-from ...modules.graph_embedding.gcn import GCN
+from ...modules.graph_embedding_learning.gcn import GCN
 from ...modules.utils.generic_utils import EarlyStopping, get_config, grid, print_config
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"

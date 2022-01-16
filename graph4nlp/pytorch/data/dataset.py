@@ -1,17 +1,21 @@
 import abc
+import json
 import os
 import warnings
 from collections import Counter
 from copy import deepcopy
 from multiprocessing import Pool
+from typing import Union
 import numpy as np
 import stanfordcorenlp
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 
-from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
-
 from ..data.data import GraphData, to_batch
+from ..modules.graph_construction.base import (
+    DynamicGraphConstructionBase,
+    StaticGraphConstructionBase,
+)
 from ..modules.graph_construction.constituency_graph_construction import (
     ConstituencyBasedGraphConstruction,
 )
@@ -19,7 +23,14 @@ from ..modules.graph_construction.dependency_graph_construction import (
     DependencyBasedGraphConstruction,
 )
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
+from ..modules.graph_construction.node_embedding_based_graph_construction import (
+    NodeEmbeddingBasedGraphConstruction,
+)
+from ..modules.graph_construction.node_embedding_based_refined_graph_construction import (
+    NodeEmbeddingBasedRefinedGraphConstruction,
+)
 from ..modules.utils.generic_utils import LabelModel
+from ..modules.utils.padding_utils import pad_2d_vals_no_size
 from ..modules.utils.tree_utils import Tree
 from ..modules.utils.tree_utils import Vocab as VocabForTree
 from ..modules.utils.tree_utils import VocabForAll
@@ -136,7 +147,7 @@ class Text2TreeDataItem(DataItem):
 
 
 class Text2LabelDataItem(DataItem):
-    def __init__(self, input_text, output_label, tokenizer):
+    def __init__(self, input_text, output_label=None, tokenizer=None):
         super(Text2LabelDataItem, self).__init__(input_text, tokenizer)
         self.output_label = output_label
 
@@ -198,9 +209,9 @@ class DoubleText2TextDataItem(DataItem):
 
 
 class SequenceLabelingDataItem(DataItem):
-    def __init__(self, input_text, output_tags, tokenizer):
+    def __init__(self, input_text, tokenizer, output_text=None):
         super(SequenceLabelingDataItem, self).__init__(input_text, tokenizer)
-        self.output_tag = output_tags
+        self.output_tag = output_text
 
     def extract(self):
         """
@@ -213,7 +224,7 @@ class SequenceLabelingDataItem(DataItem):
         input_tokens = []
         for i in range(g.get_node_num()):
             if self.tokenizer is None:
-                tokenized_token = self.output_text.strip().split(" ")
+                tokenized_token = g.node_attributes[i]["token"].strip().split()
             else:
                 tokenized_token = self.tokenizer(g.node_attributes[i]["token"])
 
@@ -299,7 +310,7 @@ class Dataset(torch.utils.data.Dataset):
         timeout=15000,
         for_inference=False,
         reused_vocab_model=None,
-        **kwargs
+        **kwargs,
     ):
         """
 
@@ -307,7 +318,7 @@ class Dataset(torch.utils.data.Dataset):
         ----------
         root: str
             The path of the data root.
-        topology_builder: GraphConstructionBase
+        topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase]
             The initial graph topology builder.
         topology_subdir: str
             The name of the data folder.
@@ -407,6 +418,8 @@ class Dataset(torch.utils.data.Dataset):
             data = torch.load(self.processed_file_paths["data"])
             self.test = data["test"]
         else:
+            if self.root is None:
+                return
             data = torch.load(self.processed_file_paths["data"])
             self.train = data["train"]
             self.test = data["test"]
@@ -481,12 +494,28 @@ class Dataset(torch.utils.data.Dataset):
                 self.val = old_train_set[new_train_length:]
                 self.train = old_train_set[:new_train_length]
 
+    def process_data_items(self, data_items):
+        return self._build_topology_process(
+            data_items=data_items,
+            topology_builder=self.topology_builder,
+            static_or_dynamic=self.static_or_dynamic,
+            graph_name=self.graph_name,
+            dynamic_init_topology_builder=self.dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=None,
+            merge_strategy=self.merge_strategy,
+            edge_strategy=self.edge_strategy,
+            lower_case=self.lower_case,
+            tokenizer=self.tokenizer,
+            port=self.port,
+            timeout=self.timeout,
+        )
+
     @staticmethod
     def _build_topology_process(
         data_items,
         topology_builder,
-        graph_type,
-        dynamic_graph_type,
+        static_or_dynamic,
+        graph_name,
         dynamic_init_topology_builder,
         merge_strategy,
         edge_strategy,
@@ -496,9 +525,10 @@ class Dataset(torch.utils.data.Dataset):
         port,
         timeout,
     ):
-
+        if static_or_dynamic not in ["static", "dynamic"]:
+            raise ValueError("Argument: ``static_or_dynamic`` must be ``static`` or ``dynamic``")
         ret = []
-        if graph_type == "static":
+        if static_or_dynamic == "static":
             print("Connecting to stanfordcorenlp server...")
             processor = stanfordcorenlp.StanfordCoreNLP(
                 "http://localhost", port=port, timeout=timeout
@@ -523,7 +553,9 @@ class Dataset(torch.utils.data.Dataset):
                     "openie.triple.strict": "true",
                 }
                 processor_args = [props_coref, props_openie]
-            elif topology_builder == DependencyBasedGraphConstruction:
+            elif topology_builder == DependencyBasedGraphConstruction or isinstance(
+                topology_builder, DependencyBasedGraphConstruction
+            ):
                 processor_args = {
                     "annotators": "ssplit,tokenize,depparse",
                     "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,"
@@ -542,14 +574,14 @@ class Dataset(torch.utils.data.Dataset):
                     "outputFormat": "json",
                 }
             else:
-                raise NotImplementedError
+                raise NotImplementedError("unknown static graph type: {}".format(graph_name))
             print("CoreNLP server connected.")
             pop_idxs = []
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
                     print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
                 try:
-                    graph = topology_builder.topology(
+                    graph = topology_builder.static_topology(
                         raw_text_data=item.input_text,
                         nlp_processor=processor,
                         processor_args=processor_args,
@@ -564,15 +596,15 @@ class Dataset(torch.utils.data.Dataset):
                     warnings.warn(RuntimeWarning(msg))
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
-        elif graph_type == "dynamic":
-            if dynamic_graph_type == "node_emb":
+        elif static_or_dynamic == "dynamic":
+            if graph_name == "node_emb":
                 for item in data_items:
                     graph = topology_builder.init_topology(
                         item.input_text, lower_case=lower_case, tokenizer=tokenizer
                     )
                     item.graph = graph
                     ret.append(item)
-            elif dynamic_graph_type == "node_emb_refined":
+            elif graph_name == "node_emb_refined":
                 if dynamic_init_topology_builder in (
                     IEBasedGraphConstruction,
                     DependencyBasedGraphConstruction,
@@ -654,7 +686,7 @@ class Dataset(torch.utils.data.Dataset):
                     ret.append(item)
                 ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
             else:
-                raise RuntimeError("Unknown dynamic_graph_type: {}".format(dynamic_graph_type))
+                raise RuntimeError("Unknown dynamic_graph_type: {}".format(graph_name))
 
         else:
             raise NotImplementedError("Currently only static and dynamic are supported!")
@@ -674,19 +706,13 @@ class Dataset(torch.utils.data.Dataset):
             start_index = total * i // thread_number
             end_index = total * (i + 1) // thread_number
 
-            """
-            data_items, topology_builder,
-                                graph_type, dynamic_graph_type, dynamic_init_topology_builder,
-                                merge_strategy, edge_strategy, dynamic_init_topology_aux_args,
-                                lower_case, tokenizer, port, timeout
-            """
             r = pool.apply_async(
                 self._build_topology_process,
                 args=(
                     data_items[start_index:end_index],
                     self.topology_builder,
-                    self.graph_type,
-                    self.dynamic_graph_type,
+                    self.static_or_dynamic,
+                    self.graph_name,
                     self.dynamic_init_topology_builder,
                     self.merge_strategy,
                     self.edge_strategy,
@@ -741,6 +767,8 @@ class Dataset(torch.utils.data.Dataset):
         return self.vocab_model
 
     def _process(self):
+        if self.root is None:
+            return
         if all(
             [
                 os.path.exists(processed_path)
@@ -797,11 +825,112 @@ class Dataset(torch.utils.data.Dataset):
 
 
 class Text2TextDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
+    """
+        The dataset for text-to-text applications.
+    Parameters
+    ----------
+    graph_name: str
+        The name of graph construction method. E.g., "dependency".
+        Note that if it is in the provided graph names (i.e., "dependency", \
+            "constituency", "ie", "node_emb", "node_emb_refine"), the following \
+            parameters are set by default and users can't modify them:
+            1. ``topology_builder``
+            2. ``static_or_dynamic``
+        If you need to customize your graph construction method, you should rename the \
+            ``graph_name`` and set the parameters above.
+    root_dir: str, default=None
+        The path of dataset.
+    topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
+        The graph construction class.
+    topology_subdir: str
+        The directory name of processed path.
+    static_or_dynamic: str, default='static'
+        The graph type. Expected in ('static', 'dynamic')
+    dynamic_init_graph_name: str, default=None
+        The graph name of the initial graph. Expected in (None, "line", \
+            "dependency", "constituency").
+        Note that if it is in the provided graph names (i.e., "line", "dependency", \
+            "constituency"), the following parameters are set by default and users \
+            can't modify them:
+            1. ``dynamic_init_topology_builder``
+        If you need to customize your graph construction method, you should rename the \
+            ``graph_name`` and set the parameters above.
+    dynamic_init_topology_builder: StaticGraphConstructionBase
+        The graph construction class.
+    dynamic_init_topology_aux_args: None,
+        TBD.
+    """
+
+    def __init__(
+        self,
+        graph_name: str,
+        root_dir: str = None,
+        static_or_dynamic: str = None,
+        topology_builder: Union[
+            StaticGraphConstructionBase, DynamicGraphConstructionBase
+        ] = DependencyBasedGraphConstruction,
+        topology_subdir: str = None,
+        dynamic_init_graph_name: str = None,
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
+        dynamic_init_topology_aux_args=None,
+        share_vocab=True,
+        **kwargs,
+    ):
+        if kwargs.get("graph_type", None) is not None:
+            raise ValueError(
+                "The argument ``graph_type`` is disgarded. \
+                    Please use ``static_or_dynamic`` instead."
+            )
         self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
+
+        if graph_name == "dependency":
+            topology_builder = DependencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "constituency":
+            topology_builder = ConstituencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "ie":
+            topology_builder = IEBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "node_emb":
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+            static_or_dynamic = "dynamic"
+        elif graph_name == "node_emb_refined":
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            static_or_dynamic = "dynamic"
+        else:
+            print("Your are customizing the graph construction method.")
+            if topology_builder is None:
+                raise ValueError("``topology_builder`` can't be None if graph is defined by user.")
+            if static_or_dynamic is None:
+                raise ValueError("``static_or_dynamic`` can't be None if graph is defined by user.")
+
+        if static_or_dynamic == "dynamic":
+            if dynamic_init_graph_name is None or dynamic_init_graph_name == "line":
+                dynamic_init_topology_builder = None
+            elif dynamic_init_graph_name == "dependency":
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif dynamic_init_graph_name == "constituency":
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            else:
+                if dynamic_init_topology_builder is None:
+                    raise ValueError(
+                        "``dynamic_init_topology_builder`` can't be None \
+                            if ``dynamic_init_graph_name`` is defined by user."
+                    )
+
+        self.static_or_dynamic = static_or_dynamic
         super(Text2TextDataset, self).__init__(
-            root_dir, topology_builder, topology_subdir, **kwargs
+            root=root_dir,
+            graph_name=graph_name,
+            topology_builder=topology_builder,
+            topology_subdir=topology_subdir,
+            static_or_dynamic=static_or_dynamic,
+            share_vocab=share_vocab,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+            **kwargs,
         )
 
     def parse_file(self, file_path) -> list:
@@ -846,70 +975,147 @@ class Text2TextDataset(Dataset):
                 data.append(data_item)
         return data
 
+    @classmethod
+    def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie=False):
+
+        item = deepcopy(data_item)
+        graph: GraphData = item.graph
+        token_matrix = []
+        for node_idx in range(graph.get_node_num()):
+            node_token = graph.node_attributes[node_idx]["token"]
+            node_token_id = vocab_model.in_word_vocab.getIndex(node_token, use_ie)
+            graph.node_attributes[node_idx]["token_id"] = node_token_id
+
+            token_matrix.append([node_token_id])
+        if use_ie:
+            for i in range(len(token_matrix)):
+                token_matrix[i] = np.array(token_matrix[i][0])
+            token_matrix = pad_2d_vals_no_size(token_matrix)
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features["token_id"] = token_matrix
+        else:
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features["token_id"] = token_matrix
+
+        if use_ie and "token" in graph.edge_attributes[0].keys():
+            edge_token_matrix = []
+            for edge_idx in range(graph.get_edge_num()):
+                edge_token = graph.edge_attributes[edge_idx]["token"]
+                edge_token_id = vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
+                graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
+                edge_token_matrix.append([edge_token_id])
+            if use_ie:
+                for i in range(len(edge_token_matrix)):
+                    edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
+                edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
+                edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
+                graph.edge_features["token_id"] = edge_token_matrix
+
+        tgt = item.output_text
+        if isinstance(tgt, str):
+            tgt_token_id = vocab_model.out_word_vocab.to_index_sequence(tgt)
+            tgt_token_id.append(vocab_model.out_word_vocab.EOS)
+            tgt_token_id = np.array(tgt_token_id)
+            item.output_np = tgt_token_id
+        return item
+
     def vectorization(self, data_items):
         if self.topology_builder == IEBasedGraphConstruction:
             use_ie = True
         else:
             use_ie = False
-        for item in data_items:
-            graph: GraphData = item.graph
-            token_matrix = []
-            for node_idx in range(graph.get_node_num()):
-                node_token = graph.node_attributes[node_idx]["token"]
-                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token, use_ie)
-                graph.node_attributes[node_idx]["token_id"] = node_token_id
-
-                token_matrix.append([node_token_id])
-            if self.topology_builder == IEBasedGraphConstruction:
-                for i in range(len(token_matrix)):
-                    token_matrix[i] = np.array(token_matrix[i][0])
-                token_matrix = pad_2d_vals_no_size(token_matrix)
-                token_matrix = torch.tensor(token_matrix, dtype=torch.long)
-                graph.node_features["token_id"] = token_matrix
-                pass
-            else:
-                token_matrix = torch.tensor(token_matrix, dtype=torch.long)
-                graph.node_features["token_id"] = token_matrix
-
-            if use_ie and "token" in graph.edge_attributes[0].keys():
-                edge_token_matrix = []
-                for edge_idx in range(graph.get_edge_num()):
-                    edge_token = graph.edge_attributes[edge_idx]["token"]
-                    edge_token_id = self.vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
-                    graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
-                    edge_token_matrix.append([edge_token_id])
-                if self.topology_builder == IEBasedGraphConstruction:
-                    for i in range(len(edge_token_matrix)):
-                        edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
-                    edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
-                    edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
-                    graph.edge_features["token_id"] = edge_token_matrix
-
-            tgt = item.output_text
-            tgt_token_id = self.vocab_model.out_word_vocab.to_index_sequence(tgt)
-            tgt_token_id.append(self.vocab_model.out_word_vocab.EOS)
-            tgt_token_id = np.array(tgt_token_id)
-            item.output_np = tgt_token_id
+        for idx in range(len(data_items)):
+            data_items[idx] = self._vectorize_one_dataitem(
+                data_items[idx], self.vocab_model, use_ie=use_ie
+            )
 
     @staticmethod
     def collate_fn(data_list: [Text2TextDataItem]):
         graph_list = [item.graph for item in data_list]
         graph_data = to_batch(graph_list)
 
-        output_numpy = [deepcopy(item.output_np) for item in data_list]
-        output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
-        output_pad = pad_2d_vals_no_size(output_numpy)
-
-        tgt_seq = torch.from_numpy(output_pad).long()
+        if isinstance(data_list[0].output_text, str):  # has ground truth
+            output_numpy = [deepcopy(item.output_np) for item in data_list]
+            output_str = [deepcopy(item.output_text.lower().strip()) for item in data_list]
+            output_pad = pad_2d_vals_no_size(output_numpy)
+            tgt_seq = torch.from_numpy(output_pad).long()
+        else:
+            output_str = []
+            tgt_seq = None
         return {"graph_data": graph_data, "tgt_seq": tgt_seq, "output_str": output_str}
 
 
-class TextToTreeDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
+class Text2TreeDataset(Dataset):
+    def __init__(
+        self,
+        graph_name: str,
+        root_dir: str = None,
+        static_or_dynamic: str = None,
+        topology_builder: Union[
+            StaticGraphConstructionBase, DynamicGraphConstructionBase
+        ] = DependencyBasedGraphConstruction,
+        topology_subdir: str = None,
+        dynamic_init_graph_name: str = None,
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
+        dynamic_init_topology_aux_args=None,
+        share_vocab=True,
+        **kwargs,
+    ):
+        if kwargs.get("graph_type", None) is not None:
+            raise ValueError(
+                "The argument ``graph_type`` is disgarded. \
+                    Please use ``static_or_dynamic`` instead."
+            )
         self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
-        super(TextToTreeDataset, self).__init__(
-            root_dir, topology_builder, topology_subdir, **kwargs
+
+        if graph_name == "dependency":
+            topology_builder = DependencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "constituency":
+            topology_builder = ConstituencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "ie":
+            topology_builder = IEBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "node_emb":
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+            static_or_dynamic = "dynamic"
+        elif graph_name == "node_emb_refined":
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            static_or_dynamic = "dynamic"
+        else:
+            print("Your are customizing the graph construction method.")
+            if topology_builder is None:
+                raise ValueError("``topology_builder`` can't be None if graph is defined by user.")
+            if static_or_dynamic is None:
+                raise ValueError("``static_or_dynamic`` can't be None if graph is defined by user.")
+
+        if static_or_dynamic == "dynamic":
+            if dynamic_init_graph_name is None or dynamic_init_graph_name == "line":
+                dynamic_init_topology_builder = None
+            elif dynamic_init_graph_name == "dependency":
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif dynamic_init_graph_name == "constituency":
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            else:
+                if dynamic_init_topology_builder is None:
+                    raise ValueError(
+                        "``dynamic_init_topology_builder`` can't be None \
+                            if ``dynamic_init_graph_name`` is defined by user."
+                    )
+
+        self.static_or_dynamic = static_or_dynamic
+        super(Text2TreeDataset, self).__init__(
+            root=root_dir,
+            graph_name=graph_name,
+            topology_builder=topology_builder,
+            topology_subdir=topology_subdir,
+            static_or_dynamic=static_or_dynamic,
+            share_vocab=share_vocab,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+            **kwargs,
         )
 
     def parse_file(self, file_path) -> list:
@@ -1039,6 +1245,28 @@ class TextToTreeDataset(Dataset):
             )
             item.output_tree = output_tree
 
+    @classmethod
+    def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie=False):
+        item = deepcopy(data_item)
+        graph: GraphData = item.graph
+        token_matrix = []
+        for node_idx in range(graph.get_node_num()):
+            node_token = graph.node_attributes[node_idx]["token"]
+            node_token_id = vocab_model.in_word_vocab.get_symbol_idx(node_token)
+            graph.node_attributes[node_idx]["token_id"] = node_token_id
+            token_matrix.append([node_token_id])
+        token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+        graph.node_features["token_id"] = token_matrix
+
+        if isinstance(item.output_text, str):
+            tgt = item.output_text
+            tgt_list = vocab_model.out_word_vocab.get_symbol_idx_for_list(tgt.split())
+            output_tree = Tree.convert_to_tree(
+                tgt_list, 0, len(tgt_list), vocab_model.out_word_vocab
+            )
+            item.output_tree = output_tree
+        return item
+
     @staticmethod
     def collate_fn(data_list: [Text2TreeDataItem]):
         # remove the deepcopy
@@ -1056,10 +1284,110 @@ class TextToTreeDataset(Dataset):
 
 
 class Text2LabelDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, **kwargs):
+    """
+    The dataset for text-to-label applications.
+    Parameters
+    ----------
+    graph_name: str
+        The name of graph construction method. E.g., "dependency".
+        Note that if it is in the provided graph names (i.e., "dependency", \
+            "constituency", "ie", "node_emb", "node_emb_refine"), the following \
+            parameters are set by default and users can't modify them:
+            1. ``topology_builder``
+            2. ``static_or_dynamic``
+        If you need to customize your graph construction method, you should rename the \
+            ``graph_name`` and set the parameters above.
+    root_dir: str, default=None
+        The path of dataset.
+    topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
+        The graph construction class.
+    topology_subdir: str
+        The directory name of processed path.
+    static_or_dynamic: str, default='static'
+        The graph type. Expected in ('static', 'dynamic')
+    dynamic_init_graph_name: str, default=None
+        The graph name of the initial graph. Expected in (None, "line", \
+            "dependency", "constituency").
+        Note that if it is in the provided graph names (i.e., "line", "dependency", \
+            "constituency"), the following parameters are set by default and users \
+            can't modify them:
+            1. ``dynamic_init_topology_builder``
+        If you need to customize your graph construction method, you should rename the \
+            ``graph_name`` and set the parameters above.
+    dynamic_init_topology_builder: StaticGraphConstructionBase
+        The graph construction class.
+    dynamic_init_topology_aux_args: None,
+        TBD.
+    """
+
+    def __init__(
+        self,
+        graph_name: str,
+        root_dir: str = None,
+        static_or_dynamic: str = None,
+        topology_builder: Union[
+            StaticGraphConstructionBase, DynamicGraphConstructionBase
+        ] = DependencyBasedGraphConstruction,
+        topology_subdir: str = None,
+        dynamic_init_graph_name: str = None,
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
+        dynamic_init_topology_aux_args=None,
+        **kwargs,
+    ):
+        if kwargs.get("graph_type", None) is not None:
+            raise ValueError(
+                "The argument ``graph_type`` is disgarded. \
+                    Please use ``static_or_dynamic`` instead."
+            )
         self.data_item_type = Text2LabelDataItem
+        if graph_name == "dependency":
+            topology_builder = DependencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "constituency":
+            topology_builder = ConstituencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "ie":
+            topology_builder = IEBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "node_emb":
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+            static_or_dynamic = "dynamic"
+        elif graph_name == "node_emb_refined":
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            static_or_dynamic = "dynamic"
+        else:
+            print("Your are customizing the graph construction method.")
+            if topology_builder is None:
+                raise ValueError("``topology_builder`` can't be None if graph is defined by user.")
+            if static_or_dynamic is None:
+                raise ValueError("``static_or_dynamic`` can't be None if graph is defined by user.")
+
+        if static_or_dynamic == "dynamic":
+            if dynamic_init_graph_name is None or dynamic_init_graph_name == "line":
+                dynamic_init_topology_builder = None
+            elif dynamic_init_graph_name == "dependency":
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif dynamic_init_graph_name == "constituency":
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            elif dynamic_init_graph_name == "ie":
+                topology_builder = IEBasedGraphConstruction
+            else:
+                if dynamic_init_topology_builder is None:
+                    raise ValueError(
+                        "``dynamic_init_topology_builder`` can't be None \
+                            if ``dynamic_init_graph_name`` is defined by user."
+                    )
+
+        self.static_or_dynamic = static_or_dynamic
         super(Text2LabelDataset, self).__init__(
-            root_dir, topology_builder, topology_subdir, **kwargs
+            root=root_dir,
+            graph_name=graph_name,
+            topology_builder=topology_builder,
+            topology_subdir=topology_subdir,
+            static_or_dynamic=static_or_dynamic,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+            **kwargs,
         )
 
     def parse_file(self, file_path) -> list:
@@ -1127,37 +1455,176 @@ class Text2LabelDataset(Dataset):
             self.processed_file_paths["label"], all_labels=all_labels
         )
 
-    def vectorization(self, data_items):
-        for item in data_items:
-            graph: GraphData = item.graph
-            token_matrix = []
-            for node_idx in range(graph.get_node_num()):
-                node_token = graph.node_attributes[node_idx]["token"]
-                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token)
-                graph.node_attributes[node_idx]["token_id"] = node_token_id
-                token_matrix.append([node_token_id])
-            token_matrix = torch.LongTensor(token_matrix)
+    @classmethod
+    def _vectorize_one_dataitem(cls, data_item, vocab_model, label_model=None, use_ie=False):
+        item = deepcopy(data_item)
+        graph: GraphData = item.graph
+        token_matrix = []
+        for node_idx in range(graph.get_node_num()):
+            node_token = graph.node_attributes[node_idx]["token"]
+            node_token_id = vocab_model.in_word_vocab.getIndex(node_token, use_ie)
+            graph.node_attributes[node_idx]["token_id"] = node_token_id
+
+            token_matrix.append([node_token_id])
+        if use_ie:
+            for i in range(len(token_matrix)):
+                token_matrix[i] = np.array(token_matrix[i][0])
+            token_matrix = pad_2d_vals_no_size(token_matrix)
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features["token_id"] = token_matrix
+        else:
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features["token_id"] = token_matrix
 
-            item.output = self.label_model.le.transform([item.output_label])[0]
+        if use_ie and "token" in graph.edge_attributes[0].keys():
+            edge_token_matrix = []
+            for edge_idx in range(graph.get_edge_num()):
+                edge_token = graph.edge_attributes[edge_idx]["token"]
+                edge_token_id = vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
+                graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
+                edge_token_matrix.append([edge_token_id])
+            if use_ie:
+                for i in range(len(edge_token_matrix)):
+                    edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
+                edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
+                edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
+                graph.edge_features["token_id"] = edge_token_matrix
+
+        if item.output_label is not None:
+            assert label_model is not None, "label_model must be specified."
+            item.output = label_model.le.transform([item.output_label])[0]
+        return item
+
+    def vectorization(self, data_items):
+        if self.topology_builder == IEBasedGraphConstruction:
+            use_ie = True
+        else:
+            use_ie = False
+        for idx in range(len(data_items)):
+            data_items[idx] = self._vectorize_one_dataitem(
+                data_items[idx], self.vocab_model, label_model=self.label_model, use_ie=use_ie
+            )
 
     @staticmethod
     def collate_fn(data_list: [Text2LabelDataItem]):
         graph_list = [item.graph for item in data_list]
         graph_data = to_batch(graph_list)
 
-        tgt = [deepcopy(item.output) for item in data_list]
-        tgt_tensor = torch.LongTensor(tgt)
+        tgt_tensor = []
+        if len(data_list) > 0 and hasattr(data_list[0], "output"):
+            tgt = [deepcopy(item.output) for item in data_list]
+            tgt_tensor = torch.LongTensor(tgt)
 
         return {"graph_data": graph_data, "tgt_tensor": tgt_tensor}
 
 
 class DoubleText2TextDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, share_vocab=True, **kwargs):
+    """
+        The dataset for double-text-to-text applications.
+    Parameters
+    ----------
+    graph_name: str
+        The name of graph construction method. E.g., "dependency".
+        Note that if it is in the provided graph names (i.e., "dependency", \
+            "constituency", "ie", "node_emb", "node_emb_refine"), the following \
+            parameters are set by default and users can't modify them:
+            1. ``topology_builder``
+            2. ``static_or_dynamic``
+        If you need to customize your graph construction method, you should rename the \
+            ``graph_name`` and set the parameters above.
+    root_dir: str, default=None
+        The path of dataset.
+    topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
+        The graph construction class.
+    topology_subdir: str
+        The directory name of processed path.
+    static_or_dynamic: str, default='static'
+        The graph type. Expected in ('static', 'dynamic')
+    dynamic_init_graph_name: str, default=None
+        The graph name of the initial graph. Expected in (None, "line", \
+            "dependency", "constituency").
+        Note that if it is in the provided graph names (i.e., "line", "dependency", \
+            "constituency"), the following parameters are set by default and users \
+            can't modify them:
+            1. ``dynamic_init_topology_builder``
+        If you need to customize your graph construction method, you should rename the \
+            ``graph_name`` and set the parameters above.
+    dynamic_init_topology_builder: StaticGraphConstructionBase
+        The graph construction class.
+    dynamic_init_topology_aux_args: None,
+        TBD.
+    """
+
+    def __init__(
+        self,
+        graph_name: str,
+        root_dir: str = None,
+        static_or_dynamic: str = None,
+        topology_builder: Union[
+            StaticGraphConstructionBase, DynamicGraphConstructionBase
+        ] = DependencyBasedGraphConstruction,
+        topology_subdir: str = None,
+        dynamic_init_graph_name: str = None,
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
+        dynamic_init_topology_aux_args=None,
+        share_vocab=True,
+        **kwargs,
+    ):
+        if kwargs.get("graph_type", None) is not None:
+            raise ValueError(
+                "The argument ``graph_type`` is disgarded. \
+                    Please use ``static_or_dynamic`` instead."
+            )
         self.data_item_type = DoubleText2TextDataItem
         self.share_vocab = share_vocab
+
+        if graph_name == "dependency":
+            topology_builder = DependencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "constituency":
+            topology_builder = ConstituencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "ie":
+            topology_builder = IEBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "node_emb":
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+            static_or_dynamic = "dynamic"
+        elif graph_name == "node_emb_refined":
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            static_or_dynamic = "dynamic"
+        else:
+            print("Your are customizing the graph construction method.")
+            if topology_builder is None:
+                raise ValueError("``topology_builder`` can't be None if graph is defined by user.")
+            if static_or_dynamic is None:
+                raise ValueError("``static_or_dynamic`` can't be None if graph is defined by user.")
+
+        if static_or_dynamic == "dynamic":
+            if dynamic_init_graph_name is None or dynamic_init_graph_name == "line":
+                dynamic_init_topology_builder = None
+            elif dynamic_init_graph_name == "dependency":
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif dynamic_init_graph_name == "constituency":
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            else:
+                if dynamic_init_topology_builder is None:
+                    raise ValueError(
+                        "``dynamic_init_topology_builder`` can't be None \
+                            if ``dynamic_init_graph_name`` is defined by user."
+                    )
+
+        self.static_or_dynamic = static_or_dynamic
         super(DoubleText2TextDataset, self).__init__(
-            root_dir, topology_builder, topology_subdir, **kwargs
+            root=root_dir,
+            graph_name=graph_name,
+            topology_builder=topology_builder,
+            topology_subdir=topology_subdir,
+            static_or_dynamic=static_or_dynamic,
+            share_vocab=share_vocab,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
+            **kwargs,
         )
 
     def parse_file(self, file_path) -> list:
@@ -1206,66 +1673,71 @@ class DoubleText2TextDataset(Dataset):
                 data.append(data_item)
         return data
 
+    @classmethod
+    def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie=False):
+        item = deepcopy(data_item)
+        graph: GraphData = item.graph
+        token_matrix = []
+        for node_idx in range(graph.get_node_num()):
+            node_token = graph.node_attributes[node_idx]["token"]
+            node_token_id = vocab_model.in_word_vocab.getIndex(node_token, use_ie)
+            graph.node_attributes[node_idx]["token_id"] = node_token_id
+            token_matrix.append([node_token_id])
+        if use_ie:
+            for i in range(len(token_matrix)):
+                token_matrix[i] = np.array(token_matrix[i][0])
+            token_matrix = pad_2d_vals_no_size(token_matrix)
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features["token_id"] = token_matrix
+        else:
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.node_features["token_id"] = token_matrix
+
+        if use_ie and "token" in graph.edge_attributes[0].keys():
+            edge_token_matrix = []
+            for edge_idx in range(graph.get_edge_num()):
+                edge_token = graph.edge_attributes[edge_idx]["token"]
+                edge_token_id = vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
+                graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
+                edge_token_matrix.append([edge_token_id])
+
+            for i in range(len(edge_token_matrix)):
+                edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
+
+            edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
+            edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
+            graph.edge_features["token_id"] = edge_token_matrix
+
+        item.input_text2 = vocab_model.tokenizer(item.input_text2)
+        input_token_id2 = vocab_model.in_word_vocab.to_index_sequence_for_list(item.input_text2)
+        input_token_id2 = np.array(input_token_id2)
+        item.input_np2 = input_token_id2
+
+        if isinstance(item.output_text, str):
+            if vocab_model.in_word_vocab.lower_case:
+                item.output_text = item.output_text.lower()
+
+            item.output_text = vocab_model.tokenizer(item.output_text)
+            tgt_token_id = vocab_model.in_word_vocab.to_index_sequence_for_list(item.output_text)
+            tgt_token_id.append(vocab_model.in_word_vocab.EOS)
+            tgt_token_id = np.array(tgt_token_id)
+            item.output_np = tgt_token_id
+            item.output_text = " ".join(item.output_text)
+        return item
+
     def vectorization(self, data_items):
         if self.topology_builder == IEBasedGraphConstruction:
             use_ie = True
         else:
             use_ie = False
-        for item in data_items:
-            graph: GraphData = item.graph
-            token_matrix = []
-            for node_idx in range(graph.get_node_num()):
-                node_token = graph.node_attributes[node_idx]["token"]
-                node_token_id = self.vocab_model.in_word_vocab.getIndex(node_token, use_ie)
-                graph.node_attributes[node_idx]["token_id"] = node_token_id
-                token_matrix.append([node_token_id])
-            if self.topology_builder == IEBasedGraphConstruction:
-                for i in range(len(token_matrix)):
-                    token_matrix[i] = np.array(token_matrix[i][0])
-                token_matrix = pad_2d_vals_no_size(token_matrix)
-                token_matrix = torch.tensor(token_matrix, dtype=torch.long)
-                graph.node_features["token_id"] = token_matrix
-                pass
-            else:
-                token_matrix = torch.tensor(token_matrix, dtype=torch.long)
-                graph.node_features["token_id"] = token_matrix
 
-            if use_ie and "token" in graph.edge_attributes[0].keys():
-                edge_token_matrix = []
-                for edge_idx in range(graph.get_edge_num()):
-                    edge_token = graph.edge_attributes[edge_idx]["token"]
-                    edge_token_id = self.vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
-                    graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
-                    edge_token_matrix.append([edge_token_id])
-                if self.topology_builder == IEBasedGraphConstruction:
-                    for i in range(len(edge_token_matrix)):
-                        edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
-                    edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
-                    edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
-                    graph.edge_features["token_id"] = edge_token_matrix
-
-            item.input_text2 = self.tokenizer(item.input_text2)
-            input_token_id2 = self.vocab_model.in_word_vocab.to_index_sequence_for_list(
-                item.input_text2
+        for idx in range(len(data_items)):
+            data_items[idx] = self._vectorize_one_dataitem(
+                data_items[idx], self.vocab_model, use_ie=use_ie
             )
-            input_token_id2 = np.array(input_token_id2)
-            item.input_np2 = input_token_id2
-
-            if self.lower_case:
-                item.output_text = item.output_text.lower()
-
-            item.output_text = self.tokenizer(item.output_text)
-
-            tgt_token_id = self.vocab_model.in_word_vocab.to_index_sequence_for_list(
-                item.output_text
-            )
-            tgt_token_id.append(self.vocab_model.in_word_vocab.EOS)
-            tgt_token_id = np.array(tgt_token_id)
-            item.output_np = tgt_token_id
-            item.output_text = " ".join(item.output_text)
 
     @staticmethod
-    def collate_fn(data_list: [Text2TextDataItem]):
+    def collate_fn(data_list: [DoubleText2TextDataItem]):
         graph_data = []
         input_tensor2, input_length2, input_text2 = [], [], []
         tgt_tensor, tgt_text = [], []
@@ -1274,13 +1746,16 @@ class DoubleText2TextDataset(Dataset):
             input_tensor2.append(deepcopy(item.input_np2))
             input_length2.append(len(item.input_np2))
             input_text2.append(deepcopy(item.input_text2))
-            tgt_tensor.append(deepcopy(item.output_np))
-            tgt_text.append(deepcopy(item.output_text))
+
+            if isinstance(item.output_text, str):
+                tgt_tensor.append(deepcopy(item.output_np))
+                tgt_text.append(deepcopy(item.output_text))
 
         input_tensor2 = torch.LongTensor(pad_2d_vals_no_size(input_tensor2))
         input_length2 = torch.LongTensor(input_length2)
-        tgt_tensor = torch.LongTensor(pad_2d_vals_no_size(tgt_tensor))
         graph_data = to_batch(graph_data)
+        if len(tgt_tensor) > 0:
+            tgt_tensor = torch.LongTensor(pad_2d_vals_no_size(tgt_tensor))
 
         return {
             "graph_data": graph_data,
@@ -1293,11 +1768,74 @@ class DoubleText2TextDataset(Dataset):
 
 
 class SequenceLabelingDataset(Dataset):
-    def __init__(self, root_dir, topology_builder, topology_subdir, tag_types, **kwargs):
+    def __init__(
+        self,
+        graph_name: str,
+        root_dir: str = None,
+        static_or_dynamic: str = None,
+        topology_builder: Union[
+            StaticGraphConstructionBase, DynamicGraphConstructionBase
+        ] = DependencyBasedGraphConstruction,
+        topology_subdir: str = None,
+        tag_types: str = None,
+        dynamic_init_graph_name: str = None,
+        dynamic_init_topology_builder: StaticGraphConstructionBase = None,
+        **kwargs,
+    ):
+        if kwargs.get("graph_type", None) is not None:
+            raise ValueError(
+                "The argument ``graph_type`` is disgarded. \
+                    Please use ``static_or_dynamic`` instead."
+            )
+
         self.data_item_type = SequenceLabelingDataItem
         self.tag_types = tag_types
+
+        if graph_name == "dependency":
+            topology_builder = DependencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "constituency":
+            topology_builder = ConstituencyBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "ie":
+            topology_builder = IEBasedGraphConstruction
+            static_or_dynamic = "static"
+        elif graph_name == "node_emb":
+            topology_builder = NodeEmbeddingBasedGraphConstruction
+            static_or_dynamic = "dynamic"
+        elif graph_name == "node_emb_refined":
+            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
+            static_or_dynamic = "dynamic"
+        else:
+            print("Your are customizing the graph construction method.")
+            if topology_builder is None:
+                raise ValueError("``topology_builder`` can't be None if graph is defined by user.")
+            if static_or_dynamic is None:
+                raise ValueError("``static_or_dynamic`` can't be None if graph is defined by user.")
+
+        if static_or_dynamic == "dynamic":
+            if dynamic_init_graph_name is None or dynamic_init_graph_name == "line":
+                dynamic_init_topology_builder = None
+            elif dynamic_init_graph_name == "dependency":
+                dynamic_init_topology_builder = DependencyBasedGraphConstruction
+            elif dynamic_init_graph_name == "constituency":
+                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
+            else:
+                if dynamic_init_topology_builder is None:
+                    raise ValueError(
+                        "``dynamic_init_topology_builder`` can't be None \
+                            if ``dynamic_init_graph_name`` is defined by user."
+                    )
+
+        self.static_or_dynamic = static_or_dynamic
         super(SequenceLabelingDataset, self).__init__(
-            root_dir, topology_builder, topology_subdir, **kwargs
+            root=root_dir,
+            graph_name=graph_name,
+            topology_builder=topology_builder,
+            topology_subdir=topology_subdir,
+            static_or_dynamic=static_or_dynamic,
+            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            **kwargs,
         )
 
     def parse_file(self, file_path) -> list:
@@ -1317,9 +1855,9 @@ class SequenceLabelingDataset(Dataset):
 
         Examples
         --------
-        "EU       I-ORG "
+        "EU       I-ORG
          rejects  O
-         German   I-MISC
+         German   I-MISC"
 
         Parameters
         ----------
@@ -1332,19 +1870,15 @@ class SequenceLabelingDataset(Dataset):
             lines = f.readlines()
             for line in lines:
                 if len(line) > 1 and line[0] != "-":
-                    if line[0] != ".":
-                        input.append(line.strip().split(" ")[0])
-                        output.append(line.strip().split(" ")[-1])
-                    if line[0] == ".":
-                        input.append(line.strip().split(" ")[0])
-                        output.append(line.strip().split(" ")[-1])
-                        if len(input) >= 2:
-                            data_item = SequenceLabelingDataItem(
-                                input_text=input, output_tags=output, tokenizer=self.tokenizer
-                            )
-                            data.append(data_item)
-                            input = []
-                            output = []
+                    input.append(line.strip().split(" ")[0])
+                    output.append(line.strip().split(" ")[-1])
+                    if line[0] == "." and len(input) >= 2:
+                        data_item = SequenceLabelingDataItem(
+                            input_text=input, output_text=output, tokenizer=self.tokenizer
+                        )
+                        data.append(data_item)
+                        input = []
+                        output = []
 
         return data
 
@@ -1394,9 +1928,225 @@ class SequenceLabelingDataset(Dataset):
 
         graph_list = [item.graph for item in data_list]
         graph_data = to_batch(graph_list)
-        tgt_tag = [deepcopy(item.output_id) for item in data_list]
+
+        if data_list[0].output_id is not None:  # has ground truth
+            tgt_tag = [deepcopy(item.output_id) for item in data_list]
+        else:
+            tgt_tag = []
 
         return {"graph_data": graph_data, "tgt_tag": tgt_tag}
+
+
+class KGCompletionDataItem(DataItem):
+    def __init__(
+        self, e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=None, share_vocab=False
+    ):
+        super(KGCompletionDataItem, self).__init__(e1, tokenizer=tokenizer)
+        self.e1 = e1
+        self.rel = rel
+        self.e2 = e2
+        self.rel_eval = rel_eval
+        self.e2_multi1 = e2_multi1
+        self.e2_multi2 = e2_multi2
+        self.share_vocab = share_vocab
+
+    def extract(self):
+        """
+        Returns
+        -------
+        Input tokens (for entity) and output tokens (for relation)
+        """
+
+        input_tokens = []
+        if self.tokenizer is None:
+            input_tokens.extend(self.e1.strip().split(" "))
+            input_tokens.extend(self.e2.strip().split(" "))
+            input_tokens.extend(self.e2_multi1.strip().split(" "))
+            input_tokens.extend(self.e2_multi2.strip().split(" "))
+        else:
+            input_tokens.extend(self.tokenizer(self.e1))
+            input_tokens.extend(self.tokenizer(self.e2))
+            input_tokens.extend(self.tokenizer(self.e2_multi1))
+            input_tokens.extend(self.tokenizer(self.e2_multi2))
+
+        output_tokens = []
+        if self.tokenizer is None:
+            output_tokens.extend(self.rel.strip().split(" "))
+            output_tokens.extend(self.rel_eval.strip().split(" "))
+        else:
+            output_tokens.extend(self.tokenizer(self.rel))
+            output_tokens.extend(self.tokenizer(self.rel_eval))
+
+        if self.share_vocab:
+            return input_tokens + output_tokens
+        else:
+            return input_tokens, output_tokens
+
+
+class KGCompletionDataset(Dataset):
+    def __init__(
+        self, root_dir: str = None, topology_builder=None, topology_subdir: str = None, **kwargs
+    ):
+        self.data_item_type = DataItem
+        super(KGCompletionDataset, self).__init__(
+            root_dir, topology_builder, topology_subdir, **kwargs
+        )
+
+    def read_raw_data(self):
+        if self.for_inference:
+            self.test = self.parse_file(self.raw_file_paths["test"])
+            return
+        self.train = self.parse_file(self.raw_file_paths["train"])
+        self.test = self.parse_file(self.raw_file_paths["test"])
+        if "val" in self.raw_file_paths.keys():
+            self.val = self.parse_file(self.raw_file_paths["val"])
+        elif "val_split_ratio" in self.__dict__:
+            if self.val_split_ratio > 0:
+                new_train_length = int((1 - self.val_split_ratio) * len(self.train))
+                import random
+
+                random.seed(self.seed)
+                old_train_set = self.train
+                random.shuffle(old_train_set)
+                self.val = old_train_set[new_train_length:]
+                self.train = old_train_set[:new_train_length]
+
+    def parse_file(self, file_path) -> list:
+        """
+        Read and parse the file specified by `file_path`. The file format
+        is specified by each individual task-specific base class. Returns
+        all the indices of data items in this file w.r.t. the whole dataset.
+
+        For KGCompletionDataset, the format of the input file should contain
+        lines of input, each line representing one record of data.
+
+        Examples
+        --------
+        input:
+        {"e1": "person100", "e2": "None", "rel": "term6", "rel_eval": "None",
+        "e2_multi1": "person90 person80 person59 person82 person63 person77
+        person85 person83 person56", "e2_multi2": "None"}
+
+        DataItem: e1="person100"
+                  e2="None"
+                  rel="term6"
+                  ...
+
+        Parameters
+        ----------
+        file_path: str
+            The path of the input file.
+
+        Returns
+        -------
+        list
+            The indices of data items in the file w.r.t. the whole dataset.
+        """
+        data = []
+        with open(file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = json.loads(line)
+                e1, rel, e2, rel_eval, e2_multi1, e2_multi2 = (
+                    line["e1"],
+                    line["rel"],
+                    line["e2"],
+                    line["rel_eval"],
+                    line["e2_multi1"],
+                    line["e2_multi2"],
+                )
+                data_item = KGCompletionDataItem(
+                    e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=self.tokenizer
+                )
+                data.append(data_item)
+
+        return data
+
+    def build_topology(self, data_items):
+        return data_items
+
+    def build_vocab(self):
+        data_for_vocab = self.train
+
+        self.vocab_model = VocabModel.build(
+            saved_vocab_file=self.processed_file_paths["vocab"],
+            data_set=data_for_vocab,
+            tokenizer=self.tokenizer,
+            lower_case=self.lower_case,
+            max_word_vocab_size=self.max_word_vocab_size,
+            min_word_vocab_freq=self.min_word_vocab_freq,
+            pretrained_word_emb_name=self.pretrained_word_emb_name,
+            pretrained_word_emb_url=self.pretrained_word_emb_url,
+            pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
+            word_emb_size=self.word_emb_size,
+            share_vocab=False,
+        )
+
+    def vectorization(self, data_items):
+        for idx in range(len(data_items)):
+            data_items[idx] = self._vectorize_one_dataitem(data_items[idx], self.vocab_model)
+
+    def process_data_items(self, data_items):
+        return data_items
+
+    @classmethod
+    def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie=False):
+        item = deepcopy(data_item)
+        e2_multi1 = vocab_model.in_word_vocab.to_index_sequence(item.e2_multi1)
+        e2_multi2 = vocab_model.in_word_vocab.to_index_sequence(item.e2_multi2)
+
+        item.e1_np = np.array([vocab_model.in_word_vocab.getIndex(item.e1)])
+        item.e2_np = np.array([vocab_model.in_word_vocab.getIndex(item.e2)])
+        item.e2_multi1_np = np.array(e2_multi1)
+        item.e2_multi2_np = np.array(e2_multi2)
+        item.rel_np = np.array([vocab_model.out_word_vocab.getIndex(item.rel)])
+        item.rel_eval_np = np.array([vocab_model.out_word_vocab.getIndex(item.rel_eval)])
+
+        index1 = [[0] * len(e2_multi1), e2_multi1]
+        value1 = [1] * len(e2_multi1)
+        item.e2_multi1_binary = torch.sparse_coo_tensor(
+            index1, value1, (1, len(vocab_model.in_word_vocab))
+        )
+
+        index2 = [[0] * len(e2_multi2), e2_multi2]
+        value2 = [1] * len(e2_multi2)
+        item.e2_multi2_binary = torch.sparse_coo_tensor(
+            index2, value2, (1, len(vocab_model.in_word_vocab))
+        )
+
+        return item
+
+    @staticmethod
+    def collate_fn(data_list: [KGCompletionDataItem]):
+        e1 = np.array([item.e1_np for item in data_list])
+        e2 = np.array([item.e2_np for item in data_list])
+        rel = np.array([item.rel_np for item in data_list])
+        rel_eval = np.array([item.rel_eval_np for item in data_list])
+        e2_multi1 = [item.e2_multi1_np for item in data_list]
+        e2_multi2 = [item.e2_multi2_np for item in data_list]
+
+        e1_tensor = torch.LongTensor(e1)
+        rel_tensor = torch.LongTensor(rel)
+        e2_multi1 = torch.LongTensor(pad_2d_vals_no_size(e2_multi1))
+        e2_multi1_binary = torch.cat([item.e2_multi1_binary.to_dense() for item in data_list])
+
+        e2_tensor = torch.LongTensor(e2)
+        rel_eval_tensor = torch.LongTensor(rel_eval)
+        e2_multi2 = torch.LongTensor(pad_2d_vals_no_size(e2_multi2))
+        e2_multi2_binary = torch.cat([item.e2_multi2_binary.to_dense() for item in data_list])
+
+        return {
+            "e1": e1,
+            "e2": e2,
+            "rel": rel,
+            "e2_multi1": e2_multi1,
+            "e2_multi2": e2_multi2,
+            "e1_tensor": e1_tensor,
+            "rel_tensor": rel_tensor,
+            "e2_multi1_binary": e2_multi1_binary,
+            "e2_tensor": e2_tensor,
+            "rel_eval_tensor": rel_eval_tensor,
+            "e2_multi2_binary": e2_multi2_binary,
+        }
 
 
 __all__ = [
@@ -1409,8 +2159,10 @@ __all__ = [
     "SequenceLabelingDataItem",
     "Dataset",
     "Text2TextDataset",
-    "TextToTreeDataset",
+    "Text2TreeDataset",
     "Text2LabelDataset",
     "DoubleText2TextDataset",
     "SequenceLabelingDataset",
+    "KGCompletionDataItem",
+    "KGCompletionDataset",
 ]

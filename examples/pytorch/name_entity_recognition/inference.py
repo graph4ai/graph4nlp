@@ -3,28 +3,19 @@ import os
 import torch
 import torch.backends.cudnn as cudnn
 import torch.multiprocessing
-import torch.optim as optim
-from torch.utils.data import DataLoader
 
-from graph4nlp.pytorch.data.data import from_batch
-from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
-from graph4nlp.pytorch.modules.graph_construction import (
-    ConstituencyBasedGraphConstruction,
-    IEBasedGraphConstruction,
-    NodeEmbeddingBasedGraphConstruction,
+from graph4nlp.pytorch.data.dataset import SequenceLabelingDataItem
+from graph4nlp.pytorch.inference_wrapper.classifier_inference_wrapper import (
+    ClassifierInferenceWrapper,
 )
+from graph4nlp.pytorch.modules.config import get_basic_args
+from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
 
-from conll import ConllDataset
+from conll import ConllDataset_inference
 from conlleval import evaluate
-from dependency_graph_construction_without_tokenize import (
-    DependencyBasedGraphConstruction_without_tokenizer,
-)
 from line_graph_construction import LineBasedGraphConstruction
 from model import Word2tag
-from node_embedding_based_refined_graph_construction import (
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 cudnn.benchmark = False
@@ -96,7 +87,7 @@ def get_tokens(g_list):
 
 
 class Conll:
-    def __init__(self):
+    def __init__(self, opt):
         super(Conll, self).__init__()
         self.tag_types = ["I-PER", "O", "B-ORG", "B-LOC", "I-ORG", "I-MISC", "I-LOC", "B-MISC"]
         if args.gpu > -1:
@@ -106,126 +97,39 @@ class Conll:
         self.checkpoint_save_path = "./checkpoints/"
 
         print("finish building model")
+        self.opt = opt
         self._build_model()
-
-        print("finish dataloading")
-        self._build_dataloader()
-
-        self._build_optimizer()
-        self._build_evaluation()
-
-    def _build_dataloader(self):
-        print("starting build the dataset")
-
-        if args.graph_type == "line_graph":
-            dataset = ConllDataset(
-                root_dir="examples/pytorch/name_entity_recognition/conll",
-                topology_builder=LineBasedGraphConstruction,
-                graph_type="static",
-                pretrained_word_emb_cache_dir=args.pre_word_emb_file,
-                topology_subdir="LineGraph",
-                tag_types=self.tag_types,
-                for_inference=1,
-                reused_vocab_model=self.model.vocab,
-            )
-        elif args.graph_type == "dependency_graph":
-            dataset = ConllDataset(
-                root_dir="examples/pytorch/name_entity_recognition/conll",
-                topology_builder=DependencyBasedGraphConstruction_without_tokenizer,
-                graph_type="static",
-                pretrained_word_emb_cache_dir=args.pre_word_emb_file,
-                topology_subdir="DependencyGraph",
-                tag_types=self.tag_types,
-                for_inference=1,
-                reused_vocab_model=self.model.vocab,
-            )
-        elif args.graph_type == "node_emb":
-            dataset = ConllDataset(
-                root_dir="examples/pytorch/name_entity_recognition/conll",
-                topology_builder=NodeEmbeddingBasedGraphConstruction,
-                graph_type="dynamic",
-                pretrained_word_emb_cache_dir=args.pre_word_emb_file,
-                topology_subdir="DynamicGraph_node_emb",
-                tag_types=self.tag_types,
-                merge_strategy=None,
-                dynamic_graph_type=args.graph_type
-                if args.graph_type in ("node_emb", "node_emb_refined")
-                else None,
-                for_inference=1,
-                reused_vocab_model=self.model.vocab,
-            )
-        elif args.graph_type == "node_emb_refined":
-            if args.init_graph_type == "line":
-                dynamic_init_topology_builder = LineBasedGraphConstruction
-            elif args.init_graph_type == "dependency":
-                dynamic_init_topology_builder = DependencyBasedGraphConstruction_without_tokenizer
-            elif args.init_graph_type == "constituency":
-                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-            elif args.init_graph_type == "ie":
-                # merge_strategy = "global"
-                dynamic_init_topology_builder = IEBasedGraphConstruction
-            else:
-                # init_topology_builder
-                raise RuntimeError("Define your own init_topology_builder")
-            dataset = ConllDataset(
-                root_dir="examples/pytorch/name_entity_recognition/conll",
-                topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
-                graph_type="dynamic",
-                pretrained_word_emb_cache_dir=args.pre_word_emb_file,
-                topology_subdir="DynamicGraph_node_emb_refined",
-                tag_types=self.tag_types,
-                dynamic_graph_type=args.graph_type
-                if args.graph_type in ("node_emb", "node_emb_refined")
-                else None,
-                dynamic_init_topology_builder=dynamic_init_topology_builder,
-                dynamic_init_topology_aux_args={"dummy_param": 0},
-                for_inference=1,
-                reused_vocab_model=self.model.vocab,
-            )
-
-        print("strating loading the testing data")
-        self.test_dataloader = DataLoader(
-            dataset.test, batch_size=100, shuffle=True, num_workers=1, collate_fn=dataset.collate_fn
-        )
-        print("strating loading the vocab")
-        self.vocab = dataset.vocab_model
 
     def _build_model(self):
         self.model = Word2tag.load_checkpoint(self.checkpoint_save_path, "best.pt").to(self.device)
 
-    def _build_optimizer(self):
-        parameters = [p for p in self.model.parameters() if p.requires_grad]
-        self.optimizer = optim.Adam(parameters, lr=args.lr, weight_decay=args.weight_decay)
+        self.inference_tool = ClassifierInferenceWrapper(
+            cfg=self.opt,
+            model=self.model,
+            label_names=self.tag_types,
+            dataset=ConllDataset_inference,
+            data_item=SequenceLabelingDataItem,
+            topology_builder=LineBasedGraphConstruction,
+            lower_case=True,
+            tokenizer=None,
+        )
 
-    def _build_evaluation(self):
-        self.metrics = Accuracy(["F1", "precision", "recall"])
-
-    def test(self):
-
-        print("sucessfully loaded the existing saved model!")
+    def predict(self):
+        """The input of the self.inference_tool.predict() is a list of sentence.
+        The default tokenizer is based on white space (if tokenizer is None).
+        The user can also customize their own tokenizer in defining the \
+            ClassifierInferenceWrapper."""
         self.model.eval()
-        pred_collect = []
-        tokens_collect = []
-        tgt_collect = []
-        with torch.no_grad():
-            for data in self.test_dataloader:
-                graph, tgt = data["graph_data"], data["tgt_tag"]
-                graph = graph.to(self.device)
-                tgt_l = [tgt_.to(self.device) for tgt_ in tgt]
-                pred, loss = self.model(graph, tgt_l, require_loss=True)
-                # pred = logits2tag(g)
-                pred_collect.extend(pred)
-                tgt_collect.extend(tgt)
-                tokens_collect.extend(get_tokens(from_batch(graph)))
-        prec, rec, f1 = conll_score(pred_collect, tgt_collect, self.tag_types)
-        print("Testing results: precision is %5.2f, rec is %5.2f, f1 is %5.2f" % (prec, rec, f1))
-        return f1
+        ret = self.inference_tool.predict(
+            raw_contents=["there is a list of jobs", "good morning"], batch_size=1
+        )
+        print(ret)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NER")
-    parser.add_argument("--gpu", type=int, default=-1, help="which GPU to use.")
-    parser.add_argument("--epochs", type=int, default=150, help="number of training epochs")
+    parser.add_argument("--gpu", type=int, default=0, help="which GPU to use.")
+    parser.add_argument("--epochs", type=int, default=2, help="number of training epochs")
     parser.add_argument(
         "--direction_option",
         type=str,
@@ -264,10 +168,16 @@ if __name__ == "__main__":
     parser.add_argument("--use_gnn", type=bool, default=True, help="whether to use gnn")
     parser.add_argument("--batch_size", type=int, default=100, help="batch size for training")
     parser.add_argument(
-        "--graph_type",
+        "--graph_name",
         type=str,
         default="line_graph",
         help="graph_type:line_graph, dependency_graph, dynamic_graph",
+    )
+    parser.add_argument(
+        "--static_or_dynamic",
+        type=str,
+        default="static",
+        help="static or dynamic",
     )
     parser.add_argument(
         "--init_graph_type",
@@ -328,6 +238,12 @@ if __name__ == "__main__":
         default=False,
         help="Not fix pretrained word embeddings (default: false)",
     )
+    parser.add_argument(
+        "--task_config",
+        type=str,
+        default="/home/xiaojie.guo/graph4nlp/graph4nlp/ner_inference.yaml",
+        help="Not fix pretrained word embeddings (default: false)",
+    )
 
     import datetime
 
@@ -336,8 +252,14 @@ if __name__ == "__main__":
     # do something other
 
     args = parser.parse_args()
-    runner = Conll()
-    max_score = runner.test()
-    print("Test finish, best score: {:.3f}".format(max_score))
-    endtime = datetime.datetime.now()
-    print((endtime - starttime).seconds)
+    print("load ner template config")
+    ner_args = get_yaml_config(args.task_config)
+
+    ner_template = get_basic_args(
+        graph_construction_name=ner_args["graph_construction_name"],
+        graph_embedding_name=ner_args["graph_embedding_name"],
+        decoder_name=ner_args["decoder_name"],
+    )
+    update_values(to_args=ner_template, from_args_list=[ner_args])
+    runner = Conll(ner_template)
+    runner.predict()

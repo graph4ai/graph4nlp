@@ -1,72 +1,33 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>graph4nlp.datasets &mdash; Graph4NLP v0.4.1 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+  <title>graph4nlp.datasets &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/language_data.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="graph4nlp.graph_construction" href="graph_construction.html" />
     <link rel="prev" title="graph4nlp.data" href="data.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html" class="icon icon-home"> Graph4NLP
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -74,18 +35,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
@@ -121,71 +71,30 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/knowledge_graph_completion.html">Knowledge Graph Completion Tutorial</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Graph4NLP</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>graph4nlp.datasets</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/modules/datasets.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <div class="section" id="module-graph4nlp.datasets">
 <span id="graph4nlp-datasets"></span><h1>graph4nlp.datasets<a class="headerlink" href="#module-graph4nlp.datasets" title="Permalink to this headline">¶</a></h1>
 <p>graph4nlp.datasets module contains various common datasets implemented based on     graph4nlp.data.dataset.</p>
@@ -193,10 +102,53 @@
 <h2>All Datasets<a class="headerlink" href="#all-datasets" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="graph4nlp.datasets.JobsDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">JobsDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">pretrained_word_emb_name='6B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">graph_type='static'</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">thread_number=1</em>, <em class="sig-param">port=9000</em>, <em class="sig-param">dynamic_graph_type=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">for_inference=None</em>, <em class="sig-param">reused_vocab_model=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.JobsDataset" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Attributes</dt>
-<dd class="field-odd"><dl class="simple">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">JobsDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">graph_name</em>, <em class="sig-param">static_or_dynamic='static'</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">dynamic_init_graph_name=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">pretrained_word_emb_name='6B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">thread_number=1</em>, <em class="sig-param">port=9000</em>, <em class="sig-param">for_inference=None</em>, <em class="sig-param">reused_vocab_model=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.JobsDataset" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>root_dir: str</strong></dt><dd><p>The path of dataset.</p>
+</dd>
+<dt><strong>graph_name: str</strong></dt><dd><p>The name of graph construction method. E.g., “dependency”.
+Note that if it is in the provided graph names (i.e., “dependency”,                 “constituency”, “ie”, “node_emb”, “node_emb_refine”), the following                 parameters are set by default and users can’t modify them:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">topology_builder</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">static_or_dynamic</span></code></p></li>
+</ol>
+</div></blockquote>
+<p>If you need to customize your graph construction method, you should rename the                 <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+</dd>
+<dt><strong>topology_builder: GraphConstructionBase, default=None</strong></dt><dd><p>The graph construction class.</p>
+</dd>
+<dt><strong>topology_subdir: str</strong></dt><dd><p>The directory name of processed path.</p>
+</dd>
+<dt><strong>static_or_dynamic: str, default=’static’</strong></dt><dd><p>The graph type. Expected in (‘static’, ‘dynamic’)</p>
+</dd>
+<dt><strong>edge_strategy: str, default=None</strong></dt><dd><p>The edge strategy. Expected in (None, ‘homogeneous’, ‘as_node’).
+If set <cite>None</cite>, it will be ‘homogeneous’.</p>
+</dd>
+<dt><strong>merge_strategy: str, default=None</strong></dt><dd><p>The strategy to merge sub-graphs. Expected in (None, ‘tailhead’, ‘user_define’).
+If set <cite>None</cite>, it will be ‘tailhead’.</p>
+</dd>
+<dt><strong>share_vocab: bool, default=False</strong></dt><dd><p>Whether to share the input vocabulary with the output vocabulary.</p>
+</dd>
+<dt><strong>dynamic_init_graph_name: str, default=None</strong></dt><dd><p>The graph name of the initial graph. Expected in (None, “line”, “dependency”,                 “constituency”).
+Note that if it is in the provided graph names (i.e., “line”, “dependency”,                 “constituency”), the following parameters are set by default and users                 can’t modify them:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dynamic_init_topology_builder</span></code></p></li>
+</ol>
+</div></blockquote>
+<p>If you need to customize your graph construction method, you should rename the                 <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+</dd>
+<dt><strong>dynamic_init_topology_builder: GraphConstructionBase</strong></dt><dd><p>The graph construction class.</p>
+</dd>
+<dt><strong>dynamic_init_topology_aux_args: None,</strong></dt><dd><p>TBD.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Attributes</dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>processed_dir</strong></dt><dd></dd>
 <dt><a class="reference internal" href="#graph4nlp.datasets.JobsDataset.processed_file_names" title="graph4nlp.datasets.JobsDataset.processed_file_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">processed_file_names</span></code></a></dt><dd><p>At least 3 reserved keys should be fiiled: ‘vocab’, ‘data’ and ‘split_ids’.</p>
 </dd>
@@ -240,6 +192,23 @@
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="graph4nlp.datasets.JobsDataset.download">
 <code class="sig-name descname">download</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.JobsDataset.download" title="Permalink to this definition">¶</a></dt>
@@ -272,7 +241,7 @@
 
 <dl class="class">
 <dt id="graph4nlp.datasets.JobsDatasetForTree">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">JobsDatasetForTree</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">pretrained_word_emb_name='6B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">val_split_ratio=0</em>, <em class="sig-param">graph_type='static'</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">dynamic_graph_type=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">enc_emb_size=300</em>, <em class="sig-param">dec_emb_size=300</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">tokenizer=&lt;function tokenize_jobs&gt;</em>, <em class="sig-param">max_word_vocab_size=100000</em>, <em class="sig-param">for_inference=False</em>, <em class="sig-param">reused_vocab_model=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.JobsDatasetForTree" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">JobsDatasetForTree</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">graph_name</em>, <em class="sig-param">static_or_dynamic='static'</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">dynamic_init_graph_name=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">pretrained_word_emb_name='6B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">val_split_ratio=0</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">enc_emb_size=300</em>, <em class="sig-param">dec_emb_size=300</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">tokenizer=&lt;function tokenize_jobs&gt;</em>, <em class="sig-param">max_word_vocab_size=100000</em>, <em class="sig-param">for_inference=False</em>, <em class="sig-param">reused_vocab_model=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.JobsDatasetForTree" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -319,6 +288,23 @@
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="graph4nlp.datasets.JobsDatasetForTree.download">
 <code class="sig-name descname">download</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.JobsDatasetForTree.download" title="Permalink to this definition">¶</a></dt>
@@ -351,7 +337,7 @@
 
 <dl class="class">
 <dt id="graph4nlp.datasets.GeoDatasetForTree">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">GeoDatasetForTree</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">pretrained_word_emb_name='6B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">val_split_ratio=0</em>, <em class="sig-param">graph_type='static'</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">dynamic_graph_type=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">enc_emb_size=300</em>, <em class="sig-param">dec_emb_size=300</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">tokenizer=&lt;function tokenize_geo&gt;</em>, <em class="sig-param">max_word_vocab_size=100000</em>, <em class="sig-param">for_inference=False</em>, <em class="sig-param">reused_vocab_model=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.GeoDatasetForTree" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">GeoDatasetForTree</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">graph_name</em>, <em class="sig-param">static_or_dynamic='static'</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">dynamic_init_graph_name=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">pretrained_word_emb_name='6B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">val_split_ratio=0</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">enc_emb_size=300</em>, <em class="sig-param">dec_emb_size=300</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">tokenizer=&lt;function tokenize_geo&gt;</em>, <em class="sig-param">max_word_vocab_size=100000</em>, <em class="sig-param">for_inference=False</em>, <em class="sig-param">reused_vocab_model=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.GeoDatasetForTree" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -398,6 +384,23 @@
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="graph4nlp.datasets.GeoDatasetForTree.download">
 <code class="sig-name descname">download</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.GeoDatasetForTree.download" title="Permalink to this definition">¶</a></dt>
@@ -429,8 +432,111 @@
 </dd></dl>
 
 <dl class="class">
+<dt id="graph4nlp.datasets.KinshipDataset">
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">KinshipDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir=None</em>, <em class="sig-param">topology_subdir='kgc'</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.KinshipDataset" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>processed_dir</strong></dt><dd></dd>
+<dt><a class="reference internal" href="#graph4nlp.datasets.KinshipDataset.processed_file_names" title="graph4nlp.datasets.KinshipDataset.processed_file_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">processed_file_names</span></code></a></dt><dd><p>At least 2 reserved keys should be fiiled: ‘vocab’ and ‘data’.</p>
+</dd>
+<dt><strong>processed_file_paths</strong></dt><dd></dd>
+<dt><a class="reference internal" href="#graph4nlp.datasets.KinshipDataset.raw_dir" title="graph4nlp.datasets.KinshipDataset.raw_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_dir</span></code></a></dt><dd><p>The directory where the raw data is stored.</p>
+</dd>
+<dt><a class="reference internal" href="#graph4nlp.datasets.KinshipDataset.raw_file_names" title="graph4nlp.datasets.KinshipDataset.raw_file_names"><code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_file_names</span></code></a></dt><dd><p>3 reserved keys: ‘train’, ‘val’ (optional), ‘test’.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">raw_file_paths</span></code></dt><dd><p>The paths to raw files.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_topology</span></code>(data_items)</p></td>
+<td><p>Build graph topology for each item in the dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_vocab</span></code>()</p></td>
+<td><p>Build the vocabulary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">collate_fn</span></code>(data_list)</p></td>
+<td><p>Takes a list of data and convert it to a batch of data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.datasets.KinshipDataset.download" title="graph4nlp.datasets.KinshipDataset.download"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download</span></code></a>()</p></td>
+<td><p>Download the raw data from the Internet.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_file</span></code>(file_path)</p></td>
+<td><p>Read and parse the file specified by <cite>file_path</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_raw_data</span></code>()</p></td>
+<td><p>Read raw data from the disk and put them in a dictionary (<cite>self.data</cite>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">vectorization</span></code>(data_items)</p></td>
+<td><p>Convert tokens to indices which can be processed by downstream models.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="graph4nlp.datasets.KinshipDataset.download">
+<code class="sig-name descname">download</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.KinshipDataset.download" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download the raw data from the Internet.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.datasets.KinshipDataset.processed_file_names">
+<em class="property">property </em><code class="sig-name descname">processed_file_names</code><a class="headerlink" href="#graph4nlp.datasets.KinshipDataset.processed_file_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘vocab’ and ‘data’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>At least 2 reserved keys should be fiiled</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.datasets.KinshipDataset.raw_dir">
+<em class="property">property </em><code class="sig-name descname">raw_dir</code><a class="headerlink" href="#graph4nlp.datasets.KinshipDataset.raw_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>The directory where the raw data is stored.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="graph4nlp.datasets.KinshipDataset.raw_file_names">
+<em class="property">property </em><code class="sig-name descname">raw_file_names</code><a class="headerlink" href="#graph4nlp.datasets.KinshipDataset.raw_file_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘train’, ‘val’ (optional), ‘test’.
+Represent the split of dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>3 reserved keys</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="graph4nlp.datasets.MawpsDatasetForTree">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">MawpsDatasetForTree</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_builder</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">pretrained_word_emb_name='6B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">val_split_ratio=0</em>, <em class="sig-param">graph_type='static'</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">dynamic_graph_type=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">enc_emb_size=300</em>, <em class="sig-param">dec_emb_size=300</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">tokenizer=&lt;function tokenize_mawps&gt;</em>, <em class="sig-param">max_word_vocab_size=100000</em>, <em class="sig-param">for_inference=False</em>, <em class="sig-param">reused_vocab_model=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.MawpsDatasetForTree" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">MawpsDatasetForTree</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">graph_name</em>, <em class="sig-param">static_or_dynamic='static'</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">dynamic_init_graph_name=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">pretrained_word_emb_name='6B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">val_split_ratio=0</em>, <em class="sig-param">word_emb_size=300</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">enc_emb_size=300</em>, <em class="sig-param">dec_emb_size=300</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">tokenizer=&lt;function tokenize_mawps&gt;</em>, <em class="sig-param">max_word_vocab_size=100000</em>, <em class="sig-param">for_inference=False</em>, <em class="sig-param">reused_vocab_model=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.MawpsDatasetForTree" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -477,6 +583,23 @@
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="graph4nlp.datasets.MawpsDatasetForTree.download">
 <code class="sig-name descname">download</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.MawpsDatasetForTree.download" title="Permalink to this definition">¶</a></dt>
@@ -509,7 +632,7 @@
 
 <dl class="class">
 <dt id="graph4nlp.datasets.SQuADDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">SQuADDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">topology_subdir=None</em>, <em class="sig-param">graph_type='static'</em>, <em class="sig-param">pretrained_word_emb_name='840B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">max_word_vocab_size=None</em>, <em class="sig-param">tokenizer=&lt;bound method RegexpTokenizer.tokenize of RegexpTokenizer(pattern=' '</em>, <em class="sig-param">gaps=True</em>, <em class="sig-param">discard_empty=True</em>, <em class="sig-param">flags=re.UNICODE|re.MULTILINE|re.DOTALL)&gt;</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">word_emb_size=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.SQuADDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">SQuADDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">graph_name</em>, <em class="sig-param">static_or_dynamic='static'</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">dynamic_init_graph_name=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">pretrained_word_emb_name='840B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">max_word_vocab_size=None</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">tokenizer=&lt;bound method RegexpTokenizer.tokenize of RegexpTokenizer(pattern=' '</em>, <em class="sig-param">gaps=True</em>, <em class="sig-param">discard_empty=True</em>, <em class="sig-param">flags=re.UNICODE|re.MULTILINE|re.DOTALL)&gt;</em>, <em class="sig-param">word_emb_size=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.SQuADDataset" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -556,6 +679,23 @@
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="graph4nlp.datasets.SQuADDataset.download">
 <code class="sig-name descname">download</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.SQuADDataset.download" title="Permalink to this definition">¶</a></dt>
@@ -588,7 +728,7 @@
 
 <dl class="class">
 <dt id="graph4nlp.datasets.TrecDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">TrecDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">topology_subdir=None</em>, <em class="sig-param">graph_type='static'</em>, <em class="sig-param">pretrained_word_emb_name='840B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">merge_strategy='tailhead'</em>, <em class="sig-param">max_word_vocab_size=None</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">word_emb_size=None</em>, <em class="sig-param">for_inference=None</em>, <em class="sig-param">reused_vocab_model=None</em>, <em class="sig-param">reused_label_model=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.TrecDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.datasets.</code><code class="sig-name descname">TrecDataset</code><span class="sig-paren">(</span><em class="sig-param">root_dir</em>, <em class="sig-param">topology_subdir</em>, <em class="sig-param">graph_name</em>, <em class="sig-param">static_or_dynamic='static'</em>, <em class="sig-param">topology_builder=None</em>, <em class="sig-param">dynamic_init_graph_name=None</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">pretrained_word_emb_name='840B'</em>, <em class="sig-param">pretrained_word_emb_url=None</em>, <em class="sig-param">pretrained_word_emb_cache_dir=None</em>, <em class="sig-param">max_word_vocab_size=None</em>, <em class="sig-param">min_word_vocab_freq=1</em>, <em class="sig-param">tokenizer=&lt;bound method RegexpTokenizer.tokenize of RegexpTokenizer(pattern=' '</em>, <em class="sig-param">gaps=True</em>, <em class="sig-param">discard_empty=True</em>, <em class="sig-param">flags=re.UNICODE|re.MULTILINE|re.DOTALL)&gt;</em>, <em class="sig-param">word_emb_size=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.TrecDataset" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -635,6 +775,23 @@
 </tr>
 </tbody>
 </table>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 77%" />
+<col style="width: 23%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>process_data_items</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>register_datapipe_as_function</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>register_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <dl class="method">
 <dt id="graph4nlp.datasets.TrecDataset.download">
 <code class="sig-name descname">download</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.datasets.TrecDataset.download" title="Permalink to this definition">¶</a></dt>
@@ -670,50 +827,33 @@
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="graph_construction.html" class="btn btn-neutral float-right" title="graph4nlp.graph_construction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="data.html" class="btn btn-neutral float-left" title="graph4nlp.data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="graph_construction.html" class="btn btn-neutral float-right" title="graph4nlp.graph_construction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2020, Graph4AI Group.
-
-    </p>
+    <p>&#169; Copyright 2020, Graph4AI Group.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

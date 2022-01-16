@@ -8,11 +8,7 @@ from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
-from graph4nlp.pytorch.modules.graph_construction import (
-    ConstituencyBasedGraphConstruction,
-    IEBasedGraphConstruction,
-    NodeEmbeddingBasedRefinedGraphConstruction,
-)
+from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
 )
@@ -112,60 +108,53 @@ class Conll:
     def _build_dataloader(self):
         print("starting build the dataset")
 
-        if args.graph_type == "line_graph":
+        if args.graph_name == "line_graph":
             dataset = ConllDataset(
                 root_dir="examples/pytorch/name_entity_recognition/conll",
                 topology_builder=LineBasedGraphConstruction,
-                graph_type="static",
+                graph_name=args.graph_name,
+                static_or_dynamic=args.static_or_dynamic,
                 pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                 topology_subdir="LineGraph",
                 tag_types=self.tag_types,
             )
-        elif args.graph_type == "dependency_graph":
+        elif args.graph_name == "dependency_graph":
             dataset = ConllDataset(
                 root_dir="examples/pytorch/name_entity_recognition/conll",
                 topology_builder=DependencyBasedGraphConstruction_without_tokenizer,
-                graph_type="static",
+                graph_name=args.graph_name,
+                static_or_dynamic="static",
                 pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                 topology_subdir="DependencyGraph",
                 tag_types=self.tag_types,
             )
-        elif args.graph_type == "node_emb":
+        elif args.graph_name == "node_emb":
             dataset = ConllDataset(
                 root_dir="examples/pytorch/name_entity_recognition/conll",
                 topology_builder=NodeEmbeddingBasedGraphConstruction,
-                graph_type="dynamic",
+                graph_name=args.graph_name,
+                static_or_dynamic="static",
                 pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                 topology_subdir="DynamicGraph_node_emb",
                 tag_types=self.tag_types,
                 merge_strategy=None,
-                dynamic_graph_type=args.graph_type
-                if args.graph_type in ("node_emb", "node_emb_refined")
-                else None,
             )
         elif args.graph_type == "node_emb_refined":
-            if args.init_graph_type == "line":
+            if args.init_graph_name == "line":
                 dynamic_init_topology_builder = LineBasedGraphConstruction
-            elif args.init_graph_type == "dependency":
+            elif args.init_graph_name == "dependency":
                 dynamic_init_topology_builder = DependencyBasedGraphConstruction_without_tokenizer
-            elif args.init_graph_type == "constituency":
-                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-            elif args.init_graph_type == "ie":
-                # merge_strategy = "global"
-                dynamic_init_topology_builder = IEBasedGraphConstruction
             else:
                 # init_topology_builder
                 raise RuntimeError("Define your own init_topology_builder")
             dataset = ConllDataset(
                 root_dir="examples/pytorch/name_entity_recognition/conll",
                 topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
-                graph_type="dynamic",
+                graph_name=args.graph_name,
+                static_or_dynamic="dynamic",
                 pretrained_word_emb_cache_dir=args.pre_word_emb_file,
                 topology_subdir="DynamicGraph_node_emb_refined",
                 tag_types=self.tag_types,
-                dynamic_graph_type=args.graph_type
-                if args.graph_type in ("node_emb", "node_emb_refined")
-                else None,
                 dynamic_init_topology_builder=dynamic_init_topology_builder,
                 dynamic_init_topology_aux_args={"dummy_param": 0},
             )
@@ -275,7 +264,7 @@ class Conll:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NER")
     parser.add_argument("--gpu", type=int, default=-1, help="which GPU to use.")
-    parser.add_argument("--epochs", type=int, default=10, help="number of training epochs")
+    parser.add_argument("--epochs", type=int, default=5, help="number of training epochs")
     parser.add_argument(
         "--direction_option",
         type=str,
@@ -314,16 +303,22 @@ if __name__ == "__main__":
     parser.add_argument("--use_gnn", type=bool, default=True, help="whether to use gnn")
     parser.add_argument("--batch_size", type=int, default=100, help="batch size for training")
     parser.add_argument(
-        "--graph_type",
+        "--graph_name",
         type=str,
         default="line_graph",
         help="graph_type:line_graph, dependency_graph, dynamic_graph",
     )
     parser.add_argument(
-        "--init_graph_type",
+        "--init_graph_name",
         type=str,
-        default="line",
+        default="dependency",
         help="initial graph construction type ('line', 'dependency', 'constituency', 'ie')",
+    )
+    parser.add_argument(
+        "--static_or_dynamic",
+        type=str,
+        default="static",
+        help="static or dynamic",
     )
     parser.add_argument(
         "--pre_word_emb_file", type=str, default=None, help="path of pretrained_word_emb_file"

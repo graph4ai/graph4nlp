@@ -15,14 +15,16 @@ from torch.utils.data import DataLoader
 from graph4nlp.pytorch.datasets.trec import TrecDataset
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
 from graph4nlp.pytorch.modules.graph_construction import (
-    ConstituencyBasedGraphConstruction,
-    DependencyBasedGraphConstruction,
-    IEBasedGraphConstruction,
     NodeEmbeddingBasedGraphConstruction,
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
-from graph4nlp.pytorch.modules.graph_embedding import GAT, GGNN, GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
+    WordEmbedding,
+)
+from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_initialization import (  # noqa
+    GraphEmbeddingInitialization,
+)
+from graph4nlp.pytorch.modules.graph_embedding_learning import GAT, GGNN, GraphSAGE
 from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
 from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
 from graph4nlp.pytorch.modules.utils import constants as Constants
@@ -36,55 +38,36 @@ class TextClassifier(nn.Module):
     def __init__(self, vocab, label_model, config):
         super(TextClassifier, self).__init__()
         self.config = config
-        self.vocab = vocab
+        self.vocab_model = vocab
         self.label_model = label_model
+        self.graph_name = self.config["graph_construction_args"]["graph_construction_share"][
+            "graph_name"
+        ]
+        assert not (
+            self.graph_name in ("node_emb", "node_emb_refined") and config["gnn"] == "gat"
+        ), "dynamic graph construction does not support GAT"
+
         embedding_style = {
-            "single_token_item": True if config["graph_type"] != "ie" else False,
+            "single_token_item": True if self.graph_name != "ie" else False,
             "emb_strategy": config.get("emb_strategy", "w2v_bilstm"),
             "num_rnn_layers": 1,
             "bert_model_name": config.get("bert_model_name", "bert-base-uncased"),
             "bert_lower_case": True,
         }
 
-        assert not (
-            config["graph_type"] in ("node_emb", "node_emb_refined") and config["gnn"] == "gat"
-        ), "dynamic graph construction does not support GAT"
+        self.graph_initializer = GraphEmbeddingInitialization(
+            word_vocab=self.vocab_model.in_word_vocab,
+            embedding_style=embedding_style,
+            hidden_size=config["num_hidden"],
+            word_dropout=config["word_dropout"],
+            rnn_dropout=config["rnn_dropout"],
+            fix_word_emb=not config["no_fix_word_emb"],
+            fix_bert_emb=not config.get("no_fix_bert_emb", False),
+        )
 
         use_edge_weight = False
-        if config["graph_type"] == "dependency":
-            self.graph_topology = DependencyBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab.in_word_vocab,
-                hidden_size=config["num_hidden"],
-                word_dropout=config["word_dropout"],
-                rnn_dropout=config["rnn_dropout"],
-                fix_word_emb=not config["no_fix_word_emb"],
-                fix_bert_emb=not config.get("no_fix_bert_emb", False),
-            )
-        elif config["graph_type"] == "constituency":
-            self.graph_topology = ConstituencyBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab.in_word_vocab,
-                hidden_size=config["num_hidden"],
-                word_dropout=config["word_dropout"],
-                rnn_dropout=config["rnn_dropout"],
-                fix_word_emb=not config["no_fix_word_emb"],
-                fix_bert_emb=not config.get("no_fix_bert_emb", False),
-            )
-        elif config["graph_type"] == "ie":
-            self.graph_topology = IEBasedGraphConstruction(
-                embedding_style=embedding_style,
-                vocab=vocab.in_word_vocab,
-                hidden_size=config["num_hidden"],
-                word_dropout=config["word_dropout"],
-                rnn_dropout=config["rnn_dropout"],
-                fix_word_emb=not config["no_fix_word_emb"],
-                fix_bert_emb=not config.get("no_fix_bert_emb", False),
-            )
-        elif config["graph_type"] == "node_emb":
+        if self.graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
-                vocab.in_word_vocab,
-                embedding_style,
                 sim_metric_type=config["gl_metric_type"],
                 num_heads=config["gl_num_heads"],
                 top_k_neigh=config["gl_top_k"],
@@ -94,16 +77,10 @@ class TextClassifier(nn.Module):
                 sparsity_ratio=config["gl_sparsity_ratio"],
                 input_size=config["num_hidden"],
                 hidden_size=config["gl_num_hidden"],
-                fix_word_emb=not config["no_fix_word_emb"],
-                fix_bert_emb=not config.get("no_fix_bert_emb", False),
-                word_dropout=config["word_dropout"],
-                rnn_dropout=config["rnn_dropout"],
             )
             use_edge_weight = True
-        elif config["graph_type"] == "node_emb_refined":
+        elif self.graph_name == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
-                vocab.in_word_vocab,
-                embedding_style,
                 config["init_adj_alpha"],
                 sim_metric_type=config["gl_metric_type"],
                 num_heads=config["gl_num_heads"],
@@ -114,24 +91,18 @@ class TextClassifier(nn.Module):
                 sparsity_ratio=config["gl_sparsity_ratio"],
                 input_size=config["num_hidden"],
                 hidden_size=config["gl_num_hidden"],
-                fix_word_emb=not config["no_fix_word_emb"],
-                fix_bert_emb=not config.get("no_fix_bert_emb", False),
-                word_dropout=config["word_dropout"],
-                rnn_dropout=config["rnn_dropout"],
             )
             use_edge_weight = True
-        else:
-            raise RuntimeError("Unknown graph_type: {}".format(config["graph_type"]))
 
-        if "w2v" in self.graph_topology.embedding_layer.word_emb_layers:
-            self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[
+        if "w2v" in self.graph_initializer.embedding_layer.word_emb_layers:
+            self.word_emb = self.graph_initializer.embedding_layer.word_emb_layers[
                 "w2v"
             ].word_emb_layer
         else:
             self.word_emb = WordEmbedding(
-                self.vocab.in_word_vocab.embeddings.shape[0],
-                self.vocab.in_word_vocab.embeddings.shape[1],
-                pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
+                self.vocab_model.in_word_vocab.embeddings.shape[0],
+                self.vocab_model.in_word_vocab.embeddings.shape[1],
+                pretrained_word_emb=self.vocab_model.in_word_vocab.embeddings,
                 fix_emb=not config["no_fix_word_emb"],
             ).word_emb_layer
 
@@ -195,8 +166,12 @@ class TextClassifier(nn.Module):
         self.loss = GeneralLoss("CrossEntropy")
 
     def forward(self, graph_list, tgt=None, require_loss=True):
-        # graph embedding construction
-        batch_gd = self.graph_topology(graph_list)
+        # graph embedding initialization
+        batch_gd = self.graph_initializer(graph_list)
+
+        # run dynamic graph construction if turned on
+        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+            batch_gd = self.graph_topology.dynamic_topology(batch_gd)
 
         # run GNN
         self.gnn(batch_gd)
@@ -210,6 +185,18 @@ class TextClassifier(nn.Module):
             return logits, loss
         else:
             return logits
+
+    def inference_forward(self, collate_data):
+        return self.forward(collate_data["graph_data"], require_loss=False)
+
+    def post_process(self, logits, label_names):
+        logits_list = []
+
+        for idx in range(len(logits)):
+            logits_list.append(logits[idx].cpu().clone().numpy())
+
+        pred_tags = [label_names[pred.argmax()] for pred in logits_list]
+        return pred_tags
 
     @classmethod
     def load_checkpoint(cls, model_path):
@@ -243,69 +230,40 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        dynamic_init_topology_builder = None
-        if self.config["graph_type"] == "dependency":
-            topology_builder = DependencyBasedGraphConstruction
-            graph_type = "static"
-            merge_strategy = "tailhead"
-        elif self.config["graph_type"] == "constituency":
-            topology_builder = ConstituencyBasedGraphConstruction
-            graph_type = "static"
-            merge_strategy = "tailhead"
-        elif self.config["graph_type"] == "ie":
-            topology_builder = IEBasedGraphConstruction
-            graph_type = "static"
-            merge_strategy = "global"
-        elif self.config["graph_type"] == "node_emb":
-            topology_builder = NodeEmbeddingBasedGraphConstruction
-            graph_type = "dynamic"
-            merge_strategy = None
-        elif self.config["graph_type"] == "node_emb_refined":
-            topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
-            graph_type = "dynamic"
-            merge_strategy = "tailhead"
-
-            if self.config["init_graph_type"] == "line":
-                dynamic_init_topology_builder = None
-            elif self.config["init_graph_type"] == "dependency":
-                dynamic_init_topology_builder = DependencyBasedGraphConstruction
-            elif self.config["init_graph_type"] == "constituency":
-                dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
-            elif self.config["init_graph_type"] == "ie":
-                merge_strategy = "global"
-                dynamic_init_topology_builder = IEBasedGraphConstruction
-            else:
-                # dynamic_init_topology_builder
-                raise RuntimeError("Define your own dynamic_init_topology_builder")
-        else:
-            raise RuntimeError("Unknown graph_type: {}".format(self.config["graph_type"]))
-
-        topology_subdir = "{}_graph".format(self.config["graph_type"])
-        if self.config["graph_type"] == "node_emb_refined":
-            topology_subdir += "_{}".format(self.config["init_graph_type"])
+        self.graph_name = self.config["graph_construction_args"]["graph_construction_share"][
+            "graph_name"
+        ]
+        topology_subdir = "{}_graph".format(self.graph_name)
+        if self.graph_name == "node_emb_refined":
+            topology_subdir += "_{}".format(
+                self.config["graph_construction_args"]["graph_construction_private"][
+                    "dynamic_init_graph_name"
+                ]
+            )
 
         dataset = TrecDataset(
-            root_dir=self.config.get("root_dir", "examples/pytorch/text_classification/data/trec"),
-            pretrained_word_emb_name=self.config.get("pretrained_word_emb_name", "840B"),
-            pretrained_word_emb_cache_dir=self.config.get(
-                "pretrained_word_emb_cache_dir", ".vector_cache"
-            ),
-            merge_strategy=merge_strategy,
-            seed=self.config["seed"],
-            thread_number=4,
-            port=9000,
-            timeout=15000,
-            word_emb_size=300,
-            graph_type=graph_type,
-            topology_builder=topology_builder,
+            root_dir=self.config["graph_construction_args"]["graph_construction_share"]["root_dir"],
             topology_subdir=topology_subdir,
-            dynamic_graph_type=self.config["graph_type"]
-            if self.config["graph_type"] in ("node_emb", "node_emb_refined")
-            else None,
-            dynamic_init_topology_builder=dynamic_init_topology_builder,
+            graph_name=self.graph_name,
+            dynamic_init_graph_name=self.config["graph_construction_args"][
+                "graph_construction_private"
+            ]["dynamic_init_graph_name"],
             dynamic_init_topology_aux_args={"dummy_param": 0},
-            for_inference=False,
-            reused_vocab_model=None,
+            pretrained_word_emb_name=self.config["pretrained_word_emb_name"],
+            merge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
+                "merge_strategy"
+            ],
+            edge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
+                "edge_strategy"
+            ],
+            min_word_vocab_freq=self.config.get("min_word_freq", 1),
+            word_emb_size=self.config.get("word_emb_size", 300),
+            seed=self.config["seed"],
+            thread_number=self.config["graph_construction_args"]["graph_construction_share"][
+                "thread_number"
+            ],
+            port=self.config["graph_construction_args"]["graph_construction_share"]["port"],
+            timeout=self.config["graph_construction_args"]["graph_construction_share"]["timeout"],
             reused_label_model=None,
         )
 
@@ -332,7 +290,7 @@ class ModelHandler:
             num_workers=self.config["num_workers"],
             collate_fn=dataset.collate_fn,
         )
-        self.vocab = dataset.vocab_model
+        self.vocab_model = dataset.vocab_model
         self.label_model = dataset.label_model
         self.config["num_classes"] = self.label_model.num_classes
         self.num_train = len(dataset.train)
@@ -350,7 +308,7 @@ class ModelHandler:
         )
 
     def _build_model(self):
-        self.model = TextClassifier(self.vocab, self.label_model, self.config).to(
+        self.model = TextClassifier(self.vocab_model, self.label_model, self.config).to(
             self.config["device"]
         )
 

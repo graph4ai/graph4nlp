@@ -9,45 +9,12 @@ from .utils import convert_adj_to_graph
 
 
 class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
-    """Class for node embedding based dynamic graph construction.
+    """Class for node embedding based dynamic graph construction."""
 
-    Parameters
-    ----------
-    word_vocab : Vocab
-        The word vocabulary.
-    embedding_styles : dict
-        - ``single_token_item`` : specify whether the item (i.e., node or edge) contains
-        single token or multiple tokens.
-        - ``emb_strategy`` : specify the embedding construction strategy.
-        - ``num_rnn_layers``: specify the number of RNN layers.
-        - ``bert_model_name``: specify the BERT model name.
-        - ``bert_lower_case``: specify whether to lower case the input text for BERT embeddings.
-    """
+    def __init__(self, **kwargs):
+        super(NodeEmbeddingBasedGraphConstruction, self).__init__(**kwargs)
 
-    def __init__(self, word_vocab, embedding_styles, **kwargs):
-        super(NodeEmbeddingBasedGraphConstruction, self).__init__(
-            word_vocab, embedding_styles, **kwargs
-        )
-
-    def forward(self, batch_graphdata):
-        """Compute graph topology and initial node embeddings.
-
-        Parameters
-        ----------
-        batch_graphdata : GraphData
-            The input graph data.
-
-        Returns
-        -------
-        GraphData
-            The constructed batched graph.
-        """
-        batch_graphdata = self.embedding(batch_graphdata)
-        batch_graphdata = self.topology(batch_graphdata)
-
-        return batch_graphdata
-
-    def topology(self, graph):
+    def dynamic_topology(self, graph):
         """Compute graph topology.
 
         Parameters

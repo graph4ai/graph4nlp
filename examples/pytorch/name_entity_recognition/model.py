@@ -6,22 +6,22 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
 )
-from graph4nlp.pytorch.modules.graph_embedding.gat import GAT
-from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
-from graph4nlp.pytorch.modules.graph_embedding.graphsage import GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
+    WordEmbedding,
+)
+from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_initialization import (  # noqa
+    GraphEmbeddingInitialization,
+)
+from graph4nlp.pytorch.modules.graph_embedding_learning.gat import GAT
+from graph4nlp.pytorch.modules.graph_embedding_learning.gcn import GCN
+from graph4nlp.pytorch.modules.graph_embedding_learning.ggnn import GGNN
+from graph4nlp.pytorch.modules.graph_embedding_learning.graphsage import GraphSAGE
 from graph4nlp.pytorch.modules.prediction.classification.node_classification import (
     BiLSTMFeedForwardNN,
 )
-
-from dependency_graph_construction_without_tokenize import (
-    DependencyBasedGraphConstruction_without_tokenizer,
-)
-from line_graph_construction import LineBasedGraphConstruction
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 cudnn.benchmark = False
@@ -31,7 +31,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # from torchcrf import CRF
 
 
-def logits2tag(logits):
+def logits2index(logits):
     _, pred = torch.max(logits, dim=-1)
     # print(pred.size())
     return pred
@@ -64,78 +64,45 @@ class SentenceBiLSTMCRF(nn.Module):
             self.dropout_tag(F.elu(self.linear1(self.dropout_rnn_out(batch_emb))))
         )
 
-        tgt = torch.cat(tgt_tags)
         logits = batch_graph.node_features["logits"][:, :]  # [batch*sentence*num_nodes,num_lable]
-        loss = self.nll_loss(self.logsoftmax(logits), tgt)
-        pred_tags = logits2tag(logits)
+        if tgt_tags is None:
+            loss = 0
+        else:
+            tgt = torch.cat(tgt_tags)
+            loss = self.nll_loss(self.logsoftmax(logits), tgt)
 
-        return loss, pred_tags
+        return loss, logits
 
 
 class Word2tag(nn.Module):
     def __init__(self, vocab, args, device=None):
         super(Word2tag, self).__init__()
         self.vocab = vocab
+        self.vocab_model = vocab
+
         self.device = device
+        self.graph_name = args.graph_name
 
         embedding_style = {
-            "single_token_item": True if args.graph_type != "ie" else False,
+            "single_token_item": True if args.graph_name != "ie" else False,
             "emb_strategy": "w2v_bilstm",
             "num_rnn_layers": 1,
             "bert_model_name": "bert-base-uncased",
             "bert_lower_case": True,
         }
 
-        if args.graph_type == "line_graph":
-            if args.gnn_type == "ggnn":
-                self.graph_topology = LineBasedGraphConstruction(
-                    embedding_style=embedding_style,
-                    vocab=vocab.in_word_vocab,
-                    hidden_size=int(args.init_hidden_size / 2),
-                    rnn_dropout=None,
-                    word_dropout=args.word_dropout,
-                    device=self.device,
-                    fix_word_emb=not args.no_fix_word_emb,
-                    fix_bert_emb=not args.no_fix_bert_emb,
-                )
-            else:
-                self.graph_topology = LineBasedGraphConstruction(
-                    embedding_style=embedding_style,
-                    vocab=vocab.in_word_vocab,
-                    hidden_size=args.init_hidden_size,
-                    rnn_dropout=None,
-                    word_dropout=args.word_dropout,
-                    device=self.device,
-                    fix_word_emb=not args.no_fix_word_emb,
-                    fix_bert_emb=not args.no_fix_bert_emb,
-                )
-        if args.graph_type == "dependency_graph":
-            if args.gnn_type == "ggnn":
-                self.graph_topology = DependencyBasedGraphConstruction_without_tokenizer(
-                    embedding_style=embedding_style,
-                    vocab=vocab.in_word_vocab,
-                    hidden_size=int(args.init_hidden_size / 2),
-                    rnn_dropout=None,
-                    word_dropout=args.word_dropout,
-                    device=self.device,
-                    fix_word_emb=not args.no_fix_word_emb,
-                    fix_bert_emb=not args.no_fix_bert_emb,
-                )
-            else:
-                self.graph_topology = DependencyBasedGraphConstruction_without_tokenizer(
-                    embedding_style=embedding_style,
-                    vocab=vocab.in_word_vocab,
-                    hidden_size=args.init_hidden_size,
-                    rnn_dropout=None,
-                    word_dropout=args.word_dropout,
-                    device=self.device,
-                    fix_word_emb=not args.no_fix_word_emb,
-                    fix_bert_emb=not args.no_fix_bert_emb,
-                )
-        if args.graph_type == "node_emb":
+        self.graph_initializer = GraphEmbeddingInitialization(
+            word_vocab=self.vocab_model.in_word_vocab,
+            embedding_style=embedding_style,
+            hidden_size=args.init_hidden_size,
+            word_dropout=args.word_dropout,
+            rnn_dropout=None,
+            fix_word_emb=not args.no_fix_word_emb,
+            fix_bert_emb=not args.no_fix_word_emb,
+        )
+
+        if args.graph_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
-                vocab.in_word_vocab,
-                embedding_style,
                 sim_metric_type=args.gl_metric_type,
                 num_heads=args.gl_num_heads,
                 top_k_neigh=args.gl_top_k,
@@ -153,10 +120,8 @@ class Word2tag(nn.Module):
                 use_edge_weight=True,
             )
 
-        if args.graph_type == "node_emb_refined":
+        if args.graph_name == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
-                vocab.in_word_vocab,
-                embedding_style,
                 args.init_adj_alpha,
                 sim_metric_type=args.gl_metric_type,
                 num_heads=args.gl_num_heads,
@@ -174,8 +139,8 @@ class Word2tag(nn.Module):
                 use_edge_weight=True,
             )
 
-        if "w2v" in self.graph_topology.embedding_layer.word_emb_layers:
-            self.word_emb = self.graph_topology.embedding_layer.word_emb_layers[
+        if "w2v" in self.graph_initializer.embedding_layer.word_emb_layers:
+            self.word_emb = self.graph_initializer.embedding_layer.word_emb_layers[
                 "w2v"
             ].word_emb_layer
         else:
@@ -299,7 +264,7 @@ class Word2tag(nn.Module):
                 )
 
     def forward(self, graph, tgt=None, require_loss=True):
-        batch_graph = self.graph_topology(graph)
+        batch_graph = self.graph_initializer(graph)
 
         if self.use_gnn is False:
             batch_graph.node_features["node_emb"] = batch_graph.node_features["node_feat"]
@@ -321,14 +286,28 @@ class Word2tag(nn.Module):
             batch_graph = self.gnn(batch_graph)
 
         # down-task
-        loss, pred = self.bilstmcrf(batch_graph, tgt)
+        loss, logits = self.bilstmcrf(batch_graph, tgt)
+        pred_index = logits2index(logits)
         self.loss = loss
 
         if require_loss is True:
-            return pred, self.loss
+            return pred_index, self.loss
         else:
             loss = None
-            return pred, self.loss
+            return pred_index, self.loss
+
+    def inference_forward(self, collate_data):
+        batch_graph = collate_data["graph_data"].to(self.device)
+        return self.forward(batch_graph, tgt=None, require_loss=False)[0]
+
+    def post_process(self, logits, label_names):
+        logits_list = []
+        # tgt_list = []
+
+        for idx in range(len(logits)):
+            logits_list.append(logits[idx].cpu().clone().numpy())
+        pred_tags = [label_names[int(pred)] for pred in logits_list]
+        return pred_tags
 
     def save_checkpoint(self, save_path, checkpoint_name):
         """

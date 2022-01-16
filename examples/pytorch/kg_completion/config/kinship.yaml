@@ -1,0 +1,66 @@
+# Data
+dataset: 'kinship'
+out_dir: "out/kgc/kinship"
+
+# Preprocessing
+top_word_vocab: 70000
+share_vocab: True
+word_emb_size: 300
+min_word_freq: 1
+num_hidden: 300 # number of hidden units
+n_samples: null
+
+
+word_dropout: 0.4 # word embedding dropout
+enc_rnn_dropout: 0.3 # Encoder RNN dropout
+coverage_loss_ratio: 0.3 # coverage loss ratio
+
+
+# Training
+seed: 1234
+batch_size: 128 # batch size
+test_batch_size: 128
+epochs: 200 # number of maximal training epochs
+grad_clipping: 10
+patience: 10
+lr: 0.0005 # learning rate
+lr_patience: 2
+lr_reduce_factor: 0.5
+num_workers: 0 # number of data loader workers
+l2: 0.0
+model: 'ggnn_distmult' # distmult, gcn_distmult, gcn_complex, ggnn_distmult
+use_bias: False
+loader_threads: 4
+
+# GNN
+direction_option: 'bi_sep' # Choose from: {undirected, bi_sep, bi_fuse}
+embedding_dim: 200
+embedding_shape1: 20
+hidden_drop: 0.25
+input_drop: 0.2
+feat_drop: 0.2
+lr_decay: 0.995
+
+resume: False
+preprocess: False  # set as True to build KG_graph.pt
+label_smoothing: 0.1
+
+hidden_size: 9728
+channels: 200
+kernel_size: 5
+
+# Beam search
+beam_size: 3
+
+gpu: -1
+no_cuda: false
+
+graph_construction_args:
+  graph_construction_private:
+    dynamic_init_graph_name: null
+    merge_strategy: null
+    edge_strategy: null
+
+  graph_construction_share:
+    port: 9100
+    timeout: 300000

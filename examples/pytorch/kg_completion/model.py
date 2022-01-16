@@ -3,8 +3,8 @@ from torch.nn import Parameter
 from torch.nn import functional as F
 from torch.nn.init import xavier_normal_
 
-from graph4nlp.pytorch.modules.graph_embedding.gcn import GCN
-from graph4nlp.pytorch.modules.graph_embedding.ggnn import GGNN
+from graph4nlp.pytorch.modules.graph_embedding_learning.gcn import GCN
+from graph4nlp.pytorch.modules.graph_embedding_learning.ggnn import GGNN
 from graph4nlp.pytorch.modules.prediction.classification.kg_completion import ComplEx, DistMult
 
 
@@ -27,10 +27,10 @@ class Complex(torch.nn.Module):
 
     def forward(self, e1, rel, kg_graph=None):
 
-        e1_embedded_real = self.emb_e_real(e1).squeeze()
-        rel_embedded_real = self.emb_rel_real(rel).squeeze()
-        e1_embedded_img = self.emb_e_img(e1).squeeze()
-        rel_embedded_img = self.emb_rel_img(rel).squeeze()
+        e1_embedded_real = self.emb_e_real(e1).squeeze(1)
+        rel_embedded_real = self.emb_rel_real(rel).squeeze(1)
+        e1_embedded_img = self.emb_e_img(e1).squeeze(1)
+        rel_embedded_img = self.emb_rel_img(rel).squeeze(1)
 
         e1_embedded_real = self.inp_drop(e1_embedded_real)
         rel_embedded_real = self.inp_drop(rel_embedded_real)
@@ -71,8 +71,8 @@ class Distmult(torch.nn.Module):
     def forward(self, e1, rel, kg_graph=None):
         e1_embedded = self.emb_e(e1)
         rel_embedded = self.emb_rel(rel)
-        e1_embedded = e1_embedded.squeeze()
-        rel_embedded = rel_embedded.squeeze()
+        e1_embedded = e1_embedded.squeeze(1)
+        rel_embedded = rel_embedded.squeeze(1)
 
         e1_embedded = self.inp_drop(e1_embedded)
         rel_embedded = self.inp_drop(rel_embedded)
@@ -165,8 +165,8 @@ class GGNNDistMult(torch.nn.Module):
 
         e1_embedded = kg_graph.node_features["node_feat"][e1]
         rel_embedded = self.emb_rel(rel)
-        e1_embedded = e1_embedded.squeeze()
-        rel_embedded = rel_embedded.squeeze()
+        e1_embedded = e1_embedded.squeeze(1)
+        rel_embedded = rel_embedded.squeeze(1)
 
         kg_graph = self.distmult(kg_graph, e1_embedded, rel_embedded, self.emb_e)
         logits = kg_graph.graph_attributes["logits"]
@@ -210,8 +210,8 @@ class GCNDistMult(torch.nn.Module):
 
         e1_embedded = kg_graph.node_features["node_feat"][e1]
         rel_embedded = self.emb_rel(rel)
-        e1_embedded = e1_embedded.squeeze()
-        rel_embedded = rel_embedded.squeeze()
+        e1_embedded = e1_embedded.squeeze(1)
+        rel_embedded = rel_embedded.squeeze(1)
 
         kg_graph = self.distmult(kg_graph, e1_embedded, rel_embedded, self.emb_e)
         logits = kg_graph.graph_attributes["logits"]
@@ -256,14 +256,14 @@ class GCNComplex(torch.nn.Module):
 
         kg_graph.node_features["node_feat"] = self.emb_e_real(X)
         kg_graph = self.gnn(kg_graph)
-        e1_embedded_real = kg_graph.node_features["node_feat"][e1].squeeze()
+        e1_embedded_real = kg_graph.node_features["node_feat"][e1].squeeze(1)
 
         kg_graph.node_features["node_feat"] = self.emb_e_img(X)
         kg_graph = self.gnn(kg_graph)
-        e1_embedded_img = kg_graph.node_features["node_feat"][e1].squeeze()
+        e1_embedded_img = kg_graph.node_features["node_feat"][e1].squeeze(1)
 
-        rel_embedded_real = self.emb_rel_real(rel).squeeze()
-        rel_embedded_img = self.emb_rel_img(rel).squeeze()
+        rel_embedded_real = self.emb_rel_real(rel).squeeze(1)
+        rel_embedded_img = self.emb_rel_img(rel).squeeze(1)
 
         kg_graph = self.complex(
             kg_graph,
