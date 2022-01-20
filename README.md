@@ -52,6 +52,7 @@
 </p>
 
 ## <img src="docs/new.png" alt='new' width=30 /> Graph4NLP news
+**01/20/2022:** The **v0.5.5 release**. Try it out! <br>
 **09/26/2021:** The **v0.5.1 release**. Try it out! <br>
 **09/01/2021:** Welcome to visit our **DLG4NLP website (https://dlg4nlp.github.io/index.html)** for various learning resources! <br>
 **06/05/2021:** The **v0.4.1 release**. 
@@ -225,6 +226,7 @@ python setup.py install
 
 | Releases | Date       | Features                                                     |
 | -------- | ---------- | ------------------------------------------------------------ |
+| v0.5.5   | 2022-01-20 | - Support model.predict API by introducing wrapper functions. <br /> - Introduce Three new inference_wrapper functions:  <br />  |
 | v0.5.1   | 2021-09-26 | - Lint the codes <br /> - Support testing with users' own data <br /> - Fix the bug: The word embedding size was hard-coded in the 0.4.1 version. Now it is equal to "word_emb_size" parameter. <br /> - Fix the bug: The build_vocab() is called twice in the 0.4.1 version. <br /> - Fix the bug: The two main files of knowledge graph completion example missed the optional parameter "kg_graph" in ranking_and_hits() when resuming training the model. <br /> - Fix the bug: We have fixed the preprocessing path error in KGC readme. <br /> - Fix the bug: We have fixed embedding construction bug when setting emb_strategy to 'w2v'. |
 | v0.4.1   | 2021-06-05 | - Support the whole pipeline of Graph4NLP<br />- GraphData and Dataset support |
 
@@ -238,10 +240,10 @@ If you want to learn more on applying Deep Learning on Graphs techniques to NLP 
 - Graph4NLP Tutorials: 
     - [Graph4NLP-NAACL'21, SIGIR'21, IJCAI'21, KDD'21](https://dlg4nlp.github.io/tutorials.html)
     - [SyncedReview Invited Chinese talk](https://app6ca5octe2206.pc.xiaoe-tech.com/detail/v_60e832f8e4b0876c0c23c1a7/3?fromH5=true) ([video](https://pan.baidu.com/s/1Lltz_kx7ECDOTLecVC9E9w) (password: wppp), [slides](https://pan.baidu.com/s/1pmgX456Me_lu30VGDY3aaw) (password: flwv))  
+- Graph4NLP Workshops : 
+    - [DLG4NLP-ICLR'22](https://dlg4nlp-workshop.github.io/dlg4nlp-iclr22/index.html)  
 - Graph4NLP Demo: [Demo](https://github.com/graph4ai/graph4nlp_demo)
 - Graph4NLP Literature Review: [Literature Lists](https://github.com/graph4ai/graph4nlp_literature)  
-- Graph4NLP Workshops : [Workshops](https://deep-learning-graphs.bitbucket.io/dlg-kdd21/index.html)  
-
 
 ## Contributing
 
