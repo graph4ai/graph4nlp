@@ -2,7 +2,7 @@
 <img src="./imgs/graph4nlp_logo.png" width="800" class="center" alt="logo"/>
     <br/>
 </p>
-   
+    
 [pypi-image]: https://badge.fury.io/py/graph4nlp.svg
 
 [pypi-url]: https://pypi.org/project/graph4nlp
