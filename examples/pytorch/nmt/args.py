@@ -37,6 +37,10 @@ def get_args():
 
     parser.add_argument("--beam-size", type=int, default=4, help="the beam size of beam search")
 
+    parser.add_argument("--world_size", default=2, type=str)
+    parser.add_argument("--master_addr", default="127.0.0.1", type=str)
+    parser.add_argument("--master_port", default="6666", type=str)
+
     cfg = parser.parse_args()
 
     our_args = get_yaml_config(cfg.dataset_yaml)
