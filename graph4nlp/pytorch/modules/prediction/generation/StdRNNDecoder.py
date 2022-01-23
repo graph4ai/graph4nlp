@@ -573,6 +573,7 @@ class StdRNNDecoder(RNNDecoderBase):
         params["tgt_seq"] = tgt_seq
         params["teacher_forcing_rate"] = teacher_forcing_rate
         params["oov_dict"] = oov_dict
+        self.rnn.flatten_parameters()
         return self._run_forward_pass(**params)
 
     def extract_params(self, batch_graph):

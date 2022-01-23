@@ -1,15 +1,23 @@
-import os
+from logging import warning
+import os, sys
+
+sys.path.append("/home/shiina/shiina/lib/graph4nlp")
+os.environ["CUDA_VISIBLE_DEVICES"]="1,2"
 import resource
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+import warnings
+warnings.filterwarnings("ignore")
 
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.evaluation import BLEU
-from graph4nlp.pytorch.data.data import from_batch
+from graph4nlp.pytorch.data.data import to_batch, from_batch
+from data_parallel_g4n import Graph4NLPDataParallel
 
 from args import get_args
 from build_model import get_model
@@ -17,6 +25,9 @@ from dataset import IWSLT14Dataset
 from utils import WarmupCosineSchedule, get_log, wordid2str
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
+
+
+
 
 
 class NMT:
@@ -106,7 +117,8 @@ class NMT:
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-        self.model = get_model(self.opt, vocab_model=self.vocab, device=self.device).to(self.device)
+        self.model = Graph4NLPDataParallel(Graph2Seq.from_args(self.opt, self.vocab)).to(self.device)
+        # get_model(self.opt, vocab_model=self.vocab, device=self.device).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
@@ -175,9 +187,7 @@ class NMT:
             graph = graph.to(self.device)
             oov_dict = None
 
-            list_of_graph = from_batch(graph)
-
-            prob, enc_attn_weights, coverage_vectors = self.model(list_of_graph, tgt, oov_dict=oov_dict)
+            prob, enc_attn_weights, coverage_vectors = self.model(graph, tgt, oov_dict=oov_dict)
             loss = self.loss(
                 logits=prob,
                 label=tgt,
@@ -263,7 +273,7 @@ class NMT:
             ref_dict = self.vocab.out_word_vocab
             batch_graph = batch_graph.to(self.device)
 
-            pred = self.model.translate(
+            pred = self.model.module.translate(
                 batch_graph=batch_graph, oov_dict=oov_dict, beam_size=3, topk=1
             )
 
