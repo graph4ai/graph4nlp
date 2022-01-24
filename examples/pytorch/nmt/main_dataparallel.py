@@ -99,6 +99,7 @@ class NMT:
             shuffle=True,
             num_workers=8,
             collate_fn=dataset.collate_fn,
+            drop_last=True
         )
         self.val_dataloader = DataLoader(
             dataset.val,
@@ -106,6 +107,7 @@ class NMT:
             shuffle=False,
             num_workers=8,
             collate_fn=dataset.collate_fn,
+            drop_last=True
         )
         self.test_dataloader = DataLoader(
             dataset.test,
@@ -113,6 +115,7 @@ class NMT:
             shuffle=False,
             num_workers=8,
             collate_fn=dataset.collate_fn,
+            drop_last=True
         )
         self.vocab = dataset.vocab_model
 
@@ -150,7 +153,7 @@ class NMT:
                 score = self.evaluate(epoch=epoch, split="val")
                 if score >= max_score:
                     self.logger.info("Best model saved, epoch {}".format(epoch))
-                    self.model.save_checkpoint(
+                    self.model.module.save_checkpoint(
                         os.path.join("examples/pytorch/nmt/save", opt["name"]), "best.pth"
                     )
                     self._best_epoch = epoch
@@ -304,7 +307,7 @@ if __name__ == "__main__":
     # save_config(opt, os.path.join(opt["checkpoint_save_path"], opt["name"]))
     max_score = runner.train()
     runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
-    runner.model = Graph2Seq.load_checkpoint(
+    runner.model.module = Graph2Seq.load_checkpoint(
         os.path.join("examples/pytorch/nmt/save", opt["name"]), "best.pth"
     ).to(runner.device)
     runner.translate()
