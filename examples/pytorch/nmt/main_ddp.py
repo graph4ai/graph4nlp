@@ -95,6 +95,8 @@ class NMT:
             sid = client_store.get("sid").decode("utf-8")
             self._build_logger(self.opt["log_dir"])
         
+        torch.distributed.barrier()
+        
         self._build_dataloader()
         self._build_model()
         self._build_optimizer()
@@ -191,21 +193,23 @@ class NMT:
         self._best_epoch = -1
         self.global_steps = 0
         for epoch in range(200):
+            print("epoch: {}, rank: {}".format(epoch, self.opt["rank"]))
             self.model.train()
             self.train_epoch(epoch, split="train")
 
             # self._adjust_lr(epoch)
-            if epoch >= 0 and self.opt["rank"] == 0:
+            if epoch >= 0:
                 score = self.evaluate(epoch=epoch, split="val")
-                if score >= max_score:
-                    self.logger.info("Best model saved, epoch {}".format(epoch))
-                    self.model.save_checkpoint(
-                        os.path.join("examples/pytorch/nmt/save", opt["name"]), "best.pth"
-                    )
-                    self._best_epoch = epoch
+                # if score >= max_score and self.opt["rank"] == 0:
+                #     self.logger.info("Best model saved, epoch {}".format(epoch))
+                #     self.model.save_checkpoint(
+                #         os.path.join("examples/pytorch/nmt/save", opt["name"]), "best.pth"
+                #     )
+                #     self._best_epoch = epoch
                 max_score = max(max_score, score)
-            if epoch >= 30 and self._stop_condition(epoch):
-                break
+            # if epoch >= 30 and self._stop_condition(epoch):
+            #     break
+            print("epoch: {}, rank: {}".format(epoch, self.opt["rank"]), "===========")
         return max_score
 
     def _stop_condition(self, epoch, patience=20):
