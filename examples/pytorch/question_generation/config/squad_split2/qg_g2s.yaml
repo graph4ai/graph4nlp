@@ -1,0 +1,41 @@
+includes:
+  # TODO: library provides util func to parse $ to library installation path, e.g., $/graph4nlp/pytorch/configs/defaults.yaml
+  - graph4nlp/pytorch/configs/defaults.yaml
+  - graph4nlp/pytorch/configs/graph_construction/dependency/defaults.yaml
+  - graph4nlp/pytorch/configs/graph_initialization/defaults.yaml
+  - graph4nlp/pytorch/configs/graph_embedding/gat/defaults.yaml
+  - graph4nlp/pytorch/configs/prediction/generation/stdrnndecoder.yaml
+  - graph4nlp/pytorch/configs/loss/general_loss/defaults.yaml
+
+
+preprocessing_args:
+  top_word_vocab: 50000
+
+
+model_args:
+  graph_construction_name: "dependency"
+  graph_embedding_name: "ggnn"
+  decoder_name: "stdrnn"
+
+
+training_args:
+  batch_size: 50 # batch size
+  epochs: 100 # number of maximal training epochs
+  early_stop_metric: 'BLEU_4'
+  patience: 3
+  lr: 0.0007 # learning rate
+
+
+evaluation_args:
+    # Metrics for evaluation
+    metrics: ['BLEU_4']
+
+
+checkpoint_args:
+  out_dir: 'out/squad_split2/qg_ckpt_dep_ggnn'
+
+
+env_args:
+  seed: 1234
+  gpu: -1
+  no_cuda: false

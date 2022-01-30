@@ -1,0 +1,44 @@
+# Configuration for preprocessing
+preprocessing_args:
+  top_word_vocab: 70000
+  word_emb_size: 300
+  min_word_freq: 1
+  share_vocab: True
+  pretrained_word_emb_name: "840B"
+
+
+# Configuration for model
+model_args: {}
+
+
+# Configuration for training
+training_args:
+  batch_size: 50 # batch size
+  epochs: 100 # number of maximal training epochs
+  grad_clipping: 10
+  early_stop_metric: 'BLEU_4'
+  patience: 30
+  lr: 0.0007 # learning rate
+  lr_patience: 10
+  lr_reduce_factor: 0.7
+  loss_args: {}
+
+
+# Configuration for evaluation
+evaluation_args:
+    # Metrics for evaluation
+    metrics: []
+
+
+# Configuration for checkpointing including resuming and loading pretrained models
+checkpoint_args:
+  out_dir: null
+
+
+# Common environment configurations
+env_args:
+  seed: 1234
+  gpu: -1
+  no_cuda: false
+  num_workers: 10 # number of data loader workers
+  pretrained_word_emb_cache_dir: ".vector_cache"

@@ -1,4 +1,44 @@
+import json
+import os
+from typing import List
 import yaml
+from omegaconf import OmegaConf
+
+
+def load_json_config(path: str):
+    with open(path, "r") as f:
+        data = json.load(f)
+        config = load_yaml_config(data["config_path"])
+        data.pop("config_path")
+
+        dot_list = []
+        for k, v in data.items():
+            dot_list.append(f"{k}={v}")
+
+        updated_config = OmegaConf.from_dotlist(dot_list)
+        merged_config = OmegaConf.merge(config, updated_config)
+        return merged_config
+
+
+def load_yaml_config(
+    path: str, included_paths: List[str] = [], nesting_level: int = 0, max_nesting_level: int = 20
+):
+    if nesting_level > max_nesting_level:
+        raise RuntimeError(f"Exceeds maximial nesting level {max_nesting_level}!")
+
+    config = OmegaConf.load(path)
+    included_configs = []
+    for each in config.get("includes", []):
+        if os.path.abspath(each) in included_paths:
+            raise RuntimeError("Circular includes of yaml files are not supported!")
+
+        included_configs.append(
+            load_yaml_config(each, included_paths + [os.path.abspath(path)], nesting_level + 1)
+        )
+
+    merged_config = OmegaConf.merge(*included_configs, config)
+    merged_config.pop("includes", None)
+    return merged_config
 
 
 def update_values(to_args: dict, from_args_list: [dict]):
