@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from typing import List
 import yaml
 from omegaconf import OmegaConf
@@ -21,10 +22,16 @@ def load_json_config(path: str):
 
 
 def load_yaml_config(
-    path: str, included_paths: List[str] = [], nesting_level: int = 0, max_nesting_level: int = 20
+    path: str, included_paths: List[str] = None, nesting_level: int = 0, max_nesting_level: int = 20
 ):
+    if included_paths is None:
+        included_paths = []
+
     if nesting_level > max_nesting_level:
         raise RuntimeError(f"Exceeds maximial nesting level {max_nesting_level}!")
+
+    # Parse yaml path
+    path = parse_config_path(path)
 
     config = OmegaConf.load(path)
     included_configs = []
@@ -39,6 +46,15 @@ def load_yaml_config(
     merged_config = OmegaConf.merge(*included_configs, config)
     merged_config.pop("includes", None)
     return merged_config
+
+
+def parse_config_path(path: str):
+    """Parse config path by replacing '$/' with the library directory."""
+    if path.startswith("$/"):
+        library_dir = Path(os.path.realpath(__file__)).parent.parent.parent
+        return str(os.path.join(library_dir, path[2:]))
+    else:
+        return path
 
 
 def update_values(to_args: dict, from_args_list: [dict]):

@@ -1,11 +1,11 @@
 includes:
-  # TODO: library provides util func to parse $ to library installation path, e.g., $/graph4nlp/pytorch/configs/defaults.yaml
-  - graph4nlp/pytorch/configs/defaults.yaml
-  - graph4nlp/pytorch/configs/graph_construction/dependency/defaults.yaml
-  - graph4nlp/pytorch/configs/graph_initialization/defaults.yaml
-  - graph4nlp/pytorch/configs/graph_embedding/gat/defaults.yaml
-  - graph4nlp/pytorch/configs/prediction/generation/stdrnndecoder.yaml
-  - graph4nlp/pytorch/configs/loss/general_loss/defaults.yaml
+  # '$/' indicates the library directory which contains the config folder
+  - $/configs/defaults.yaml
+  - $/configs/graph_construction/dependency/defaults.yaml
+  - $/configs/graph_initialization/defaults.yaml
+  - $/configs/graph_embedding/gat/defaults.yaml
+  - $/configs/prediction/generation/stdrnndecoder.yaml
+  - $/configs/loss/general_loss/defaults.yaml
 
 
 preprocessing_args:
