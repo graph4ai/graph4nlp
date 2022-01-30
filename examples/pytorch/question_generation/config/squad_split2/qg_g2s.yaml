@@ -27,8 +27,8 @@ training_args:
 
 
 evaluation_args:
-    # Metrics for evaluation
-    metrics: ['BLEU_4']
+  # Metrics for evaluation
+  metrics: ['BLEU_4']
 
 
 checkpoint_args:

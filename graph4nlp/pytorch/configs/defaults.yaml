@@ -26,8 +26,8 @@ training_args:
 
 # Configuration for evaluation
 evaluation_args:
-    # Metrics for evaluation
-    metrics: []
+  # Metrics for evaluation
+  metrics: []
 
 
 # Configuration for checkpointing including resuming and loading pretrained models
