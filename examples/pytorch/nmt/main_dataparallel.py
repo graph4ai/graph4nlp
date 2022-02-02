@@ -1,7 +1,5 @@
 from logging import warning
-import os, sys
-
-sys.path.append("/home/shiina/shiina/lib/graph4nlp")
+import os
 os.environ["CUDA_VISIBLE_DEVICES"]="1,2"
 import resource
 import numpy as np
