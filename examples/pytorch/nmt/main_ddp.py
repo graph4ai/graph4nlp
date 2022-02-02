@@ -147,7 +147,7 @@ class NMT:
                                     persistent_workers=False,
                                     worker_init_fn=set_worker_seed_builder(self.opt["rank"]),
                                     batch_size=self.opt["batch_size"],
-            num_workers=3,
+            num_workers=0,
             collate_fn=dataset.collate_fn)
 
         self.val_dataloader = DataLoader(
