@@ -236,9 +236,13 @@ class Graph2XBase(nn.Module):
         -------
 
         """
+        print("0000000", flush=True)
         checkpoint_path = os.path.join(save_path, checkpoint_name)
+        print("1111111", flush=True)
         os.makedirs(save_path, exist_ok=True)
+        print("2222222", flush=True)
         torch.save(self, checkpoint_path)
+        print("3333333", flush=True)
 
     @classmethod
     def load_checkpoint(cls, load_path, checkpoint_name):

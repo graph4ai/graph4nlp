@@ -25,6 +25,11 @@ How to run
 python examples/pytorch/nmt/main.py --name test
 ```
 
+#### run script with DDP
+``` bash
+python examples/pytorch/nmt/main_ddp.py --name test --dataset_yaml examples/pytorch/nmt/config/dynamic_gcn_ddp.yaml
+```
+
 NMT Results
 -------
 

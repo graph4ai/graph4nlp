@@ -1,5 +1,3 @@
-import sys
-sys.path.append("/home/shiina/shiina/lib/graph4nlp")
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="3,4"
 import torch.multiprocessing
@@ -74,6 +72,7 @@ class NMT:
             )
             server_store.set("sid", sid)
             self._build_logger(self.opt["log_dir"])
+            self._build_dataloader()
 
             # os.makedirs(os.path.join(self.run_path, 'checkpoints'), exist_ok=True)
             # os.makedirs(os.path.join(self.run_path, 'samples'), exist_ok=True)
@@ -148,7 +147,7 @@ class NMT:
                                     persistent_workers=False,
                                     worker_init_fn=set_worker_seed_builder(self.opt["rank"]),
                                     batch_size=self.opt["batch_size"],
-            num_workers=0,
+            num_workers=3,
             collate_fn=dataset.collate_fn)
 
         self.val_dataloader = DataLoader(
@@ -193,23 +192,26 @@ class NMT:
         self._best_epoch = -1
         self.global_steps = 0
         for epoch in range(200):
-            print("epoch: {}, rank: {}".format(epoch, self.opt["rank"]))
+            print("epoch: {}, rank: {}".format(epoch, self.opt["rank"]), flush=True)
             self.model.train()
             self.train_epoch(epoch, split="train")
 
             # self._adjust_lr(epoch)
-            if epoch >= 0:
-                score = self.evaluate(epoch=epoch, split="val")
-                # if score >= max_score and self.opt["rank"] == 0:
-                #     self.logger.info("Best model saved, epoch {}".format(epoch))
-                #     self.model.save_checkpoint(
-                #         os.path.join("examples/pytorch/nmt/save", opt["name"]), "best.pth"
-                #     )
-                #     self._best_epoch = epoch
-                max_score = max(max_score, score)
+
+            score = self.evaluate(epoch=epoch, split="val")
+
+            if score >= max_score and self.opt["rank"] == 0:
+                self.logger.info("Best model saved, epoch {}".format(epoch))
+                self.model.module.save_checkpoint(
+                    os.path.join("examples/pytorch/nmt/save", self.opt["name"]), "best.pth"
+                )
+            #     self._best_epoch = epoch
+            max_score = max(max_score, score)
+            torch.distributed.barrier()
+
             # if epoch >= 30 and self._stop_condition(epoch):
             #     break
-            print("epoch: {}, rank: {}".format(epoch, self.opt["rank"]), "===========")
+            print("epoch: {}, rank: {}".format(epoch, self.opt["rank"]), "===========", flush=True)
         return max_score
 
     def _stop_condition(self, epoch, patience=20):
