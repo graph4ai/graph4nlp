@@ -1,7 +1,6 @@
 model_args:
   graph_construction_args:
     graph_construction_share:
-      graph_name: 'dependency'
       root_dir: null
       topology_subdir: 'DependencyGraph'
       share_vocab: true

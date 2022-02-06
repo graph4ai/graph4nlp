@@ -1,10 +1,8 @@
 includes:
   # '$/' indicates the library directory which contains the config folder
+  # Users can import user customized yaml files or library provided default yaml files
   - $/configs/defaults.yaml
-  - $/configs/graph_construction/dependency/defaults.yaml
   - $/configs/graph_initialization/defaults.yaml
-  - $/configs/graph_embedding/gat/defaults.yaml
-  - $/configs/prediction/generation/stdrnndecoder.yaml
   - $/configs/loss/general_loss/defaults.yaml
 
 
@@ -14,7 +12,7 @@ preprocessing_args:
 
 model_args:
   graph_construction_name: "dependency"
-  graph_embedding_name: "ggnn"
+  graph_embedding_name: "gat"
   decoder_name: "stdrnn"
 
 

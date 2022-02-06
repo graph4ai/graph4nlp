@@ -1,7 +1,6 @@
 model_args:
   graph_construction_args:
     graph_construction_share:
-      graph_name: 'ie'
       root_dir: null
       topology_subdir: 'IEGraph'
       share_vocab: true

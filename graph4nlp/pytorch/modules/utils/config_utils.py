@@ -1,9 +1,10 @@
 import json
 import os
-from pathlib import Path
-from typing import List
+from typing import Set
 import yaml
 from omegaconf import OmegaConf
+
+from .generic_utils import get_library_dir_path
 
 
 def load_json_config(path: str):
@@ -22,25 +23,88 @@ def load_json_config(path: str):
 
 
 def load_yaml_config(
-    path: str, included_paths: List[str] = None, nesting_level: int = 0, max_nesting_level: int = 20
+    path: str, included_paths: Set[str] = None, nesting_level: int = 0, max_nesting_level: int = 20
 ):
     if included_paths is None:
-        included_paths = []
+        included_paths = set()
 
     if nesting_level > max_nesting_level:
         raise RuntimeError(f"Exceeds maximial nesting level {max_nesting_level}!")
 
-    # Parse yaml path
-    path = parse_config_path(path)
-
     config = OmegaConf.load(path)
+    included_config_paths = [parse_config_path(path) for path in config.get("includes", [])]
+
+    # Choose which defaults to load based on user config input
+    if "model_args" in config:
+        library_dir = get_library_dir_path()
+
+        config_paths_to_remove = set()
+        config_paths_to_add = []
+        if "graph_construction_name" in config.model_args:
+            config_path = os.path.join(
+                library_dir,
+                f"configs/graph_construction/{config.model_args.graph_construction_name}/defaults.yaml",  # noqa
+            )
+            if os.path.exists(config_path):
+                # Load default config file matching the provided name
+                config_paths_to_add.append(config_path)
+
+                # Remove the included config paths which are in conflict
+                for each in included_config_paths:
+                    if each.startswith(os.path.join(library_dir, "configs/graph_construction")):
+                        config_paths_to_remove.add(each)
+                        if each != config_path:
+                            print(
+                                f"[Warning] the imported graph construction yaml file '{each}' will be overwritten by '{config_path}' which is specified by the provided graph_construction_name '{config.model_args.graph_construction_name}'"  # noqa
+                            )
+
+        if "graph_embedding_name" in config.model_args:
+            config_path = os.path.join(
+                library_dir,
+                f"configs/graph_embedding/{config.model_args.graph_embedding_name}/defaults.yaml",
+            )
+            if os.path.exists(config_path):
+                # Load default config file matching the provided name
+                config_paths_to_add.append(config_path)
+
+                # Remove the included config paths which are in conflict
+                for each in included_config_paths:
+                    if each.startswith(os.path.join(library_dir, "configs/graph_embedding")):
+                        config_paths_to_remove.add(each)
+                        if each != config_path:
+                            print(
+                                f"[Warning] the imported graph embedding yaml file '{each}' will be overwritten by '{config_path}' which is specified by the provided graph_embedding_name '{config.model_args.graph_embedding_name}'"  # noqa
+                            )
+
+        if "decoder_name" in config.model_args:
+            config_path = os.path.join(
+                library_dir, f"configs/prediction/generation/{config.model_args.decoder_name}.yaml"
+            )
+            if os.path.exists(config_path):
+                # Load default config file matching the provided name
+                config_paths_to_add.append(config_path)
+
+                # Remove the included config paths which are in conflict
+                for each in included_config_paths:
+                    if each.startswith(os.path.join(library_dir, "configs/prediction/generation")):
+                        config_paths_to_remove.add(each)
+                        if each != config_path:
+                            print(
+                                f"[Warning] the imported decoder yaml file '{each}' will be overwritten by '{config_path}' which is specified by the provided decoder_name '{config.model_args.decoder_name}'"  # noqa
+                            )
+
+        included_config_paths = [
+            each for each in included_config_paths if each not in config_paths_to_remove
+        ]
+        included_config_paths += config_paths_to_add
+
     included_configs = []
-    for each in config.get("includes", []):
-        if os.path.abspath(each) in included_paths:
+    for each in included_config_paths:
+        if each in included_paths:
             raise RuntimeError("Circular includes of yaml files are not supported!")
 
         included_configs.append(
-            load_yaml_config(each, included_paths + [os.path.abspath(path)], nesting_level + 1)
+            load_yaml_config(each, included_paths.union([os.path.abspath(path)]), nesting_level + 1)
         )
 
     merged_config = OmegaConf.merge(*included_configs, config)
@@ -49,12 +113,12 @@ def load_yaml_config(
 
 
 def parse_config_path(path: str):
-    """Parse config path by replacing '$/' with the library directory."""
+    """Parse config path by replacing '$/' with the library directory if exists."""
     if path.startswith("$/"):
-        library_dir = Path(os.path.realpath(__file__)).parent.parent.parent
-        return str(os.path.join(library_dir, path[2:]))
+        library_dir = get_library_dir_path()
+        return os.path.join(library_dir, path[2:])
     else:
-        return path
+        return os.path.abspath(path)
 
 
 def update_values(to_args: dict, from_args_list: [dict]):

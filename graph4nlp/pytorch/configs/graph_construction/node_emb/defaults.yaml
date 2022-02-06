@@ -1,7 +1,6 @@
 model_args:
   graph_construction_args:
     graph_construction_share:
-      graph_name: 'node_emb'
       root_dir: null
       topology_subdir: 'NodeEmbGraph'
       share_vocab: true
