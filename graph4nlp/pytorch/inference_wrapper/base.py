@@ -72,7 +72,7 @@ class InferenceWrapperBase(nn.Module):
         self.cfg = cfg
         self.model = model
         self.graph_name = model.graph_name
-        self.dynamic_init_graph_name = cfg["graph_construction_args"][
+        self.dynamic_init_graph_name = cfg["model_args"]["graph_construction_args"][
             "graph_construction_private"
         ].get("dynamic_init_graph_name", None)
         self.lower_case = lower_case
@@ -80,15 +80,19 @@ class InferenceWrapperBase(nn.Module):
         self.dynamic_init_topology_builder = dynamic_init_topology_builder
         self.tokenizer = tokenizer
 
-        self.port = self.cfg["graph_construction_args"]["graph_construction_share"]["port"]
-        self.timeout = self.cfg["graph_construction_args"]["graph_construction_share"]["timeout"]
+        self.port = self.cfg["model_args"]["graph_construction_args"]["graph_construction_share"][
+            "port"
+        ]
+        self.timeout = self.cfg["model_args"]["graph_construction_args"][
+            "graph_construction_share"
+        ]["timeout"]
 
-        self.merge_strategy = self.cfg["graph_construction_args"]["graph_construction_private"][
-            "merge_strategy"
-        ]
-        self.edge_strategy = self.cfg["graph_construction_args"]["graph_construction_private"][
-            "edge_strategy"
-        ]
+        self.merge_strategy = self.cfg["model_args"]["graph_construction_args"][
+            "graph_construction_private"
+        ]["merge_strategy"]
+        self.edge_strategy = self.cfg["model_args"]["graph_construction_args"][
+            "graph_construction_private"
+        ]["edge_strategy"]
 
         self.dataset = dataset(
             port=self.port,
