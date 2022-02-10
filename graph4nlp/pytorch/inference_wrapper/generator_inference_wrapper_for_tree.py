@@ -76,7 +76,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         )
 
         self.vocab_model = model.vocab_model
-        self.use_copy = self.cfg["decoder_args"]["rnn_decoder_share"]["use_copy"]
+        self.use_copy = self.cfg["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
 
     def prepare_ext_vocab(self, batch_graph, src_vocab, device):
         oov_dict = copy.deepcopy(src_vocab)

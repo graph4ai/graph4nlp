@@ -77,7 +77,7 @@ class GeneratorInferenceWrapper(InferenceWrapperBase):
         )
 
         self.vocab_model = model.vocab_model
-        self.use_copy = self.cfg["decoder_args"]["rnn_decoder_share"]["use_copy"]
+        self.use_copy = self.cfg["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
 
     @torch.no_grad()
     def predict(self, raw_contents: list, batch_size=1):
