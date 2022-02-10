@@ -1,7 +1,7 @@
 model_args:
   graph_construction_args:
     graph_construction_share:
-      root_dir: null
+      root_dir: './'
       topology_subdir: 'ConstituencyGraph'
       share_vocab: true
       thread_number: 4

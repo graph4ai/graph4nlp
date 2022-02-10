@@ -3,7 +3,6 @@ includes:
   # Users can import user customized yaml files or library provided default yaml files
   - $/configs/defaults.yaml
   - $/configs/graph_initialization/defaults.yaml
-  - $/configs/loss/general_loss/defaults.yaml
 
 
 preprocessing_args:
