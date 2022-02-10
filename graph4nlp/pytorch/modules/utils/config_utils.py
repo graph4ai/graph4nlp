@@ -19,7 +19,7 @@ def load_json_config(path: str):
 
         updated_config = OmegaConf.from_dotlist(dot_list)
         merged_config = OmegaConf.merge(config, updated_config)
-        return merged_config
+        return OmegaConf.to_container(merged_config, resolve=True)
 
 
 def load_yaml_config(

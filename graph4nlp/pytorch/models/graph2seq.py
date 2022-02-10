@@ -319,14 +319,12 @@ class Graph2Seq(Graph2XBase):
         args = copy.deepcopy(initializer_args)
         args.update(gnn_args)
         args.update(dec_args)
-        args["share_vocab"] = opt["graph_construction_args"]["graph_construction_share"][
-            "share_vocab"
-        ]
+        args["share_vocab"] = opt["model_args"]["graph_construction_args"]["graph_construction_share"]["share_vocab"] # noqa
         return cls(vocab_model=vocab_model, **args)
 
     @staticmethod
     def _get_decoder_params(opt):
-        dec_args = opt["decoder_args"]
+        dec_args = opt["model_args"]["decoder_args"]
         shared_args = copy.deepcopy(dec_args["rnn_decoder_share"])
         private_args = copy.deepcopy(dec_args["rnn_decoder_private"])
         ret = copy.deepcopy(dict(shared_args, **private_args))
@@ -335,7 +333,7 @@ class Graph2Seq(Graph2XBase):
 
     @staticmethod
     def _get_gnn_params(opt):
-        args = opt["graph_embedding_args"]
+        args = opt["model_args"]["graph_embedding_args"]
         shared_args = copy.deepcopy(args["graph_embedding_share"])
         private_args = copy.deepcopy(args["graph_embedding_private"])
         if "activation" in private_args.keys():
@@ -350,18 +348,18 @@ class Graph2Seq(Graph2XBase):
         gnn_shared_args = {"gnn_" + key: value for key, value in shared_args.items()}
         pri_shared_args = {"gnn_" + key: value for key, value in private_args.items()}
         ret = copy.deepcopy(dict(gnn_shared_args, **pri_shared_args))
-        ret["gnn"] = opt["graph_embedding_name"]
+        ret["gnn"] = opt["model_args"]["graph_embedding_name"]
         return ret
 
     @staticmethod
     def _get_node_initializer_params(opt):
         # Dynamic graph construction related params are stored here
-        init_args = opt["graph_construction_args"]["graph_construction_private"]
+        init_args = opt["model_args"]["graph_construction_args"]["graph_construction_private"]
         ret: dict = copy.deepcopy(init_args)
-        args = opt["graph_initialization_args"]
+        args = opt["model_args"]["graph_initialization_args"]
         ret.update(args)
         ret.pop("embedding_style")
         emb_ret = {"emb_" + key: value for key, value in ret.items()}
         emb_ret["embedding_style"] = args["embedding_style"]
-        emb_ret["graph_name"] = opt["graph_construction_name"]
+        emb_ret["graph_name"] = opt["model_args"]["graph_construction_name"]
         return emb_ret

@@ -24,6 +24,10 @@ training_args:
   loss_args: {}
 
 
+# Configuration for inference
+inference_args: {}
+
+
 # Configuration for evaluation
 evaluation_args:
   # Metrics for evaluation
