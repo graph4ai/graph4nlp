@@ -499,7 +499,7 @@ class Dataset(torch.utils.data.Dataset):
             data_items=data_items,
             topology_builder=self.topology_builder,
             static_or_dynamic=self.static_or_dynamic,
-            graph_name=self.graph_name,
+            graph_construction_name=self.graph_construction_name,
             dynamic_init_topology_builder=self.dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=None,
             merge_strategy=self.merge_strategy,
@@ -515,7 +515,7 @@ class Dataset(torch.utils.data.Dataset):
         data_items,
         topology_builder,
         static_or_dynamic,
-        graph_name,
+        graph_construction_name,
         dynamic_init_topology_builder,
         merge_strategy,
         edge_strategy,
@@ -574,7 +574,7 @@ class Dataset(torch.utils.data.Dataset):
                     "outputFormat": "json",
                 }
             else:
-                raise NotImplementedError("unknown static graph type: {}".format(graph_name))
+                raise NotImplementedError("unknown static graph type: {}".format(graph_construction_name))
             print("CoreNLP server connected.")
             pop_idxs = []
             for cnt, item in enumerate(data_items):
@@ -597,14 +597,14 @@ class Dataset(torch.utils.data.Dataset):
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
         elif static_or_dynamic == "dynamic":
-            if graph_name == "node_emb":
+            if graph_construction_name == "node_emb":
                 for item in data_items:
                     graph = topology_builder.init_topology(
                         item.input_text, lower_case=lower_case, tokenizer=tokenizer
                     )
                     item.graph = graph
                     ret.append(item)
-            elif graph_name == "node_emb_refined":
+            elif graph_construction_name == "node_emb_refined":
                 if dynamic_init_topology_builder in (
                     IEBasedGraphConstruction,
                     DependencyBasedGraphConstruction,
@@ -686,7 +686,7 @@ class Dataset(torch.utils.data.Dataset):
                     ret.append(item)
                 ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
             else:
-                raise RuntimeError("Unknown dynamic_graph_type: {}".format(graph_name))
+                raise RuntimeError("Unknown dynamic_graph_type: {}".format(graph_construction_name))
 
         else:
             raise NotImplementedError("Currently only static and dynamic are supported!")
@@ -712,7 +712,7 @@ class Dataset(torch.utils.data.Dataset):
                     data_items[start_index:end_index],
                     self.topology_builder,
                     self.static_or_dynamic,
-                    self.graph_name,
+                    self.graph_construction_name,
                     self.dynamic_init_topology_builder,
                     self.merge_strategy,
                     self.edge_strategy,
@@ -829,7 +829,7 @@ class Text2TextDataset(Dataset):
         The dataset for text-to-text applications.
     Parameters
     ----------
-    graph_name: str
+    graph_construction_name: str
         The name of graph construction method. E.g., "dependency".
         Note that if it is in the provided graph names (i.e., "dependency", \
             "constituency", "ie", "node_emb", "node_emb_refine"), the following \
@@ -837,7 +837,7 @@ class Text2TextDataset(Dataset):
             1. ``topology_builder``
             2. ``static_or_dynamic``
         If you need to customize your graph construction method, you should rename the \
-            ``graph_name`` and set the parameters above.
+            ``graph_construction_name`` and set the parameters above.
     root_dir: str, default=None
         The path of dataset.
     topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
@@ -854,7 +854,7 @@ class Text2TextDataset(Dataset):
             can't modify them:
             1. ``dynamic_init_topology_builder``
         If you need to customize your graph construction method, you should rename the \
-            ``graph_name`` and set the parameters above.
+            ``graph_construction_name`` and set the parameters above.
     dynamic_init_topology_builder: StaticGraphConstructionBase
         The graph construction class.
     dynamic_init_topology_aux_args: None,
@@ -863,7 +863,7 @@ class Text2TextDataset(Dataset):
 
     def __init__(
         self,
-        graph_name: str,
+        graph_construction_name: str,
         root_dir: str = None,
         static_or_dynamic: str = None,
         topology_builder: Union[
@@ -884,19 +884,19 @@ class Text2TextDataset(Dataset):
         self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
 
-        if graph_name == "dependency":
+        if graph_construction_name == "dependency":
             topology_builder = DependencyBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "constituency":
+        elif graph_construction_name == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "ie":
+        elif graph_construction_name == "ie":
             topology_builder = IEBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "node_emb":
+        elif graph_construction_name == "node_emb":
             topology_builder = NodeEmbeddingBasedGraphConstruction
             static_or_dynamic = "dynamic"
-        elif graph_name == "node_emb_refined":
+        elif graph_construction_name == "node_emb_refined":
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             static_or_dynamic = "dynamic"
         else:
@@ -923,7 +923,7 @@ class Text2TextDataset(Dataset):
         self.static_or_dynamic = static_or_dynamic
         super(Text2TextDataset, self).__init__(
             root=root_dir,
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
             static_or_dynamic=static_or_dynamic,
@@ -1048,7 +1048,7 @@ class Text2TextDataset(Dataset):
 class Text2TreeDataset(Dataset):
     def __init__(
         self,
-        graph_name: str,
+        graph_construction_name: str,
         root_dir: str = None,
         static_or_dynamic: str = None,
         topology_builder: Union[
@@ -1069,19 +1069,19 @@ class Text2TreeDataset(Dataset):
         self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
 
-        if graph_name == "dependency":
+        if graph_construction_name == "dependency":
             topology_builder = DependencyBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "constituency":
+        elif graph_construction_name == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "ie":
+        elif graph_construction_name == "ie":
             topology_builder = IEBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "node_emb":
+        elif graph_construction_name == "node_emb":
             topology_builder = NodeEmbeddingBasedGraphConstruction
             static_or_dynamic = "dynamic"
-        elif graph_name == "node_emb_refined":
+        elif graph_construction_name == "node_emb_refined":
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             static_or_dynamic = "dynamic"
         else:
@@ -1108,7 +1108,7 @@ class Text2TreeDataset(Dataset):
         self.static_or_dynamic = static_or_dynamic
         super(Text2TreeDataset, self).__init__(
             root=root_dir,
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
             static_or_dynamic=static_or_dynamic,
@@ -1288,7 +1288,7 @@ class Text2LabelDataset(Dataset):
     The dataset for text-to-label applications.
     Parameters
     ----------
-    graph_name: str
+    graph_construction_name: str
         The name of graph construction method. E.g., "dependency".
         Note that if it is in the provided graph names (i.e., "dependency", \
             "constituency", "ie", "node_emb", "node_emb_refine"), the following \
@@ -1296,7 +1296,7 @@ class Text2LabelDataset(Dataset):
             1. ``topology_builder``
             2. ``static_or_dynamic``
         If you need to customize your graph construction method, you should rename the \
-            ``graph_name`` and set the parameters above.
+            ``graph_construction_name`` and set the parameters above.
     root_dir: str, default=None
         The path of dataset.
     topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
@@ -1313,7 +1313,7 @@ class Text2LabelDataset(Dataset):
             can't modify them:
             1. ``dynamic_init_topology_builder``
         If you need to customize your graph construction method, you should rename the \
-            ``graph_name`` and set the parameters above.
+            ``graph_construction_name`` and set the parameters above.
     dynamic_init_topology_builder: StaticGraphConstructionBase
         The graph construction class.
     dynamic_init_topology_aux_args: None,
@@ -1322,7 +1322,7 @@ class Text2LabelDataset(Dataset):
 
     def __init__(
         self,
-        graph_name: str,
+        graph_construction_name: str,
         root_dir: str = None,
         static_or_dynamic: str = None,
         topology_builder: Union[
@@ -1340,19 +1340,19 @@ class Text2LabelDataset(Dataset):
                     Please use ``static_or_dynamic`` instead."
             )
         self.data_item_type = Text2LabelDataItem
-        if graph_name == "dependency":
+        if graph_construction_name == "dependency":
             topology_builder = DependencyBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "constituency":
+        elif graph_construction_name == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "ie":
+        elif graph_construction_name == "ie":
             topology_builder = IEBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "node_emb":
+        elif graph_construction_name == "node_emb":
             topology_builder = NodeEmbeddingBasedGraphConstruction
             static_or_dynamic = "dynamic"
-        elif graph_name == "node_emb_refined":
+        elif graph_construction_name == "node_emb_refined":
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             static_or_dynamic = "dynamic"
         else:
@@ -1381,7 +1381,7 @@ class Text2LabelDataset(Dataset):
         self.static_or_dynamic = static_or_dynamic
         super(Text2LabelDataset, self).__init__(
             root=root_dir,
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
             static_or_dynamic=static_or_dynamic,
@@ -1523,7 +1523,7 @@ class DoubleText2TextDataset(Dataset):
         The dataset for double-text-to-text applications.
     Parameters
     ----------
-    graph_name: str
+    graph_construction_name: str
         The name of graph construction method. E.g., "dependency".
         Note that if it is in the provided graph names (i.e., "dependency", \
             "constituency", "ie", "node_emb", "node_emb_refine"), the following \
@@ -1531,7 +1531,7 @@ class DoubleText2TextDataset(Dataset):
             1. ``topology_builder``
             2. ``static_or_dynamic``
         If you need to customize your graph construction method, you should rename the \
-            ``graph_name`` and set the parameters above.
+            ``graph_construction_name`` and set the parameters above.
     root_dir: str, default=None
         The path of dataset.
     topology_builder: Union[StaticGraphConstructionBase, DynamicGraphConstructionBase], default=None
@@ -1548,7 +1548,7 @@ class DoubleText2TextDataset(Dataset):
             can't modify them:
             1. ``dynamic_init_topology_builder``
         If you need to customize your graph construction method, you should rename the \
-            ``graph_name`` and set the parameters above.
+            ``graph_construction_name`` and set the parameters above.
     dynamic_init_topology_builder: StaticGraphConstructionBase
         The graph construction class.
     dynamic_init_topology_aux_args: None,
@@ -1557,7 +1557,7 @@ class DoubleText2TextDataset(Dataset):
 
     def __init__(
         self,
-        graph_name: str,
+        graph_construction_name: str,
         root_dir: str = None,
         static_or_dynamic: str = None,
         topology_builder: Union[
@@ -1578,19 +1578,19 @@ class DoubleText2TextDataset(Dataset):
         self.data_item_type = DoubleText2TextDataItem
         self.share_vocab = share_vocab
 
-        if graph_name == "dependency":
+        if graph_construction_name == "dependency":
             topology_builder = DependencyBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "constituency":
+        elif graph_construction_name == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "ie":
+        elif graph_construction_name == "ie":
             topology_builder = IEBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "node_emb":
+        elif graph_construction_name == "node_emb":
             topology_builder = NodeEmbeddingBasedGraphConstruction
             static_or_dynamic = "dynamic"
-        elif graph_name == "node_emb_refined":
+        elif graph_construction_name == "node_emb_refined":
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             static_or_dynamic = "dynamic"
         else:
@@ -1617,7 +1617,7 @@ class DoubleText2TextDataset(Dataset):
         self.static_or_dynamic = static_or_dynamic
         super(DoubleText2TextDataset, self).__init__(
             root=root_dir,
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
             static_or_dynamic=static_or_dynamic,
@@ -1770,7 +1770,7 @@ class DoubleText2TextDataset(Dataset):
 class SequenceLabelingDataset(Dataset):
     def __init__(
         self,
-        graph_name: str,
+        graph_construction_name: str,
         root_dir: str = None,
         static_or_dynamic: str = None,
         topology_builder: Union[
@@ -1791,19 +1791,19 @@ class SequenceLabelingDataset(Dataset):
         self.data_item_type = SequenceLabelingDataItem
         self.tag_types = tag_types
 
-        if graph_name == "dependency":
+        if graph_construction_name == "dependency":
             topology_builder = DependencyBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "constituency":
+        elif graph_construction_name == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "ie":
+        elif graph_construction_name == "ie":
             topology_builder = IEBasedGraphConstruction
             static_or_dynamic = "static"
-        elif graph_name == "node_emb":
+        elif graph_construction_name == "node_emb":
             topology_builder = NodeEmbeddingBasedGraphConstruction
             static_or_dynamic = "dynamic"
-        elif graph_name == "node_emb_refined":
+        elif graph_construction_name == "node_emb_refined":
             topology_builder = NodeEmbeddingBasedRefinedGraphConstruction
             static_or_dynamic = "dynamic"
         else:
@@ -1830,7 +1830,7 @@ class SequenceLabelingDataset(Dataset):
         self.static_or_dynamic = static_or_dynamic
         super(SequenceLabelingDataset, self).__init__(
             root=root_dir,
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
             static_or_dynamic=static_or_dynamic,
