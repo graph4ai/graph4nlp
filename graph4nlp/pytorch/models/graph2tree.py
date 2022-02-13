@@ -26,7 +26,7 @@ class Graph2Tree(Graph2XBase):
     ----------
     vocab_model: VocabModel
         The vocabulary.
-    graph_name: str
+    graph_construction_name: str
         The graph type. Excepted in ["dependency", "constituency", "node_emb", "node_emb_refined"].
     gnn: str
         The graph neural network type. Expected in ["gcn", "gat", "graphsage", "ggnn"]
@@ -38,7 +38,7 @@ class Graph2Tree(Graph2XBase):
         self,
         vocab_model,
         embedding_style,
-        graph_name,
+        graph_construction_name,
         # embedding
         emb_input_size,
         emb_hidden_size,
@@ -73,7 +73,7 @@ class Graph2Tree(Graph2XBase):
             vocab_model=vocab_model,
             emb_input_size=emb_input_size,
             emb_hidden_size=emb_hidden_size,
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             gnn_direction_option=gnn_direction_option,
             gnn=gnn,
             gnn_num_layers=gnn_num_layers,
@@ -409,5 +409,5 @@ class Graph2Tree(Graph2XBase):
         ret.pop("embedding_style")
         emb_ret = {"emb_" + key: value for key, value in ret.items()}
         emb_ret["embedding_style"] = args["embedding_style"]
-        emb_ret["graph_name"] = opt["graph_construction_name"]
+        emb_ret["graph_construction_name"] = opt["graph_construction_name"]
         return emb_ret

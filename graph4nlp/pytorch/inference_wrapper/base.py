@@ -39,7 +39,7 @@ class InferenceWrapperBase(nn.Module):
         model: nn.Module
             The model checkpoint.
             The model must support the following attributes:
-                model.graph_name: str,
+                model.graph_construction_name: str,
                     The graph type, eg: "dependency".
             The model must support the following api:
                 model.inference_forward(batch_graph, **kwargs)
@@ -57,7 +57,7 @@ class InferenceWrapperBase(nn.Module):
                             default=None
             The initial graph topology builder. It is used to custermize your own graph\
                  construction method. We will set the default topology builder for you \
-                 if it is ``None`` according to ``graph_name`` in ``cfg``.
+                 if it is ``None`` according to ``graph_construction_name`` in ``cfg``.
         dynamic_init_topology_builder: StaticGraphConstructionBase, default=None
             The dynamic initial graph topology builder. It is used to custermize your own \
                 graph construction method. We will set the default topology builder for you\
@@ -71,7 +71,7 @@ class InferenceWrapperBase(nn.Module):
         # TODO: lower_case and tokenizer should be removed
         self.cfg = cfg
         self.model = model
-        self.graph_name = model.graph_name
+        self.graph_construction_name = model.graph_construction_name
         self.dynamic_init_graph_name = cfg["model_args"]["graph_construction_args"][
             "graph_construction_private"
         ].get("dynamic_init_graph_name", None)
@@ -96,7 +96,7 @@ class InferenceWrapperBase(nn.Module):
 
         self.dataset = dataset(
             port=self.port,
-            graph_name=self.graph_name,
+            graph_construction_name=self.graph_construction_name,
             dynamic_init_graph_name=self.dynamic_init_graph_name,
             topology_builder=topology_builder,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
@@ -111,7 +111,7 @@ class InferenceWrapperBase(nn.Module):
 
     def preprocess(self, raw_contents: list):
         processed_data_items = []
-        use_ie = self.graph_name == "ie"  # hard code
+        use_ie = self.graph_construction_name == "ie"  # hard code
         for raw_sentence in raw_contents:
             if self.data_item_class == DoubleText2TextDataItem:
                 assert isinstance(

@@ -34,10 +34,14 @@ def load_yaml_config(
     config = OmegaConf.load(path)
     included_config_paths = [parse_config_path(path) for path in config.get("includes", [])]
 
+    library_dir = get_library_dir_path()
+    # Add default base yamls if not imported
+    base_config_path = os.path.join(library_dir, "configs/defaults.yaml")
+    if base_config_path not in included_config_paths and base_config_path not in included_paths:
+        included_config_paths.append(base_config_path)
+
     # Choose which defaults to load based on user config input
     if "model_args" in config:
-        library_dir = get_library_dir_path()
-
         config_paths_to_remove = set()
         config_paths_to_add = []
         if "graph_construction_name" in config.model_args:
@@ -56,6 +60,24 @@ def load_yaml_config(
                         if each != config_path:
                             print(
                                 f"[Warning] the imported graph construction yaml file '{each}' will be overwritten by '{config_path}' which is specified by the provided graph_construction_name '{config.model_args.graph_construction_name}'"  # noqa
+                            )
+
+        if "graph_initialization_name" in config.model_args:
+            config_path = os.path.join(
+                library_dir,
+                f"configs/graph_initialization/{config.model_args.graph_initialization_name}.yaml",
+            )
+            if os.path.exists(config_path):
+                # Load default config file matching the provided name
+                config_paths_to_add.append(config_path)
+
+                # Remove the included config paths which are in conflict
+                for each in included_config_paths:
+                    if each.startswith(os.path.join(library_dir, "configs/graph_initialization")):
+                        config_paths_to_remove.add(each)
+                        if each != config_path:
+                            print(
+                                f"[Warning] the imported graph initialization yaml file '{each}' will be overwritten by '{config_path}' which is specified by the provided graph_initialization_name '{config.model_args.graph_initialization_name}'"  # noqa
                             )
 
         if "graph_embedding_name" in config.model_args:

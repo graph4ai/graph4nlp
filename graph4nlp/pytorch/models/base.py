@@ -24,7 +24,7 @@ class Graph2XBase(nn.Module):
         self,
         vocab_model,
         embedding_style,
-        graph_name,
+        graph_construction_name,
         emb_input_size,
         emb_hidden_size,
         gnn,
@@ -45,7 +45,7 @@ class Graph2XBase(nn.Module):
         super(Graph2XBase, self).__init__()
         self.vocab_model = vocab_model
         self._build_embedding_encoder(
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             embedding_style=embedding_style,
             vocab_model=vocab_model,
             emb_input_size=emb_input_size,
@@ -71,7 +71,7 @@ class Graph2XBase(nn.Module):
 
     def _build_embedding_encoder(
         self,
-        graph_name,
+        graph_construction_name,
         embedding_style,
         vocab_model,
         emb_input_size,
@@ -92,8 +92,8 @@ class Graph2XBase(nn.Module):
         **kwargs
     ):
 
-        if not isinstance(graph_name, str):
-            raise ValueError("graph_name parameter should be str")
+        if not isinstance(graph_construction_name, str):
+            raise ValueError("graph_construction_name parameter should be str")
 
         self.graph_initializer = GraphEmbeddingInitialization(
             word_vocab=vocab_model.in_word_vocab,
@@ -105,7 +105,7 @@ class Graph2XBase(nn.Module):
             fix_bert_emb=emb_fix_bert_emb,
         )
 
-        if graph_name == "node_emb":
+        if graph_construction_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
                 sim_metric_type=emb_sim_metric_type,
                 num_heads=emb_num_heads,
@@ -117,7 +117,7 @@ class Graph2XBase(nn.Module):
                 input_size=emb_input_size,
                 hidden_size=emb_hidden_size,
             )
-        elif graph_name == "node_emb_refined":
+        elif graph_construction_name == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
                 emb_alpha_fusion,
                 sim_metric_type=emb_sim_metric_type,
@@ -136,7 +136,7 @@ class Graph2XBase(nn.Module):
             if "w2v" in self.graph_initializer.embedding_layer.word_emb_layers
             else None
         )
-        self.graph_name = graph_name
+        self.graph_construction_name = graph_construction_name
 
     def _build_gnn_encoder(
         self,

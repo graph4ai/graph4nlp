@@ -574,7 +574,9 @@ class Dataset(torch.utils.data.Dataset):
                     "outputFormat": "json",
                 }
             else:
-                raise NotImplementedError("unknown static graph type: {}".format(graph_construction_name))
+                raise NotImplementedError(
+                    "unknown static graph type: {}".format(graph_construction_name)
+                )
             print("CoreNLP server connected.")
             pop_idxs = []
             for cnt, item in enumerate(data_items):
