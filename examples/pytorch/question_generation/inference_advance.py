@@ -5,6 +5,7 @@
         during inference, which support multi-processing when converting the raw inputs to graphs.
 """
 import argparse
+import copy
 import os
 import time
 import numpy as np
@@ -14,10 +15,9 @@ import torch.multiprocessing
 from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.squad import SQuADDataset
-from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.modules.evaluation import BLEU, METEOR, ROUGE
 from graph4nlp.pytorch.modules.utils import constants as Constants
-from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
@@ -29,57 +29,65 @@ class ModelHandler:
     def __init__(self, config):
         super(ModelHandler, self).__init__()
         self.config = config
-        self.use_copy = self.config["decoder_args"]["rnn_decoder_share"]["use_copy"]
-        self.use_coverage = self.config["decoder_args"]["rnn_decoder_share"]["use_coverage"]
+        self.use_copy = self.config["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
+        self.use_coverage = self.config["model_args"]["decoder_args"]["rnn_decoder_share"][
+            "use_coverage"
+        ]
+        log_config = copy.deepcopy(config)
+        del log_config["env_args"]["device"]
         self.logger = Logger(
-            config["out_dir"],
-            config={k: v for k, v in config.items() if k != "device"},
+            config["checkpoint_args"]["out_dir"],
+            config=log_config,
             overwrite=True,
         )
-        self.logger.write(config["out_dir"])
+        self.logger.write(config["checkpoint_args"]["out_dir"])
         self._build_model()
         self._build_dataloader()
         self._build_evaluation()
 
     def _build_dataloader(self):
         dataset = SQuADDataset(
-            root_dir=self.config["graph_construction_args"]["graph_construction_share"]["root_dir"],
-            topology_subdir=self.config["graph_construction_args"]["graph_construction_share"][
-                "topology_subdir"
-            ],
-            graph_name=self.config["graph_construction_args"]["graph_construction_share"][
-                "graph_name"
-            ],
-            dynamic_init_graph_name=self.config["graph_construction_args"][
+            root_dir=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["root_dir"],
+            topology_subdir=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["topology_subdir"],
+            graph_name=self.config["model_args"]["graph_construction_name"],
+            dynamic_init_graph_name=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_private"
             ].get("dynamic_init_graph_type", None),
             dynamic_init_topology_aux_args={"dummy_param": 0},
-            pretrained_word_emb_name=self.config["pretrained_word_emb_name"],
-            merge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
-                "merge_strategy"
+            pretrained_word_emb_name=self.config["preprocessing_args"]["pretrained_word_emb_name"],
+            merge_strategy=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ]["merge_strategy"],
+            edge_strategy=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ]["edge_strategy"],
+            max_word_vocab_size=self.config["preprocessing_args"]["top_word_vocab"],
+            min_word_vocab_freq=self.config["preprocessing_args"]["min_word_freq"],
+            word_emb_size=self.config["preprocessing_args"]["word_emb_size"],
+            share_vocab=self.config["preprocessing_args"]["share_vocab"],
+            seed=self.config["env_args"]["seed"],
+            thread_number=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["thread_number"],
+            port=self.config["model_args"]["graph_construction_args"]["graph_construction_share"][
+                "port"
             ],
-            edge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
-                "edge_strategy"
-            ],
-            max_word_vocab_size=self.config["top_word_vocab"],
-            min_word_vocab_freq=self.config["min_word_freq"],
-            word_emb_size=self.config["word_emb_size"],
-            share_vocab=self.config["share_vocab"],
-            seed=self.config["seed"],
-            thread_number=self.config["graph_construction_args"]["graph_construction_share"][
-                "thread_number"
-            ],
-            port=self.config["graph_construction_args"]["graph_construction_share"]["port"],
-            timeout=self.config["graph_construction_args"]["graph_construction_share"]["timeout"],
+            timeout=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["timeout"],
             for_inference=True,
             reused_vocab_model=self.model.vocab,
         )
 
         self.test_dataloader = DataLoader(
             dataset.test,
-            batch_size=self.config["batch_size"],
+            batch_size=self.config["training_args"]["batch_size"],
             shuffle=False,
-            num_workers=self.config["num_workers"],
+            num_workers=self.config["env_args"]["num_workers"],
             collate_fn=dataset.collate_fn,
         )
         self.vocab = dataset.vocab_model
@@ -89,8 +97,8 @@ class ModelHandler:
 
     def _build_model(self):
         self.model = torch.load(
-            os.path.join(self.config["out_dir"], Constants._SAVED_WEIGHTS_FILE)
-        ).to(self.config["device"])
+            os.path.join(self.config["checkpoint_args"]["out_dir"], Constants._SAVED_WEIGHTS_FILE)
+        ).to(self.config["env_args"]["device"])
 
     def _build_evaluation(self):
         self.metrics = {"BLEU": BLEU(n_grams=[1, 2, 3, 4]), "METEOR": METEOR(), "ROUGE": ROUGE()}
@@ -101,10 +109,10 @@ class ModelHandler:
             pred_collect = []
             gt_collect = []
             for i, data in enumerate(self.test_dataloader):
-                data = all_to_cuda(data, self.config["device"])
+                data = all_to_cuda(data, self.config["env_args"]["device"])
                 if self.use_copy:
                     oov_dict = prepare_ext_vocab(
-                        data["graph_data"], self.vocab, device=self.config["device"]
+                        data["graph_data"], self.vocab, device=self.config["env_args"]["device"]
                     )
                     ref_dict = oov_dict
                 else:
@@ -113,16 +121,18 @@ class ModelHandler:
 
                 batch_gd = self.model.encode_init_node_feature(data)
                 prob = self.model.g2s.encoder_decoder_beam_search(
-                    batch_gd, self.config["beam_size"], topk=1, oov_dict=oov_dict
+                    batch_gd, self.config["inference_args"]["beam_size"], topk=1, oov_dict=oov_dict
                 )
 
                 pred_ids = (
                     torch.zeros(
                         len(prob),
-                        self.config["decoder_args"]["rnn_decoder_private"]["max_decoder_step"],
+                        self.config["model_args"]["decoder_args"]["rnn_decoder_private"][
+                            "max_decoder_step"
+                        ],
                     )
                     .fill_(ref_dict.EOS)
-                    .to(self.config["device"])
+                    .to(self.config["env_args"]["device"])
                     .int()
                 )
                 for i, item in enumerate(prob):
@@ -162,18 +172,20 @@ class ModelHandler:
 
 def main(config):
     # configure
-    np.random.seed(config["seed"])
-    torch.manual_seed(config["seed"])
+    np.random.seed(config["env_args"]["seed"])
+    torch.manual_seed(config["env_args"]["seed"])
 
-    if not config["no_cuda"] and torch.cuda.is_available():
+    if not config["env_args"]["no_cuda"] and torch.cuda.is_available():
         print("[ Using CUDA ]")
-        config["device"] = torch.device("cuda" if config["gpu"] < 0 else "cuda:%d" % config["gpu"])
+        config["env_args"]["device"] = torch.device(
+            "cuda" if config["env_args"]["gpu"] < 0 else "cuda:%d" % config["env_args"]["gpu"]
+        )
         cudnn.benchmark = True
-        torch.cuda.manual_seed(config["seed"])
+        torch.cuda.manual_seed(config["env_args"]["seed"])
     else:
-        config["device"] = torch.device("cpu")
+        config["env_args"]["device"] = torch.device("cpu")
 
-    print("\n" + config["out_dir"])
+    print("\n" + config["checkpoint_args"]["out_dir"])
 
     runner = ModelHandler(config)
     t0 = time.time()
@@ -212,14 +224,13 @@ def wordid2str(word_ids, vocab):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-task_config", "--task_config", required=True, type=str, help="path to the config file"
+        "-json_config",
+        "--json_config",
+        required=True,
+        type=str,
+        help="path to the json config file",
     )
-    parser.add_argument(
-        "-g2s_config", "--g2s_config", required=True, type=str, help="path to the config file"
-    )
-    parser.add_argument("--grid_search", action="store_true", help="flag: grid search")
     args = vars(parser.parse_args())
-
     return args
 
 
@@ -240,14 +251,6 @@ if __name__ == "__main__":
         multiprocessing.set_start_method("spawn")
 
     cfg = get_args()
-    task_args = get_yaml_config(cfg["task_config"])
-    g2s_args = get_yaml_config(cfg["g2s_config"])
-    # load Graph2Seq template config
-    g2s_template = get_basic_args(
-        graph_construction_name=g2s_args["graph_construction_name"],
-        graph_embedding_name=g2s_args["graph_embedding_name"],
-        decoder_name=g2s_args["decoder_name"],
-    )
-    update_values(to_args=g2s_template, from_args_list=[g2s_args, task_args])
+    config = load_json_config(cfg["json_config"])
 
-    main(g2s_template)
+    main(config)

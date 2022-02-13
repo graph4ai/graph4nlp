@@ -1,0 +1,16 @@
+model_args:
+  graph_construction_args:
+    graph_construction_share:
+      root_dir: './'
+      topology_subdir: 'NodeEmbGraph'
+      share_vocab: true
+
+    graph_construction_private:
+      lower_case: false
+      sim_metric_type: 'weighted_cosine'
+      num_heads: null
+      top_k_neigh: null
+      epsilon_neigh: 0.5
+      smoothness_ratio: 0.1
+      connectivity_ratio: 0.05
+      sparsity_ratio: 0.1

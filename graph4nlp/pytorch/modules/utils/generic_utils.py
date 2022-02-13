@@ -1,6 +1,7 @@
 import os
 import pickle
 from collections import OrderedDict
+from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
@@ -9,6 +10,11 @@ from scipy import sparse
 from sklearn import preprocessing
 
 from graph4nlp.pytorch.data.data import GraphData
+
+
+def get_library_dir_path():
+    library_dir = Path(os.path.realpath(__file__)).parent.parent.parent
+    return str(library_dir)
 
 
 def get_config(config_path="config.yml"):

@@ -1,0 +1,14 @@
+model_args:
+  graph_construction_args:
+    graph_construction_share:
+      root_dir: './'
+      topology_subdir: 'ConstituencyGraph'
+      share_vocab: true
+      thread_number: 4
+      port: 9000
+      timeout: 15000
+
+    graph_construction_private:
+      merge_strategy: 'tailhead'
+      sequential_link: true
+      bisequential_link: true

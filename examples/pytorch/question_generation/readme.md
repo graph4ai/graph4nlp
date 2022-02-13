@@ -20,22 +20,22 @@ How to run
 
 #### Train the model:
 ```python
-  python -m examples.pytorch.question_generation.main -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
+  python -m examples.pytorch.question_generation.main -json_config examples/pytorch/question_generation/config/squad_split2/XYZ.json
 ```
 
 #### Run inference advance:
 ```python
-  python -m examples.pytorch.question_generation.inference_advance -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
+  python -m examples.pytorch.question_generation.inference_advance -json_config examples/pytorch/question_generation/config/squad_split2/XYZ.json
 ```
 
 #### Run inference:
 ```python
-  python -m examples.pytorch.question_generation.inference -task_config examples/pytorch/question_generation/config/squad_split2/qg.yaml  -g2s_config examples/pytorch/question_generation/config/squad_split2/XYZ.yaml
+  python -m examples.pytorch.question_generation.inference -json_config examples/pytorch/question_generation/config/squad_split2/XYZ.json
 ```
 
 
 Note: 
-1) `XYZ.yaml` should be replaced by the exact g2s config file such as `new_dependency_ggnn.yaml`.
+1) `XYZ.json` should be replaced by the exact json config file like `qg_g2s.json`.
 2) You can find the output files in the `out/squad_split2/` folder. 
 <!-- 3) You can save your time by downloading the preprocessed data for dependency graph from [here](https://drive.google.com/drive/folders/1UPrlBvzXXgmUqx41CzO6ULrA3E1v24P9?usp=sharing), and moving the `squad_split2` folder to `examples/pytorch/question_generation/data/`. -->
 
