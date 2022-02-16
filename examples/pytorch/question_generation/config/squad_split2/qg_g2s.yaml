@@ -1,8 +1,7 @@
-includes:
-  # '$/' indicates the library directory which contains the config folder
-  # Users can import user customized yaml files or library provided default yaml files
-  - $/configs/defaults.yaml
-  - $/configs/graph_initialization/defaults.yaml
+# Users can import user customized yaml files or library provided default yaml files
+includes: []
+  # - $/configs/defaults.yaml
+  # In the above example path, '$/' indicates the library directory which contains the config folder
 
 
 preprocessing_args:
@@ -14,8 +13,10 @@ preprocessing_args:
 
 model_args:
   graph_construction_name: "dependency"
+  graph_initialization_name: "defaults"
   graph_embedding_name: "ggnn"
   decoder_name: "stdrnn"
+
 
   graph_construction_args:
     graph_construction_share:

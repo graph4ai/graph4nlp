@@ -53,7 +53,7 @@ class ModelHandler:
             topology_subdir=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["topology_subdir"],
-            graph_name=self.config["model_args"]["graph_construction_name"],
+            graph_construction_name=self.config["model_args"]["graph_construction_name"],
             dynamic_init_graph_name=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_private"
             ].get("dynamic_init_graph_type", None),

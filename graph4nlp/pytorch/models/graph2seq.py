@@ -35,7 +35,7 @@ class Graph2Seq(Graph2XBase):
     ----------
     vocab_model: VocabModel
         The vocabulary.
-    graph_name: str
+    graph_construction_name: str
         The graph type. Excepted in ["dependency", "constituency", "node_emb", "node_emb_refined"].
     gnn: str
         The graph neural network's name. Expected in ["gcn", "gat", "graphsage", "ggnn"]
@@ -47,7 +47,7 @@ class Graph2Seq(Graph2XBase):
         emb_input_size,
         emb_hidden_size,
         embedding_style,
-        graph_name,
+        graph_construction_name,
         gnn_direction_option,
         gnn_input_size,
         gnn_hidden_size,
@@ -80,7 +80,7 @@ class Graph2Seq(Graph2XBase):
             vocab_model=vocab_model,
             emb_input_size=emb_input_size,
             emb_hidden_size=emb_hidden_size,
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             gnn_direction_option=gnn_direction_option,
             gnn=gnn,
             gnn_num_layers=gnn_num_layers,
@@ -319,7 +319,11 @@ class Graph2Seq(Graph2XBase):
         args = copy.deepcopy(initializer_args)
         args.update(gnn_args)
         args.update(dec_args)
-        args["share_vocab"] = opt["model_args"]["graph_construction_args"]["graph_construction_share"]["share_vocab"] # noqa
+        args["share_vocab"] = opt["model_args"]["graph_construction_args"][
+            "graph_construction_share"
+        ][
+            "share_vocab"
+        ]  # noqa
         return cls(vocab_model=vocab_model, **args)
 
     @staticmethod
@@ -361,5 +365,5 @@ class Graph2Seq(Graph2XBase):
         ret.pop("embedding_style")
         emb_ret = {"emb_" + key: value for key, value in ret.items()}
         emb_ret["embedding_style"] = args["embedding_style"]
-        emb_ret["graph_name"] = opt["model_args"]["graph_construction_name"]
+        emb_ret["graph_construction_name"] = opt["model_args"]["graph_construction_name"]
         return emb_ret
