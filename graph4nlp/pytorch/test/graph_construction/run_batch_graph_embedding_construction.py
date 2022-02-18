@@ -23,7 +23,7 @@ if __name__ == "__main__":
         raw_text_data,
         max_word_vocab_size=None,
         min_word_vocab_freq=1,
-        pretrained_word_emb_file=None,
+        pretrained_word_emb_name=None,
         word_emb_size=300,
     )
 
@@ -41,22 +41,22 @@ if __name__ == "__main__":
         graph.add_nodes(num_nodes[i])
         for j in range(num_nodes[i]):
             tokens = np.random.choice(
-                list(vocab_model.word_vocab.word2index.keys()), np.random.choice(range(1, 7))
+                list(vocab_model.in_word_vocab.word2index.keys()), np.random.choice(range(1, 7))
             )
             graph.node_attributes[j][
-                "token_idx"
-            ] = vocab_model.word_vocab.to_index_sequence_for_list(tokens)
-            node_size.append(len(graph.node_attributes[j]["token_idx"]))
+                "token_id"
+            ] = vocab_model.in_word_vocab.to_index_sequence_for_list(tokens)
+            node_size.append(len(graph.node_attributes[j]["token_id"]))
             max_node_len = max(node_size[-1], max_node_len)
 
         graph_list.append(graph)
 
     for graph in graph_list:
-        tmp_token_idx = [graph.node_attributes[j]["token_idx"] for j in range(graph.get_node_num())]
+        tmp_token_idx = [graph.node_attributes[j]["token_id"] for j in range(graph.get_node_num())]
         tmp_token_idx = torch.LongTensor(
             (pad_2d_vals(tmp_token_idx, len(tmp_token_idx), max_node_len))
         )
-        graph.node_features["token_idx"] = tmp_token_idx
+        graph.node_features["token_id"] = tmp_token_idx
 
     graph_list = [graph.to_dgl() for graph in graph_list]
     bg = dgl.batch(graph_list, edge_attrs=None)
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         vocab_model.word_vocab, "w2v", "bilstm", "bilstm", hidden_size, device=None
     )
     t0 = time.time()
-    node_feat = emb_constructor(bg.ndata["token_idx"], node_size, num_nodes)
+    node_feat = emb_constructor(bg.ndata["token_id"], node_size, num_nodes)
     print("runtime: {}".format(time.time() - t0))
     print("mean", node_feat.mean())
 
