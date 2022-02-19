@@ -48,6 +48,7 @@ if __name__ == "__main__":
         "tqdm >= 4.29.0",
         "pyyaml",
         "transformers",
+        "omegaconf,
     ]
     # pytorch_requirement = 'torch >= 1.6.0' if platform.system() != 'Windows' else 'torch == 1.8.0'
     # torchtext_requirement = 'torchtext >= 0.7.0' if platform.system() != 'Windows' else 'torchtext == 0.9.0'
