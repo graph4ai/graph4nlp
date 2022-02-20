@@ -1,0 +1,7 @@
+{
+"config_path": "examples/pytorch/text_classification/config/trec/text_clf.yaml",
+"model_args.graph_embedding_args.graph_embedding_share.direction_option": "bi_sep",
+"model_args.graph_embedding_args.graph_embedding_share.feat_drop": "0.2",
+"training_args.lr": "0.002",
+"checkpoint_args.out_dir": "out/trec/ggnn_bi_sep_dependency_ckpt"
+}

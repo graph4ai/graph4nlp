@@ -152,7 +152,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
             DependencyBasedGraphConstruction,
             ConstituencyBasedGraphConstruction,
         ):
-            graph = dynamic_init_topology_builder.topology(
+            graph = dynamic_init_topology_builder.static_topology(
                 raw_text_data=raw_text_data,
                 nlp_processor=nlp_processor,
                 processor_args=processor_args,
@@ -161,7 +161,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
                 verbose=verbose,
             )
         else:
-            graph = dynamic_init_topology_builder.topology(
+            graph = dynamic_init_topology_builder.static_topology(
                 raw_text_data, dynamic_init_topology_aux_args
             )
 
