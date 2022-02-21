@@ -6,8 +6,8 @@ model_args:
       share_vocab: true
 
     graph_construction_private:
-      lower_case: false
       sim_metric_type: 'weighted_cosine'
+      hidden_size: null
       num_heads: null
       top_k_neigh: null
       epsilon_neigh: 0.5

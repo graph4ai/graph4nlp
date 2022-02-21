@@ -5,7 +5,6 @@ import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.multiprocessing
-import yaml
 from nltk.tokenize import word_tokenize
 
 from graph4nlp.pytorch.data.dataset import Text2LabelDataItem, Text2LabelDataset
@@ -13,6 +12,7 @@ from graph4nlp.pytorch.inference_wrapper.classifier_inference_wrapper import (
     ClassifierInferenceWrapper,
 )
 from graph4nlp.pytorch.modules.utils import constants as Constants
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
 from .run_text_classifier import TextClassifier
 
@@ -27,11 +27,8 @@ class ModelHandler:
 
     def _build_model(self):
         self.model = TextClassifier.load_checkpoint(
-            os.path.join(
-                self.config["out_dir"],
-                self.config.get("model_ckpt_name", Constants._SAVED_WEIGHTS_FILE),
-            )
-        ).to(self.config["device"])
+            os.path.join(self.config["checkpoint_args"]["out_dir"], Constants._SAVED_WEIGHTS_FILE)
+        ).to(self.config["env_args"]["device"])
 
         self.inference_tool = ClassifierInferenceWrapper(
             cfg=self.config,
@@ -53,20 +50,22 @@ class ModelHandler:
 
 def main(config):
     # configure
-    np.random.seed(config["seed"])
-    torch.manual_seed(config["seed"])
+    np.random.seed(config["env_args"]["seed"])
+    torch.manual_seed(config["env_args"]["seed"])
 
-    if not config["no_cuda"] and torch.cuda.is_available():
+    if not config["env_args"]["no_cuda"] and torch.cuda.is_available():
         print("[ Using CUDA ]")
-        config["device"] = torch.device("cuda" if config["gpu"] < 0 else "cuda:%d" % config["gpu"])
-        torch.cuda.manual_seed(config["seed"])
-        torch.cuda.manual_seed_all(config["seed"])
+        config["env_args"]["device"] = torch.device(
+            "cuda" if config["env_args"]["gpu"] < 0 else "cuda:%d" % config["env_args"]["gpu"]
+        )
+        torch.cuda.manual_seed(config["env_args"]["seed"])
+        torch.cuda.manual_seed_all(config["env_args"]["seed"])
         torch.backends.cudnn.deterministic = True
         cudnn.benchmark = False
     else:
-        config["device"] = torch.device("cpu")
+        config["env_args"]["device"] = torch.device("cpu")
 
-    print("\n" + config["out_dir"])
+    print("\n" + config["checkpoint_args"]["out_dir"])
 
     runner = ModelHandler(config)
     ret = runner.predict(["How far is it from Denver to Aspen ?"])
@@ -79,18 +78,15 @@ def main(config):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-config", "--config", required=True, type=str, help="path to the config file"
+        "-json_config",
+        "--json_config",
+        required=True,
+        type=str,
+        help="path to the json config file",
     )
     args = vars(parser.parse_args())
 
     return args
-
-
-def get_config(config_path="config.yml"):
-    with open(config_path, "r") as setting:
-        config = yaml.safe_load(setting)
-
-    return config
 
 
 def print_config(config):
@@ -110,7 +106,7 @@ if __name__ == "__main__":
         multiprocessing.set_start_method("spawn")
 
     cfg = get_args()
-    config = get_config(cfg["config"])
+    config = load_json_config(cfg["json_config"])
     print_config(config)
 
     main(config)

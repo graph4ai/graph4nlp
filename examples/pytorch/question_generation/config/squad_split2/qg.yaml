@@ -1,38 +1,97 @@
-# Data
-dataset: 'squad-split2'
-pretrained_word_emb_name: "840B"
-pretrained_word_emb_cache_dir: ".vector_cache"
-out_dir: 'out/squad_split2/qg_ckpt_dep_ggnn'
-
-# Preprocessing
-top_word_vocab: 70000
-share_vocab: True
-word_emb_size: 300
-min_word_freq: 1
-num_hidden: 300 # number of hidden units
-n_samples: null
+# Users can import user customized yaml files or library provided default yaml files
+includes: []
+  # - $/configs/defaults.yaml
+  # In the above example path, '$/' indicates the library directory which contains the config folder
 
 
-word_dropout: 0.4 # word embedding dropout
-enc_rnn_dropout: 0.3 # Encoder RNN dropout
-coverage_loss_ratio: 0 # coverage loss ratio
+preprocessing_args:
+  top_word_vocab: 70000
+  word_emb_size: 300
+  share_vocab: True
+  min_word_freq: 1
 
 
-# Training
-seed: 1234
-batch_size: 50 # batch size
-epochs: 100 # number of maximal training epochs
-grad_clipping: 10
-early_stop_metric: 'BLEU_4'
-patience: 30
-lr: 0.0007 # learning rate
-lr_patience: 10
-lr_reduce_factor: 0.7
-num_workers: 10 # number of data loader workers
+model_args:
+  graph_construction_name: "dependency"
+  graph_initialization_name: "defaults"
+  graph_embedding_name: "ggnn"
+  decoder_name: "stdrnn"
 
 
-# Beam search
-beam_size: 5
+  graph_construction_args:
+    graph_construction_share:
+      root_dir: 'examples/pytorch/question_generation/data/squad_split2'
+      topology_subdir: 'DependencyGraph'
 
-gpu: -1
-no_cuda: false
+  graph_initialization_args:
+    input_size: 300
+    hidden_size: 300
+    word_dropout: 0.4
+    rnn_dropout: 0.3
+    fix_bert_emb: false
+    fix_word_emb: true
+    embedding_style:
+      single_token_item: true
+      emb_strategy: "w2v_bilstm"
+      num_rnn_layers: 1
+      bert_model_name: null
+      bert_lower_case: null
+
+  graph_embedding_args:
+    graph_embedding_share:
+      num_layers: 3
+      input_size: 300
+      hidden_size: 300
+      output_size: 300
+      direction_option: "undirected"
+      feat_drop: 0.2
+
+    graph_embedding_private:
+      n_etypes: 1
+      bias: true
+      use_edge_weight: true
+
+  decoder_args:
+    rnn_decoder_share:
+      rnn_type: "lstm"
+      input_size: 300
+      hidden_size: 300
+      rnn_emb_input_size: 300
+      use_copy: true
+      use_coverage: false
+      graph_pooling_strategy: "max"
+      attention_type: "sep_diff_encoder_type"
+      fuse_strategy: "concatenate"
+      dropout: 0.3
+
+    rnn_decoder_private:
+      max_decoder_step: 41
+      node_type_num: null
+      tgt_emb_as_output_layer: true
+      teacher_forcing_rate: 0.8
+
+
+training_args:
+  batch_size: 50 # batch size
+  epochs: 100 # number of maximal training epochs
+  grad_clipping: 10
+  early_stop_metric: 'BLEU_4'
+  patience: 30
+  lr: 0.0007 # learning rate
+  lr_patience: 10
+  lr_reduce_factor: 0.7
+  coverage_loss_ratio: 0 # coverage loss ratio
+
+
+inference_args:
+  beam_size: 5
+
+
+checkpoint_args:
+  out_dir: 'out/squad_split2/ggnn_dependency_ckpt'
+
+
+env_args:
+  seed: 1234
+  gpu: 0
+  no_cuda: false

@@ -8,14 +8,18 @@ How to run
 
 #### Train the model:
 ```python
-python -m examples.pytorch.text_classification.run_text_classifier -config examples/pytorch/text_classification/config/trec/XYZ.yaml
+python -m examples.pytorch.text_classification.run_text_classifier -json_config examples/pytorch/text_classification/config/trec/XYZ.json
+```
+
+#### Run inference advance:
+```python
+python -m examples.pytorch.text_classification.inference_advance -json_config examples/pytorch/text_classification/config/trec/XYZ.json
 ```
 
 #### Run inference:
 ```python
-python -m examples.pytorch.text_classification.inference_advance -config examples/pytorch/text_classification/config/trec/XYZ.yaml
+python -m examples.pytorch.text_classification.inference -json_config examples/pytorch/text_classification/config/trec/XYZ.json
 ```
-
 
 
 

@@ -25,7 +25,7 @@ class TrecDataset(Text2LabelDataset):
         self,
         root_dir,
         topology_subdir,
-        graph_name,
+        graph_construction_name,
         static_or_dynamic="static",
         topology_builder=None,
         dynamic_init_graph_name=None,
@@ -41,7 +41,7 @@ class TrecDataset(Text2LabelDataset):
         **kwargs
     ):
         super(TrecDataset, self).__init__(
-            graph_name,
+            graph_construction_name,
             root_dir=root_dir,
             static_or_dynamic=static_or_dynamic,
             topology_builder=topology_builder,

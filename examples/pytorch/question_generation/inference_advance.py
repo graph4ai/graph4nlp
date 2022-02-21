@@ -56,7 +56,7 @@ class ModelHandler:
             graph_construction_name=self.config["model_args"]["graph_construction_name"],
             dynamic_init_graph_name=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_private"
-            ].get("dynamic_init_graph_type", None),
+            ].get("dynamic_init_graph_name", None),
             dynamic_init_topology_aux_args={"dummy_param": 0},
             pretrained_word_emb_name=self.config["preprocessing_args"]["pretrained_word_emb_name"],
             merge_strategy=self.config["model_args"]["graph_construction_args"][

@@ -1,4 +1,5 @@
 import argparse
+import copy
 import os
 import time
 import numpy as np
@@ -8,7 +9,6 @@ import torch.multiprocessing
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import yaml
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
@@ -28,7 +28,8 @@ from graph4nlp.pytorch.modules.graph_embedding_learning import GAT, GGNN, GraphS
 from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
 from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
 from graph4nlp.pytorch.modules.utils import constants as Constants
-from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, grid, to_cuda
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
+from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 
 torch.multiprocessing.set_sharing_strategy("file_system")
@@ -40,59 +41,85 @@ class TextClassifier(nn.Module):
         self.config = config
         self.vocab_model = vocab
         self.label_model = label_model
-        self.graph_name = self.config["graph_construction_args"]["graph_construction_share"][
-            "graph_name"
-        ]
+        self.graph_construction_name = self.config["model_args"]["graph_construction_name"]
         assert not (
-            self.graph_name in ("node_emb", "node_emb_refined") and config["gnn"] == "gat"
+            self.graph_construction_name in ("node_emb", "node_emb_refined")
+            and config["model_args"]["graph_embedding_name"] == "gat"
         ), "dynamic graph construction does not support GAT"
-
-        embedding_style = {
-            "single_token_item": True if self.graph_name != "ie" else False,
-            "emb_strategy": config.get("emb_strategy", "w2v_bilstm"),
-            "num_rnn_layers": 1,
-            "bert_model_name": config.get("bert_model_name", "bert-base-uncased"),
-            "bert_lower_case": True,
-        }
 
         self.graph_initializer = GraphEmbeddingInitialization(
             word_vocab=self.vocab_model.in_word_vocab,
-            embedding_style=embedding_style,
-            hidden_size=config["num_hidden"],
-            word_dropout=config["word_dropout"],
-            rnn_dropout=config["rnn_dropout"],
-            fix_word_emb=not config["no_fix_word_emb"],
-            fix_bert_emb=not config.get("no_fix_bert_emb", False),
+            embedding_style=config["model_args"]["graph_initialization_args"]["embedding_style"],
+            hidden_size=config["model_args"]["graph_initialization_args"]["hidden_size"],
+            word_dropout=config["model_args"]["graph_initialization_args"]["word_dropout"],
+            rnn_dropout=config["model_args"]["graph_initialization_args"]["rnn_dropout"],
+            fix_word_emb=config["model_args"]["graph_initialization_args"]["fix_word_emb"],
+            fix_bert_emb=config["model_args"]["graph_initialization_args"]["fix_bert_emb"],
         )
 
-        use_edge_weight = False
-        if self.graph_name == "node_emb":
+        if self.graph_construction_name == "node_emb":
             self.graph_topology = NodeEmbeddingBasedGraphConstruction(
-                sim_metric_type=config["gl_metric_type"],
-                num_heads=config["gl_num_heads"],
-                top_k_neigh=config["gl_top_k"],
-                epsilon_neigh=config["gl_epsilon"],
-                smoothness_ratio=config["gl_smoothness_ratio"],
-                connectivity_ratio=config["gl_connectivity_ratio"],
-                sparsity_ratio=config["gl_sparsity_ratio"],
-                input_size=config["num_hidden"],
-                hidden_size=config["gl_num_hidden"],
+                sim_metric_type=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["sim_metric_type"],
+                num_heads=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["num_heads"],
+                top_k_neigh=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["top_k_neigh"],
+                epsilon_neigh=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["epsilon_neigh"],
+                smoothness_ratio=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["smoothness_ratio"],
+                connectivity_ratio=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["connectivity_ratio"],
+                sparsity_ratio=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["sparsity_ratio"],
+                input_size=config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "input_size"
+                ],
+                hidden_size=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["hidden_size"],
             )
-            use_edge_weight = True
-        elif self.graph_name == "node_emb_refined":
+        elif self.graph_construction_name == "node_emb_refined":
             self.graph_topology = NodeEmbeddingBasedRefinedGraphConstruction(
-                config["init_adj_alpha"],
-                sim_metric_type=config["gl_metric_type"],
-                num_heads=config["gl_num_heads"],
-                top_k_neigh=config["gl_top_k"],
-                epsilon_neigh=config["gl_epsilon"],
-                smoothness_ratio=config["gl_smoothness_ratio"],
-                connectivity_ratio=config["gl_connectivity_ratio"],
-                sparsity_ratio=config["gl_sparsity_ratio"],
-                input_size=config["num_hidden"],
-                hidden_size=config["gl_num_hidden"],
+                config["model_args"]["graph_construction_args"]["graph_construction_private"][
+                    "alpha_fusion"
+                ],
+                sim_metric_type=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["sim_metric_type"],
+                num_heads=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["num_heads"],
+                top_k_neigh=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["top_k_neigh"],
+                epsilon_neigh=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["epsilon_neigh"],
+                smoothness_ratio=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["smoothness_ratio"],
+                connectivity_ratio=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["connectivity_ratio"],
+                sparsity_ratio=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["sparsity_ratio"],
+                input_size=config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "input_size"
+                ],
+                hidden_size=config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ]["hidden_size"],
             )
-            use_edge_weight = True
 
         if "w2v" in self.graph_initializer.embedding_layer.word_emb_layers:
             self.word_emb = self.graph_initializer.embedding_layer.word_emb_layers[
@@ -103,64 +130,115 @@ class TextClassifier(nn.Module):
                 self.vocab_model.in_word_vocab.embeddings.shape[0],
                 self.vocab_model.in_word_vocab.embeddings.shape[1],
                 pretrained_word_emb=self.vocab_model.in_word_vocab.embeddings,
-                fix_emb=not config["no_fix_word_emb"],
+                fix_emb=config["graph_initialization_args"]["fix_word_emb"],
             ).word_emb_layer
 
-        if config["gnn"] == "gat":
-            heads = [config["gat_num_heads"]] * (config["gnn_num_layers"] - 1) + [
-                config["gat_num_out_heads"]
-            ]
+        if config["model_args"]["graph_embedding_name"] == "gat":
             self.gnn = GAT(
-                config["gnn_num_layers"],
-                config["num_hidden"],
-                config["num_hidden"],
-                config["num_hidden"],
-                heads,
-                direction_option=config["gnn_direction_option"],
-                feat_drop=config["gnn_dropout"],
-                attn_drop=config["gat_attn_dropout"],
-                negative_slope=config["gat_negative_slope"],
-                residual=config["gat_residual"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["num_layers"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["input_size"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "hidden_size"
+                ],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "output_size"
+                ],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_private"]["heads"],
+                direction_option=config["model_args"]["graph_embedding_args"][
+                    "graph_embedding_share"
+                ]["direction_option"],
+                feat_drop=config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "feat_drop"
+                ],
+                attn_drop=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                    "attn_drop"
+                ],
+                negative_slope=config["model_args"]["graph_embedding_args"][
+                    "graph_embedding_private"
+                ]["negative_slope"],
+                residual=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                    "residual"
+                ],
                 activation=F.elu,
-                allow_zero_in_degree=True,
+                allow_zero_in_degree=config["model_args"]["graph_embedding_args"][
+                    "graph_embedding_private"
+                ]["allow_zero_in_degree"],
             )
-        elif config["gnn"] == "graphsage":
+        elif config["model_args"]["graph_embedding_name"] == "graphsage":
             self.gnn = GraphSAGE(
-                config["gnn_num_layers"],
-                config["num_hidden"],
-                config["num_hidden"],
-                config["num_hidden"],
-                config["graphsage_aggreagte_type"],
-                direction_option=config["gnn_direction_option"],
-                feat_drop=config["gnn_dropout"],
-                bias=True,
-                norm=None,
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["num_layers"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["input_size"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "hidden_size"
+                ],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "output_size"
+                ],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                    "aggregator_type"
+                ],
+                direction_option=config["model_args"]["graph_embedding_args"][
+                    "graph_embedding_share"
+                ]["direction_option"],
+                feat_drop=config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "feat_drop"
+                ],
+                bias=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                    "bias"
+                ],
+                norm=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                    "norm"
+                ],
                 activation=F.relu,
-                use_edge_weight=use_edge_weight,
+                use_edge_weight=config["model_args"]["graph_embedding_args"][
+                    "graph_embedding_private"
+                ]["use_edge_weight"],
             )
-        elif config["gnn"] == "ggnn":
+        elif config["model_args"]["graph_embedding_name"] == "ggnn":
             self.gnn = GGNN(
-                config["gnn_num_layers"],
-                config["num_hidden"],
-                config["num_hidden"],
-                config["num_hidden"],
-                feat_drop=config["gnn_dropout"],
-                direction_option=config["gnn_direction_option"],
-                bias=True,
-                use_edge_weight=use_edge_weight,
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["num_layers"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["input_size"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "hidden_size"
+                ],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "output_size"
+                ],
+                feat_drop=config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "feat_drop"
+                ],
+                direction_option=config["model_args"]["graph_embedding_args"][
+                    "graph_embedding_share"
+                ]["direction_option"],
+                bias=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                    "bias"
+                ],
+                use_edge_weight=config["model_args"]["graph_embedding_args"][
+                    "graph_embedding_private"
+                ]["use_edge_weight"],
             )
         else:
-            raise RuntimeError("Unknown gnn type: {}".format(config["gnn"]))
+            raise RuntimeError(
+                "Unknown gnn type: {}".format(config["model_args"]["graph_embedding_name"])
+            )
 
         self.clf = FeedForwardNN(
-            2 * config["num_hidden"]
-            if config["gnn_direction_option"] == "bi_sep"
-            else config["num_hidden"],
+            2 * config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["output_size"]
+            if config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                "direction_option"
+            ]
+            == "bi_sep"
+            else config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                "output_size"
+            ],
             config["num_classes"],
-            [config["num_hidden"]],
-            graph_pool_type=config["graph_pooling"],
-            dim=config["num_hidden"],
-            use_linear_proj=config["max_pool_linear_proj"],
+            [config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["output_size"]],
+            graph_pool_type=config["model_args"]["decoder_args"]["graph_pooling_share"][
+                "pooling_type"
+            ],
+            use_linear_proj=config["model_args"]["decoder_args"]["graph_pooling_share"][
+                "max_pool_linear_proj"
+            ],
         )
 
         self.loss = GeneralLoss("CrossEntropy")
@@ -218,76 +296,82 @@ class ModelHandler:
     def __init__(self, config):
         super(ModelHandler, self).__init__()
         self.config = config
+        log_config = copy.deepcopy(config)
+        del log_config["env_args"]["device"]
         self.logger = Logger(
-            self.config["out_dir"],
-            config={k: v for k, v in self.config.items() if k != "device"},
+            self.config["checkpoint_args"]["out_dir"],
+            config=log_config,
             overwrite=True,
         )
-        self.logger.write(self.config["out_dir"])
+        self.logger.write(self.config["checkpoint_args"]["out_dir"])
         self._build_dataloader()
         self._build_model()
         self._build_optimizer()
         self._build_evaluation()
 
     def _build_dataloader(self):
-        self.graph_name = self.config["graph_construction_args"]["graph_construction_share"][
-            "graph_name"
-        ]
-        topology_subdir = "{}_graph".format(self.graph_name)
-        if self.graph_name == "node_emb_refined":
+        self.graph_construction_name = self.config["model_args"]["graph_construction_name"]
+        topology_subdir = "{}_graph".format(self.graph_construction_name)
+        if self.graph_construction_name == "node_emb_refined":
             topology_subdir += "_{}".format(
-                self.config["graph_construction_args"]["graph_construction_private"][
+                self.config["model_args"]["graph_construction_args"]["graph_construction_private"][
                     "dynamic_init_graph_name"
                 ]
             )
 
         dataset = TrecDataset(
-            root_dir=self.config["graph_construction_args"]["graph_construction_share"]["root_dir"],
+            root_dir=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["root_dir"],
             topology_subdir=topology_subdir,
-            graph_name=self.graph_name,
-            dynamic_init_graph_name=self.config["graph_construction_args"][
+            graph_construction_name=self.graph_construction_name,
+            dynamic_init_graph_name=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_private"
-            ]["dynamic_init_graph_name"],
+            ].get("dynamic_init_graph_name", None),
             dynamic_init_topology_aux_args={"dummy_param": 0},
-            pretrained_word_emb_name=self.config["pretrained_word_emb_name"],
-            merge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
-                "merge_strategy"
-            ],
-            edge_strategy=self.config["graph_construction_args"]["graph_construction_private"][
-                "edge_strategy"
-            ],
-            min_word_vocab_freq=self.config.get("min_word_freq", 1),
-            word_emb_size=self.config.get("word_emb_size", 300),
-            seed=self.config["seed"],
-            thread_number=self.config["graph_construction_args"]["graph_construction_share"][
-                "thread_number"
-            ],
-            port=self.config["graph_construction_args"]["graph_construction_share"]["port"],
-            timeout=self.config["graph_construction_args"]["graph_construction_share"]["timeout"],
+            pretrained_word_emb_name=self.config["preprocessing_args"]["pretrained_word_emb_name"],
+            merge_strategy=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ].get("merge_strategy", None),
+            edge_strategy=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ].get("edge_strategy", None),
+            min_word_vocab_freq=self.config["preprocessing_args"]["min_word_freq"],
+            word_emb_size=self.config["preprocessing_args"]["word_emb_size"],
+            seed=self.config["env_args"]["seed"],
+            thread_number=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ].get("thread_number", None),
+            port=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ].get("port", None),
+            timeout=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ].get("timeout", None),
             reused_label_model=None,
         )
 
         self.train_dataloader = DataLoader(
             dataset.train,
-            batch_size=self.config["batch_size"],
+            batch_size=self.config["training_args"]["batch_size"],
             shuffle=True,
-            num_workers=self.config["num_workers"],
+            num_workers=self.config["env_args"]["num_workers"],
             collate_fn=dataset.collate_fn,
         )
         if not hasattr(dataset, "val"):
             dataset.val = dataset.test
         self.val_dataloader = DataLoader(
             dataset.val,
-            batch_size=self.config["batch_size"],
+            batch_size=self.config["training_args"]["batch_size"],
             shuffle=False,
-            num_workers=self.config["num_workers"],
+            num_workers=self.config["env_args"]["num_workers"],
             collate_fn=dataset.collate_fn,
         )
         self.test_dataloader = DataLoader(
             dataset.test,
-            batch_size=self.config["batch_size"],
+            batch_size=self.config["training_args"]["batch_size"],
             shuffle=False,
-            num_workers=self.config["num_workers"],
+            num_workers=self.config["env_args"]["num_workers"],
             collate_fn=dataset.collate_fn,
         )
         self.vocab_model = dataset.vocab_model
@@ -309,24 +393,24 @@ class ModelHandler:
 
     def _build_model(self):
         self.model = TextClassifier(self.vocab_model, self.label_model, self.config).to(
-            self.config["device"]
+            self.config["env_args"]["device"]
         )
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
-        self.optimizer = optim.Adam(parameters, lr=self.config["lr"])
+        self.optimizer = optim.Adam(parameters, lr=self.config["training_args"]["lr"])
         self.stopper = EarlyStopping(
             os.path.join(
-                self.config["out_dir"],
-                self.config.get("model_ckpt_name", Constants._SAVED_WEIGHTS_FILE),
+                self.config["checkpoint_args"]["out_dir"],
+                Constants._SAVED_WEIGHTS_FILE,
             ),
-            patience=self.config["patience"],
+            patience=self.config["training_args"]["patience"],
         )
         self.scheduler = ReduceLROnPlateau(
             self.optimizer,
             mode="max",
-            factor=self.config["lr_reduce_factor"],
-            patience=self.config["lr_patience"],
+            factor=self.config["training_args"]["lr_reduce_factor"],
+            patience=self.config["training_args"]["lr_patience"],
             verbose=True,
         )
 
@@ -335,14 +419,14 @@ class ModelHandler:
 
     def train(self):
         dur = []
-        for epoch in range(self.config["epochs"]):
+        for epoch in range(self.config["training_args"]["epochs"]):
             self.model.train()
             train_loss = []
             train_acc = []
             t0 = time.time()
             for data in self.train_dataloader:
-                tgt = to_cuda(data["tgt_tensor"], self.config["device"])
-                data["graph_data"] = data["graph_data"].to(self.config["device"])
+                tgt = to_cuda(data["tgt_tensor"], self.config["env_args"]["device"])
+                data["graph_data"] = data["graph_data"].to(self.config["env_args"]["device"])
                 logits, loss = self.model(data["graph_data"], tgt, require_loss=True)
 
                 # add graph regularization loss if available
@@ -366,7 +450,7 @@ class ModelHandler:
                 "Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} |"
                 "Train Acc: {:.4f} | Val Acc: {:.4f}".format(
                     epoch + 1,
-                    self.config["epochs"],
+                    self.config["training_args"]["epochs"],
                     np.mean(dur),
                     np.mean(train_loss),
                     np.mean(train_acc),
@@ -377,7 +461,7 @@ class ModelHandler:
                 "Epoch: [{} / {}] | Time: {:.2f}s | Loss: {:.4f} |"
                 "Train Acc: {:.4f} | Val Acc: {:.4f}".format(
                     epoch + 1,
-                    self.config["epochs"],
+                    self.config["training_args"]["epochs"],
                     np.mean(dur),
                     np.mean(train_loss),
                     np.mean(train_acc),
@@ -396,8 +480,8 @@ class ModelHandler:
             pred_collect = []
             gt_collect = []
             for data in dataloader:
-                tgt = to_cuda(data["tgt_tensor"], self.config["device"])
-                data["graph_data"] = data["graph_data"].to(self.config["device"])
+                tgt = to_cuda(data["tgt_tensor"], self.config["env_args"]["device"])
+                data["graph_data"] = data["graph_data"].to(self.config["env_args"]["device"])
                 logits = self.model(data["graph_data"], require_loss=False)
                 pred_collect.append(logits)
                 gt_collect.append(tgt)
@@ -427,20 +511,22 @@ class ModelHandler:
 
 def main(config):
     # configure
-    np.random.seed(config["seed"])
-    torch.manual_seed(config["seed"])
+    np.random.seed(config["env_args"]["seed"])
+    torch.manual_seed(config["env_args"]["seed"])
 
-    if not config["no_cuda"] and torch.cuda.is_available():
+    if not config["env_args"]["no_cuda"] and torch.cuda.is_available():
         print("[ Using CUDA ]")
-        config["device"] = torch.device("cuda" if config["gpu"] < 0 else "cuda:%d" % config["gpu"])
-        torch.cuda.manual_seed(config["seed"])
-        torch.cuda.manual_seed_all(config["seed"])
+        config["env_args"]["device"] = torch.device(
+            "cuda" if config["env_args"]["gpu"] < 0 else "cuda:%d" % config["env_args"]["gpu"]
+        )
+        torch.cuda.manual_seed(config["env_args"]["seed"])
+        torch.cuda.manual_seed_all(config["env_args"]["seed"])
         torch.backends.cudnn.deterministic = True
         cudnn.benchmark = False
     else:
-        config["device"] = torch.device("cpu")
+        config["env_args"]["device"] = torch.device("cpu")
 
-    print("\n" + config["out_dir"])
+    print("\n" + config["checkpoint_args"]["out_dir"])
 
     runner = ModelHandler(config)
     t0 = time.time()
@@ -462,19 +548,15 @@ def main(config):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-config", "--config", required=True, type=str, help="path to the config file"
+        "-json_config",
+        "--json_config",
+        required=True,
+        type=str,
+        help="path to the json config file",
     )
-    parser.add_argument("--grid_search", action="store_true", help="flag: grid search")
     args = vars(parser.parse_args())
 
     return args
-
-
-def get_config(config_path="config.yml"):
-    with open(config_path, "r") as setting:
-        config = yaml.safe_load(setting)
-
-    return config
 
 
 def print_config(config):
@@ -486,41 +568,6 @@ def print_config(config):
     print("**************** MODEL CONFIGURATION ****************")
 
 
-def grid_search_main(config):
-    grid_search_hyperparams = []
-    log_path = config["out_dir"]
-    for k, v in config.items():
-        if isinstance(v, list):
-            grid_search_hyperparams.append(k)
-            log_path += "_{}_{}".format(k, v)
-
-    logger = Logger(log_path, config=config, overwrite=True)
-
-    best_config = None
-    best_score = -1
-    configs = grid(config)
-    for cnf in configs:
-        for k in grid_search_hyperparams:
-            cnf["out_dir"] += "_{}_{}".format(k, cnf[k])
-
-        val_score, test_score = main(cnf)
-        if best_score < test_score:
-            best_score = test_score
-            best_config = cnf
-            print("Found a better configuration: {}".format(best_score))
-            logger.write("Found a better configuration: {}".format(best_score))
-
-    print("\nBest configuration:")
-    logger.write("\nBest configuration:")
-    for k in grid_search_hyperparams:
-        print("{}: {}".format(k, best_config[k]))
-        logger.write("{}: {}".format(k, best_config[k]))
-
-    print("Best score: {}".format(best_score))
-    logger.write("Best score: {}\n".format(best_score))
-    logger.close()
-
-
 if __name__ == "__main__":
     import platform
     import multiprocessing
@@ -529,9 +576,7 @@ if __name__ == "__main__":
         multiprocessing.set_start_method("spawn")
 
     cfg = get_args()
-    config = get_config(cfg["config"])
+    config = load_json_config(cfg["json_config"])
     print_config(config)
-    if cfg["grid_search"]:
-        grid_search_main(config)
-    else:
-        main(config)
+
+    main(config)
