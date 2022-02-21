@@ -1,5 +1,5 @@
-import copy
 import argparse
+import copy
 import random
 import time
 import warnings
@@ -11,9 +11,8 @@ from tqdm import tqdm
 
 from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
-from graph4nlp.pytorch.modules.utils.tree_utils import Tree
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
-
+from graph4nlp.pytorch.modules.utils.tree_utils import Tree
 
 warnings.filterwarnings("ignore")
 
@@ -32,12 +31,14 @@ class Jobs:
             self.device = torch.device("cpu")
         else:
             self.device = torch.device("cuda:{}".format(self.opt["env_args"]["gpuid"]))
-    
+
         self.use_copy = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
-        self.use_share_vocab = self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
-            "share_vocab"
-        ]
-        self.data_dir = self.opt["model_args"]["graph_construction_args"]["graph_construction_share"]["root_dir"]
+        self.use_share_vocab = self.opt["model_args"]["graph_construction_args"][
+            "graph_construction_share"
+        ]["share_vocab"]
+        self.data_dir = self.opt["model_args"]["graph_construction_args"][
+            "graph_construction_share"
+        ]["root_dir"]
 
         self._build_dataloader()
         self._build_model()
@@ -47,16 +48,19 @@ class Jobs:
         para_dic = {
             "root_dir": self.data_dir,
             "word_emb_size": self.opt["model_args"]["graph_initialization_args"]["input_size"],
-            "topology_subdir": self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
+            "topology_subdir": self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_share"][
                 "topology_subdir"
             ],
-            "edge_strategy": self.opt["model_args"]["graph_construction_args"]["graph_construction_private"][
+            "edge_strategy": self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_private"][
                 "edge_strategy"
             ],
             "graph_construction_name": self.opt["model_args"]["graph_construction_name"],
             "share_vocab": self.use_share_vocab,
             "enc_emb_size": self.opt["model_args"]["graph_initialization_args"]["input_size"],
-            "dec_emb_size": self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["input_size"],
+            "dec_emb_size": self.opt["model_args"]["decoder_args"][
+                "rnn_decoder_share"]["input_size"],
             "dynamic_init_graph_name": self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_private"
             ].get("dynamic_init_graph_name", None),
@@ -143,7 +147,9 @@ class Jobs:
                 oov_dict=oov_dict,
             )
             loss.backward()
-            torch.nn.utils.clip_grad_value_(self.model.parameters(), self.opt["training_args"]["grad_clip"])
+            torch.nn.utils.clip_grad_value_(self.model.parameters(), self.opt[
+                "training_args"
+            ]["grad_clip"])
             self.optimizer.step()
             loss_to_print += loss
         print("-------------\nLoss = {:.3f}".format(loss_to_print / num_batch))
@@ -160,7 +166,10 @@ class Jobs:
                 if val_acc > best_acc:
                     best_acc = val_acc
                     best_model = self.model
-        best_model.save_checkpoint(self.opt["checkpoint_args"]["out_dir"], self.opt["checkpoint_args"]["checkpoint_name"])
+        best_model.save_checkpoint(
+            self.opt["checkpoint_args"]["out_dir"],
+            self.opt["checkpoint_args"]["checkpoint_name"]
+        )
         print(f"Best Accuracy: {best_acc:.4f}")
 
     def eval(self, model):
