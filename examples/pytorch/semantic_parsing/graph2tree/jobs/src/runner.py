@@ -49,23 +49,22 @@ class Jobs:
             "root_dir": self.data_dir,
             "word_emb_size": self.opt["model_args"]["graph_initialization_args"]["input_size"],
             "topology_subdir": self.opt["model_args"]["graph_construction_args"][
-                "graph_construction_share"][
-                "topology_subdir"
-            ],
+                "graph_construction_share"
+            ]["topology_subdir"],
             "edge_strategy": self.opt["model_args"]["graph_construction_args"][
-                "graph_construction_private"][
-                "edge_strategy"
-            ],
+                "graph_construction_private"
+            ]["edge_strategy"],
             "graph_construction_name": self.opt["model_args"]["graph_construction_name"],
             "share_vocab": self.use_share_vocab,
             "enc_emb_size": self.opt["model_args"]["graph_initialization_args"]["input_size"],
-            "dec_emb_size": self.opt["model_args"]["decoder_args"][
-                "rnn_decoder_share"]["input_size"],
+            "dec_emb_size": self.opt["model_args"]["decoder_args"]["rnn_decoder_share"][
+                "input_size"
+            ],
             "dynamic_init_graph_name": self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_private"
             ].get("dynamic_init_graph_name", None),
             "min_word_vocab_freq": self.opt["preprocessing_args"]["min_freq"],
-            "pretrained_word_emb_name": self.opt["preprocessing_args"]["pretrained_word_emb_name"]
+            "pretrained_word_emb_name": self.opt["preprocessing_args"]["pretrained_word_emb_name"],
         }
 
         dataset = JobsDatasetForTree(**para_dic)
@@ -147,9 +146,9 @@ class Jobs:
                 oov_dict=oov_dict,
             )
             loss.backward()
-            torch.nn.utils.clip_grad_value_(self.model.parameters(), self.opt[
-                "training_args"
-            ]["grad_clip"])
+            torch.nn.utils.clip_grad_value_(
+                self.model.parameters(), self.opt["training_args"]["grad_clip"]
+            )
             self.optimizer.step()
             loss_to_print += loss
         print("-------------\nLoss = {:.3f}".format(loss_to_print / num_batch))
@@ -167,8 +166,7 @@ class Jobs:
                     best_acc = val_acc
                     best_model = self.model
         best_model.save_checkpoint(
-            self.opt["checkpoint_args"]["out_dir"],
-            self.opt["checkpoint_args"]["checkpoint_name"]
+            self.opt["checkpoint_args"]["out_dir"], self.opt["checkpoint_args"]["checkpoint_name"]
         )
         print(f"Best Accuracy: {best_acc:.4f}")
 
@@ -241,6 +239,7 @@ def get_args():
 
 def print_config(config):
     import pprint
+
     print("**************** MODEL CONFIGURATION ****************")
     pprint.pprint(config)
     print("**************** MODEL CONFIGURATION ****************")

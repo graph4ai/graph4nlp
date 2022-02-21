@@ -40,10 +40,9 @@ class Jobs:
             self.device = torch.device("cuda:{}".format(self.opt["env_args"]["gpuid"]))
 
         self.use_copy = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
-        self.use_share_vocab = self.opt["model_args"][
-            "graph_construction_args"]["graph_construction_share"][
-            "share_vocab"
-        ]
+        self.use_share_vocab = self.opt["model_args"]["graph_construction_args"][
+            "graph_construction_share"
+        ]["share_vocab"]
         self.data_dir = self.opt["inference_args"]["inference_data_dir"]
 
         self._build_model()
@@ -55,18 +54,17 @@ class Jobs:
             "root_dir": self.data_dir,
             "word_emb_size": self.opt["model_args"]["graph_initialization_args"]["input_size"],
             "topology_subdir": self.opt["model_args"]["graph_construction_args"][
-                "graph_construction_share"][
-                "topology_subdir"
-            ],
+                "graph_construction_share"
+            ]["topology_subdir"],
             "edge_strategy": self.opt["model_args"]["graph_construction_args"][
-                "graph_construction_private"][
-                "edge_strategy"
-            ],
+                "graph_construction_private"
+            ]["edge_strategy"],
             "graph_construction_name": self.opt["model_args"]["graph_construction_name"],
             "share_vocab": self.use_share_vocab,
             "enc_emb_size": self.opt["model_args"]["graph_initialization_args"]["input_size"],
-            "dec_emb_size": self.opt["model_args"]["decoder_args"][
-                "rnn_decoder_share"]["input_size"],
+            "dec_emb_size": self.opt["model_args"]["decoder_args"]["rnn_decoder_share"][
+                "input_size"
+            ],
             "dynamic_init_graph_name": self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_private"
             ].get("dynamic_init_graph_name", None),
@@ -95,8 +93,7 @@ class Jobs:
     def _build_model(self):
         """For encoder-decoder"""
         self.model = Graph2Tree.load_checkpoint(
-            self.opt["checkpoint_args"]["out_dir"],
-            self.opt["checkpoint_args"]["checkpoint_name"]
+            self.opt["checkpoint_args"]["out_dir"], self.opt["checkpoint_args"]["checkpoint_name"]
         ).to(self.device)
 
     def prepare_ext_vocab(self, batch_graph, src_vocab):
@@ -168,6 +165,7 @@ class Jobs:
                 )
             )
 
+
 ################################################################################
 # ArgParse and Helper Functions #
 ################################################################################
@@ -189,6 +187,7 @@ def get_args():
 
 def print_config(config):
     import pprint
+
     print("**************** MODEL CONFIGURATION ****************")
     pprint.pprint(config)
     print("**************** MODEL CONFIGURATION ****************")

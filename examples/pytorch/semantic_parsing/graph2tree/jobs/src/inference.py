@@ -39,8 +39,7 @@ class Jobs:
 
     def _build_model(self):
         self.model = Graph2Tree.load_checkpoint(
-            self.opt["checkpoint_args"]["out_dir"],
-            self.opt["checkpoint_args"]["checkpoint_name"]
+            self.opt["checkpoint_args"]["out_dir"], self.opt["checkpoint_args"]["checkpoint_name"]
         ).to(self.device)
 
         self.inference_tool = GeneratorInferenceWrapper(
@@ -73,6 +72,7 @@ def get_args():
 
 def print_config(config):
     import pprint
+
     print("**************** MODEL CONFIGURATION ****************")
     pprint.pprint(config)
     print("**************** MODEL CONFIGURATION ****************")
