@@ -6,7 +6,7 @@
 """
 import argparse
 import os
-from typing import List, Tuple
+from typing import List
 import numpy as np
 import torch
 from nltk.tokenize import word_tokenize
@@ -18,6 +18,7 @@ from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
 from .main import SumModel
+
 
 class ModelHandler:
     def __init__(self, config):

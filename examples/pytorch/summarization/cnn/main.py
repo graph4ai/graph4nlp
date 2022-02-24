@@ -1,7 +1,7 @@
 import argparse
+import copy
 import os
 import time
-import copy
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -61,7 +61,9 @@ class SumModel(nn.Module):
                 self.vocab.in_word_vocab.embeddings.shape[0],
                 self.vocab.in_word_vocab.embeddings.shape[1],
                 pretrained_word_emb=self.vocab.in_word_vocab.embeddings,
-                fix_emb=config["model_args"]["graph_construction_args"]["node_embedding"]["fix_word_emb"],
+                fix_emb=config["model_args"]["graph_construction_args"]["node_embedding"][
+                    "fix_word_emb"
+                ],
             ).word_emb_layer
 
         self.g2s.seq_decoder.tgt_emb = self.word_emb
@@ -143,21 +145,23 @@ class ModelHandler:
             ].get("dynamic_init_graph_type", None),
             dynamic_init_topology_aux_args={"dummy_param": 0},
             pretrained_word_emb_name=self.config["preprocessing_args"]["pretrained_word_emb_name"],
-            merge_strategy=self.config["model_args"]["graph_construction_args"]["graph_construction_private"][
-                "merge_strategy"
-            ],
-            edge_strategy=self.config["model_args"]["graph_construction_args"]["graph_construction_private"][
-                "edge_strategy"
-            ],
+            merge_strategy=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ]["merge_strategy"],
+            edge_strategy=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ]["edge_strategy"],
             max_word_vocab_size=self.config["preprocessing_args"]["top_word_vocab"],
             min_word_vocab_freq=self.config["preprocessing_args"]["min_word_freq"],
             word_emb_size=self.config["preprocessing_args"]["word_emb_size"],
             share_vocab=self.config["preprocessing_args"]["share_vocab"],
             seed=self.config["env_args"]["seed"],
-            thread_number=self.config["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "thread_number"
+            thread_number=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["thread_number"],
+            port=self.config["model_args"]["graph_construction_args"]["graph_construction_share"][
+                "port"
             ],
-            port=self.config["model_args"]["graph_construction_args"]["graph_construction_share"]["port"],
             timeout=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["timeout"],
@@ -269,7 +273,9 @@ class ModelHandler:
             print(format_str)
             self.logger.write(format_str)
 
-            if self.stopper.step(val_scores[self.config["training_args"]["early_stop_metric"]], self.model):
+            if self.stopper.step(
+                val_scores[self.config["training_args"]["early_stop_metric"]], self.model
+            ):
                 break
 
         return self.stopper.best_score
@@ -306,7 +312,8 @@ class ModelHandler:
             if write2file:
                 with open(
                     "{}/{}_pred.txt".format(
-                        self.config["checkpoint_args"]["out_dir"], self.config["checkpoint_args"]["out_dir"].split("/")[-1]
+                        self.config["checkpoint_args"]["out_dir"],
+                        self.config["checkpoint_args"]["out_dir"].split("/")[-1],
                     ),
                     "w+",
                 ) as f:
@@ -315,7 +322,8 @@ class ModelHandler:
 
                 with open(
                     "{}/{}_gt.txt".format(
-                        self.config["checkpoint_args"]["out_dir"], self.config["checkpoint_args"]["out_dir"].split("/")[-1]
+                        self.config["checkpoint_args"]["out_dir"],
+                        self.config["checkpoint_args"]["out_dir"].split("/")[-1],
                     ),
                     "w+",
                 ) as f:
@@ -347,7 +355,10 @@ class ModelHandler:
 
                 batch_graph = self.model.g2s.graph_initializer(data["graph_data"])
                 prob = self.model.g2s.encoder_decoder_beam_search(
-                    batch_graph, self.config["inference_args"]["beam_size"], topk=1, oov_dict=oov_dict
+                    batch_graph,
+                    self.config["inference_args"]["beam_size"],
+                    topk=1,
+                    oov_dict=oov_dict,
                 )
 
                 pred_ids = (

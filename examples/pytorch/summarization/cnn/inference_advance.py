@@ -11,8 +11,6 @@ import time
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
-import torch.optim as optim
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.cnn import CNNDataset
@@ -49,31 +47,31 @@ class ModelHandler:
 
     def _build_dataloader(self):
         para_dic = {
-            "root_dir": self.config["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "root_dir"
-            ],
-            "topology_subdir": self.config["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "topology_subdir"
-            ],
+            "root_dir": self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["root_dir"],
+            "topology_subdir": self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["topology_subdir"],
             "word_emb_size": self.config["preprocessing_args"]["word_emb_size"],
-            "merge_strategy": self.config["model_args"]["graph_construction_args"]["graph_construction_private"][
-                "merge_strategy"
-            ],
-            "edge_strategy": self.config["model_args"]["graph_construction_args"]["graph_construction_private"][
-                "edge_strategy"
-            ],
-            "graph_construction_name": self.config["model_args"][
-                "graph_construction_name"
-            ],
+            "merge_strategy": self.config["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ]["merge_strategy"],
+            "edge_strategy": self.config["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ]["edge_strategy"],
+            "graph_construction_name": self.config["model_args"]["graph_construction_name"],
             "share_vocab": self.config["preprocessing_args"]["share_vocab"],
             "min_word_vocab_freq": self.config["preprocessing_args"]["min_word_freq"],
-            "thread_number": self.config["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "thread_number"
-            ],
-            "port": self.config["model_args"]["graph_construction_args"]["graph_construction_share"]["port"],
-            "timeout": self.config["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "timeout"
-            ],
+            "thread_number": self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["thread_number"],
+            "port": self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["port"],
+            "timeout": self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["timeout"],
             "tokenizer": None,
             "for_inference": True,
             "reused_vocab_model": self.model.vocab,
@@ -123,7 +121,10 @@ class ModelHandler:
 
                 batch_graph = self.model.g2s.graph_initializer(data["graph_data"])
                 prob = self.model.g2s.encoder_decoder_beam_search(
-                    batch_graph, self.config["inference_args"]["beam_size"], topk=1, oov_dict=oov_dict
+                    batch_graph,
+                    self.config["inference_args"]["beam_size"],
+                    topk=1,
+                    oov_dict=oov_dict,
                 )
 
                 pred_ids = (
