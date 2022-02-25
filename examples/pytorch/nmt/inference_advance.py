@@ -7,6 +7,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.evaluation import BLEU
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
 from args import get_args
 from dataset import IWSLT14Dataset
@@ -19,33 +20,35 @@ class NMT:
     def __init__(self, opt):
         super(NMT, self).__init__()
         self.opt = opt
-        self.use_copy = self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"]
+        self.use_copy = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
         assert self.use_copy is False, print("Copy is not fit to NMT")
-        self.use_coverage = self.opt["decoder_args"]["rnn_decoder_share"]["use_coverage"]
+        self.use_coverage = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use\
+            _coverage"]
         self._build_device(self.opt)
-        self._build_logger(self.opt["log_dir"])
+        self._build_logger(self.opt["training_args"]["log_dir"])
         self._build_model()
         self._build_dataloader()
         self._build_evaluation()
 
     def _build_device(self, opt):
-        seed = opt["seed"]
+        seed = opt["env_args"]["seed"]
         np.random.seed(seed)
-        if opt["use_gpu"] != 0 and torch.cuda.is_available():
+        if opt["env_args"]["use_gpu"] != 0 and torch.cuda.is_available():
             print("[ Using CUDA ]")
             torch.manual_seed(seed)
             torch.cuda.manual_seed_all(seed)
             from torch.backends import cudnn
 
             cudnn.benchmark = True
-            device = torch.device("cuda" if opt["gpu"] < 0 else "cuda:%d" % opt["gpu"])
+            device = torch.device("cuda" if opt["env_args"]["gpuid"] < 0 else "cuda:%d" % opt["\
+                env_args"]["gpuid"])
         else:
             print("[ Using CPU ]")
             device = torch.device("cpu")
         self.device = device
 
     def _build_logger(self, log_dir):
-        log_path = os.path.join(log_dir, self.opt["name"])
+        log_path = os.path.join(log_dir, self.opt["training_args"]["name"])
         logger_path = os.path.join(log_path, "txt")
         tensorboard_path = os.path.join(log_path, "tensorboard")
         if not os.path.exists(logger_path):
@@ -57,21 +60,24 @@ class NMT:
 
     def _build_dataloader(self):
         dataset = IWSLT14Dataset(
-            root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
-            val_split_ratio=self.opt["val_split_ratio"],
-            merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
+            root_dir=self.opt["model_args"]["graph_construction_args"]["\
+                graph_construction_share"]["root_dir"],
+            val_split_ratio=self.opt["preprocessing_args"]["val_split_ratio"],
+            merge_strategy=self.opt["model_args"]["graph_construction_args"]["\
+                graph_construction_private"][
                 "merge_strategy"
             ],
-            edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
+            edge_strategy=self.opt["model_args"]["graph_construction_args"]["\
+                graph_construction_private"][
                 "edge_strategy"
             ],
-            seed=self.opt["seed"],
-            word_emb_size=self.opt["word_emb_size"],
-            share_vocab=self.opt["share_vocab"],
-            graph_name=self.opt["graph_construction_args"]["graph_construction_share"][
-                "graph_name"
-            ],
-            topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
+            seed=self.opt["env_args"]["seed"],
+            word_emb_size=self.opt["preprocessing_args"]["word_emb_size"],
+            share_vocab=self.opt["model_args"]["graph_construction_args"]["\
+                graph_construction_share"]["share_vocab"],
+            graph_construction_name=self.opt["model_args"]["graph_construction_name"],
+            topology_subdir=self.opt["model_args"]["graph_construction_args"]["\
+                graph_construction_share"][
                 "topology_subdir"
             ],
             for_inference=True,
@@ -80,16 +86,17 @@ class NMT:
 
         self.test_dataloader = DataLoader(
             dataset.test,
-            batch_size=self.opt["batch_size"],
+            batch_size=self.opt["training_args"]["batch_size"],
             shuffle=False,
-            num_workers=8,
+            num_workers=self.opt["training_args"]["num_works"],
             collate_fn=dataset.collate_fn,
         )
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
         self.model = Graph2Seq.load_checkpoint(
-            os.path.join("examples/pytorch/nmt/save", opt["name"]), "best.pth"
+            os.path.join(self.opt["checkpoint_args"]["checkpoint_save_path"], self.opt["\
+                training_args"]["name"]), "best.pth"
         ).to(self.device)
 
     def _build_evaluation(self):
@@ -140,7 +147,8 @@ class NMT:
 
 if __name__ == "__main__":
     opt = get_args()
-    runner = NMT(opt)
-    runner.logger.info("------ Running Training ----------")
-    runner.logger.info("\tRunner name: {}".format(opt["name"]))
+    config = load_json_config(opt["json_config"])
+    runner = NMT(config)
+    runner.logger.info("------ Running Inference ----------")
+    runner.logger.info("\tRunner name: {}".format(config["training_args"]["name"]))
     runner.translate()

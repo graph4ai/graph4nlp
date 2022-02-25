@@ -99,7 +99,6 @@ training_args:
 
 inference_args:
   beam_size: 4
-  inference_data_dir: "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data_inference"
 
 
 evaluation_args:

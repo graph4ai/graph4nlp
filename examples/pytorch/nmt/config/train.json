@@ -1,0 +1,5 @@
+{
+    "config_path": "examples/pytorch/nmt/config/dynamic_gcn.yaml",
+    "training_args.name": "test"
+    }
+    

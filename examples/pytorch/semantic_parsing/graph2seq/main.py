@@ -5,8 +5,8 @@ from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
-from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
+from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
 from args import get_args
 from build_model import get_model
@@ -19,7 +19,9 @@ class Jobs:
         super(Jobs, self).__init__()
         self.opt = opt
         self.use_copy = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
-        self.use_coverage = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_coverage"]
+        self.use_coverage = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"][
+            "use_coverage"
+        ]
         self._build_device(self.opt)
         self._build_logger(self.opt["training_args"]["log_file"])
         self._build_dataloader()
@@ -38,7 +40,9 @@ class Jobs:
             from torch.backends import cudnn
 
             cudnn.benchmark = True
-            device = torch.device("cuda" if opt["env_args"]["gpuid"] < 0 else "cuda:%d" % opt["env_args"]["gpuid"])
+            device = torch.device(
+                "cuda" if opt["env_args"]["gpuid"] < 0 else "cuda:%d" % opt["env_args"]["gpuid"]
+            )
         else:
             print("[ Using CPU ]")
             device = torch.device("cpu")
@@ -54,34 +58,40 @@ class Jobs:
 
     def _build_dataloader(self):
         dataset = JobsDataset(
-            root_dir=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"]["root_dir"],
+            root_dir=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
+                "root_dir"
+            ],
             #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
             pretrained_word_emb_name=self.opt["preprocessing_args"]["pretrained_word_emb_name"],
             pretrained_word_emb_url=self.opt["preprocessing_args"]["pretrained_word_emb_url"],
-            pretrained_word_emb_cache_dir=self.opt["preprocessing_args"]["pretrained_word_emb_cache_dir"],
+            pretrained_word_emb_cache_dir=self.opt["preprocessing_args"][
+                "pretrained_word_emb_cache_dir"
+            ],
             #   val_split_ratio=self.opt["val_split_ratio"],
-            merge_strategy=self.opt["model_args"]["graph_construction_args"]["graph_construction_private"][
-                "merge_strategy"
-            ],
-            edge_strategy=self.opt["model_args"]["graph_construction_args"]["graph_construction_private"][
-                "edge_strategy"
-            ],
+            merge_strategy=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ]["merge_strategy"],
+            edge_strategy=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ]["edge_strategy"],
             seed=self.opt["env_args"]["seed"],
             word_emb_size=self.opt["preprocessing_args"]["word_emb_size"],
-            share_vocab=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "share_vocab"
-            ],
+            share_vocab=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["share_vocab"],
             graph_construction_name=self.opt["model_args"]["graph_construction_name"],
             dynamic_init_graph_name=self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_private"
             ].get("dynamic_init_graph_type", None),
-            topology_subdir=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "topology_subdir"
+            topology_subdir=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["topology_subdir"],
+            thread_number=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["thread_number"],
+            port=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
+                "port"
             ],
-            thread_number=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "thread_number"
-            ],
-            port=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"]["port"],
         )
 
         self.train_dataloader = DataLoader(
@@ -128,7 +138,9 @@ class Jobs:
                 score = self.evaluate(split="test")
                 if score >= max_score:
                     self.logger.info("Best model saved, epoch {}".format(epoch))
-                    self.model.save_checkpoint(self.opt["checkpoint_args"]["checkpoint_save_path"], "best.pt")
+                    self.model.save_checkpoint(
+                        self.opt["checkpoint_args"]["checkpoint_save_path"], "best.pt"
+                    )
                     self._best_epoch = epoch
                 max_score = max(max_score, score)
             if epoch >= 30 and self._stop_condition(epoch):
@@ -147,8 +159,15 @@ class Jobs:
         if epoch_diff >= 0 and epoch_diff % self.opt["training_args"]["lr_decay_per_epoch"] == 0:
             if self.opt["training_args"]["learning_rate"] > self.opt["training_args"]["min_lr"]:
                 set_lr(self.optimizer, self.opt["training_args"]["lr_decay_rate"])
-                self.opt["training_args"]["learning_rate"] = self.opt["training_args"]["learning_rate"] * self.opt["training_args"]["lr_decay_rate"]
-                self.logger.info("Learning rate adjusted: {:.5f}".format(self.opt["training_args"]["learning_rate"]))
+                self.opt["training_args"]["learning_rate"] = (
+                    self.opt["training_args"]["learning_rate"]
+                    * self.opt["training_args"]["lr_decay_rate"]
+                )
+                self.logger.info(
+                    "Learning rate adjusted: {:.5f}".format(
+                        self.opt["training_args"]["learning_rate"]
+                    )
+                )
 
     def train_epoch(self, epoch, split="train"):
         assert split in ["train"]
@@ -245,7 +264,8 @@ class Jobs:
         score = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
         self.logger.info("Evaluation accuracy in `{}` split: {:.3f}".format("test", score))
         return score
-    
+
+
 def print_config(config):
     print("**************** MODEL CONFIGURATION ****************")
     for key in sorted(config.keys()):
@@ -255,13 +275,12 @@ def print_config(config):
     print("**************** MODEL CONFIGURATION ****************")
 
 
-
 if __name__ == "__main__":
     opt = get_args()
     config = load_json_config(opt["json_config"])
     print_config(config)
     print(config.keys())
-    
+
     runner = Jobs(config)
     max_score = runner.train()
     runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))

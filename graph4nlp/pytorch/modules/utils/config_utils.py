@@ -21,6 +21,7 @@ def load_json_config(path: str):
         merged_config = OmegaConf.merge(config, updated_config)
         return OmegaConf.to_container(merged_config, resolve=True)
 
+
 def load_yaml_config(
     path: str, included_paths: Set[str] = None, nesting_level: int = 0, max_nesting_level: int = 20
 ):
@@ -127,7 +128,6 @@ def load_yaml_config(
         included_configs.append(
             load_yaml_config(each, included_paths.union([os.path.abspath(path)]), nesting_level + 1)
         )
-    
     merged_config = OmegaConf.merge(*included_configs, config)
     merged_config.pop("includes", None)
     return merged_config
