@@ -1,3 +1,5 @@
 recursive-include graph4nlp/pytorch/modules/config *.yaml
+recursive-include graph4nlp/pytorch/configs *.yaml
+
 include graph4nlp/pytorch/modules/evaluation/meteor_tool/data/paraphrase-en.gz
 include graph4nlp/pytorch/modules/evaluation/meteor_tool/meteor-1.5.jar
