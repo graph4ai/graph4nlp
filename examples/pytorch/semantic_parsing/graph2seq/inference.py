@@ -34,8 +34,9 @@ class Jobs:
             from torch.backends import cudnn
 
             cudnn.benchmark = True
-            device = torch.device("cuda" if opt["env_args"]["gpuid"] < 0 else
-                                  "cuda:%d" % opt["env_args"]["gpuid"])
+            device = torch.device(
+                "cuda" if opt["env_args"]["gpuid"] < 0 else "cuda:%d" % opt["env_args"]["gpuid"]
+            )
         else:
             print("[ Using CPU ]")
             device = torch.device("cpu")
@@ -43,11 +44,15 @@ class Jobs:
 
     def _build_model(self):
         self.model = Graph2Seq.load_checkpoint(
-            self.opt["checkpoint_args"]["checkpoint_save_path"], "best.pt").to(self.device)
+            self.opt["checkpoint_args"]["checkpoint_save_path"], "best.pt"
+        ).to(self.device)
 
         self.inference_tool = GeneratorInferenceWrapper(
-            cfg=self.opt, model=self.model, beam_size=self.opt["inference_args"]["beam_size"],
-            lower_case=True, tokenizer=word_tokenize
+            cfg=self.opt,
+            model=self.model,
+            beam_size=self.opt["inference_args"]["beam_size"],
+            lower_case=True,
+            tokenizer=word_tokenize,
         )
 
     @torch.no_grad()

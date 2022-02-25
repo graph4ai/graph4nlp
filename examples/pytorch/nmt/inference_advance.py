@@ -22,8 +22,10 @@ class NMT:
         self.opt = opt
         self.use_copy = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
         assert self.use_copy is False, print("Copy is not fit to NMT")
-        self.use_coverage = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use\
-            _coverage"]
+        self.use_coverage = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"][
+            "use\
+            _coverage"
+        ]
         self._build_device(self.opt)
         self._build_logger(self.opt["training_args"]["log_dir"])
         self._build_model()
@@ -40,8 +42,15 @@ class NMT:
             from torch.backends import cudnn
 
             cudnn.benchmark = True
-            device = torch.device("cuda" if opt["env_args"]["gpuid"] < 0 else "cuda:%d" % opt["\
-                env_args"]["gpuid"])
+            device = torch.device(
+                "cuda"
+                if opt["env_args"]["gpuid"] < 0
+                else "cuda:%d"
+                % opt[
+                    "\
+                env_args"
+                ]["gpuid"]
+            )
         else:
             print("[ Using CPU ]")
             device = torch.device("cpu")
@@ -60,26 +69,30 @@ class NMT:
 
     def _build_dataloader(self):
         dataset = IWSLT14Dataset(
-            root_dir=self.opt["model_args"]["graph_construction_args"]["\
-                graph_construction_share"]["root_dir"],
+            root_dir=self.opt["model_args"]["graph_construction_args"][
+                "\
+                graph_construction_share"
+            ]["root_dir"],
             val_split_ratio=self.opt["preprocessing_args"]["val_split_ratio"],
-            merge_strategy=self.opt["model_args"]["graph_construction_args"]["\
-                graph_construction_private"][
-                "merge_strategy"
-            ],
-            edge_strategy=self.opt["model_args"]["graph_construction_args"]["\
-                graph_construction_private"][
-                "edge_strategy"
-            ],
+            merge_strategy=self.opt["model_args"]["graph_construction_args"][
+                "\
+                graph_construction_private"
+            ]["merge_strategy"],
+            edge_strategy=self.opt["model_args"]["graph_construction_args"][
+                "\
+                graph_construction_private"
+            ]["edge_strategy"],
             seed=self.opt["env_args"]["seed"],
             word_emb_size=self.opt["preprocessing_args"]["word_emb_size"],
-            share_vocab=self.opt["model_args"]["graph_construction_args"]["\
-                graph_construction_share"]["share_vocab"],
+            share_vocab=self.opt["model_args"]["graph_construction_args"][
+                "\
+                graph_construction_share"
+            ]["share_vocab"],
             graph_construction_name=self.opt["model_args"]["graph_construction_name"],
-            topology_subdir=self.opt["model_args"]["graph_construction_args"]["\
-                graph_construction_share"][
-                "topology_subdir"
-            ],
+            topology_subdir=self.opt["model_args"]["graph_construction_args"][
+                "\
+                graph_construction_share"
+            ]["topology_subdir"],
             for_inference=True,
             reused_vocab_model=self.model.vocab_model,
         )
@@ -95,8 +108,14 @@ class NMT:
 
     def _build_model(self):
         self.model = Graph2Seq.load_checkpoint(
-            os.path.join(self.opt["checkpoint_args"]["checkpoint_save_path"], self.opt["\
-                training_args"]["name"]), "best.pth"
+            os.path.join(
+                self.opt["checkpoint_args"]["checkpoint_save_path"],
+                self.opt[
+                    "\
+                training_args"
+                ]["name"],
+            ),
+            "best.pth",
         ).to(self.device)
 
     def _build_evaluation(self):

@@ -25,8 +25,10 @@ class NMT:
         self.opt = opt
         self.use_copy = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
         assert self.use_copy is False, print("Copy is not fit to NMT")
-        self.use_coverage = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_\
-            coverage"]
+        self.use_coverage = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"][
+            "use_\
+            coverage"
+        ]
         self._build_device(self.opt)
         self._build_logger(self.opt["training_args"]["log_dir"])
         self._build_dataloader()
@@ -45,8 +47,9 @@ class NMT:
             from torch.backends import cudnn
 
             cudnn.benchmark = True
-            device = torch.device("cuda" if opt["env_args"]["gpuid"] < 0 else
-                                  "cuda:%d" % opt["env_args"]["gpuid"])
+            device = torch.device(
+                "cuda" if opt["env_args"]["gpuid"] < 0 else "cuda:%d" % opt["env_args"]["gpuid"]
+            )
         else:
             print("[ Using CPU ]")
             device = torch.device("cpu")
@@ -65,20 +68,26 @@ class NMT:
 
     def _build_dataloader(self):
         dataset = IWSLT14Dataset(
-            root_dir=self.opt["model_args"]["graph_construction_args"]["graph_construction\
-                _share"]["root_dir"],
+            root_dir=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction\
+                _share"
+            ]["root_dir"],
             val_split_ratio=self.opt["preprocessing_args"]["val_split_ratio"],
-            merge_strategy=self.opt["model_args"]["graph_construction_args"]
-            ["graph_construction_private"]["merge_strategy"],
-            edge_strategy=self.opt["model_args"]["graph_construction_args"]
-                                  ["graph_construction_private"]["edge_strategy"],
+            merge_strategy=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ]["merge_strategy"],
+            edge_strategy=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_private"
+            ]["edge_strategy"],
             seed=self.opt["env_args"]["seed"],
             word_emb_size=self.opt["preprocessing_args"]["word_emb_size"],
-            share_vocab=self.opt["model_args"]["graph_construction_args"]
-                                ["graph_construction_share"]["share_vocab"],
+            share_vocab=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["share_vocab"],
             graph_construction_name=self.opt["model_args"]["graph_construction_name"],
-            topology_subdir=self.opt["model_args"]["graph_construction_args"]
-                                    ["graph_construction_share"]["topology_subdir"]
+            topology_subdir=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["topology_subdir"],
         )
 
         self.train_dataloader = DataLoader(
@@ -105,15 +114,15 @@ class NMT:
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-        self.model = get_model(self.opt, vocab_model=self.vocab, device=self.device)\
-            .to(self.device)
+        self.model = get_model(self.opt, vocab_model=self.vocab, device=self.device).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
         self.optimizer = optim.Adam(parameters, lr=self.opt["training_args"]["learning_rate"])
         self.scheduler = WarmupCosineSchedule(
-            self.optimizer, warmup_steps=self.opt["training_args"]["warmup_steps"],
-            t_total=self.opt["training_args"]["max_steps"]
+            self.optimizer,
+            warmup_steps=self.opt["training_args"]["warmup_steps"],
+            t_total=self.opt["training_args"]["max_steps"],
         )
 
     def _build_evaluation(self):
@@ -140,8 +149,11 @@ class NMT:
                 if score >= max_score:
                     self.logger.info("Best model saved, epoch {}".format(epoch))
                     self.model.save_checkpoint(
-                        os.path.join(self.opt["checkpoint_args"]["checkpoint_save_path"],
-                                     self.opt["training_args"]["name"]), "best.pth"
+                        os.path.join(
+                            self.opt["checkpoint_args"]["checkpoint_save_path"],
+                            self.opt["training_args"]["name"],
+                        ),
+                        "best.pth",
                     )
                     self._best_epoch = epoch
                 max_score = max(max_score, score)
@@ -163,8 +175,11 @@ class NMT:
                 set_lr(self.optimizer, self.opt["training_args"]["lr_decay_rate"])
                 self.opt["training_args"]["learning_rate"] = self.opt["training_args"]
                 ["learning_rate"] * self.opt["training_args"]["lr_decay_rate"]
-                self.logger.info("Learning rate adjusted: {:.5f}".format(
-                    self.opt["training_args"]["learning_rate"]))
+                self.logger.info(
+                    "Learning rate adjusted: {:.5f}".format(
+                        self.opt["training_args"]["learning_rate"]
+                    )
+                )
 
     def train_epoch(self, epoch, split="train"):
         assert split in ["train"]
@@ -202,8 +217,9 @@ class NMT:
                 loss_collect = []
             self.optimizer.zero_grad()
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(),
-                                           self.opt["training_args"]["grad_clip"])
+            torch.nn.utils.clip_grad_norm_(
+                self.model.parameters(), self.opt["training_args"]["grad_clip"]
+            )
             self.optimizer.step()
             self.scheduler.step()
             self.writer.add_scalar(
@@ -309,6 +325,13 @@ if __name__ == "__main__":
     max_score = runner.train()
     runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
     runner.model = Graph2Seq.load_checkpoint(
-        os.path.join(config["checkpoint_args"]["checkpoint_save_path"], opt["training\
-            _args"]["name"]), "best.pth").to(runner.device)
+        os.path.join(
+            config["checkpoint_args"]["checkpoint_save_path"],
+            opt[
+                "training\
+            _args"
+            ]["name"],
+        ),
+        "best.pth",
+    ).to(runner.device)
     runner.translate()
