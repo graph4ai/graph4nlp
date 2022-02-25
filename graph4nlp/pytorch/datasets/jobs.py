@@ -145,7 +145,7 @@ class JobsDatasetForTree(Text2TreeDataset):
         root_dir,
         # topology_builder,
         topology_subdir,
-        graph_name,
+        graph_construction_name,
         static_or_dynamic="static",
         topology_builder=None,
         merge_strategy="tailhead",
@@ -173,7 +173,7 @@ class JobsDatasetForTree(Text2TreeDataset):
         ----------
         root_dir: str
             The path of dataset.
-        graph_name: str
+        graph_construction_name: str
             The name of graph construction method. E.g., "dependency".
             Note that if it is in the provided graph names (i.e., "dependency", \
                 "constituency", "ie", "node_emb", "node_emb_refine"), the following \
@@ -181,7 +181,7 @@ class JobsDatasetForTree(Text2TreeDataset):
                 1. ``topology_builder``
                 2. ``static_or_dynamic``
             If you need to customize your graph construction method, you should rename the \
-                ``graph_name`` and set the parameters above.
+                ``graph_construction_name`` and set the parameters above.
         topology_builder: GraphConstructionBase
             The graph construction class.
         topology_subdir: str
@@ -216,7 +216,7 @@ class JobsDatasetForTree(Text2TreeDataset):
             root_dir=root_dir,
             # topology_builder=topology_builder,
             topology_subdir=topology_subdir,
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             static_or_dynamic=static_or_dynamic,
             edge_strategy=edge_strategy,
             merge_strategy=merge_strategy,
