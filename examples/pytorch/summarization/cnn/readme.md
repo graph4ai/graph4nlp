@@ -14,5 +14,5 @@ Note:
 2) You can find the output files in the `out/cnn/` folder. 
 
 |  Dataset |    Model   | Graph Construction   | Evaluation | Performance |
-| -------- | ---------- | ------------ | ------ |------ |
-| CNN (30k)|  GCN bi-fuse  |     Dependency     |  ROUGE-1  | 26.4|
+| -------- | ---------- | ------------ | ------ |-------------|
+| CNN (30k)|  GCN bi-fuse  |     Dependency     |  ROUGE-1  | 29.2        |

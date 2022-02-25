@@ -1,0 +1,44 @@
+# Users can import user customized yaml files or library provided default yaml files
+includes: []
+  # - $/configs/defaults.yaml
+  # In the above example path, '$/' indicates the library directory which contains the config folder
+
+preprocessing_args:
+  top_word_vocab: 70000
+  word_emb_size: 300
+  share_vocab: True
+  min_word_freq: 1
+  dataset: "kinship"
+  preprocess: False
+  resume: False
+
+model_args:
+  model: "gcn_complex" # distmult, gcn_distmult, gcn_complex, ggnn_distmult
+  graph_initialization_name: "defaults"
+  # for kgc models
+  embedding_dim: 200
+  embedding_shape1: 20
+  hidden_drop: 0.25
+  input_drop: 0.2
+  feat_drop: 0.2
+  direction_option: "bi_sep"
+  use_bias: False
+  conve_hidden_size: 9728
+
+training_args:
+  batch_size: 128 # batch size
+  epochs: 200 # number of maximal training epochs
+  lr: 0.0005 # learning rate
+  loader_threads: 4
+  l2: 0.0
+  label_smoothing: 0.1
+
+
+checkpoint_args:
+  out_dir: "out/kgc/kinship"
+
+
+env_args:
+  seed: 1234
+  gpu: 1
+  no_cuda: false

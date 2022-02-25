@@ -63,9 +63,9 @@ def read_file(path):
 
 
 if __name__ == "__main__":
-    path = "out/cnn/gcn_bi_fuse_ie_ckpt/"
-    gt_file = "out/cnn/gcn_bi_fuse_ie_ckpt/gcn_bi_fuse_ie_ckpt_bs3_gt.txt"
-    pred_file = "out/cnn/gcn_bi_fuse_ie_ckpt/gcn_bi_fuse_ie_ckpt_bs3_pred.txt"
+    path = "out/cnn/gcn_bi_fuse_l2_ckpt/"
+    gt_file = "{}gcn_bi_fuse_l2_ckpt_bs3_gt.txt".format(path)
+    pred_file = "{}gcn_bi_fuse_l2_ckpt_bs3_pred.txt".format(path)
 
     gt_collect = read_file(gt_file)
     pred_collect = read_file(pred_file)
