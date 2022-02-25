@@ -22,7 +22,7 @@ How to run
 #### Run with following:
 
 ```python
-python examples/pytorch/semantic_parsing/graph2seq/main.py --dataset_yaml examples/pytorch/semantic_parsing/graph2seq/config/new_dependency_gcn_undirected.yaml
+python examples/pytorch/semantic_parsing/graph2seq/main.py --json_config=examples/pytorch/semantic_parsing/graph2seq/config/new_dynamic_graphsage_undirected.json
 ```
 
 #### Inference with following:

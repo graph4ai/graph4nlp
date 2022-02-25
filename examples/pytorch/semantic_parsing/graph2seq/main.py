@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from graph4nlp.pytorch.datasets.jobs import JobsDataset
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
 from args import get_args
 from build_model import get_model
@@ -17,10 +18,10 @@ class Jobs:
     def __init__(self, opt):
         super(Jobs, self).__init__()
         self.opt = opt
-        self.use_copy = self.opt["decoder_args"]["rnn_decoder_share"]["use_copy"]
-        self.use_coverage = self.opt["decoder_args"]["rnn_decoder_share"]["use_coverage"]
+        self.use_copy = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
+        self.use_coverage = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_coverage"]
         self._build_device(self.opt)
-        self._build_logger(self.opt["log_file"])
+        self._build_logger(self.opt["training_args"]["log_file"])
         self._build_dataloader()
         self._build_model()
         self._build_optimizer()
@@ -28,16 +29,16 @@ class Jobs:
         self._build_loss_function()
 
     def _build_device(self, opt):
-        seed = opt["seed"]
+        seed = opt["env_args"]["seed"]
         np.random.seed(seed)
-        if opt["use_gpu"] != 0 and torch.cuda.is_available():
+        if opt["env_args"]["use_gpu"] != 0 and torch.cuda.is_available():
             print("[ Using CUDA ]")
             torch.manual_seed(seed)
             torch.cuda.manual_seed_all(seed)
             from torch.backends import cudnn
 
             cudnn.benchmark = True
-            device = torch.device("cuda" if opt["gpu"] < 0 else "cuda:%d" % opt["gpu"])
+            device = torch.device("cuda" if opt["env_args"]["gpuid"] < 0 else "cuda:%d" % opt["env_args"]["gpuid"])
         else:
             print("[ Using CPU ]")
             device = torch.device("cpu")
@@ -53,50 +54,48 @@ class Jobs:
 
     def _build_dataloader(self):
         dataset = JobsDataset(
-            root_dir=self.opt["graph_construction_args"]["graph_construction_share"]["root_dir"],
+            root_dir=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"]["root_dir"],
             #   pretrained_word_emb_file=self.opt["pretrained_word_emb_file"],
-            pretrained_word_emb_name=self.opt["pretrained_word_emb_name"],
-            pretrained_word_emb_url=self.opt["pretrained_word_emb_url"],
-            pretrained_word_emb_cache_dir=self.opt["pretrained_word_emb_cache_dir"],
+            pretrained_word_emb_name=self.opt["preprocessing_args"]["pretrained_word_emb_name"],
+            pretrained_word_emb_url=self.opt["preprocessing_args"]["pretrained_word_emb_url"],
+            pretrained_word_emb_cache_dir=self.opt["preprocessing_args"]["pretrained_word_emb_cache_dir"],
             #   val_split_ratio=self.opt["val_split_ratio"],
-            merge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
+            merge_strategy=self.opt["model_args"]["graph_construction_args"]["graph_construction_private"][
                 "merge_strategy"
             ],
-            edge_strategy=self.opt["graph_construction_args"]["graph_construction_private"][
+            edge_strategy=self.opt["model_args"]["graph_construction_args"]["graph_construction_private"][
                 "edge_strategy"
             ],
-            seed=self.opt["seed"],
-            word_emb_size=self.opt["word_emb_size"],
-            share_vocab=self.opt["graph_construction_args"]["graph_construction_share"][
+            seed=self.opt["env_args"]["seed"],
+            word_emb_size=self.opt["preprocessing_args"]["word_emb_size"],
+            share_vocab=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
                 "share_vocab"
             ],
-            graph_name=self.opt["graph_construction_args"]["graph_construction_share"][
-                "graph_name"
-            ],
-            dynamic_init_graph_name=self.opt["graph_construction_args"][
+            graph_construction_name=self.opt["model_args"]["graph_construction_name"],
+            dynamic_init_graph_name=self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_private"
             ].get("dynamic_init_graph_type", None),
-            topology_subdir=self.opt["graph_construction_args"]["graph_construction_share"][
+            topology_subdir=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
                 "topology_subdir"
             ],
-            thread_number=self.opt["graph_construction_args"]["graph_construction_share"][
+            thread_number=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
                 "thread_number"
             ],
-            port=self.opt["graph_construction_args"]["graph_construction_share"]["port"],
+            port=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"]["port"],
         )
 
         self.train_dataloader = DataLoader(
             dataset.train,
-            batch_size=self.opt["batch_size"],
+            batch_size=self.opt["training_args"]["batch_size"],
             shuffle=True,
-            num_workers=self.opt["num_works"],
+            num_workers=self.opt["training_args"]["num_works"],
             collate_fn=dataset.collate_fn,
         )
         self.test_dataloader = DataLoader(
             dataset.test,
-            batch_size=self.opt["batch_size"],
+            batch_size=self.opt["training_args"]["batch_size"],
             shuffle=False,
-            num_workers=self.opt["num_works"],
+            num_workers=self.opt["training_args"]["num_works"],
             collate_fn=dataset.collate_fn,
         )
         self.vocab = dataset.vocab_model
@@ -106,7 +105,7 @@ class Jobs:
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
-        self.optimizer = optim.Adam(parameters, lr=self.opt["learning_rate"])
+        self.optimizer = optim.Adam(parameters, lr=self.opt["training_args"]["learning_rate"])
 
     def _build_evaluation(self):
         self.metrics = [ExpressionAccuracy()]
@@ -115,7 +114,7 @@ class Jobs:
         self.loss = Graph2SeqLoss(
             ignore_index=self.vocab.out_word_vocab.PAD,
             use_coverage=self.use_coverage,
-            coverage_weight=0.3,
+            coverage_weight=self.opt["training_args"]["coverage_weight"],
         )
 
     def train(self):
@@ -129,7 +128,7 @@ class Jobs:
                 score = self.evaluate(split="test")
                 if score >= max_score:
                     self.logger.info("Best model saved, epoch {}".format(epoch))
-                    self.model.save_checkpoint(self.opt["checkpoint_save_path"], "best.pt")
+                    self.model.save_checkpoint(self.opt["checkpoint_args"]["checkpoint_save_path"], "best.pt")
                     self._best_epoch = epoch
                 max_score = max(max_score, score)
             if epoch >= 30 and self._stop_condition(epoch):
@@ -144,12 +143,12 @@ class Jobs:
             for group in optimizer.param_groups:
                 group["lr"] = group["lr"] * decay_factor
 
-        epoch_diff = epoch - self.opt["lr_start_decay_epoch"]
-        if epoch_diff >= 0 and epoch_diff % self.opt["lr_decay_per_epoch"] == 0:
-            if self.opt["learning_rate"] > self.opt["min_lr"]:
-                set_lr(self.optimizer, self.opt["lr_decay_rate"])
-                self.opt["learning_rate"] = self.opt["learning_rate"] * self.opt["lr_decay_rate"]
-                self.logger.info("Learning rate adjusted: {:.5f}".format(self.opt["learning_rate"]))
+        epoch_diff = epoch - self.opt["training_args"]["lr_start_decay_epoch"]
+        if epoch_diff >= 0 and epoch_diff % self.opt["training_args"]["lr_decay_per_epoch"] == 0:
+            if self.opt["training_args"]["learning_rate"] > self.opt["training_args"]["min_lr"]:
+                set_lr(self.optimizer, self.opt["training_args"]["lr_decay_rate"])
+                self.opt["training_args"]["learning_rate"] = self.opt["training_args"]["learning_rate"] * self.opt["training_args"]["lr_decay_rate"]
+                self.logger.info("Learning rate adjusted: {:.5f}".format(self.opt["training_args"]["learning_rate"]))
 
     def train_epoch(self, epoch, split="train"):
         assert split in ["train"]
@@ -175,7 +174,7 @@ class Jobs:
                 coverage_vectors=coverage_vectors,
             )
             loss_collect.append(loss.item())
-            if step % self.opt["loss_display_step"] == 0 and step != 0:
+            if step % self.opt["training_args"]["loss_display_step"] == 0 and step != 0:
                 self.logger.info(
                     "Epoch {}: [{} / {}] loss: {:.3f}".format(
                         epoch, step, step_all_train, np.mean(loss_collect)
@@ -246,11 +245,24 @@ class Jobs:
         score = self.metrics[0].calculate_scores(ground_truth=gt_collect, predict=pred_collect)
         self.logger.info("Evaluation accuracy in `{}` split: {:.3f}".format("test", score))
         return score
+    
+def print_config(config):
+    print("**************** MODEL CONFIGURATION ****************")
+    for key in sorted(config.keys()):
+        val = config[key]
+        keystr = "{}".format(key) + (" " * (24 - len(key)))
+        print("{} -->  {}".format(keystr, val))
+    print("**************** MODEL CONFIGURATION ****************")
+
 
 
 if __name__ == "__main__":
     opt = get_args()
-    runner = Jobs(opt)
+    config = load_json_config(opt["json_config"])
+    print_config(config)
+    print(config.keys())
+    
+    runner = Jobs(config)
     max_score = runner.train()
     runner.logger.info("Train finish, best val score: {:.3f}".format(max_score))
     runner.translate()
