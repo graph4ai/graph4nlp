@@ -93,7 +93,7 @@ class ModelHandler:
         self.logger.write("Test size: {}".format(self.num_test))
 
     def _build_model(self):
-        self.model = torch.load(
+        self.model = SumModel.load_checkpoint(
             os.path.join(self.config["checkpoint_args"]["out_dir"], Constants._SAVED_WEIGHTS_FILE)
         ).to(self.config["env_args"]["device"])
 

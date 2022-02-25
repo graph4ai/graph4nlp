@@ -46,11 +46,10 @@ class ModelHandler:
         self.device = device
 
     def _build_model(self):
-        # self.model = SumModel.load_checkpoint(self.stopper.save_model_path)
-
-        self.model = torch.load(
+        self.model = SumModel.load_checkpoint(
             os.path.join(self.config["checkpoint_args"]["out_dir"], Constants._SAVED_WEIGHTS_FILE)
         ).to(self.device)
+
         self.model.vocab_model = self.model.vocab
 
         self.inference_tool = GeneratorInferenceWrapper(
@@ -70,7 +69,7 @@ class ModelHandler:
             raw_contents=raw_contents,
             batch_size=batch_size,
         )
-        print(ret)
+        return ret
 
 
 ################################################################################

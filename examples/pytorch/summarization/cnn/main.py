@@ -13,7 +13,6 @@ from torch.utils.data import DataLoader
 from graph4nlp.pytorch.datasets.cnn import CNNDataset
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
-# from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
 from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
     WordEmbedding,
