@@ -8,22 +8,36 @@ preprocessing_args:
   word_emb_size: 300
   share_vocab: True
   min_word_freq: 1
-  dataset: "kinship"
+  dataset: "WN18RR"
   preprocess: False
   resume: False
 
 model_args:
-  model: "gcn_complex" # distmult, gcn_distmult, gcn_complex, ggnn_distmult
+  model: "ggnn_distmult" # conve, complex, distmult, gcn_distmult, gcn_complex, ggnn_distmult
   graph_initialization_name: "defaults"
   # for kgc models
   embedding_dim: 200
-  embedding_shape1: 20
+  embedding_shape1: 20 # for conve
+  conve_hidden_size: 9728 # for conve
+  use_bias: False # for conve
   hidden_drop: 0.25
   input_drop: 0.2
   feat_drop: 0.2
-  direction_option: "bi_sep"
-  use_bias: False
-  conve_hidden_size: 9728
+
+  graph_construction_args:
+    graph_construction_private:
+      dynamic_init_graph_name: null
+      merge_strategy: null
+      edge_strategy: null
+
+    graph_construction_share:
+      timeout: null
+      port: null
+
+  graph_embedding_args:
+    graph_embedding_share:
+      num_layers: 2
+      direction_option: "bi_sep"
 
 training_args:
   batch_size: 128 # batch size
@@ -35,7 +49,7 @@ training_args:
 
 
 checkpoint_args:
-  out_dir: "out/kgc/kinship"
+  out_dir: "out/kgc/WN18RR"
 
 
 env_args:

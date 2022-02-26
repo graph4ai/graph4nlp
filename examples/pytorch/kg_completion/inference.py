@@ -1,5 +1,4 @@
 import argparse
-import os
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -9,15 +8,9 @@ from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 from graph4nlp.pytorch.inference_wrapper.classifier_inference_wrapper import (
     ClassifierInferenceWrapper,
 )
-from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
 from main import KGC
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-
-np.set_printoptions(precision=3)
-
-cudnn.benchmark = True
 
 
 def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=None):
@@ -122,33 +115,42 @@ def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=No
 
 
 def main(cfg, model_path):
+    np.random.seed(config["env_args"]["seed"])
+    torch.manual_seed(config["env_args"]["seed"])
+
+    if not config["env_args"]["no_cuda"] and torch.cuda.is_available():
+        print("[ Using CUDA ]")
+        config["env_args"]["device"] = torch.device(
+            "cuda" if config["env_args"]["gpu"] < 0 else "cuda:%d" % config["env_args"]["gpu"]
+        )
+        cudnn.benchmark = True
+        torch.cuda.manual_seed(config["env_args"]["seed"])
+    else:
+        config["env_args"]["device"] = torch.device("cpu")
+
+    print("\n" + config["checkpoint_args"]["out_dir"])
+
     dataset = KinshipDataset(
-        root_dir="examples/pytorch/kg_completion/data/{}".format(cfg["dataset"]),
+        root_dir="examples/pytorch/kg_completion/data/{}".format(
+            cfg["preprocessing_args"]["dataset"]
+        ),
         topology_subdir="kgc",
     )
-    # data = []
-    # rows = []
-    # columns = []
+
     num_entities = len(dataset.vocab_model.in_word_vocab)
     num_relations = len(dataset.vocab_model.out_word_vocab)
 
     graph_path = "examples/pytorch/kg_completion/data/{}/processed/kgc/" "KG_graph.pt".format(
-        cfg["dataset"]
+        cfg["preprocessing_args"]["dataset"]
     )
-    KG_graph = torch.load(graph_path)
-
-    if cfg["cuda"] is True:
-        KG_graph = KG_graph.to("cuda")
-    else:
-        KG_graph = KG_graph.to("cpu")
-
-    model = KGC(cfg, num_entities, num_relations)
+    KG_graph = torch.load(graph_path).to(cfg["env_args"]["device"])
+    model = KGC(cfg, num_entities, num_relations).to(cfg["env_args"]["device"])
 
     model_params = torch.load(model_path)
     model.load_state_dict(model_params)
     model.eval()
 
-    model.graph_name = None
+    model.graph_construction_name = None
     model.vocab_model = dataset.vocab_model
 
     inference_tool = ClassifierInferenceWrapper(
@@ -158,9 +160,6 @@ def main(cfg, model_path):
         data_item=KGCompletionDataItem,
         lower_case=True,
     )
-
-    if cfg["cuda"] is True:
-        model.cuda()
 
     # for kinship
     raw_contents = [
@@ -182,34 +181,46 @@ def main(cfg, model_path):
     #  12640607 12648045 12370174 12400720 12400489 12625003 12771192
     #  12399132 12633638 12648196 12744387 12636224 12744850 12761284
     #  12373100 12667406 12638218 12742290 12745386 12743352"}']
-    inference_tool.predict(raw_contents=raw_contents, batch_size=cfg["test_batch_size"])
+    inference_tool.predict(
+        raw_contents=raw_contents, batch_size=cfg["training_args"]["batch_size"], iskgc=True
+    )
 
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-task_config", "--task_config", required=True, type=str, help="path to the config file"
+        "-json_config",
+        "--json_config",
+        required=True,
+        type=str,
+        help="path to the json config file",
     )
-    parser.add_argument("--grid_search", action="store_true", help="flag: grid search")
     args = vars(parser.parse_args())
-
     return args
+
+
+def print_config(config):
+    print("**************** MODEL CONFIGURATION ****************")
+    for key in sorted(config.keys()):
+        val = config[key]
+        keystr = "{}".format(key) + (" " * (24 - len(key)))
+        print("{} -->  {}".format(keystr, val))
+    print("**************** MODEL CONFIGURATION ****************")
 
 
 if __name__ == "__main__":
     cfg = get_args()
-    task_args = get_yaml_config(cfg["task_config"])
+    config = load_json_config(cfg["json_config"])
+    print_config(config)
 
-    task_args["cuda"] = True
-
-    model_name = "{2}_{0}_{1}".format(
-        task_args["input_drop"], task_args["hidden_drop"], task_args["model"]
+    model_name = "{0}_{1}_{2}_{3}".format(
+        config["model_args"]["model"],
+        config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["direction_option"],
+        config["model_args"]["input_drop"],
+        config["model_args"]["hidden_drop"],
     )
     model_path = "examples/pytorch/kg_completion/saved_models/{0}_{1}.model".format(
-        task_args["dataset"], model_name
+        config["preprocessing_args"]["dataset"], model_name
     )
 
-    print(model_path)
-
-    torch.manual_seed(task_args["seed"])
-    main(task_args, model_path)
+    main(config, model_path)

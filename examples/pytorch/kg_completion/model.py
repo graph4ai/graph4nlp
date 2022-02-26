@@ -12,11 +12,19 @@ class Complex(torch.nn.Module):
     def __init__(self, args, num_entities, num_relations):
         super(Complex, self).__init__()
         self.num_entities = num_entities
-        self.emb_e_real = torch.nn.Embedding(num_entities, args.embedding_dim, padding_idx=0)
-        self.emb_e_img = torch.nn.Embedding(num_entities, args.embedding_dim, padding_idx=0)
-        self.emb_rel_real = torch.nn.Embedding(num_relations, args.embedding_dim, padding_idx=0)
-        self.emb_rel_img = torch.nn.Embedding(num_relations, args.embedding_dim, padding_idx=0)
-        self.inp_drop = torch.nn.Dropout(args.input_drop)
+        self.emb_e_real = torch.nn.Embedding(
+            num_entities, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.emb_e_img = torch.nn.Embedding(
+            num_entities, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.emb_rel_real = torch.nn.Embedding(
+            num_relations, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.emb_rel_img = torch.nn.Embedding(
+            num_relations, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.inp_drop = torch.nn.Dropout(args.model_args["input_drop"])
         self.loss = torch.nn.BCELoss()
 
     def init(self):
@@ -59,9 +67,13 @@ class Complex(torch.nn.Module):
 class Distmult(torch.nn.Module):
     def __init__(self, args, num_entities, num_relations):
         super(Distmult, self).__init__()
-        self.emb_e = torch.nn.Embedding(num_entities, args.embedding_dim, padding_idx=0)
-        self.emb_rel = torch.nn.Embedding(num_relations, args.embedding_dim, padding_idx=0)
-        self.inp_drop = torch.nn.Dropout(args.input_drop)
+        self.emb_e = torch.nn.Embedding(
+            num_entities, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.emb_rel = torch.nn.Embedding(
+            num_relations, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.inp_drop = torch.nn.Dropout(args.model_args["input_drop"])
         self.loss = torch.nn.BCELoss()
 
     def init(self):
@@ -86,21 +98,27 @@ class Distmult(torch.nn.Module):
 class ConvE(torch.nn.Module):
     def __init__(self, args, num_entities, num_relations):
         super(ConvE, self).__init__()
-        self.emb_e = torch.nn.Embedding(num_entities, args.embedding_dim, padding_idx=0)
-        self.emb_rel = torch.nn.Embedding(num_relations, args.embedding_dim, padding_idx=0)
-        self.inp_drop = torch.nn.Dropout(args.input_drop)
-        self.hidden_drop = torch.nn.Dropout(args.hidden_drop)
-        self.feature_map_drop = torch.nn.Dropout2d(args.feat_drop)
+        self.emb_e = torch.nn.Embedding(
+            num_entities, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.emb_rel = torch.nn.Embedding(
+            num_relations, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.inp_drop = torch.nn.Dropout(args.model_args["input_drop"])
+        self.hidden_drop = torch.nn.Dropout(args.model_args["hidden_drop"])
+        self.feature_map_drop = torch.nn.Dropout2d(args.model_args["feat_drop"])
         self.loss = torch.nn.BCELoss()
-        self.emb_dim1 = args.embedding_shape1
-        self.emb_dim2 = args.embedding_dim // self.emb_dim1
+        self.emb_dim1 = args.model_args["embedding_shape1"]
+        self.emb_dim2 = args.model_args["embedding_dim"] // self.emb_dim1
 
-        self.conv1 = torch.nn.Conv2d(1, 32, (3, 3), 1, 0, bias=args.use_bias)
+        self.conv1 = torch.nn.Conv2d(1, 32, (3, 3), 1, 0, bias=args.model_args["use_bias"])
         self.bn0 = torch.nn.BatchNorm2d(1)
         self.bn1 = torch.nn.BatchNorm2d(32)
-        self.bn2 = torch.nn.BatchNorm1d(args.embedding_dim)
+        self.bn2 = torch.nn.BatchNorm1d(args.model_args["embedding_dim"])
         self.register_parameter("b", Parameter(torch.zeros(num_entities)))
-        self.fc = torch.nn.Linear(args.hidden_size, args.embedding_dim)
+        self.fc = torch.nn.Linear(
+            args.model_args["conve_hidden_size"], args.model_args["embedding_dim"]
+        )
         print(num_entities, num_relations)
 
     def init(self):
@@ -132,26 +150,34 @@ class ConvE(torch.nn.Module):
 
 
 class GGNNDistMult(torch.nn.Module):
-    def __init__(self, args, num_entities, num_relations, num_layers=2):
+    def __init__(self, args, num_entities, num_relations):
         super(GGNNDistMult, self).__init__()
-        self.emb_e = torch.nn.Embedding(num_entities, args.embedding_dim, padding_idx=0)
-        self.emb_rel = torch.nn.Embedding(num_relations, args.embedding_dim, padding_idx=0)
+        self.emb_e = torch.nn.Embedding(
+            num_entities, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.emb_rel = torch.nn.Embedding(
+            num_relations, args.model_args["embedding_dim"], padding_idx=0
+        )
         self.num_entities = num_entities
         self.num_relations = num_relations
 
-        self.num_layers = num_layers
+        self.num_layers = args.model_args["graph_embedding_args"]["graph_embedding_share"][
+            "num_layers"
+        ]
+        self.direction_option = args.model_args["graph_embedding_args"]["graph_embedding_share"][
+            "direction_option"
+        ]
         self.gnn = GGNN(
             self.num_layers,
-            args.embedding_dim,
-            args.embedding_dim,
-            args.embedding_dim,
-            feat_drop=args.input_drop,
-            direction_option=args.direction_option,
+            args.model_args["embedding_dim"],
+            args.model_args["embedding_dim"],
+            args.model_args["embedding_dim"],
+            feat_drop=args.model_args["feat_drop"],
+            direction_option=self.direction_option,
         )
-        self.direction_option = args.direction_option
 
         self.loss = torch.nn.BCELoss()
-        self.distmult = DistMult(args.input_drop, loss_name="BCELoss")
+        self.distmult = DistMult(args.model_args["input_drop"], loss_name="BCELoss")
 
     def init(self):
         xavier_normal_(self.emb_e.weight.data)
@@ -175,26 +201,34 @@ class GGNNDistMult(torch.nn.Module):
 
 
 class GCNDistMult(torch.nn.Module):
-    def __init__(self, args, num_entities, num_relations, num_layers=2):
+    def __init__(self, args, num_entities, num_relations):
         super(GCNDistMult, self).__init__()
-        self.emb_e = torch.nn.Embedding(num_entities, args.embedding_dim, padding_idx=0)
-        self.emb_rel = torch.nn.Embedding(num_relations, args.embedding_dim, padding_idx=0)
+        self.emb_e = torch.nn.Embedding(
+            num_entities, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.emb_rel = torch.nn.Embedding(
+            num_relations, args.model_args["embedding_dim"], padding_idx=0
+        )
 
         self.num_entities = num_entities
         self.num_relations = num_relations
 
-        self.num_layers = num_layers
+        self.num_layers = args.model_args["graph_embedding_args"]["graph_embedding_share"][
+            "num_layers"
+        ]
+        self.direction_option = args.model_args["graph_embedding_args"]["graph_embedding_share"][
+            "direction_option"
+        ]
         self.gnn = GCN(
             self.num_layers,
-            args.embedding_dim,
-            args.embedding_dim,
-            args.embedding_dim,
-            args.direction_option,
-            feat_drop=args.input_drop,
+            args.model_args["embedding_dim"],
+            args.model_args["embedding_dim"],
+            args.model_args["embedding_dim"],
+            self.direction_option,
+            feat_drop=args.model_args["input_drop"],
         )
 
-        self.direction_option = args.direction_option
-        self.distmult = DistMult(args.input_drop, loss_name="BCELoss")
+        self.distmult = DistMult(args.model_args["input_drop"], loss_name="BCELoss")
         self.loss = torch.nn.BCELoss()
         # self.loss = KGLoss('SigmoidLoss')
 
@@ -222,28 +256,40 @@ class GCNDistMult(torch.nn.Module):
 class GCNComplex(torch.nn.Module):
     def __init__(self, args, num_entities, num_relations, num_layers=2):
         super(GCNComplex, self).__init__()
-        self.emb_e_real = torch.nn.Embedding(num_entities, args.embedding_dim, padding_idx=0)
-        self.emb_e_img = torch.nn.Embedding(num_entities, args.embedding_dim, padding_idx=0)
-        self.emb_rel_real = torch.nn.Embedding(num_relations, args.embedding_dim, padding_idx=0)
-        self.emb_rel_img = torch.nn.Embedding(num_relations, args.embedding_dim, padding_idx=0)
-        self.inp_drop = torch.nn.Dropout(args.input_drop)
+        self.emb_e_real = torch.nn.Embedding(
+            num_entities, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.emb_e_img = torch.nn.Embedding(
+            num_entities, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.emb_rel_real = torch.nn.Embedding(
+            num_relations, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.emb_rel_img = torch.nn.Embedding(
+            num_relations, args.model_args["embedding_dim"], padding_idx=0
+        )
+        self.inp_drop = torch.nn.Dropout(args.model_args["input_drop"])
 
         self.num_entities = num_entities
         self.num_relations = num_relations
 
-        self.num_layers = num_layers
+        self.num_layers = args.model_args["graph_embedding_args"]["graph_embedding_share"][
+            "num_layers"
+        ]
+        self.direction_option = args.model_args["graph_embedding_args"]["graph_embedding_share"][
+            "direction_option"
+        ]
         self.gnn = GCN(
             self.num_layers,
-            args.embedding_dim,
-            args.embedding_dim,
-            args.embedding_dim,
-            args.direction_option,
-            feat_drop=args.input_drop,
+            args.model_args["embedding_dim"],
+            args.model_args["embedding_dim"],
+            args.model_args["embedding_dim"],
+            self.direction_option,
+            feat_drop=args.model_args["feat_drop"],
         )
 
-        self.direction_option = args.direction_option
         self.loss = torch.nn.BCELoss()
-        self.complex = ComplEx(args.input_drop)
+        self.complex = ComplEx(args.model_args["input_drop"])
 
     def init(self):
         xavier_normal_(self.emb_e_real.weight.data)

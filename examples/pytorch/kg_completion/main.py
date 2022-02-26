@@ -1,5 +1,5 @@
 import argparse
-import os
+import copy
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -7,16 +7,10 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset
-from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.logger import Logger
 
 from .model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
-np.set_printoptions(precision=3)
-
-cudnn.benchmark = True
 
 
 class KGC(nn.Module):
@@ -25,19 +19,19 @@ class KGC(nn.Module):
         self.cfg = cfg
         self.num_entities = num_entities
         self.num_relations = num_relations
-        if cfg["model"] is None:
+        if cfg["model_args"]["model"] is None:
             model = ConvE(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "conve":
+        elif cfg["model_args"]["model"] == "conve":
             model = ConvE(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "distmult":
+        elif cfg["model_args"]["model"] == "distmult":
             model = Distmult(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "complex":
+        elif cfg["model_args"]["model"] == "complex":
             model = Complex(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "ggnn_distmult":
+        elif cfg["model_args"]["model"] == "ggnn_distmult":
             model = GGNNDistMult(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "gcn_distmult":
+        elif cfg["model_args"]["model"] == "gcn_distmult":
             model = GCNDistMult(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "gcn_complex":
+        elif cfg["model_args"]["model"] == "gcn_complex":
             model = GCNComplex(argparse.Namespace(**cfg), num_entities, num_relations)
         else:
             raise Exception("Unknown model type!")
@@ -54,11 +48,8 @@ class KGC(nn.Module):
         return self.model.loss(pred, e2_multi)
 
     def inference_forward(self, collate_data, KG_graph):
-        e1_tensor = collate_data["e1_tensor"]
-        rel_tensor = collate_data["rel_tensor"]
-        if self.cfg["cuda"]:
-            e1_tensor = e1_tensor.to("cuda")
-            rel_tensor = rel_tensor.to("cuda")
+        e1_tensor = collate_data["e1_tensor"].to(self.cfg["env_args"]["device"])
+        rel_tensor = collate_data["rel_tensor"].to(self.cfg["env_args"]["device"])
         return self.model(e1_tensor, rel_tensor, KG_graph)
 
     def post_process(self, logits, e2=None):
@@ -95,19 +86,12 @@ def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=No
         hits.append([])
 
     for i, str2var in enumerate(dev_rank_batcher):
-        e1 = str2var["e1_tensor"]
-        e2 = str2var["e2_tensor"]
-        rel = str2var["rel_tensor"]
-        rel_reverse = str2var["rel_eval_tensor"]
-        e2_multi1 = str2var["e2_multi1"].float()
-        e2_multi2 = str2var["e2_multi2"].float()
-        if cfg["cuda"]:
-            e1 = e1.to("cuda")
-            e2 = e2.to("cuda")
-            rel = rel.to("cuda")
-            rel_reverse = rel_reverse.to("cuda")
-            e2_multi1 = e2_multi1.to("cuda")
-            e2_multi2 = e2_multi2.to("cuda")
+        e1 = str2var["e1_tensor"].to(cfg["env_args"]["device"])
+        e2 = str2var["e2_tensor"].to(cfg["env_args"]["device"])
+        rel = str2var["rel_tensor"].to(cfg["env_args"]["device"])
+        rel_reverse = str2var["rel_eval_tensor"].to(cfg["env_args"]["device"])
+        e2_multi1 = str2var["e2_multi1"].float().to(cfg["env_args"]["device"])
+        e2_multi2 = str2var["e2_multi2"].float().to(cfg["env_args"]["device"])
 
         pred1 = model(e1, rel, kg_graph)
         pred2 = model(e2, rel_reverse, kg_graph)
@@ -191,39 +175,61 @@ def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=No
 
 
 def main(cfg, model_path):
+    np.random.seed(cfg["env_args"]["seed"])
+    torch.manual_seed(cfg["env_args"]["seed"])
+
+    if not cfg["env_args"]["no_cuda"] and torch.cuda.is_available():
+        print("[ Using CUDA ]")
+        cfg["env_args"]["device"] = torch.device(
+            "cuda" if cfg["env_args"]["gpu"] < 0 else "cuda:%d" % cfg["env_args"]["gpu"]
+        )
+        cudnn.benchmark = True
+        torch.cuda.manual_seed(cfg["env_args"]["seed"])
+    else:
+        cfg["env_args"]["device"] = torch.device("cpu")
+
+    print("\n" + cfg["checkpoint_args"]["out_dir"])
+
     dataset = KinshipDataset(
-        root_dir="examples/pytorch/kg_completion/data/{}".format(cfg["dataset"]),
+        root_dir="examples/pytorch/kg_completion/data/{}".format(
+            cfg["preprocessing_args"]["dataset"]
+        ),
         topology_subdir="kgc",
     )
 
-    cfg["out_dir"] = cfg["out_dir"] + "_{}_{}".format(cfg["model"], cfg["direction_option"])
+    cfg["checkpoint_args"]["out_dir"] = cfg["checkpoint_args"]["out_dir"] + "_{}_{}".format(
+        cfg["model_args"]["model"],
+        cfg["model_args"]["graph_embedding_args"]["graph_embedding_share"]["direction_option"],
+    )
 
+    log_config = copy.deepcopy(cfg)
+    del log_config["env_args"]["device"]
     logger = Logger(
-        cfg["out_dir"],
-        config={k: v for k, v in cfg.items() if k != "device"},
+        cfg["checkpoint_args"]["out_dir"],
+        config=log_config,
         overwrite=True,
     )
-    logger.write(cfg["out_dir"])
+    logger.write(cfg["checkpoint_args"]["out_dir"])
 
     train_dataloader = DataLoader(
         dataset.train,
-        batch_size=cfg["batch_size"],
+        batch_size=cfg["training_args"]["batch_size"],
         shuffle=True,
-        num_workers=cfg["loader_threads"],
+        num_workers=cfg["training_args"]["loader_threads"],
         collate_fn=dataset.collate_fn,
     )
     val_dataloader = DataLoader(
         dataset.val,
-        batch_size=cfg["batch_size"],
+        batch_size=cfg["training_args"]["batch_size"],
         shuffle=False,
-        num_workers=cfg["loader_threads"],
+        num_workers=cfg["training_args"]["loader_threads"],
         collate_fn=dataset.collate_fn,
     )
     test_dataloader = DataLoader(
         dataset.test,
-        batch_size=cfg["batch_size"],
+        batch_size=cfg["training_args"]["batch_size"],
         shuffle=False,
-        num_workers=cfg["loader_threads"],
+        num_workers=cfg["training_args"]["loader_threads"],
         collate_fn=dataset.collate_fn,
     )
 
@@ -233,7 +239,7 @@ def main(cfg, model_path):
     num_entities = len(dataset.vocab_model.in_word_vocab)
     num_relations = len(dataset.vocab_model.out_word_vocab)
 
-    if cfg["preprocess"]:
+    if cfg["preprocessing_args"]["preprocess"]:
         for i, str2var in enumerate(train_dataloader):
             print("batch number:", i)
             for j in range(str2var["e1"].shape[0]):
@@ -257,26 +263,19 @@ def main(cfg, model_path):
         torch.save(
             KG_graph,
             "examples/pytorch/kg_completion/data/{}/processed/kgc/KG_graph.pt".format(
-                cfg["dataset"]
+                cfg["preprocessing_args"]["dataset"]
             ),
         )
     else:
         graph_path = "examples/pytorch/kg_completion/data/{}/processed/kgc/" "KG_graph.pt".format(
-            cfg["dataset"]
+            cfg["preprocessing_args"]["dataset"]
         )
         KG_graph = torch.load(graph_path)
 
-    if cfg["cuda"] is True:
-        KG_graph = KG_graph.to("cuda")
-    else:
-        KG_graph = KG_graph.to("cpu")
+    KG_graph = KG_graph.to(cfg["env_args"]["device"])
+    model = KGC(cfg, num_entities, num_relations).to(cfg["env_args"]["device"])
 
-    model = KGC(cfg, num_entities, num_relations)
-
-    if cfg["cuda"] is True:
-        model.to("cuda")
-
-    if cfg["resume"]:
+    if cfg["preprocessing_args"]["resume"]:
         model_params = torch.load(model_path)
         print(model)
         total_param_size = []
@@ -308,27 +307,22 @@ def main(cfg, model_path):
     else:
         model.init()
 
-    # total_param_size = []
-    # params = [value.numel() for value in model.parameters()]
-    # print(params)
-    # print(np.sum(params))
-
     best_mrr = 0
 
-    opt = torch.optim.Adam(model.parameters(), lr=cfg["lr"], weight_decay=cfg["l2"])
-    for epoch in range(cfg["epochs"]):
+    opt = torch.optim.Adam(
+        model.parameters(), lr=cfg["training_args"]["lr"], weight_decay=cfg["training_args"]["l2"]
+    )
+    for epoch in range(cfg["training_args"]["epochs"]):
         model.train()
         for str2var in train_dataloader:
             opt.zero_grad()
-            e1_tensor = str2var["e1_tensor"]
-            rel_tensor = str2var["rel_tensor"]
-            e2_multi = str2var["e2_multi1_binary"].float()
-            if cfg["cuda"]:
-                e1_tensor = e1_tensor.to("cuda")
-                rel_tensor = rel_tensor.to("cuda")
-                e2_multi = e2_multi.to("cuda")
+            e1_tensor = str2var["e1_tensor"].to(cfg["env_args"]["device"])
+            rel_tensor = str2var["rel_tensor"].to(cfg["env_args"]["device"])
+            e2_multi = str2var["e2_multi1_binary"].float().to(cfg["env_args"]["device"])
             # label smoothing
-            e2_multi = ((1.0 - cfg["label_smoothing"]) * e2_multi) + (1.0 / e2_multi.size(1))
+            e2_multi = ((1.0 - cfg["training_args"]["label_smoothing"]) * e2_multi) + (
+                1.0 / e2_multi.size(1)
+            )
 
             pred = model(e1_tensor, rel_tensor, KG_graph)
             loss = model.loss(pred, e2_multi)
@@ -369,30 +363,38 @@ def main(cfg, model_path):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-task_config", "--task_config", required=True, type=str, help="path to the config file"
+        "-json_config",
+        "--json_config",
+        required=True,
+        type=str,
+        help="path to the json config file",
     )
-    parser.add_argument("--grid_search", action="store_true", help="flag: grid search")
     args = vars(parser.parse_args())
-
     return args
 
 
+def print_config(config):
+    print("**************** MODEL CONFIGURATION ****************")
+    for key in sorted(config.keys()):
+        val = config[key]
+        keystr = "{}".format(key) + (" " * (24 - len(key)))
+        print("{} -->  {}".format(keystr, val))
+    print("**************** MODEL CONFIGURATION ****************")
+
+
 if __name__ == "__main__":
-
     cfg = get_args()
-    task_args = get_yaml_config(cfg["task_config"])
+    config = load_json_config(cfg["json_config"])
+    print_config(config)
 
-    task_args["cuda"] = True
-
-    model_name = "{2}_{3}_{0}_{1}".format(
-        task_args["input_drop"],
-        task_args["hidden_drop"],
-        task_args["model"],
-        task_args["direction_option"],
+    model_name = "{0}_{1}_{2}_{3}".format(
+        config["model_args"]["model"],
+        config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["direction_option"],
+        config["model_args"]["input_drop"],
+        config["model_args"]["hidden_drop"],
     )
     model_path = "examples/pytorch/kg_completion/saved_models/{0}_{1}.model".format(
-        task_args["dataset"], model_name
+        config["preprocessing_args"]["dataset"], model_name
     )
 
-    torch.manual_seed(task_args["seed"])
-    main(task_args, model_path)
+    main(config, model_path)
