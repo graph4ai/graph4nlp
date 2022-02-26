@@ -460,7 +460,7 @@ the edge weights represented by the value of the matrix entries.</p>
 
 <dl class="method">
 <dt id="graph4nlp.data.data.GraphData.from_scipy_sparse_matrix">
-<code class="sig-name descname">from_scipy_sparse_matrix</code><span class="sig-paren">(</span><em class="sig-param">adj: scipy.sparse.coo.coo_matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.data.GraphData.from_scipy_sparse_matrix" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">from_scipy_sparse_matrix</code><span class="sig-paren">(</span><em class="sig-param">adj: scipy.sparse._coo.coo_matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.data.GraphData.from_scipy_sparse_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Construct a graph from a sparse adjacency matrix with the edge weights
 represented by the value of the matrix entries.
 :param adj: The object representing the sparse adjacency matrix.
@@ -981,14 +981,14 @@ subset (e.g. train, val and test).</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.Text2TextDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TextDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_construction_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TextDataset" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>The dataset for text-to-text applications.</p>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>graph_name</strong> (<em>str</em>) – <p>The name of graph construction method. E.g., “dependency”.
+<li><p><strong>graph_construction_name</strong> (<em>str</em>) – <p>The name of graph construction method. E.g., “dependency”.
 Note that if it is in the provided graph names (i.e., “dependency”,             “constituency”, “ie”, “node_emb”, “node_emb_refine”), the following             parameters are set by default and users can’t modify them:</p>
 <blockquote>
 <div><ol class="arabic simple">
@@ -996,7 +996,7 @@ Note that if it is in the provided graph names (i.e., “dependency”,         
 <li><p><code class="docutils literal notranslate"><span class="pre">static_or_dynamic</span></code></p></li>
 </ol>
 </div></blockquote>
-<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_construction_name</span></code> and set the parameters above.</p>
 </p></li>
 <li><p><strong>root_dir</strong> (<em>str</em><em>, </em><em>default=None</em>) – The path of dataset.</p></li>
 <li><p><strong>topology_builder</strong> (<em>Union</em><em>[</em><em>StaticGraphConstructionBase</em><em>, </em><em>DynamicGraphConstructionBase</em><em>]</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
@@ -1009,7 +1009,7 @@ Note that if it is in the provided graph names (i.e., “line”, “dependency�
 <li><p><code class="docutils literal notranslate"><span class="pre">dynamic_init_topology_builder</span></code></p></li>
 </ol>
 </div></blockquote>
-<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_construction_name</span></code> and set the parameters above.</p>
 </p></li>
 <li><p><strong>dynamic_init_topology_builder</strong> (<em>StaticGraphConstructionBase</em>) – The graph construction class.</p></li>
 <li><p><strong>dynamic_init_topology_aux_args</strong> (<em>None</em><em>,</em>) – TBD.</p></li>
@@ -1123,7 +1123,7 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.Text2TreeDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2TreeDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TreeDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2TreeDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_construction_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2TreeDataset" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1238,9 +1238,9 @@ language ( ANS , languageid0 )”</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.Text2LabelDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2LabelDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2LabelDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2LabelDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_construction_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.Text2LabelDataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>The dataset for text-to-label applications.
-:param graph_name: The name of graph construction method. E.g., “dependency”.</p>
+:param graph_construction_name: The name of graph construction method. E.g., “dependency”.</p>
 <blockquote>
 <div><dl class="simple">
 <dt>Note that if it is in the provided graph names (i.e., “dependency”,             “constituency”, “ie”, “node_emb”, “node_emb_refine”), the following             parameters are set by default and users can’t modify them:</dt><dd><ol class="arabic simple">
@@ -1249,7 +1249,7 @@ language ( ANS , languageid0 )”</p>
 </ol>
 </dd>
 </dl>
-<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_construction_name</span></code> and set the parameters above.</p>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1265,7 +1265,7 @@ Note that if it is in the provided graph names (i.e., “line”, “dependency�
 <li><p><code class="docutils literal notranslate"><span class="pre">dynamic_init_topology_builder</span></code></p></li>
 </ol>
 </div></blockquote>
-<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_construction_name</span></code> and set the parameters above.</p>
 </p></li>
 <li><p><strong>dynamic_init_topology_builder</strong> (<em>StaticGraphConstructionBase</em>) – The graph construction class.</p></li>
 <li><p><strong>dynamic_init_topology_aux_args</strong> (<em>None</em><em>,</em>) – TBD.</p></li>
@@ -1383,14 +1383,14 @@ input and output is separated by a tab( ).</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.DoubleText2TextDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">DoubleText2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">DoubleText2TextDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_construction_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">share_vocab=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.DoubleText2TextDataset" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>The dataset for double-text-to-text applications.</p>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>graph_name</strong> (<em>str</em>) – <p>The name of graph construction method. E.g., “dependency”.
+<li><p><strong>graph_construction_name</strong> (<em>str</em>) – <p>The name of graph construction method. E.g., “dependency”.
 Note that if it is in the provided graph names (i.e., “dependency”,             “constituency”, “ie”, “node_emb”, “node_emb_refine”), the following             parameters are set by default and users can’t modify them:</p>
 <blockquote>
 <div><ol class="arabic simple">
@@ -1398,7 +1398,7 @@ Note that if it is in the provided graph names (i.e., “dependency”,         
 <li><p><code class="docutils literal notranslate"><span class="pre">static_or_dynamic</span></code></p></li>
 </ol>
 </div></blockquote>
-<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_construction_name</span></code> and set the parameters above.</p>
 </p></li>
 <li><p><strong>root_dir</strong> (<em>str</em><em>, </em><em>default=None</em>) – The path of dataset.</p></li>
 <li><p><strong>topology_builder</strong> (<em>Union</em><em>[</em><em>StaticGraphConstructionBase</em><em>, </em><em>DynamicGraphConstructionBase</em><em>]</em><em>, </em><em>default=None</em>) – The graph construction class.</p></li>
@@ -1411,7 +1411,7 @@ Note that if it is in the provided graph names (i.e., “line”, “dependency�
 <li><p><code class="docutils literal notranslate"><span class="pre">dynamic_init_topology_builder</span></code></p></li>
 </ol>
 </div></blockquote>
-<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_construction_name</span></code> and set the parameters above.</p>
 </p></li>
 <li><p><strong>dynamic_init_topology_builder</strong> (<em>StaticGraphConstructionBase</em>) – The graph construction class.</p></li>
 <li><p><strong>dynamic_init_topology_aux_args</strong> (<em>None</em><em>,</em>) – TBD.</p></li>
@@ -1527,7 +1527,7 @@ output_text=”job ( ANS ) , language ( ANS , languageid0 )”</p>
 
 <dl class="class">
 <dt id="graph4nlp.data.dataset.SequenceLabelingDataset">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">SequenceLabelingDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">tag_types: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.SequenceLabelingDataset" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">SequenceLabelingDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_construction_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">tag_types: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.data.dataset.SequenceLabelingDataset" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -1618,6 +1618,12 @@ individual task-specific base class. Returns all the indices of data items in
 this file w.r.t. the whole dataset.
 For SequenceLabelingDataset, the format of the input file should contain lines of tokens,
 each line representing one record of token at first column and its tag at the last column.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><blockquote>
+<div></div></blockquote>
+</dd>
+</dl>
 <p class="rubric">Examples</p>
 <dl class="simple">
 <dt>“EU       I-ORG</dt><dd><p>rejects  O
@@ -1938,9 +1944,9 @@ subset (e.g. train, val and test).</p>
 <h2>Task Level Dataset Base Class<a class="headerlink" href="#task-level-dataset-base-class" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt>
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2LabelDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span></dt>
+<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.data.dataset.</code><code class="sig-name descname">Text2LabelDataset</code><span class="sig-paren">(</span><em class="sig-param">graph_construction_name: str</em>, <em class="sig-param">root_dir: str = None</em>, <em class="sig-param">static_or_dynamic: str = None</em>, <em class="sig-param">topology_builder: Union[graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase</em>, <em class="sig-param">graph4nlp.pytorch.modules.graph_construction.base.DynamicGraphConstructionBase] = &lt;class 'graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction.DependencyBasedGraphConstruction'&gt;</em>, <em class="sig-param">topology_subdir: str = None</em>, <em class="sig-param">dynamic_init_graph_name: str = None</em>, <em class="sig-param">dynamic_init_topology_builder: graph4nlp.pytorch.modules.graph_construction.base.StaticGraphConstructionBase = None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span></dt>
 <dd><p>The dataset for text-to-label applications.
-:param graph_name: The name of graph construction method. E.g., “dependency”.</p>
+:param graph_construction_name: The name of graph construction method. E.g., “dependency”.</p>
 <blockquote>
 <div><dl class="simple">
 <dt>Note that if it is in the provided graph names (i.e., “dependency”,             “constituency”, “ie”, “node_emb”, “node_emb_refine”), the following             parameters are set by default and users can’t modify them:</dt><dd><ol class="arabic simple">
@@ -1949,7 +1955,7 @@ subset (e.g. train, val and test).</p>
 </ol>
 </dd>
 </dl>
-<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_construction_name</span></code> and set the parameters above.</p>
 </div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1965,7 +1971,7 @@ Note that if it is in the provided graph names (i.e., “line”, “dependency�
 <li><p><code class="docutils literal notranslate"><span class="pre">dynamic_init_topology_builder</span></code></p></li>
 </ol>
 </div></blockquote>
-<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_name</span></code> and set the parameters above.</p>
+<p>If you need to customize your graph construction method, you should rename the             <code class="docutils literal notranslate"><span class="pre">graph_construction_name</span></code> and set the parameters above.</p>
 </p></li>
 <li><p><strong>dynamic_init_topology_builder</strong> (<em>StaticGraphConstructionBase</em>) – The graph construction class.</p></li>
 <li><p><strong>dynamic_init_topology_aux_args</strong> (<em>None</em><em>,</em>) – TBD.</p></li>
