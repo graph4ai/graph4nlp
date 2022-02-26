@@ -17,7 +17,7 @@ jobs:
       uses: ammaraskar/sphinx-action@master
       with:
         docs-folder: "docs/"
-        pre-build-command: "pip install sphinx_rtd_theme && pip install torchtext && pip install numpydoc && pip install graph4nlp"
+        pre-build-command: "pip install sphinx_rtd_theme && pip install torchtext && pip install omegaconf && pip install numpydoc && pip install graph4nlp"
         build-command: "make html"
     - name: Deploy GH page
       uses: JamesIves/github-pages-deploy-action@3.4.2
