@@ -5,10 +5,10 @@ import torch
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.data.dataset import SequenceLabelingDataset
 
-from graph4nlp.examples.pytorch.name_entity_recognition.dependency_graph_construction_without_tokenize import (
+from dependency_graph_construction_without_tokenize import (
     DependencyBasedGraphConstruction_without_tokenizer,
 )
-from graph4nlp.examples.pytorch.name_entity_recognition.line_graph_construction import LineBasedGraphConstruction
+from line_graph_construction import LineBasedGraphConstruction
 
 
 class ConllDataset(SequenceLabelingDataset):

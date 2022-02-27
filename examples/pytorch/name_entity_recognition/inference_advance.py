@@ -12,16 +12,16 @@ from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedRefin
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
 )
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
 
-from graph4nlp.examples.pytorch.name_entity_recognition.conll import ConllDataset
-from graph4nlp.examples.pytorch.name_entity_recognition.conlleval import evaluate
-from graph4nlp.examples.pytorch.name_entity_recognition.dependency_graph_construction_without_tokenize import (
+from conll import ConllDataset
+from conlleval import evaluate
+from dependency_graph_construction_without_tokenize import (
     DependencyBasedGraphConstruction_without_tokenizer,
 )
-from graph4nlp.examples.pytorch.name_entity_recognition.line_graph_construction import LineBasedGraphConstruction
-from graph4nlp.examples.pytorch.name_entity_recognition.model import Word2tag
-from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
+from line_graph_construction import LineBasedGraphConstruction
+from model import Word2tag
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 cudnn.benchmark = False
@@ -101,7 +101,7 @@ class Conll:
         else:
             self.device = torch.device("cpu")
         self.checkpoint_save_path = "./checkpoints/"
-        self.config =config
+        self.config = config
         print("finish building model")
         self._build_model()
 
@@ -110,7 +110,6 @@ class Conll:
 
         self._build_optimizer()
         self._build_evaluation()
-        
 
     def _build_dataloader(self):
         print("starting build the dataset")
@@ -123,7 +122,8 @@ class Conll:
                 graph_name=self.graph_name,
                 static_or_dynamic="static",
                 pretrained_word_emb_cache_dir=self.config["model_args"]["graph_construction_args"][
-                "graph_construction_share"]["pre_word_emb_file"],
+                    "graph_construction_share"
+                ]["pre_word_emb_file"],
                 topology_subdir="LineGraph",
                 tag_types=self.tag_types,
                 for_inference=1,
@@ -135,7 +135,8 @@ class Conll:
                 topology_builder=DependencyBasedGraphConstruction_without_tokenizer,
                 graph_name=self.graph_name,
                 pretrained_word_emb_cache_dir=self.config["model_args"]["graph_construction_args"][
-                "graph_construction_share"]["pre_word_emb_file"],
+                    "graph_construction_share"
+                ]["pre_word_emb_file"],
                 topology_subdir="DependencyGraph",
                 tag_types=self.tag_types,
                 for_inference=1,
@@ -147,7 +148,8 @@ class Conll:
                 topology_builder=NodeEmbeddingBasedGraphConstruction,
                 graph_name=self.graph_name,
                 pretrained_word_emb_cache_dir=self.config["model_args"]["graph_construction_args"][
-                "graph_construction_share"]["pre_word_emb_file"],
+                    "graph_construction_share"
+                ]["pre_word_emb_file"],
                 topology_subdir="DynamicGraph_node_emb",
                 tag_types=self.tag_types,
                 merge_strategy=None,
@@ -155,13 +157,19 @@ class Conll:
                 reused_vocab_model=self.model.vocab,
             )
         elif self.graph_name == "node_emb_refined":
-            if self.config["model_args"]["graph_construction_args"][
-                "graph_construction_private"
-            ].get("dynamic_init_graph_name", None) == "line":
+            if (
+                self.config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ].get("dynamic_init_graph_name", None)
+                == "line"
+            ):
                 dynamic_init_topology_builder = LineBasedGraphConstruction
-            elif self.config["model_args"]["graph_construction_args"][
-                "graph_construction_private"
-            ].get("dynamic_init_graph_name", None) == "dependency":
+            elif (
+                self.config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ].get("dynamic_init_graph_name", None)
+                == "dependency"
+            ):
                 dynamic_init_topology_builder = DependencyBasedGraphConstruction_without_tokenizer
             else:
                 # init_topology_builder
@@ -172,12 +180,13 @@ class Conll:
                 graph_name=self.graph_name,
                 static_or_dynamic="dynamic",
                 pretrained_word_emb_cache_dir=self.config["model_args"]["graph_construction_args"][
-                "graph_construction_share"]["pre_word_emb_file"],
+                    "graph_construction_share"
+                ]["pre_word_emb_file"],
                 topology_subdir="DynamicGraph_node_emb_refined",
                 tag_types=self.tag_types,
                 dynamic_init_graph_name=self.config["model_args"]["graph_construction_args"][
-                "graph_construction_private"
-            ].get("dynamic_init_graph_name", None),
+                    "graph_construction_private"
+                ].get("dynamic_init_graph_name", None),
                 dynamic_init_topology_builder=dynamic_init_topology_builder,
                 dynamic_init_topology_aux_args={"dummy_param": 0},
                 for_inference=1,
@@ -196,7 +205,11 @@ class Conll:
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
-        self.optimizer = optim.Adam(parameters, lr=self.config["training_args"]["lr"], weight_decay=self.config["training_args"]["weight_decay"])
+        self.optimizer = optim.Adam(
+            parameters,
+            lr=self.config["training_args"]["lr"],
+            weight_decay=self.config["training_args"]["weight_decay"],
+        )
 
     def _build_evaluation(self):
         self.metrics = Accuracy(["F1", "precision", "recall"])
@@ -222,6 +235,7 @@ class Conll:
         print("Testing results: precision is %5.2f, rec is %5.2f, f1 is %5.2f" % (prec, rec, f1))
         return f1
 
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -245,7 +259,6 @@ def print_config(config):
     print("**************** MODEL CONFIGURATION ****************")
 
 
-
 if __name__ == "__main__":
 
     import datetime
@@ -254,7 +267,7 @@ if __name__ == "__main__":
     # long running
     # do something other
 
-    #args = parser.parse_args()
+    # args = parser.parse_args()
     cfg = get_args()
     config = load_json_config(cfg["json_config"])
     print_config(config)
