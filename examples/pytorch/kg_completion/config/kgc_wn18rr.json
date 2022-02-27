@@ -1,4 +1,4 @@
 {
-"config_path": "examples/pytorch/kg_completion/config/kgc_kinship.yaml",
+"config_path": "examples/pytorch/kg_completion/config/kgc_wn18rr.yaml",
 "training_args.batch_size": "128"
 }

@@ -14,17 +14,17 @@ If you run the task for the first time, remember to set `preprocess: True ` in t
 
 Then run:
 ```bash
-python examples/pytorch/kg_completion/main.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
+python examples/pytorch/kg_completion/main.py -json_config examples/pytorch/kg_completion/config/kgc_kinship.json
 ```
 
 If you want to evaluate the saved model, run:
 ```bash
-python examples/pytorch/kg_completion/inference_advance.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
+python examples/pytorch/kg_completion/inference_advance.py -json_config examples/pytorch/kg_completion/config/kgc_kinship.json
 ```
 
 If you want to test the model with a single example:
 ```bash
-python examples/pytorch/kg_completion/inference.py -task_config examples/pytorch/kg_completion/config/kinship.yaml
+python examples/pytorch/kg_completion/inference.py -json_config examples/pytorch/kg_completion/config/kgc_kinship.json
 ```
 Results on kinship
 ------------------

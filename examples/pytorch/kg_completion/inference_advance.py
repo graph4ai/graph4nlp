@@ -1,72 +1,13 @@
 import argparse
-import os
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
-import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset
-from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
-from .model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
-
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-
-np.set_printoptions(precision=3)
-
-cudnn.benchmark = True
-
-
-class KGC(nn.Module):
-    def __init__(self, cfg, num_entities, num_relations):
-        super(KGC, self).__init__()
-        self.cfg = cfg
-        self.num_entities = num_entities
-        self.num_relations = num_relations
-        if cfg["model"] is None:
-            model = ConvE(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "conve":
-            model = ConvE(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "distmult":
-            model = Distmult(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "complex":
-            model = Complex(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "ggnn_distmult":
-            model = GGNNDistMult(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "gcn_distmult":
-            model = GCNDistMult(argparse.Namespace(**cfg), num_entities, num_relations)
-        elif cfg["model"] == "gcn_complex":
-            model = GCNComplex(argparse.Namespace(**cfg), num_entities, num_relations)
-        else:
-            raise Exception("Unknown model type!")
-
-        self.model = model
-
-    def init(self):
-        return self.model.init()
-
-    def forward(self, e1_tensor, rel_tensor, KG_graph):
-        return self.model(e1_tensor, rel_tensor, KG_graph)
-
-    def loss(self, pred, e2_multi):
-        return self.model.loss(pred, e2_multi)
-
-    def inference_forward(self, collate_data, KG_graph):
-        e1_tensor = collate_data["e1_tensor"]
-        rel_tensor = collate_data["rel_tensor"]
-        if self.cfg["cuda"]:
-            e1_tensor = e1_tensor.to("cuda")
-            rel_tensor = rel_tensor.to("cuda")
-        return self.model(e1_tensor, rel_tensor, KG_graph)
-
-    def post_process(self, logits_results, e2=None):
-        max_values, argsort1 = torch.sort(logits_results, 1, descending=True)
-        rank1 = np.where(argsort1.cpu().numpy()[0] == e2[0, 0].item())[0][0]
-
-        print("rank = {}".format(rank1 + 1))
-
-        return argsort1[:, 0].item()
+from main import KGC
 
 
 def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=None):
@@ -87,19 +28,12 @@ def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=No
         hits.append([])
 
     for i, str2var in enumerate(dev_rank_batcher):
-        e1 = str2var["e1_tensor"]
-        e2 = str2var["e2_tensor"]
-        rel = str2var["rel_tensor"]
-        rel_reverse = str2var["rel_eval_tensor"]
-        e2_multi1 = str2var["e2_multi1"].float()
-        e2_multi2 = str2var["e2_multi2"].float()
-        if cfg["cuda"]:
-            e1 = e1.to("cuda")
-            e2 = e2.to("cuda")
-            rel = rel.to("cuda")
-            rel_reverse = rel_reverse.to("cuda")
-            e2_multi1 = e2_multi1.to("cuda")
-            e2_multi2 = e2_multi2.to("cuda")
+        e1 = str2var["e1_tensor"].to(cfg["env_args"]["device"])
+        e2 = str2var["e2_tensor"].to(cfg["env_args"]["device"])
+        rel = str2var["rel_tensor"].to(cfg["env_args"]["device"])
+        rel_reverse = str2var["rel_eval_tensor"].to(cfg["env_args"]["device"])
+        e2_multi1 = str2var["e2_multi1"].float().to(cfg["env_args"]["device"])
+        e2_multi2 = str2var["e2_multi2"].float().to(cfg["env_args"]["device"])
 
         pred1 = model(e1, rel, kg_graph)
         pred2 = model(e2, rel_reverse, kg_graph)
@@ -171,17 +105,33 @@ def ranking_and_hits_this(cfg, model, dev_rank_batcher, vocab, name, kg_graph=No
 
 
 def main(cfg, model_path):
+    np.random.seed(cfg["env_args"]["seed"])
+    torch.manual_seed(cfg["env_args"]["seed"])
+
+    if not cfg["env_args"]["no_cuda"] and torch.cuda.is_available():
+        print("[ Using CUDA ]")
+        cfg["env_args"]["device"] = torch.device(
+            "cuda" if cfg["env_args"]["gpu"] < 0 else "cuda:%d" % cfg["env_args"]["gpu"]
+        )
+        cudnn.benchmark = True
+        torch.cuda.manual_seed(cfg["env_args"]["seed"])
+    else:
+        cfg["env_args"]["device"] = torch.device("cpu")
+
+    print("\n" + cfg["checkpoint_args"]["out_dir"])
+
     dataset = KinshipDataset(
-        root_dir="examples/pytorch/kg_completion/data/{}".format(cfg["dataset"]),
+        root_dir="examples/pytorch/kg_completion/data/{}".format(
+            cfg["preprocessing_args"]["dataset"]
+        ),
         topology_subdir="kgc",
     )
 
     test_dataloader = DataLoader(
         dataset.test,
-        batch_size=cfg["batch_size"],
+        batch_size=cfg["training_args"]["batch_size"],
         shuffle=False,
         num_workers=0,
-        # num_workers=args.loader_threads,
         collate_fn=dataset.collate_fn,
     )
 
@@ -189,28 +139,18 @@ def main(cfg, model_path):
     num_relations = len(dataset.vocab_model.out_word_vocab)
 
     graph_path = "examples/pytorch/kg_completion/data/{}/processed/kgc/" "KG_graph.pt".format(
-        cfg["dataset"]
+        cfg["preprocessing_args"]["dataset"]
     )
-    KG_graph = torch.load(graph_path)
-
-    if cfg["cuda"] is True:
-        KG_graph = KG_graph.to("cuda")
-    else:
-        KG_graph = KG_graph.to("cpu")
-
-    model = KGC(cfg, num_entities, num_relations)
-
-    if cfg["cuda"] is True:
-        model.to("cuda")
+    KG_graph = torch.load(graph_path).to(cfg["env_args"]["device"])
+    model = KGC(cfg, num_entities, num_relations).to(cfg["env_args"]["device"])
 
     model_params = torch.load(model_path)
-    print(model)
-    total_param_size = []
-    params = [(key, value.size(), value.numel()) for key, value in model_params.items()]
-    for key, size, count in params:
-        total_param_size.append(count)
-        print(key, size, count)
-    print(np.array(total_param_size).sum())
+    # total_param_size = []
+    # params = [(key, value.size(), value.numel()) for key, value in model_params.items()]
+    # for key, size, count in params:
+    #     total_param_size.append(count)
+    #     print(key, size, count)
+    # print(np.array(total_param_size).sum())
     model.load_state_dict(model_params)
     model.eval()
     ranking_and_hits_this(
@@ -221,29 +161,38 @@ def main(cfg, model_path):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-task_config", "--task_config", required=True, type=str, help="path to the config file"
+        "-json_config",
+        "--json_config",
+        required=True,
+        type=str,
+        help="path to the json config file",
     )
-    parser.add_argument("--grid_search", action="store_true", help="flag: grid search")
     args = vars(parser.parse_args())
-
     return args
+
+
+def print_config(config):
+    print("**************** MODEL CONFIGURATION ****************")
+    for key in sorted(config.keys()):
+        val = config[key]
+        keystr = "{}".format(key) + (" " * (24 - len(key)))
+        print("{} -->  {}".format(keystr, val))
+    print("**************** MODEL CONFIGURATION ****************")
 
 
 if __name__ == "__main__":
     cfg = get_args()
-    task_args = get_yaml_config(cfg["task_config"])
+    config = load_json_config(cfg["json_config"])
+    print_config(config)
 
-    task_args["cuda"] = True
-
-    model_name = "{2}_{3}_{0}_{1}".format(
-        task_args["input_drop"],
-        task_args["hidden_drop"],
-        task_args["model"],
-        task_args["direction_option"],
+    model_name = "{0}_{1}_{2}_{3}".format(
+        config["model_args"]["model"],
+        config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["direction_option"],
+        config["model_args"]["input_drop"],
+        config["model_args"]["hidden_drop"],
     )
     model_path = "examples/pytorch/kg_completion/saved_models/{0}_{1}.model".format(
-        task_args["dataset"], model_name
+        config["preprocessing_args"]["dataset"], model_name
     )
 
-    torch.manual_seed(task_args["seed"])
-    main(task_args, model_path)
+    main(config, model_path)
