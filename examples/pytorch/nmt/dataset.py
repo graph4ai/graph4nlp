@@ -74,7 +74,7 @@ class IWSLT14Dataset(Text2TextDataset):
 
     def __init__(
         self,
-        graph_name,
+        graph_construction_name,
         root_dir=None,
         topology_subdir=None,
         topology_builder=None,
@@ -96,6 +96,7 @@ class IWSLT14Dataset(Text2TextDataset):
         for_inference=False,
         reused_vocab_model=None,
         lower_case=True,
+        port=None,
     ):
         """
 
@@ -129,7 +130,7 @@ class IWSLT14Dataset(Text2TextDataset):
         super(IWSLT14Dataset, self).__init__(
             root_dir=root_dir,
             topology_subdir=topology_subdir,
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             edge_strategy=edge_strategy,
             merge_strategy=merge_strategy,

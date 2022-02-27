@@ -22,7 +22,12 @@ How to run
 
 #### run script
 ``` bash
-python examples/pytorch/nmt/main.py --name test
+python examples/pytorch/nmt/main.py --json_config examples/pytorch/nmt/config/train.json
+```
+
+#### Advanced Inference:
+```bash
+python examples/pytorch/nmt/inference_advance.py --json_config examples/pytorch/nmt/config/inference.json
 ```
 
 NMT Results

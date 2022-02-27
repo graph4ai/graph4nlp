@@ -128,7 +128,6 @@ def load_yaml_config(
         included_configs.append(
             load_yaml_config(each, included_paths.union([os.path.abspath(path)]), nesting_level + 1)
         )
-
     merged_config = OmegaConf.merge(*included_configs, config)
     merged_config.pop("includes", None)
     return merged_config

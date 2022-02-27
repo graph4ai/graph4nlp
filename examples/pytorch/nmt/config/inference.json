@@ -1,0 +1,6 @@
+{
+    "config_path": "examples/pytorch/nmt/config/dynamic_gcn.yaml",
+    "model_args.graph_construction_args.graph_construction_share.root_dir": "examples/pytorch/nmt/data_inference",
+    "training_args.name": "test"
+    }
+    

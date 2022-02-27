@@ -8,6 +8,7 @@ from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper import (
     GeneratorInferenceWrapper,
 )
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
 from args import get_args
 from dataset import IWSLT14Dataset
@@ -24,14 +25,30 @@ def remove_bpe(str_with_subword):
 
 if __name__ == "__main__":
     opt = get_args()
-    if opt["use_gpu"] != 0 and torch.cuda.is_available():
+    opt = load_json_config(opt["json_config"])
+    if opt["env_args"]["use_gpu"] != 0 and torch.cuda.is_available():
         print("[ Using CUDA ]")
-        device = torch.device("cuda" if opt["gpu"] < 0 else "cuda:%d" % opt["gpu"])
+        device = torch.device(
+            "cuda"
+            if opt["env_args"]["gpuid"] < 0
+            else "cuda:%d"
+            % opt[
+                "env\
+            _args"
+            ]["gpuid"]
+        )
     else:
         print("[ Using CPU ]")
         device = torch.device("cpu")
     model = Graph2Seq.load_checkpoint(
-        os.path.join("examples/pytorch/nmt/save", opt["name"]), "best.pth"
+        os.path.join(
+            opt["checkpoint_args"][
+                "checkpoint\
+        _save_path"
+            ],
+            opt["training_args"]["name"],
+        ),
+        "best.pth",
     ).to(device)
 
     wrapper = GeneratorInferenceWrapper(
