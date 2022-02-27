@@ -4,18 +4,18 @@ import torch
 import torch.backends.cudnn as cudnn
 import torch.multiprocessing
 
+from graph4nlp.examples.pytorch.name_entity_recognition.conll import ConllDataset_inference
+from graph4nlp.examples.pytorch.name_entity_recognition.conlleval import evaluate
+from graph4nlp.examples.pytorch.name_entity_recognition.line_graph_construction import (
+    LineBasedGraphConstruction,
+)
+from graph4nlp.examples.pytorch.name_entity_recognition.model import Word2tag
 from graph4nlp.pytorch.data.dataset import SequenceLabelingDataItem
 from graph4nlp.pytorch.inference_wrapper.classifier_inference_wrapper import (
     ClassifierInferenceWrapper,
 )
-from graph4nlp.pytorch.modules.config import get_basic_args
-from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
-
-from conll import ConllDataset_inference
-from conlleval import evaluate
-from line_graph_construction import LineBasedGraphConstruction
-from model import Word2tag
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 cudnn.benchmark = False
@@ -87,17 +87,17 @@ def get_tokens(g_list):
 
 
 class Conll:
-    def __init__(self, opt):
+    def __init__(self, config):
         super(Conll, self).__init__()
         self.tag_types = ["I-PER", "O", "B-ORG", "B-LOC", "I-ORG", "I-MISC", "I-LOC", "B-MISC"]
-        if args.gpu > -1:
+        if config["env_args"]["gpu"] > -1:
             self.device = torch.device("cuda")
         else:
             self.device = torch.device("cpu")
         self.checkpoint_save_path = "./checkpoints/"
 
         print("finish building model")
-        self.opt = opt
+        self.opt = config
         self._build_model()
 
     def _build_model(self):
@@ -126,124 +126,30 @@ class Conll:
         print(ret)
 
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-json_config",
+        "--json_config",
+        required=True,
+        type=str,
+        help="path to the json config file",
+    )
+    args = vars(parser.parse_args())
+
+    return args
+
+
+def print_config(config):
+    print("**************** MODEL CONFIGURATION ****************")
+    for key in sorted(config.keys()):
+        val = config[key]
+        keystr = "{}".format(key) + (" " * (24 - len(key)))
+        print("{} -->   {}".format(keystr, val))
+    print("**************** MODEL CONFIGURATION ****************")
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="NER")
-    parser.add_argument("--gpu", type=int, default=0, help="which GPU to use.")
-    parser.add_argument("--epochs", type=int, default=2, help="number of training epochs")
-    parser.add_argument(
-        "--direction_option",
-        type=str,
-        default="bi_fuse",
-        help="direction type (`undirected`, `bi_fuse`, `bi_sep`)",
-    )
-    parser.add_argument(
-        "--lstm_num_layers", type=int, default=1, help="number of hidden layers in lstm"
-    )
-    parser.add_argument(
-        "--gnn_num_layers", type=int, default=1, help="number of hidden layers in gnn"
-    )
-    parser.add_argument("--init_hidden_size", type=int, default=300, help="initial_emb_hidden_size")
-    parser.add_argument("--hidden_size", type=int, default=128, help="initial_emb_hidden_size")
-    parser.add_argument("--lstm_hidden_size", type=int, default=80, help="initial_emb_hidden_size")
-    parser.add_argument("--num_class", type=int, default=8, help="num_class")
-    parser.add_argument(
-        "--residual", action="store_true", default=False, help="use residual connection"
-    )
-    parser.add_argument("--word_dropout", type=float, default=0.5, help="input feature dropout")
-    parser.add_argument("--tag_dropout", type=float, default=0.5, help="input feature dropout")
-    parser.add_argument(
-        "--rnn_dropout", type=list, default=0.33, help="dropout for rnn in word_emb"
-    )
-    parser.add_argument("--lr", type=float, default=0.01, help="learning rate")
-    parser.add_argument("--weight-decay", type=float, default=5e-5, help="weight decay")
-    parser.add_argument(
-        "--aggregate_type",
-        type=str,
-        default="mean",
-        help="aggregate type: 'mean','gcn','pool','lstm'",
-    )
-    parser.add_argument(
-        "--gnn_type", type=str, default="graphsage", help="ingnn type: 'gat','graphsage','ggnn'"
-    )
-    parser.add_argument("--use_gnn", type=bool, default=True, help="whether to use gnn")
-    parser.add_argument("--batch_size", type=int, default=100, help="batch size for training")
-    parser.add_argument(
-        "--graph_name",
-        type=str,
-        default="line_graph",
-        help="graph_type:line_graph, dependency_graph, dynamic_graph",
-    )
-    parser.add_argument(
-        "--static_or_dynamic",
-        type=str,
-        default="static",
-        help="static or dynamic",
-    )
-    parser.add_argument(
-        "--init_graph_type",
-        type=str,
-        default="line",
-        help="initial graph construction type ('line', 'dependency', 'constituency', 'ie')",
-    )
-    parser.add_argument(
-        "--pre_word_emb_file", type=str, default=None, help="path of pretrained_word_emb_file"
-    )
-    parser.add_argument(
-        "--gl_num_heads", type=int, default=1, help="num of heads for dynamic graph construction"
-    )
-    parser.add_argument(
-        "--gl_epsilon", type=int, default=0.5, help="epsilon for graph sparsification"
-    )
-    parser.add_argument("--gl_top_k", type=int, default=None, help="top k for graph sparsification")
-    parser.add_argument(
-        "--gl_smoothness_ratio",
-        type=float,
-        default=None,
-        help="smoothness ratio for graph regularization loss",
-    )
-    parser.add_argument(
-        "--gl_sparsity_ratio",
-        type=float,
-        default=None,
-        help="sparsity ratio for graph regularization loss",
-    )
-    parser.add_argument(
-        "--gl_connectivity_ratio",
-        type=float,
-        default=None,
-        help="connectivity ratio for graph regularization loss",
-    )
-    parser.add_argument(
-        "--init_adj_alpha",
-        type=float,
-        default=0.8,
-        help="alpha ratio for combining initial graph adjacency matrix",
-    )
-    parser.add_argument(
-        "--gl_metric_type",
-        type=str,
-        default="weighted_cosine",
-        help="similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', \
-            'rbf_kernel', 'cosine')",
-    )
-    parser.add_argument(
-        "--no_fix_word_emb",
-        type=bool,
-        default=False,
-        help="Not fix pretrained word embeddings (default: false)",
-    )
-    parser.add_argument(
-        "--no_fix_bert_emb",
-        type=bool,
-        default=False,
-        help="Not fix pretrained word embeddings (default: false)",
-    )
-    parser.add_argument(
-        "--task_config",
-        type=str,
-        default="/home/xiaojie.guo/graph4nlp/graph4nlp/ner_inference.yaml",
-        help="Not fix pretrained word embeddings (default: false)",
-    )
 
     import datetime
 
@@ -251,15 +157,18 @@ if __name__ == "__main__":
     # long running
     # do something other
 
-    args = parser.parse_args()
-    print("load ner template config")
-    ner_args = get_yaml_config(args.task_config)
+    # args = parser.parse_args()
+    # print("load ner template config")
+    # ner_args = get_yaml_config(args.task_config)
 
-    ner_template = get_basic_args(
-        graph_construction_name=ner_args["graph_construction_name"],
-        graph_embedding_name=ner_args["graph_embedding_name"],
-        decoder_name=ner_args["decoder_name"],
-    )
-    update_values(to_args=ner_template, from_args_list=[ner_args])
-    runner = Conll(ner_template)
+    # ner_template = get_basic_args(
+    #    graph_construction_name=ner_args["graph_construction_name"],
+    #    graph_embedding_name=ner_args["graph_embedding_name"],
+    #    decoder_name=ner_args["decoder_name"],
+    # )
+    # update_values(to_args=ner_template, from_args_list=[ner_args])
+    cfg = get_args()
+    config = load_json_config(cfg["json_config"])
+    print_config(config)
+    runner = Conll(config)
     runner.predict()

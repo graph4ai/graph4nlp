@@ -5,10 +5,10 @@ import torch
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.data.dataset import SequenceLabelingDataset
 
-from dependency_graph_construction_without_tokenize import (
+from graph4nlp.examples.pytorch.name_entity_recognition.dependency_graph_construction_without_tokenize import (
     DependencyBasedGraphConstruction_without_tokenizer,
 )
-from line_graph_construction import LineBasedGraphConstruction
+from graph4nlp.examples.pytorch.name_entity_recognition.line_graph_construction import LineBasedGraphConstruction
 
 
 class ConllDataset(SequenceLabelingDataset):
@@ -49,7 +49,7 @@ class ConllDataset(SequenceLabelingDataset):
             root_dir=root_dir,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
-            graph_name=graph_name,
+            graph_construction_name=graph_name,
             static_or_dynamic=static_or_dynamic,
             edge_strategy=edge_strategy,
             merge_strategy=merge_strategy,
@@ -195,7 +195,7 @@ class ConllDataset(SequenceLabelingDataset):
             data_items,
             self.topology_builder,
             self.static_or_dynamic,
-            self.graph_name,
+            self.graph_construction_name,
             self.dynamic_init_topology_builder,
             self.merge_strategy,
             self.edge_strategy,
@@ -225,7 +225,7 @@ class ConllDataset_inference(SequenceLabelingDataset):
 
     def __init__(
         self,
-        graph_name,
+        graph_construction_name,
         static_or_dynamic="static",
         topology_builder=None,
         topology_subdir=None,
@@ -242,7 +242,7 @@ class ConllDataset_inference(SequenceLabelingDataset):
         super(ConllDataset_inference, self).__init__(
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
-            graph_name=graph_name,
+            graph_construction_name=graph_construction_name,
             static_or_dynamic=static_or_dynamic,
             edge_strategy=edge_strategy,
             merge_strategy=merge_strategy,
@@ -262,7 +262,7 @@ class ConllDataset_inference(SequenceLabelingDataset):
         data_items,
         topology_builder,
         static_or_dynamic,
-        graph_name,
+        graph_construction_name,
         dynamic_init_topology_builder,
         merge_strategy,
         edge_strategy,
