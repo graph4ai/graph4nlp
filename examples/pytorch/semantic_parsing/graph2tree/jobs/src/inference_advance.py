@@ -17,7 +17,7 @@ from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
-from .evaluation import ExactMatch
+from evaluation import ExactMatch
 
 warnings.filterwarnings("ignore")
 
@@ -160,8 +160,8 @@ class Jobs:
         # we calculate a exact match score for the result.
         if all(DUMMY_STR not in i for i in ground_truth_list):
             print(
-                "Exact match score: {0:.2f}%".format(
-                    self.evaluation_metric.calculate_scores(ground_truth_list, pred_list)
+                "Exact match score: {:.2f}%".format(
+                    self.evaluation_metric.calculate_scores(ground_truth_list, pred_list)*100
                 )
             )
 

@@ -1,0 +1,15 @@
+{
+    "config_path": "examples/pytorch/semantic_parsing/graph2tree/jobs/config/semantic_parsing_with_tree_decoder.yaml",
+    "checkpoint_args.checkpoint_name": "node_emb_sage_undirected.pt",
+    "checkpoint_args.out_dir": "examples/pytorch/math_word_problem/mathqa/config/save",
+    "env_args.gpuid": 2,
+    "training_args.batch_size": 80,
+    "training_args.max_epochs": 20,
+    "model_args.graph_construction_args.graph_construction_share.root_dir": "examples/pytorch/math_word_problem/mathqa/mathqa_data",
+    "inference_args.inference_data_dir": "examples/pytorch/math_word_problem/mathqa/mathqa_data_for_inference",
+    "model_args.decoder_args.rnn_decoder_share.dropout": 0.1,
+    "model_args.decoder_args.rnn_decoder_private.max_decoder_step": 400,
+    "model_args.decoder_args.rnn_decoder_private.max_tree_depth": 5,
+    "preprocessing_args.pretrained_word_emb_name": "6B"
+    }
+    

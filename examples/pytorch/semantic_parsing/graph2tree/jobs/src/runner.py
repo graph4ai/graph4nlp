@@ -171,7 +171,7 @@ class Jobs:
         print(f"Best Accuracy: {best_acc:.4f}")
 
     def eval(self, model):
-        from .evaluation import compute_tree_accuracy
+        from evaluation import compute_tree_accuracy
 
         model.eval()
         reference_list = []
