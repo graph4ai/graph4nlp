@@ -161,7 +161,7 @@ class Jobs:
         if all(DUMMY_STR not in i for i in ground_truth_list):
             print(
                 "Exact match score: {:.2f}%".format(
-                    self.evaluation_metric.calculate_scores(ground_truth_list, pred_list)*100
+                    self.evaluation_metric.calculate_scores(ground_truth_list, pred_list) * 100
                 )
             )
 

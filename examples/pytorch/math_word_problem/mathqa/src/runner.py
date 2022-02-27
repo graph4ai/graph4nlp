@@ -149,8 +149,9 @@ class MathQA:
                 oov_dict=oov_dict,
             )
             loss.backward()
-            torch.nn.utils.clip_grad_value_(self.model.parameters(), 
-                self.opt["training_args"]["grad_clip"])
+            torch.nn.utils.clip_grad_value_(
+                self.model.parameters(), self.opt["training_args"]["grad_clip"]
+            )
             self.optimizer.step()
             loss_to_print += loss
         return loss_to_print / num_batch
