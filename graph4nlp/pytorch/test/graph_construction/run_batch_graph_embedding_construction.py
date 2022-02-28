@@ -4,20 +4,16 @@ import numpy as np
 import torch
 
 from ...data.data import GraphData
-from ...modules.graph_construction.embedding_construction import EmbeddingConstruction
+from ...modules.graph_embedding_initialization.embedding_construction import EmbeddingConstruction
 from ...modules.utils.padding_utils import pad_2d_vals
-from ...modules.utils.vocab_utils import VocabModel
+from .vocab_utils import VocabModel
 
 if __name__ == "__main__":
     raw_text_data = [
-        [
             "This is a news aggregator service.",
             "It presents a continuous flow of articles.",
-        ],
-        [
             "This is available as an app on Android, iOS, and the Web.",
             "They released a beta version in September 2002.",
-        ],
     ]
     vocab_model = VocabModel(
         raw_text_data,
@@ -49,6 +45,12 @@ if __name__ == "__main__":
             node_size.append(len(graph.node_attributes[j]["token_id"]))
             max_node_len = max(node_size[-1], max_node_len)
 
+            # print('tokens: {}'.format(tokens))
+            # print('node_attributes, token_id: {} {}'.format(
+            #     graph.node_attributes[j]["token_id"]
+            # ))
+            # print('max node len: {}'.format(max_node_len))
+
         graph_list.append(graph)
 
     for graph in graph_list:
@@ -56,6 +58,9 @@ if __name__ == "__main__":
         tmp_token_idx = torch.LongTensor(
             (pad_2d_vals(tmp_token_idx, len(tmp_token_idx), max_node_len))
         )
+
+        # print('after padding, token_idx: {} {}'.format(tmp_token_idx.shape, tmp_token_idx))
+
         graph.node_features["token_id"] = tmp_token_idx
 
     graph_list = [graph.to_dgl() for graph in graph_list]
@@ -63,12 +68,12 @@ if __name__ == "__main__":
     node_size = torch.LongTensor(node_size)
     num_nodes = torch.LongTensor(num_nodes)
 
-    emb_constructor = EmbeddingConstruction(
-        vocab_model.word_vocab, "w2v", "bilstm", "bilstm", hidden_size, device=None
-    )
-    t0 = time.time()
-    node_feat = emb_constructor(bg.ndata["token_id"], node_size, num_nodes)
-    print("runtime: {}".format(time.time() - t0))
-    print("mean", node_feat.mean())
+    # emb_constructor = EmbeddingConstruction(
+    #     vocab_model.in_word_vocab, single_token_item=True
+    # )
+    # t0 = time.time()
+    # node_feat = emb_constructor(bg.ndata["token_id"], node_size, num_nodes)
+    # print("runtime: {}".format(time.time() - t0))
+    # print("mean", node_feat.mean())
 
-    print("emb: {}".format(node_feat.shape))
+    # print("emb: {}".format(node_feat.shape))
