@@ -13,12 +13,12 @@ python -m examples.pytorch.name_entity_recognition.main.py -json_config examples
 
 #### Run inference_advance:
 ```python
-python -m examples.pytorch.name_entity_recognition.inference_advance.py -config examples/pytorch/name_entity_recognition/config/XYZ.json
+python -m examples.pytorch.name_entity_recognition.inference_advance.py -json_config examples/pytorch/name_entity_recognition/config/XYZ.json
 ```
 
 #### Run inference:
 ```python
-python -m examples.pytorch.name_entity_recognition.inference.py -config examples/pytorch/name_entity_recognition/config/XYZ.json
+python -m examples.pytorch.name_entity_recognition.inference.py -json_config examples/pytorch/name_entity_recognition/config/XYZ.json
 ```
 
 

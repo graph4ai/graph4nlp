@@ -1,5 +1,5 @@
 {
-    "config_path": "/home/xiaojie.guo/graph4nlp/graph4nlp/config/ner_inference.yaml",
+    "config_path": "./ner_inference.yaml",
     "model_args.graph_embedding_name": "gat",
     "model_args.graph_construction_name": "dependency_graph",
     "model_args.graph_embedding_args.graph_embedding_share.num_layers": "1",
@@ -7,5 +7,5 @@
     "model_args.graph_embedding_args.graph_embedding_share.feat_drop": "0.1",
     "model_args.graph_embedding_args.graph_embedding_private.aggregator_type": "lstm",
     "model_args.graph_embedding_args.graph_embedding_private.norm": "null",
-    "checkpoint_args.out_dir": "/home/xiaojie.guo/graph4nlp/graph4nlp/examples/pytorch/name_entity_recognition/out/gat_bi_fuse_dependency_graph_ckpt"
+    "checkpoint_args.out_dir": "../out/gat_bi_fuse_dependency_graph_ckpt"
     }

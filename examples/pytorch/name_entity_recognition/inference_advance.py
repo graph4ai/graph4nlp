@@ -264,10 +264,7 @@ if __name__ == "__main__":
     import datetime
 
     starttime = datetime.datetime.now()
-    # long running
-    # do something other
 
-    # args = parser.parse_args()
     cfg = get_args()
     config = load_json_config(cfg["json_config"])
     print_config(config)

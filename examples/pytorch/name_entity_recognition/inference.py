@@ -154,19 +154,7 @@ if __name__ == "__main__":
     import datetime
 
     starttime = datetime.datetime.now()
-    # long running
-    # do something other
 
-    # args = parser.parse_args()
-    # print("load ner template config")
-    # ner_args = get_yaml_config(args.task_config)
-
-    # ner_template = get_basic_args(
-    #    graph_construction_name=ner_args["graph_construction_name"],
-    #    graph_embedding_name=ner_args["graph_embedding_name"],
-    #    decoder_name=ner_args["decoder_name"],
-    # )
-    # update_values(to_args=ner_template, from_args_list=[ner_args])
     cfg = get_args()
     config = load_json_config(cfg["json_config"])
     print_config(config)

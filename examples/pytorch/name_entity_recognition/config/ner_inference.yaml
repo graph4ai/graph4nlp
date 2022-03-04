@@ -22,7 +22,7 @@ model_args:
 
   graph_construction_args:
     graph_construction_share:
-      root_dir: 'examples/pytorch/name_entity_recognition/conll'
+      root_dir: '../conll'
       topology_subdir: 'LineGraph'
       thread_number: 10
       port: 9000
@@ -62,21 +62,6 @@ model_args:
       feat_drop: 0.3            
 
 
-
-  node_embedding:
-    input_size: 300
-    hidden_size: 300
-    word_dropout: 0.2
-    rnn_dropout: 0.3
-    fix_bert_emb: false
-    fix_word_emb: true
-    embedding_style:
-      single_token_item: true
-      emb_strategy: "w2v_bilstm"
-      num_rnn_layers: 1
-      bert_model_name: null
-      bert_lower_case: null
-
 training_args:
   batch_size: 100 # batch size
   epochs: 100 # number of maximal training epochs
@@ -90,7 +75,7 @@ training_args:
 
 
 checkpoint_args:
-  out_dir: '/home/xiaojie.guo/graph4nlp/graph4nlp/examples/pytorch/name_entity_recognition/out/graphsage_bi_fuse_line_graph_ckpt'
+  out_dir: '../out/graphsage_bi_fuse_line_graph_ckpt'
 
 
 env_args:
