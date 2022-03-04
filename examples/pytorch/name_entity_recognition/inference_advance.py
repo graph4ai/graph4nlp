@@ -12,6 +12,7 @@ from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedRefin
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
 )
+from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
 
 from conll import ConllDataset
@@ -92,15 +93,15 @@ def get_tokens(g_list):
 
 
 class Conll:
-    def __init__(self):
+    def __init__(self, config):
         super(Conll, self).__init__()
         self.tag_types = ["I-PER", "O", "B-ORG", "B-LOC", "I-ORG", "I-MISC", "I-LOC", "B-MISC"]
-        if args.gpu > -1:
+        if config["env_args"]["gpu"] > -1:
             self.device = torch.device("cuda")
         else:
             self.device = torch.device("cpu")
         self.checkpoint_save_path = "./checkpoints/"
-
+        self.config = config
         print("finish building model")
         self._build_model()
 
@@ -112,46 +113,63 @@ class Conll:
 
     def _build_dataloader(self):
         print("starting build the dataset")
+        self.graph_name = self.config["model_args"]["graph_construction_name"]
 
-        if args.graph_name == "line_graph":
+        if self.graph_name == "line_graph":
             dataset = ConllDataset(
                 root_dir="examples/pytorch/name_entity_recognition/conll",
                 topology_builder=LineBasedGraphConstruction,
-                graph_name=args.graph_name,
-                static_or_dynamic=args.static_or_dynamic,
-                pretrained_word_emb_cache_dir=args.pre_word_emb_file,
+                graph_name=self.graph_name,
+                static_or_dynamic="static",
+                pretrained_word_emb_cache_dir=self.config["model_args"]["graph_construction_args"][
+                    "graph_construction_share"
+                ]["pre_word_emb_file"],
                 topology_subdir="LineGraph",
                 tag_types=self.tag_types,
                 for_inference=1,
                 reused_vocab_model=self.model.vocab,
             )
-        elif args.graph_name == "dependency_graph":
+        elif self.graph_name == "dependency_graph":
             dataset = ConllDataset(
                 root_dir="examples/pytorch/name_entity_recognition/conll",
                 topology_builder=DependencyBasedGraphConstruction_without_tokenizer,
-                graph_name=args.graph_name,
-                pretrained_word_emb_cache_dir=args.pre_word_emb_file,
+                graph_name=self.graph_name,
+                pretrained_word_emb_cache_dir=self.config["model_args"]["graph_construction_args"][
+                    "graph_construction_share"
+                ]["pre_word_emb_file"],
                 topology_subdir="DependencyGraph",
                 tag_types=self.tag_types,
                 for_inference=1,
                 reused_vocab_model=self.model.vocab,
             )
-        elif args.graph_name == "node_emb":
+        elif self.graph_name == "node_emb":
             dataset = ConllDataset(
                 root_dir="examples/pytorch/name_entity_recognition/conll",
                 topology_builder=NodeEmbeddingBasedGraphConstruction,
-                graph_name=args.graph_name,
-                pretrained_word_emb_cache_dir=args.pre_word_emb_file,
+                graph_name=self.graph_name,
+                pretrained_word_emb_cache_dir=self.config["model_args"]["graph_construction_args"][
+                    "graph_construction_share"
+                ]["pre_word_emb_file"],
                 topology_subdir="DynamicGraph_node_emb",
                 tag_types=self.tag_types,
                 merge_strategy=None,
                 for_inference=1,
                 reused_vocab_model=self.model.vocab,
             )
-        elif args.graph_name == "node_emb_refined":
-            if args.init_graph_name == "line":
+        elif self.graph_name == "node_emb_refined":
+            if (
+                self.config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ].get("dynamic_init_graph_name", None)
+                == "line"
+            ):
                 dynamic_init_topology_builder = LineBasedGraphConstruction
-            elif args.init_graph_name == "dependency":
+            elif (
+                self.config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ].get("dynamic_init_graph_name", None)
+                == "dependency"
+            ):
                 dynamic_init_topology_builder = DependencyBasedGraphConstruction_without_tokenizer
             else:
                 # init_topology_builder
@@ -159,12 +177,16 @@ class Conll:
             dataset = ConllDataset(
                 root_dir="examples/pytorch/name_entity_recognition/conll",
                 topology_builder=NodeEmbeddingBasedRefinedGraphConstruction,
-                graph_name=args.graph_name,
+                graph_name=self.graph_name,
                 static_or_dynamic="dynamic",
-                pretrained_word_emb_cache_dir=args.pre_word_emb_file,
+                pretrained_word_emb_cache_dir=self.config["model_args"]["graph_construction_args"][
+                    "graph_construction_share"
+                ]["pre_word_emb_file"],
                 topology_subdir="DynamicGraph_node_emb_refined",
                 tag_types=self.tag_types,
-                dynamic_init_graph_name=args.init_graph_name,
+                dynamic_init_graph_name=self.config["model_args"]["graph_construction_args"][
+                    "graph_construction_private"
+                ].get("dynamic_init_graph_name", None),
                 dynamic_init_topology_builder=dynamic_init_topology_builder,
                 dynamic_init_topology_aux_args={"dummy_param": 0},
                 for_inference=1,
@@ -183,7 +205,11 @@ class Conll:
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
-        self.optimizer = optim.Adam(parameters, lr=args.lr, weight_decay=args.weight_decay)
+        self.optimizer = optim.Adam(
+            parameters,
+            lr=self.config["training_args"]["lr"],
+            weight_decay=self.config["training_args"]["weight_decay"],
+        )
 
     def _build_evaluation(self):
         self.metrics = Accuracy(["F1", "precision", "recall"])
@@ -210,127 +236,40 @@ class Conll:
         return f1
 
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-json_config",
+        "--json_config",
+        required=True,
+        type=str,
+        help="path to the json config file",
+    )
+    args = vars(parser.parse_args())
+
+    return args
+
+
+def print_config(config):
+    print("**************** MODEL CONFIGURATION ****************")
+    for key in sorted(config.keys()):
+        val = config[key]
+        keystr = "{}".format(key) + (" " * (24 - len(key)))
+        print("{} -->   {}".format(keystr, val))
+    print("**************** MODEL CONFIGURATION ****************")
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="NER")
-    parser.add_argument("--gpu", type=int, default=0, help="which GPU to use.")
-    parser.add_argument("--epochs", type=int, default=150, help="number of training epochs")
-    parser.add_argument(
-        "--direction_option",
-        type=str,
-        default="bi_fuse",
-        help="direction type (`undirected`, `bi_fuse`, `bi_sep`)",
-    )
-    parser.add_argument(
-        "--lstm_num_layers", type=int, default=1, help="number of hidden layers in lstm"
-    )
-    parser.add_argument(
-        "--gnn_num_layers", type=int, default=1, help="number of hidden layers in gnn"
-    )
-    parser.add_argument("--init_hidden_size", type=int, default=300, help="initial_emb_hidden_size")
-    parser.add_argument("--hidden_size", type=int, default=128, help="initial_emb_hidden_size")
-    parser.add_argument("--lstm_hidden_size", type=int, default=80, help="initial_emb_hidden_size")
-    parser.add_argument("--num_class", type=int, default=8, help="num_class")
-    parser.add_argument(
-        "--residual", action="store_true", default=False, help="use residual connection"
-    )
-    parser.add_argument("--word_dropout", type=float, default=0.5, help="input feature dropout")
-    parser.add_argument("--tag_dropout", type=float, default=0.5, help="input feature dropout")
-    parser.add_argument(
-        "--rnn_dropout", type=list, default=0.33, help="dropout for rnn in word_emb"
-    )
-    parser.add_argument("--lr", type=float, default=0.01, help="learning rate")
-    parser.add_argument("--weight-decay", type=float, default=5e-5, help="weight decay")
-    parser.add_argument(
-        "--aggregate_type",
-        type=str,
-        default="mean",
-        help="aggregate type: 'mean','gcn','pool','lstm'",
-    )
-    parser.add_argument(
-        "--gnn_type", type=str, default="graphsage", help="ingnn type: 'gat','graphsage','ggnn'"
-    )
-    parser.add_argument("--use_gnn", type=bool, default=True, help="whether to use gnn")
-    parser.add_argument("--batch_size", type=int, default=100, help="batch size for training")
-    parser.add_argument(
-        "--graph_name",
-        type=str,
-        default="line_graph",
-        help="graph_name:line_graph, dependency_graph, node_emb_graph",
-    )
-    parser.add_argument(
-        "--static_or_dynamic",
-        type=str,
-        default="static",
-        help="static or dynamic",
-    )
-    parser.add_argument(
-        "--init_graph_name",
-        type=str,
-        default="line",
-        help="initial graph construction type ('line', 'dependency', 'constituency', 'ie')",
-    )
-    parser.add_argument(
-        "--pre_word_emb_file", type=str, default=None, help="path of pretrained_word_emb_file"
-    )
-    parser.add_argument(
-        "--gl_num_heads", type=int, default=1, help="num of heads for dynamic graph construction"
-    )
-    parser.add_argument(
-        "--gl_epsilon", type=int, default=0.5, help="epsilon for graph sparsification"
-    )
-    parser.add_argument("--gl_top_k", type=int, default=None, help="top k for graph sparsification")
-    parser.add_argument(
-        "--gl_smoothness_ratio",
-        type=float,
-        default=None,
-        help="smoothness ratio for graph regularization loss",
-    )
-    parser.add_argument(
-        "--gl_sparsity_ratio",
-        type=float,
-        default=None,
-        help="sparsity ratio for graph regularization loss",
-    )
-    parser.add_argument(
-        "--gl_connectivity_ratio",
-        type=float,
-        default=None,
-        help="connectivity ratio for graph regularization loss",
-    )
-    parser.add_argument(
-        "--init_adj_alpha",
-        type=float,
-        default=0.8,
-        help="alpha ratio for combining initial graph adjacency matrix",
-    )
-    parser.add_argument(
-        "--gl_metric_type",
-        type=str,
-        default="weighted_cosine",
-        help="similarity metric type for dynamic graph construction ('weighted_cosine', 'attention', \
-            'rbf_kernel', 'cosine')",
-    )
-    parser.add_argument(
-        "--no_fix_word_emb",
-        type=bool,
-        default=False,
-        help="Not fix pretrained word embeddings (default: false)",
-    )
-    parser.add_argument(
-        "--no_fix_bert_emb",
-        type=bool,
-        default=False,
-        help="Not fix pretrained word embeddings (default: false)",
-    )
 
     import datetime
 
     starttime = datetime.datetime.now()
-    # long running
-    # do something other
 
-    args = parser.parse_args()
-    runner = Conll()
+    cfg = get_args()
+    config = load_json_config(cfg["json_config"])
+    print_config(config)
+
+    runner = Conll(config)
     max_score = runner.test()
     print("Test finish, best score: {:.3f}".format(max_score))
     endtime = datetime.datetime.now()
