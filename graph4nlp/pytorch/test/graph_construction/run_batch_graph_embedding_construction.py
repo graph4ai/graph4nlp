@@ -3,30 +3,52 @@ import dgl
 import numpy as np
 import torch
 
-from ...data.data import GraphData
+from ...data.data import GraphData, to_batch
+from ...data.dataset import DataItem
 from ...modules.graph_embedding_initialization.embedding_construction import EmbeddingConstruction
 from ...modules.utils.padding_utils import pad_2d_vals
-from .vocab_utils import VocabModel
+from ...modules.utils.vocab_utils import VocabModel
+from ...modules.graph_embedding_initialization.graph_embedding_initialization import GraphEmbeddingInitialization
+
+
+class RawTextDataItem(DataItem):
+    def __init__(self, input_text, tokenizer=None):
+        """
+        input_text: str
+        """
+        super(RawTextDataItem, self).__init__(input_text, tokenizer)
+    
+    def extract(self, lower_case=True):
+        return self.input_text.lower().split()
 
 if __name__ == "__main__":
     raw_text_data = [
-            "This is a news aggregator service.",
-            "It presents a continuous flow of articles.",
-            "This is available as an app on Android, iOS, and the Web.",
-            "They released a beta version in September 2002.",
+        "This is a news aggregator service.",
+        "It presents a continuous flow of articles.",
+        "This is available as an app on Android, iOS, and the Web.",
+        "They released a beta version in September 2002.",
     ]
+    raw_text_dataItem = [RawTextDataItem(text) for text in raw_text_data]
     vocab_model = VocabModel(
-        raw_text_data,
+        raw_text_dataItem,
         max_word_vocab_size=None,
         min_word_vocab_freq=1,
         pretrained_word_emb_name=None,
         word_emb_size=300,
     )
 
-    batch_size = 64
+    batch_size = 1
     hidden_size = 128
     num_nodes = list(range(3, 3 + batch_size))
     np.random.shuffle(num_nodes)
+    
+    embedding_style = {
+        "single_token_item": False,
+        "emb_strategy": "w2v_bilstm",
+        "num_rnn_layers": 1,
+        "bert_model_name": None,
+        "bert_lower_case": None,
+    }
 
     # build graph
     max_node_len = 0
@@ -46,7 +68,7 @@ if __name__ == "__main__":
             max_node_len = max(node_size[-1], max_node_len)
 
             # print('tokens: {}'.format(tokens))
-            # print('node_attributes, token_id: {} {}'.format(
+            # print('node_attributes, token_id: {}'.format(
             #     graph.node_attributes[j]["token_id"]
             # ))
             # print('max node len: {}'.format(max_node_len))
@@ -59,21 +81,22 @@ if __name__ == "__main__":
             (pad_2d_vals(tmp_token_idx, len(tmp_token_idx), max_node_len))
         )
 
-        # print('after padding, token_idx: {} {}'.format(tmp_token_idx.shape, tmp_token_idx))
+        # print('after padding, token_id: {} {}'.format(tmp_token_idx.shape, tmp_token_idx))
 
         graph.node_features["token_id"] = tmp_token_idx
 
-    graph_list = [graph.to_dgl() for graph in graph_list]
-    bg = dgl.batch(graph_list, edge_attrs=None)
+    bg = to_batch(graph_list)
     node_size = torch.LongTensor(node_size)
     num_nodes = torch.LongTensor(num_nodes)
+    
+    emb_constructor = GraphEmbeddingInitialization(
+        word_vocab=vocab_model.in_word_vocab,
+        embedding_style=embedding_style,
+        hidden_size=hidden_size
+    )
 
-    # emb_constructor = EmbeddingConstruction(
-    #     vocab_model.in_word_vocab, single_token_item=True
-    # )
-    # t0 = time.time()
-    # node_feat = emb_constructor(bg.ndata["token_id"], node_size, num_nodes)
-    # print("runtime: {}".format(time.time() - t0))
-    # print("mean", node_feat.mean())
-
-    # print("emb: {}".format(node_feat.shape))
+    t0 = time.time()
+    node_feat = emb_constructor(bg).batch_node_features["node_feat"]
+    print("runtime: {}".format(time.time() - t0))
+    print("mean", node_feat.mean())
+    print("emb: {}".format(node_feat.shape))
