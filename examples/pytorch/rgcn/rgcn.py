@@ -11,38 +11,26 @@ from .base import GNNBase, GNNLayerBase
 
 
 class RGCN(GNNBase):
-    r"""Multi-layered `GraphSAGE Network <https://arxiv.org/pdf/1706.02216.pdf>`__
-    Support both unidirectional (i.e., regular) and bidirectional (i.e., `bi_sep` and `bi_fuse`)
-    versions.
+    r"""Multi-layered `RGCN Network <TODO:paper.pdf>`__
 
     .. math::
-        h_{\mathcal{N}(i)}^{(l+1)} & = \mathrm{aggregate}
-        \left(\{h_{j}^{l}, \forall j \in \mathcal{N}(i) \}\right)
-        h_{i}^{(l+1)} & = \sigma \left(W \cdot \mathrm{concat}
-        (h_{i}^{l}, h_{\mathcal{N}(i)}^{l+1} + b) \right)
-        h_{i}^{(l+1)} & = \mathrm{norm}(h_{i}^{l})
+        TODO:Add Calculation.
 
     Parameters
     ----------
     num_layers: int
-        Number of GraphSAGE layers.
+        Number of RGCN layers.
     input_size : int, or pair of ints
         Input feature size.
-        If the layer is to be applied to a unidirectional bipartite graph, ``input_size``
-        specifies the input feature size on both the source and destination nodes.  If
-        a scalar is given, the source and destination node feature size would take the
-        same value.
-        If aggregator type is ``gcn``, the feature size of source and destination nodes
-        are required to be the same.
     hidden_size: int list of int
         Hidden layer size.
         If a scalar is given, the sizes of all the hidden layers are the same.
         If a list of scalar is given, each element in the list is the size of each hidden layer.
         Example: [100,50]
     output_size : int
-        Output feature size. For the bisep version, the output size is 2*output_size
+        Output feature size.
     num_rels : int
-        Number of relations. .
+        Number of relations.
     num_bases : int, optional
         Number of bases. Needed when ``regularizer`` is specified. Default: ``None``.
     use_self_loop : bool, optional
@@ -123,7 +111,7 @@ class RGCN(GNNBase):
         )
 
     def forward(self, graph):
-        r"""Compute GraphSAGE layer.
+        r"""Compute RGCN layer.
 
         Parameters
         ----------
@@ -158,16 +146,12 @@ class RGCNLayer(GNNLayerBase):
     r"""A wrapper for RelGraphConv in DGL.
 
     .. math::
-        tbd
+        TODO
 
     Parameters
     ----------
     input_size : int, or pair of ints
         Input feature size.
-        If the layer is to be applied to a unidirectional bipartite graph, ``input_size``
-        specifies the input feature size on both the source and destination nodes.  If
-        a scalar is given, the source and destination node feature size would take the
-        same value.
     output_size : int
         Output feature size.
     num_rels: int
