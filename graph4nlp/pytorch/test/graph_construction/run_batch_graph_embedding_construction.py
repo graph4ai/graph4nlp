@@ -1,14 +1,14 @@
 import time
-import dgl
 import numpy as np
 import torch
 
 from ...data.data import GraphData, to_batch
 from ...data.dataset import DataItem
-from ...modules.graph_embedding_initialization.embedding_construction import EmbeddingConstruction
 from ...modules.utils.padding_utils import pad_2d_vals
 from ...modules.utils.vocab_utils import VocabModel
-from ...modules.graph_embedding_initialization.graph_embedding_initialization import GraphEmbeddingInitialization
+from ...modules.graph_embedding_initialization.graph_embedding_initialization import (
+    GraphEmbeddingInitialization
+)
 
 
 class RawTextDataItem(DataItem):
@@ -17,9 +17,13 @@ class RawTextDataItem(DataItem):
         input_text: str
         """
         super(RawTextDataItem, self).__init__(input_text, tokenizer)
-    
+
     def extract(self, lower_case=True):
-        return self.input_text.lower().split()
+        if lower_case:
+            return self.input_text.lower().split()
+        else:
+            return self.input_text.split()
+
 
 if __name__ == "__main__":
     raw_text_data = [
@@ -41,7 +45,7 @@ if __name__ == "__main__":
     hidden_size = 128
     num_nodes = list(range(3, 3 + batch_size))
     np.random.shuffle(num_nodes)
-    
+
     embedding_style = {
         "single_token_item": False,
         "emb_strategy": "w2v_bilstm",
@@ -67,12 +71,6 @@ if __name__ == "__main__":
             node_size.append(len(graph.node_attributes[j]["token_id"]))
             max_node_len = max(node_size[-1], max_node_len)
 
-            # print('tokens: {}'.format(tokens))
-            # print('node_attributes, token_id: {}'.format(
-            #     graph.node_attributes[j]["token_id"]
-            # ))
-            # print('max node len: {}'.format(max_node_len))
-
         graph_list.append(graph)
 
     for graph in graph_list:
@@ -81,14 +79,12 @@ if __name__ == "__main__":
             (pad_2d_vals(tmp_token_idx, len(tmp_token_idx), max_node_len))
         )
 
-        # print('after padding, token_id: {} {}'.format(tmp_token_idx.shape, tmp_token_idx))
-
         graph.node_features["token_id"] = tmp_token_idx
 
     bg = to_batch(graph_list)
     node_size = torch.LongTensor(node_size)
     num_nodes = torch.LongTensor(num_nodes)
-    
+
     emb_constructor = GraphEmbeddingInitialization(
         word_vocab=vocab_model.in_word_vocab,
         embedding_style=embedding_style,
