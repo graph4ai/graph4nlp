@@ -1,6 +1,7 @@
-<p align="center">
+<p align="center"><a href="https://dlg4nlp.github.io/index.html">
 <img src="./imgs/graph4nlp_logo.png" width="800" class="center" alt="logo"/>
     <br/>
+    <a/>
 </p>
    
 [pypi-image]: https://badge.fury.io/py/graph4nlp.svg
