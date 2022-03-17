@@ -241,7 +241,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--task_config",
         type=str,
-        default="/home/xiaojie.guo/graph4nlp/graph4nlp/ner_inference.yaml",
+        default="./ner_inference.yaml",
         help="Not fix pretrained word embeddings (default: false)",
     )
 
