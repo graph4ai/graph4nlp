@@ -7,7 +7,7 @@ import dgl
 from dgl.utils import check_eq_shape, expand_as_pair
 from dgl.nn.pytorch import RelGraphConv
 
-from .base import GNNBase, GNNLayerBase
+from graph4nlp.pytorch.modules.graph_embedding_learning.base import GNNBase, GNNLayerBase
 
 
 class RGCN(GNNBase):
