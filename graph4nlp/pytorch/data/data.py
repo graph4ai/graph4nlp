@@ -68,13 +68,13 @@ class GraphData(object):
         """
 
         # Initialize internal data storages.
-        self._node_attributes = node_attribute_factory()
-        self._node_features = node_feature_factory(res_init_node_features)
+        self._node_attributes: List[Dict[str, Any]] = node_attribute_factory()
+        self._node_features: Dict[str, torch.Tensor] = node_feature_factory(res_init_node_features)
         self._edge_indices = EdgeIndex(src=[], tgt=[])
-        self._nids_eid_mapping = nids_eid_mapping_factory()
-        self._edge_features = edge_feature_factory(res_init_edge_features)
-        self._edge_attributes = edge_attribute_factory()
-        self.graph_attributes = graph_data_factory()
+        self._nids_eid_mapping: Dict[Tuple[int, int], int] = nids_eid_mapping_factory()
+        self._edge_features: Dict[str, torch.Tensor] = edge_feature_factory(res_init_edge_features)
+        self._edge_attributes: List[Dict[str, Any]] = edge_attribute_factory()
+        self.graph_attributes: Dict[str, Any] = graph_data_factory()
         self.device = device
 
         # Batch information.
@@ -449,7 +449,7 @@ class GraphData(object):
         for key in self._edge_features.keys():
             self._edge_features[key] = entail_zero_padding(self._edge_features[key], num_edges)
 
-    def edge_ids(self, src: Union[int, List[int]], tgt: Union[int or List[int]]) -> List[Any]:
+    def edge_ids(self, src: Union[int, List[int]], tgt: Union[int, List[int]]) -> List[Any]:
         """
         Convert the given endpoints to edge indices.
 
@@ -1066,6 +1066,81 @@ class GraphData(object):
         for i in range(self.batch_size):
             output[i, : info_src[i]] = split_input[i]
         return output
+
+
+class HeteroGraphData(GraphData):
+    """
+    Heterogeneous graph data structure. Example usage: rGCN.
+    """
+
+    def add_edge(self, src: int, tgt: int):
+        # Consistency check
+        if (src < 0 or src >= self.get_node_num()) and (tgt < 0 and tgt >= self.get_node_num()):
+            raise ValueError("Endpoint not in the graph.")
+
+        # Append to the mapping list
+        endpoint_tuple = (src, tgt)
+        eid = self.get_edge_num()
+        self._nids_eid_mapping[endpoint_tuple] = eid
+
+        # Add edge
+        self._edge_indices.src.append(src)
+        self._edge_indices.tgt.append(tgt)
+
+        # Initialize edge feature and attribute
+        # 1. create placeholder in edge attribute dictionary
+        self._edge_attributes.append(single_edge_attr_factory(**res_init_edge_attributes))
+        # 2. perform zero padding
+        for key in self._edge_features.keys():
+            self._edge_features[key] = entail_zero_padding(self._edge_features[key], 1)
+
+    def add_edges(self, src: Union[int, List[int]], tgt: Union[int, List[int]]) -> None:
+        """
+        Add a bunch of edges to the graph.
+
+        Parameters
+        ----------
+        src : int or list
+            Source node indices
+        tgt : int or list
+            Target node indices
+
+        Raises
+        ------
+        ValueError
+            If the lengths of `src` and `tgt` don't match or one of the list contains no element.
+        """
+        src, tgt = check_and_expand(int_to_list(src), int_to_list(tgt))
+        current_num_edges = len(self._edge_attributes)
+        # --- Consistency check ---
+        if len(src) != len(tgt):
+            raise ValueError(
+                "Length of the source and target indices is not the same. "
+                "Got {} source nodes and {} target nodes".format(len(src), len(tgt))
+            )
+        for src_idx, tgt_idx in zip(src, tgt):
+            if (src_idx < 0 or src_idx >= self.get_node_num()) and (
+                tgt_idx < 0 and tgt_idx >= self.get_node_num()
+            ):
+                raise ValueError("Endpoint not in the graph.")
+        # --- Consistency check ---
+        for i in range(len(src)):
+            # If the edge to be added already exists in the graph, then skip it.
+            endpoint_tuple = (src[i], tgt[i])
+            self._nids_eid_mapping[endpoint_tuple] = current_num_edges + i
+
+        num_edges = len(src)
+
+        # Add edge indices
+        self._edge_indices.src.extend(src)
+        self._edge_indices.tgt.extend(tgt)
+
+        # Initialize edge attributes and features
+        self._edge_attributes.extend(
+            [single_edge_attr_factory(**res_init_edge_attributes) for _ in range(num_edges)]
+        )
+        for key in self._edge_features.keys():
+            self._edge_features[key] = entail_zero_padding(self._edge_features[key], num_edges)
 
 
 def from_dgl(g: dgl.DGLGraph) -> GraphData:
