@@ -7,7 +7,7 @@ includes: []
 preprocessing_args:
   min_freq: 1
   pretrained_word_emb_name: "6B"
-  pretrained_word_emb_url: None
+  pretrained_word_emb_url: null
   pretrained_word_emb_cache_dir: ".vector_cache"
   word_emb_size: 300
 
@@ -27,6 +27,21 @@ model_args:
       thread_number: 4
       port: 9000
       timeout: 15000
+
+      nlp_processor_args:
+        name: "stanza"
+        args:
+          annotators: ["tokenize,ssplit,pos,depparse"]
+          corenlp_dir: "/home/shiina/software/stanford-corenlp-4.0.0"
+          endpoint: "http://localhost:9002"
+          memory: "4G"
+          properties:
+            tokenize.options: 
+              splitHyphenated: False
+              normalizeParentheses: False
+              normalizeOtherBrackets: False
+            tokenize.whitespace: True
+            ssplit.isOneSentence: True
       
     graph_construction_private:
       edge_strategy: 'homogeneous'

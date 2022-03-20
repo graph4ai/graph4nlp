@@ -89,6 +89,7 @@ class JobsDataset(Text2TextDataset):
         lower_case=True,
         thread_number=1,
         port=9000,
+        nlp_processor_args=None,
         for_inference=None,
         reused_vocab_model=None,
     ):
@@ -111,6 +112,7 @@ class JobsDataset(Text2TextDataset):
             word_emb_size=word_emb_size,
             thread_number=thread_number,
             port=port,
+            nlp_processor_args=nlp_processor_args,
             dynamic_init_graph_name=dynamic_init_graph_name,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,

@@ -275,7 +275,6 @@ class WordEmbModel(Vectors):
         pretrained_word_emb_cache_dir=".vector_cache/",
         pretrained_word_emb_dim=300,
     ):
-
         if pretrained_word_emb_name in GloVe.url.keys() and pretrained_word_emb_url is None:
             url = GloVe.url[pretrained_word_emb_name]
             name = "glove.{}.{}d.txt".format(pretrained_word_emb_name, str(pretrained_word_emb_dim))
