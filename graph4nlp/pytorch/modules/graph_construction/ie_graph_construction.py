@@ -180,25 +180,36 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         """
         cls.verbose = verbose
 
-        if isinstance(processor_args, list):
-            props_coref = processor_args[0]
-            props_openie = processor_args[1]
-        else:
-            raise RuntimeError(
-                "processor_args for IEBasedGraphConstruction shouble be a list of dict."
-            )
+        # if isinstance(processor_args, list):
+        #     props_coref = processor_args[0]
+        #     props_openie = processor_args[1]
+        # else:
+        #     raise RuntimeError(
+        #         "processor_args for IEBasedGraphConstruction shouble be a list of dict."
+        #     )
+
+        props_coref = {
+            "annotators": "tokenize, ssplit, pos, lemma, ner, parse, coref",
+        }
+        props_coref.update(processor_args)
+        props_coref.pop('openie.triple.strict')
+
+        props_openie = {
+            "annotators": "tokenize, ssplit, pos, ner, parse, openie",
+        }
+        props_openie.update(processor_args)
 
         # Do coreference resolution on the whole 'raw_text_data'
-        coref_json = nlp_processor.annotate(raw_text_data.strip(), properties=props_coref)
-        from .utils import CORENLP_TIMEOUT_SIGNATURE
-
-        if CORENLP_TIMEOUT_SIGNATURE in coref_json:
-            raise TimeoutError(
-                "Coref-CoreNLP timed out at input: \n{}\n This item will be skipped. "
-                "Please check the input or change the timeout threshold.".format(raw_text_data)
-            )
-
-        coref_dict = json.loads(coref_json)
+        coref_dict = nlp_processor.annotate(raw_text_data.strip(), properties=props_coref)
+        # from .utils import CORENLP_TIMEOUT_SIGNATURE
+        #
+        # if CORENLP_TIMEOUT_SIGNATURE in coref_json:
+        #     raise TimeoutError(
+        #         "Coref-CoreNLP timed out at input: \n{}\n This item will be skipped. "
+        #         "Please check the input or change the timeout threshold.".format(raw_text_data)
+        #     )
+        #
+        # coref_dict = json.loads(coref_json)
 
         # Extract and preserve necessary parsing results from coref_dict['sentences']
         # sent_dict['tokenWords']: list of tokens in a sentence
@@ -244,13 +255,13 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         all_sent_triples = {}
         for sent in sentences:
             resolved_sent = sent["resolvedText"]
-            openie_json = nlp_processor.annotate(resolved_sent.strip(), properties=props_openie)
-            if CORENLP_TIMEOUT_SIGNATURE in openie_json:
-                raise TimeoutError(
-                    "OpenIE-CoreNLP timed out at input: \n{}\n This item will be skipped. "
-                    "Please check the input or change the timeout threshold.".format(raw_text_data)
-                )
-            openie_dict = json.loads(openie_json)
+            openie_dict = nlp_processor.annotate(resolved_sent.strip(), properties=props_openie)
+            # if CORENLP_TIMEOUT_SIGNATURE in openie_json:
+            #     raise TimeoutError(
+            #         "OpenIE-CoreNLP timed out at input: \n{}\n This item will be skipped. "
+            #         "Please check the input or change the timeout threshold.".format(raw_text_data)
+            #     )
+            # openie_dict = json.loads(openie_json)
             for triple_dict in openie_dict["sentences"][0]["openie"]:
                 sbj = triple_dict["subject"]
                 rel = triple_dict["relation"]

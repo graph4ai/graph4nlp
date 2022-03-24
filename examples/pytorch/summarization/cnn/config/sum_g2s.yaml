@@ -18,8 +18,7 @@ model_args:
   graph_construction_args:
     graph_construction_share:
       root_dir: "examples/pytorch/summarization/cnn"
-      topology_subdir: 'DependencyGraph1'
-#      topology_subdir: 'DependencyGraph'
+      topology_subdir: 'DependencyGraph'
       thread_number: 35
       port: 9100
 
