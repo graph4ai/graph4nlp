@@ -22,12 +22,27 @@ model_args:
 
   graph_construction_args:
     graph_construction_share:
-      root_dir: '../conll'
+      root_dir: '../conll/'
       topology_subdir: 'LineGraph'
       thread_number: 10
       port: 9000
       timeout: 15000
-      pre_word_emb_file: None
+      pre_word_emb_file: null
+
+    nlp_processor_args:
+      name: "stanza"
+      args:
+          annotators: ["tokenize,ssplit,pos,depparse"]
+          corenlp_dir: "../stanford-corenlp-4.0.0"
+          endpoint: "http://localhost:9002"
+          memory: "4G"
+          properties:
+            tokenize.options: 
+              splitHyphenated: False
+              normalizeParentheses: False
+              normalizeOtherBrackets: False
+            tokenize.whitespace: True
+            ssplit.isOneSentence: True
 
     graph_construction_private:
       edge_strategy: 'homogeneous'

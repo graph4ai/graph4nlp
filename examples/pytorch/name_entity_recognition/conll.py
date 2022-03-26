@@ -1,9 +1,13 @@
+import os
 from copy import deepcopy
 import stanfordcorenlp
+import stanza
 import torch
+from stanza.server import CoreNLPClient
 
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.data.dataset import SequenceLabelingDataset
+from graph4nlp.pytorch.modules.utils.nlp_parser_utils import get_stanza_properties
 
 from dependency_graph_construction_without_tokenize import (
     DependencyBasedGraphConstruction_without_tokenizer,
@@ -34,14 +38,16 @@ class ConllDataset(SequenceLabelingDataset):
         graph_name,
         static_or_dynamic="static",
         topology_builder=None,
-        topology_subdir=None,
         pretrained_word_emb_cache_dir=None,
         edge_strategy=None,
         merge_strategy=None,
         tag_types=None,
+        topology_subdir=None,
         dynamic_init_graph_name=None,
         dynamic_init_topology_builder=None,
+        dynamic_init_topology_aux_args=None,
         for_inference=None,
+        nlp_processor_args=None,
         reused_vocab_model=None,
         **kwargs
     ):
@@ -54,8 +60,10 @@ class ConllDataset(SequenceLabelingDataset):
             edge_strategy=edge_strategy,
             merge_strategy=merge_strategy,
             tag_types=tag_types,
+            nlp_processor_args=nlp_processor_args,
             dynamic_init_graph_name=dynamic_init_graph_name,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
             pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
@@ -68,11 +76,14 @@ class ConllDataset(SequenceLabelingDataset):
         self,
         data_items,
         topology_builder,
+        nlp_processor,
+        nlp_processor_args,
         static_or_dynamic,
         graph_name,
         dynamic_init_topology_builder,
         merge_strategy,
         edge_strategy,
+        dynamic_init_topology_aux_args,
         lower_case,
         tokenizer,
         port,
@@ -89,35 +100,22 @@ class ConllDataset(SequenceLabelingDataset):
         if self.static_or_dynamic == "static":
 
             if self.topology_builder == DependencyBasedGraphConstruction_without_tokenizer:
-                print("Connecting to stanfordcorenlp server...")
-                processor = stanfordcorenlp.StanfordCoreNLP(
-                    "http://localhost", port=9000, timeout=1000
-                )
-                processor_args = {
-                    "annotators": "ssplit,tokenize,depparse",
-                    "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,\
-                        normalizeOtherBrackets=false",
-                    "tokenize.whitespace": False,
-                    "ssplit.isOneSentence": False,
-                    "outputFormat": "json",
-                }
+                nlp_processor.start()
                 for item in data_items:
                     graph = self.topology_builder.static_topology(
                         raw_text_data=item.input_text,
+                        nlp_processor=nlp_processor,
+                        processor_args=nlp_processor_args,
+                        merge_strategy=merge_strategy,
+                        edge_strategy=edge_strategy,
+                        verbose=False,
                         auxiliary_args=self.depedency_topology_aux_args,
                     )
                     item.graph = graph
+                ret = [x for idx, x in enumerate(data_items)]
 
             elif self.topology_builder == LineBasedGraphConstruction:
                 processor = None
-                processor_args = {
-                    "annotators": "ssplit,tokenize,depparse",
-                    "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,\
-                        normalizeOtherBrackets=false",
-                    "tokenize.whitespace": False,
-                    "ssplit.isOneSentence": False,
-                    "outputFormat": "json",
-                }
                 for item in data_items:
                     graph = self.topology_builder.static_topology(
                         raw_text_data=item.input_text,
@@ -127,6 +125,7 @@ class ConllDataset(SequenceLabelingDataset):
                         processor_args=None,
                     )
                     item.graph = graph
+                ret = [x for idx, x in enumerate(data_items)]
 
             else:
                 raise NotImplementedError("unknown static graph type: {}".format(self.graph_name))
@@ -188,21 +187,49 @@ class ConllDataset(SequenceLabelingDataset):
 
         else:
             raise NotImplementedError("Currently only static and dynamic are supported!")
-        return data_items
+        return ret
 
     def build_topology(self, data_items):
+        print("building topology")
+        if self.topology_builder == LineBasedGraphConstruction:
+            nlp_processor = None
+            nlp_processor_args = None
+        else:
+            if self.nlp_processor_args["name"] == "stanza":
+                corenlp_dir = self.nlp_processor_args["args"]["corenlp_dir"]
+                stanza.install_corenlp(dir=corenlp_dir)
+                os.environ["CORENLP_HOME"] = corenlp_dir
+                print("Connecting to NLP parsing tool: stanza")
+                from stanza.server.client import StartServer
+
+                nlp_processor = CoreNLPClient(
+                    annotators=self.nlp_processor_args["args"]["annotators"],
+                    start_server=StartServer.TRY_START,
+                    memory=self.nlp_processor_args["args"]["memory"],
+                    endpoint=self.nlp_processor_args["args"]["endpoint"],
+                    be_quiet=True,
+                    output_format="json",
+                )
+
+                nlp_processor_args = get_stanza_properties(
+                    self.nlp_processor_args["args"]["properties"]
+                )
+
         return self._build_topology_process(
             data_items,
             self.topology_builder,
+            nlp_processor,
+            nlp_processor_args,
             self.static_or_dynamic,
             self.graph_construction_name,
             self.dynamic_init_topology_builder,
             self.merge_strategy,
             self.edge_strategy,
+            self.dynamic_init_topology_aux_args,
             self.lower_case,
             self.tokenizer,
-            9000,
-            1000,
+            self.port,
+            self.timeout,
         )
 
 
@@ -235,7 +262,9 @@ class ConllDataset_inference(SequenceLabelingDataset):
         tag_types=None,
         dynamic_init_graph_name=None,
         dynamic_init_topology_builder=None,
+        dynamic_init_topology_aux_args=None,
         for_inference=None,
+        nlp_processor_args=None,
         reused_vocab_model=None,
         **kwargs
     ):
@@ -247,8 +276,10 @@ class ConllDataset_inference(SequenceLabelingDataset):
             edge_strategy=edge_strategy,
             merge_strategy=merge_strategy,
             tag_types=tag_types,
+            nlp_processor_args=nlp_processor_args,
             dynamic_init_graph_name=dynamic_init_graph_name,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
+            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
             pretrained_word_emb_cache_dir=pretrained_word_emb_cache_dir,
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
