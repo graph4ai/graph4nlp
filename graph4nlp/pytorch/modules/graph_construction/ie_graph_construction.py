@@ -1,5 +1,3 @@
-import json
-
 from ...data.data import GraphData
 from .base import StaticGraphConstructionBase
 
@@ -192,7 +190,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             "annotators": "tokenize, ssplit, pos, lemma, ner, parse, coref",
         }
         props_coref.update(processor_args)
-        props_coref.pop('openie.triple.strict')
+        props_coref.pop("openie.triple.strict")
 
         props_openie = {
             "annotators": "tokenize, ssplit, pos, ner, parse, openie",
@@ -259,7 +257,8 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             # if CORENLP_TIMEOUT_SIGNATURE in openie_json:
             #     raise TimeoutError(
             #         "OpenIE-CoreNLP timed out at input: \n{}\n This item will be skipped. "
-            #         "Please check the input or change the timeout threshold.".format(raw_text_data)
+            #         "Please check the input or "
+            #         "change the timeout threshold.".format(raw_text_data)
             #     )
             # openie_dict = json.loads(openie_json)
             for triple_dict in openie_dict["sentences"][0]["openie"]:
