@@ -60,12 +60,12 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             raw_text_data.strip().replace("(", "<LB>").replace(")", "<RB>"),
             properties=processor_args,
         )
-        if CORENLP_TIMEOUT_SIGNATURE in output:
-            raise TimeoutError(
-                "CoreNLP timed out at input: \n{}\n This item will be skipped. "
-                "Please check the input or change the timeout threshold.".format(raw_text_data)
-            )
-        parsed_output = json.loads(output)["sentences"]
+        # if CORENLP_TIMEOUT_SIGNATURE in output:
+        #     raise TimeoutError(
+        #         "CoreNLP timed out at input: \n{}\n This item will be skipped. "
+        #         "Please check the input or change the timeout threshold.".format(raw_text_data)
+        #     )
+        parsed_output = output["sentences"]
         return parsed_output
 
     @classmethod
