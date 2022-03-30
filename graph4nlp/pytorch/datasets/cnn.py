@@ -11,7 +11,6 @@ class CNNDataset(Text2TextDataset):
         self,
         root_dir,
         topology_subdir,
-        graph_name,
         static_or_dynamic="static",
         tokenizer=word_tokenize,
         lower_case=True,
@@ -31,6 +30,7 @@ class CNNDataset(Text2TextDataset):
         dynamic_init_graph_name=None,
         dynamic_init_topology_builder=None,
         dynamic_init_topology_aux_args=None,
+        nlp_processor_args=None,
         for_inference=False,
         reused_vocab_model=None,
         **kwargs
@@ -38,7 +38,6 @@ class CNNDataset(Text2TextDataset):
         super(CNNDataset, self).__init__(
             root_dir=root_dir,
             topology_subdir=topology_subdir,
-            graph_name=graph_name,
             static_or_dynamic=static_or_dynamic,
             tokenizer=tokenizer,
             lower_case=lower_case,
@@ -51,6 +50,7 @@ class CNNDataset(Text2TextDataset):
             seed=seed,
             thread_number=thread_number,
             port=port,
+            nlp_processor_args=nlp_processor_args,
             timeout=timeout,
             edge_strategy=edge_strategy,
             share_vocab=share_vocab,
