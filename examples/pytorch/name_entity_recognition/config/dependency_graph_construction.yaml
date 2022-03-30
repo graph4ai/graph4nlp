@@ -1,0 +1,29 @@
+graph_construction_share:
+  graph_name: 'dependency_graph'
+  root_dir: null
+  topology_subdir: 'DependencyGraph'
+  share_vocab: true
+  thread_number: 4
+  port: 9000
+  timeout: 15000
+
+graph_construction_private:
+  edge_strategy: 'homogeneous'
+  merge_strategy: 'tailhead'
+  sequential_link: true
+  as_node: false
+
+  nlp_processor_args:
+    name: "stanza"
+    args:
+      annotators: ["tokenize", "ssplit", "pos", "depparse"]
+      corenlp_dir: "./corenlp"
+      endpoint: "http://localhost:9002"
+      memory: "4G"
+      properties:
+        tokenize.options: 
+          splitHyphenated: False
+          normalizeParentheses: False
+          normalizeOtherBrackets: False
+        tokenize.whitespace: True
+        ssplit.isOneSentence: True
