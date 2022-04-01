@@ -167,6 +167,9 @@ class ModelHandler:
             max_word_vocab_size=self.config["preprocessing_args"]["top_word_vocab"],
             min_word_vocab_freq=self.config["preprocessing_args"]["min_word_freq"],
             word_emb_size=self.config["preprocessing_args"]["word_emb_size"],
+            nlp_processor_args=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ].get("nlp_processor_args", None),
             share_vocab=self.config["preprocessing_args"]["share_vocab"],
             seed=self.config["env_args"]["seed"],
             thread_number=self.config["model_args"]["graph_construction_args"][

@@ -19,6 +19,21 @@ model_args:
       root_dir: 'examples/pytorch/text_classification/data/trec'
       topology_subdir: 'DependencyGraph'
 
+      nlp_processor_args:
+        name: "stanza"
+        args:
+          annotators: ["tokenize", "ssplit", "pos", "depparse"]
+          corenlp_dir: "./corenlp"
+          endpoint: "http://localhost:9002"
+          memory: "4G"
+          properties:
+            tokenize.options:
+              splitHyphenated: False
+              normalizeParentheses: False
+              normalizeOtherBrackets: False
+            tokenize.whitespace: True
+            ssplit.isOneSentence: True
+
   graph_initialization_args:
     input_size: 300
     hidden_size: 300
