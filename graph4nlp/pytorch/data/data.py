@@ -79,10 +79,10 @@ class GraphData(object):
         self.is_hetero = is_hetero
 
         if is_hetero:
-            self._ntypes = []
+            self._ntypes: List[str] = []
             # self._ntype_to_idx: Dict[str, int] = {}
             # self._idx_to_ntype: Dict[int, str] = {}
-            self._etypes = []
+            self._etypes: List[Tuple[str, str, str]] = []
 
         # Batch information.
         # If this instance is not a batch, then the following attributes are all `None`.
@@ -307,7 +307,7 @@ class GraphData(object):
             if not isinstance(value, torch.Tensor):
                 raise TypeError("torch.Tensor expected, received `{}'.".format(type(value)))
 
-            value_on_device = value
+            value_on_device = value.to(self.device)
             if key not in self._node_features or self._node_features[key] is None:
                 self._node_features[key] = value_on_device
             else:
@@ -1292,6 +1292,7 @@ def to_batch(graphs: List[GraphData] = None) -> GraphData:
     big_graph = GraphData()
     big_graph._is_batch = True
     big_graph.device = graphs[0].device
+    big_graph.is_hetero = is_heterograph
 
     total_num_nodes = 0
     for g in graphs:
@@ -1447,7 +1448,7 @@ def from_batch(batch: GraphData) -> List[GraphData]:
         cum_n_nodes += num_nodes[graph_cnt]
 
     # Add node and edge types
-    if batch.is_heterograph:
+    if batch.is_hetero:
         cum_n_nodes = 0
         cum_n_edges = 0
         for graph_cnt in range(batch_size):

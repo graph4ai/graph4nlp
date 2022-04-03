@@ -36,6 +36,18 @@ def test_add_nodes():
     assert torch.all(torch.eq(g.node_features["zero"][10:], torch.zeros(9)))
 
 
+def test_add_nodes_hetero():
+    g = GraphData(is_hetero=True)
+    try:
+        g.add_nodes(10, ntypes=["A"] * 9)
+        fail_here()
+    except AssertionError:
+        pass
+    g.add_nodes(10, ntypes=["A"] * 10)
+    assert g.get_node_num() == 10  # Test node number
+    assert g.ntypes == ["A"] * 10  # Test node type
+
+
 def test_set_node_features_cpu():
     g = GraphData()
     g.add_nodes(10)
@@ -160,6 +172,13 @@ def test_add_edges():
     # Test adding duplicate edges
     with pytest.warns(Warning):
         g.add_edges([0, 1], [1, 2])
+
+
+def test_add_edges_hetero():
+    g = GraphData(is_hetero=True)
+    g.add_nodes(10, ntypes=["A"] * 5 + ["B"] * 5)
+    g.add_edges([0, 1, 2, 3, 4], [5, 6, 7, 8, 9], etypes=[("A", "R_ab", "B")] * 5)
+    assert g.etypes == [("A", "R_ab", "B")] * 5
 
 
 def test_edge_ids():
