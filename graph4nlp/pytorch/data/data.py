@@ -1345,8 +1345,8 @@ def from_dgl(g: dgl.DGLGraph, is_hetero=False) -> GraphData:
     GraphData
         The converted graph in GraphData format.
     """
-    graph = GraphData(is_hetero=not g.is_homogeneous)
-    graph.from_dgl(g, is_hetero=not g.is_homogeneous)
+    graph = GraphData(is_hetero=is_hetero)
+    graph.from_dgl(g)
     return graph
 
 
