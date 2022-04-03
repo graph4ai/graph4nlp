@@ -158,15 +158,9 @@ class ModelHandler:
             thread_number=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["thread_number"],
-            port=self.config["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "port"
-            ],
             nlp_processor_args=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["nlp_processor_args"],
-            timeout=self.config["model_args"]["graph_construction_args"][
-                "graph_construction_share"
-            ]["timeout"],
             tokenizer=None,
         )
 

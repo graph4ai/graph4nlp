@@ -1,3 +1,5 @@
+import sys
+sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
 import os
 import resource
 import numpy as np
@@ -26,8 +28,7 @@ class NMT:
         self.use_copy = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"]["use_copy"]
         assert self.use_copy is False, print("Copy is not fit to NMT")
         self.use_coverage = self.opt["model_args"]["decoder_args"]["rnn_decoder_share"][
-            "use_\
-            coverage"
+            "use_coverage"
         ]
         self._build_device(self.opt)
         self._build_logger(self.opt["training_args"]["log_dir"])
@@ -69,8 +70,7 @@ class NMT:
     def _build_dataloader(self):
         dataset = IWSLT14Dataset(
             root_dir=self.opt["model_args"]["graph_construction_args"][
-                "graph_construction\
-                _share"
+                "graph_construction_share"
             ]["root_dir"],
             val_split_ratio=self.opt["preprocessing_args"]["val_split_ratio"],
             merge_strategy=self.opt["model_args"]["graph_construction_args"][

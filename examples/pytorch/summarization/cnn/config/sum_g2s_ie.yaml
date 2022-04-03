@@ -21,7 +21,6 @@ model_args:
 #      topology_subdir: 'IEGraph_3w'
       topology_subdir: 'IEGraph_stanza'
       thread_number: 35
-      port: 9100
 
       nlp_processor_args:
         name: "stanza"

@@ -1,5 +1,3 @@
-import sys
-sys.path.append("/home/shiina/shiina/lib/graph4nlp")
 import numpy as np
 import torch
 import torch.optim as optim
@@ -91,9 +89,6 @@ class Jobs:
             thread_number=self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["thread_number"],
-            port=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "port"
-            ],
             nlp_processor_args=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"]["nlp_processor_args"]
         )
 

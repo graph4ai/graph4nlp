@@ -25,14 +25,12 @@ model_args:
       topology_subdir: 'DependencyGraph'
       share_vocab: true
       thread_number: 4
-      port: 9000
-      timeout: 15000
 
       nlp_processor_args:
         name: "stanza"
         args:
           annotators: ["tokenize,ssplit,pos,depparse"]
-          corenlp_dir: "/home/shiina/software/stanford-corenlp-4.0.0"
+          corenlp_dir: "./corenlp"
           endpoint: "http://localhost:9002"
           memory: "4G"
           properties:

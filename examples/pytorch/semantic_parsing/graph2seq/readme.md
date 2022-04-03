@@ -10,15 +10,6 @@ Graph2Seq results
 How to run
 ----------
 
-#### Start the StanfordCoreNLP server for data preprocessing:
-
-1) Download StanfordCoreNLP `https://stanfordnlp.github.io/CoreNLP/`
-2) Go to the root folder and start the server:
-
-```java
-    java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
-```
-
 #### Run with following:
 
 ```python

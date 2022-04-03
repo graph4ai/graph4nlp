@@ -4,8 +4,6 @@ graph_construction_share:
   topology_subdir: 'DependencyGraph'
   share_vocab: true
   thread_number: 4
-  port: 9000
-  timeout: 15000
 
 graph_construction_private:
   edge_strategy: 'homogeneous'
