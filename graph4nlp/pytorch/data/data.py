@@ -1330,7 +1330,7 @@ class GraphData(object):
         return output
 
 
-def from_dgl(g: dgl.DGLGraph) -> GraphData:
+def from_dgl(g: dgl.DGLGraph, is_hetero=False) -> GraphData:
     """
     Convert a dgl.DGLGraph to a GraphData object.
 
@@ -1338,7 +1338,8 @@ def from_dgl(g: dgl.DGLGraph) -> GraphData:
     ----------
     g : dgl.DGLGraph
         The source graph in DGLGraph format.
-
+    is_hetero: bool, default=False
+        Whether the graph should be heterogeneous
     Returns
     -------
     GraphData
