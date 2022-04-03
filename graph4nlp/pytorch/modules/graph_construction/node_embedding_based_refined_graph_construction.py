@@ -90,6 +90,7 @@ class NodeEmbeddingBasedRefinedGraphConstruction(DynamicGraphConstructionBase):
         verbose=False,
         dynamic_init_topology_builder=None,
         dynamic_init_topology_aux_args=None,
+        **kwargs
     ):
         """Convert raw text data to the initial graph.
 

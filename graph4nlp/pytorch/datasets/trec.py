@@ -38,6 +38,7 @@ class TrecDataset(Text2LabelDataset):
         min_word_vocab_freq=1,
         tokenizer=nltk.RegexpTokenizer(" ", gaps=True).tokenize,
         word_emb_size=None,
+        nlp_processor_args=None,
         **kwargs
     ):
         super(TrecDataset, self).__init__(
@@ -56,5 +57,6 @@ class TrecDataset(Text2LabelDataset):
             min_word_vocab_freq=min_word_vocab_freq,
             tokenizer=tokenizer,
             word_emb_size=word_emb_size,
+            nlp_processor_args=nlp_processor_args,
             **kwargs
         )
