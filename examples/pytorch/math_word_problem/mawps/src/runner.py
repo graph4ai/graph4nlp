@@ -65,6 +65,8 @@ class Mawps:
             ].get("dynamic_init_graph_name", None),
             "min_word_vocab_freq": self.opt["preprocessing_args"]["min_freq"],
             "pretrained_word_emb_name": self.opt["preprocessing_args"]["pretrained_word_emb_name"],
+            "nlp_processor_args": self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_share"]["nlp_processor_args"]
         }
 
         dataset = MawpsDatasetForTree(**para_dic)

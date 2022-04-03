@@ -22,8 +22,6 @@ model_args:
       topology_subdir: 'NodeEmbGraph'
       thread_number: 10
       share_vocab: True
-      port: 9000
-      timeout: 15000
 
       nlp_processor_args:
         name: "stanza"
