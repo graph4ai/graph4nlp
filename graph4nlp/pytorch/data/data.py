@@ -66,6 +66,8 @@ class GraphData(object):
             is a copy of :py:class:`src`.
         device: str, default=None
             The device descriptor for graph. By default it is None.
+        is_hetero: bool, default=False
+            Whether the graph should be heterogeneous
         """
 
         # Initialize internal data storages.
@@ -1308,7 +1310,7 @@ class GraphData(object):
         return output
 
 
-def from_dgl(g: dgl.DGLGraph) -> GraphData:
+def from_dgl(g: dgl.DGLGraph, is_hetero=False) -> GraphData:
     """
     Convert a dgl.DGLGraph to a GraphData object.
 
@@ -1316,14 +1318,15 @@ def from_dgl(g: dgl.DGLGraph) -> GraphData:
     ----------
     g : dgl.DGLGraph
         The source graph in DGLGraph format.
-
+    is_hetero: bool, default=False
+        Whether the graph should be heterogeneous
     Returns
     -------
     GraphData
         The converted graph in GraphData format.
     """
-    graph = GraphData(is_hetero=not g.is_homogeneous)
-    graph.from_dgl(g, is_hetero=not g.is_homogeneous)
+    graph = GraphData(is_hetero=is_hetero)
+    graph.from_dgl(g)
     return graph
 
 
