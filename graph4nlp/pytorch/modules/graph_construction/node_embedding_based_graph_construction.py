@@ -56,7 +56,7 @@ class NodeEmbeddingBasedGraphConstruction(DynamicGraphConstructionBase):
         return graph
 
     @classmethod
-    def init_topology(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize):
+    def init_topology(cls, raw_text_data, lower_case=True, tokenizer=word_tokenize, **kwargs):
         """Convert raw text data to the initial node set graph (i.e., no edge information).
 
         Parameters

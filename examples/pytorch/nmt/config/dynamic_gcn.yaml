@@ -19,8 +19,6 @@ model_args:
       topology_subdir: 'NodeEmbGraph'
       share_vocab: false
       thread_number: 4
-      port: 9000
-      timeout: 15000
 
     
     graph_construction_private:

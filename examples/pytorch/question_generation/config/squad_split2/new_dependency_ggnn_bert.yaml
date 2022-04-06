@@ -8,8 +8,21 @@ graph_construction_args:
     root_dir: 'examples/pytorch/question_generation/data/squad_split2'
     topology_subdir: 'DependencyGraph'
     thread_number: 4
-    port: 9000
-    timeout: 15000
+
+    nlp_processor_args:
+      name: "stanza"
+      args:
+        annotators: ["tokenize", "ssplit", "pos", "depparse"]
+        corenlp_dir: "./corenlp"
+        endpoint: "http://localhost:9002"
+        memory: "4G"
+        properties:
+          tokenize.options:
+            splitHyphenated: False
+            normalizeParentheses: False
+            normalizeOtherBrackets: False
+          tokenize.whitespace: True
+          ssplit.isOneSentence: True
 
   graph_construction_private:
     edge_strategy: 'homogeneous'

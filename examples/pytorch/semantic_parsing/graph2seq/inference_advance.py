@@ -91,9 +91,9 @@ class Jobs:
             thread_number=self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["thread_number"],
-            port=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
-                "port"
-            ],
+            nlp_processor_args=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["nlp_processor_args"],
             for_inference=True,
             reused_vocab_model=self.model.vocab_model,
         )

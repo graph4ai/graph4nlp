@@ -22,9 +22,22 @@ model_args:
       topology_subdir: 'NodeEmbGraph'
       thread_number: 10
       share_vocab: True
-      port: 9000
-      timeout: 15000
-      
+
+      nlp_processor_args:
+        name: "stanza"
+        args:
+          annotators: ["tokenize", "ssplit", "pos", "parse"]
+          corenlp_dir: "./corenlp"
+          endpoint: "http://localhost:9002"
+          memory: "4G"
+          properties:
+            tokenize.options: 
+              splitHyphenated: False
+              normalizeParentheses: False
+              normalizeOtherBrackets: False
+            tokenize.whitespace: True
+            ssplit.isOneSentence: False
+
     graph_construction_private:
       edge_strategy: 'homogeneous'
       merge_strategy: 'tailhead'

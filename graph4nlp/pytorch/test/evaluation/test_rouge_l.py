@@ -4,8 +4,8 @@ if __name__ == "__main__":
     import json
 
     scorer = ROUGE()
-    pred_file_path = "/home/shiina/shiina/question/iq/pred.json"
-    gt_file_path = "/home/shiina/shiina/question/iq/gt.json"
+    pred_file_path = "~/shiina/question/iq/pred.json"
+    gt_file_path = "~/shiina/question/iq/gt.json"
     with open(gt_file_path, "r") as f:
         gt = json.load(f)
         print(gt[0])

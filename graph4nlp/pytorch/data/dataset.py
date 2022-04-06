@@ -7,9 +7,10 @@ from copy import deepcopy
 from multiprocessing import Pool
 from typing import Union
 import numpy as np
-import stanfordcorenlp
+import stanza
 import torch.utils.data
 from nltk.tokenize import word_tokenize
+from stanza.server import CoreNLPClient
 
 from ..data.data import GraphData, to_batch
 from ..modules.graph_construction.base import (
@@ -30,6 +31,7 @@ from ..modules.graph_construction.node_embedding_based_refined_graph_constructio
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
 from ..modules.utils.generic_utils import LabelModel
+from ..modules.utils.nlp_parser_utils import get_stanza_properties
 from ..modules.utils.padding_utils import pad_2d_vals_no_size
 from ..modules.utils.tree_utils import Tree
 from ..modules.utils.tree_utils import Vocab as VocabForTree
@@ -306,10 +308,9 @@ class Dataset(torch.utils.data.Dataset):
         use_val_for_vocab=False,
         seed=1234,
         thread_number=4,
-        port=9000,
-        timeout=15000,
         for_inference=False,
         reused_vocab_model=None,
+        nlp_processor_args=None,
         **kwargs,
     ):
         """
@@ -349,15 +350,13 @@ class Dataset(torch.utils.data.Dataset):
         thread_number: int, default=4
             The thread number for building initial graph. For most case, it may be the
             number of your CPU cores.
-        port: int, default=9000
-            The port for stanfordcorenlp.
-        timeout: int, default=15000
-            The timeout for stanfordcorenlp.
         for_inference: bool, default=False
             Whether this dataset is used for inference.
         reused_vocab_model: str, default=None
             When ``for_inference`` is true, you need to specify the directory where the
             vocabulary data is located.
+        nlp_processor_args: dict, default=None
+            It contains the parameter for nlp processor such as ``stanza``.
         kwargs
         """
         super(Dataset, self).__init__()
@@ -367,8 +366,7 @@ class Dataset(torch.utils.data.Dataset):
 
         # stanfordcorenlp hyper-parameter
         self.thread_number = thread_number
-        self.port = port
-        self.timeout = timeout
+        self.nlp_processor_args = nlp_processor_args
 
         # inference
         self.for_inference = for_inference
@@ -494,99 +492,36 @@ class Dataset(torch.utils.data.Dataset):
                 self.val = old_train_set[new_train_length:]
                 self.train = old_train_set[:new_train_length]
 
-    def process_data_items(self, data_items):
-        return self._build_topology_process(
-            data_items=data_items,
-            topology_builder=self.topology_builder,
-            static_or_dynamic=self.static_or_dynamic,
-            graph_construction_name=self.graph_construction_name,
-            dynamic_init_topology_builder=self.dynamic_init_topology_builder,
-            dynamic_init_topology_aux_args=None,
-            merge_strategy=self.merge_strategy,
-            edge_strategy=self.edge_strategy,
-            lower_case=self.lower_case,
-            tokenizer=self.tokenizer,
-            port=self.port,
-            timeout=self.timeout,
-        )
-
     @staticmethod
     def _build_topology_process(
         data_items,
         topology_builder,
+        nlp_processor,
+        nlp_processor_args,
         static_or_dynamic,
-        graph_construction_name,
         dynamic_init_topology_builder,
         merge_strategy,
         edge_strategy,
         dynamic_init_topology_aux_args,
         lower_case,
         tokenizer,
-        port,
-        timeout,
     ):
         if static_or_dynamic not in ["static", "dynamic"]:
             raise ValueError("Argument: ``static_or_dynamic`` must be ``static`` or ``dynamic``")
         ret = []
         if static_or_dynamic == "static":
-            print("Connecting to stanfordcorenlp server...")
-            processor = stanfordcorenlp.StanfordCoreNLP(
-                "http://localhost", port=port, timeout=timeout
-            )
-
-            if topology_builder == IEBasedGraphConstruction:
-                props_coref = {
-                    "annotators": "tokenize, ssplit, pos, lemma, ner, parse, coref",
-                    "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,"
-                    "normalizeOtherBrackets=true",
-                    "tokenize.whitespace": False,
-                    "ssplit.isOneSentence": False,
-                    "outputFormat": "json",
-                }
-                props_openie = {
-                    "annotators": "tokenize, ssplit, pos, ner, parse, openie",
-                    "tokenize.options": "splitHyphenated=true,normalizeParentheses=true,"
-                    "normalizeOtherBrackets=true",
-                    "tokenize.whitespace": False,
-                    "ssplit.isOneSentence": False,
-                    "outputFormat": "json",
-                    "openie.triple.strict": "true",
-                }
-                processor_args = [props_coref, props_openie]
-            elif topology_builder == DependencyBasedGraphConstruction or isinstance(
-                topology_builder, DependencyBasedGraphConstruction
-            ):
-                processor_args = {
-                    "annotators": "ssplit,tokenize,depparse",
-                    "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,"
-                    "normalizeOtherBrackets=false",
-                    "tokenize.whitespace": True,
-                    "ssplit.isOneSentence": True,
-                    "outputFormat": "json",
-                }
-            elif topology_builder == ConstituencyBasedGraphConstruction:
-                processor_args = {
-                    "annotators": "tokenize,ssplit,pos,parse",
-                    "tokenize.options": "splitHyphenated=false,normalizeParentheses=false,"
-                    "normalizeOtherBrackets=false",
-                    "tokenize.whitespace": True,
-                    "ssplit.isOneSentence": False,
-                    "outputFormat": "json",
-                }
-            else:
-                raise NotImplementedError(
-                    "unknown static graph type: {}".format(graph_construction_name)
-                )
-            print("CoreNLP server connected.")
+            nlp_processor.start()
             pop_idxs = []
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
-                    print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
+                    print(
+                        "Building graph.... Processed/Remain: {} / {}".format(cnt, len(data_items))
+                    )
                 try:
                     graph = topology_builder.static_topology(
                         raw_text_data=item.input_text,
-                        nlp_processor=processor,
-                        processor_args=processor_args,
+                        nlp_processor=nlp_processor,
+                        processor_args=nlp_processor_args,
                         merge_strategy=merge_strategy,
                         edge_strategy=edge_strategy,
                         verbose=False,
@@ -599,97 +534,29 @@ class Dataset(torch.utils.data.Dataset):
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
         elif static_or_dynamic == "dynamic":
-            if graph_construction_name == "node_emb":
-                for item in data_items:
+            pop_idxs = []
+            for idx, item in enumerate(data_items):
+                try:
                     graph = topology_builder.init_topology(
-                        item.input_text, lower_case=lower_case, tokenizer=tokenizer
+                        item.input_text,
+                        lower_case=lower_case,
+                        tokenizer=tokenizer,
+                        dynamic_init_topology_builder=dynamic_init_topology_builder,
+                        nlp_processor=nlp_processor,
+                        processor_args=nlp_processor_args,
+                        merge_strategy=merge_strategy,
+                        edge_strategy=edge_strategy,
+                        verbose=False,
+                        dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
                     )
+
                     item.graph = graph
-                    ret.append(item)
-            elif graph_construction_name == "node_emb_refined":
-                if dynamic_init_topology_builder in (
-                    IEBasedGraphConstruction,
-                    DependencyBasedGraphConstruction,
-                    ConstituencyBasedGraphConstruction,
-                ):
-                    print("Connecting to stanfordcorenlp server...")
-                    processor = stanfordcorenlp.StanfordCoreNLP(
-                        "http://localhost", port=port, timeout=timeout
-                    )
-
-                    if dynamic_init_topology_builder == IEBasedGraphConstruction:
-                        props_coref = {
-                            "annotators": "tokenize, ssplit, pos, lemma, ner, parse, coref",
-                            "tokenize.options": "splitHyphenated=true,"
-                            "normalizeParentheses=true,"
-                            "normalizeOtherBrackets=true",
-                            "tokenize.whitespace": False,
-                            "ssplit.isOneSentence": False,
-                            "outputFormat": "json",
-                        }
-                        props_openie = {
-                            "annotators": "tokenize, ssplit, pos, ner, parse, openie",
-                            "tokenize.options": "splitHyphenated=true,"
-                            "normalizeParentheses=true,"
-                            "normalizeOtherBrackets=true",
-                            "tokenize.whitespace": False,
-                            "ssplit.isOneSentence": False,
-                            "outputFormat": "json",
-                            "openie.triple.strict": "true",
-                        }
-                        processor_args = [props_coref, props_openie]
-                    elif dynamic_init_topology_builder == DependencyBasedGraphConstruction:
-                        processor_args = {
-                            "annotators": "ssplit,tokenize,depparse",
-                            "tokenize.options": "splitHyphenated=false,"
-                            "normalizeParentheses=false,"
-                            "normalizeOtherBrackets=false",
-                            "tokenize.whitespace": False,
-                            "ssplit.isOneSentence": False,
-                            "outputFormat": "json",
-                        }
-                    elif dynamic_init_topology_builder == ConstituencyBasedGraphConstruction:
-                        processor_args = {
-                            "annotators": "tokenize,ssplit,pos,parse",
-                            "tokenize.options": "splitHyphenated=true,"
-                            "normalizeParentheses=true,"
-                            "normalizeOtherBrackets=true",
-                            "tokenize.whitespace": False,
-                            "ssplit.isOneSentence": False,
-                            "outputFormat": "json",
-                        }
-                    else:
-                        raise NotImplementedError
-                    print("CoreNLP server connected.")
-                else:
-                    processor = None
-                    processor_args = None
-                pop_idxs = []
-                for idx, item in enumerate(data_items):
-                    try:
-                        graph = topology_builder.init_topology(
-                            item.input_text,
-                            dynamic_init_topology_builder=dynamic_init_topology_builder,
-                            lower_case=lower_case,
-                            tokenizer=tokenizer,
-                            nlp_processor=processor,
-                            processor_args=processor_args,
-                            merge_strategy=merge_strategy,
-                            edge_strategy=edge_strategy,
-                            verbose=False,
-                            dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
-                        )
-
-                        item.graph = graph
-                    except Exception as msg:
-                        pop_idxs.append(idx)
-                        item.graph = None
-                        warnings.warn(RuntimeWarning(msg))
-                    ret.append(item)
-                ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
-            else:
-                raise RuntimeError("Unknown dynamic_graph_type: {}".format(graph_construction_name))
-
+                except Exception as msg:
+                    pop_idxs.append(idx)
+                    item.graph = None
+                    warnings.warn(RuntimeWarning(msg))
+                ret.append(item)
+            ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
         else:
             raise NotImplementedError("Currently only static and dynamic are supported!")
 
@@ -700,6 +567,36 @@ class Dataset(torch.utils.data.Dataset):
         Build graph topology for each item in the dataset. The generated graph
         is bound to the `graph` attribute of the DataItem.
         """
+        if self.nlp_processor_args is not None and self.nlp_processor_args["name"] == "stanza":
+            corenlp_dir = self.nlp_processor_args["args"]["corenlp_dir"]
+            stanza.install_corenlp(dir=corenlp_dir)
+            os.environ["CORENLP_HOME"] = corenlp_dir
+            print("Connecting to NLP parsing tool: stanza")
+            from stanza.server.client import StartServer
+
+            nlp_processor = CoreNLPClient(
+                annotators=self.nlp_processor_args["args"]["annotators"],
+                start_server=StartServer.TRY_START,
+                memory=self.nlp_processor_args["args"]["memory"],
+                endpoint=self.nlp_processor_args["args"]["endpoint"],
+                be_quiet=True,
+                output_format="json",
+            )
+
+            nlp_processor_args = get_stanza_properties(
+                self.nlp_processor_args["args"]["properties"]
+            )
+        else:
+            if (
+                self.graph_construction_name == "node_emb"
+                or self.graph_construction_name == "node_emb_refined"
+                and self.dynamic_init_topology_builder is None
+            ):
+                nlp_processor = None
+                nlp_processor_args = None
+            else:
+                raise RuntimeError("nlp_processor_args is not set properly for stanza")
+
         total = len(data_items)
         thread_number = min(total, self.thread_number)
         pool = Pool(thread_number)
@@ -713,16 +610,15 @@ class Dataset(torch.utils.data.Dataset):
                 args=(
                     data_items[start_index:end_index],
                     self.topology_builder,
+                    nlp_processor,
+                    nlp_processor_args,
                     self.static_or_dynamic,
-                    self.graph_construction_name,
                     self.dynamic_init_topology_builder,
                     self.merge_strategy,
                     self.edge_strategy,
                     self.dynamic_init_topology_aux_args,
                     self.lower_case,
                     self.tokenizer,
-                    self.port,
-                    self.timeout,
                 ),
             )
             res_l.append(r)
@@ -1372,7 +1268,7 @@ class Text2LabelDataset(Dataset):
             elif dynamic_init_graph_name == "constituency":
                 dynamic_init_topology_builder = ConstituencyBasedGraphConstruction
             elif dynamic_init_graph_name == "ie":
-                topology_builder = IEBasedGraphConstruction
+                dynamic_init_topology_builder = IEBasedGraphConstruction
             else:
                 if dynamic_init_topology_builder is None:
                     raise ValueError(

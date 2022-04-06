@@ -1,0 +1,15 @@
+{
+"config_path": "examples/pytorch/text_classification/config/trec/text_clf.yaml",
+"model_args.graph_construction_name": "constituency",
+"model_args.graph_construction_args.graph_construction_share.topology_subdir": "constituency_graph",
+"model_args.graph_embedding_name": "gat",
+"model_args.graph_embedding_args.graph_embedding_share.direction_option": "bi_sep",
+"model_args.graph_embedding_args.graph_embedding_share.feat_drop": "0.4",
+"model_args.graph_embedding_args.graph_embedding_share.num_layers": "1",
+"model_args.graph_embedding_args.graph_embedding_private.heads": "[2]",
+"model_args.graph_embedding_args.graph_embedding_private.attn_drop": "0.3",
+"model_args.graph_embedding_args.graph_embedding_private.negative_slope": "0.1",
+"model_args.graph_embedding_args.graph_embedding_private.residual": "false",
+"model_args.graph_embedding_args.graph_embedding_private.allow_zero_in_degree": "true",
+"checkpoint_args.out_dir": "out/trec/gat_bi_sep_constituency_ckpt"
+}

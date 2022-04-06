@@ -1,0 +1,75 @@
+# Users can import user customized yaml files or library provided default yaml files
+includes: []
+  # - $/configs/defaults.yaml
+  # In the above example path, '$/' indicates the library directory which contains the config folder
+
+
+preprocessing_args:
+  word_emb_size: 300
+  min_word_freq: 1
+
+
+model_args:
+  graph_construction_name: "dependency"
+  graph_initialization_name: "defaults"
+  graph_embedding_name: "ggnn"
+
+  graph_construction_args:
+    graph_construction_share:
+      root_dir: 'examples/pytorch/text_classification/data/CAirline'
+      topology_subdir: 'dependency_graph'
+
+
+  graph_initialization_args:
+    input_size: 300
+    hidden_size: 256
+    word_dropout: 0.2
+    rnn_dropout: 0.2
+    fix_bert_emb: true
+    fix_word_emb: false
+    embedding_style:
+      single_token_item: true
+      emb_strategy: "w2v_bilstm"
+      num_rnn_layers: 1
+      bert_model_name: "bert-base-uncased"
+      bert_lower_case: true
+
+  graph_embedding_args:
+    graph_embedding_share:
+      num_layers: 3
+      input_size: 256
+      hidden_size: 256
+      output_size: 256
+      direction_option: "bi_sep"
+      feat_drop: 0.2
+
+    graph_embedding_private:
+      n_etypes: 1
+      bias: true
+      use_edge_weight: false
+
+  decoder_args:
+    graph_pooling_share:
+      pooling_type: 'avg_pool'
+      max_pool_linear_proj: false
+
+
+training_args:
+  batch_size: 50 # batch size
+  epochs: 500 # number of maximal training epochs
+  grad_clipping: 10
+  early_stop_metric: 'BLEU_4'
+  patience: 10
+  lr: 0.003 # learning rate
+  lr_patience: 2
+  lr_reduce_factor: 0.5
+
+
+checkpoint_args:
+  out_dir: 'out/CAirline/ggnn_bi_sep_dependency_ckpt'
+
+
+env_args:
+  seed: 1234
+  gpu: 0
+  no_cuda: false

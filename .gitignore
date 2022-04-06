@@ -121,6 +121,10 @@ venv.bak/
 # data directory
 _download
 out/
+corenlp/
+corenlp*.props
+.vector_cache/
+checkpoints/
 
 # CTags & CScope
 tags

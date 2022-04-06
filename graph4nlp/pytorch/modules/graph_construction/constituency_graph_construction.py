@@ -1,11 +1,9 @@
 import copy
-import json
 from pythonds.basic.stack import Stack
 
 from graph4nlp.pytorch.data.data import GraphData
 
 from .base import StaticGraphConstructionBase
-from .utils import CORENLP_TIMEOUT_SIGNATURE
 
 
 class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
@@ -60,12 +58,12 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
             raw_text_data.strip().replace("(", "<LB>").replace(")", "<RB>"),
             properties=processor_args,
         )
-        if CORENLP_TIMEOUT_SIGNATURE in output:
-            raise TimeoutError(
-                "CoreNLP timed out at input: \n{}\n This item will be skipped. "
-                "Please check the input or change the timeout threshold.".format(raw_text_data)
-            )
-        parsed_output = json.loads(output)["sentences"]
+        # if CORENLP_TIMEOUT_SIGNATURE in output:
+        #     raise TimeoutError(
+        #         "CoreNLP timed out at input: \n{}\n This item will be skipped. "
+        #         "Please check the input or change the timeout threshold.".format(raw_text_data)
+        #     )
+        parsed_output = output["sentences"]
         return parsed_output
 
     @classmethod

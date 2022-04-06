@@ -18,9 +18,25 @@ model_args:
   graph_construction_args:
     graph_construction_share:
       root_dir: "examples/pytorch/summarization/cnn"
-      topology_subdir: 'IEGraph_3w'
+#      topology_subdir: 'IEGraph_3w'
+      topology_subdir: 'IEGraph_stanza'
       thread_number: 35
-      port: 9100
+
+      nlp_processor_args:
+        name: "stanza"
+        args:
+          corenlp_dir: "/raid/user8/graph4nlp/stanford-corenlp-4.0.0"
+          endpoint: "http://localhost:9100"
+          memory: "4G"
+          annotators: ["tokenize, ssplit, pos, lemma, ner, parse, coref, openie"]
+          properties:
+            tokenize.options:
+              splitHyphenated: True
+              normalizeParentheses: True
+              normalizeOtherBrackets: True
+            tokenize.whitespace: False
+            ssplit.isOneSentence: False
+            openie.triple.strict: True
 
     graph_construction_private:
       edge_strategy: "as_node"
@@ -105,6 +121,6 @@ checkpoint_args:
 
 env_args:
   seed: 1234
-  gpu: 1
+  gpu: 2
   no_cuda: false
   num_workers: 0

@@ -131,16 +131,20 @@ class Conll:
             )
         elif self.graph_name == "dependency_graph":
             dataset = ConllDataset(
-                root_dir="examples/pytorch/name_entity_recognition/conll",
+                root_dir=self.config["model_args"]["graph_construction_args"][
+                    "graph_construction_share"
+                ]["root_dir"],
                 topology_builder=DependencyBasedGraphConstruction_without_tokenizer,
                 graph_name=self.graph_name,
+                static_or_dynamic="static",
                 pretrained_word_emb_cache_dir=self.config["model_args"]["graph_construction_args"][
                     "graph_construction_share"
                 ]["pre_word_emb_file"],
                 topology_subdir="DependencyGraph",
                 tag_types=self.tag_types,
-                for_inference=1,
-                reused_vocab_model=self.model.vocab,
+                nlp_processor_args=self.config["model_args"]["graph_construction_args"][
+                    "nlp_processor_args"
+                ],
             )
         elif self.graph_name == "node_emb":
             dataset = ConllDataset(

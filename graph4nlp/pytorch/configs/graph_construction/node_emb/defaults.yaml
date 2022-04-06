@@ -4,6 +4,7 @@ model_args:
       root_dir: './'
       topology_subdir: 'NodeEmbGraph'
       share_vocab: true
+      thread_number: 4
 
     graph_construction_private:
       sim_metric_type: 'weighted_cosine'

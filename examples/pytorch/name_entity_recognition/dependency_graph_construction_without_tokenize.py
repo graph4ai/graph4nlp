@@ -1,6 +1,5 @@
 import copy
 import itertools
-import json
 from collections import Counter
 
 from graph4nlp.pytorch.data.data import GraphData
@@ -49,7 +48,7 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             self.vocab.word_vocab._add_words([attr["token"]])
 
     @classmethod
-    def parsing(cls, raw_text_data, tokenizer=None):
+    def parsing(cls, raw_text_data, nlp_processor, processor_args, tokenizer=None):
         """
         Parameters
         ----------
@@ -86,17 +85,14 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             else:
                 raw_text_data = tokenizer(raw_text_data)
         parsed_results = []
-        # for sent_id in range(len(raw_text_data)):
+
         parsed_sent = {}
         parsed_sent["graph_content"] = []
         parsed_sent["node_content"] = []
         sent = raw_text_data  # [sent_id]
         assert len(sent) >= 2
         parsed_sent["node_num"] = len(sent)
-        # generate node content in a text
-        # dep_parser = CoreNLPDependencyParser(url='http://localhost:9020')
-        # processor = stanfordcorenlp.StanfordCoreNLP('F:/xiaojie/stanford-corenlp-4.1.0',
-        # port=9080, timeout=1000)
+
         for token_id in range(len(sent)):
             node = {}
             node["token"] = sent[token_id]
@@ -106,9 +102,8 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             parsed_sent["node_content"].append(node)
         # generate graph content in a text
         raw_sent = " ".join(sent)
-        if len(sent) < 20:
-            dep_json = cls.processor.annotate(raw_sent)
-            dep_dict = json.loads(dep_json)
+        if len(sent) < 50:
+            dep_dict = nlp_processor.annotate(text=raw_sent.strip(), properties=processor_args)
             tokens = dep_dict["sentences"][0]["tokens"]
             for dep in dep_dict["sentences"][0]["basicDependencies"]:
                 if cls.verbose > 0:
@@ -127,19 +122,6 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
                     g["edge_type"] = dep["dep"]
                     parsed_sent["graph_content"].append(g)
 
-        #        (parse_sent, ),(null, )=dep_parser.parse_sents([sent,sent])
-        #        dep_info = parse_sent.to_conll(10)
-        #        new_sent=get_new_sent(dep_info)
-        #        for line in dep_info.strip().split('\n'):
-        #                    g={}
-        #                    if line.split('\t')[1] in sent:
-        #                      g['src']=sent.index(line.split('\t')[1])
-        #                      if int(line.split('\t')[6])>0:
-        #                          if new_sent[int(line.split('\t')[6])-1] in sent:
-        #                              token=new_sent[int(line.split('\t')[6])-1]
-        #                              g['tgt']=sent.index(token)
-        #                              g['edge_type']=line.split('\t')[-3]
-        #                              parsed_sent['graph_content'].append(g)
         parsed_results.append(parsed_sent)
 
         return parsed_results
@@ -148,10 +130,14 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
     def static_topology(
         cls,
         raw_text_data,
-        auxiliary_args,
+        nlp_processor,
+        processor_args,
+        merge_strategy,
+        edge_strategy,
         split_hyphenated=False,
         normalize=False,
         sequential_link=True,
+        verbose=0,
     ):
         """
             Graph building method.
@@ -198,24 +184,29 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         joint_graph: GraphData
             The merged graph data-structure.
         """
-        cls.processor = auxiliary_args["nlp_processor"]
+        cls.processor = nlp_processor
         # split_hyphenated = (False,)
         # normalize = (False,)
         sequential_link = (True,)
         # verbose = 0
-        cls.verbose = auxiliary_args["verbose"]
+        cls.verbose = verbose
 
-        parsed_results = cls.parsing(cls, raw_text_data=raw_text_data)
+        parsed_results = cls.parsing(
+            cls,
+            raw_text_data=raw_text_data,
+            nlp_processor=nlp_processor,
+            processor_args=processor_args,
+        )
 
         sub_graphs = []
         for _, parsed_sent in enumerate(parsed_results):
             graph = cls._construct_static_graph(
                 parsed_sent,
-                edge_strategy=auxiliary_args["edge_strategy"],
+                edge_strategy=edge_strategy,
                 sequential_link=sequential_link,
             )
             sub_graphs.append(graph)
-        joint_graph = cls._graph_connect(sub_graphs, auxiliary_args["merge_strategy"])
+        joint_graph = cls._graph_connect(sub_graphs, merge_strategy)
         return joint_graph
 
     @classmethod
@@ -426,9 +417,4 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
         return g
 
     def forward(self, batch_graphdata: list):
-        batch_graphdata = self.embedding_layer(batch_graphdata)
-        return batch_graphdata
-
-    def embedding(self, node_attributes, edge_attributes):
-        node_emb, edge_emb = self.embedding_layer(node_attributes, edge_attributes)
-        return node_emb, edge_emb
+        raise RuntimeError("This interface is removed.")
