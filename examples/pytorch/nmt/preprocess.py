@@ -7,14 +7,14 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--raw_data_root",
-        default="/home/shiina/data/nmt/iwslt14/iwslt14.tokenized.de-en",
+        default="~/data/nmt/iwslt14/iwslt14.tokenized.de-en",
         type=str,
         help="path to the config file",
     )
     parser.add_argument(
         "--train_raw_dataset_tgt",
         type=str,
-        default="/home/shiina/shiina/lib/dataset/europarl-v7.fr-en.en",
+        default="~/dataset/europarl-v7.fr-en.en",
         help="rank",
     )
     parser.add_argument(

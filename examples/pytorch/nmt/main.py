@@ -1,6 +1,5 @@
 import os
 import resource
-import sys
 import numpy as np
 import torch
 import torch.optim as optim
@@ -16,9 +15,6 @@ from args import get_args
 from build_model import get_model
 from dataset import IWSLT14Dataset
 from utils import WarmupCosineSchedule, get_log, wordid2str
-
-sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
-
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 
