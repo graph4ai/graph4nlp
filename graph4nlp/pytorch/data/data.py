@@ -6,6 +6,7 @@ adding features which are in tensor form, and attributes which are of arbitrary
 form to the correspondingnodes or edges. Batching operations is also supported
 by :py:class:`GraphData`.
 """
+from distutils.log import warn
 import os
 import warnings
 from collections import namedtuple
@@ -719,11 +720,19 @@ class GraphData(object):
             The dictionary containing all relevant data.
         """
         data_dict = {}
+        # 0th pass: Convert typeless node index to typed node index
+        typed_node_indices = []
+        type_node_counts = {}
+        for i in range(self.get_node_num()):
+            node_idx_in_type = type_node_counts.setdefault(self._ntypes[i], 0)
+            typed_node_indices.append((self._ntypes[i], node_idx_in_type))
+            type_node_counts[self._ntypes[i]] += 1
         # 1st pass: scan every edge and make them ((src_type, etype, tgt_type)->(src_idx, tgt_idx))
         for edge_index in range(self.get_edge_num()):
             etype = self.etypes[edge_index]
             key = etype
             src, tgt = self._edge_indices.src[edge_index], self._edge_indices.tgt[edge_index]
+            src, tgt = typed_node_indices[src][1], typed_node_indices[tgt][1]
             if key not in data_dict:
                 data_dict[key] = ([], [])
             data_dict[key][0].append(src)
@@ -798,20 +807,34 @@ class GraphData(object):
                 # Fill in the features
                 for feat_name, feat_value in features.items():
                     ret[feat_name] = {}
+                    if feat_value is None:
+                        continue
                     for n_type, indices in ntype_indices.items():
                         ret[feat_name][n_type] = feat_value[indices]
                 return ret
 
             node_hetero_feat_dict = make_feature_dict(self._node_features, self.ntypes)
             edge_hetero_feat_dict = make_feature_dict(self._edge_features, self.etypes)
+            num_ntypes = len(set(self.ntypes))
+            num_etypes = len(set(self.etypes))
             for feat_name, feat_data_dict in node_hetero_feat_dict.items():
-                dgl_g.ndata[feat_name] = feat_data_dict
+                if len(feat_data_dict) == 0:
+                    continue
+                if num_ntypes > 1:
+                    dgl_g.ndata[feat_name] = feat_data_dict
+                else:
+                    dgl_g.ndata[feat_name] = feat_data_dict[self.ntypes[0]]
             for feat_name, feat_data_dict in edge_hetero_feat_dict.items():
-                dgl_g.edata[feat_name] = feat_data_dict
+                if len(feat_data_dict) == 0:
+                    continue
+                if num_etypes > 1:
+                    dgl_g.edata[feat_name] = feat_data_dict
+                else:
+                    dgl_g.edata[feat_name] = feat_data_dict[self.etypes[0]]
 
         return dgl_g
 
-    def from_dgl(self, dgl_g: dgl.DGLGraph):
+    def from_dgl(self, dgl_g: dgl.DGLGraph, is_hetero=False):
         """
         Build the graph from dgl.DGLGraph
 
@@ -824,7 +847,7 @@ class GraphData(object):
             raise ValueError(
                 "This graph isn't an empty graph. Please use an empty graph for conversion."
             )
-        if dgl_g.is_homogeneous:
+        if not is_hetero:
             # Add nodes
             self.add_nodes(dgl_g.number_of_nodes())
             for k, v in dgl_g.ndata.items():
@@ -839,36 +862,78 @@ class GraphData(object):
                 self.edge_features[k] = v
         else:
             self.is_hetero = True
-            self.add_nodes(dgl_g.number_of_nodes(), dgl_g.ntypes)
-            self.add_edges(dgl_g.number_of_edges(), dgl_g.etypes)
-            # Set node features
-            # Step 1: Calculate the indices of each node type
-            node_type_indices_dict = {}
-            for i, tp in enumerate(self._ntypes):
-                type_indices = node_type_indices_dict.setdefault(tp, [])
-                type_indices.append(i)
-            # Step 2: Convert these indices to tensors for indexing tensors
-            for tp, indices in node_type_indices_dict.items():
-                node_type_indices_dict[tp] = torch.LongTensor(indices)
-            # Step 3: Set node features
-            for feat_name, feat_dict in dgl_g.ndata.items():
-                for etype, edge_feat in feat_dict.items():
-                    indices = node_type_indices_dict[etype]
-                    self._node_features[feat_name][indices] = edge_feat
-            # Set edge features
-            # Step 1: Calculate the indices of each edge type
-            edge_type_indices_dict = {}
-            for i, tp in enumerate(self._etypes):
-                type_indices = edge_type_indices_dict.setdefault(tp, [])
-                type_indices.append(i)
-            # Step 2: Convert these indices to tensors for indexing tensors
-            for tp, indices in edge_type_indices_dict.items():
-                edge_type_indices_dict[tp] = torch.LongTensor(indices)
-            # Step 3: Set node features
-            for feat_name, feat_dict in dgl_g.edata.items():
-                for etype, edge_feat in feat_dict.items():
-                    indices = node_type_indices_dict[etype]
-                    self._edge_features[feat_name][indices] = edge_feat
+            # For heterogeneous DGL graphs, we perform the same routines for nodes and edges.
+            # Specifically, for nodes/edges, we first iterate over all the types.
+            # Then we add the nodes and there corresponding features
+            # Routine for nodes
+            # for ntype in dgl_g.ntypes:
+            #     nodes = dgl_g.nodes[ntype]
+            #     node_data = nodes.data
+            #     if len(node_data) == 0:
+            #         warnings.warn("Nodes of type {} have no features. Skipping.".format(ntype))
+            #         continue
+            #     num_nodes = len(node_data[list(node_data.keys())[0]])
+            #     self.add_nodes(num_nodes, ntypes=[ntype] * num_nodes)
+            #     for feature_name, feature_value in node_data.items():
+            #         self.node_features[feature_name] = feature_value
+            node_data = dgl_g.ndata
+            ntypes = []
+            processed_node_types = False
+            node_feat_dict = {}
+            for feature_name, data_dict in node_data.items():
+                if not processed_node_types:
+                    for node_type, node_feature in data_dict.items():
+                        ntypes += [node_type] * len(node_feature)
+                    processed_node_types = True
+                # for node_type, node_feature in data_dict.items():
+                node_feat_dict[feature_name] = torch.cat(list(data_dict.values()), dim=0)
+            self.add_nodes(len(ntypes), ntypes=ntypes)
+            for feature_name, feature_value in node_feat_dict.items():
+                self.node_features[feature_name] = feature_value
+            # do the same thing for edges
+            dgl_g_etypes = dgl_g.canonical_etypes
+            # Add edges first
+            edge_feature_dict = {}
+            for etype in dgl_g_etypes:
+                num_edges = dgl_g.num_edges(etype)
+                src_type, r_type, dst_type = etype
+                srcs, dsts = dgl_g.find_edges(
+                    torch.tensor(list(range(num_edges)), dtype=torch.long), etype
+                )
+                srcs, dsts = (
+                    srcs.detach().cpu().numpy().tolist(),
+                    dsts.detach().cpu().numpy().tolist(),
+                )
+                self.add_edges(srcs, dsts, etypes=[etype] * num_edges)
+                if len(dgl_g_etypes) > 1:
+                    for feature_name, feature_dict in dgl_g.edata.items():
+                        current_feat = edge_feature_dict.get(feature_name, None)
+                        if current_feat is None:
+                            current_feat = feature_dict[etype]
+                        else:
+                            current_feat = torch.cat([current_feat, feature_dict[etype]], dim=0)
+                        edge_feature_dict[feature_name] = current_feat
+                else:
+                    for feature_name, feature_value in dgl_g.edata.items():
+                        edge_feature_dict[feature_name] = feature_value
+            # Add edge features then
+            for feat_name, feat_value in edge_feature_dict.items():
+                self.edge_features[feat_name] = feat_value
+            # edge_data = dgl_g.edata
+            # etypes = []
+            # processed_edge_types = False
+            # edge_feat_dict = {}
+            # for feature_name, data_dict in edge_data.items():
+            #     if not processed_edge_types:
+            #         for edge_type, edge_feature in data_dict.items():
+            #             etypes += [edge_type] * len(edge_feature)
+            #         processed_edge_types = True
+            #     # for edge_type, edge_feature in data_dict.items():
+            #     edge_feat_dict[feature_name] = torch.stack(list(data_dict.values()), dim=0)
+            # self.add_edges()
+            # for feature_name, feature_value in edge_feat_dict.items():
+            #     self.edge_features[feature_name] = feature_value
+
         return self
 
     def from_dense_adj(self, adj: torch.Tensor):
@@ -1257,8 +1322,8 @@ def from_dgl(g: dgl.DGLGraph) -> GraphData:
     GraphData
         The converted graph in GraphData format.
     """
-    graph = GraphData()
-    graph.from_dgl(g)
+    graph = GraphData(is_hetero=not g.is_homogeneous)
+    graph.from_dgl(g, is_hetero=not g.is_homogeneous)
     return graph
 
 

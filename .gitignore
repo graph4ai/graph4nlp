@@ -145,3 +145,6 @@ cscope.*
 # config file
 /config
 local_scripts/
+
+# Personal symbolic links for testing
+tests_saizhuo
