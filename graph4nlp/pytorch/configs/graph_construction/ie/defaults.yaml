@@ -5,8 +5,22 @@ model_args:
       topology_subdir: 'IEGraph'
       share_vocab: true
       thread_number: 4
-      port: 9000
-      timeout: 15000
+
+      nlp_processor_args:
+        name: "stanza"
+        args:
+          corenlp_dir: "/raid/user8/graph4nlp/stanford-corenlp-4.0.0"
+          endpoint: "http://localhost:9100"
+          memory: "4G"
+          annotators: ["tokenize, ssplit, pos, lemma, ner, parse, coref, openie"]
+          properties:
+            tokenize.options:
+              splitHyphenated: True
+              normalizeParentheses: True
+              normalizeOtherBrackets: True
+            tokenize.whitespace: False
+            ssplit.isOneSentence: False
+            openie.triple.strict: True
 
     graph_construction_private:
       edge_strategy: 'as_node'

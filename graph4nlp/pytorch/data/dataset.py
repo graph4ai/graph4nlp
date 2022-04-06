@@ -8,10 +8,11 @@ from multiprocessing import Pool
 from typing import Union
 import numpy as np
 import stanza
-from stanza.server import CoreNLPClient
+
 # from sympy import im
 import torch.utils.data
 from nltk.tokenize import word_tokenize
+from stanza.server import CoreNLPClient
 
 from ..data.data import GraphData, to_batch
 from ..modules.graph_construction.base import (
@@ -32,12 +33,12 @@ from ..modules.graph_construction.node_embedding_based_refined_graph_constructio
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
 from ..modules.utils.generic_utils import LabelModel
+from ..modules.utils.nlp_parser_utils import get_stanza_properties
 from ..modules.utils.padding_utils import pad_2d_vals_no_size
 from ..modules.utils.tree_utils import Tree
 from ..modules.utils.tree_utils import Vocab as VocabForTree
 from ..modules.utils.tree_utils import VocabForAll
 from ..modules.utils.vocab_utils import VocabModel
-from ..modules.utils.nlp_parser_utils import get_stanza_properties
 
 
 class DataItem(object):
@@ -309,8 +310,8 @@ class Dataset(torch.utils.data.Dataset):
         use_val_for_vocab=False,
         seed=1234,
         thread_number=4,
-        port=9000, # deprecated
-        timeout=15000, # deprecated
+        port=9000,  # deprecated
+        timeout=15000,  # deprecated
         for_inference=False,
         reused_vocab_model=None,
         nlp_processor_args=None,
@@ -596,24 +597,29 @@ class Dataset(torch.utils.data.Dataset):
             os.environ["CORENLP_HOME"] = corenlp_dir
             print("Connecting to NLP parsing tool: stanza")
             from stanza.server.client import StartServer
+
             nlp_processor = CoreNLPClient(
                 annotators=self.nlp_processor_args["args"]["annotators"],
                 start_server=StartServer.TRY_START,
                 memory=self.nlp_processor_args["args"]["memory"],
                 endpoint=self.nlp_processor_args["args"]["endpoint"],
                 be_quiet=True,
-                output_format="json"
+                output_format="json",
             )
-            
-            nlp_processor_args = get_stanza_properties(self.nlp_processor_args["args"]["properties"])
+
+            nlp_processor_args = get_stanza_properties(
+                self.nlp_processor_args["args"]["properties"]
+            )
         else:
-            if self.graph_construction_name == 'node_emb' or \
-                self.graph_construction_name == 'node_emb_refined' and self.dynamic_init_topology_builder is None:
+            if (
+                self.graph_construction_name == "node_emb"
+                or self.graph_construction_name == "node_emb_refined"
+                and self.dynamic_init_topology_builder is None
+            ):
                 nlp_processor = None
                 nlp_processor_args = None
             else:
                 raise RuntimeError("nlp_processor_args is not set properly for stanza")
-
 
         total = len(data_items)
         thread_number = min(total, self.thread_number)
@@ -622,7 +628,7 @@ class Dataset(torch.utils.data.Dataset):
         for i in range(thread_number):
             start_index = total * i // thread_number
             end_index = total * (i + 1) // thread_number
- 
+
             r = pool.apply_async(
                 self._build_topology_process,
                 args=(

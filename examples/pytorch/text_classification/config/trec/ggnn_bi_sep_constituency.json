@@ -1,7 +1,7 @@
 {
 "config_path": "examples/pytorch/text_classification/config/trec/text_clf.yaml",
 "model_args.graph_construction_name": "constituency",
-"model_args.graph_construction_args.graph_construction_share.topology_subdir": "ConstituencyGraph",
+"model_args.graph_construction_args.graph_construction_share.topology_subdir": "constituency_graph",
 "model_args.graph_embedding_args.graph_embedding_share.direction_option": "bi_sep",
 "checkpoint_args.out_dir": "out/trec/ggnn_bi_sep_constituency_ckpt"
 }

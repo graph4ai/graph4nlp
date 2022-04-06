@@ -14,10 +14,10 @@
 "model_args.graph_construction_args.graph_construction_private.connectivity_ratio": "null",
 "model_args.graph_construction_args.graph_construction_private.sparsity_ratio": "null",
 "model_args.graph_embedding_args.graph_embedding_share.num_layers": "1",
-"model_args.graph_embedding_args.graph_embedding_share.direction_option": "bi_sep",
+"model_args.graph_embedding_args.graph_embedding_share.direction_option": "bi_fuse",
 "model_args.graph_embedding_args.graph_embedding_share.feat_drop": "0.3",
 "model_args.graph_embedding_args.graph_embedding_private.aggregator_type": "mean",
 "model_args.graph_embedding_args.graph_embedding_private.norm": "null",
 "model_args.graph_embedding_args.graph_embedding_private.use_edge_weight": "true",
-"checkpoint_args.out_dir": "out/trec/graphsage_bi_sep_node_emb_refined_dependency_ckpt"
+"checkpoint_args.out_dir": "out/trec/graphsage_bi_fuse_node_emb_refined_dependency_ckpt"
 }
