@@ -2,7 +2,7 @@ import json
 import os
 from typing import Set
 import yaml
-from omegaconf import OmegaConf
+from omegaconf import OmegaConf, dictconfig
 
 from .generic_utils import get_library_dir_path
 
@@ -10,20 +10,19 @@ from .generic_utils import get_library_dir_path
 def load_json_config(path: str):
     with open(path, "r") as f:
         data = json.load(f)
-        config = load_yaml_config(data["config_path"])
-        data.pop("config_path")
+        config_path = data.pop("config_path")
 
         dot_list = []
         for k, v in data.items():
             dot_list.append(f"{k}={v}")
 
         updated_config = OmegaConf.from_dotlist(dot_list)
-        merged_config = OmegaConf.merge(config, updated_config)
+        merged_config = load_yaml_config(config_path, updated_config=updated_config)
         return OmegaConf.to_container(merged_config, resolve=True)
 
 
 def load_yaml_config(
-    path: str, included_paths: Set[str] = None, nesting_level: int = 0, max_nesting_level: int = 20
+    path: str, updated_config: dictconfig.DictConfig = None, included_paths: Set[str] = None, nesting_level: int = 0, max_nesting_level: int = 20
 ):
     if included_paths is None:
         included_paths = set()
@@ -32,6 +31,12 @@ def load_yaml_config(
         raise RuntimeError(f"Exceeds maximial nesting level {max_nesting_level}!")
 
     config = OmegaConf.load(path)
+    if updated_config is not None:
+        # Merge updated_config first in case it updates template values such as
+        # graph_construction_name, graph_initialization_name, graph_embedding_name and decoder_name
+        config = OmegaConf.merge(config, updated_config)
+
+
     included_config_paths = [parse_config_path(path) for path in config.get("includes", [])]
 
     library_dir = get_library_dir_path()
@@ -126,7 +131,7 @@ def load_yaml_config(
             raise RuntimeError("Circular includes of yaml files are not supported!")
 
         included_configs.append(
-            load_yaml_config(each, included_paths.union([os.path.abspath(path)]), nesting_level + 1)
+            load_yaml_config(each, included_paths=included_paths.union([os.path.abspath(path)]), nesting_level=nesting_level + 1)
         )
     merged_config = OmegaConf.merge(*included_configs, config)
     merged_config.pop("includes", None)

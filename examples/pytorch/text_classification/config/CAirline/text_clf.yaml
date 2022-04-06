@@ -16,46 +16,32 @@ model_args:
 
   graph_construction_args:
     graph_construction_share:
-      root_dir: 'examples/pytorch/text_classification/data/trec'
+      root_dir: 'examples/pytorch/text_classification/data/CAirline'
       topology_subdir: 'dependency_graph'
 
-      nlp_processor_args:
-        name: "stanza"
-        args:
-          annotators: ["tokenize", "ssplit", "pos", "depparse"]
-          corenlp_dir: "./corenlp"
-          endpoint: "http://localhost:9002"
-          memory: "4G"
-          properties:
-            tokenize.options:
-              splitHyphenated: False
-              normalizeParentheses: False
-              normalizeOtherBrackets: False
-            tokenize.whitespace: True
-            ssplit.isOneSentence: True
 
   graph_initialization_args:
     input_size: 300
-    hidden_size: 300
-    word_dropout: 0.4
-    rnn_dropout: 0.1
-    fix_bert_emb: false
-    fix_word_emb: true
+    hidden_size: 256
+    word_dropout: 0.2
+    rnn_dropout: 0.2
+    fix_bert_emb: true
+    fix_word_emb: false
     embedding_style:
       single_token_item: true
       emb_strategy: "w2v_bilstm"
       num_rnn_layers: 1
-      bert_model_name: null
-      bert_lower_case: null
+      bert_model_name: "bert-base-uncased"
+      bert_lower_case: true
 
   graph_embedding_args:
     graph_embedding_share:
-      num_layers: 1
-      input_size: 300
-      hidden_size: 300
-      output_size: 300
-      direction_option: "bi_fuse"
-      feat_drop: 0.3
+      num_layers: 3
+      input_size: 256
+      hidden_size: 256
+      output_size: 256
+      direction_option: "bi_sep"
+      feat_drop: 0.2
 
     graph_embedding_private:
       n_etypes: 1
@@ -74,13 +60,13 @@ training_args:
   grad_clipping: 10
   early_stop_metric: 'BLEU_4'
   patience: 10
-  lr: 0.001 # learning rate
+  lr: 0.003 # learning rate
   lr_patience: 2
   lr_reduce_factor: 0.5
 
 
 checkpoint_args:
-  out_dir: 'out/trec/ggnn_bi_fuse_dependency_ckpt'
+  out_dir: 'out/CAirline/ggnn_bi_sep_dependency_ckpt'
 
 
 env_args:

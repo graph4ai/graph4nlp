@@ -40,21 +40,12 @@ class ModelHandler:
         self._build_evaluation()
 
     def _build_dataloader(self):
-        self.graph_construction_name = self.config["model_args"]["graph_construction_name"]
-        topology_subdir = "{}_graph".format(self.graph_construction_name)
-        if self.graph_construction_name == "node_emb_refined":
-            topology_subdir += "_{}".format(
-                self.config["model_args"]["graph_construction_args"]["graph_construction_private"][
-                    "dynamic_init_graph_name"
-                ]
-            )
-
         dataset = TrecDataset(
             root_dir=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["root_dir"],
-            topology_subdir=topology_subdir,
-            graph_construction_name=self.graph_construction_name,
+            topology_subdir=self.config["model_args"]["graph_construction_args"]["graph_construction_share"]["topology_subdir"],
+            graph_construction_name=self.config["model_args"]["graph_construction_name"],
             dynamic_init_graph_name=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_private"
             ].get("dynamic_init_graph_name", None),
@@ -75,12 +66,6 @@ class ModelHandler:
             thread_number=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ].get("thread_number", None),
-            port=self.config["model_args"]["graph_construction_args"][
-                "graph_construction_share"
-            ].get("port", None),
-            timeout=self.config["model_args"]["graph_construction_args"][
-                "graph_construction_share"
-            ].get("timeout", None),
             for_inference=True,
             reused_vocab_model=self.model.vocab_model,
             reused_label_model=self.model.label_model,

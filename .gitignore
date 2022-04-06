@@ -121,6 +121,7 @@ venv.bak/
 # data directory
 _download
 out/
+corenlp/
 
 # CTags & CScope
 tags
