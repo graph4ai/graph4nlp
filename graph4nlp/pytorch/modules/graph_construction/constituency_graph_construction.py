@@ -1,11 +1,9 @@
 import copy
-import json
 from pythonds.basic.stack import Stack
 
 from graph4nlp.pytorch.data.data import GraphData
 
 from .base import StaticGraphConstructionBase
-from .utils import CORENLP_TIMEOUT_SIGNATURE
 
 
 class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):

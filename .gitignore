@@ -122,6 +122,9 @@ venv.bak/
 _download
 out/
 corenlp/
+corenlp*.props
+.vector_cache/
+checkpoints/
 
 # CTags & CScope
 tags

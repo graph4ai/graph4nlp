@@ -85,17 +85,14 @@ class DependencyBasedGraphConstruction_without_tokenizer(StaticGraphConstruction
             else:
                 raw_text_data = tokenizer(raw_text_data)
         parsed_results = []
-        # for sent_id in range(len(raw_text_data)):
+
         parsed_sent = {}
         parsed_sent["graph_content"] = []
         parsed_sent["node_content"] = []
         sent = raw_text_data  # [sent_id]
         assert len(sent) >= 2
         parsed_sent["node_num"] = len(sent)
-        # generate node content in a text
-        # dep_parser = CoreNLPDependencyParser(url='http://localhost:9020')
-        # processor = stanfordcorenlp.StanfordCoreNLP('F:/xiaojie/stanford-corenlp-4.1.0',
-        # port=9080, timeout=1000)
+
         for token_id in range(len(sent)):
             node = {}
             node["token"] = sent[token_id]

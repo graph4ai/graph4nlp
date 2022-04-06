@@ -8,8 +8,6 @@ from multiprocessing import Pool
 from typing import Union
 import numpy as np
 import stanza
-
-# from sympy import im
 import torch.utils.data
 from nltk.tokenize import word_tokenize
 from stanza.server import CoreNLPClient
@@ -310,8 +308,6 @@ class Dataset(torch.utils.data.Dataset):
         use_val_for_vocab=False,
         seed=1234,
         thread_number=4,
-        port=9000,  # deprecated
-        timeout=15000,  # deprecated
         for_inference=False,
         reused_vocab_model=None,
         nlp_processor_args=None,
@@ -354,15 +350,13 @@ class Dataset(torch.utils.data.Dataset):
         thread_number: int, default=4
             The thread number for building initial graph. For most case, it may be the
             number of your CPU cores.
-        port: int, default=9000
-            The port for stanfordcorenlp.
-        timeout: int, default=15000
-            The timeout for stanfordcorenlp.
         for_inference: bool, default=False
             Whether this dataset is used for inference.
         reused_vocab_model: str, default=None
             When ``for_inference`` is true, you need to specify the directory where the
             vocabulary data is located.
+        nlp_processor_args: dict, default=None
+            It contains the parameter for nlp processor such as ``stanza``.
         kwargs
         """
         super(Dataset, self).__init__()
@@ -372,8 +366,6 @@ class Dataset(torch.utils.data.Dataset):
 
         # stanfordcorenlp hyper-parameter
         self.thread_number = thread_number
-        self.port = port
-        self.timeout = timeout
         self.nlp_processor_args = nlp_processor_args
 
         # inference
@@ -500,22 +492,6 @@ class Dataset(torch.utils.data.Dataset):
                 self.val = old_train_set[new_train_length:]
                 self.train = old_train_set[:new_train_length]
 
-    def process_data_items(self, data_items):
-        return self._build_topology_process(
-            data_items=data_items,
-            topology_builder=self.topology_builder,
-            static_or_dynamic=self.static_or_dynamic,
-            graph_construction_name=self.graph_construction_name,
-            dynamic_init_topology_builder=self.dynamic_init_topology_builder,
-            dynamic_init_topology_aux_args=None,
-            merge_strategy=self.merge_strategy,
-            edge_strategy=self.edge_strategy,
-            lower_case=self.lower_case,
-            tokenizer=self.tokenizer,
-            port=self.port,
-            timeout=self.timeout,
-        )
-
     @staticmethod
     def _build_topology_process(
         data_items,
@@ -529,8 +505,6 @@ class Dataset(torch.utils.data.Dataset):
         dynamic_init_topology_aux_args,
         lower_case,
         tokenizer,
-        port,
-        timeout,
     ):
         if static_or_dynamic not in ["static", "dynamic"]:
             raise ValueError("Argument: ``static_or_dynamic`` must be ``static`` or ``dynamic``")
@@ -540,7 +514,7 @@ class Dataset(torch.utils.data.Dataset):
             pop_idxs = []
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
-                    print("Port {}, processing: {} / {}".format(port, cnt, len(data_items)))
+                    print("Building graph.... Processed/Remain: {} / {}".format(cnt, len(data_items)))
                 try:
                     graph = topology_builder.static_topology(
                         raw_text_data=item.input_text,
@@ -642,9 +616,7 @@ class Dataset(torch.utils.data.Dataset):
                     self.edge_strategy,
                     self.dynamic_init_topology_aux_args,
                     self.lower_case,
-                    self.tokenizer,
-                    self.port,
-                    self.timeout,
+                    self.tokenizer
                 ),
             )
             res_l.append(r)

@@ -1,7 +1,6 @@
-import sys
-sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
 import os
 import resource
+import sys
 import numpy as np
 import torch
 import torch.optim as optim
@@ -17,6 +16,9 @@ from args import get_args
 from build_model import get_model
 from dataset import IWSLT14Dataset
 from utils import WarmupCosineSchedule, get_log, wordid2str
+
+sys.path.append("/home/shiina/shiina/graph4nlp/lib/graph4nlp")
+
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 
@@ -69,9 +71,9 @@ class NMT:
 
     def _build_dataloader(self):
         dataset = IWSLT14Dataset(
-            root_dir=self.opt["model_args"]["graph_construction_args"][
-                "graph_construction_share"
-            ]["root_dir"],
+            root_dir=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
+                "root_dir"
+            ],
             val_split_ratio=self.opt["preprocessing_args"]["val_split_ratio"],
             merge_strategy=self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_private"

@@ -1,8 +1,6 @@
-
-
 def get_stanza_properties(properties_args):
     """
-        Return properties for stanza from omega conf
+    Return properties for stanza from omega conf
     """
     ret = {}
 
@@ -15,7 +13,7 @@ def get_stanza_properties(properties_args):
             for kk, vv in v.items():
                 if not isinstance(vv, bool):
                     raise RuntimeError("The properties args for stanza is incorrect.")
-                v_string += str(kk) + "=" +  convert_bool2string(vv) + ","
+                v_string += str(kk) + "=" + convert_bool2string(vv) + ","
             v_string = v_string[:-1]
             ret[str(k)] = v_string
         elif isinstance(v, bool):

@@ -89,7 +89,9 @@ class Jobs:
             thread_number=self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["thread_number"],
-            nlp_processor_args=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"]["nlp_processor_args"]
+            nlp_processor_args=self.opt["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["nlp_processor_args"],
         )
 
         self.train_dataloader = DataLoader(
