@@ -72,9 +72,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 'tgt': int
                     The target node ``id``
         """
-        dep_dict = nlp_processor.annotate(
-            text=raw_text_data.strip(),
-            properties=processor_args)
+        dep_dict = nlp_processor.annotate(text=raw_text_data.strip(), properties=processor_args)
 
         # dep_json = nlp_processor.annotate(raw_text_data.strip(), properties=processor_args)
         # from .utils import CORENLP_TIMEOUT_SIGNATURE
