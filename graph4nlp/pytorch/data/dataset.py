@@ -514,7 +514,9 @@ class Dataset(torch.utils.data.Dataset):
             pop_idxs = []
             for cnt, item in enumerate(data_items):
                 if cnt % 1000 == 0:
-                    print("Building graph.... Processed/Remain: {} / {}".format(cnt, len(data_items)))
+                    print(
+                        "Building graph.... Processed/Remain: {} / {}".format(cnt, len(data_items))
+                    )
                 try:
                     graph = topology_builder.static_topology(
                         raw_text_data=item.input_text,
@@ -616,7 +618,7 @@ class Dataset(torch.utils.data.Dataset):
                     self.edge_strategy,
                     self.dynamic_init_topology_aux_args,
                     self.lower_case,
-                    self.tokenizer
+                    self.tokenizer,
                 ),
             )
             res_l.append(r)

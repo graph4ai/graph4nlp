@@ -105,7 +105,6 @@ class InferenceWrapperBase(nn.Module):
             setattr(self, k, v)
 
     def preprocess(self, raw_contents: list):
-        processed_data_items = []
         use_ie = self.graph_construction_name == "ie"  # hard code
         data_item_collect = []
         for raw_sentence in raw_contents:
@@ -148,7 +147,7 @@ class InferenceWrapperBase(nn.Module):
                     input_text=raw_sentence, tokenizer=self.tokenizer, output_text=None
                 )
             data_item_collect.append(data_item)
-            
+
         data_item_collect = self.dataset.build_topology(data_items=data_item_collect)
         for i in range(len(data_item_collect)):
             data_item_collect[i] = self.dataset._vectorize_one_dataitem(
