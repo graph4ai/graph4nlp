@@ -314,7 +314,9 @@ class ModelHandler:
             root_dir=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["root_dir"],
-            topology_subdir=self.config["model_args"]["graph_construction_args"]["graph_construction_share"]["topology_subdir"],
+            topology_subdir=self.config["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["topology_subdir"],
             graph_construction_name=self.config["model_args"]["graph_construction_name"],
             dynamic_init_graph_name=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_private"

@@ -174,7 +174,7 @@ class ModelHandler:
             seed=self.config["env_args"]["seed"],
             thread_number=self.config["model_args"]["graph_construction_args"][
                 "graph_construction_share"
-            ]["thread_number"]
+            ]["thread_number"],
         )
 
         self.train_dataloader = DataLoader(

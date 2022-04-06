@@ -22,7 +22,11 @@ def load_json_config(path: str):
 
 
 def load_yaml_config(
-    path: str, updated_config: dictconfig.DictConfig = None, included_paths: Set[str] = None, nesting_level: int = 0, max_nesting_level: int = 20
+    path: str,
+    updated_config: dictconfig.DictConfig = None,
+    included_paths: Set[str] = None,
+    nesting_level: int = 0,
+    max_nesting_level: int = 20,
 ):
     if included_paths is None:
         included_paths = set()
@@ -35,7 +39,6 @@ def load_yaml_config(
         # Merge updated_config first in case it updates template values such as
         # graph_construction_name, graph_initialization_name, graph_embedding_name and decoder_name
         config = OmegaConf.merge(config, updated_config)
-
 
     included_config_paths = [parse_config_path(path) for path in config.get("includes", [])]
 
@@ -131,7 +134,11 @@ def load_yaml_config(
             raise RuntimeError("Circular includes of yaml files are not supported!")
 
         included_configs.append(
-            load_yaml_config(each, included_paths=included_paths.union([os.path.abspath(path)]), nesting_level=nesting_level + 1)
+            load_yaml_config(
+                each,
+                included_paths=included_paths.union([os.path.abspath(path)]),
+                nesting_level=nesting_level + 1,
+            )
         )
     merged_config = OmegaConf.merge(*included_configs, config)
     merged_config.pop("includes", None)
