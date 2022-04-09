@@ -198,4 +198,5 @@ class RGCNLayer(GNNLayerBase):
         )
 
     def forward(self, graph, feat, etypes, norm=None):
+
         return self.model(graph, feat, etypes, norm)
