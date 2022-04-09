@@ -48,6 +48,7 @@ class RGCN(GNNBase):
         num_rels,
         num_bases=None,
         use_self_loop=True,
+        use_cuda=False,
         dropout=0.0
     ):
         super(RGCN, self).__init__()
@@ -202,4 +203,5 @@ class RGCNLayer(GNNLayerBase):
                         layer_norm=layer_norm)
 
     def forward(self, graph, feat, etypes, norm=None):
+
         return self.model(graph, feat, etypes, norm)
