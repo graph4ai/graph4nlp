@@ -5,13 +5,11 @@ from amr_graph_construction import (
 
 def test_amr():
     raw_data = (
-        "We need to borrow 55% of the hammer price until we can get planning permission for restoration which will allow us to get a mortgage."
+        "We need to borrow 55% of the hammer price until we can get planning permission for restoration which will allow us to get a mortgage . I saw a nice dog and noticed he was eating a bone ."
     )
 
     AmrGraphConstruction.static_topology(
         raw_data,
-        merge_strategy="tailhead",
-        edge_strategy="heterogeneous",
         verbose=1,
     )
     pass

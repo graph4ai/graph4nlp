@@ -2,6 +2,7 @@ import copy
 import spacy
 import amrlib
 
+from collections import defaultdict
 from amrlib.alignments.faa_aligner import FAA_Aligner
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
@@ -58,18 +59,28 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                 The list consisting node information. Each node is organized by a dict.
                 'token': str
                     the entire word
-                'id': int,
+                'id': int
                     the node token's id which will be used in GraphData
                 'variable': str
                     the variable
+                'type': int
+                    the node type
+                'sentence_id': int
+                    the sentence id of the node
             "graph_content": list[dict]
                 The list consisting edge information. Each edge is organized by a dict.
                 "edge_type": str
-                    The edge type token, eg: 'nsubj'
+                    The edge type token, eg: 'ARG1'
                 'src': int
                     The source node ``id``
                 'tgt': int.
                     The target node ``id``
+                'sentence_id': int
+                    The sentence id of the edge
+            "sentence": str
+                The original sentence of the amr graph.
+            "mapping": dict[list]
+                The mapping between sequence token index and node or edge index.
         """
         amrlib.setup_spacy_extension()
         nlp = spacy.load('en_core_web_sm')
@@ -77,7 +88,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
         parsed_results = []
         graphs = doc._.to_amr()
         st = []
-        for graph, sentences in zip(graphs, doc.sents):
+        for ind, (graph, sentences) in enumerate(zip(graphs, doc.sents)):
             node_item = []
             parsed_sent = []
             st = []
@@ -100,6 +111,8 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                         "variable": variable,
                         "id": node_id,
                         "token": concept,
+                        "type": 4, # 4 for amr graph node
+                        "sentence_id": ind,
                     }
                     node2id[variable] = node_id
                     node_item.append(node)
@@ -110,7 +123,9 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                         node = {
                             "variable": None,
                             "id": node_id,
-                            "token": variable
+                            "token": variable, 
+                            "type": 4, # 4 for amr graph node
+                            "sentence_id": ind,
                         }
                         node2id[variable] = node_id
                         node_item.append(node)
@@ -132,14 +147,12 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                     dep_info = {
                         "src": fa,
                         "tgt": node2id[variable],
-                        "edge_type": l[0][1:]
+                        "edge_type": l[0][1:],
+                        "sentence_id": ind,
                     }
                     parsed_sent.append(dep_info)
                     pos_now = pos + '.' + str(size_son[pos] + 1)
                     size_son[pos_now] = 0
-                    # print(st)
-                    print(pos_now)
-                    print(node_item[nodeid_now])
                     index[pos_now] = nodeid_now
                     index[pos_now + '.r'] = len(parsed_sent) - 1
                     size_son[pos] += 1
@@ -154,25 +167,21 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             inference = FAA_Aligner()
             _, alignment_strings = inference.align_sents([sentences.text], [graph])
             alignment = alignment_strings[0].strip().split(' ')
-            vis = [False] * node_id
-            print(_)
-            sentences = sentences.text.strip().split(' ')
+            sentences_token = sentences.text.strip().split(' ')
+            mapping = defaultdict(list)
             for relation in alignment:
                 assert('-' in relation)
                 src = relation.split('-')[0]
                 tgt = relation.split('-')[1]
                 assert(tgt in index)
-                assert(int(src) <= len(sentences))
+                assert(int(src) <= len(sentences_token))
                 if 'r' in tgt:
-                    pass
-                else:   
-                    if vis[index[tgt]]:
-                        node_item[index[tgt]]['token'] += sentences[int(src)] + ' '
-                    else:
-                        node_item[index[tgt]]['token'] = sentences[int(src)] + ' '
-                        vis[index[tgt]] = True
+                    mapping[int(src)].append((index[tgt], "edge"))
+                else:
+                    mapping[int(src)].append((index[tgt], "node"))
+            
             parsed_results.append(
-                {"graph_content": parsed_sent, "node_content": node_item, "node_num": node_id}
+                {"graph_content": parsed_sent, "node_content": node_item, "node_num": node_id, "sentence": sentences.text, "mapping": mapping}
             )   
 
         return parsed_results
@@ -181,8 +190,8 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
     def static_topology(
         cls,
         raw_text_data,
-        merge_strategy,
-        edge_strategy,
+        merge_strategy=None,
+        edge_strategy=None,
         verbose=0,
     ):
         """
@@ -194,15 +203,6 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             Raw text data, it can be multi-sentences.
             When it is ``str`` type, it is the raw text.
             When it is ``list[list]`` type, it is the tokenized token lists.
-        merge_strategy: None or str, option=[None, "tailhead", "user_define"]
-            Strategy to merge sub-graphs into one graph
-            ``None``: It will be the default option. We will do as ``"tailhead"``.
-            ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
-            ``"user_define"``: We will give this option to the user. User can override this method to define your merge # noqa
-                               strategy.
-
-        sequential_link: bool, default=True
-            Whether to link node tokens sequentially (note that it is bidirectional)
         verbose: int, default=0
             Whether to output log infors. Set 1 to output more infos.
         Returns
@@ -216,11 +216,9 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
 
         sub_graphs = []
         for parsed_sent in parsed_results:
-            graph = cls._construct_static_graph(
-                parsed_sent
-            )
+            graph = cls._construct_static_graph(parsed_sent)
             sub_graphs.append(graph)
-        joint_graph = cls._graph_connect(sub_graphs, merge_strategy)
+        joint_graph = cls._graph_connect(sub_graphs)
         return joint_graph
 
     @classmethod
@@ -248,9 +246,10 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
         # insert node attributes
         node_objects = parsed_object["node_content"]
         for node in node_objects:
+            ret_graph.node_attributes[node["id"]]["type"] = node["type"]
             ret_graph.node_attributes[node["id"]]["variable"] = node["variable"]
             ret_graph.node_attributes[node["id"]]["token"] = node["token"]
-
+            ret_graph.node_attributes[node["id"]]["sentence_id"] = node["sentence_id"]
             ret_graph.node_attributes[node["id"]]["head"] = False
             ret_graph.node_attributes[node["id"]]["tail"] = False
 
@@ -258,9 +257,14 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             ret_graph.add_edge(dep_info["src"], dep_info["tgt"])
             edge_idx = ret_graph.edge_ids(dep_info["src"], dep_info["tgt"])[0]
             ret_graph.edge_attributes[edge_idx]["token"] = dep_info["edge_type"]
-
+            ret_graph.edge_attributes[edge_idx]["sentence_id"] = dep_info["sentence_id"]
+        
         ret_graph.node_attributes[head_node]["head"] = True
         ret_graph.node_attributes[tail_node]["tail"] = True
+
+        # add graph attributes
+        ret_graph.graph_attributes["mapping"] = parsed_object["mapping"]
+        ret_graph.graph_attributes["sentence"] = parsed_object["sentence"]
 
         return ret_graph
 
@@ -273,12 +277,6 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
         ----------
         nx_graph_list: list[GraphData]
             The list of all sub-graphs.
-        merge_strategy: None or str, option=[None, "tailhead", "user_define"]
-            Strategy to merge sub-graphs into one graph
-            ``None``: It will be the default option. We will do as ``"tailhead"``.
-            ``"tailhead"``: Link the sub-graph  ``i``'s tail node with ``i+1``'s head node
-            ``"user_define"``: We will give this option to the user. User can override this method to define your merge # noqa
-                               strategy.
 
         Returns
         -------
@@ -297,6 +295,8 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                 print(s_g.get_all_edges())
                 for i in range(s_g.get_edge_num()):
                     print(i, s_g.edge_attributes[i])
+                print("sentence: {}".format(s_g.graph_attributes["sentence"]))
+                print("mapping: {}".format(s_g.graph_attributes["mapping"]))
             print("*************************************")
         if len(nx_graph_list) == 1:
             return nx_graph_list[0]
