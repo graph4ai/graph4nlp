@@ -145,3 +145,6 @@ cscope.*
 # config file
 /config
 local_scripts/
+
+# test link
+tests_saizhuo

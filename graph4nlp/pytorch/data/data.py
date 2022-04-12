@@ -84,6 +84,7 @@ class GraphData(object):
         self.batch_size = None  # Batch size
         self._batch_num_nodes = None  # Subgraph node number list with the length of batch size
         self._batch_num_edges = None  # Subgraph edge number list with the length of batch size
+        self.batch_graph_attributes = []  # Subgraph attribute list with the length of batch size
 
         if src is not None:
             if isinstance(src, GraphData):
@@ -449,7 +450,7 @@ class GraphData(object):
         for key in self._edge_features.keys():
             self._edge_features[key] = entail_zero_padding(self._edge_features[key], num_edges)
 
-    def edge_ids(self, src: Union[int, List[int]], tgt: Union[int or List[int]]) -> List[Any]:
+    def edge_ids(self, src: Union[int, List[int]], tgt: Union[int, List[int]]) -> List[Any]:
         """
         Convert the given endpoints to edge indices.
 
@@ -1192,6 +1193,10 @@ def to_batch(graphs: List[GraphData] = None) -> GraphData:
     big_graph._batch_num_nodes = [g.get_node_num() for g in graphs]
     big_graph._batch_num_edges = [g.get_edge_num() for g in graphs]
 
+    # Step 8: Insert graph attributes
+    for g in graphs:
+        big_graph.batch_graph_attributes.append(g.graph_attributes)
+
     return big_graph
 
 
@@ -1228,6 +1233,7 @@ def from_batch(batch: GraphData) -> List[GraphData]:
         cum_n_edges += num_edges[i]
         cum_n_nodes += num_nodes[i]
         ret.append(g)
+        g.graph_attributes = batch.batch_graph_attributes[i]
 
     # Add node and edge features
 
