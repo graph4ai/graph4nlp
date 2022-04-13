@@ -46,7 +46,7 @@ def load_data(get_norm=False, inv_target=False):
 
     # find out the target node ids in g
     # loc = (g.ndata['ntype'] == category_id)
-    loc = False
+    loc = (g.ndata['_TYPE'] == category_id)
     target_idx = node_ids[loc]
 
     if inv_target:
@@ -73,10 +73,10 @@ if __name__ == "__main__":
     g, num_rels, num_classes, labels, train_idx, test_idx, target_idx = load_data(get_norm=True)
 
     # g.ntypes = 0
-    graph = from_dgl(g, is_hetero=True)
+    graph = from_dgl(g, is_hetero=False)
     # graph.ntypes=0
     num_nodes = graph.get_node_num()
-    model = RGCN(num_layers=num_layers, 
+    model = RGCN(num_hidden_layers=num_layers, 
                  input_size=num_nodes,
                  hidden_size=hidden_size,
                  output_size=num_classes,
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     model.train()
 
     for epoch in range(100):
-        logits = model(g)
+        logits = model(graph).node_features["node_emb"]
         logits = logits[target_idx]
         loss = F.cross_entropy(logits[train_idx], labels[train_idx])
         optimizer.zero_grad()
