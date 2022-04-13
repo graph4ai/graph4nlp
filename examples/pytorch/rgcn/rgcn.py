@@ -37,7 +37,7 @@ class RGCN(GNNBase):
 
     def __init__(
         self,
-        num_layers,
+        num_hidden_layers,
         input_size,
         hidden_size,
         output_size,
@@ -47,12 +47,13 @@ class RGCN(GNNBase):
         dropout=0.0,
     ):
         super(RGCN, self).__init__()
-        self.num_layers = num_layers
+        self.num_hidden_layers = num_hidden_layers
         self.num_rels = num_rels
         self.num_bases = num_bases
         self.use_self_loop = use_self_loop
         self.dropout = dropout
 
+        self.emb = nn.Embedding(input_size, hidden_size)
         self.RGCN_layers = nn.ModuleList()
 
         # transform the hidden size format
@@ -75,7 +76,7 @@ class RGCN(GNNBase):
                 )
             )
         # hidden layers
-        for l in range(1, self.num_layers - 1):
+        for l in range(self.num_hidden_layers):
             # due to multi-head, the input_size = hidden_size * num_heads
             self.RGCN_layers.append(
                 RGCNLayer(
@@ -93,7 +94,7 @@ class RGCN(GNNBase):
         # output projection
         self.RGCN_layers.append(
             RGCNLayer(
-                hidden_size[-1] if self.num_layers > 1 else input_size,
+                hidden_size,
                 output_size,
                 num_rels=self.num_rels,
                 regularizer="basis",
@@ -122,17 +123,17 @@ class RGCN(GNNBase):
             named as "node_emb".
         """
 
-        h = graph.node_features["node_feat"]
+        
         # get the node feature tensor from graph
         g = graph.to_dgl()  # transfer the current NLPgraph to DGL graph
-        edge_type = g.edata[dgl.ETYPE].long()
+        edge_type = g.edata['_TYPE'].long()
         # output projection
-        if self.num_layers > 1:
-            for l in range(0, self.num_layers - 1):
-                h = self.RGCN_layers[l](g, h, edge_type)
+        h = self.emb.weight
+        for l in range(self.num_hidden_layers):
+            h = self.RGCN_layers[l](g, h, edge_type)
 
         logits = self.RGCN_layers[-1](g, h, edge_type)
-
+        graph.node_features['node_feat'] = h
         graph.node_features["node_emb"] = logits  # put the results into the NLPGraph
         return graph
 
