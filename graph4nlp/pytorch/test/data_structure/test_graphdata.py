@@ -324,22 +324,22 @@ def test_conversion_dgl():
 
 def test_conversion_dgl_hetero():
     g = GraphData(is_hetero=True)
-    g.add_nodes(10, ntypes=["A"] * 5 + ["B"] * 5)
+    g.add_nodes(11, ntypes=["A"] * 5 + ["B"] * 6)
     # g.add_nodes
     for i in range(5):
-        g.add_edge(src=i, tgt=(i + 5) % 10, etype=("A", "R_ab", "B"))
+        g.add_edge(src=i, tgt=(i + 5) % 11, etype=("A", "R_ab", "B"))
     for i in range(5):
-        g.add_edge(src=(i + 5) % 10, tgt=i, etype=("B", "R_ba", "A"))
+        g.add_edge(src=(i + 6) % 11, tgt=i, etype=("B", "R_ba", "A"))
     for i in range(5):
         g.add_edge(src=i, tgt=(i + 1) % 5, etype=("A", "R_aa", "A"))
-    g.node_features["node_feat"] = torch.randn((10, 10))
-    g.node_features["zero"] = torch.zeros(10)
-    g.node_features["idx"] = torch.tensor(list(range(10)), dtype=torch.long)
+    g.node_features["node_feat"] = torch.randn((11, 10))
+    g.node_features["zero"] = torch.zeros(11)
+    g.node_features["idx"] = torch.tensor(list(range(11)), dtype=torch.long)
     g.edge_features["edge_feat"] = torch.randn((15, 10))
     g.edge_features["idx"] = torch.tensor(list(range(15)), dtype=torch.long)
     # Test to_dgl
     dgl_g = g.to_dgl()
-    g = from_dgl(dgl_g)
+    g = from_dgl(dgl_g, is_hetero=True)
     # for node_feat_name in g.node_feature_names():
     #     if g.node_features[node_feat_name] is None:
     #         assert node_feat_name not in dgl_g.ndata.keys()
@@ -616,3 +616,6 @@ def test_remove_edges():
     mem_report()
     g.remove_all_edges()
     mem_report()
+
+if __name__ == "__main__":
+    test_conversion_dgl_hetero()
