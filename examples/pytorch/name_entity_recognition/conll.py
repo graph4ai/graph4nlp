@@ -1,18 +1,8 @@
-import os
 from copy import deepcopy
-import stanfordcorenlp
-import stanza
 import torch
-from stanza.server import CoreNLPClient
 
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.data.dataset import SequenceLabelingDataset
-from graph4nlp.pytorch.modules.utils.nlp_parser_utils import get_stanza_properties
-
-from dependency_graph_construction_without_tokenize import (
-    DependencyBasedGraphConstruction_without_tokenizer,
-)
-from line_graph_construction import LineBasedGraphConstruction
 
 
 class ConllDataset(SequenceLabelingDataset):
