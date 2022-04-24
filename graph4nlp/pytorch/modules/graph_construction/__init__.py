@@ -5,6 +5,7 @@ from .node_embedding_based_graph_construction import NodeEmbeddingBasedGraphCons
 from .node_embedding_based_refined_graph_construction import (
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
+from .amr_graph_construction import AmrGraphConstruction
 
 __all__ = [
     "DependencyBasedGraphConstruction",
@@ -12,4 +13,5 @@ __all__ = [
     "IEBasedGraphConstruction",
     "NodeEmbeddingBasedGraphConstruction",
     "NodeEmbeddingBasedRefinedGraphConstruction",
+    "AmrGraphConstruction",
 ]

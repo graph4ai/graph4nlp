@@ -1,0 +1,69 @@
+graph_construction_name: "constituency"
+graph_embedding_name: "graphsage"
+decoder_name: "stdtree"
+
+graph_construction_args:
+  graph_construction_share:
+    graph_name: 'constituency'
+    root_dir: "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data_inference"
+    topology_subdir: 'ConstituencyGraph'
+    thread_number: 4
+    port: 9000
+    timeout: 15000
+
+  graph_construction_private:
+    edge_strategy: 'homogeneous'
+    merge_strategy: 'tailhead'
+    sequential_link: true
+    as_node: false
+
+graph_initialization_args:
+  input_size: 300
+  hidden_size: 300
+  word_dropout: 0.2
+  rnn_dropout: 0.3
+  # word_dropout: 0.1
+  # rnn_dropout: 0.1
+  fix_bert_emb: false
+  fix_word_emb: false
+  embedding_style:
+    single_token_item: true
+    emb_strategy: "w2v_bilstm"
+    num_rnn_layers: 1
+    bert_model_name: null
+    bert_lower_case: null
+
+graph_embedding_args:
+  graph_embedding_share:
+    num_layers: 1
+    input_size: 300
+    hidden_size: 300
+    output_size: 300
+    direction_option: "undirected"
+    feat_drop: 0.0
+    attn_drop: 0.0
+
+  graph_embedding_private:
+    aggregator_type: "lstm"
+    bias: true
+    norm: null
+    activation: "relu"
+    use_edge_weight: false
+
+decoder_args:
+  rnn_decoder_share:
+    rnn_type: "lstm"
+    input_size: 300
+    hidden_size: 300
+    rnn_emb_input_size: 300
+    use_copy: true
+    graph_pooling_strategy: null
+    attention_type: "uniform"
+    fuse_strategy: "concatenate"
+    dropout: 0.1
+    teacher_forcing_rate: 1.0
+
+  rnn_decoder_private:
+    max_decoder_step: 50
+    max_tree_depth: 50
+    use_sibling: false

@@ -1,0 +1,115 @@
+# Users can import user customized yaml files or library provided default yaml files
+includes: []
+  # - $/configs/defaults.yaml
+  # In the above example path, '$/' indicates the library directory which contains the config folder
+
+
+preprocessing_args:
+  min_freq: 1
+  pretrained_word_emb_name: null
+
+
+model_args:
+  graph_construction_name: "node_emb"
+  graph_initialization_name: "defaults"
+  graph_embedding_name: "graphsage"
+  decoder_name: "stdtree"
+
+
+  graph_construction_args:
+    graph_construction_share:
+      root_dir: 'examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data'
+      topology_subdir: 'NodeEmbGraph'
+      thread_number: 10
+      share_vocab: True
+      port: 9000
+      timeout: 15000
+      
+    graph_construction_private:
+      edge_strategy: 'homogeneous'
+      merge_strategy: 'tailhead'
+      sequential_link: true
+      as_node: false
+      sim_metric_type: 'weighted_cosine'
+      num_heads: 1
+      top_k_neigh: null
+      epsilon_neigh: 0.5
+      smoothness_ratio: 0.1
+      connectivity_ratio: 0.05
+      sparsity_ratio: 0.1
+
+  graph_initialization_args:
+    input_size: 300
+    hidden_size: 300
+    word_dropout: 0.1
+    rnn_dropout: 0.1
+    # word_dropout: 0.2
+    # rnn_dropout: 0.3
+    fix_bert_emb: false
+    fix_word_emb: false
+    embedding_style:
+      single_token_item: true
+      emb_strategy: "w2v_bilstm"
+      num_rnn_layers: 1
+      bert_model_name: null
+      bert_lower_case: null
+
+  graph_embedding_args:
+    graph_embedding_share:
+      num_layers: 1
+      input_size: 300
+      hidden_size: 300
+      output_size: 300
+      direction_option: "undirected"
+      feat_drop: 0.0
+      attn_drop: 0.0
+    graph_embedding_private:
+      aggregator_type: "lstm"
+      bias: true
+      norm: null
+      activation: "relu"
+      use_edge_weight: true
+
+  decoder_args:
+    rnn_decoder_share:
+      rnn_type: "lstm"
+      input_size: 300
+      hidden_size: 300
+      rnn_emb_input_size: 300
+      use_copy: true
+      graph_pooling_strategy: null
+      attention_type: "uniform"
+      fuse_strategy: "concatenate"
+      dropout: 0.1
+      teacher_forcing_rate: 1.0
+    rnn_decoder_private:
+      max_decoder_step: 50
+      max_tree_depth: 50
+      use_sibling: false
+
+training_args:
+  learning_rate: 0.001
+  init_weight: 0.08
+  weight_decay: 0
+  max_epochs: 150
+  grad_clip: 5
+  batch_size: 20
+
+
+inference_args:
+  beam_size: 4
+  inference_data_dir: "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data_inference"
+
+
+evaluation_args:
+  # Metrics for evaluation
+  
+
+checkpoint_args:
+  out_dir: "examples/pytorch/semantic_parsing/graph2tree/jobs/save"
+  checkpoint_name: "best.pt"
+
+
+env_args:
+  seed: 0
+  gpuid: -1

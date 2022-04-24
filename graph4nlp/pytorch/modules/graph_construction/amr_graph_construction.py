@@ -1,7 +1,7 @@
 import copy
 import spacy
 import amrlib
-
+import torch
 from collections import defaultdict
 from amrlib.alignments.faa_aligner import FAA_Aligner
 from graph4nlp.pytorch.data.data import GraphData
@@ -213,7 +213,6 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             The merged graph data-structure.
         """
         cls.verbose = verbose
-
         parsed_results = cls.parsing(raw_text_data)
 
         sub_graphs = []
