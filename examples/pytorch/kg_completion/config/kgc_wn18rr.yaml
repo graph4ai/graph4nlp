@@ -5,24 +5,26 @@ includes: []
 
 preprocessing_args:
   top_word_vocab: 70000
-  word_emb_size: 300
-  share_vocab: True
+  word_emb_size: 200
+  share_vocab: False
   min_word_freq: 1
   dataset: "WN18RR"
   preprocess: False
   resume: False
+  pretrained_word_emb_name: null
 
 model_args:
   model: "ggnn_distmult" # conve, complex, distmult, gcn_distmult, gcn_complex, ggnn_distmult
   graph_initialization_name: "defaults"
   # for kgc models
-  embedding_dim: 200
+  input_size: 200 # embedding_dim
+  hidden_size: 200
+  output_size: 200
   embedding_shape1: 20 # for conve
   conve_hidden_size: 9728 # for conve
   use_bias: False # for conve
-  hidden_drop: 0.25
+  hidden_drop: 0.25 # for conve
   input_drop: 0.2
-  feat_drop: 0.2
 
   graph_construction_args:
     graph_construction_private:
@@ -38,6 +40,7 @@ model_args:
     graph_embedding_share:
       num_layers: 2
       direction_option: "bi_sep"
+      feat_drop: 0.2
 
 training_args:
   batch_size: 128 # batch size
