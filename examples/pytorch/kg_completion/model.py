@@ -67,9 +67,7 @@ class Complex(torch.nn.Module):
 class Distmult(torch.nn.Module):
     def __init__(self, args, num_entities, num_relations):
         super(Distmult, self).__init__()
-        self.emb_e = torch.nn.Embedding(
-            num_entities, args.model_args["input_size"], padding_idx=0
-        )
+        self.emb_e = torch.nn.Embedding(num_entities, args.model_args["input_size"], padding_idx=0)
         self.emb_rel = torch.nn.Embedding(
             num_relations, args.model_args["input_size"], padding_idx=0
         )
@@ -98,9 +96,7 @@ class Distmult(torch.nn.Module):
 class ConvE(torch.nn.Module):
     def __init__(self, args, num_entities, num_relations):
         super(ConvE, self).__init__()
-        self.emb_e = torch.nn.Embedding(
-            num_entities, args.model_args["input_size"], padding_idx=0
-        )
+        self.emb_e = torch.nn.Embedding(num_entities, args.model_args["input_size"], padding_idx=0)
         self.emb_rel = torch.nn.Embedding(
             num_relations, args.model_args["input_size"], padding_idx=0
         )
@@ -152,9 +148,7 @@ class ConvE(torch.nn.Module):
 class GGNNDistMult(torch.nn.Module):
     def __init__(self, args, num_entities, num_relations):
         super(GGNNDistMult, self).__init__()
-        self.emb_e = torch.nn.Embedding(
-            num_entities, args.model_args["input_size"], padding_idx=0
-        )
+        self.emb_e = torch.nn.Embedding(num_entities, args.model_args["input_size"], padding_idx=0)
         self.emb_rel = torch.nn.Embedding(
             num_relations, args.model_args["input_size"], padding_idx=0
         )
@@ -206,9 +200,7 @@ class GGNNDistMult(torch.nn.Module):
 class GCNDistMult(torch.nn.Module):
     def __init__(self, args, num_entities, num_relations):
         super(GCNDistMult, self).__init__()
-        self.emb_e = torch.nn.Embedding(
-            num_entities, args.model_args["input_size"], padding_idx=0
-        )
+        self.emb_e = torch.nn.Embedding(num_entities, args.model_args["input_size"], padding_idx=0)
         self.emb_rel = torch.nn.Embedding(
             num_relations, args.model_args["input_size"], padding_idx=0
         )
