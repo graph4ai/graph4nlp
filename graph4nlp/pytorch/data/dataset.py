@@ -23,9 +23,6 @@ from ..modules.graph_construction.constituency_graph_construction import (
 from ..modules.graph_construction.dependency_graph_construction import (
     DependencyBasedGraphConstruction,
 )
-from ..modules.graph_construction.amr_graph_construction import (
-    AmrGraphConstruction,
-)
 from ..modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from ..modules.graph_construction.node_embedding_based_graph_construction import (
     NodeEmbeddingBasedGraphConstruction,
@@ -788,9 +785,6 @@ class Text2TextDataset(Dataset):
 
         if graph_construction_name == "dependency":
             topology_builder = DependencyBasedGraphConstruction
-            static_or_dynamic = "static"
-        elif graph_construction_name == "amr":
-            topology_builder = AmrGraphConstruction
             static_or_dynamic = "static"
         elif graph_construction_name == "constituency":
             topology_builder = ConstituencyBasedGraphConstruction

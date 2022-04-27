@@ -20,7 +20,8 @@ from graph4nlp.pytorch.modules.graph_construction.constituency_graph_constructio
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import (
     DependencyBasedGraphConstruction,
 )
-from graph4nlp.pytorch.modules.graph_construction.amr_graph_construction import (
+
+from amr_graph_construction import (
     AmrGraphConstruction,
 )
 from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
@@ -31,11 +32,11 @@ from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_refined_g
     NodeEmbeddingBasedRefinedGraphConstruction,
 )
 
-from args import get_args
-from build_model import get_model
-from evaluation import ExpressionAccuracy
+from amr_semantic_parsing.graph2seq.args import get_args
+from amr_semantic_parsing.graph2seq.build_model import get_model
+from amr_semantic_parsing.graph2seq.evaluation import ExpressionAccuracy
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
-from utils import get_log, wordid2str
+from amr_semantic_parsing.graph2seq.utils import get_log, wordid2str
 
 
 class AmrDataItem(DataItem):

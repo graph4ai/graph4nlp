@@ -1,7 +1,6 @@
 import copy
 import spacy
 import amrlib
-
 from collections import defaultdict
 from amrlib.alignments.faa_aligner import FAA_Aligner
 from graph4nlp.pytorch.data.data import GraphData
@@ -87,6 +86,8 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
         doc = nlp(raw_text_data)
         parsed_results = []
         graphs = doc._.to_amr()
+        for i in graphs:
+            print(i)
         st = []
         for ind, (graph, sentences) in enumerate(zip(graphs, doc.sents)):
             node_item = []
@@ -95,7 +96,6 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             node_id = 0
             node2id = {}
 
-            # get the alignment information
             index = {}
             size_son = {}
 
@@ -213,7 +213,6 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             The merged graph data-structure.
         """
         cls.verbose = verbose
-
         parsed_results = cls.parsing(raw_text_data)
 
         sub_graphs = []
@@ -301,9 +300,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                 print("sentence: {}".format(s_g.graph_attributes["sentence"]))
                 print("mapping: {}".format(s_g.graph_attributes["mapping"]))
             print("*************************************")
-        if len(nx_graph_list) == 1:
-            return nx_graph_list[0]
-        elif len(nx_graph_list) == 0:
+        if len(nx_graph_list) == 0:
             raise RuntimeError("There is no graph needed to merge.")
         node_num_list = [s_g.get_node_num() for s_g in nx_graph_list]
         node_num = sum(node_num_list)

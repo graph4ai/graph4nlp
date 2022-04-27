@@ -5,7 +5,7 @@ from amr_graph_construction import (
 
 def test_amr():
     raw_data = (
-        "We need to borrow 55% of the hammer price until we can get planning permission for restoration which will allow us to get a mortgage . I saw a nice dog and noticed he was eating a bone ."
+        "find all languageid0 job in locid0"
     )
 
     AmrGraphConstruction.static_topology(

@@ -40,6 +40,11 @@ Results
 
 As_node(Dep + GAT): 90.0 90.0 89.1
 
+AMR
+
+| multi-token: |single-token | amr-embedding: |
+| ------------ | --- | ---|
+| 0.643 | 0.693 | 0.721 |
 
 Dependency
 

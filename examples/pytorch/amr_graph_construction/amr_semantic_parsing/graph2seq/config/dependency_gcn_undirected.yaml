@@ -21,7 +21,7 @@ model_args:
 
   graph_construction_args:
     graph_construction_share:
-      root_dir: "examples/pytorch/amr_semantic_parsing/graph2seq/jobs"
+      root_dir: "examples/pytorch/amr_graph_construction/amr_semantic_parsing/graph2seq/jobs"
       topology_subdir: 'AmrGraph'
       share_vocab: true
       thread_number: 4
@@ -43,7 +43,7 @@ model_args:
     fix_word_emb: false
     embedding_style:
       single_token_item: false
-      emb_strategy: "bert_bilstm_amr"
+      emb_strategy: "w2v_bert_bilstm_amr"
       num_rnn_layers: 1
       bert_model_name: null
       bert_lower_case: null
@@ -84,7 +84,7 @@ model_args:
       tgt_emb_as_output_layer: true
 
 training_args:
-  log_file: "examples/pytorch/amr_semantic_parsing/graph2seq/log/amr.txt"
+  log_file: "examples/pytorch/amr_graph_construction/amr_semantic_parsing/graph2seq/log/amr.txt"
   learning_rate: 0.001
   lr_start_decay_epoch: 20
   lr_decay_per_epoch: 5
@@ -106,10 +106,10 @@ evaluation_args:
   
 
 checkpoint_args:
-  checkpoint_save_path: "examples/pytorch/amr_semantic_parsing/graph2seq/save"
+  checkpoint_save_path: "examples/pytorch/amr_graph_construction/amr_semantic_parsing/graph2seq/save"
 
 
 env_args:
-  use_gpu: 0
+  use_gpu: 1
   seed: 0
   gpuid: -1
