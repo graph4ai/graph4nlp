@@ -14,7 +14,7 @@ from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.modules.evaluation.rouge import ROUGE
-from graph4nlp.pytorch.modules.graph_construction.embedding_construction import WordEmbedding
+from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import WordEmbedding
 from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
