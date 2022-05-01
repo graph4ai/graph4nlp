@@ -58,6 +58,14 @@
 **09/01/2021:** Welcome to visit our **DLG4NLP website (https://dlg4nlp.github.io/index.html)** for various learning resources! <br>
 **06/05/2021:** The **v0.4.1 release**. 
 
+## Major Releases
+
+| Releases | Date       | Features                                                     |
+| -------- | ---------- | ------------------------------------------------------------ |
+| v0.5.5   | 2022-01-20 | - Support model.predict API by introducing wrapper functions. <br /> - Introduce Three new inference_wrapper functions: classifier_inference_wrapper, generator_inference_wrapper, generator_inference_wrapper_for_tree. <br /> - Add the inference and inference_advance examples in each application. <br /> - Separate the graph topology and graph embedding process. <br /> - Renew all the graph construction functions. <br /> - Module graph_embedding is divided into graph_embedding_initialization and graph_embedding_learning. <br /> - Unify the parameters in Dataset. We remove the ambiguous parameter ``graph_type`` and introduce ``graph_name`` to indicate the graph construction method and ``static_or_dynamic`` to indicate the static or dynamic graph  construction type.  <br /> - New: The dataset now can automatically choose the default methods (e.g., ``topology_builder``) by only one parameter `` graph_name ``. |
+| v0.5.1   | 2021-09-26 | - Lint the codes <br /> - Support testing with users' own data <br /> - Fix the bug: The word embedding size was hard-coded in the 0.4.1 version. Now it is equal to "word_emb_size" parameter. <br /> - Fix the bug: The build_vocab() is called twice in the 0.4.1 version. <br /> - Fix the bug: The two main files of knowledge graph completion example missed the optional parameter "kg_graph" in ranking_and_hits() when resuming training the model. <br /> - Fix the bug: We have fixed the preprocessing path error in KGC readme. <br /> - Fix the bug: We have fixed embedding construction bug when setting emb_strategy to 'w2v'. |
+| v0.4.1   | 2021-06-05 | - Support the whole pipeline of Graph4NLP <br /> - GraphData and Dataset support |
+
 ## Quick tour
 
 ***Graph4nlp*** aims to make it incredibly easy to use GNNs in NLP tasks (check out [Graph4NLP Documentation](https://graph4ai.github.io/graph4nlp/)). Here is an example of how to use the [*Graph2seq*](https://graph4ai.github.io/graph4nlp/) model (widely used in machine translation, question answering,
@@ -223,13 +231,11 @@ Finally, install the package:
 python setup.py install
 ```
 
-## Major Releases
+## For Hyperparameter tuning
 
-| Releases | Date       | Features                                                     |
-| -------- | ---------- | ------------------------------------------------------------ |
-| v0.5.5   | 2022-01-20 | - Support model.predict API by introducing wrapper functions. <br /> - Introduce Three new inference_wrapper functions: classifier_inference_wrapper, generator_inference_wrapper, generator_inference_wrapper_for_tree. <br /> - Add the inference and inference_advance examples in each application. <br /> - Separate the graph topology and graph embedding process. <br /> - Renew all the graph construction functions. <br /> - Module graph_embedding is divided into graph_embedding_initialization and graph_embedding_learning. <br /> - Unify the parameters in Dataset. We remove the ambiguous parameter ``graph_type`` and introduce ``graph_name`` to indicate the graph construction method and ``static_or_dynamic`` to indicate the static or dynamic graph  construction type.  <br /> - New: The dataset now can automatically choose the default methods (e.g., ``topology_builder``) by only one parameter `` graph_name ``. |
-| v0.5.1   | 2021-09-26 | - Lint the codes <br /> - Support testing with users' own data <br /> - Fix the bug: The word embedding size was hard-coded in the 0.4.1 version. Now it is equal to "word_emb_size" parameter. <br /> - Fix the bug: The build_vocab() is called twice in the 0.4.1 version. <br /> - Fix the bug: The two main files of knowledge graph completion example missed the optional parameter "kg_graph" in ranking_and_hits() when resuming training the model. <br /> - Fix the bug: We have fixed the preprocessing path error in KGC readme. <br /> - Fix the bug: We have fixed embedding construction bug when setting emb_strategy to 'w2v'. |
-| v0.4.1   | 2021-06-05 | - Support the whole pipeline of Graph4NLP <br /> - GraphData and Dataset support |
+We show some of the hyperparameters that are often tuned
+ [here](https://docs.google.com/spreadsheets/d/e/2PACX-1vQaE3BTKYt4NX0z5oJrzVESdE7Kx3dnmTCG7zTdtTqj6zuRX12qBz7OoEf0ckTDini0BljFLA9JuF5v/pubhtml?gid=0&single=true).
+
 
 ## New to Deep Learning on Graphs for NLP?
 
