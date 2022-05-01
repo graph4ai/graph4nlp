@@ -195,6 +195,8 @@ def main(cfg, model_path):
             cfg["preprocessing_args"]["dataset"]
         ),
         topology_subdir="kgc",
+        pretrained_word_emb_name=cfg["preprocessing_args"]["pretrained_word_emb_name"],
+        word_emb_size=cfg["preprocessing_args"]["word_emb_size"],
     )
 
     cfg["checkpoint_args"]["out_dir"] = cfg["checkpoint_args"]["out_dir"] + "_{}_{}".format(
