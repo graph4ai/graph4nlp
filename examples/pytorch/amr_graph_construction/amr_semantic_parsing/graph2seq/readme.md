@@ -22,7 +22,7 @@ How to run
 #### Run with following:
 
 ```python
-python examples/pytorch/amr_semantic_parsing/graph2seq/main.py --json_config=examples/pytorch/amr_semantic_parsing/graph2seq/config/train.json
+python examples/pytorch/amr_graph_construction/main.py --json_config=examples/pytorch/amr_graph_construction/amr_semantic_parsing/graph2seq/config/train.json
 ```
 
 #### Inference with following:
@@ -43,8 +43,8 @@ As_node(Dep + GAT): 90.0 90.0 89.1
 AMR
 
 | multi-token: |single-token | amr-embedding: |
-| ------------ | --- | ---|
-| 0.643 | 0.693 | 0.721 |
+| ------------ | ----------- | -------------- |
+|     64.3     |   69.3      |     72.1       |
 
 Dependency
 

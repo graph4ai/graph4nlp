@@ -40,7 +40,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             self.vocab.word_vocab._add_words([attr["token"]])
 
     @classmethod
-    def parsing(cls, raw_text_data):
+    def parsing(cls, raw_text_data, nlp_processor):
         """
 
         Parameters
@@ -86,8 +86,6 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
         doc = nlp(raw_text_data)
         parsed_results = []
         graphs = doc._.to_amr()
-        for i in graphs:
-            print(i)
         st = []
         for ind, (graph, sentences) in enumerate(zip(graphs, doc.sents)):
             node_item = []
@@ -179,9 +177,15 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                     mapping[index[tgt]].append((int(src), "edge"))
                 else:
                     mapping[index[tgt]].append((int(src), "node"))
+
+            pos_tag = nlp_processor.pos_tag(sentences.text)
+            pos_tag = [x[1] for x in pos_tag]
+            entity_label = nlp_processor.ner(sentences.text)
+            entity_label = [x[1] for x in entity_label]
             
             parsed_results.append(
-                {"graph_content": parsed_sent, "node_content": node_item, "node_num": node_id, "sentence": sentences.text, "mapping": mapping}
+                {"graph_content": parsed_sent, "node_content": node_item, "node_num": node_id, 
+                    "sentence": sentences.text, "mapping": mapping, "pos_tag": pos_tag, "entity_label": entity_label}
             )   
 
         return parsed_results
@@ -213,7 +217,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             The merged graph data-structure.
         """
         cls.verbose = verbose
-        parsed_results = cls.parsing(raw_text_data)
+        parsed_results = cls.parsing(raw_text_data, nlp_processor)
 
         sub_graphs = []
         for parsed_sent in parsed_results:
@@ -267,6 +271,8 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
         # add graph attributes
         ret_graph.graph_attributes["mapping"] = parsed_object["mapping"]
         ret_graph.graph_attributes["sentence"] = parsed_object["sentence"]
+        ret_graph.graph_attributes["pos_tag"] = parsed_object["pos_tag"]
+        ret_graph.graph_attributes["entity_label"] = parsed_object["entity_label"]
 
         return ret_graph
 
@@ -310,9 +316,13 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
         # copy graph attributes
         g.graph_attributes["mapping"] = list()
         g.graph_attributes["sentence"] = list()
+        g.graph_attributes["pos_tag"] = list()
+        g.graph_attributes["entity_label"] = list()
         for graph in nx_graph_list:
             g.graph_attributes["mapping"].append(graph.graph_attributes["mapping"])
             g.graph_attributes["sentence"].append(graph.graph_attributes["sentence"])
+            g.graph_attributes["pos_tag"].append(graph.graph_attributes["pos_tag"])
+            g.graph_attributes["entity_label"].append(graph.graph_attributes["entity_label"])
 
         # copy edges
         for s_g in nx_graph_list:

@@ -240,6 +240,42 @@ class Text2TextDataset(Dataset):
             graph.node_attributes[node_idx]["token_id"] = node_token_id
 
             token_matrix.append([node_token_id])
+
+        if "pos_tag" in graph.graph_attributes:
+            pos_vocab = [".", "CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", "NNP", "NNPS", "NNS", "PDT", "POS", "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "SYM", "TO", "UH", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$", "WRB"]
+            pos_map = {pos: i for i, pos in enumerate(pos_vocab)}
+            maxlen = max(len(pos_tag) for pos_tag in graph.graph_attributes["pos_tag"])
+            pos_token_id = torch.zeros(len(graph.graph_attributes["pos_tag"]), maxlen, dtype=torch.long)
+            for i, sentence_token in enumerate(graph.graph_attributes["pos_tag"]):
+                for j, token in enumerate(sentence_token):
+                    if token in pos_map:
+                        pos_token_id[i][j] = pos_map[token]
+                    else:
+                        print('pos_tag', token)
+            graph.graph_attributes["pos_tag_id"] = pos_token_id 
+
+        if "entity_label" in graph.graph_attributes:
+            entity_label = ["O", "PERSON", "LOCATION", "ORGANIZATION", "ORGANIZATION", "MISC", "MONEY", "NUMBER", "ORDINAL", "PERCENT", "DATE", "TIME", "DURATION", "SET", "EMAIL", "URL", "CITY", "STATE_OR_PROVINCE", "COUNTRY", "NATIONALITY", "RELIGION", "TITLE", "IDEOLOGY", "CRIMINAL_CHARGE", "CAUSE_OF_DEATH", "HANDLE"]
+            entity_map = {entity: i for i, entity in enumerate(entity_label)}
+            maxlen = max(len(entity_tag) for entity_tag in graph.graph_attributes["entity_label"])
+            entity_token_id = torch.zeros(len(graph.graph_attributes["entity_label"]), maxlen, dtype=torch.long)
+            for i, sentence_token in enumerate(graph.graph_attributes["entity_label"]):
+                for j, token in enumerate(sentence_token):
+                    if token in entity_map:
+                        entity_token_id[i][j] = entity_map[token]
+                    else:
+                        print('entity_label', token)
+            graph.graph_attributes["entity_label_id"] = entity_token_id
+
+        if "sentence" in graph.graph_attributes:
+            maxlen = max(len(sentence.strip().split()) for sentence in graph.graph_attributes["sentence"])
+            seq_token_id = torch.zeros(len(graph.graph_attributes["sentence"]), maxlen, dtype=torch.long)
+            for i, sentence in enumerate(graph.graph_attributes["sentence"]):
+                sentence_token = sentence.strip().split()
+                for j, token in enumerate(sentence_token):
+                    seq_token_id[i][j] = vocab_model.in_word_vocab.getIndex(token, use_ie)
+            graph.graph_attributes["sentence_id"] = seq_token_id
+                
         if use_ie:
             for i in range(len(token_matrix)):
                 token_matrix[i] = np.array(token_matrix[i][0])
