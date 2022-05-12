@@ -1,5 +1,6 @@
 import abc
 import json
+from multiprocessing.sharedctypes import Value
 import os
 import warnings
 from collections import Counter
@@ -296,6 +297,7 @@ class Dataset(torch.utils.data.Dataset):
         root,
         topology_builder,
         topology_subdir,
+        data_item_type=DataItem,
         tokenizer=word_tokenize,
         lower_case=True,
         pretrained_word_emb_name="840B",
@@ -323,6 +325,8 @@ class Dataset(torch.utils.data.Dataset):
             The initial graph topology builder.
         topology_subdir: str
             The name of the data folder.
+        data_item_type: DataItem
+            The type of DataItem. E.g., Text2TextDataItem.
         tokenizer: function, default=nltk.word_tokenize
             The word tokenizer.
         lower_case: bool, default=True
@@ -384,6 +388,7 @@ class Dataset(torch.utils.data.Dataset):
         # self.pretrained_word_emb_file = pretrained_word_emb_file
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
+        self.data_item_type = data_item_type
         self.use_val_for_vocab = use_val_for_vocab
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -768,6 +773,7 @@ class Text2TextDataset(Dataset):
             StaticGraphConstructionBase, DynamicGraphConstructionBase
         ] = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
+        data_item_type: DataItem = Text2TextDataItem,
         dynamic_init_graph_name: str = None,
         dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,
@@ -779,9 +785,7 @@ class Text2TextDataset(Dataset):
                 "The argument ``graph_type`` is disgarded. \
                     Please use ``static_or_dynamic`` instead."
             )
-        self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
-
         if graph_construction_name == "dependency":
             topology_builder = DependencyBasedGraphConstruction
             static_or_dynamic = "static"
@@ -803,7 +807,7 @@ class Text2TextDataset(Dataset):
                 raise ValueError("``topology_builder`` can't be None if graph is defined by user.")
             if static_or_dynamic is None:
                 raise ValueError("``static_or_dynamic`` can't be None if graph is defined by user.")
-
+        
         if static_or_dynamic == "dynamic":
             if dynamic_init_graph_name is None or dynamic_init_graph_name == "line":
                 dynamic_init_topology_builder = None
@@ -824,6 +828,7 @@ class Text2TextDataset(Dataset):
             graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
+            data_item_type=data_item_type,
             static_or_dynamic=static_or_dynamic,
             share_vocab=share_vocab,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
@@ -864,7 +869,7 @@ class Text2TextDataset(Dataset):
             lines = f.readlines()
             for line in lines:
                 input, output = line.split("\t")
-                data_item = Text2TextDataItem(
+                data_item = self.data_item_type(
                     input_text=input,
                     output_text=output,
                     tokenizer=self.tokenizer,
@@ -953,6 +958,7 @@ class Text2TreeDataset(Dataset):
             StaticGraphConstructionBase, DynamicGraphConstructionBase
         ] = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
+        data_item_type: DataItem = Text2TreeDataItem,
         dynamic_init_graph_name: str = None,
         dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,
@@ -964,7 +970,6 @@ class Text2TreeDataset(Dataset):
                 "The argument ``graph_type`` is disgarded. \
                     Please use ``static_or_dynamic`` instead."
             )
-        self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
 
         if graph_construction_name == "dependency":
@@ -1009,6 +1014,7 @@ class Text2TreeDataset(Dataset):
             graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
+            data_item_type=data_item_type,
             static_or_dynamic=static_or_dynamic,
             share_vocab=share_vocab,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
@@ -1048,7 +1054,7 @@ class Text2TreeDataset(Dataset):
             lines = f.readlines()
             for line in lines:
                 input, output = line.split("\t")
-                data_item = Text2TreeDataItem(
+                data_item = self.data_item_type(
                     input_text=input,
                     output_text=output,
                     output_tree=None,
@@ -1227,6 +1233,7 @@ class Text2LabelDataset(Dataset):
             StaticGraphConstructionBase, DynamicGraphConstructionBase
         ] = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
+        data_item_type: DataItem = Text2LabelDataItem,
         dynamic_init_graph_name: str = None,
         dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,
@@ -1237,7 +1244,6 @@ class Text2LabelDataset(Dataset):
                 "The argument ``graph_type`` is disgarded. \
                     Please use ``static_or_dynamic`` instead."
             )
-        self.data_item_type = Text2LabelDataItem
         if graph_construction_name == "dependency":
             topology_builder = DependencyBasedGraphConstruction
             static_or_dynamic = "static"
@@ -1282,6 +1288,7 @@ class Text2LabelDataset(Dataset):
             graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
+            data_item_type=data_item_type,
             static_or_dynamic=static_or_dynamic,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
@@ -1318,7 +1325,7 @@ class Text2LabelDataset(Dataset):
         with open(file_path, "r", encoding="utf-8") as f:
             for line in f:
                 input, output = line.split("\t")
-                data_item = Text2LabelDataItem(
+                data_item = self.data_item_type(
                     input_text=input.strip(), output_label=output.strip(), tokenizer=self.tokenizer
                 )
                 data.append(data_item)
@@ -1462,6 +1469,7 @@ class DoubleText2TextDataset(Dataset):
             StaticGraphConstructionBase, DynamicGraphConstructionBase
         ] = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
+        data_item_type: DataItem = DoubleText2TextDataItem,
         dynamic_init_graph_name: str = None,
         dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,
@@ -1473,7 +1481,6 @@ class DoubleText2TextDataset(Dataset):
                 "The argument ``graph_type`` is disgarded. \
                     Please use ``static_or_dynamic`` instead."
             )
-        self.data_item_type = DoubleText2TextDataItem
         self.share_vocab = share_vocab
 
         if graph_construction_name == "dependency":
@@ -1518,6 +1525,7 @@ class DoubleText2TextDataset(Dataset):
             graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
+            data_item_type=data_item_type,
             static_or_dynamic=static_or_dynamic,
             share_vocab=share_vocab,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
@@ -1561,7 +1569,7 @@ class DoubleText2TextDataset(Dataset):
                 if self.lower_case:
                     line = line.lower().strip()
                 input, input2, output = line.split("\t")
-                data_item = DoubleText2TextDataItem(
+                data_item = self.data_item_type(
                     input_text=input.strip(),
                     input_text2=input2.strip(),
                     output_text=output.strip(),
@@ -1675,6 +1683,7 @@ class SequenceLabelingDataset(Dataset):
             StaticGraphConstructionBase, DynamicGraphConstructionBase
         ] = DependencyBasedGraphConstruction,
         topology_subdir: str = None,
+        data_item_type: DataItem = SequenceLabelingDataItem,
         tag_types: str = None,
         dynamic_init_graph_name: str = None,
         dynamic_init_topology_builder: StaticGraphConstructionBase = None,
@@ -1686,7 +1695,6 @@ class SequenceLabelingDataset(Dataset):
                     Please use ``static_or_dynamic`` instead."
             )
 
-        self.data_item_type = SequenceLabelingDataItem
         self.tag_types = tag_types
 
         if graph_construction_name == "dependency":
@@ -1731,6 +1739,7 @@ class SequenceLabelingDataset(Dataset):
             graph_construction_name=graph_construction_name,
             topology_builder=topology_builder,
             topology_subdir=topology_subdir,
+            data_item_type=data_item_type,
             static_or_dynamic=static_or_dynamic,
             dynamic_init_topology_builder=dynamic_init_topology_builder,
             **kwargs,
@@ -1771,7 +1780,7 @@ class SequenceLabelingDataset(Dataset):
                     input.append(line.strip().split(" ")[0])
                     output.append(line.strip().split(" ")[-1])
                     if line[0] == "." and len(input) >= 2:
-                        data_item = SequenceLabelingDataItem(
+                        data_item = self.data_item_type(
                             input_text=input, output_text=output, tokenizer=self.tokenizer
                         )
                         data.append(data_item)
@@ -1883,11 +1892,11 @@ class KGCompletionDataItem(DataItem):
 
 class KGCompletionDataset(Dataset):
     def __init__(
-        self, root_dir: str = None, topology_builder=None, topology_subdir: str = None, **kwargs
+        self, root_dir: str = None, topology_builder=None, topology_subdir: str = None, 
+        data_item_type: DataItem = KGCompletionDataItem, **kwargs
     ):
-        self.data_item_type = DataItem
         super(KGCompletionDataset, self).__init__(
-            root_dir, topology_builder, topology_subdir, **kwargs
+            root_dir, topology_builder, topology_subdir, data_item_type=data_item_type, **kwargs
         )
 
     def read_raw_data(self):
@@ -1952,7 +1961,7 @@ class KGCompletionDataset(Dataset):
                     line["e2_multi1"],
                     line["e2_multi2"],
                 )
-                data_item = KGCompletionDataItem(
+                data_item = self.data_item_type(
                     e1, rel, e2, rel_eval, e2_multi1, e2_multi2, tokenizer=self.tokenizer
                 )
                 data.append(data_item)
