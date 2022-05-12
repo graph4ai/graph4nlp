@@ -1,11 +1,11 @@
 import abc
 import json
-from multiprocessing.sharedctypes import Value
 import os
 import warnings
 from collections import Counter
 from copy import deepcopy
 from multiprocessing import Pool
+from multiprocessing.sharedctypes import Value
 from typing import Union
 import numpy as np
 import stanza
@@ -807,7 +807,7 @@ class Text2TextDataset(Dataset):
                 raise ValueError("``topology_builder`` can't be None if graph is defined by user.")
             if static_or_dynamic is None:
                 raise ValueError("``static_or_dynamic`` can't be None if graph is defined by user.")
-        
+
         if static_or_dynamic == "dynamic":
             if dynamic_init_graph_name is None or dynamic_init_graph_name == "line":
                 dynamic_init_topology_builder = None
@@ -1892,8 +1892,12 @@ class KGCompletionDataItem(DataItem):
 
 class KGCompletionDataset(Dataset):
     def __init__(
-        self, root_dir: str = None, topology_builder=None, topology_subdir: str = None, 
-        data_item_type: DataItem = KGCompletionDataItem, **kwargs
+        self,
+        root_dir: str = None,
+        topology_builder=None,
+        topology_subdir: str = None,
+        data_item_type: DataItem = KGCompletionDataItem,
+        **kwargs,
     ):
         super(KGCompletionDataset, self).__init__(
             root_dir, topology_builder, topology_subdir, data_item_type=data_item_type, **kwargs
