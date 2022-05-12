@@ -1,8 +1,0 @@
-{
-"config_path": "examples/pytorch/amr_graph_construction/question_generation/config/squad_split2/qg.yaml",
-"model_args.graph_initialization_args.bert_dropout": "0.4",
-"model_args.graph_initialization_args.embedding_style.emb_strategy": "w2v_bert_bilstm_amr",
-"model_args.graph_initialization_args.embedding_style.bert_model_name": "bert-base-uncased",
-"model_args.graph_initialization_args.embedding_style.bert_lower_case": "true",
-"checkpoint_args.out_dir": "out/squad_split2/ggnn_dependency_bert_ckpt"
-}

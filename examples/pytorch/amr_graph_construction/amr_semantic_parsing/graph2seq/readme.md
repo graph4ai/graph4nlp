@@ -42,9 +42,9 @@ As_node(Dep + GAT): 90.0 90.0 89.1
 
 AMR
 
-| multi-token: |single-token | amr-embedding: |
-| ------------ | ----------- | -------------- |
-|     64.3     |   69.3      |     72.1       |
+| multi-token: |single-token | glove+pos-embedding: |
+| ------------ | ----------- | -------------------- |
+|     64.3     |   69.3      |     80.7             |
 
 Dependency
 

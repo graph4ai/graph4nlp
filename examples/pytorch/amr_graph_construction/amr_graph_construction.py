@@ -1,4 +1,5 @@
 import copy
+import json
 import spacy
 import amrlib
 from collections import defaultdict
@@ -40,7 +41,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             self.vocab.word_vocab._add_words([attr["token"]])
 
     @classmethod
-    def parsing(cls, raw_text_data, nlp_processor):
+    def parsing(cls, raw_text_data, nlp_processor, processor_args):
         """
 
         Parameters
@@ -100,11 +101,14 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             for line in graph.splitlines():
                 if line[0] == '#':
                     continue
-                l = line.strip().split(' ')
+                l = line.strip().split()
                 # add new node
                 if line.find('/') != -1:
                     variable = l[l.index('/') - 1].strip('(')
                     concept = l[l.index('/') + 1].strip(')')
+                    if '-' in concept:
+                        concept = concept.split('-')[0]
+                    assert concept is not ''
                     node = {
                         "variable": variable,
                         "id": node_id,
@@ -113,10 +117,13 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                         "sentence_id": ind,
                     }
                     node2id[variable] = node_id
+                    nodeid_now = node_id
                     node_item.append(node)
                     node_id += 1
                 else:
-                    variable = l[1].strip(')')
+                    variable = l[1].strip(')').strip()
+                    variable = variable.strip().strip('"')
+                    assert variable is not ''
                     if variable not in node2id:
                         node = {
                             "variable": None,
@@ -125,11 +132,11 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                             "type": 4, # 4 for amr graph node
                             "sentence_id": ind,
                         }
-                        node2id[variable] = node_id
+                        nodeid_now = node_id
                         node_item.append(node)
                         node_id += 1
-                        
-                nodeid_now = node2id[variable]
+                    else:
+                        nodeid_now = node2id[variable]
                 cnt = 0
                 for c in line:
                     if c != ' ':
@@ -137,18 +144,23 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                     cnt += 1
                 while len(st) and st[-1][0] >= cnt:
                     st.pop()
-                
+                nodeid_now = int(nodeid_now)
                 # add new edge
                 if line.find(':') != -1:
                     fa = st[-1][1]
                     pos = st[-1][2]
                     dep_info = {
                         "src": fa,
-                        "tgt": node2id[variable],
+                        "tgt": nodeid_now,
                         "edge_type": l[0][1:],
                         "sentence_id": ind,
                     }
                     parsed_sent.append(dep_info)
+                    for x in parsed_results:
+                        if (x["src"] == fa and x["tgt"] == nodeid_now) \
+                            or (x["src"] == nodeid_now and x["tgt"] == fa):
+                            print(graphs)
+                            assert 0
                     pos_now = pos + '.' + str(size_son[pos] + 1)
                     size_son[pos_now] = 0
                     index[pos_now] = nodeid_now
@@ -160,7 +172,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                     size_son[pos_now] = 0
                 
                 # push the node to stack
-                st.append((cnt, node2id[variable], pos_now))
+                st.append((cnt, nodeid_now, pos_now))
 
             inference = FAA_Aligner()
             _, alignment_strings = inference.align_sents([sentences.text], [graph])
@@ -178,10 +190,10 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                 else:
                     mapping[index[tgt]].append((int(src), "node"))
 
-            pos_tag = nlp_processor.pos_tag(sentences.text)
-            pos_tag = [x[1] for x in pos_tag]
-            entity_label = nlp_processor.ner(sentences.text)
-            entity_label = [x[1] for x in entity_label]
+            res_json = nlp_processor.annotate(sentences.text, properties=processor_args)
+            dep_dict = json.loads(res_json)
+            pos_tag = [tokens["pos"] for tokens in dep_dict["sentences"][0]["tokens"]]
+            entity_label = [tokens["ner"] for tokens in dep_dict["sentences"][0]["tokens"]]
             
             parsed_results.append(
                 {"graph_content": parsed_sent, "node_content": node_item, "node_num": node_id, 
@@ -217,7 +229,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
             The merged graph data-structure.
         """
         cls.verbose = verbose
-        parsed_results = cls.parsing(raw_text_data, nlp_processor)
+        parsed_results = cls.parsing(raw_text_data, nlp_processor, processor_args)
 
         sub_graphs = []
         for parsed_sent in parsed_results:

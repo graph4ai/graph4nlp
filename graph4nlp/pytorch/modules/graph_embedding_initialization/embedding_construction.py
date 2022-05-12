@@ -141,7 +141,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             "w2v_bert_bilstm",
             "w2v_bert_bigru",
             "w2v_amr",
-            "w2v_bert_bilstm_amr",
             "w2v_bilstm_amr",
             "w2v_bilstm_amr_pos",
         ), "emb_strategy must be one of ('w2v', 'w2v_bilstm', 'w2v_bigru', 'bert', 'bert_bilstm', "
@@ -169,7 +168,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             
             if "pos" in emb_strategy:
                 word_emb_type.add("pos")
-                word_emb_type.add("entity_label")
+                #word_emb_type.add("entity_label")
                 word_emb_type.add("position")
 
             if "w2v" in emb_strategy:
@@ -279,6 +278,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             token_ids = batch_gd.node_features["token_id"]
             if "w2v" in self.word_emb_layers:
                 word_feat = self.word_emb_layers["w2v"](token_ids)
+                 # TODO:
                 word_feat = dropout_fn(
                     word_feat, self.word_dropout, shared_axes=[-2], training=self.training
                 )
@@ -298,32 +298,26 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                         seq_feat.append(word_feat)
                     else:
                         RuntimeError("No word embedding layer")
-                    if "pos" in self.word_emb_layers and "entity_label" in self.word_emb_layers:
+                    if "pos" in self.word_emb_layers:
                         sentence_pos = g.graph_attributes["pos_tag_id"].to(batch_gd.device)
                         pos_feat = self.word_emb_layers["pos"](sentence_pos)
                         pos_feat = dropout_fn(
                             pos_feat, self.word_dropout, shared_axes=[-2], training=self.training
                         )
                         seq_feat.append(pos_feat)
+                    
+                    if "entity_label" in self.word_emb_layers:
                         sentence_entity_label = g.graph_attributes["entity_label_id"].to(batch_gd.device)
                         entity_label_feat = self.word_emb_layers["entity_label"](sentence_entity_label)
                         entity_label_feat = dropout_fn(
                             entity_label_feat, self.word_dropout, shared_axes=[-2], training=self.training
                         )
                         seq_feat.append(entity_label_feat)
-                        # position_feat = self.word_emb_layers["position"](sentence_position)
-                        # position_feat = dropout_fn(
-                        #     position_feat, self.word_dropout, shared_axes=[-2], training=self.training
-                        # )
-                        # seq_feat.append(position_feat)
-                    else:
-                        RuntimeError("No word embedding layer")
 
                     seq_feat = torch.cat(seq_feat, dim=-1)
                     
                     raw_tokens = [dd.strip().split() for dd in g.graph_attributes["sentence"]]
                     l = [len(s) for s in raw_tokens]
-                    assert seq_feat > 0
                     rnn_state = self.seq_info_encode_layer(
                         seq_feat, torch.LongTensor(l).to(batch_gd.device)
                     )
@@ -358,10 +352,11 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
             if len(feat) > 0:
                 feat = torch.cat(feat, dim=-1)
-                node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
+                if any(batch_gd.batch_graph_attributes) is False:
+                    node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
                 feat = self.node_edge_emb_layer(feat, node_token_lens)
                 if isinstance(feat, (tuple, list)):
-                    feat = feat[-1]
+                    feat = feat[-1] 
                 feat = batch_gd.split_features(feat)
 
         if (self.seq_info_encode_layer is None and "seq_bert" not in self.word_emb_layers) or any(batch_gd.batch_graph_attributes):

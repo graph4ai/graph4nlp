@@ -43,7 +43,7 @@ model_args:
     fix_word_emb: false
     embedding_style:
       single_token_item: false
-      emb_strategy: "w2v_bilstm_amr"
+      emb_strategy: "w2v_bilstm_amr_pos"
       num_rnn_layers: 1
       bert_model_name: null
       bert_lower_case: null
