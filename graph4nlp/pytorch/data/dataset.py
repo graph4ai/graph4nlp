@@ -5,7 +5,6 @@ import warnings
 from collections import Counter
 from copy import deepcopy
 from multiprocessing import Pool
-from multiprocessing.sharedctypes import Value
 from typing import Union
 import numpy as np
 import stanza
