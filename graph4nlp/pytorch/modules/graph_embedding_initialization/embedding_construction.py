@@ -283,7 +283,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                     word_feat, self.word_dropout, shared_axes=[-2], training=self.training
                 )
                 feat.append(word_feat)
-
             if any(batch_gd.batch_graph_attributes):
                 tot = 0
                 gd_list = from_batch(batch_gd)
@@ -352,8 +351,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
             if len(feat) > 0:
                 feat = torch.cat(feat, dim=-1)
-                if any(batch_gd.batch_graph_attributes) is False:
-                    node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
+                node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
                 feat = self.node_edge_emb_layer(feat, node_token_lens)
                 if isinstance(feat, (tuple, list)):
                     feat = feat[-1] 

@@ -1467,7 +1467,11 @@ def to_batch(graphs: List[GraphData] = None) -> GraphData:
     big_graph._batch_num_nodes = [g.get_node_num() for g in graphs]
     big_graph._batch_num_edges = [g.get_edge_num() for g in graphs]
 
-    # Step 8: merge node and edge types if the batch is heterograph
+    # Step 8: Insert graph attributes
+    for g in graphs:
+        big_graph.batch_graph_attributes.append(g.graph_attributes)
+
+    # Step 9: merge node and edge types if the batch is heterograph
     if is_heterograph:
         node_types = []
         edge_types = []

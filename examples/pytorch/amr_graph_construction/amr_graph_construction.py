@@ -84,7 +84,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
         """
         amrlib.setup_spacy_extension()
         nlp = spacy.load('en_core_web_sm')
-        doc = nlp(raw_text_data)
+        doc = nlp(raw_text_data + ' .')
         parsed_results = []
         graphs = doc._.to_amr()
         st = []
@@ -121,9 +121,10 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                     node_item.append(node)
                     node_id += 1
                 else:
-                    variable = l[1].strip(')').strip()
-                    variable = variable.strip().strip('"')
-                    assert variable is not ''
+                    variable = l[-1].strip(')').strip('"')
+                    if variable is '':
+                        print(graph)
+                        assert variable is not ''
                     if variable not in node2id:
                         node = {
                             "variable": None,
@@ -190,11 +191,9 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                 else:
                     mapping[index[tgt]].append((int(src), "node"))
 
-            res_json = nlp_processor.annotate(sentences.text, properties=processor_args)
-            dep_dict = json.loads(res_json)
+            dep_dict = nlp_processor.annotate(sentences.text, properties=processor_args)
             pos_tag = [tokens["pos"] for tokens in dep_dict["sentences"][0]["tokens"]]
             entity_label = [tokens["ner"] for tokens in dep_dict["sentences"][0]["tokens"]]
-            
             parsed_results.append(
                 {"graph_content": parsed_sent, "node_content": node_item, "node_num": node_id, 
                     "sentence": sentences.text, "mapping": mapping, "pos_tag": pos_tag, "entity_label": entity_label}
