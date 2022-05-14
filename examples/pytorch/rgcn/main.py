@@ -102,8 +102,12 @@ def main(args):
 
     graph = from_dgl(g, is_hetero=False)
     num_nodes = graph.get_node_num()
-    model = RGCN(num_hidden_layers=args.num_hidden_layers, 
-                 input_size=num_nodes,
+    emb = torch.nn.Embedding(num_nodes, args.hidden_size)
+    # emb.requires_grad = True
+    graph.node_features['node_feat'] = emb.weight
+    
+    model = RGCN(num_layers=args.num_hidden_layers, 
+                 input_size=args.hidden_size,
                  hidden_size=args.hidden_size,
                  output_size=num_classes,
                  num_rels=num_rels,
@@ -118,6 +122,7 @@ def main(args):
         logits = model(graph).node_features["node_emb"]
         logits = logits[target_idx]
         loss = F.cross_entropy(logits[train_idx], labels[train_idx])
+    
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
