@@ -517,21 +517,21 @@ class Dataset(torch.utils.data.Dataset):
                     print(
                         "Building graph.... Processed/Remain: {} / {}".format(cnt, len(data_items))
                     )
-                try:
+               # try:
                     
-                    graph = topology_builder.static_topology(
-                        raw_text_data=item.input_text,
-                        nlp_processor=nlp_processor,
-                        processor_args=nlp_processor_args,
-                        merge_strategy=merge_strategy,
-                        edge_strategy=edge_strategy,
-                        verbose=False,
-                    )
-                    item.graph = graph
-                except Exception as msg:
-                    pop_idxs.append(cnt)
-                    item.graph = None
-                    warnings.warn(RuntimeWarning(msg))
+                graph = topology_builder.static_topology(
+                    raw_text_data=item.input_text,
+                    nlp_processor=nlp_processor,
+                    processor_args=nlp_processor_args,
+                    merge_strategy=merge_strategy,
+                    edge_strategy=edge_strategy,
+                    verbose=False,
+                )
+                item.graph = graph
+                # except Exception as msg:
+                #     pop_idxs.append(cnt)
+                #     item.graph = None
+                #     warnings.warn(RuntimeWarning(msg))
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
         elif static_or_dynamic == "dynamic":
@@ -997,6 +997,7 @@ class Text2TreeDataset(Dataset):
         dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,
         share_vocab=True,
+        dataitem=None,
         **kwargs,
     ):
         if kwargs.get("graph_type", None) is not None:
@@ -1004,7 +1005,10 @@ class Text2TreeDataset(Dataset):
                 "The argument ``graph_type`` is disgarded. \
                     Please use ``static_or_dynamic`` instead."
             )
-        self.data_item_type = Text2TreeDataItem
+        if dataitem is None:
+            self.data_item_type = Text2TreeDataItem
+        else:
+            self.data_item_type = dataitem
         self.share_vocab = share_vocab
 
         if graph_construction_name == "dependency":
@@ -1088,7 +1092,7 @@ class Text2TreeDataset(Dataset):
             lines = f.readlines()
             for line in lines:
                 input, output = line.split("\t")
-                data_item = Text2TreeDataItem(
+                data_item = self.data_item_type(
                     input_text=input,
                     output_text=output,
                     output_tree=None,
@@ -1206,7 +1210,7 @@ class Text2TreeDataset(Dataset):
         return item
 
     @staticmethod
-    def collate_fn(data_list: [Text2TreeDataItem]):
+    def collate_fn(data_list):
         # remove the deepcopy
         graph_data = [item.graph for item in data_list]
         graph_data = to_batch(graph_data)

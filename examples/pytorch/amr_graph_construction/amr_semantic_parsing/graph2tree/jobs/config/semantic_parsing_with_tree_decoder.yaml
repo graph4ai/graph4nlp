@@ -10,21 +10,34 @@ preprocessing_args:
 
 
 model_args:
-  graph_construction_name: "node_emb"
+  graph_construction_name: "amr"
   graph_initialization_name: "defaults"
-  graph_embedding_name: "graphsage"
+  graph_embedding_name: "rgcn"
   decoder_name: "stdtree"
 
 
   graph_construction_args:
     graph_construction_share:
       root_dir: 'examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data'
-      topology_subdir: 'NodeEmbGraph'
+      topology_subdir: 'AmrGraph'
       thread_number: 10
       share_vocab: True
-      port: 9000
-      timeout: 15000
-      
+
+      nlp_processor_args:
+        name: "stanza"
+        args:
+          annotators: ["tokenize", "ssplit", "pos", "ner"]
+          corenlp_dir: "./corenlp"
+          endpoint: "http://localhost:9002"
+          memory: "4G"
+          properties:
+            tokenize.options: 
+              splitHyphenated: False
+              normalizeParentheses: False
+              normalizeOtherBrackets: False
+            tokenize.whitespace: True
+            ssplit.isOneSentence: False
+
     graph_construction_private:
       edge_strategy: 'homogeneous'
       merge_strategy: 'tailhead'
@@ -49,7 +62,7 @@ model_args:
     fix_word_emb: false
     embedding_style:
       single_token_item: true
-      emb_strategy: "w2v_bilstm"
+      emb_strategy: "w2v_bilstm_amr_pos"
       num_rnn_layers: 1
       bert_model_name: null
       bert_lower_case: null

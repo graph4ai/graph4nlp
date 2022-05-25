@@ -15,7 +15,7 @@ preprocessing_args:
 model_args:
   graph_construction_name: "amr"
   graph_initialization_name: "defaults"
-  graph_embedding_name: "gcn"
+  graph_embedding_name: "rgcn"
   decoder_name: "stdrnn"
 
 
@@ -24,7 +24,7 @@ model_args:
       root_dir: "examples/pytorch/amr_graph_construction/amr_semantic_parsing/graph2seq/jobs"
       topology_subdir: 'AmrGraph'
       share_vocab: true
-      thread_number: 4
+      thread_number: 3
 
       nlp_processor_args:
           name: "stanza"

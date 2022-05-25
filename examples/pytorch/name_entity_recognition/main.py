@@ -195,7 +195,6 @@ class Conll:
                 ]["nlp_processor_args"],
             )
 
-        print(len(dataset.train))
         print("strating loading the training data")
         self.train_dataloader = DataLoader(
             dataset.train,

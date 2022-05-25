@@ -84,7 +84,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
         """
         amrlib.setup_spacy_extension()
         nlp = spacy.load('en_core_web_sm')
-        doc = nlp(raw_text_data + ' .')
+        doc = nlp(raw_text_data)
         parsed_results = []
         graphs = doc._.to_amr()
         st = []
@@ -103,7 +103,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                     continue
                 l = line.strip().split()
                 # add new node
-                if line.find('/') != -1:
+                if line.find('/') != -1 and '/' in l:
                     variable = l[l.index('/') - 1].strip('(')
                     concept = l[l.index('/') + 1].strip(')')
                     if '-' in concept:
@@ -123,8 +123,9 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                 else:
                     variable = l[-1].strip(')').strip('"')
                     if variable is '':
-                        print(graph)
-                        assert variable is not ''
+                        variable = l[1].strip(')').strip('"')
+                        if variable is '':
+                            continue
                     if variable not in node2id:
                         node = {
                             "variable": None,
@@ -157,11 +158,11 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                         "sentence_id": ind,
                     }
                     parsed_sent.append(dep_info)
-                    for x in parsed_results:
-                        if (x["src"] == fa and x["tgt"] == nodeid_now) \
-                            or (x["src"] == nodeid_now and x["tgt"] == fa):
-                            print(graphs)
-                            assert 0
+                    # for x in parsed_sent:
+                    #     if (x["src"] == fa and x["tgt"] == nodeid_now) \
+                    #         or (x["src"] == nodeid_now and x["tgt"] == fa):
+                    #         print(graphs)
+                    #         assert 0
                     pos_now = pos + '.' + str(size_son[pos] + 1)
                     size_son[pos_now] = 0
                     index[pos_now] = nodeid_now
@@ -176,6 +177,8 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                 st.append((cnt, nodeid_now, pos_now))
 
             inference = FAA_Aligner()
+            if graph is None or sentences.text is '':
+                continue
             _, alignment_strings = inference.align_sents([sentences.text], [graph])
             alignment = alignment_strings[0].strip().split(' ')
             sentences_token = sentences.text.strip().split(' ')
