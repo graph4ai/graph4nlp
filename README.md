@@ -144,7 +144,7 @@ Environment: torch 1.8, ubuntu 16.04 with 2080ti GPUs
 | Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.4                          |
 | Math word problem          |              MAWPS               | SAGE                | Dynamic                                      | Solution accuracy   | 76.4                    |
 | Knowledge graph completion | Kinship                          |           GCN      | Dependency                                    | MRR                | 82.0                          |
-| Math word problem          | MAWPS                        | SAGE                | Dynamic                                      | Solution accuracy   | 76.4  |
+
 
 ## Installation
 
