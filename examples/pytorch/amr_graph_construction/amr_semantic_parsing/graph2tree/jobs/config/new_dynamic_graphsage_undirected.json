@@ -1,5 +1,5 @@
 {
-    "config_path": "examples/pytorch/semantic_parsing/graph2tree/jobs/config/semantic_parsing_with_tree_decoder.yaml",
+    "config_path": "examples/pytorch/amr_graph_construction/amr_semantic_parsing/graph2tree/jobs/config/semantic_parsing_with_tree_decoder.yaml",
     "checkpoint_args.checkpoint_name": "node_emb_sage_undirected.pt",
     "env_args.gpuid": 2,
     "training_args.batch_size": 40,

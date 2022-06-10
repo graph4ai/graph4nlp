@@ -114,7 +114,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                         "id": node_id,
                         "token": concept,
                         "type": 4, # 4 for amr graph node
-                        "sentence_id": ind,
+                        "sentence_id": len(parsed_results),
                     }
                     node2id[variable] = node_id
                     nodeid_now = node_id
@@ -132,7 +132,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                             "id": node_id,
                             "token": variable, 
                             "type": 4, # 4 for amr graph node
-                            "sentence_id": ind,
+                            "sentence_id": len(parsed_results),
                         }
                         nodeid_now = node_id
                         node_item.append(node)
@@ -155,14 +155,9 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                         "src": fa,
                         "tgt": nodeid_now,
                         "edge_type": l[0][1:],
-                        "sentence_id": ind,
+                        "sentence_id": len(parsed_results),
                     }
                     parsed_sent.append(dep_info)
-                    # for x in parsed_sent:
-                    #     if (x["src"] == fa and x["tgt"] == nodeid_now) \
-                    #         or (x["src"] == nodeid_now and x["tgt"] == fa):
-                    #         print(graphs)
-                    #         assert 0
                     pos_now = pos + '.' + str(size_son[pos] + 1)
                     size_son[pos_now] = 0
                     index[pos_now] = nodeid_now
@@ -177,9 +172,12 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
                 st.append((cnt, nodeid_now, pos_now))
 
             inference = FAA_Aligner()
-            if graph is None or sentences.text is '':
+            if graph is None or sentences.text is '' or len(graph) == 0 or len(sentences) == 0:
                 continue
-            _, alignment_strings = inference.align_sents([sentences.text], [graph])
+            try:
+                _, alignment_strings = inference.align_sents([sentences.text], [graph])
+            except Exception as e:
+                continue
             alignment = alignment_strings[0].strip().split(' ')
             sentences_token = sentences.text.strip().split(' ')
             mapping = defaultdict(list)

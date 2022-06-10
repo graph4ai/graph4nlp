@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 import torch
 import torch.optim as optim
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from graph4nlp.pytorch.data.data import GraphData
@@ -15,12 +16,8 @@ from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.tree_utils import Tree
-import os
-# add the . to the path
-os.environ["PATH"] += os.pathsep + os.getcwd()
-# add the .. to the path
-os.environ["PATH"] += os.pathsep + os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 
+from examples.pytorch.rgcn.rgcn import RGCN
 from amr_graph_construction import AmrGraphConstruction
 
 warnings.filterwarnings("ignore")
@@ -51,6 +48,42 @@ class AmrDataItem(DataItem):
         output_tokens = self.tokenizer(self.output_text)
 
         return input_tokens, output_tokens
+
+class RGCNGraph2Tree(Graph2Tree):
+    def _build_gnn_encoder(
+        self,
+        gnn,
+        num_layers,
+        input_size,
+        hidden_size,
+        output_size,
+        direction_option,
+        feats_dropout,
+        gnn_heads=None,
+        gnn_residual=True,
+        gnn_attn_dropout=0.0,
+        gnn_activation=F.relu,  # gat
+        gnn_bias=True,
+        gnn_allow_zero_in_degree=True,
+        gnn_norm="both",
+        gnn_weight=True,
+        gnn_use_edge_weight=False,
+        gnn_gcn_norm="both",  # gcn
+        gnn_n_etypes=1,  # ggnn
+        gnn_aggregator_type="lstm",  # graphsage
+        **kwargs
+    ):
+        if gnn == "rgcn":
+            self.gnn_encoder = RGCN(
+                num_layers,
+                input_size,
+                hidden_size,
+                output_size,
+                num_rels=2,
+                gpu=0,
+            )
+        else:
+            raise NotImplementedError()
 
 class Mawps:
     def __init__(self, opt=None):
@@ -129,7 +162,7 @@ class Mawps:
 
     def _build_model(self):
         """For encoder-decoder"""
-        self.model = Graph2Tree.from_args(self.opt, vocab_model=self.vocab_model)
+        self.model = RGCNGraph2Tree.from_args(self.opt, vocab_model=self.vocab_model)
         self.model.init(self.opt["training_args"]["init_weight"])
         self.model.to(self.device)
 

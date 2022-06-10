@@ -17,7 +17,6 @@ from graph4nlp.pytorch.modules.graph_embedding_learning.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding_learning.gcn import GCN
 from graph4nlp.pytorch.modules.graph_embedding_learning.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding_learning.graphsage import GraphSAGE
-from graph4nlp.pytorch.modules.graph_embedding_learning.rgcn import RGCN
 
 
 class Graph2XBase(nn.Module):
@@ -212,15 +211,6 @@ class Graph2XBase(nn.Module):
                 allow_zero_in_degree=gnn_allow_zero_in_degree,
                 activation=gnn_activation,
                 use_edge_weight=gnn_use_edge_weight,
-            )
-        elif gnn == "rgcn":
-            self.gnn_encoder = RGCN(
-                num_layers,
-                input_size,
-                hidden_size,
-                output_size,
-                num_rels=gnn_n_etypes,
-                gpu=0,
             )
         else:
             raise NotImplementedError()

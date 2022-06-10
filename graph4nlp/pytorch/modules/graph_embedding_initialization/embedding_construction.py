@@ -326,6 +326,9 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                     # update node features
                     for j in range(g.get_node_num()):
                         id = g.node_attributes[j]["sentence_id"]
+                        print(len(batch_gd.batch_graph_attributes[i]["mapping"]))
+                        print(id)
+                        print(batch_gd.batch_graph_attributes[i]["sentence"])
                         if g.node_attributes[j]["id"] in batch_gd.batch_graph_attributes[i]["mapping"][id]:
                             rel_list = batch_gd.batch_graph_attributes[i]["mapping"][id][g.node_attributes[j]["id"]]
                             state = []
