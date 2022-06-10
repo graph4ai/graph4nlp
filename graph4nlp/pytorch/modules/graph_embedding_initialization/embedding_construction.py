@@ -326,9 +326,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                     # update node features
                     for j in range(g.get_node_num()):
                         id = g.node_attributes[j]["sentence_id"]
-                        print(len(batch_gd.batch_graph_attributes[i]["mapping"]))
-                        print(id)
-                        print(batch_gd.batch_graph_attributes[i]["sentence"])
                         if g.node_attributes[j]["id"] in batch_gd.batch_graph_attributes[i]["mapping"][id]:
                             rel_list = batch_gd.batch_graph_attributes[i]["mapping"][id][g.node_attributes[j]["id"]]
                             state = []
@@ -354,10 +351,13 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
             if len(feat) > 0:
                 feat = torch.cat(feat, dim=-1)
-                node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
-                feat = self.node_edge_emb_layer(feat, node_token_lens)
+                if not any(batch_gd.batch_graph_attributes):
+                    node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
+                    feat = self.node_edge_emb_layer(feat, node_token_lens)
+                else:
+                    feat = feat.squeeze(dim=1)
                 if isinstance(feat, (tuple, list)):
-                    feat = feat[-1] 
+                    feat = feat[-1]
                 feat = batch_gd.split_features(feat)
 
         if (self.seq_info_encode_layer is None and "seq_bert" not in self.word_emb_layers) or any(batch_gd.batch_graph_attributes):
