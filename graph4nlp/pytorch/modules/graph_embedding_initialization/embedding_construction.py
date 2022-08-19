@@ -275,6 +275,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 feat.append(word_feat)
 
         else:  # multi-token node graph
+            assert 0
             token_ids = batch_gd.node_features["token_id"]
             if "w2v" in self.word_emb_layers:
                 word_feat = self.word_emb_layers["w2v"](token_ids)

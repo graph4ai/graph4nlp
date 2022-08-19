@@ -10,7 +10,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.data.dataset import DataItem
+from graph4nlp.pytorch.data.dataset import DataItem, Text2TreeDataItem
 
 from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
@@ -79,7 +79,7 @@ class RGCNGraph2Tree(Graph2Tree):
                 input_size,
                 hidden_size,
                 output_size,
-                num_rels=2,
+                num_rels=77,
                 gpu=0,
             )
         else:
@@ -136,6 +136,7 @@ class Mawps:
             "nlp_processor_args": self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["nlp_processor_args"],
+            #"dataitem": Text2TreeDataItem,
             "dataitem": AmrDataItem,
             "topology_builder": AmrGraphConstruction,
         }
@@ -158,11 +159,16 @@ class Mawps:
         self.vocab_model = dataset.vocab_model
         self.src_vocab = self.vocab_model.in_word_vocab
         self.tgt_vocab = self.vocab_model.out_word_vocab
+        #self.num_rel = len(dataset.edge_vocab)
         self.share_vocab = self.vocab_model.share_vocab if self.use_share_vocab else None
 
     def _build_model(self):
         """For encoder-decoder"""
-        self.model = RGCNGraph2Tree.from_args(self.opt, vocab_model=self.vocab_model)
+        print(self.opt["model_args"]["graph_embedding_name"])
+        if self.opt["model_args"]["graph_embedding_name"] == "rgcn":
+            self.model = RGCNGraph2Tree.from_args(self.opt, vocab_model=self.vocab_model)
+        else:
+            self.model = Graph2Tree.from_args(self.opt, vocab_model=self.vocab_model)
         self.model.init(self.opt["training_args"]["init_weight"])
         self.model.to(self.device)
 

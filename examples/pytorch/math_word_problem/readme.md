@@ -22,3 +22,5 @@ python examples/pytorch/math_word_problem/mawps/src/runner.py
 | SAGE |undirected |  
 | ---- | ---- |  
 | Dynamic_node_emb | 76.4 |  
+
+python examples/pytorch/amr_graph_construction/runner.py --json_config=examples/pytorch/amr_graph_construction/mawps/config/dynamic_sage_undirected.json

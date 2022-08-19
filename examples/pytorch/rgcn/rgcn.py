@@ -128,8 +128,9 @@ class RGCN(GNNBase):
         # transfer the current NLPgraph to DGL graph
         g = graph.to_dgl()
         h = graph.node_features['node_feat']
-        #edge_type = g.edata['edge__TYPE'].long()
-        edge_type = torch.ones(g.number_of_edges(), dtype=torch.long).to(self.gpu)
+        edge_type = graph.edge_features['token_id'].squeeze(1)
+        #print(edge_type)
+        #edge_type = torch.zeros(g.number_of_edges(), dtype=torch.long).to(self.gpu)
         for l in range(self.num_layers):
             h = self.RGCN_layers[l](g, h, edge_type)
             h = self.dropout(F.relu(h))

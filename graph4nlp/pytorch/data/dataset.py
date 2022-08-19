@@ -517,20 +517,20 @@ class Dataset(torch.utils.data.Dataset):
                     print(
                         "Building graph.... Processed/Remain: {} / {}".format(cnt, len(data_items))
                     )
-                try:
-                    graph = topology_builder.static_topology(
-                        raw_text_data=item.input_text,
-                        nlp_processor=nlp_processor,
-                        processor_args=nlp_processor_args,
-                        merge_strategy=merge_strategy,
-                        edge_strategy=edge_strategy,
-                        verbose=False,
-                    )
-                    item.graph = graph
-                except Exception as msg:
-                    pop_idxs.append(cnt)
-                    item.graph = None
-                    warnings.warn(RuntimeWarning(msg))
+                #try:
+                graph = topology_builder.static_topology(
+                    raw_text_data=item.input_text,
+                    nlp_processor=nlp_processor,
+                    processor_args=nlp_processor_args,
+                    merge_strategy=merge_strategy,
+                    edge_strategy=edge_strategy,
+                    verbose=False,
+                )
+                item.graph = graph
+                # except Exception as msg:
+                #     pop_idxs.append(cnt)
+                #     item.graph = None
+                #     warnings.warn(RuntimeWarning(msg))
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
         elif static_or_dynamic == "dynamic":
@@ -705,7 +705,38 @@ class Dataset(torch.utils.data.Dataset):
             self.test = self.build_topology(self.test)
             if "val" in self.__dict__:
                 self.val = self.build_topology(self.val)
-
+            self.edge_vocab = {}
+            s = set()
+            try:
+                for i in self.train:
+                    graph = i.graph
+                    for edge_idx in range(graph.get_edge_num()):
+                        if "token" in graph.edge_attributes[edge_idx]:
+                            edge_token = graph.edge_attributes[edge_idx]["token"]
+                            s.add(edge_token)
+            except Exception as e:
+                pass
+            try:
+                for i in self.test:
+                    graph = i.graph
+                    for edge_idx in range(graph.get_edge_num()):
+                        if "token" in graph.edge_attributes[edge_idx]:
+                            edge_token = graph.edge_attributes[edge_idx]["token"]
+                            s.add(edge_token)
+            except Exception as e:
+                pass
+            try:
+                for i in self.val:
+                    graph = i.graph
+                    for edge_idx in range(graph.get_edge_num()):
+                        if "token" in graph.edge_attributes[edge_idx]:
+                            edge_token = graph.edge_attributes[edge_idx]["token"]
+                            s.add(edge_token)
+            except Exception as e:
+                pass
+            s.add("")
+            self.edge_vocab = {v: k for k, v in enumerate(s)}
+            print(len(self.edge_vocab))
             self.build_vocab()
 
             self.vectorization(self.train)
@@ -934,17 +965,20 @@ class Text2TextDataset(Dataset):
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features["token_id"] = token_matrix
 
-        if use_ie and "token" in graph.edge_attributes[0].keys():
+        if (use_ie or "sentence" in graph.graph_attributes) and "token" in graph.edge_attributes[0].keys():
             edge_token_matrix = []
             for edge_idx in range(graph.get_edge_num()):
                 edge_token = graph.edge_attributes[edge_idx]["token"]
-                edge_token_id = vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
+                edge_token_id = cls.edge_vocab[edge_token]
                 graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
                 edge_token_matrix.append([edge_token_id])
             if use_ie:
                 for i in range(len(edge_token_matrix)):
                     edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
                 edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
+                edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
+                graph.edge_features["token_id"] = edge_token_matrix
+            else:
                 edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
                 graph.edge_features["token_id"] = edge_token_matrix
 
@@ -1178,6 +1212,18 @@ class Text2TreeDataset(Dataset):
                 token_matrix.append([node_token_id])
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features["token_id"] = token_matrix
+
+            token_matrix = []
+            for edge_idx in range(graph.get_edge_num()):
+                if "token" in graph.edge_attributes[edge_idx]:
+                    edge_token = graph.edge_attributes[edge_idx]["token"]
+                else:
+                    edge_token = ""
+                edge_token_id = self.edge_vocab[edge_token]
+                graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
+                token_matrix.append([edge_token_id])
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.edge_features["token_id"] = token_matrix
             
             if "pos_tag" in graph.graph_attributes:
                 pos_vocab = [".", "CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", "NNP", "NNPS", "NNS", "PDT", "POS", "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "SYM", "TO", "UH", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$", "WRB"]
@@ -1191,7 +1237,6 @@ class Text2TreeDataset(Dataset):
                         else:
                             print('pos_tag', token)
                 graph.graph_attributes["pos_tag_id"] = pos_token_id
-                print('qwq')
 
             if "entity_label" in graph.graph_attributes:
                 entity_label = ["O", "PERSON", "LOCATION", "ORGANIZATION", "ORGANIZATION", "MISC", "MONEY", "NUMBER", "ORDINAL", "PERCENT", "DATE", "TIME", "DURATION", "SET", "EMAIL", "URL", "CITY", "STATE_OR_PROVINCE", "COUNTRY", "NATIONALITY", "RELIGION", "TITLE", "IDEOLOGY", "CRIMINAL_CHARGE", "CAUSE_OF_DEATH", "HANDLE"]
@@ -1456,6 +1501,7 @@ class Text2LabelDataset(Dataset):
         if use_ie and "token" in graph.edge_attributes[0].keys():
             edge_token_matrix = []
             for edge_idx in range(graph.get_edge_num()):
+                assert 0
                 edge_token = graph.edge_attributes[edge_idx]["token"]
                 edge_token_id = vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
                 graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
