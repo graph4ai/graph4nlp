@@ -136,8 +136,8 @@ class Mawps:
             "nlp_processor_args": self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["nlp_processor_args"],
-            #"dataitem": Text2TreeDataItem,
-            "dataitem": AmrDataItem,
+            "dataitem": Text2TreeDataItem,
+            #"dataitem": AmrDataItem,
             "topology_builder": AmrGraphConstruction,
         }
 
@@ -160,6 +160,7 @@ class Mawps:
         self.src_vocab = self.vocab_model.in_word_vocab
         self.tgt_vocab = self.vocab_model.out_word_vocab
         #self.num_rel = len(dataset.edge_vocab)
+        #print(dataset.edge_vocab)
         self.share_vocab = self.vocab_model.share_vocab if self.use_share_vocab else None
 
     def _build_model(self):

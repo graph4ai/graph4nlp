@@ -20,7 +20,7 @@ model_args:
     graph_construction_share:
       root_dir: 'examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data'
       topology_subdir: 'AmrGraph'
-      thread_number: 10
+      thread_number: 15
       share_vocab: True
       port: 9000
       timeout: 15000
@@ -28,7 +28,7 @@ model_args:
       nlp_processor_args:
         name: "stanza"
         args:
-          annotators: ["tokenize", "ssplit", "pos", "parse"]
+          annotators: ["tokenize", "ssplit", "pos", "ner"]
           corenlp_dir: "./corenlp"
           endpoint: "http://localhost:9002"
           memory: "4G"
@@ -41,7 +41,7 @@ model_args:
             ssplit.isOneSentence: False
 
     graph_construction_private:
-      edge_strategy: 'homogeneous'
+      edge_strategy: 'heterogeneous'
       merge_strategy: 'tailhead'
       sequential_link: true
       as_node: false
@@ -63,7 +63,7 @@ model_args:
     fix_bert_emb: false
     fix_word_emb: false
     embedding_style:
-      single_token_item: true
+      single_token_item: false
       emb_strategy: "w2v_bilstm_amr_pos"
       num_rnn_layers: 1
       bert_model_name: null

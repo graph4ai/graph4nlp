@@ -250,6 +250,8 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         else:
             self.output_size = rnn_input_size
             self.seq_info_encode_layer = None
+        
+        #self.fc = nn.Linear(376, 300)
 
     def forward(self, batch_gd):
         """Compute initial node/edge embeddings.
@@ -275,7 +277,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 feat.append(word_feat)
 
         else:  # multi-token node graph
-            assert 0
             token_ids = batch_gd.node_features["token_id"]
             if "w2v" in self.word_emb_layers:
                 word_feat = self.word_emb_layers["w2v"](token_ids)
@@ -391,7 +392,19 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             )
             if isinstance(rnn_state, (tuple, list)):
                 rnn_state = rnn_state[0]
+            # print(rnn_state.shape)
+            # print(token_ids.shape)
+            # gd_list = from_batch(batch_gd)
+            # edge_feature = torch.zeros(rnn_state.shape[0], rnn_state.shape[1], 38*2).to(batch_gd.device)
+            # for i, g in enumerate(gd_list):
+            #     for ind, (s, t) in enumerate(g.get_all_edges()):
+            #         #print(g.edge_attributes[ind]["token_id"])
+            #         edge_feature[i][s][g.edge_attributes[ind]["token_id"]] = 1
+            #         edge_feature[i][t][g.edge_attributes[ind]["token_id"]+38] = 1
+            # #print(edge_feature)
+            # #exit(0)
 
+            # batch_gd.batch_node_features["node_feat"] = self.fc(torch.concat((rnn_state, edge_feature), dim=-1))
             batch_gd.batch_node_features["node_feat"] = rnn_state
 
             return batch_gd

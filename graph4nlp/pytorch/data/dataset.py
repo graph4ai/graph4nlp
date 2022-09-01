@@ -736,6 +736,7 @@ class Dataset(torch.utils.data.Dataset):
                 pass
             s.add("")
             self.edge_vocab = {v: k for k, v in enumerate(s)}
+            print('size')
             print(len(self.edge_vocab))
             self.build_vocab()
 
@@ -1501,7 +1502,6 @@ class Text2LabelDataset(Dataset):
         if use_ie and "token" in graph.edge_attributes[0].keys():
             edge_token_matrix = []
             for edge_idx in range(graph.get_edge_num()):
-                assert 0
                 edge_token = graph.edge_attributes[edge_idx]["token"]
                 edge_token_id = vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
                 graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
