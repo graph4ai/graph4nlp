@@ -27,8 +27,8 @@ class GraphEmbeddingInitialization(nn.Module):
             num_rnn_layers=embedding_style.get("num_rnn_layers", 1),
             fix_word_emb=fix_word_emb,
             fix_bert_emb=fix_bert_emb,
-          #  bert_model_name=embedding_style.get("bert_model_name", "bert-base-uncased"),
-          #  bert_lower_case=embedding_style.get("bert_lower_case", True),
+            bert_model_name=embedding_style.get("bert_model_name", "bert-base-uncased"),
+            bert_lower_case=embedding_style.get("bert_lower_case", True),
             word_dropout=word_dropout,
             rnn_dropout=rnn_dropout,
         )

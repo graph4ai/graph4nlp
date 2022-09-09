@@ -1,5 +1,5 @@
 from amr_graph_construction import (
-    AmrGraphConstruction,
+    AMRGraphConstruction,
 )
 
 
@@ -8,7 +8,7 @@ def test_amr():
         "find all languageid0 job in locid0"
     )
 
-    AmrGraphConstruction.static_topology(
+    AMRGraphConstruction.static_topology(
         raw_data,
         verbose=1,
     )

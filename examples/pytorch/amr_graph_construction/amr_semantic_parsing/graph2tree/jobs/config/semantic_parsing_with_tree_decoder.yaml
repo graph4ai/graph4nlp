@@ -19,7 +19,7 @@ model_args:
   graph_construction_args:
     graph_construction_share:
       root_dir: 'examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data'
-      topology_subdir: 'AmrGraph'
+      topology_subdir: 'AMRGraph'
       thread_number: 15
       share_vocab: True
       port: 9000
@@ -38,7 +38,8 @@ model_args:
               normalizeParentheses: False
               normalizeOtherBrackets: False
             tokenize.whitespace: True
-            ssplit.isOneSentence: False
+            ssplit.isOneSentence: True
+            #ssplit.isOneSentence: False
 
     graph_construction_private:
       edge_strategy: 'heterogeneous'

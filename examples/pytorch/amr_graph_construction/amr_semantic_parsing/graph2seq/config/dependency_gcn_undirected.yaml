@@ -22,7 +22,7 @@ model_args:
 graph_construction_args:
     graph_construction_share:
       root_dir: "examples/pytorch/amr_graph_construction/amr_semantic_parsing/graph2seq/jobs"
-      topology_subdir: 'AmrGraph'
+      topology_subdir: 'AMRGraph'
       share_vocab: true
       thread_number: 3
 

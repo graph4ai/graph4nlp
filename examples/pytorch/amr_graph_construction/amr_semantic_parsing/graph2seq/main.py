@@ -23,7 +23,7 @@ from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction 
 )
 
 from amr_graph_construction import (
-    AmrGraphConstruction,
+    AMRGraphConstruction,
 )
 from graph4nlp.pytorch.modules.graph_construction.ie_graph_construction import IEBasedGraphConstruction
 from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_construction import (
@@ -40,9 +40,9 @@ from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from amr_semantic_parsing.graph2seq.utils import get_log, wordid2str
 
 
-class AmrDataItem(DataItem):
+class AMRDataItem(DataItem):
     def __init__(self, input_text, output_text, tokenizer, share_vocab=True):
-        super(AmrDataItem, self).__init__(input_text, tokenizer)
+        super(AMRDataItem, self).__init__(input_text, tokenizer)
         self.output_text = output_text
         self.share_vocab = share_vocab
 
@@ -118,7 +118,7 @@ class Jobs:
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
-        topology_builder = AmrGraphConstruction
+        topology_builder = AMRGraphConstruction
         dataset = JobsDataset(
             root_dir=self.opt["model_args"]["graph_construction_args"]["graph_construction_share"][
                 "root_dir"
@@ -155,7 +155,7 @@ class Jobs:
                 "graph_construction_share"
             ]["nlp_processor_args"],
             topology_builder=topology_builder,
-            dataitem=AmrDataItem,
+            dataitem=AMRDataItem,
         )
 
         self.train_dataloader = DataLoader(

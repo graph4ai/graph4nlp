@@ -5,7 +5,7 @@ from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
 from graph4nlp.pytorch.modules.utils.vocab_utils import VocabModel
 from graph4nlp.pytorch.data.dataset import Text2LabelDataItem
 from graph4nlp.pytorch.data.data import GraphData, to_batch
-from examples.pytorch.amr_graph_construction.amr_graph_construction import AmrGraphConstruction
+from examples.pytorch.amr_graph_construction.amr_graph_construction import AMRGraphConstruction
 from graph4nlp.pytorch.data.dataset import Text2LabelDataset
 from graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction import DependencyBasedGraphConstruction
 from stanfordcorenlp import StanfordCoreNLP
@@ -23,7 +23,7 @@ if __name__ == "__main__":
         "We need to borrow 55% of the hammer price until we can get planning permission for restoration which will allow us to get a mortgage . I saw a nice dog and noticed he was eating a bone ."
     )
 
-    graph = AmrGraphConstruction.static_topology(raw_data)
+    graph = AMRGraphConstruction.static_topology(raw_data)
     data_set = Text2LabelDataItem('I like nlp.')
     data_set.graph = graph
     vocab_model = VocabModel(

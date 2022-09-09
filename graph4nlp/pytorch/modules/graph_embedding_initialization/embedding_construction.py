@@ -280,7 +280,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             token_ids = batch_gd.node_features["token_id"]
             if "w2v" in self.word_emb_layers:
                 word_feat = self.word_emb_layers["w2v"](token_ids)
-                 # TODO:
                 word_feat = dropout_fn(
                     word_feat, self.word_dropout, shared_axes=[-2], training=self.training
                 )
@@ -360,12 +359,15 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                     feat = feat.squeeze(dim=1)
                 if isinstance(feat, (tuple, list)):
                     feat = feat[-1]
+
                 feat = batch_gd.split_features(feat)
 
         if (self.seq_info_encode_layer is None and "seq_bert" not in self.word_emb_layers) or any(batch_gd.batch_graph_attributes):
             if isinstance(feat, list):
                 feat = torch.cat(feat, -1)
+
             batch_gd.batch_node_features["node_feat"] = feat
+
             return batch_gd
         else:  # single-token node graph
             new_feat = feat
@@ -392,19 +394,7 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             )
             if isinstance(rnn_state, (tuple, list)):
                 rnn_state = rnn_state[0]
-            # print(rnn_state.shape)
-            # print(token_ids.shape)
-            # gd_list = from_batch(batch_gd)
-            # edge_feature = torch.zeros(rnn_state.shape[0], rnn_state.shape[1], 38*2).to(batch_gd.device)
-            # for i, g in enumerate(gd_list):
-            #     for ind, (s, t) in enumerate(g.get_all_edges()):
-            #         #print(g.edge_attributes[ind]["token_id"])
-            #         edge_feature[i][s][g.edge_attributes[ind]["token_id"]] = 1
-            #         edge_feature[i][t][g.edge_attributes[ind]["token_id"]+38] = 1
-            # #print(edge_feature)
-            # #exit(0)
 
-            # batch_gd.batch_node_features["node_feat"] = self.fc(torch.concat((rnn_state, edge_feature), dim=-1))
             batch_gd.batch_node_features["node_feat"] = rnn_state
 
             return batch_gd
@@ -505,7 +495,7 @@ class BertEmbedding(nn.Module):
         from transformers import BertModel, BertTokenizer
 
         print("[ Using pretrained BERT embeddings ]")
-        self.bert_tokenizer = BertTokenizer.from_pretrained(name, do_lower_case=lower_case, use_auth_token=False)
+        self.bert_tokenizer = BertTokenizer.from_pretrained(name, do_lower_case=lower_case)
         self.bert_model = BertModel.from_pretrained(name)
         if fix_emb:
             print("[ Fix BERT layers ]")
@@ -696,6 +686,7 @@ class RNNEmbedding(nn.Module):
         sorted_x_len, indx = torch.sort(x_len, 0, descending=True)
         device = x.device
         x = pack_padded_sequence(x[indx], sorted_x_len.data.tolist(), batch_first=True)
+
         h0 = torch.zeros(self.num_directions * self.num_layers, x_len.size(0), self.hidden_size).to(
             device
         )

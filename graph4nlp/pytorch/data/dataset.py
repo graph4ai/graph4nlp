@@ -311,6 +311,7 @@ class Dataset(torch.utils.data.Dataset):
         for_inference=False,
         reused_vocab_model=None,
         nlp_processor_args=None,
+        init_edge_vocab=False,
         **kwargs,
     ):
         """
@@ -385,6 +386,7 @@ class Dataset(torch.utils.data.Dataset):
         self.topology_builder = topology_builder
         self.topology_subdir = topology_subdir
         self.use_val_for_vocab = use_val_for_vocab
+        self.init_edge_vocab = init_edge_vocab
         for k, v in kwargs.items():
             setattr(self, k, v)
         self.__indices__ = None
@@ -426,6 +428,8 @@ class Dataset(torch.utils.data.Dataset):
 
             vocab = torch.load(self.processed_file_paths["vocab"])
             self.vocab_model = vocab
+            if init_edge_vocab:
+                self.edge_vocab = torch.load(self.processed_file_paths["edge_vocab"])
 
             if hasattr(self, "reused_label_model"):
                 self.label_model = LabelModel.build(self.processed_file_paths["label"])
@@ -517,20 +521,20 @@ class Dataset(torch.utils.data.Dataset):
                     print(
                         "Building graph.... Processed/Remain: {} / {}".format(cnt, len(data_items))
                     )
-                #try:
-                graph = topology_builder.static_topology(
-                    raw_text_data=item.input_text,
-                    nlp_processor=nlp_processor,
-                    processor_args=nlp_processor_args,
-                    merge_strategy=merge_strategy,
-                    edge_strategy=edge_strategy,
-                    verbose=False,
-                )
-                item.graph = graph
-                # except Exception as msg:
-                #     pop_idxs.append(cnt)
-                #     item.graph = None
-                #     warnings.warn(RuntimeWarning(msg))
+                try:
+                    graph = topology_builder.static_topology(
+                        raw_text_data=item.input_text,
+                        nlp_processor=nlp_processor,
+                        processor_args=nlp_processor_args,
+                        merge_strategy=merge_strategy,
+                        edge_strategy=edge_strategy,
+                        verbose=False,
+                    )
+                    item.graph = graph
+                except Exception as msg:
+                    pop_idxs.append(cnt)
+                    item.graph = None
+                    warnings.warn(RuntimeWarning(msg))
                 ret.append(item)
             ret = [x for idx, x in enumerate(ret) if idx not in pop_idxs]
         elif static_or_dynamic == "dynamic":
@@ -705,39 +709,42 @@ class Dataset(torch.utils.data.Dataset):
             self.test = self.build_topology(self.test)
             if "val" in self.__dict__:
                 self.val = self.build_topology(self.val)
-            self.edge_vocab = {}
-            s = set()
-            try:
-                for i in self.train:
-                    graph = i.graph
-                    for edge_idx in range(graph.get_edge_num()):
-                        if "token" in graph.edge_attributes[edge_idx]:
-                            edge_token = graph.edge_attributes[edge_idx]["token"]
-                            s.add(edge_token)
-            except Exception as e:
-                pass
-            try:
-                for i in self.test:
-                    graph = i.graph
-                    for edge_idx in range(graph.get_edge_num()):
-                        if "token" in graph.edge_attributes[edge_idx]:
-                            edge_token = graph.edge_attributes[edge_idx]["token"]
-                            s.add(edge_token)
-            except Exception as e:
-                pass
-            try:
-                for i in self.val:
-                    graph = i.graph
-                    for edge_idx in range(graph.get_edge_num()):
-                        if "token" in graph.edge_attributes[edge_idx]:
-                            edge_token = graph.edge_attributes[edge_idx]["token"]
-                            s.add(edge_token)
-            except Exception as e:
-                pass
-            s.add("")
-            self.edge_vocab = {v: k for k, v in enumerate(s)}
-            print('size')
-            print(len(self.edge_vocab))
+            # build_edge_vocab and save
+            if self.init_edge_vocab:
+                self.edge_vocab = {}
+                s = set()
+                try:
+                    for i in self.train:
+                        graph = i.graph
+                        for edge_idx in range(graph.get_edge_num()):
+                            if "token" in graph.edge_attributes[edge_idx]:
+                                edge_token = graph.edge_attributes[edge_idx]["token"]
+                                s.add(edge_token)
+                except Exception as e:
+                    pass
+                try:
+                    for i in self.test:
+                        graph = i.graph
+                        for edge_idx in range(graph.get_edge_num()):
+                            if "token" in graph.edge_attributes[edge_idx]:
+                                edge_token = graph.edge_attributes[edge_idx]["token"]
+                                s.add(edge_token)
+                except Exception as e:
+                    pass
+                try:
+                    for i in self.val:
+                        graph = i.graph
+                        for edge_idx in range(graph.get_edge_num()):
+                            if "token" in graph.edge_attributes[edge_idx]:
+                                edge_token = graph.edge_attributes[edge_idx]["token"]
+                                s.add(edge_token)
+                except Exception as e:
+                    pass
+                s.add("")
+                self.edge_vocab = {v: k for k, v in enumerate(s)}
+                print('edge vocab size:', len(self.edge_vocab))
+                torch.save(self.edge_vocab, self.processed_file_paths["edge_vocab"])
+
             self.build_vocab()
 
             self.vectorization(self.train)
@@ -804,7 +811,6 @@ class Text2TextDataset(Dataset):
         dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,
         share_vocab=True,
-        dataitem=None,
         **kwargs,
     ):
         if kwargs.get("graph_type", None) is not None:
@@ -812,10 +818,7 @@ class Text2TextDataset(Dataset):
                 "The argument ``graph_type`` is disgarded. \
                     Please use ``static_or_dynamic`` instead."
             )
-        if dataitem is not None:
-            self.data_item_type = dataitem
-        else:
-            self.data_item_type = Text2TextDataItem
+        self.data_item_type = Text2TextDataItem
         self.share_vocab = share_vocab
 
         if graph_construction_name == "dependency":
@@ -900,7 +903,7 @@ class Text2TextDataset(Dataset):
             lines = f.readlines()
             for line in lines:
                 input, output = line.split("\t")
-                data_item = self.data_item_type(
+                data_item = Text2TextDataItem(
                     input_text=input,
                     output_text=output,
                     tokenizer=self.tokenizer,
@@ -921,41 +924,6 @@ class Text2TextDataset(Dataset):
             graph.node_attributes[node_idx]["token_id"] = node_token_id
 
             token_matrix.append([node_token_id])
-        if "pos_tag" in graph.graph_attributes:
-            pos_vocab = [".", "CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", "NNP", "NNPS", "NNS", "PDT", "POS", "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "SYM", "TO", "UH", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$", "WRB"]
-            pos_map = {pos: i for i, pos in enumerate(pos_vocab)}
-            maxlen = max(len(pos_tag) for pos_tag in graph.graph_attributes["pos_tag"])
-            pos_token_id = torch.zeros(len(graph.graph_attributes["pos_tag"]), maxlen, dtype=torch.long)
-            for i, sentence_token in enumerate(graph.graph_attributes["pos_tag"]):
-                for j, token in enumerate(sentence_token):
-                    if token in pos_map:
-                        pos_token_id[i][j] = pos_map[token]
-                    else:
-                        print('pos_tag', token)
-            graph.graph_attributes["pos_tag_id"] = pos_token_id 
-
-        if "entity_label" in graph.graph_attributes:
-            entity_label = ["O", "PERSON", "LOCATION", "ORGANIZATION", "ORGANIZATION", "MISC", "MONEY", "NUMBER", "ORDINAL", "PERCENT", "DATE", "TIME", "DURATION", "SET", "EMAIL", "URL", "CITY", "STATE_OR_PROVINCE", "COUNTRY", "NATIONALITY", "RELIGION", "TITLE", "IDEOLOGY", "CRIMINAL_CHARGE", "CAUSE_OF_DEATH", "HANDLE"]
-            entity_map = {entity: i for i, entity in enumerate(entity_label)}
-            maxlen = max(len(entity_tag) for entity_tag in graph.graph_attributes["entity_label"])
-            entity_token_id = torch.zeros(len(graph.graph_attributes["entity_label"]), maxlen, dtype=torch.long)
-            for i, sentence_token in enumerate(graph.graph_attributes["entity_label"]):
-                for j, token in enumerate(sentence_token):
-                    if token in entity_map:
-                        entity_token_id[i][j] = entity_map[token]
-                    else:
-                        print('entity_label', token)
-            graph.graph_attributes["entity_label_id"] = entity_token_id
-
-        if "sentence" in graph.graph_attributes:
-            maxlen = max(len(sentence.strip().split()) for sentence in graph.graph_attributes["sentence"])
-            seq_token_id = torch.zeros(len(graph.graph_attributes["sentence"]), maxlen, dtype=torch.long)
-            for i, sentence in enumerate(graph.graph_attributes["sentence"]):
-                sentence_token = sentence.strip().split()
-                for j, token in enumerate(sentence_token):
-                    seq_token_id[i][j] = vocab_model.in_word_vocab.getIndex(token, use_ie)
-            graph.graph_attributes["sentence_id"] = seq_token_id
-        
         if use_ie:
             for i in range(len(token_matrix)):
                 token_matrix[i] = np.array(token_matrix[i][0])
@@ -966,20 +934,17 @@ class Text2TextDataset(Dataset):
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features["token_id"] = token_matrix
 
-        if (use_ie or "sentence" in graph.graph_attributes) and "token" in graph.edge_attributes[0].keys():
+        if use_ie and "token" in graph.edge_attributes[0].keys():
             edge_token_matrix = []
             for edge_idx in range(graph.get_edge_num()):
                 edge_token = graph.edge_attributes[edge_idx]["token"]
-                edge_token_id = cls.edge_vocab[edge_token]
+                edge_token_id = vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
                 graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
                 edge_token_matrix.append([edge_token_id])
             if use_ie:
                 for i in range(len(edge_token_matrix)):
                     edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
                 edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
-                edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
-                graph.edge_features["token_id"] = edge_token_matrix
-            else:
                 edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
                 graph.edge_features["token_id"] = edge_token_matrix
 
@@ -1002,7 +967,7 @@ class Text2TextDataset(Dataset):
             )
 
     @staticmethod
-    def collate_fn(data_list):
+    def collate_fn(data_list: [Text2TextDataItem]):
         graph_list = [item.graph for item in data_list]
         graph_data = to_batch(graph_list)
 
@@ -1031,7 +996,6 @@ class Text2TreeDataset(Dataset):
         dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         dynamic_init_topology_aux_args=None,
         share_vocab=True,
-        dataitem=None,
         **kwargs,
     ):
         if kwargs.get("graph_type", None) is not None:
@@ -1039,10 +1003,7 @@ class Text2TreeDataset(Dataset):
                 "The argument ``graph_type`` is disgarded. \
                     Please use ``static_or_dynamic`` instead."
             )
-        if dataitem is None:
-            self.data_item_type = Text2TreeDataItem
-        else:
-            self.data_item_type = dataitem
+        self.data_item_type = Text2TreeDataItem
         self.share_vocab = share_vocab
 
         if graph_construction_name == "dependency":
@@ -1126,7 +1087,7 @@ class Text2TreeDataset(Dataset):
             lines = f.readlines()
             for line in lines:
                 input, output = line.split("\t")
-                data_item = self.data_item_type(
+                data_item = Text2TreeDataItem(
                     input_text=input,
                     output_text=output,
                     output_tree=None,
@@ -1214,53 +1175,6 @@ class Text2TreeDataset(Dataset):
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features["token_id"] = token_matrix
 
-            token_matrix = []
-            for edge_idx in range(graph.get_edge_num()):
-                if "token" in graph.edge_attributes[edge_idx]:
-                    edge_token = graph.edge_attributes[edge_idx]["token"]
-                else:
-                    edge_token = ""
-                edge_token_id = self.edge_vocab[edge_token]
-                graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
-                token_matrix.append([edge_token_id])
-            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
-            graph.edge_features["token_id"] = token_matrix
-            
-            if "pos_tag" in graph.graph_attributes:
-                pos_vocab = [".", "CC", "CD", "DT", "EX", "FW", "IN", "JJ", "JJR", "JJS", "LS", "MD", "NN", "NNP", "NNPS", "NNS", "PDT", "POS", "PRP", "PRP$", "RB", "RBR", "RBS", "RP", "SYM", "TO", "UH", "VB", "VBD", "VBG", "VBN", "VBP", "VBZ", "WDT", "WP", "WP$", "WRB"]
-                pos_map = {pos: i for i, pos in enumerate(pos_vocab)}
-                maxlen = max(len(pos_tag) for pos_tag in graph.graph_attributes["pos_tag"])
-                pos_token_id = torch.zeros(len(graph.graph_attributes["pos_tag"]), maxlen, dtype=torch.long)
-                for i, sentence_token in enumerate(graph.graph_attributes["pos_tag"]):
-                    for j, token in enumerate(sentence_token):
-                        if token in pos_map:
-                            pos_token_id[i][j] = pos_map[token]
-                        else:
-                            print('pos_tag', token)
-                graph.graph_attributes["pos_tag_id"] = pos_token_id
-
-            if "entity_label" in graph.graph_attributes:
-                entity_label = ["O", "PERSON", "LOCATION", "ORGANIZATION", "ORGANIZATION", "MISC", "MONEY", "NUMBER", "ORDINAL", "PERCENT", "DATE", "TIME", "DURATION", "SET", "EMAIL", "URL", "CITY", "STATE_OR_PROVINCE", "COUNTRY", "NATIONALITY", "RELIGION", "TITLE", "IDEOLOGY", "CRIMINAL_CHARGE", "CAUSE_OF_DEATH", "HANDLE"]
-                entity_map = {entity: i for i, entity in enumerate(entity_label)}
-                maxlen = max(len(entity_tag) for entity_tag in graph.graph_attributes["entity_label"])
-                entity_token_id = torch.zeros(len(graph.graph_attributes["entity_label"]), maxlen, dtype=torch.long)
-                for i, sentence_token in enumerate(graph.graph_attributes["entity_label"]):
-                    for j, token in enumerate(sentence_token):
-                        if token in entity_map:
-                            entity_token_id[i][j] = entity_map[token]
-                        else:
-                            print('entity_label', token)
-                graph.graph_attributes["entity_label_id"] = entity_token_id
-
-            if "sentence" in graph.graph_attributes:
-                maxlen = max(len(sentence.strip().split()) for sentence in graph.graph_attributes["sentence"])
-                seq_token_id = torch.zeros(len(graph.graph_attributes["sentence"]), maxlen, dtype=torch.long)
-                for i, sentence in enumerate(graph.graph_attributes["sentence"]):
-                    sentence_token = sentence.strip().split()
-                    for j, token in enumerate(sentence_token):
-                        seq_token_id[i][j] = self.vocab_model.in_word_vocab.get_symbol_idx(token)
-                graph.graph_attributes["sentence_id"] = seq_token_id
-
             tgt = item.output_text
             tgt_list = self.vocab_model.out_word_vocab.get_symbol_idx_for_list(tgt.split())
             output_tree = Tree.convert_to_tree(
@@ -1291,7 +1205,7 @@ class Text2TreeDataset(Dataset):
         return item
 
     @staticmethod
-    def collate_fn(data_list):
+    def collate_fn(data_list: [Text2TreeDataItem]):
         # remove the deepcopy
         graph_data = [item.graph for item in data_list]
         graph_data = to_batch(graph_data)

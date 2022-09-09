@@ -50,7 +50,7 @@ class RGCN(GNNBase):
         if num_bases == -1:
             num_bases = num_rels
         self.num_rels = num_rels
-        self.num_bases = 4
+        self.num_bases = num_bases
         self.use_self_loop = use_self_loop
         self.dropout = dropout
 
@@ -116,7 +116,6 @@ class RGCN(GNNBase):
         graph : GraphData
             The graph with node feature stored in the feature field named as
             "node_feat".
-            
             The node features are used for message passing.
 
         Returns
@@ -130,10 +129,6 @@ class RGCN(GNNBase):
         g = graph.to_dgl()
         h = graph.node_features['node_feat']
         edge_type = graph.edge_features['token_id'].squeeze(1)
-        # print(graph.get_edge_num())
-        # print(edge_type)
-        #print(edge_type)
-        #edge_type = torch.zeros(g.number_of_edges(), dtype=torch.long).to(self.gpu)
         for l in range(self.num_layers):
             h = self.RGCN_layers[l](g, h, edge_type)
             h = self.dropout(F.relu(h))

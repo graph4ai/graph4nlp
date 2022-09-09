@@ -1,5 +1,5 @@
-from .amr_graph_construction import AmrGraphConstruction
+from .amr_graph_construction import AMRGraphConstruction
 
 __all__ = [
-    "AmrGraphConstruction",
+    "AMRGraphConstruction",
 ]

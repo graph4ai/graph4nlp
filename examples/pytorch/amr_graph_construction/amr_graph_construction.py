@@ -8,7 +8,7 @@ from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
 
 
-class AmrGraphConstruction(StaticGraphConstructionBase):
+class AMRGraphConstruction(StaticGraphConstructionBase):
     """
         Dependency-parsing-tree based graph construction class
 
@@ -22,7 +22,7 @@ class AmrGraphConstruction(StaticGraphConstructionBase):
         self,
         vocab,
     ):
-        super(AmrGraphConstruction, self).__init__()
+        super(AMRGraphConstruction, self).__init__()
         self.vocab = vocab
         self.verbose = 1
 

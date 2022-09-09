@@ -91,7 +91,6 @@ class JobsDataset(Text2TextDataset):
         nlp_processor_args=None,
         for_inference=None,
         reused_vocab_model=None,
-        dataitem=None,
     ):
         # Initialize the dataset. If the preprocessed files are not found,
         # then do the preprocessing and save them.
@@ -117,7 +116,6 @@ class JobsDataset(Text2TextDataset):
             dynamic_init_topology_aux_args=dynamic_init_topology_aux_args,
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
-            dataitem=dataitem,
         )
 
 

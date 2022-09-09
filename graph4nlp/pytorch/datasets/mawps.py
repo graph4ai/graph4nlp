@@ -50,7 +50,7 @@ class MawpsDatasetForTree(Text2TreeDataset):
         max_word_vocab_size=100000,
         for_inference=False,
         reused_vocab_model=None,
-        dataitem=None,
+        init_edge_vocab=False,
     ):
         """
         Parameters
@@ -119,5 +119,5 @@ class MawpsDatasetForTree(Text2TreeDataset):
             max_word_vocab_size=max_word_vocab_size,
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
-            dataitem=dataitem,
+            init_edge_vocab=init_edge_vocab,
         )

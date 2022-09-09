@@ -28,6 +28,7 @@ class InferenceWrapperBase(nn.Module):
         dynamic_init_topology_builder: StaticGraphConstructionBase = None,
         lower_case: bool = True,
         tokenizer=word_tokenize,
+        edge_vocab=None,
         **kwargs
     ):
         """
@@ -101,6 +102,7 @@ class InferenceWrapperBase(nn.Module):
             ]["nlp_processor_args"],
         )
         self.data_item_class = data_item
+        self.edge_vocab = edge_vocab
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -142,15 +144,22 @@ class InferenceWrapperBase(nn.Module):
                 )
             elif self.data_item_class == Text2LabelDataItem:
                 data_item = self.data_item_class(input_text=raw_sentence, tokenizer=self.tokenizer)
+            # default the data item only need output_text
             else:
+                # data_item = self.data_item_class(
+                #     input_text=raw_sentence, tokenizer=self.tokenizer, output_text=None
+                # )
                 data_item = self.data_item_class(
-                    input_text=raw_sentence, tokenizer=self.tokenizer, output_text=None
+                    input_text=raw_sentence,
+                    output_text=None,
+                    output_tree=None,
+                    tokenizer=self.tokenizer,
                 )
             data_item_collect.append(data_item)
 
         data_item_collect = self.dataset.build_topology(data_items=data_item_collect)
         for i in range(len(data_item_collect)):
             data_item_collect[i] = self.dataset._vectorize_one_dataitem(
-                data_item_collect[i], self.vocab_model, use_ie=use_ie
+                data_item_collect[i], self.vocab_model, use_ie=use_ie, edge_vocab=self.edge_vocab
             )
         return data_item_collect

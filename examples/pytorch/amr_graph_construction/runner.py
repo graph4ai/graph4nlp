@@ -2,15 +2,17 @@ import argparse
 import copy
 import random
 import time
+from typing import Union
 import warnings
 import numpy as np
 import torch
 import torch.optim as optim
 import torch.nn.functional as F
+from copy import deepcopy
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.data.dataset import DataItem, Text2TreeDataItem
+from graph4nlp.pytorch.data.dataset import DataItem, Text2TreeDataItem, Text2TreeDataset
 
 from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
@@ -18,72 +20,10 @@ from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.tree_utils import Tree
 
 from examples.pytorch.rgcn.rgcn import RGCN
-from amr_graph_construction import AmrGraphConstruction
+from amr_graph_construction import AMRGraphConstruction
+from utils import AMRDataItem, EdgeText2TreeDataset, RGCNGraph2Tree
 
 warnings.filterwarnings("ignore")
-
-class AmrDataItem(DataItem):
-    def __init__(self, input_text, output_text, output_tree, tokenizer, share_vocab=True):
-        super(AmrDataItem, self).__init__(input_text, tokenizer)
-        self.output_text = output_text
-        self.share_vocab = share_vocab
-        self.output_tree = output_tree
-
-    def extract(self):
-        """
-        Returns
-        -------
-        Input tokens and output tokens
-        """
-        g: GraphData = self.graph
-
-        input_tokens = []
-        for i in range(g.get_node_num()):
-            tokenized_token = self.tokenizer(g.node_attributes[i]["token"])
-            input_tokens.extend(tokenized_token)
-        
-        for s in g.graph_attributes["sentence"]:
-            input_tokens.extend(s.strip().split(" "))
-
-        output_tokens = self.tokenizer(self.output_text)
-
-        return input_tokens, output_tokens
-
-class RGCNGraph2Tree(Graph2Tree):
-    def _build_gnn_encoder(
-        self,
-        gnn,
-        num_layers,
-        input_size,
-        hidden_size,
-        output_size,
-        direction_option,
-        feats_dropout,
-        gnn_heads=None,
-        gnn_residual=True,
-        gnn_attn_dropout=0.0,
-        gnn_activation=F.relu,  # gat
-        gnn_bias=True,
-        gnn_allow_zero_in_degree=True,
-        gnn_norm="both",
-        gnn_weight=True,
-        gnn_use_edge_weight=False,
-        gnn_gcn_norm="both",  # gcn
-        gnn_n_etypes=1,  # ggnn
-        gnn_aggregator_type="lstm",  # graphsage
-        **kwargs
-    ):
-        if gnn == "rgcn":
-            self.gnn_encoder = RGCN(
-                num_layers,
-                input_size,
-                hidden_size,
-                output_size,
-                num_rels=77,
-                gpu=0,
-            )
-        else:
-            raise NotImplementedError()
 
 class Mawps:
     def __init__(self, opt=None):
@@ -113,6 +53,7 @@ class Mawps:
         self._build_optimizer()
 
     def _build_dataloader(self):
+        graph_type = self.opt["model_args"]["graph_construction_name"]
         para_dic = {
             "root_dir": self.data_dir,
             "word_emb_size": self.opt["model_args"]["graph_initialization_args"]["input_size"],
@@ -136,12 +77,12 @@ class Mawps:
             "nlp_processor_args": self.opt["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["nlp_processor_args"],
-            "dataitem": Text2TreeDataItem,
-            #"dataitem": AmrDataItem,
-            "topology_builder": AmrGraphConstruction,
+            "dataitem": Text2TreeDataItem if graph_type != "amr" else AMRDataItem,
+            #"dataitem": AMRDataItem,
+            "topology_builder": AMRGraphConstruction if graph_type == "amr" else None,
         }
 
-        dataset = MawpsDatasetForTree(**para_dic)
+        dataset = EdgeText2TreeDataset(**para_dic)
 
         self.train_data_loader = DataLoader(
             dataset.train,
@@ -157,6 +98,7 @@ class Mawps:
             dataset.val, batch_size=1, shuffle=False, num_workers=0, collate_fn=dataset.collate_fn
         )
         self.vocab_model = dataset.vocab_model
+        self.edge_vocab = dataset.edge_vocab
         self.src_vocab = self.vocab_model.in_word_vocab
         self.tgt_vocab = self.vocab_model.out_word_vocab
         #self.num_rel = len(dataset.edge_vocab)
@@ -167,7 +109,7 @@ class Mawps:
         """For encoder-decoder"""
         print(self.opt["model_args"]["graph_embedding_name"])
         if self.opt["model_args"]["graph_embedding_name"] == "rgcn":
-            self.model = RGCNGraph2Tree.from_args(self.opt, vocab_model=self.vocab_model)
+            self.model = RGCNGraph2Tree.from_args(opt=self.opt, vocab_model=self.vocab_model, edge_vocab=self.edge_vocab)
         else:
             self.model = Graph2Tree.from_args(self.opt, vocab_model=self.vocab_model)
         self.model.init(self.opt["training_args"]["init_weight"])
