@@ -84,6 +84,9 @@ class GraphData(object):
             # self._ntype_to_idx: Dict[str, int] = {}
             # self._idx_to_ntype: Dict[int, str] = {}
             self._etypes: List[Tuple[str, str, str]] = []
+        else:
+            self._ntypes = None
+            self._etypes = None
 
         # Batch information.
         # If this instance is not a batch, then the following attributes are all `None`.
@@ -161,15 +164,30 @@ class GraphData(object):
         node_num: int
             The number of nodes to be added
         """
-        assert (
-            node_num > 0
-        ), "The number of nodes to be added should be greater than 0. (Got {})".format(node_num)
+        if node_num <= 0:
+            raise ValueError(
+                "The number of nodes to be added should be greater than 0. (Got {})".format(
+                    node_num
+                )
+            )
 
         if not self.is_hetero:
-            assert ntypes is None, "The graph is homogeneous, ntypes should be None."
+            if ntypes is None:
+                raise ValueError(
+                    "The graph is homogeneous, ntypes should be None. Got {}".format(ntypes)
+                )
         else:
-            assert ntypes is not None, "The graph is heterogeneous, ntypes should be provided."
-            assert len(ntypes) == node_num, "The length of ntypes should be equal to node_num."
+            if ntypes is None:
+                raise ValueError(
+                    "The graph is heterogeneous, ntypes should not be None. Got ntypes = {}".format(
+                        ntypes
+                    )
+                )
+            if len(ntypes) != node_num:
+                raise ValueError(
+                    "The number of ntypes should be equal to the number of nodes to be added. "
+                    "Got len(ntypes) = {} and node_num = {}".format(len(ntypes), node_num)
+                )
 
         # Create placeholders in the node attribute dictionary
         self._node_attributes.extend(
@@ -183,8 +201,6 @@ class GraphData(object):
         # Update the node type information
         if self.is_hetero:
             self._ntypes.extend(ntypes)
-            # self._ntype_to_idx = {nt: i for i, nt in enumerate(self._ntypes)}
-            # self._idx_to_ntype = {i: nt for i, nt in enumerate(self._ntypes)}
 
     # Node feature operations
     @property
@@ -401,11 +417,11 @@ class GraphData(object):
         if (src < 0 or src >= self.get_node_num()) and (tgt < 0 and tgt >= self.get_node_num()):
             raise ValueError("Endpoint not in the graph.")
         if self.is_hetero:
-            assert etype is not None, "Edge type must be specified for heterogeneous graphs."
+            if etype is None:
+                raise ValueError("Edge type must be specified for heterograph. Got None.")
         else:
-            assert etype is None, "Edge type must be None for homogeneous graphs, got {}".format(
-                etype
-            )
+            if etype is not None:
+                raise ValueError("Edge type must be None for homograph. Got {}.".format(etype))
 
         # Duplicate edge check. If the edge to be added already exists in the graph, then skip it.
         endpoint_tuple = (src, tgt)
@@ -472,10 +488,14 @@ class GraphData(object):
 
         # Edge type consistency check
         if self.is_hetero:
-            assert etypes is not None, "Edge types must be specified for heterogeneous graphs."
-            assert len(src) == len(etypes), "Length of edge types and number of edges mismatch."
+            if etypes is None:
+                raise ValueError("Edge type must be specified for heterograph. Got None.")
+            if len(src) != len(etypes):
+                raise ValueError("Length of edge types and number of edges mismatch."
+                                 "Got {} edge types and {} edges.".format(len(etypes), len(src)))
         else:
-            assert etypes is None, "Edge types must be None for homogeneous graphs."
+            if etypes is not None:
+                raise ValueError("Edge type must be None for homograph. Got {}.".format(etypes))
 
         # Duplicate edge check for non-heterogeneous graph
         if not self.is_hetero:
@@ -710,7 +730,8 @@ class GraphData(object):
         return self._edge_attributes
 
     # Conversion utility functions
-    def make_data_dict(self) -> Dict[Tuple[str, str, str], Tuple[torch.Tensor, torch.Tensor]]:
+    @property
+    def _data_dict(self) -> Dict[Tuple[str, str, str], Tuple[torch.Tensor, torch.Tensor]]:
         """
         Convert the graph data to a dictionary.
 
@@ -771,7 +792,7 @@ class GraphData(object):
                 if value is not None:
                     dgl_g.edata[key] = value
         else:
-            data_dict = self.make_data_dict()
+            data_dict = self._data_dict
             dgl_g = dgl.heterograph(data_dict).to(self.device)
 
             def make_feature_dict(
@@ -954,8 +975,6 @@ class GraphData(object):
             raise SizeMismatchException("Adjancency matrix is not 2-dimensional.")
         if not (adj.shape[0] == adj.shape[1]):
             raise SizeMismatchException("Adjancecy is not a square.")
-        # assert adj.dim() == 2, 'Adjancency matrix is not 2-dimensional.'
-        # assert adj.shape[0] == adj.shape[1], 'Adjancecy is not a square.'
 
         node_num = adj.shape[0]
         self.add_nodes(node_num)
@@ -984,7 +1003,6 @@ class GraphData(object):
         """
         if not (adj.shape[0] == adj.shape[1]):
             raise SizeMismatchException("Got an adjancecy matrix which is not a square.")
-        # assert adj.shape[0] == adj.shape[1], 'Got an adjancecy matrix which is not a square.'
 
         num_nodes = adj.shape[0]
         self.add_nodes(num_nodes)
@@ -1028,7 +1046,6 @@ class GraphData(object):
         else:
             if not self._is_batch:
                 raise Exception("Cannot enable batch view on a non-batch graph!")
-            # assert self._is_batch, "Cannot enable batch view on a non-batch graph!"
             max_num_nodes = max(self._batch_num_nodes)
             ret = torch.zeros((self.batch_size, max_num_nodes, max_num_nodes)).to(self.device)
             cum_num_nodes = 0
@@ -1281,7 +1298,6 @@ class GraphData(object):
         input_tensor = input_tensor.to(self.device)
         if not self._is_batch:
             raise Exception("Cannot invoke `batch_split` method on a non-batch graph.")
-        # assert self._is_batch, "Cannot invoke `batch_split` method on a non-batch graph."
         if type == "node":
             info_src = self._batch_num_nodes
         elif type == "edge":
@@ -1345,10 +1361,8 @@ def to_batch(graphs: List[GraphData] = None) -> GraphData:
     # Check
     if not isinstance(graphs, list):
         raise TypeError("to_batch() only accepts list of GraphData!")
-    # assert isinstance(graphs, list), "to_batch() only accepts list of GraphData!"
     if not (len(graphs) > 0):
         raise ValueError("Cannot convert an empty list of graphs into a big batched graph!")
-    # assert len(graphs) > 0, "Cannot convert an empty list of graphs into a big batched graph!"
     is_heterograph = graphs[0].is_hetero
     if not (all([g.is_hetero for g in graphs]) == is_heterograph):
         raise ValueError("All the graphs in the batch must all be heterogeneous or homogeneous!")
