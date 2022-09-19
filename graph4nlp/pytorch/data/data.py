@@ -66,6 +66,11 @@ class GraphData(object):
             is a copy of :py:class:`src`.
         device: str, default=None
             The device descriptor for graph. By default it is None.
+        is_hetero: bool, default=False
+            The heterogeneous graph flag. By default it is False, which means
+            the graph is a homogeneous graph (i.e. no node type nor edge type
+            specified in the graph). The GraphData instances will include node
+            types, edge types, or both if this flag is set to True.
         """
 
         # Initialize internal data storages.
