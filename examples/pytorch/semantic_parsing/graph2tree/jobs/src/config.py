@@ -1,7 +1,7 @@
-import argparse
-
 from graph4nlp.pytorch.modules.config import get_basic_args
 from graph4nlp.pytorch.modules.utils.config_utils import get_yaml_config, update_values
+
+import argparse
 
 
 def get_args():

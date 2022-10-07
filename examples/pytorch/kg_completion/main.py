@@ -1,5 +1,3 @@
-import argparse
-import copy
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -9,6 +7,9 @@ from torch.utils.data import DataLoader
 from graph4nlp.pytorch.datasets.kinship import KinshipDataset
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.logger import Logger
+
+import argparse
+import copy
 
 from .model import Complex, ConvE, Distmult, GCNComplex, GCNDistMult, GGNNDistMult
 

@@ -5,11 +5,6 @@ References
 ----------
 DGL GCN example: https://github.com/dmlc/dgl/tree/master/examples/pytorch/gcn
 """
-import argparse
-import os
-import time
-import warnings
-from collections import namedtuple
 import dgl
 import networkx as nx
 import numpy as np
@@ -19,6 +14,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from dgl import DGLGraph
 from dgl.data import load_data
+
+import argparse
+import os
+import time
+import warnings
+from collections import namedtuple
 
 from ...data.data import GraphData
 from ...modules.graph_embedding_learning.gcn import GCN

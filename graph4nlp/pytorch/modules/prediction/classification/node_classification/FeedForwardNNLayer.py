@@ -1,6 +1,7 @@
-import collections
 import torch as th
 from torch import nn
+
+import collections
 
 from ..base import NodeClassifierLayerBase
 

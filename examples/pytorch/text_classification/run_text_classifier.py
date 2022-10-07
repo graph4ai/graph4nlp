@@ -1,7 +1,3 @@
-import argparse
-import copy
-import os
-import time
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -31,6 +27,11 @@ from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
+
+import argparse
+import copy
+import os
+import time
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 
@@ -559,8 +560,8 @@ def print_config(config):
 
 
 if __name__ == "__main__":
-    import platform
     import multiprocessing
+    import platform
 
     if platform.system() == "Darwin":
         multiprocessing.set_start_method("spawn")

@@ -1,4 +1,3 @@
-import copy
 import torch.nn.functional as F
 
 from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
@@ -7,6 +6,8 @@ from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construc
 from graph4nlp.pytorch.modules.prediction.generation.decoder_strategy import DecoderStrategy
 from graph4nlp.pytorch.modules.prediction.generation.StdRNNDecoder import StdRNNDecoder
 from graph4nlp.pytorch.modules.utils.generic_utils import wordid2str
+
+import copy
 
 from .base import Graph2XBase
 

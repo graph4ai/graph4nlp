@@ -1,6 +1,7 @@
-import copy
 import numpy as np
 import torch
+
+import copy
 
 from .padding_utils import pad_2d_vals_no_size
 

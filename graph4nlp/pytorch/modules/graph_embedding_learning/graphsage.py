@@ -1,9 +1,10 @@
-import warnings
 import dgl.function as fn
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dgl.utils import check_eq_shape, expand_as_pair
+
+import warnings
 
 from .base import GNNBase, GNNLayerBase
 

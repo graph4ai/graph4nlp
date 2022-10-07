@@ -1,5 +1,6 @@
-from typing import Any, List, Tuple, Union
 import torch
+
+from typing import Any, List, Tuple, Union
 
 
 class SizeMismatchException(Exception):

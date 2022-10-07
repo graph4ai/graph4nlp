@@ -1,11 +1,12 @@
-import warnings
+import dgl
 import dgl.function as fn
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import dgl
-from dgl.utils import check_eq_shape, expand_as_pair
 from dgl.nn.pytorch import RelGraphConv
+from dgl.utils import check_eq_shape, expand_as_pair
+
+import warnings
 
 from .base import GNNBase, GNNLayerBase
 
@@ -48,7 +49,7 @@ class RGCN(GNNBase):
         num_rels,
         num_bases=None,
         use_self_loop=True,
-        dropout=0.0
+        dropout=0.0,
     ):
         super(RGCN, self).__init__()
         self.num_layers = num_layers
@@ -76,7 +77,7 @@ class RGCN(GNNBase):
                     bias=True,
                     activation=F.relu,
                     self_loop=self.use_self_loop,
-                    dropout=self.dropout
+                    dropout=self.dropout,
                 )
             )
         # hidden layers
@@ -84,7 +85,7 @@ class RGCN(GNNBase):
             # due to multi-head, the input_size = hidden_size * num_heads
             self.RGCN_layers.append(
                 RGCNLayer(
-                    hidden_size[l-1],
+                    hidden_size[l - 1],
                     hidden_size[l],
                     num_rels=self.num_rels,
                     regularizer="basis",
@@ -92,7 +93,7 @@ class RGCN(GNNBase):
                     bias=True,
                     activation=F.relu,
                     self_loop=self.use_self_loop,
-                    dropout=self.dropout
+                    dropout=self.dropout,
                 )
             )
         # output projection
@@ -106,7 +107,7 @@ class RGCN(GNNBase):
                 bias=True,
                 activation=F.relu,
                 self_loop=self.use_self_loop,
-                dropout=self.dropout
+                dropout=self.dropout,
             )
         )
 
@@ -186,20 +187,21 @@ class RGCNLayer(GNNLayerBase):
         activation=None,
         self_loop=False,
         dropout=0.0,
-        layer_norm=False
+        layer_norm=False,
     ):
         super(RGCNLayer, self).__init__()
         self.model = RelGraphConv(
-                        in_feat=input_size, 
-                        out_feat=output_size, 
-                        num_rels=num_rels, 
-                        regularizer=regularizer,
-                        num_bases=num_bases,
-                        bias=bias, 
-                        activation=activation,
-                        self_loop=self_loop,
-                        dropout=dropout,
-                        layer_norm=layer_norm)
+            in_feat=input_size,
+            out_feat=output_size,
+            num_rels=num_rels,
+            regularizer=regularizer,
+            num_bases=num_bases,
+            bias=bias,
+            activation=activation,
+            self_loop=self_loop,
+            dropout=dropout,
+            layer_norm=layer_norm,
+        )
 
     def forward(self, graph, feat, etypes, norm=None):
         return self.model(graph, feat, etypes, norm)

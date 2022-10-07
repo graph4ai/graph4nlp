@@ -1,4 +1,3 @@
-import os
 import torch
 import torch.backends.cudnn as cudnn
 import torch.multiprocessing
@@ -22,6 +21,8 @@ from graph4nlp.pytorch.modules.graph_embedding_learning.graphsage import GraphSA
 from graph4nlp.pytorch.modules.prediction.classification.node_classification import (
     BiLSTMFeedForwardNN,
 )
+
+import os
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 cudnn.benchmark = False

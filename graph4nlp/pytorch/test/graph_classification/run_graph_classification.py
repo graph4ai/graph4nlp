@@ -25,6 +25,14 @@ This can be seen in the following reserach references:
 
 """
 
+import dgl
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from dgl.data import MiniGCDataset
+from torch.utils.data import DataLoader
+
 ###############################################################################
 # Simple graph classification task
 # --------------------------------
@@ -37,13 +45,6 @@ This can be seen in the following reserach references:
 # Implement a synthetic dataset :class:`data.MiniGCDataset` in DGL. The dataset has eight
 # different types of graphs and each class has the same number of graph samples.
 import argparse
-import dgl
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-from dgl.data import MiniGCDataset
-from torch.utils.data import DataLoader
 
 from ...data.data import from_dgl, to_batch
 from ...modules.graph_embedding_learning.gat import GAT

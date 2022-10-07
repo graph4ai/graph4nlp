@@ -1,8 +1,9 @@
 from __future__ import print_function
+import numpy as np
+
 import json
 import sys
 from os.path import join
-import numpy as np
 
 rdm = np.random.RandomState(234234)
 

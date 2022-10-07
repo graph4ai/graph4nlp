@@ -1,5 +1,3 @@
-import abc
-import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -17,6 +15,9 @@ from graph4nlp.pytorch.modules.graph_embedding_learning.gat import GAT
 from graph4nlp.pytorch.modules.graph_embedding_learning.gcn import GCN
 from graph4nlp.pytorch.modules.graph_embedding_learning.ggnn import GGNN
 from graph4nlp.pytorch.modules.graph_embedding_learning.graphsage import GraphSAGE
+
+import abc
+import os
 
 
 class Graph2XBase(nn.Module):

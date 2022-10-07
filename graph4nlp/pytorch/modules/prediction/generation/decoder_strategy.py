@@ -1,8 +1,9 @@
-from copy import deepcopy
 import torch
 import torch.nn as nn
 
 from graph4nlp.pytorch.modules.prediction.generation.base import DecoderBase
+
+from copy import deepcopy
 
 
 class StrategyBase(nn.Module):

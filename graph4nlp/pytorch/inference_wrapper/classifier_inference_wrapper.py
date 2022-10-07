@@ -1,8 +1,8 @@
-import math
-import warnings
-
 from graph4nlp.pytorch.data.dataset import Text2LabelDataItem, Text2LabelDataset
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
+
+import math
+import warnings
 
 from .base import InferenceWrapperBase
 

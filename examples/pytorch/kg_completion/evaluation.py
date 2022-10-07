@@ -1,7 +1,7 @@
-import datetime
 import numpy as np
 import torch
 
+import datetime
 from spodernet.utils.logger import Logger
 
 log = Logger("evaluation{0}.py.txt".format(datetime.datetime.now()))

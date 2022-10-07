@@ -2,12 +2,13 @@
 # Tsung-Yi Lin <tl483@cornell.edu>
 # Ramakrishna Vedantam <vrama91@vt.edu>
 
+import numpy as np
+
 import copy
 import math
 import os
 import sys
 from collections import defaultdict
-import numpy as np
 
 # Use cPickle if it is installed, as it is much faster
 if "cPickle" in sys.modules:
@@ -169,7 +170,7 @@ class CiderScorer(object):
 
                 assert not math.isnan(val[n])
                 # vrama91: added a length based gaussian penalty
-                val[n] *= np.e ** (-(delta ** 2) / (2 * self.sigma ** 2))
+                val[n] *= np.e ** (-(delta**2) / (2 * self.sigma**2))
             return val
 
         # compute log reference length

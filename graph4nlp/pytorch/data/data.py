@@ -6,15 +6,16 @@ adding features which are in tensor form, and attributes which are of arbitrary
 form to the correspondingnodes or edges. Batching operations is also supported
 by :py:class:`GraphData`.
 """
-from distutils.log import warn
-import os
-import warnings
-from collections import namedtuple
-from typing import Any, Callable, Dict, List, Tuple, Union
 import dgl
 import scipy.sparse
 import torch
 from torch.nn.utils.rnn import pad_sequence
+
+import os
+import warnings
+from collections import namedtuple
+from distutils.log import warn
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 from .utils import (
     EdgeNotFoundException,
@@ -496,8 +497,10 @@ class GraphData(object):
             if etypes is None:
                 raise ValueError("Edge type must be specified for heterograph. Got None.")
             if len(src) != len(etypes):
-                raise ValueError("Length of edge types and number of edges mismatch."
-                                 "Got {} edge types and {} edges.".format(len(etypes), len(src)))
+                raise ValueError(
+                    "Length of edge types and number of edges mismatch."
+                    "Got {} edge types and {} edges.".format(len(etypes), len(src))
+                )
         else:
             if etypes is not None:
                 raise ValueError("Edge type must be None for homograph. Got {}.".format(etypes))

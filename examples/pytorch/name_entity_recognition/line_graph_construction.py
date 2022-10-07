@@ -1,9 +1,9 @@
+from graph4nlp.pytorch.data.data import GraphData
+from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
+
 import copy
 import itertools
 from collections import Counter
-
-from graph4nlp.pytorch.data.data import GraphData
-from graph4nlp.pytorch.modules.graph_construction.base import StaticGraphConstructionBase
 
 
 class LineBasedGraphConstruction(StaticGraphConstructionBase):

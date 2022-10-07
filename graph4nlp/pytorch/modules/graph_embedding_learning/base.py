@@ -1,5 +1,6 @@
-import abc
 import torch.nn as nn
+
+import abc
 
 
 class GNNLayerBase(nn.Module):

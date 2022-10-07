@@ -1,7 +1,8 @@
-import random
 import numpy as np
 import torch
 from stanfordcorenlp import StanfordCoreNLP
+
+import random
 
 from ...modules.graph_construction.constituency_graph_construction import (
     ConstituencyBasedGraphConstruction,

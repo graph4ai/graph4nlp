@@ -1,9 +1,10 @@
-import json
 import torch
 from nltk.tokenize import word_tokenize
 
 from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals, pad_2d_vals_no_size
+
+import json
 
 
 class CNNDataset(Text2TextDataset):

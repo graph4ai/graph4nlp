@@ -1,5 +1,3 @@
-import json
-from typing import Union
 import torch.nn as nn
 
 from graph4nlp.pytorch.data.dataset import (
@@ -15,6 +13,9 @@ from graph4nlp.pytorch.modules.graph_construction.base import (
     DynamicGraphConstructionBase,
     StaticGraphConstructionBase,
 )
+
+import json
+from typing import Union
 
 
 class InferenceWrapperBase(nn.Module):

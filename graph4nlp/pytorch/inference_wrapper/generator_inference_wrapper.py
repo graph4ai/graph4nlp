@@ -1,11 +1,12 @@
-import copy
-import math
-import warnings
 import torch
 
 from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
+
+import copy
+import math
+import warnings
 
 from .base import InferenceWrapperBase
 

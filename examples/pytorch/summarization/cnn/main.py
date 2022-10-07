@@ -1,7 +1,3 @@
-import argparse
-import copy
-import os
-import time
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -23,6 +19,11 @@ from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
+
+import argparse
+import copy
+import os
+import time
 
 
 def all_to_cuda(data, device=None):

@@ -5,10 +5,6 @@ References
 ----------
 DGL GAT example: https://github.com/dmlc/dgl/tree/master/examples/pytorch/gat
 """
-import argparse
-import os
-import time
-from collections import namedtuple
 import dgl
 import networkx as nx
 import numpy as np
@@ -20,6 +16,11 @@ from dgl import DGLGraph
 from dgl.data import load_data
 
 from graph4nlp.pytorch.modules.utils.logger import Logger
+
+import argparse
+import os
+import time
+from collections import namedtuple
 
 from ...data.data import GraphData
 from ...modules.graph_embedding_learning.gat import GAT

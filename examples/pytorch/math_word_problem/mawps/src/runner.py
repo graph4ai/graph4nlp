@@ -1,8 +1,3 @@
-import argparse
-import copy
-import random
-import time
-import warnings
 import numpy as np
 import torch
 import torch.optim as optim
@@ -13,6 +8,12 @@ from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.tree_utils import Tree
+
+import argparse
+import copy
+import random
+import time
+import warnings
 
 warnings.filterwarnings("ignore")
 
@@ -258,8 +259,8 @@ def print_config(config):
 
 
 if __name__ == "__main__":
-    import platform
     import multiprocessing
+    import platform
 
     if platform.system() == "Darwin":
         multiprocessing.set_start_method("spawn")

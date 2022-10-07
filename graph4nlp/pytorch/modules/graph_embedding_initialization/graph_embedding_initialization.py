@@ -1,10 +1,11 @@
-from abc import abstractmethod
 import torch.nn as nn
 
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.modules.graph_embedding_initialization.embedding_construction import (
     EmbeddingConstruction,
 )
+
+from abc import abstractmethod
 
 
 class GraphEmbeddingInitialization(nn.Module):

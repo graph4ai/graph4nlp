@@ -1,6 +1,7 @@
-from collections import namedtuple
 import numpy as np
 import torch
+
+from collections import namedtuple
 
 # When using the sliding window trick for long sequences,
 # we take the representation of each token with maximal context.

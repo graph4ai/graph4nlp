@@ -1,12 +1,13 @@
-import logging
-import math
-import os
-import pickle
 import torch
 import torchtext.vocab as vocab
 from torch.optim.lr_scheduler import LambdaLR
 
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
+
+import logging
+import math
+import os
+import pickle
 
 
 class WarmupCosineSchedule(LambdaLR):
