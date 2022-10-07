@@ -1,11 +1,7 @@
-import warnings
 import dgl
-import dgl.function as fn
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dgl.nn.pytorch import RelGraphConv
-from dgl.utils import check_eq_shape, expand_as_pair
 
 from .base import GNNBase, GNNLayerBase
 
