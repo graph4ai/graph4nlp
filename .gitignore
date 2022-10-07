@@ -121,6 +121,10 @@ venv.bak/
 # data directory
 _download
 out/
+corenlp/
+corenlp*.props
+.vector_cache/
+checkpoints/
 
 # CTags & CScope
 tags
@@ -145,6 +149,3 @@ cscope.*
 # config file
 /config
 local_scripts/
-
-# Personal symbolic links for testing
-tests_saizhuo

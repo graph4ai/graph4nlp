@@ -1,0 +1,34 @@
+model_args:
+  graph_construction_args:
+    graph_construction_share:
+      root_dir: './'
+      topology_subdir: 'NodeEmbGraphRefined'
+      share_vocab: true
+      thread_number: 4
+
+      nlp_processor_args:
+        name: "stanza"
+        args:
+          annotators: ["tokenize", "ssplit", "pos", "depparse"]
+          corenlp_dir: "./corenlp"
+          endpoint: "http://localhost:9002"
+          memory: "4G"
+          properties:
+            tokenize.options:
+              splitHyphenated: False
+              normalizeParentheses: False
+              normalizeOtherBrackets: False
+            tokenize.whitespace: True
+            ssplit.isOneSentence: True
+
+    graph_construction_private:
+      dynamic_init_graph_name: 'dependency'
+      alpha_fusion: 0.2
+      sim_metric_type: 'weighted_cosine'
+      hidden_size: null
+      num_heads: null
+      top_k_neigh: null
+      epsilon_neigh: 0.5
+      smoothness_ratio: 0.1
+      connectivity_ratio: 0.05
+      sparsity_ratio: 0.1

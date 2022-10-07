@@ -80,13 +80,6 @@ class InferenceWrapperBase(nn.Module):
         self.dynamic_init_topology_builder = dynamic_init_topology_builder
         self.tokenizer = tokenizer
 
-        self.port = self.cfg["model_args"]["graph_construction_args"]["graph_construction_share"][
-            "port"
-        ]
-        self.timeout = self.cfg["model_args"]["graph_construction_args"][
-            "graph_construction_share"
-        ]["timeout"]
-
         self.merge_strategy = self.cfg["model_args"]["graph_construction_args"][
             "graph_construction_private"
         ]["merge_strategy"]
@@ -95,7 +88,6 @@ class InferenceWrapperBase(nn.Module):
         ]["edge_strategy"]
 
         self.dataset = dataset(
-            port=self.port,
             graph_construction_name=self.graph_construction_name,
             dynamic_init_graph_name=self.dynamic_init_graph_name,
             topology_builder=topology_builder,
@@ -104,14 +96,17 @@ class InferenceWrapperBase(nn.Module):
             tokenizer=tokenizer,
             merge_strategy=self.merge_strategy,
             edge_strategy=self.edge_strategy,
+            nlp_processor_args=self.cfg["model_args"]["graph_construction_args"][
+                "graph_construction_share"
+            ]["nlp_processor_args"],
         )
         self.data_item_class = data_item
         for k, v in kwargs.items():
             setattr(self, k, v)
 
     def preprocess(self, raw_contents: list):
-        processed_data_items = []
         use_ie = self.graph_construction_name == "ie"  # hard code
+        data_item_collect = []
         for raw_sentence in raw_contents:
             if self.data_item_class == DoubleText2TextDataItem:
                 assert isinstance(
@@ -151,10 +146,11 @@ class InferenceWrapperBase(nn.Module):
                 data_item = self.data_item_class(
                     input_text=raw_sentence, tokenizer=self.tokenizer, output_text=None
                 )
+            data_item_collect.append(data_item)
 
-            data_item = self.dataset.process_data_items(data_items=[data_item])
-            data_item = self.dataset._vectorize_one_dataitem(
-                data_item[0], self.vocab_model, use_ie=use_ie
+        data_item_collect = self.dataset.build_topology(data_items=data_item_collect)
+        for i in range(len(data_item_collect)):
+            data_item_collect[i] = self.dataset._vectorize_one_dataitem(
+                data_item_collect[i], self.vocab_model, use_ie=use_ie
             )
-            processed_data_items.append(data_item)
-        return processed_data_items
+        return data_item_collect

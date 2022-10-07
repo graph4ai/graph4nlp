@@ -5,8 +5,21 @@ model_args:
       topology_subdir: 'ConstituencyGraph'
       share_vocab: true
       thread_number: 4
-      port: 9000
-      timeout: 15000
+
+      nlp_processor_args:
+        name: "stanza"
+        args:
+          annotators: ["tokenize", "ssplit", "pos", "parse"]
+          corenlp_dir: "./corenlp"
+          endpoint: "http://localhost:9002"
+          memory: "4G"
+          properties:
+            tokenize.options:
+              splitHyphenated: False
+              normalizeParentheses: False
+              normalizeOtherBrackets: False
+            tokenize.whitespace: True
+            ssplit.isOneSentence: False
 
     graph_construction_private:
       merge_strategy: 'tailhead'

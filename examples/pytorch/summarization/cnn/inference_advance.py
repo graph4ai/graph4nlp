@@ -66,12 +66,6 @@ class ModelHandler:
             "thread_number": self.config["model_args"]["graph_construction_args"][
                 "graph_construction_share"
             ]["thread_number"],
-            "port": self.config["model_args"]["graph_construction_args"][
-                "graph_construction_share"
-            ]["port"],
-            "timeout": self.config["model_args"]["graph_construction_args"][
-                "graph_construction_share"
-            ]["timeout"],
             "tokenizer": None,
             "for_inference": True,
             "reused_vocab_model": self.model.vocab,

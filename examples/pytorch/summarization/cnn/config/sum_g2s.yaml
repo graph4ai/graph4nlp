@@ -18,10 +18,23 @@ model_args:
   graph_construction_args:
     graph_construction_share:
       root_dir: "examples/pytorch/summarization/cnn"
-      topology_subdir: 'DependencyGraph1'
-#      topology_subdir: 'DependencyGraph'
+      topology_subdir: 'DependencyGraph'
       thread_number: 35
-      port: 9100
+
+    nlp_processor_args:
+        name: "stanza"
+        args:
+          annotators: ["tokenize,ssplit,pos,depparse"]
+          corenlp_dir: "./corenlp"
+          endpoint: "http://localhost:9010"
+          memory: "4G"
+          properties:
+            tokenize.options: 
+              splitHyphenated: False
+              normalizeParentheses: False
+              normalizeOtherBrackets: False
+            tokenize.whitespace: True
+            ssplit.isOneSentence: True
 
   graph_initialization_args:
     input_size: 300

@@ -6,12 +6,6 @@ import torch.multiprocessing
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from graph4nlp.examples.pytorch.name_entity_recognition.conll import ConllDataset
-from graph4nlp.examples.pytorch.name_entity_recognition.conlleval import evaluate
-from graph4nlp.examples.pytorch.name_entity_recognition.line_graph_construction import (
-    LineBasedGraphConstruction,
-)
-from graph4nlp.examples.pytorch.name_entity_recognition.model import Word2tag
 from graph4nlp.pytorch.data.data import from_batch
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
 from graph4nlp.pytorch.modules.graph_construction import NodeEmbeddingBasedRefinedGraphConstruction
@@ -21,9 +15,13 @@ from graph4nlp.pytorch.modules.graph_construction.node_embedding_based_graph_con
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
 
+from conll import ConllDataset
+from conlleval import evaluate
 from dependency_graph_construction_without_tokenize import (
     DependencyBasedGraphConstruction_without_tokenizer,
 )
+from line_graph_construction import LineBasedGraphConstruction
+from model import Word2tag
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 cudnn.benchmark = False
@@ -143,6 +141,9 @@ class Conll:
                 ]["pre_word_emb_file"],
                 topology_subdir="DependencyGraph",
                 tag_types=self.tag_types,
+                nlp_processor_args=self.config["model_args"]["graph_construction_args"][
+                    "nlp_processor_args"
+                ],
             )
         elif self.graph_name == "node_emb":
             dataset = ConllDataset(
@@ -189,6 +190,9 @@ class Conll:
                 tag_types=self.tag_types,
                 dynamic_init_topology_builder=dynamic_init_topology_builder,
                 dynamic_init_topology_aux_args={"dummy_param": 0},
+                nlp_processor_args=self.opt["model_args"]["graph_construction_args"][
+                    "graph_construction_share"
+                ]["nlp_processor_args"],
             )
 
         print(len(dataset.train))

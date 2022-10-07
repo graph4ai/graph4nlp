@@ -1,5 +1,4 @@
 import copy
-import json
 
 from ...data.data import GraphData
 from .base import StaticGraphConstructionBase
@@ -73,16 +72,22 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
                 'tgt': int
                     The target node ``id``
         """
-        dep_json = nlp_processor.annotate(raw_text_data.strip(), properties=processor_args)
-        from .utils import CORENLP_TIMEOUT_SIGNATURE
+        dep_dict = nlp_processor.annotate(text=raw_text_data.strip(), properties=processor_args)
 
-        if CORENLP_TIMEOUT_SIGNATURE in dep_json:
-            raise TimeoutError(
-                "CoreNLP timed out at input: \n{}\n This item will be skipped. "
-                "Please check the input or change the timeout threshold.".format(raw_text_data)
-            )
+        # dep_json = nlp_processor.annotate(raw_text_data.strip(), properties=processor_args)
+        # from .utils import CORENLP_TIMEOUT_SIGNATURE
 
-        dep_dict = json.loads(dep_json)
+        # if CORENLP_TIMEOUT_SIGNATURE in dep_json:
+        #     raise TimeoutError(
+        #         "CoreNLP timed out at input: \n{}\n This item will be skipped. "
+        #         "Please check the input or change the timeout threshold.".format(raw_text_data)
+        #     )
+
+        # print(dep_json, "lllllll")
+
+        # dep_dict = json.loads(dep_json)
+        # print(dep_dict, "oooooooo")
+        # exit(0)
 
         parsed_results = []
         node_id = 0

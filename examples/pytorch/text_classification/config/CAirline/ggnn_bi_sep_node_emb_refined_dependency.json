@@ -1,0 +1,19 @@
+{
+"config_path": "examples/pytorch/text_classification/config/CAirline/text_clf.yaml",
+"model_args.graph_construction_name": "node_emb_refined",
+"model_args.graph_construction_args.graph_construction_share.topology_subdir": "node_emb_refined_dependency_graph",
+"model_args.graph_construction_args.graph_construction_private.hidden_size": "300",
+"model_args.graph_construction_args.graph_construction_private.dynamic_init_graph_name": "dependency",
+"model_args.graph_construction_args.graph_construction_private.alpha_fusion": "0.1",
+"model_args.graph_construction_args.graph_construction_private.num_heads": "1",
+"model_args.graph_construction_args.graph_construction_private.epsilon_neigh": "0.6",
+"model_args.graph_construction_args.graph_construction_private.smoothness_ratio": "null",
+"model_args.graph_construction_args.graph_construction_private.connectivity_ratio": "null",
+"model_args.graph_construction_args.graph_construction_private.sparsity_ratio": "null",
+"model_args.graph_initialization_args.hidden_size": "300",
+"model_args.graph_embedding_args.graph_embedding_share.input_size": "300",
+"model_args.graph_embedding_args.graph_embedding_share.hidden_size": "300",
+"model_args.graph_embedding_args.graph_embedding_share.output_size": "300",
+"model_args.graph_embedding_args.graph_embedding_private.use_edge_weight": "true",
+"checkpoint_args.out_dir": "out/trec/ggnn_bi_sep_node_emb_refined_dependency_ckpt"
+}
