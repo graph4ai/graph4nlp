@@ -186,7 +186,7 @@ class DynamicGraphConstructionBase(nn.Module):
         elif self.sim_metric_type == "rbf_kernel":
             dist_weight = torch.mm(self.weight, self.weight.transpose(-1, -2))
             attention = self._compute_distance_matrix(node_emb, dist_weight)
-            attention = torch.exp(-0.5 * attention * (self.precision_inv_dis**2))
+            attention = torch.exp(-0.5 * attention * (self.precision_inv_dis ** 2))
         elif self.sim_metric_type == "cosine":
             node_vec_norm = node_emb.div(torch.norm(node_emb, p=2, dim=-1, keepdim=True))
             attention = torch.mm(node_vec_norm, node_vec_norm.transpose(-1, -2)).detach()

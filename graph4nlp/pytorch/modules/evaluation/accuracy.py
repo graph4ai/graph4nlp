@@ -97,7 +97,7 @@ class Accuracy(EvaluationMetricBase):
         recall = self._prf_divide(tp_sum, gt_sum, zero_division=zero_division)
 
         # calculate F_beta
-        beta2 = 1**2  # note: only F1 here
+        beta2 = 1 ** 2  # note: only F1 here
         denominator = beta2 * precision + recall
 
         denominator[denominator == 0.0] = 1  # avoid division by 0

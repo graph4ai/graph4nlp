@@ -169,7 +169,7 @@ class CiderScorer(object):
 
                 assert not math.isnan(val[n])
                 # vrama91: added a length based gaussian penalty
-                val[n] *= np.e ** (-(delta**2) / (2 * self.sigma**2))
+                val[n] *= np.e ** (-(delta ** 2) / (2 * self.sigma ** 2))
             return val
 
         # compute log reference length

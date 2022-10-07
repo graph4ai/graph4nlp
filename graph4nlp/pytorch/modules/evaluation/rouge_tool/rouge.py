@@ -71,8 +71,8 @@ class Rouge:
         rec_max = max(rec)
 
         if prec_max != 0 and rec_max != 0:
-            score = ((1 + self.beta**2) * prec_max * rec_max) / float(
-                rec_max + self.beta**2 * prec_max
+            score = ((1 + self.beta ** 2) * prec_max * rec_max) / float(
+                rec_max + self.beta ** 2 * prec_max
             )
         else:
             score = 0.0
