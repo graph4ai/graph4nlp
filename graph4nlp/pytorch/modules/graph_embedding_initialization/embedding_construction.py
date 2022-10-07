@@ -140,9 +140,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
             "w2v_bert",
             "w2v_bert_bilstm",
             "w2v_bert_bigru",
-            "w2v_amr",
-            "w2v_bilstm_amr",
-            "w2v_bilstm_amr_pos",
         ), "emb_strategy must be one of ('w2v', 'w2v_bilstm', 'w2v_bigru', 'bert', 'bert_bilstm', "
         "'bert_bigru', 'w2v_bert', 'w2v_bert_bilstm', 'w2v_bert_bigru')"
 
@@ -163,14 +160,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                 seq_info_encode_strategy = "none"
         else:
             seq_info_encode_strategy = "none"
-            if "amr" in emb_strategy:
-                seq_info_encode_strategy = "bilstm"
-            
-            if "pos" in emb_strategy:
-                word_emb_type.add("pos")
-                #word_emb_type.add("entity_label")
-                word_emb_type.add("position")
-
             if "w2v" in emb_strategy:
                 word_emb_type.add("w2v")
 
@@ -222,17 +211,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         else:
             rnn_input_size = word_emb_size
 
-        if "pos" in word_emb_type:
-            self.word_emb_layers["pos"] = WordEmbedding(37, 50)
-            rnn_input_size += 50
-
-        if "entity_label" in word_emb_type:
-            self.word_emb_layers["entity_label"] = WordEmbedding(26, 50)
-            rnn_input_size += 50
-
-        if "position" in word_emb_type:
-            pass
-
         if "seq_bert" in word_emb_type:
             rnn_input_size += self.word_emb_layers["seq_bert"].bert_model.config.hidden_size
 
@@ -250,8 +228,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
         else:
             self.output_size = rnn_input_size
             self.seq_info_encode_layer = None
-        
-        #self.fc = nn.Linear(376, 300)
 
     def forward(self, batch_gd):
         """Compute initial node/edge embeddings.
@@ -284,60 +260,6 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
                     word_feat, self.word_dropout, shared_axes=[-2], training=self.training
                 )
                 feat.append(word_feat)
-            if any(batch_gd.batch_graph_attributes):
-                tot = 0
-                gd_list = from_batch(batch_gd)
-                for i, g in enumerate(gd_list):
-                    sentence_id = g.graph_attributes["sentence_id"].to(batch_gd.device)
-                    seq_feat = []
-                    if "w2v" in self.word_emb_layers:
-                        word_feat = self.word_emb_layers["w2v"](sentence_id)
-                        word_feat = dropout_fn(
-                            word_feat, self.word_dropout, shared_axes=[-2], training=self.training
-                        )
-                        seq_feat.append(word_feat)
-                    else:
-                        RuntimeError("No word embedding layer")
-                    if "pos" in self.word_emb_layers:
-                        sentence_pos = g.graph_attributes["pos_tag_id"].to(batch_gd.device)
-                        pos_feat = self.word_emb_layers["pos"](sentence_pos)
-                        pos_feat = dropout_fn(
-                            pos_feat, self.word_dropout, shared_axes=[-2], training=self.training
-                        )
-                        seq_feat.append(pos_feat)
-                    
-                    if "entity_label" in self.word_emb_layers:
-                        sentence_entity_label = g.graph_attributes["entity_label_id"].to(batch_gd.device)
-                        entity_label_feat = self.word_emb_layers["entity_label"](sentence_entity_label)
-                        entity_label_feat = dropout_fn(
-                            entity_label_feat, self.word_dropout, shared_axes=[-2], training=self.training
-                        )
-                        seq_feat.append(entity_label_feat)
-
-                    seq_feat = torch.cat(seq_feat, dim=-1)
-                    
-                    raw_tokens = [dd.strip().split() for dd in g.graph_attributes["sentence"]]
-                    l = [len(s) for s in raw_tokens]
-                    rnn_state = self.seq_info_encode_layer(
-                        seq_feat, torch.LongTensor(l).to(batch_gd.device)
-                    )
-                    if isinstance(rnn_state, (tuple, list)):
-                        rnn_state = rnn_state[0]
-
-                    # update node features
-                    for j in range(g.get_node_num()):
-                        id = g.node_attributes[j]["sentence_id"]
-                        if g.node_attributes[j]["id"] in batch_gd.batch_graph_attributes[i]["mapping"][id]:
-                            rel_list = batch_gd.batch_graph_attributes[i]["mapping"][id][g.node_attributes[j]["id"]]
-                            state = []
-                            for rel in rel_list:
-                                if rel[1] == "node":
-                                    state.append(rnn_state[id][rel[0]])
-                            # replace embedding of the node
-                            if len(state) > 0:
-                                feat[0][tot + j][0] = torch.stack(state, 0).mean(0)
-
-                    tot += g.get_node_num()
 
             if "node_edge_bert" in self.word_emb_layers:
                 input_data = [
@@ -352,17 +274,14 @@ class EmbeddingConstruction(EmbeddingConstructionBase):
 
             if len(feat) > 0:
                 feat = torch.cat(feat, dim=-1)
-                if not any(batch_gd.batch_graph_attributes):
-                    node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
-                    feat = self.node_edge_emb_layer(feat, node_token_lens)
-                else:
-                    feat = feat.squeeze(dim=1)
+                node_token_lens = torch.clamp((token_ids != Vocab.PAD).sum(-1), min=1)
+                feat = self.node_edge_emb_layer(feat, node_token_lens)
                 if isinstance(feat, (tuple, list)):
                     feat = feat[-1]
 
                 feat = batch_gd.split_features(feat)
 
-        if (self.seq_info_encode_layer is None and "seq_bert" not in self.word_emb_layers) or any(batch_gd.batch_graph_attributes):
+        if self.seq_info_encode_layer is None and "seq_bert" not in self.word_emb_layers:
             if isinstance(feat, list):
                 feat = torch.cat(feat, -1)
 

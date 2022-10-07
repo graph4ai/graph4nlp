@@ -51,6 +51,7 @@ class MawpsDatasetForTree(Text2TreeDataset):
         for_inference=False,
         reused_vocab_model=None,
         init_edge_vocab=False,
+        is_hetero=False,
     ):
         """
         Parameters
@@ -120,4 +121,5 @@ class MawpsDatasetForTree(Text2TreeDataset):
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
             init_edge_vocab=init_edge_vocab,
+            is_hetero=is_hetero,
         )

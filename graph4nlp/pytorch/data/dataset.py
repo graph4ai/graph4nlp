@@ -36,7 +36,7 @@ from ..modules.utils.padding_utils import pad_2d_vals_no_size
 from ..modules.utils.tree_utils import Tree
 from ..modules.utils.tree_utils import Vocab as VocabForTree
 from ..modules.utils.tree_utils import VocabForAll
-from ..modules.utils.vocab_utils import VocabModel
+from ..modules.utils.vocab_utils import Vocab, VocabModel
 
 
 class DataItem(object):
@@ -146,6 +146,16 @@ class Text2TreeDataItem(DataItem):
         output_tokens = self.tokenizer(self.output_text)
 
         return input_tokens, output_tokens
+    
+    def extract_edge_tokens(self):
+        g: GraphData = self.graph
+        edge_tokens = []
+        for i in range(g.get_edge_num()):
+            if "token" in g.edge_attributes[i]:
+                edge_tokens.append(g.edge_attributes[i]["token"])
+            else:
+                edge_tokens.append("")
+        return edge_tokens
 
 
 class Text2LabelDataItem(DataItem):
@@ -312,6 +322,7 @@ class Dataset(torch.utils.data.Dataset):
         reused_vocab_model=None,
         nlp_processor_args=None,
         init_edge_vocab=False,
+        is_hetero=False,
         **kwargs,
     ):
         """
@@ -358,6 +369,10 @@ class Dataset(torch.utils.data.Dataset):
             vocabulary data is located.
         nlp_processor_args: dict, default=None
             It contains the parameter for nlp processor such as ``stanza``.
+        init_edge_vocab: bool, default=False
+            Whether to initialize the edge vocabulary.
+        is_hetero: bool, default=False
+            Whether the graph is heterogeneous.
         kwargs
         """
         super(Dataset, self).__init__()
@@ -387,6 +402,7 @@ class Dataset(torch.utils.data.Dataset):
         self.topology_subdir = topology_subdir
         self.use_val_for_vocab = use_val_for_vocab
         self.init_edge_vocab = init_edge_vocab
+        self.is_hetero = is_hetero
         for k, v in kwargs.items():
             setattr(self, k, v)
         self.__indices__ = None
@@ -428,8 +444,6 @@ class Dataset(torch.utils.data.Dataset):
 
             vocab = torch.load(self.processed_file_paths["vocab"])
             self.vocab_model = vocab
-            if init_edge_vocab:
-                self.edge_vocab = torch.load(self.processed_file_paths["edge_vocab"])
 
             if hasattr(self, "reused_label_model"):
                 self.label_model = LabelModel.build(self.processed_file_paths["label"])
@@ -663,6 +677,7 @@ class Dataset(torch.utils.data.Dataset):
             target_pretrained_word_emb_name=self.target_pretrained_word_emb_name,
             target_pretrained_word_emb_url=self.target_pretrained_word_emb_url,
             word_emb_size=self.word_emb_size,
+            init_edge_vocab=self.init_edge_vocab,
         )
         self.vocab_model = vocab_model
 
@@ -709,41 +724,6 @@ class Dataset(torch.utils.data.Dataset):
             self.test = self.build_topology(self.test)
             if "val" in self.__dict__:
                 self.val = self.build_topology(self.val)
-            # build_edge_vocab and save
-            if self.init_edge_vocab:
-                self.edge_vocab = {}
-                s = set()
-                try:
-                    for i in self.train:
-                        graph = i.graph
-                        for edge_idx in range(graph.get_edge_num()):
-                            if "token" in graph.edge_attributes[edge_idx]:
-                                edge_token = graph.edge_attributes[edge_idx]["token"]
-                                s.add(edge_token)
-                except Exception as e:
-                    pass
-                try:
-                    for i in self.test:
-                        graph = i.graph
-                        for edge_idx in range(graph.get_edge_num()):
-                            if "token" in graph.edge_attributes[edge_idx]:
-                                edge_token = graph.edge_attributes[edge_idx]["token"]
-                                s.add(edge_token)
-                except Exception as e:
-                    pass
-                try:
-                    for i in self.val:
-                        graph = i.graph
-                        for edge_idx in range(graph.get_edge_num()):
-                            if "token" in graph.edge_attributes[edge_idx]:
-                                edge_token = graph.edge_attributes[edge_idx]["token"]
-                                s.add(edge_token)
-                except Exception as e:
-                    pass
-                s.add("")
-                self.edge_vocab = {v: k for k, v in enumerate(s)}
-                print('edge vocab size:', len(self.edge_vocab))
-                torch.save(self.edge_vocab, self.processed_file_paths["edge_vocab"])
 
             self.build_vocab()
 
@@ -1116,6 +1096,11 @@ class Text2TreeDataset(Dataset):
             pretrained_word_emb_cache_dir=self.pretrained_word_emb_cache_dir,
             embedding_dims=self.dec_emb_size,
         )
+        if self.init_edge_vocab:
+            all_edge_words = VocabModel.collect_edge_vocabs(data_for_vocab, self.tokenizer, lower_case=self.lower_case)
+            edge_vocab = Vocab(lower_case=self.lower_case, tokenizer=self.tokenizer)
+            edge_vocab.build_vocab(all_edge_words, max_vocab_size=None, min_vocab_freq=1)
+            edge_vocab.randomize_embeddings(self.word_emb_size)
 
         if self.share_vocab:
             all_words = Counter()
@@ -1158,6 +1143,7 @@ class Text2TreeDataset(Dataset):
             in_word_vocab=src_vocab_model,
             out_word_vocab=tgt_vocab_model,
             share_vocab=src_vocab_model if self.share_vocab else None,
+            edge_vocab=edge_vocab if self.init_edge_vocab else None,
         )
 
         return self.vocab_model
@@ -1175,6 +1161,18 @@ class Text2TreeDataset(Dataset):
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features["token_id"] = token_matrix
 
+            if self.is_hetero:
+                for edge_idx in range(graph.get_edge_num()):
+                    if "token" in graph.edge_attributes[edge_idx]:
+                        edge_token = graph.edge_attributes[edge_idx]["token"]
+                    else:
+                        edge_token = ""
+                    edge_token_id = self.edge_vocab[edge_token]
+                    graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
+                    token_matrix.append([edge_token_id])
+                token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+                graph.edge_features["token_id"] = token_matrix
+
             tgt = item.output_text
             tgt_list = self.vocab_model.out_word_vocab.get_symbol_idx_for_list(tgt.split())
             output_tree = Tree.convert_to_tree(
@@ -1183,7 +1181,7 @@ class Text2TreeDataset(Dataset):
             item.output_tree = output_tree
 
     @classmethod
-    def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie=False):
+    def _vectorize_one_dataitem(cls, data_item, vocab_model, use_ie=False, is_hetero=False):
         item = deepcopy(data_item)
         graph: GraphData = item.graph
         token_matrix = []
@@ -1194,6 +1192,21 @@ class Text2TreeDataset(Dataset):
             token_matrix.append([node_token_id])
         token_matrix = torch.tensor(token_matrix, dtype=torch.long)
         graph.node_features["token_id"] = token_matrix
+
+        if is_hetero:
+            if not hasattr(vocab_model, "edge_vocab"):
+                raise ValueError("Vocab model must have edge vocab attribute")
+            token_matrix = []
+            for edge_idx in range(graph.get_edge_num()):
+                if "token" in graph.edge_attributes[edge_idx]:
+                    edge_token = graph.edge_attributes[edge_idx]["token"]
+                else:
+                    edge_token = ""
+                edge_token_id = vocab_model.edge_vocab[edge_token]
+                graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
+                token_matrix.append([edge_token_id])
+            token_matrix = torch.tensor(token_matrix, dtype=torch.long)
+            graph.edge_features["token_id"] = token_matrix
 
         if isinstance(item.output_text, str):
             tgt = item.output_text
