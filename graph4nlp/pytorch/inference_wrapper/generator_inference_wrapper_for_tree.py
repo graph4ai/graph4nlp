@@ -1,11 +1,10 @@
+import copy
+import math
+import warnings
 import torch
 
 from graph4nlp.pytorch.data.dataset import Text2TreeDataItem, Text2TreeDataset
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
-
-import copy
-import math
-import warnings
 
 from .base import InferenceWrapperBase
 

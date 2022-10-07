@@ -4,6 +4,10 @@
     Compared with the inference.py, it is more efficient. It will save the graphs \
         during inference, which support multi-processing when converting the raw inputs to graphs.
 """
+import argparse
+import copy
+import os
+import time
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -17,11 +21,6 @@ from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import all_to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.utils.summarization_utils import wordid2str
-
-import argparse
-import copy
-import os
-import time
 
 from .main import SumModel
 

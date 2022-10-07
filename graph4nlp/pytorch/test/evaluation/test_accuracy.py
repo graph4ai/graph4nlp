@@ -1,3 +1,5 @@
+import random
+import unittest
 import numpy as np
 import torch
 import tqdm
@@ -5,8 +7,6 @@ from sklearn import metrics
 
 from graph4nlp.pytorch.modules.evaluation.accuracy import Accuracy
 
-import random
-import unittest
 
 """
     strict unittest by comparing the results with sklearn

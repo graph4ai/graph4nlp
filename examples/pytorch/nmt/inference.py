@@ -1,3 +1,5 @@
+import os
+import resource
 import nltk
 import torch
 
@@ -8,8 +10,6 @@ from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper import (
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
-import os
-import resource
 from args import get_args
 from dataset import IWSLT14Dataset
 

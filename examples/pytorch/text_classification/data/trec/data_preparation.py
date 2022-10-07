@@ -1,6 +1,5 @@
-import chardet
-
 import sys
+import chardet
 
 fin = open(sys.argv[1], "rb")
 fout = open(sys.argv[2], "w")

@@ -6,16 +6,15 @@ adding features which are in tensor form, and attributes which are of arbitrary
 form to the correspondingnodes or edges. Batching operations is also supported
 by :py:class:`GraphData`.
 """
-import dgl
-import scipy.sparse
-import torch
-from torch.nn.utils.rnn import pad_sequence
-
 import os
 import warnings
 from collections import namedtuple
 from distutils.log import warn
 from typing import Any, Callable, Dict, List, Tuple, Union
+import dgl
+import scipy.sparse
+import torch
+from torch.nn.utils.rnn import pad_sequence
 
 from .utils import (
     EdgeNotFoundException,

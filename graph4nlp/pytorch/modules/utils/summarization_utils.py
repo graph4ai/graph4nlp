@@ -1,9 +1,8 @@
+import logging
 import torch
 import torchtext.vocab as vocab
 
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-
-import logging
 
 
 def get_log(log_file):

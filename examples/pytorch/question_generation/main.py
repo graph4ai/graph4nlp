@@ -1,3 +1,9 @@
+import argparse
+import copy
+import multiprocessing
+import os
+import platform
+import time
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -19,13 +25,6 @@ from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
-
-import argparse
-import copy
-import multiprocessing
-import os
-import platform
-import time
 
 from .fused_embedding_construction import FusedEmbeddingConstruction
 

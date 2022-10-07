@@ -1,10 +1,9 @@
+import copy
+import warnings
 import numpy as np
 import torch
 
 from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-
-import copy
-import warnings
 
 
 class Accuracy(EvaluationMetricBase):

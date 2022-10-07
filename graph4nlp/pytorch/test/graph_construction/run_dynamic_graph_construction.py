@@ -1,3 +1,6 @@
+import argparse
+import os
+import time
 import dgl
 import dgl.function as fn
 import networkx as nx
@@ -9,10 +12,6 @@ import torch.nn.functional as F
 from dgl import DGLGraph
 from dgl.data import load_data, register_data_args
 from scipy import sparse
-
-import argparse
-import os
-import time
 
 from ...modules.graph_construction import (
     NodeEmbeddingBasedGraphConstruction,

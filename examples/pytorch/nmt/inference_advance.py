@@ -1,3 +1,5 @@
+import os
+import resource
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -7,8 +9,6 @@ from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 from graph4nlp.pytorch.modules.evaluation import BLEU
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
-import os
-import resource
 from args import get_args
 from dataset import IWSLT14Dataset
 from utils import get_log, wordid2str

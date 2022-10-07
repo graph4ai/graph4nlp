@@ -1,8 +1,7 @@
+import copy
 from pythonds.basic.stack import Stack
 
 from graph4nlp.pytorch.data.data import GraphData
-
-import copy
 
 from .base import StaticGraphConstructionBase
 

@@ -1,3 +1,8 @@
+import argparse
+import copy
+import json
+import os
+import time
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -10,12 +15,6 @@ from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
-
-import argparse
-import copy
-import json
-import os
-import time
 
 from .run_text_classifier import TextClassifier
 

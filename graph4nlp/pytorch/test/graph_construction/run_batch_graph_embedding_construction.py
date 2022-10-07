@@ -1,8 +1,7 @@
+import time
 import dgl
 import numpy as np
 import torch
-
-import time
 
 from ...data.data import GraphData
 from ...modules.graph_construction.embedding_construction import EmbeddingConstruction

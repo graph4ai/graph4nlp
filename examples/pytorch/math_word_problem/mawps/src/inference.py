@@ -4,6 +4,9 @@
         in the GeneratorInferenceWrapper.
     The GeneratorInferenceWrapper takes the raw inputs and produce the outputs.
 """
+import argparse
+import random
+import warnings
 import numpy as np
 import torch
 
@@ -13,10 +16,6 @@ from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper_for_tree im
 )
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
-
-import argparse
-import random
-import warnings
 
 warnings.filterwarnings("ignore")
 

@@ -1,14 +1,13 @@
-import numpy as np
-import torch
-from nltk.tokenize import word_tokenize
-from torchtext.vocab import GloVe, Vectors
-
 import os
 import pickle
 import re
 import warnings
 from collections import Counter
 from functools import lru_cache
+import numpy as np
+import torch
+from nltk.tokenize import word_tokenize
+from torchtext.vocab import GloVe, Vectors
 
 from . import constants
 

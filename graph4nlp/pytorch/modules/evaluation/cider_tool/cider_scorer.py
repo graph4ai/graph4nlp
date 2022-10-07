@@ -2,13 +2,12 @@
 # Tsung-Yi Lin <tl483@cornell.edu>
 # Ramakrishna Vedantam <vrama91@vt.edu>
 
-import numpy as np
-
 import copy
 import math
 import os
 import sys
 from collections import defaultdict
+import numpy as np
 
 # Use cPickle if it is installed, as it is much faster
 if "cPickle" in sys.modules:

@@ -1,9 +1,8 @@
+from copy import deepcopy
 import torch
 
 from graph4nlp.pytorch.data.data import GraphData
 from graph4nlp.pytorch.data.dataset import SequenceLabelingDataset
-
-from copy import deepcopy
 
 
 class ConllDataset(SequenceLabelingDataset):

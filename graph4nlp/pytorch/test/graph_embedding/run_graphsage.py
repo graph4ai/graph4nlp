@@ -1,3 +1,6 @@
+import argparse
+import os
+import time
 import dgl
 import networkx as nx
 import numpy as np
@@ -6,10 +9,6 @@ import torch.backends.cudnn as cudnn
 import torch.nn as nn
 from dgl import DGLGraph
 from dgl.data import load_data, register_data_args
-
-import argparse
-import os
-import time
 
 from ...data.data import GraphData
 from ...modules.graph_embedding_learning.graphsage import GraphSAGE

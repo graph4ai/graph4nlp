@@ -1,9 +1,3 @@
-import numpy as np
-import stanza
-import torch.utils.data
-from nltk.tokenize import word_tokenize
-from stanza.server import CoreNLPClient
-
 import abc
 import json
 import os
@@ -12,6 +6,11 @@ from collections import Counter
 from copy import deepcopy
 from multiprocessing import Pool
 from typing import Union
+import numpy as np
+import stanza
+import torch.utils.data
+from nltk.tokenize import word_tokenize
+from stanza.server import CoreNLPClient
 
 from ..data.data import GraphData, to_batch
 from ..modules.graph_construction.base import (

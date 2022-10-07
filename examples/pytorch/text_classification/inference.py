@@ -1,3 +1,6 @@
+import argparse
+import os
+from typing import List
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -10,10 +13,6 @@ from graph4nlp.pytorch.inference_wrapper.classifier_inference_wrapper import (
 )
 from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
-
-import argparse
-import os
-from typing import List
 
 from .run_text_classifier import TextClassifier
 

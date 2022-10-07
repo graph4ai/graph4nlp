@@ -1,3 +1,6 @@
+import argparse
+import os
+import time
 import dgl
 import networkx as nx
 import numpy as np
@@ -7,10 +10,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from dgl import DGLGraph
 from dgl.data import load_data, register_data_args
-
-import argparse
-import os
-import time
 
 from ...data.data import GraphData
 from ...modules.graph_embedding_learning.ggnn import GGNN

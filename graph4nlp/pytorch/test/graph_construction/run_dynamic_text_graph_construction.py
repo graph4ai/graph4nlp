@@ -1,9 +1,8 @@
+import argparse
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 from dgl.data import register_data_args
-
-import argparse
 
 from ...modules.graph_construction import NodeEmbeddingBasedGraphConstruction
 from ...modules.utils.padding_utils import pad_2d_vals_no_size

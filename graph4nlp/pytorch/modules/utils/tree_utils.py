@@ -1,6 +1,5 @@
-import numpy as np
-
 from operator import itemgetter
+import numpy as np
 
 
 class Tree:

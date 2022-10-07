@@ -1,3 +1,7 @@
+import os
+import pickle
+from collections import OrderedDict
+from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
@@ -6,11 +10,6 @@ from scipy import sparse
 from sklearn import preprocessing
 
 from graph4nlp.pytorch.data.data import GraphData
-
-import os
-import pickle
-from collections import OrderedDict
-from pathlib import Path
 
 
 def get_library_dir_path():

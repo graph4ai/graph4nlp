@@ -1,3 +1,5 @@
+import os
+import resource
 import numpy as np
 import torch
 import torch.optim as optim
@@ -9,8 +11,6 @@ from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.evaluation import BLEU
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
-import os
-import resource
 from args import get_args
 from build_model import get_model
 from dataset import IWSLT14Dataset

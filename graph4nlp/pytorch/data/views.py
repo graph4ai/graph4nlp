@@ -1,8 +1,7 @@
 # Views implementations used in GraphData
-import torch
-
 from collections import namedtuple
 from typing import Any, List, Union
+import torch
 
 from .utils import slice_to_list
 

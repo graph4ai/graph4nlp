@@ -1,3 +1,8 @@
+import argparse
+import copy
+import random
+import time
+import warnings
 import numpy as np
 import torch
 import torch.optim as optim
@@ -8,12 +13,6 @@ from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.tree_utils import Tree
-
-import argparse
-import copy
-import random
-import time
-import warnings
 
 warnings.filterwarnings("ignore")
 

@@ -1,10 +1,9 @@
+import pickle
 import nltk
 import torch
 
 from graph4nlp.pytorch.data.dataset import Text2TextDataItem, Text2TextDataset
 from graph4nlp.pytorch.modules.utils.padding_utils import pad_2d_vals_no_size
-
-import pickle
 
 
 class IWSLT14Dataset(Text2TextDataset):

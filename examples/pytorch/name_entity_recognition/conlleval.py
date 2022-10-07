@@ -21,7 +21,6 @@ prefix: IOBES
 chunk_type: PER, LOC, etc.
 """
 from __future__ import division, print_function, unicode_literals
-
 import sys
 from collections import defaultdict
 

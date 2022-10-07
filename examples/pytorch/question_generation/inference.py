@@ -4,6 +4,9 @@
         in the GeneratorInferenceWrapper.
     The GeneratorInferenceWrapper takes the raw inputs and produce the outputs.
 """
+import argparse
+import os
+from typing import List, Tuple
 import numpy as np
 import torch
 from nltk.tokenize import word_tokenize
@@ -14,10 +17,6 @@ from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper import (
 )
 from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
-
-import argparse
-import os
-from typing import List, Tuple
 
 from .main import QGModel  # noqa
 

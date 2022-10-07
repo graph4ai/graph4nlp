@@ -1,10 +1,9 @@
+import argparse
 import torch
 import torch.nn.functional as F
 import torch_geometric.transforms as T
 from ogb.nodeproppred import Evaluator, PygNodePropPredDataset
 from torch_geometric.nn import GCNConv, SAGEConv
-
-import argparse
 
 from .logger import Logger
 

@@ -1,3 +1,5 @@
+import argparse
+import os
 import torch
 import torch.backends.cudnn as cudnn
 import torch.multiprocessing
@@ -14,9 +16,6 @@ from graph4nlp.pytorch.inference_wrapper.classifier_inference_wrapper import (
 )
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.generic_utils import to_cuda
-
-import argparse
-import os
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 cudnn.benchmark = False

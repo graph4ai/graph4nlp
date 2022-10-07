@@ -4,6 +4,11 @@
     Compared with the inference.py, it is more efficient. It will save the graphs \
         during inference, which support multi-processing when converting the raw inputs to graphs.
 """
+import argparse
+import copy
+import random
+import time
+import warnings
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -12,11 +17,6 @@ from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree
 from graph4nlp.pytorch.models.graph2tree import Graph2Tree
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 
-import argparse
-import copy
-import random
-import time
-import warnings
 from evaluation import SolutionMatch
 
 warnings.filterwarnings("ignore")

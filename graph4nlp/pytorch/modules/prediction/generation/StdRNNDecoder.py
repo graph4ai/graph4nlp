@@ -1,12 +1,11 @@
+import random
+from functools import reduce
 import torch
 import torch.nn as nn
 
 from graph4nlp.pytorch.modules.prediction.generation.attention import Attention
 from graph4nlp.pytorch.modules.prediction.generation.base import RNNDecoderBase
 from graph4nlp.pytorch.modules.utils.vocab_utils import Vocab
-
-import random
-from functools import reduce
 
 
 def extract_mask(mask, token):
