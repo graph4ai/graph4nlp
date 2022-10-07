@@ -1,5 +1,0 @@
-{
-    "config_path": "examples/pytorch/semantic_parsing/graph2seq/config/dependency_gcn_undirected.yaml",
-    "model_args.graph_construction_args.graph_construction_share.root_dir": "examples/pytorch/semantic_parsing/graph2seq/jobs_inference"
-    }
-    
