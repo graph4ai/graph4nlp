@@ -9,7 +9,6 @@ by :py:class:`GraphData`.
 import os
 import warnings
 from collections import namedtuple
-from distutils.log import warn
 from typing import Any, Callable, Dict, List, Tuple, Union
 import dgl
 import scipy.sparse
