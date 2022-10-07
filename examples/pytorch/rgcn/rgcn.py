@@ -52,7 +52,6 @@ class RGCN(GNNBase):
         self.num_bases = num_bases
         self.use_self_loop = use_self_loop
         self.dropout = dropout
-        self.use_cuda = use_cuda
 
         self.RGCN_layers = nn.ModuleList()
 
