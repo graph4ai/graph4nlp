@@ -194,8 +194,8 @@ def print_config(config):
 
 
 if __name__ == "__main__":
-    import platform
     import multiprocessing
+    import platform
 
     if platform.system() == "Darwin":
         multiprocessing.set_start_method("spawn")

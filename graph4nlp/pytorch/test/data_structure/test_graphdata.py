@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 
-import pytest
+from graph4nlp.pytorch.data import GraphData, from_batch, from_dgl, to_batch
+from graph4nlp.pytorch.data.utils import EdgeNotFoundException, SizeMismatchException
 
-from ...data.data import GraphData, from_batch, from_dgl, to_batch
-from ...data.utils import EdgeNotFoundException, SizeMismatchException
+import pytest
 
 
 def fail_here():
@@ -34,6 +34,18 @@ def test_add_nodes():
     g.add_nodes(9)
     assert g.get_node_num() == 19
     assert torch.all(torch.eq(g.node_features["zero"][10:], torch.zeros(9)))
+
+
+def test_add_nodes_hetero():
+    g = GraphData(is_hetero=True)
+    try:
+        g.add_nodes(10, ntypes=["A"] * 9)
+        fail_here()
+    except AssertionError:
+        pass
+    g.add_nodes(10, ntypes=["A"] * 10)
+    assert g.get_node_num() == 10  # Test node number
+    assert g.ntypes == ["A"] * 10  # Test node type
 
 
 def test_set_node_features_cpu():
@@ -160,6 +172,13 @@ def test_add_edges():
     # Test adding duplicate edges
     with pytest.warns(Warning):
         g.add_edges([0, 1], [1, 2])
+
+
+def test_add_edges_hetero():
+    g = GraphData(is_hetero=True)
+    g.add_nodes(10, ntypes=["A"] * 5 + ["B"] * 5)
+    g.add_edges([0, 1, 2, 3, 4], [5, 6, 7, 8, 9], etypes=[("A", "R_ab", "B")] * 5)
+    assert g.etypes == [("A", "R_ab", "B")] * 5
 
 
 def test_edge_ids():
@@ -301,6 +320,26 @@ def test_conversion_dgl():
             assert g1.edge_features[edge_feat_name] == g.edge_features[edge_feat_name]
     assert g1.get_node_num() == g.get_node_num()
     assert g1.get_all_edges() == g.get_all_edges()
+
+
+def test_conversion_dgl_hetero():
+    g = GraphData(is_hetero=True)
+    g.add_nodes(10, ntypes=["A"] * 5 + ["B"] * 5)
+    # g.add_nodes
+    for i in range(5):
+        g.add_edge(src=i, tgt=(i + 5) % 10, etype=("A", "R_ab", "B"))
+    for i in range(5):
+        g.add_edge(src=(i + 5) % 10, tgt=i, etype=("B", "R_ba", "A"))
+    for i in range(5):
+        g.add_edge(src=i, tgt=(i + 1) % 5, etype=("A", "R_aa", "A"))
+    g.node_features["node_feat"] = torch.randn((10, 10))
+    g.node_features["zero"] = torch.zeros(10)
+    g.node_features["idx"] = torch.tensor(list(range(10)), dtype=torch.long)
+    g.edge_features["edge_feat"] = torch.randn((15, 10))
+    g.edge_features["idx"] = torch.tensor(list(range(15)), dtype=torch.long)
+    # Test to_dgl
+    dgl_g = g.to_dgl()
+    g = from_dgl(dgl_g)
 
 
 def test_batch():

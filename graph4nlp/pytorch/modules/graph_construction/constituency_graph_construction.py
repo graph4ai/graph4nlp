@@ -237,7 +237,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
         """
         assert (add_pos_node & cut_line_node) is False
         parsed_sentence_data = parsed_object["parse"]
-        for punc in [u"(", u")"]:
+        for punc in ["(", ")"]:
             parsed_sentence_data = parsed_sentence_data.replace(punc, " " + punc + " ")
         parse_list = (parsed_sentence_data.strip()).split()
         # cut root node
@@ -279,7 +279,7 @@ class ConstituencyBasedGraphConstruction(StaticGraphConstructionBase):
                     pstack.push(node_2)
             elif parse_list[idx] == ")":
                 pstack.pop()
-            elif parse_list[idx + 1] == u")" and parse_list[idx] != u")":
+            elif parse_list[idx + 1] == ")" and parse_list[idx] != ")":
                 cnt_word_node += 1
                 if add_pos_node:
                     res_graph.add_nodes(1)

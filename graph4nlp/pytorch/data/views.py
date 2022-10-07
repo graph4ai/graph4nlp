@@ -11,7 +11,7 @@ EdgeRepr = namedtuple("EdgeData", ["features"])
 
 class NodeView(object):
     """
-    View for graph nodes at at high level.
+    View for graph nodes at high level.
     """
 
     def __init__(self, graph: Any):

@@ -411,8 +411,7 @@ class BertEmbedding(nn.Module):
         self.bert_doc_stride = doc_stride
         self.fix_emb = fix_emb
 
-        from transformers import BertModel
-        from transformers import BertTokenizer
+        from transformers import BertModel, BertTokenizer
 
         print("[ Using pretrained BERT embeddings ]")
         self.bert_tokenizer = BertTokenizer.from_pretrained(name, do_lower_case=lower_case)
