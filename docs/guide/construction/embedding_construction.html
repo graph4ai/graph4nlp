@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Embedding Construction &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Embedding Construction &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +38,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -64,7 +66,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -74,7 +76,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -108,11 +110,11 @@
            <div itemprop="articleBody">
              
   <div class="section" id="embedding-construction">
-<span id="guide-embedding-construction"></span><h1>Embedding Construction<a class="headerlink" href="#embedding-construction" title="Permalink to this headline">¶</a></h1>
+<span id="guide-embedding-construction"></span><h1>Embedding Construction<a class="headerlink" href="#embedding-construction" title="Permalink to this heading">¶</a></h1>
 <p>The embedding construction module aims to learn the initial node/edge embeddings for the input graph
 before being consumed by the subsequent GNN model.</p>
 <div class="section" id="embeddingconstruction">
-<h2>EmbeddingConstruction<a class="headerlink" href="#embeddingconstruction" title="Permalink to this headline">¶</a></h2>
+<h2>EmbeddingConstruction<a class="headerlink" href="#embeddingconstruction" title="Permalink to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">EmbeddingConstruction</span></code> class supports various strategies for initializing both single-token
 (i.e., containing single token) and multi-token (i.e., containing multiple tokens) items (i.e., node/edge).
 As shown in the below code piece, for both single-token and multi-token items, supported embedding strategies
@@ -216,7 +218,7 @@ the BERT embedding and word2vec embedding instead of word2vec embedding will be 
 </div>
 </div>
 <div class="section" id="various-embedding-modules">
-<h2>Various embedding modules<a class="headerlink" href="#various-embedding-modules" title="Permalink to this headline">¶</a></h2>
+<h2>Various embedding modules<a class="headerlink" href="#various-embedding-modules" title="Permalink to this heading">¶</a></h2>
 <p>Various embedding modules are provided in the library to support embedding construction.
 For instance, <code class="docutils literal notranslate"><span class="pre">WordEmbedding</span></code> class aims to convert the input word index sequence to the word embedding matrix.
 <code class="docutils literal notranslate"><span class="pre">MeanEmbedding</span></code> class simply computes the average embeddings.

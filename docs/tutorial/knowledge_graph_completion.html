@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Knowledge Graph Completion Tutorial &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>Knowledge Graph Completion Tutorial &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -35,11 +37,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guide/graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guide/dataset.html">Chapter 2. Dataset</a></li>
@@ -49,7 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../guide/classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guide/evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -59,7 +61,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -107,9 +109,9 @@
            <div itemprop="articleBody">
              
   <div class="section" id="knowledge-graph-completion-tutorial">
-<h1>Knowledge Graph Completion Tutorial<a class="headerlink" href="#knowledge-graph-completion-tutorial" title="Permalink to this headline">¶</a></h1>
+<h1>Knowledge Graph Completion Tutorial<a class="headerlink" href="#knowledge-graph-completion-tutorial" title="Permalink to this heading">¶</a></h1>
 <div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
 <p>In this tutorial demo, we will use the Graph4NLP library to build a
 GNN-based knowledge graph completion model. The model consists of</p>
 <ul class="simple">
@@ -121,16 +123,16 @@ evaluate it on the Kinship dataset. The full example can be downloaded from
 <a class="reference external" href="https://github.com/graph4ai/graph4nlp_demo/tree/main/KDD2021_demo/kg_completion">knowledge graph completion notebook</a></p>
 </div>
 <div class="section" id="environment-setup">
-<h2>Environment setup<a class="headerlink" href="#environment-setup" title="Permalink to this headline">¶</a></h2>
+<h2>Environment setup<a class="headerlink" href="#environment-setup" title="Permalink to this heading">¶</a></h2>
 <div class="section" id="create-virtual-environment">
-<h3>Create virtual environment<a class="headerlink" href="#create-virtual-environment" title="Permalink to this headline">¶</a></h3>
+<h3>Create virtual environment<a class="headerlink" href="#create-virtual-environment" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>conda create –name g4l python=3.7</p></li>
 <li><p>conda activate g4l</p></li>
 </ul>
 </div>
 <div class="section" id="install-graph4nlp-library-via-pip">
-<h3>Install graph4nlp library via pip<a class="headerlink" href="#install-graph4nlp-library-via-pip" title="Permalink to this headline">¶</a></h3>
+<h3>Install graph4nlp library via pip<a class="headerlink" href="#install-graph4nlp-library-via-pip" title="Permalink to this heading">¶</a></h3>
 <p>Ensure that at least PyTorch (&gt;=1.6.0) is installed:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python -c <span class="s2">&quot;import torch; print(torch.__version__)&quot;</span>
 &gt;&gt;&gt; <span class="m">1</span>.6.0
@@ -187,7 +189,7 @@ CUDA 11.1 users, please refer to <code class="docutils literal notranslate"><spa
 </table>
 </div>
 <div class="section" id="installation-for-kgc">
-<h3>Installation for KGC<a class="headerlink" href="#installation-for-kgc" title="Permalink to this headline">¶</a></h3>
+<h3>Installation for KGC<a class="headerlink" href="#installation-for-kgc" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Run the preprocessing script for WN18RR and Kinship:
 <code class="docutils literal notranslate"><span class="pre">sh</span> <span class="pre">kg_completion/preprocess.sh</span></code></p></li>
@@ -196,7 +198,7 @@ CUDA 11.1 users, please refer to <code class="docutils literal notranslate"><spa
 </div>
 </div>
 <div class="section" id="import-packages">
-<h2>Import packages<a class="headerlink" href="#import-packages" title="Permalink to this headline">¶</a></h2>
+<h2>Import packages<a class="headerlink" href="#import-packages" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -216,7 +218,7 @@ CUDA 11.1 users, please refer to <code class="docutils literal notranslate"><spa
 </div>
 </div>
 <div class="section" id="build-model">
-<h2>Build Model<a class="headerlink" href="#build-model" title="Permalink to this headline">¶</a></h2>
+<h2>Build Model<a class="headerlink" href="#build-model" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">KGC</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">num_entities</span><span class="p">,</span> <span class="n">num_relations</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">KGC</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -271,7 +273,7 @@ CUDA 11.1 users, please refer to <code class="docutils literal notranslate"><spa
 </div>
 </div>
 <div class="section" id="define-evaluation-for-kg-completion">
-<h2>Define Evaluation for KG Completion<a class="headerlink" href="#define-evaluation-for-kg-completion" title="Permalink to this headline">¶</a></h2>
+<h2>Define Evaluation for KG Completion<a class="headerlink" href="#define-evaluation-for-kg-completion" title="Permalink to this heading">¶</a></h2>
 <p>This part we follow the implementaion of <a class="reference external" href="https://github.com/TimDettmers/ConvE">ConvE</a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">ranking_and_hits_this</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">dev_rank_batcher</span><span class="p">,</span> <span class="n">vocab</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">kg_graph</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -376,7 +378,7 @@ CUDA 11.1 users, please refer to <code class="docutils literal notranslate"><spa
 </div>
 </div>
 <div class="section" id="define-main">
-<h2>Define Main()<a class="headerlink" href="#define-main" title="Permalink to this headline">¶</a></h2>
+<h2>Define Main()<a class="headerlink" href="#define-main" title="Permalink to this heading">¶</a></h2>
 <p>Next, let’s build a main() function which will do a bunch of things including setting up dataset, dataloader, whole KG,
 model, optimizer, evaluation metrics, train/val/test loops, and so on.</p>
 <p>In particular, users need to set the <code class="docutils literal notranslate"><span class="pre">preprocess</span></code> field in config file to be <code class="docutils literal notranslate"><span class="pre">True</span></code> if they run the code
@@ -532,7 +534,7 @@ for the first time to build the whole KG.</p>
 </div>
 </div>
 <div class="section" id="run-the-model">
-<h2>Run the model<a class="headerlink" href="#run-the-model" title="Permalink to this headline">¶</a></h2>
+<h2>Run the model<a class="headerlink" href="#run-the-model" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">()</span>
 <span class="n">task_args</span> <span class="o">=</span> <span class="n">get_yaml_config</span><span class="p">(</span><span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;task_config&quot;</span><span class="p">])</span>
 
@@ -551,7 +553,7 @@ for the first time to build the whole KG.</p>
 </div>
 </div>
 <div class="section" id="results-on-kinship">
-<h2>Results on kinship<a class="headerlink" href="#results-on-kinship" title="Permalink to this headline">¶</a></h2>
+<h2>Results on kinship<a class="headerlink" href="#results-on-kinship" title="Permalink to this heading">¶</a></h2>
 <table class="colwidths-given docutils align-default" id="id1">
 <caption><span class="caption-text">BCELoss+GGNNDistmult</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
 <colgroup>

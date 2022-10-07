@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dynamic Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Dynamic Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +38,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -65,7 +67,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -75,7 +77,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -109,7 +111,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="dynamic-graph-construction">
-<span id="guide-dynamic-graph-construction"></span><h1>Dynamic Graph Construction<a class="headerlink" href="#dynamic-graph-construction" title="Permalink to this headline">¶</a></h1>
+<span id="guide-dynamic-graph-construction"></span><h1>Dynamic Graph Construction<a class="headerlink" href="#dynamic-graph-construction" title="Permalink to this heading">¶</a></h1>
 <p>Unlike static graph construction which is performed during preprocessing,
 dynamic graph construction operates by jointly learning the graph structure
 and graph representation on the fly. The ultimate goal is to learn the
@@ -125,7 +127,7 @@ initial graph topology and the implicit learned graph topology to obtain a
 better graph topology for the downstream task.</p>
 <img alt="../../_images/dynamic_graph_overall.pdf" src="../../_images/dynamic_graph_overall.pdf" />
 <div class="section" id="dynamicgraphconstructionbase">
-<h2>DynamicGraphConstructionBase<a class="headerlink" href="#dynamicgraphconstructionbase" title="Permalink to this headline">¶</a></h2>
+<h2>DynamicGraphConstructionBase<a class="headerlink" href="#dynamicgraphconstructionbase" title="Permalink to this heading">¶</a></h2>
 <p>Before we introduce the two built-in dynamic graph construction classes, let’s
 first talk about <code class="docutils literal notranslate"><span class="pre">DynamicGraphConstructionBase</span></code> which is the base class
 for dynamic graph construction. This base class implements several important
@@ -216,7 +218,7 @@ Below is the implementation of this method.</p>
 </div>
 </div>
 <div class="section" id="node-embedding-based-dynamic-graph-construction">
-<h2>Node Embedding Based Dynamic Graph Construction<a class="headerlink" href="#node-embedding-based-dynamic-graph-construction" title="Permalink to this headline">¶</a></h2>
+<h2>Node Embedding Based Dynamic Graph Construction<a class="headerlink" href="#node-embedding-based-dynamic-graph-construction" title="Permalink to this heading">¶</a></h2>
 <p>For node embedding based dynamic graph construction, we aim to learn the graph structure from a set of node embeddings.
 The <code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedGraphConstruction</span></code> class inherits the <code class="docutils literal notranslate"><span class="pre">DynamicGraphConstructionBase</span></code> base class which implements
 several aforementioned important components (e.g., <code class="docutils literal notranslate"><span class="pre">compute_similarity_metric</span></code>, <code class="docutils literal notranslate"><span class="pre">sparsify_graph</span></code>).
@@ -250,7 +252,7 @@ initial node embeddings, as shown below:</p>
 </div>
 </div>
 <div class="section" id="node-embedding-based-refined-dynamic-graph-construction">
-<h2>Node Embedding Based Refined Dynamic Graph Construction<a class="headerlink" href="#node-embedding-based-refined-dynamic-graph-construction" title="Permalink to this headline">¶</a></h2>
+<h2>Node Embedding Based Refined Dynamic Graph Construction<a class="headerlink" href="#node-embedding-based-refined-dynamic-graph-construction" title="Permalink to this heading">¶</a></h2>
 <p>Unlike the node embedding based metric learning, node embedding based refined graph metric
 learning in addition utilizes the intrinsic graph structure which potentially still carries
 rich and useful information regarding the optimal graph structure for the downstream task.

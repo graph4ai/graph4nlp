@@ -3,17 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Graph Attention Networks &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Graph Attention Networks &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +39,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -61,7 +64,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -71,7 +74,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -105,7 +108,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="graph-attention-networks">
-<span id="guide-gat"></span><h1>Graph Attention Networks<a class="headerlink" href="#graph-attention-networks" title="Permalink to this headline">¶</a></h1>
+<span id="guide-gat"></span><h1>Graph Attention Networks<a class="headerlink" href="#graph-attention-networks" title="Permalink to this heading">¶</a></h1>
 <p>The Graph Attention Network (<a class="reference external" href="https://arxiv.org/abs/1710.10903">GAT</a>) aims to learn edge weights for the input binary adjacency matrix by introducing
 the multi-head attention mechanism to the GNN architecture when performing message passing.
 We provide high level APIs to users to easily define a multi-layer GAT model. Besides, we support both
@@ -124,7 +127,7 @@ node <span class="math notranslate nohighlight">\(j\)</span>.</p>
 e_{ij}^{l} = \mathrm{LeakyReLU}\left(\vec{a}^T [W h_{i} \| W h_{j}]\right)\end{split}\]</div>
 </div></blockquote>
 <div class="section" id="gat-module-construction-function">
-<h2>GAT Module Construction Function<a class="headerlink" href="#gat-module-construction-function" title="Permalink to this headline">¶</a></h2>
+<h2>GAT Module Construction Function<a class="headerlink" href="#gat-module-construction-function" title="Permalink to this heading">¶</a></h2>
 <p>The construction function performs the following steps:</p>
 <ol class="arabic simple">
 <li><p>Set options.</p></li>
@@ -173,7 +176,7 @@ For GAT, <code class="docutils literal notranslate"><span class="pre">heads</spa
 unidirectional (i.e., undirected) or bidirectional (i.e., <cite>bi_sep</cite> and <cite>bi_fuse</cite>) version of GAT.</p>
 </div>
 <div class="section" id="gat-module-forward-function">
-<h2>GAT Module Forward Function<a class="headerlink" href="#gat-module-forward-function" title="Permalink to this headline">¶</a></h2>
+<h2>GAT Module Forward Function<a class="headerlink" href="#gat-module-forward-function" title="Permalink to this heading">¶</a></h2>
 <p>In NN module, <code class="docutils literal notranslate"><span class="pre">forward()</span></code> function does the actual message passing and computation. <code class="docutils literal notranslate"><span class="pre">forward()</span></code> takes a parameter <code class="docutils literal notranslate"><span class="pre">GraphData</span></code> as input.
 The updated node embedding will be stored back into the node field <code class="docutils literal notranslate"><span class="pre">node_emb</span></code> of GraphData and the final output is the GraphData.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph</span><span class="p">):</span>
@@ -208,7 +211,7 @@ The updated node embedding will be stored back into the node field <code class="
 </div>
 </div>
 <div class="section" id="gatlayer-construction-function">
-<h2>GATLayer Construction Function<a class="headerlink" href="#gatlayer-construction-function" title="Permalink to this headline">¶</a></h2>
+<h2>GATLayer Construction Function<a class="headerlink" href="#gatlayer-construction-function" title="Permalink to this heading">¶</a></h2>
 <p>To make the utilization of GAT more felxbible, we also provide the low-level implementation of GAT layer. Similarly to high-level API, users can specify <code class="docutils literal notranslate"><span class="pre">direction_option</span></code> which determines whether to use
 unidirectional (i.e., undirected) or bidirectional (i.e., <cite>bi_sep</cite> and <cite>bi_fuse</cite>) GAT.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GATLayer</span><span class="p">(</span><span class="n">GNNLayerBase</span><span class="p">):</span>

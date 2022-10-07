@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Node Classification &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Node Classification &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +38,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -61,7 +63,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -71,7 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -105,11 +107,11 @@
            <div itemprop="articleBody">
              
   <div class="section" id="node-classification">
-<span id="guide-node-classification"></span><h1>Node Classification<a class="headerlink" href="#node-classification" title="Permalink to this headline">¶</a></h1>
+<span id="guide-node-classification"></span><h1>Node Classification<a class="headerlink" href="#node-classification" title="Permalink to this heading">¶</a></h1>
 <p>Node classification is a downstream task that are normally observed in the GNN-based NLP tasks, such as sequence labeling and name entity recognition. The process is about classify the label of the each node in the graph based on the node embeddings that learnt from the GNNs modules.</p>
 <p>To facilitate the implementation of node classification task, we provide both high-level and low-level APIs to users to easily define a multi-layer node classification function. Besides, for each level’s APIs, we support two popularly used node classifiers, one is based on the BiLSTM and feedforward neural network (BiLSTMFeedForwardNN), another one is based on simple feedforward neural network (FeedForwardNN).</p>
 <div class="section" id="bilstmfeedforwardnnlayer">
-<h2>BiLSTMFeedForwardNNLayer<a class="headerlink" href="#bilstmfeedforwardnnlayer" title="Permalink to this headline">¶</a></h2>
+<h2>BiLSTMFeedForwardNNLayer<a class="headerlink" href="#bilstmfeedforwardnnlayer" title="Permalink to this heading">¶</a></h2>
 <p>This function is based on a combination of the BiLSTM layer and a feedforward layer. The low-level function defines the a single layer classifier with the input of node embedding tensor and the output of legit tensor after classification.</p>
 <p>Below is an example to construct the BiLSTMFeedForwardNNlayer module. If <code class="docutils literal notranslate"><span class="pre">hidden_size</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, we add an additional hidden layer after the last. Else, we directly use the output of the lstm as the classification logits.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
@@ -158,7 +160,7 @@
 <p>The final output of this module is the classification logits.</p>
 </div>
 <div class="section" id="bilstmfeedforwardnn">
-<h2>BiLSTMFeedForwardNN<a class="headerlink" href="#bilstmfeedforwardnn" title="Permalink to this headline">¶</a></h2>
+<h2>BiLSTMFeedForwardNN<a class="headerlink" href="#bilstmfeedforwardnn" title="Permalink to this heading">¶</a></h2>
 <p>To facilitate the easily implementation of the pipeline of GNN-based NLP application, we also provide the high-level function for node classification, where the input and output are both the graph in type of <cite>GraphData</cite>.</p>
 <p>Below is an example to construct the BiLSTMFeedForwardNN module.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">num_class</span></code> defines the the number of node categoriey for classification.</p>
@@ -179,7 +181,7 @@
 </div>
 </div>
 <div class="section" id="feedforwardnn">
-<h2>FeedForwardNN<a class="headerlink" href="#feedforwardnn" title="Permalink to this headline">¶</a></h2>
+<h2>FeedForwardNN<a class="headerlink" href="#feedforwardnn" title="Permalink to this heading">¶</a></h2>
 <p>This function is based on a combination of several feedforward layer. The low-level function defines the classifier layers with the input of node embedding tensor and the output of legit tensor after classification.</p>
 <p>Below is an example to construct the FeedForwardNNLayer module.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FeedForwardNNLayer</span><span class="p">(</span><span class="n">NodeClassifierLayerBase</span><span class="p">):</span>

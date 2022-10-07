@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Manipulating GraphData &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Manipulating GraphData &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +38,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="construct.html">Constructing GraphData</a></li>
@@ -60,7 +62,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -70,7 +72,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -104,12 +106,12 @@
            <div itemprop="articleBody">
              
   <div class="section" id="manipulating-graphdata">
-<span id="guide-manipulate"></span><h1>Manipulating GraphData<a class="headerlink" href="#manipulating-graphdata" title="Permalink to this headline">¶</a></h1>
+<span id="guide-manipulate"></span><h1>Manipulating GraphData<a class="headerlink" href="#manipulating-graphdata" title="Permalink to this heading">¶</a></h1>
 <p>After constructing a GraphData instance and adding several nodes and edges to it, the next job is to attach some useful
 information to it for further processing. In <code class="docutils literal notranslate"><span class="pre">GraphData</span></code>, there are two types of information related to the nodes and
 edges, namely <cite>features</cite> and <cite>attributes</cite>.</p>
 <div class="section" id="features">
-<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this heading">¶</a></h2>
 <p>Features are PyTorch tensors designated for each node or edge. To access features, users may call
 <code class="docutils literal notranslate"><span class="pre">GraphData.nodes[node_index].features</span></code> or <code class="docutils literal notranslate"><span class="pre">GraphData.edges[index].features</span></code>.
 These methods return the features of the specified nodes or edges in a dictionary representation, where the keys are the
@@ -191,7 +193,7 @@ None), zero padding will be performed on the newly added instances.</p>
 </div>
 </div>
 <div class="section" id="attributes">
-<h2>Attributes<a class="headerlink" href="#attributes" title="Permalink to this headline">¶</a></h2>
+<h2>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading">¶</a></h2>
 <p>Another important attached information is <cite>attribute</cite>. Like <cite>features</cite>, <cite>attribute</cite> is related to each node/edge
 instance and is basically a list of dictionaries. The list index corresponds to the node/edge index and the dictionary
 at each position stands for the corresponding attributes of that instance.
@@ -208,7 +210,7 @@ keys are <cite>node_attr</cite> for node attributes and <cite>edge_attr</cite> f
 </div>
 </div>
 <div class="section" id="features-vs-attributes">
-<h2>Features vs. Attributes<a class="headerlink" href="#features-vs-attributes" title="Permalink to this headline">¶</a></h2>
+<h2>Features vs. Attributes<a class="headerlink" href="#features-vs-attributes" title="Permalink to this heading">¶</a></h2>
 <p>To make it clear, in this subsection we compare the differences between features and attributes in order for users to
 better utilize them.</p>
 <ol class="arabic simple">

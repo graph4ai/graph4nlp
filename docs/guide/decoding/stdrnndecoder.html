@@ -3,17 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chapter 5.1 Standard RNN Decoder &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Chapter 5.1 Standard RNN Decoder &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +39,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -60,7 +63,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -70,7 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -104,7 +107,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="chapter-5-1-standard-rnn-decoder">
-<span id="std-rnn-decoder"></span><h1>Chapter 5.1 Standard RNN Decoder<a class="headerlink" href="#chapter-5-1-standard-rnn-decoder" title="Permalink to this headline">¶</a></h1>
+<span id="std-rnn-decoder"></span><h1>Chapter 5.1 Standard RNN Decoder<a class="headerlink" href="#chapter-5-1-standard-rnn-decoder" title="Permalink to this heading">¶</a></h1>
 <p>There are various solutions for translating the graph based data to sequential outputs, such as RNN based and transformer based decoding.
 However, in this section, we focus on the RNN based decoding mechanism.
 Similar to most sequence-to-sequence decoder, the graph based <code class="docutils literal notranslate"><span class="pre">StdRNNDecoder</span></code> adopts the attention mechanism to learn
@@ -137,9 +140,9 @@ the soft alignment between the input graphs and the sequential outputs.</p>
 </pre></div>
 </div>
 <div class="section" id="some-advanced-mechanisms">
-<h2>Some advanced mechanisms<a class="headerlink" href="#some-advanced-mechanisms" title="Permalink to this headline">¶</a></h2>
+<h2>Some advanced mechanisms<a class="headerlink" href="#some-advanced-mechanisms" title="Permalink to this heading">¶</a></h2>
 <div class="section" id="copy-and-coverage">
-<h3>Copy and coverage<a class="headerlink" href="#copy-and-coverage" title="Permalink to this headline">¶</a></h3>
+<h3>Copy and coverage<a class="headerlink" href="#copy-and-coverage" title="Permalink to this heading">¶</a></h3>
 <p>To further enhance the performance, we also implement the <code class="docutils literal notranslate"><span class="pre">copy</span></code> and <code class="docutils literal notranslate"><span class="pre">coverage</span></code> mechanism.</p>
 <p>For <code class="docutils literal notranslate"><span class="pre">copy</span></code> mechanism, it helps model to copy words directly from the source sequence, and computed as,
 <span class="math notranslate nohighlight">\(p(w) = p_{gen}  p_{softmax}(w) + (1 - p_{gen})  p_{copy}(w)\)</span>. We refer to the implement of <a class="reference external" href="https://arxiv.org/abs/1506.03134">pointer-network</a>. Technically, for a certain mini-batch graphdata, we extend the original vocabulary to a full-vocabulary containing all words (including out-of-vocabulary (oov) words) in the mini-batch:</p>
@@ -201,7 +204,7 @@ Users can easily use this feature by setting <code class="docutils literal notra
 <p>Users can use the <code class="docutils literal notranslate"><span class="pre">CoverageLoss</span></code> or <code class="docutils literal notranslate"><span class="pre">Graph2SeqLoss</span></code> (including both <code class="docutils literal notranslate"><span class="pre">CoverageLoss</span></code> and <code class="docutils literal notranslate"><span class="pre">NLLLoss</span></code>) to conduct this process.</p>
 </div>
 <div class="section" id="separate-attention">
-<h3>Separate attention<a class="headerlink" href="#separate-attention" title="Permalink to this headline">¶</a></h3>
+<h3>Separate attention<a class="headerlink" href="#separate-attention" title="Permalink to this heading">¶</a></h3>
 <p>And different from most sequence-to-sequence decoder, our <code class="docutils literal notranslate"><span class="pre">StdRNNDecoder</span></code> designs both <code class="docutils literal notranslate"><span class="pre">separate</span> <span class="pre">attention</span></code> and <code class="docutils literal notranslate"><span class="pre">uniform</span> <span class="pre">attention</span></code> for sequential encoder’s outputs <span class="math notranslate nohighlight">\(\mathbf{S}\)</span> and graph encoder’s outputs <span class="math notranslate nohighlight">\(\mathcal{G}(\mathcal{V}, \mathcal{E})\)</span>, respectively:</p>
 <ol class="arabic simple">
 <li><p>Uniform attention: It means the decoder only attends on the graph encoder’s output <span class="math notranslate nohighlight">\(\mathcal{G}(\mathcal{V}, \mathcal{E})\)</span>. Note that we only support attending on node features and leaving the edges for future. Technically, it regard the nodes as tokens and apply attention on them to calculate the output vector. Users can set <code class="docutils literal notranslate"><span class="pre">attention_type</span></code> to <code class="docutils literal notranslate"><span class="pre">uniform</span></code> to use this feature.</p></li>

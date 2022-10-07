@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Math Word Problem Tutorial &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>Math Word Problem Tutorial &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -36,11 +38,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guide/graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guide/dataset.html">Chapter 2. Dataset</a></li>
@@ -50,7 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../guide/classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guide/evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -60,7 +62,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -104,9 +106,9 @@
            <div itemprop="articleBody">
              
   <div class="section" id="math-word-problem-tutorial">
-<h1>Math Word Problem Tutorial<a class="headerlink" href="#math-word-problem-tutorial" title="Permalink to this headline">¶</a></h1>
+<h1>Math Word Problem Tutorial<a class="headerlink" href="#math-word-problem-tutorial" title="Permalink to this heading">¶</a></h1>
 <div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
 <p>In this demo, we will have a closer look at how to apply <strong>Graph2Tree
 model to the task of math word problem automatically solving</strong>. Math
 word problem solving aims to infer reasonable equations from given
@@ -131,7 +133,7 @@ non-terminal node).</p>
 evaluate it on the Mawps dataset.</p>
 </div>
 <div class="section" id="environment-setup">
-<h2>Environment setup<a class="headerlink" href="#environment-setup" title="Permalink to this headline">¶</a></h2>
+<h2>Environment setup<a class="headerlink" href="#environment-setup" title="Permalink to this heading">¶</a></h2>
 <ol class="arabic simple">
 <li><p>Create virtual environment</p></li>
 </ol>
@@ -177,7 +179,7 @@ unnecessary for this demo because preprocessed data is provided)</p></li>
 </div>
 </div>
 <div class="section" id="load-the-config-file">
-<h2>Load the config file<a class="headerlink" href="#load-the-config-file" title="Permalink to this headline">¶</a></h2>
+<h2>Load the config file<a class="headerlink" href="#load-the-config-file" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.config</span> <span class="kn">import</span> <span class="n">get_basic_args</span>
 <span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.utils.config_utils</span> <span class="kn">import</span> <span class="n">update_values</span><span class="p">,</span> <span class="n">get_yaml_config</span>
 
@@ -214,7 +216,7 @@ unnecessary for this demo because preprocessed data is provided)</p></li>
 </pre></div>
 </div>
 <div class="section" id="the-config-output">
-<h3>The config output<a class="headerlink" href="#the-config-output" title="Permalink to this headline">¶</a></h3>
+<h3>The config output<a class="headerlink" href="#the-config-output" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
  <span class="s1">&#39;beam_size&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
  <span class="s1">&#39;checkpoint_save_path&#39;</span><span class="p">:</span> <span class="s1">&#39;./checkpoint_save&#39;</span><span class="p">,</span>
@@ -296,7 +298,7 @@ unnecessary for this demo because preprocessed data is provided)</p></li>
 </div>
 </div>
 <div class="section" id="import-packages">
-<h2>Import packages<a class="headerlink" href="#import-packages" title="Permalink to this headline">¶</a></h2>
+<h2>Import packages<a class="headerlink" href="#import-packages" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">random</span>
@@ -318,7 +320,7 @@ unnecessary for this demo because preprocessed data is provided)</p></li>
 </div>
 </div>
 <div class="section" id="build-the-model">
-<h2>Build the model<a class="headerlink" href="#build-the-model" title="Permalink to this headline">¶</a></h2>
+<h2>Build the model<a class="headerlink" href="#build-the-model" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Mawps</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Mawps</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -388,7 +390,7 @@ unnecessary for this demo because preprocessed data is provided)</p></li>
     <span class="k">def</span> <span class="nf">train_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
         <span class="n">loss_to_print</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">num_batch</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_data_loader</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_data_loader</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Epoch </span><span class="si">{epoch:02d}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_data_loader</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_data_loader</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">:</span><span class="s1">02d</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_data_loader</span><span class="p">)):</span>
             <span class="n">batch_graph</span><span class="p">,</span> <span class="n">batch_tree_list</span><span class="p">,</span> <span class="n">batch_original_tree_list</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;graph_data&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;dec_tree_batch&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;original_dec_tree_batch&#39;</span><span class="p">]</span>
             <span class="n">batch_graph</span> <span class="o">=</span> <span class="n">batch_graph</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
@@ -468,7 +470,7 @@ unnecessary for this demo because preprocessed data is provided)</p></li>
 </div>
 </div>
 <div class="section" id="run-and-get-results">
-<h2>Run and get results<a class="headerlink" href="#run-and-get-results" title="Permalink to this headline">¶</a></h2>
+<h2>Run and get results<a class="headerlink" href="#run-and-get-results" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">Mawps</span><span class="p">(</span><span class="n">cfg_g2t</span><span class="p">)</span>
 <span class="n">best_acc</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
 </pre></div>

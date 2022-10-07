@@ -3,17 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Constituency Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Constituency Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +39,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -64,7 +67,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -74,7 +77,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -108,7 +111,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="constituency-graph-construction">
-<span id="id1"></span><h1>Constituency Graph Construction<a class="headerlink" href="#constituency-graph-construction" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>Constituency Graph Construction<a class="headerlink" href="#constituency-graph-construction" title="Permalink to this heading">¶</a></h1>
 <p>The constituency graph is a widely used static graph that is able to capture phrase-based syntactic relations in a sentence. Constituency parsing models the assembly of one or several corresponded words (i.e., phrase level). Thus it provides new insight into the grammatical structure of a sentence. Specifically, we could devide the graph construction process into following several steps:</p>
 <ol class="arabic simple">
 <li><p>Parsing. For each sentence in the input paragraph, we use an external parser like CoreNLP to perform constituency parsing on it.</p></li>
@@ -117,7 +120,7 @@
 </ol>
 <p>For example, we can construct the constituency graph given a raw textual input:</p>
 <div class="section" id="how-to-use">
-<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.graph_construction.constituency_graph_construction</span> <span class="kn">import</span> <span class="n">ConstituencyBasedGraphConstruction</span>
 <span class="kn">from</span> <span class="nn">stanfordcorenlp</span> <span class="kn">import</span> <span class="n">StanfordCoreNLP</span>
 
@@ -141,9 +144,9 @@
 <a class="reference internal image-reference" href="../../_images/cons_tree.jpg"><img alt="../../_images/cons_tree.jpg" src="../../_images/cons_tree.jpg" style="height: 300px;" /></a>
 </div>
 <div class="section" id="implementation-details">
-<h2>Implementation details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h2>
+<h2>Implementation details<a class="headerlink" href="#implementation-details" title="Permalink to this heading">¶</a></h2>
 <div class="section" id="parsing">
-<h3>Parsing<a class="headerlink" href="#parsing" title="Permalink to this headline">¶</a></h3>
+<h3>Parsing<a class="headerlink" href="#parsing" title="Permalink to this heading">¶</a></h3>
 <p>We use CoreNLP as our parser and load the constituency parsing results in json format.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">parsing</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">raw_text_data</span><span class="p">,</span> <span class="n">nlp_processor</span><span class="p">,</span> <span class="n">processor_args</span><span class="p">):</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">nlp_processor</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">raw_text_data</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;LB&gt;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;RB&gt;&#39;</span><span class="p">),</span> <span class="n">properties</span><span class="o">=</span><span class="n">processor_args</span><span class="p">)</span>
@@ -156,10 +159,10 @@
 </div>
 </div>
 <div class="section" id="sub-graph-construction">
-<h3>Sub-graph construction<a class="headerlink" href="#sub-graph-construction" title="Permalink to this headline">¶</a></h3>
+<h3>Sub-graph construction<a class="headerlink" href="#sub-graph-construction" title="Permalink to this heading">¶</a></h3>
 <p>For subgraph construction of each sentence, we provide two operations: adding sequential links and constituency graph pruning. Instructions of them are as follows,</p>
 <div class="section" id="sequential-link">
-<h4>Sequential Link<a class="headerlink" href="#sequential-link" title="Permalink to this headline">¶</a></h4>
+<h4>Sequential Link<a class="headerlink" href="#sequential-link" title="Permalink to this heading">¶</a></h4>
 <p>We provide an option to add no/unidirectional/bidirectional edges between word nodes and nodes connecting two sub-graphs.</p>
 <ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">sequential_link</span></code> = <code class="docutils literal notranslate"><span class="pre">0</span></code>. Do not add sequential links.</p></li>
@@ -169,7 +172,7 @@
 </ol>
 </div>
 <div class="section" id="prune">
-<h4>Prune<a class="headerlink" href="#prune" title="Permalink to this headline">¶</a></h4>
+<h4>Prune<a class="headerlink" href="#prune" title="Permalink to this heading">¶</a></h4>
 <p>The hierarchical structure of constituency graph is complicated, we, therefore, provide some pruning options as follows (<code class="docutils literal notranslate"><span class="pre">ROOT</span></code> node are pruned by default),</p>
 <ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">prune</span></code> = <code class="docutils literal notranslate"><span class="pre">0</span></code>. No pruning.</p></li>
@@ -216,7 +219,7 @@
 </div>
 </div>
 <div class="section" id="graph-merging">
-<h3>Graph merging<a class="headerlink" href="#graph-merging" title="Permalink to this headline">¶</a></h3>
+<h3>Graph merging<a class="headerlink" href="#graph-merging" title="Permalink to this heading">¶</a></h3>
 <p>Since the constituency graph is only constructed for sentences individually, we provide options to construct one graph
 for the paragraph consisting of multiple sentences. Currently, we support the following options:</p>
 <ol class="arabic simple">

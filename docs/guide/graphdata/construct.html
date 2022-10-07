@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Constructing GraphData &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Constructing GraphData &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +38,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Constructing GraphData</a><ul>
@@ -60,7 +62,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -70,7 +72,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -104,10 +106,10 @@
            <div itemprop="articleBody">
              
   <div class="section" id="constructing-graphdata">
-<span id="guide-construct"></span><h1>Constructing GraphData<a class="headerlink" href="#constructing-graphdata" title="Permalink to this headline">¶</a></h1>
+<span id="guide-construct"></span><h1>Constructing GraphData<a class="headerlink" href="#constructing-graphdata" title="Permalink to this heading">¶</a></h1>
 <p>This section illustrates how to construct GraphData instances.</p>
 <div class="section" id="constructing-from-scratch">
-<h2>Constructing from scratch<a class="headerlink" href="#constructing-from-scratch" title="Permalink to this headline">¶</a></h2>
+<h2>Constructing from scratch<a class="headerlink" href="#constructing-from-scratch" title="Permalink to this heading">¶</a></h2>
 <p>The most basic way is to construct a GraphData instance from scratch, as the following example shows:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">GraphData</span><span class="p">()</span> <span class="c1"># Construct an empty graph</span>
 <span class="n">g</span><span class="o">.</span><span class="n">add_nodes</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># Add 10 nodes to this graph sequentially.</span>
@@ -127,7 +129,7 @@ However, it may be more illustrative to show the examples with features and attr
 makes it more suitable to appear in the next section <a class="reference internal" href="manipulate.html#guide-manipulate"><span class="std std-ref">Manipulating GraphData</span></a>.</p>
 </div>
 <div class="section" id="importing-from-other-sources">
-<h2>Importing from other sources<a class="headerlink" href="#importing-from-other-sources" title="Permalink to this headline">¶</a></h2>
+<h2>Importing from other sources<a class="headerlink" href="#importing-from-other-sources" title="Permalink to this heading">¶</a></h2>
 <p>Another way to construct GraphData is to import from other sources. Currently GraphData supports importing from
 <code class="docutils literal notranslate"><span class="pre">from_dgl()</span></code>, <code class="docutils literal notranslate"><span class="pre">from_dense_adj()</span></code>, <code class="docutils literal notranslate"><span class="pre">from_scipy_sparse_matrix()</span></code> and <code class="docutils literal notranslate"><span class="pre">from_graphdata()</span></code>.
 Interested readers may refer to the <code class="docutils literal notranslate"><span class="pre">API</span> <span class="pre">reference</span></code> for more details.</p>
@@ -176,7 +178,7 @@ Interested readers may refer to the <code class="docutils literal notranslate"><
 </div>
 </div>
 <div class="section" id="exporting-to-other-formats">
-<h2>Exporting to other formats<a class="headerlink" href="#exporting-to-other-formats" title="Permalink to this headline">¶</a></h2>
+<h2>Exporting to other formats<a class="headerlink" href="#exporting-to-other-formats" title="Permalink to this heading">¶</a></h2>
 <p>On the other hand, GraphData also supports converting itself to other formats. Currently <code class="docutils literal notranslate"><span class="pre">to_dgl()</span></code> is provided to export
 a <code class="docutils literal notranslate"><span class="pre">GraphData</span></code> to <code class="docutils literal notranslate"><span class="pre">dgl.DGLGraph</span></code>.</p>
 </div>

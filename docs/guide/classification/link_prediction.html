@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Link Prediction &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Link Prediction &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +38,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -61,7 +63,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -71,7 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -105,11 +107,11 @@
            <div itemprop="articleBody">
              
   <div class="section" id="link-prediction">
-<span id="guide-link-prediction"></span><h1>Link Prediction<a class="headerlink" href="#link-prediction" title="Permalink to this headline">¶</a></h1>
+<span id="guide-link-prediction"></span><h1>Link Prediction<a class="headerlink" href="#link-prediction" title="Permalink to this heading">¶</a></h1>
 <p>Link prediction is a downstream task that are normally observed in the GNN-based NLP tasks, such as relation extract and amr parsing. The process is about classify the label of each edge or predict whether there is an edge between a pair of nodes based on the node embeddings that learnt from the GNNs modules.
 To facilitate the implementation of link prediction task, we provide both high-level and low-level APIs to users to easily define a multi-layer link prediction function. Besides, for each level’s APIs, we support three popularly used node classifiers, namely, ConcatFeedForwardNN, ElementSum, and StackedElementProd.</p>
 <div class="section" id="concatfeedforwardnn">
-<h2>ConcatFeedForwardNN<a class="headerlink" href="#concatfeedforwardnn" title="Permalink to this headline">¶</a></h2>
+<h2>ConcatFeedForwardNN<a class="headerlink" href="#concatfeedforwardnn" title="Permalink to this heading">¶</a></h2>
 <p>This function is based on the feedforward layer. To predict the edge between a pair of nodes, the embeddings of the two nodes is first concatenated and then inputed into the Feedforward neural network. The low-level function defines a two-layer classifier with the input of node embedding tensor and the output of legit tensor after classification. The user can specify the index of edge (represented as tuple of nodes pair indexes) that needs prediction. If not specified, the classifier will be applied to all pair of nodes. Below is how the ConcatFeedForwardNNLayer module.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ConcatFeedForwardNNLayer</span><span class="p">(</span><span class="n">LinkPredictionLayerBase</span><span class="p">):</span>
    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">num_class</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()):</span>
@@ -144,7 +146,7 @@ To facilitate the implementation of link prediction task, we provide both high-l
 <p>Here the <code class="docutils literal notranslate"><span class="pre">self.classifier</span></code> is defined by <code class="docutils literal notranslate"><span class="pre">ConcatFeedForwardNNLayer</span></code> mentioned above.</p>
 </div>
 <div class="section" id="elementsum">
-<h2>ElementSum<a class="headerlink" href="#elementsum" title="Permalink to this headline">¶</a></h2>
+<h2>ElementSum<a class="headerlink" href="#elementsum" title="Permalink to this heading">¶</a></h2>
 <p>This function is also based on the feedforward layer. To predict the edge between a pair of nodes, the embeddings of the two nodes is first inputted into feedforward neural network and get the updated embedding. Then the element sum operation is conducted on the two embedding for the final prediction. The low-level function defines a two-layer classifier with the input of node embedding tensor and the output of legit tensor after prediction. The user can specify the index of edge (represented as tuple of nodes pair indexes) that needs prediction. If not specified, the classifier will be applied to all pair of nodes.</p>
 <p>Below is how the ElementSumLayer module constructed.</p>
 <p>As shown above. Three linear layers are defined. Two are for embeddings from source nodes and destinated node, the other one is for the final aggregation step.</p>
@@ -156,7 +158,7 @@ To facilitate the implementation of link prediction task, we provide both high-l
 <p>To facilitate the easily implementation of the pipeline of GNN-based NLP application, we also provide the high-level function here, where the input and output are both the graph in type of <cite>GraphData</cite>. The node embedding tensor should be stored in the node feature field named “node_emb”  in the input_graph for prediction. The computed logit tensor for each pair of nodes in the graph are stored in the edge feature field named “edge_logits”. The <code class="docutils literal notranslate"><span class="pre">forward</span></code> part of <code class="docutils literal notranslate"><span class="pre">ElementSum</span></code> is the same to that of <code class="docutils literal notranslate"><span class="pre">ConcatFeedForwardNN</span></code>.</p>
 </div>
 <div class="section" id="stackedelementprod">
-<h2>StackedElementProd<a class="headerlink" href="#stackedelementprod" title="Permalink to this headline">¶</a></h2>
+<h2>StackedElementProd<a class="headerlink" href="#stackedelementprod" title="Permalink to this heading">¶</a></h2>
 <p>This function is also based on the feedforward layer and designed for a multi-layer GNN encoder. To predict the edge between a pair of nodes, the products of the embeddings of two nodes at each GNN-layer will be concatenated. Then the concatenation will be finally inputted into the feedforward neural network for the final prediction. The low-level function defines a classifier layer with the input of node embedding list (each element in the list refers to a node embedding tensor at each layer) and the output of legit tensor after prediction. The user can specify the index of edge (represented as tuple of nodes pair indexes) that needs prediction. If not specified, the classifier will be applied to all pair of nodes.</p>
 <p>Below is how the StackedElementProdLayer module constructed.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">StackedElementProdLayer</span><span class="p">(</span><span class="n">LinkPredictionLayerBase</span><span class="p">):</span>

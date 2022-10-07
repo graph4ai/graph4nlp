@@ -3,17 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IE Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>IE Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +39,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -63,7 +66,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -73,7 +76,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -107,7 +110,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="ie-graph-construction">
-<span id="id1"></span><h1>IE Graph Construction<a class="headerlink" href="#ie-graph-construction" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>IE Graph Construction<a class="headerlink" href="#ie-graph-construction" title="Permalink to this heading">¶</a></h1>
 <p>The information extraction graph (IE Graph) aims to extract the structural information
 to represent the high-level information among natural sentences, e.g., text-based documents.
 We divide this process into two three basic steps:</p>
@@ -209,7 +212,7 @@ After this step, we can obtain a list of triples, and a triple can be denoted as
 </pre></div>
 </div>
 <div class="section" id="how-to-use">
-<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this heading">¶</a></h2>
 <p>For example, we can construct the IE graph given a raw textual input:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.graph_construction.ie_graph_construction</span> <span class="kn">import</span> <span class="n">IEBasedGraphConstruction</span>
 <span class="kn">from</span> <span class="nn">stanfordcorenlp</span> <span class="kn">import</span> <span class="n">StanfordCoreNLP</span>
@@ -246,7 +249,7 @@ After this step, we can obtain a list of triples, and a triple can be denoted as
 </pre></div>
 </div>
 <div class="section" id="merge-strategy">
-<h3>Merge strategy<a class="headerlink" href="#merge-strategy" title="Permalink to this headline">¶</a></h3>
+<h3>Merge strategy<a class="headerlink" href="#merge-strategy" title="Permalink to this heading">¶</a></h3>
 <p>Since the ie graph is only constructed for sentences individually, we provide options to construct one graph
 for the paragraph consisting of multiple sentences. Currently, we support the following options:</p>
 <ol class="arabic simple">
@@ -263,7 +266,7 @@ for the paragraph consisting of multiple sentences. Currently, we support the fo
 </div>
 </div>
 <div class="section" id="edge-strategy">
-<h3>Edge Strategy<a class="headerlink" href="#edge-strategy" title="Permalink to this headline">¶</a></h3>
+<h3>Edge Strategy<a class="headerlink" href="#edge-strategy" title="Permalink to this heading">¶</a></h3>
 <p>There are various dependency relations for ie graph nodes. Currently, we support the following options:</p>
 <ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">None</span></code>. It means we will not add additional edges.</p></li>

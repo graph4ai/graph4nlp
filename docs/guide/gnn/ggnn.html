@@ -3,17 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gated Graph Neural Networks &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Gated Graph Neural Networks &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +39,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -62,7 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -72,7 +75,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -106,7 +109,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="gated-graph-neural-networks">
-<span id="guide-ggnn"></span><h1>Gated Graph Neural Networks<a class="headerlink" href="#gated-graph-neural-networks" title="Permalink to this headline">¶</a></h1>
+<span id="guide-ggnn"></span><h1>Gated Graph Neural Networks<a class="headerlink" href="#gated-graph-neural-networks" title="Permalink to this heading">¶</a></h1>
 <p>A typical example of recurrent-based graph filters is the Gated Graph Neural Networks (<a class="reference external" href="https://arxiv.org/pdf/1511.05493.pdf">GGNN</a>)-filter.
 The biggest modification from typical GNNs to GGNNs is the use of Gated Recurrent Units (GRU).
 The GGNN-filter also takes the edge type and edge direction into consideration.
@@ -127,7 +130,7 @@ and direction. The following step uses a GRU unit to update the hidden state of
 node <span class="math notranslate nohighlight">\(v\)</span> by incorporating <span class="math notranslate nohighlight">\(\mathbf{a}_i^{(l)}\)</span> and the previous timestep hidden
 state <span class="math notranslate nohighlight">\(\mathbf{h}_i^{(l-1)}\)</span>.</p>
 <div class="section" id="ggnn-module-construction-function">
-<h2>4.2.1 GGNN Module Construction Function<a class="headerlink" href="#ggnn-module-construction-function" title="Permalink to this headline">¶</a></h2>
+<h2>4.2.1 GGNN Module Construction Function<a class="headerlink" href="#ggnn-module-construction-function" title="Permalink to this heading">¶</a></h2>
 <p>The construction function performs the following steps:</p>
 <ol class="arabic simple">
 <li><p>Set options.</p></li>
@@ -160,12 +163,12 @@ state <span class="math notranslate nohighlight">\(\mathbf{h}_i^{(l-1)}\)</span>
 If the direction_option is ‘bi_sep’ or ‘bi_fuse’, n_etypes will be set to 1.</p>
 </div>
 <div class="section" id="ggnnlayer-construction-function">
-<h2>4.2.2 GGNNLayer Construction Function<a class="headerlink" href="#ggnnlayer-construction-function" title="Permalink to this headline">¶</a></h2>
+<h2>4.2.2 GGNNLayer Construction Function<a class="headerlink" href="#ggnnlayer-construction-function" title="Permalink to this heading">¶</a></h2>
 <p>Similaer to <code class="docutils literal notranslate"><span class="pre">GCNLayer</span></code>, <code class="docutils literal notranslate"><span class="pre">GGNNLayer</span></code> is a single-layer GGNN and its initial options are same as class <code class="docutils literal notranslate"><span class="pre">GGNN</span></code>.
 This module registers different GGNNLayerConv according to <code class="docutils literal notranslate"><span class="pre">direction_option</span></code>.</p>
 </div>
 <div class="section" id="ggnnlayerconv-construction-function">
-<h2>4.2.3 GGNNLayerConv Construction Function<a class="headerlink" href="#ggnnlayerconv-construction-function" title="Permalink to this headline">¶</a></h2>
+<h2>4.2.3 GGNNLayerConv Construction Function<a class="headerlink" href="#ggnnlayerconv-construction-function" title="Permalink to this heading">¶</a></h2>
 <p>We will take <code class="docutils literal notranslate"><span class="pre">BiSepGGNNLayerConv</span></code> as an example. The construction function performs the following steps:</p>
 <ol class="arabic simple">
 <li><p>Set options.</p></li>
@@ -199,7 +202,7 @@ This module registers different GGNNLayerConv according to <code class="docutils
 <p>All learnable parameters and layers defined in this module are bidirectional, such as <code class="docutils literal notranslate"><span class="pre">self.gru_in</span></code> and <code class="docutils literal notranslate"><span class="pre">self.gru_out</span></code>.</p>
 </div>
 <div class="section" id="ggnn-forward-function">
-<h2>4.2.4 GGNN Forward Function<a class="headerlink" href="#ggnn-forward-function" title="Permalink to this headline">¶</a></h2>
+<h2>4.2.4 GGNN Forward Function<a class="headerlink" href="#ggnn-forward-function" title="Permalink to this heading">¶</a></h2>
 <p>In NN module, <code class="docutils literal notranslate"><span class="pre">forward()</span></code> function does the actual message passing and computation. <code class="docutils literal notranslate"><span class="pre">forward()</span></code> takes a parameter <code class="docutils literal notranslate"><span class="pre">GraphData</span></code> as input.</p>
 <p>The rest of the section takes a deep dive into the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> function.</p>
 <p>We first need to obatin the input graph node features and convert the <code class="docutils literal notranslate"><span class="pre">GraphData</span></code> to <code class="docutils literal notranslate"><span class="pre">dgl.DGLGraph</span></code>. Then, we need to determine whether to expand <code class="docutils literal notranslate"><span class="pre">feat</span></code> according to <code class="docutils literal notranslate"><span class="pre">self.use_edge_weight</span></code> and whether to use edge weight according to <code class="docutils literal notranslate"><span class="pre">self.direction_option</span></code>.</p>

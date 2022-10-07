@@ -3,17 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chapter 5.2 Standard Tree Decoder &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Chapter 5.2 Standard Tree Decoder &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +39,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -60,7 +63,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -70,7 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -104,7 +107,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="chapter-5-2-standard-tree-decoder">
-<span id="std-tree-decoder"></span><h1>Chapter 5.2 Standard Tree Decoder<a class="headerlink" href="#chapter-5-2-standard-tree-decoder" title="Permalink to this headline">¶</a></h1>
+<span id="std-tree-decoder"></span><h1>Chapter 5.2 Standard Tree Decoder<a class="headerlink" href="#chapter-5-2-standard-tree-decoder" title="Permalink to this heading">¶</a></h1>
 <p>The output of many NLP applications (i.e., semantic parsing, code generation, and math word problem) contain structural information. For example, the output in math word problem is a mathematical equation, which can be expressed naturally by the data structure of the tree. To model these kinds of outputs, tree decoders are widely adopted. Tree decoders can be divided into two main parts: <code class="docutils literal notranslate"><span class="pre">DFS</span></code> (depth-first search) based tree decoder, and <code class="docutils literal notranslate"><span class="pre">BFS</span></code> (breadth-first search) based tree decoder. We mainly implement <code class="docutils literal notranslate"><span class="pre">BFS</span></code> based tree decoder here. Specifically, we give a simple example on how <code class="docutils literal notranslate"><span class="pre">StdTreeDecoder</span></code> is initialized as follows,</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
@@ -132,9 +135,9 @@
 </pre></div>
 </div>
 <div class="section" id="implementation-details">
-<h2>Implementation details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h2>
+<h2>Implementation details<a class="headerlink" href="#implementation-details" title="Permalink to this heading">¶</a></h2>
 <div class="section" id="what-is-the-tree-decoding-process">
-<h3>What is the tree decoding process<a class="headerlink" href="#what-is-the-tree-decoding-process" title="Permalink to this headline">¶</a></h3>
+<h3>What is the tree decoding process<a class="headerlink" href="#what-is-the-tree-decoding-process" title="Permalink to this heading">¶</a></h3>
 <p>In the BFS-based tree decoding approach, we represent all subtrees as non-terminal nodes. Then we divide the whole tree structure into multiple “sequences” from top to bottom according to the non-terminal nodes, which is shown in code below,</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_dec_batch</span><span class="p">(</span><span class="n">dec_tree_batch</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">form_manager</span><span class="p">):</span>
     <span class="n">queue_tree</span> <span class="o">=</span> <span class="p">{}</span>
@@ -199,7 +202,7 @@
 <p>Where <code class="docutils literal notranslate"><span class="pre">max_index</span></code> is the number of non-terminal nodes and <code class="docutils literal notranslate"><span class="pre">max_dec_tree_depth</span></code> is the maximum number of non-terminal nodes allowed.</p>
 </div>
 <div class="section" id="copy-and-separate-attention">
-<h3>Copy and separate attention<a class="headerlink" href="#copy-and-separate-attention" title="Permalink to this headline">¶</a></h3>
+<h3>Copy and separate attention<a class="headerlink" href="#copy-and-separate-attention" title="Permalink to this heading">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">StdTreeDecoder</span></code> employ <code class="docutils literal notranslate"><span class="pre">copy</span></code> and <code class="docutils literal notranslate"><span class="pre">separate</span> <span class="pre">attention</span></code> mechanism to enhance the overall <code class="docutils literal notranslate"><span class="pre">Graph2Tree</span></code> model. We show how <code class="docutils literal notranslate"><span class="pre">copy</span></code> is used in <code class="docutils literal notranslate"><span class="pre">StdTreeDecoder</span></code> here. Both <code class="docutils literal notranslate"><span class="pre">StdTreeDecoder</span></code> and  <code class="docutils literal notranslate"><span class="pre">StdRNNDecoder</span></code> use <code class="docutils literal notranslate"><span class="pre">separate</span> <span class="pre">attention</span></code> mechanism, it has been explained in <a class="reference internal" href="stdrnndecoder.html#std-rnn-decoder"><span class="std std-ref">Chapter 5.1 Standard RNN Decoder</span></a>. So we will not go into detail here.</p>
 <p>For <code class="docutils literal notranslate"><span class="pre">copy</span></code> mechanism, it helps model to copy words directly from input, and computed as,
 <span class="math notranslate nohighlight">\(p(w) = p_{gen}  p_{softmax}(w) + (1 - p_{gen})  p_{copy}(w)\)</span>.</p>

@@ -3,17 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dependency Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Dependency Graph Construction &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +39,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -64,7 +67,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -74,7 +77,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -108,7 +111,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="dependency-graph-construction">
-<span id="id1"></span><h1>Dependency Graph Construction<a class="headerlink" href="#dependency-graph-construction" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>Dependency Graph Construction<a class="headerlink" href="#dependency-graph-construction" title="Permalink to this heading">¶</a></h1>
 <p>The dependency graph is widely used to capture the dependency relations between different objects in the given sentences.
 Formally, given a paragraph, one can obtain the dependency parsing tree (e.g., syntactic dependency tree or semantic dependency parsing tree) by using various NLP parsing tools (e.g., Stanford CoreNLP).
 Then one may extract the dependency relations from the dependency parsing tree and convert them into a dependency graph.</p>
@@ -137,7 +140,7 @@ Then one may extract the dependency relations from the dependency parsing tree a
 </pre></div>
 </div>
 <div class="section" id="how-to-use">
-<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this headline">¶</a></h2>
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Permalink to this heading">¶</a></h2>
 <p>For example, we can construct the dependency graph given a raw textual input:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">graph4nlp.pytorch.modules.graph_construction.dependency_graph_construction</span> <span class="kn">import</span> <span class="n">DependencyBasedGraphConstruction</span>
 <span class="kn">from</span> <span class="nn">stanfordcorenlp</span> <span class="kn">import</span> <span class="n">StanfordCoreNLP</span>
@@ -161,9 +164,9 @@ Then one may extract the dependency relations from the dependency parsing tree a
 </div>
 </div>
 <div class="section" id="the-specific-details">
-<h2>The specific details<a class="headerlink" href="#the-specific-details" title="Permalink to this headline">¶</a></h2>
+<h2>The specific details<a class="headerlink" href="#the-specific-details" title="Permalink to this heading">¶</a></h2>
 <div class="section" id="parsing">
-<h3>Parsing<a class="headerlink" href="#parsing" title="Permalink to this headline">¶</a></h3>
+<h3>Parsing<a class="headerlink" href="#parsing" title="Permalink to this heading">¶</a></h3>
 <p>The parsing function first parses the input paragraph into list of sentences. Then for each sentence, we will parse it into dict containing:</p>
 <ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">node_num</span></code> indicating the number of nodes.</p></li>
@@ -172,7 +175,7 @@ Then one may extract the dependency relations from the dependency parsing tree a
 </ol>
 </div>
 <div class="section" id="sub-graph-construction">
-<h3>Sub-graph construction<a class="headerlink" href="#sub-graph-construction" title="Permalink to this headline">¶</a></h3>
+<h3>Sub-graph construction<a class="headerlink" href="#sub-graph-construction" title="Permalink to this heading">¶</a></h3>
 <p>In this step, we constrcut sub-graph given parsed sentence results in the previous step controlled by <code class="docutils literal notranslate"><span class="pre">edge_strategy</span></code> and <code class="docutils literal notranslate"><span class="pre">sequential_link</span></code>.</p>
 <p>We first add the nodes to the graph.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ret_graph</span> <span class="o">=</span> <span class="n">GraphData</span><span class="p">()</span>
@@ -220,7 +223,7 @@ Specifically, for dependency graph constructing, we define the sequential relati
 <p>Users can set <code class="docutils literal notranslate"><span class="pre">sequential_link</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> to enable this feature.</p>
 </div>
 <div class="section" id="graph-merging">
-<h3>Graph merging<a class="headerlink" href="#graph-merging" title="Permalink to this headline">¶</a></h3>
+<h3>Graph merging<a class="headerlink" href="#graph-merging" title="Permalink to this heading">¶</a></h3>
 <p>Since the dependency graph is only constructed for sentences individually, we provide options to construct one graph
 for the paragraph consisting of multiple sentences. Currently, we support the following options:</p>
 <ol class="arabic simple">

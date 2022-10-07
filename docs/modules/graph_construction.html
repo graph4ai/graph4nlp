@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>graph4nlp.graph_construction &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>graph4nlp.graph_construction &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -36,11 +38,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guide/graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guide/dataset.html">Chapter 2. Dataset</a></li>
@@ -50,12 +52,41 @@
 <li class="toctree-l1"><a class="reference internal" href="../guide/classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guide/evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datasets.html">graph4nlp.datasets</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">graph4nlp.graph_construction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#graph-constructor">Graph Constructor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#graph-constructor">Graph Constructor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction"><code class="docutils literal notranslate"><span class="pre">DependencyBasedGraphConstruction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab"><code class="docutils literal notranslate"><span class="pre">DependencyBasedGraphConstruction.add_vocab()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing"><code class="docutils literal notranslate"><span class="pre">DependencyBasedGraphConstruction.parsing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.static_topology"><code class="docutils literal notranslate"><span class="pre">DependencyBasedGraphConstruction.static_topology()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction"><code class="docutils literal notranslate"><span class="pre">ConstituencyBasedGraphConstruction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.parsing"><code class="docutils literal notranslate"><span class="pre">ConstituencyBasedGraphConstruction.parsing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.static_topology"><code class="docutils literal notranslate"><span class="pre">ConstituencyBasedGraphConstruction.static_topology()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction"><code class="docutils literal notranslate"><span class="pre">IEBasedGraphConstruction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.add_vocab"><code class="docutils literal notranslate"><span class="pre">IEBasedGraphConstruction.add_vocab()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.parsing"><code class="docutils literal notranslate"><span class="pre">IEBasedGraphConstruction.parsing()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.static_topology"><code class="docutils literal notranslate"><span class="pre">IEBasedGraphConstruction.static_topology()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction"><code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedGraphConstruction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.dynamic_topology"><code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedGraphConstruction.dynamic_topology()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology"><code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedGraphConstruction.init_topology()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction"><code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedRefinedGraphConstruction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.dynamic_topology"><code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedRefinedGraphConstruction.dynamic_topology()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology"><code class="docutils literal notranslate"><span class="pre">NodeEmbeddingBasedRefinedGraphConstruction.init_topology()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="graph_embedding.html">graph4nlp.graph_embedding</a></li>
@@ -63,7 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -96,12 +127,12 @@
            <div itemprop="articleBody">
              
   <div class="section" id="module-graph4nlp.graph_construction">
-<span id="graph4nlp-graph-construction"></span><h1>graph4nlp.graph_construction<a class="headerlink" href="#module-graph4nlp.graph_construction" title="Permalink to this headline">¶</a></h1>
+<span id="graph4nlp-graph-construction"></span><h1>graph4nlp.graph_construction<a class="headerlink" href="#module-graph4nlp.graph_construction" title="Permalink to this heading">¶</a></h1>
 <div class="section" id="graph-constructor">
-<h2>Graph Constructor<a class="headerlink" href="#graph-constructor" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="graph4nlp.graph_construction.DependencyBasedGraphConstruction">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_construction.</code><code class="sig-name descname">DependencyBasedGraphConstruction</code><span class="sig-paren">(</span><em class="sig-param">vocab</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
+<h2>Graph Constructor<a class="headerlink" href="#graph-constructor" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.DependencyBasedGraphConstruction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">graph4nlp.graph_construction.</span></span><span class="sig-name descname"><span class="pre">DependencyBasedGraphConstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vocab</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Dependency-parsing-tree based graph construction class</p>
 </div></blockquote>
@@ -114,7 +145,7 @@
 </dd>
 </dl>
 <p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -123,14 +154,14 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab" title="graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_vocab</span></code></a>(g)</p></td>
 <td><p>Add node tokens appeared in graph g to vocabulary.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing" title="graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parsing</span></code></a>(raw_text_data, nlp_processor, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing" title="graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parsing</span></code></a>(raw_text_data, nlp_processor, ...)</p></td>
 <td><p><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p></p></dd>
 </dl>
 </p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.static_topology" title="graph4nlp.graph_construction.DependencyBasedGraphConstruction.static_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static_topology</span></code></a>(raw_text_data, …[, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.static_topology" title="graph4nlp.graph_construction.DependencyBasedGraphConstruction.static_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static_topology</span></code></a>(raw_text_data, ...[, ...])</p></td>
 <td><p>Graph building method.</p></td>
 </tr>
 </tbody>
@@ -146,9 +177,9 @@
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab">
-<code class="sig-name descname">add_vocab</code><span class="sig-paren">(</span><em class="sig-param">g</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab">
+<span class="sig-name descname"><span class="pre">add_vocab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.add_vocab" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Add node tokens appeared in graph g to vocabulary.</p>
 </div></blockquote>
@@ -162,9 +193,9 @@
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing">
-<em class="property">classmethod </em><code class="sig-name descname">parsing</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parsing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_text_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlp_processor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.parsing" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -215,9 +246,9 @@ key, value
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.static_topology">
-<em class="property">classmethod </em><code class="sig-name descname">static_topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy</em>, <em class="sig-param">edge_strategy</em>, <em class="sig-param">sequential_link=True</em>, <em class="sig-param">verbose=0</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.static_topology" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.DependencyBasedGraphConstruction.static_topology">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">static_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_text_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlp_processor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequential_link</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.DependencyBasedGraphConstruction.static_topology" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Graph building method.</p>
 </div></blockquote>
@@ -270,9 +301,9 @@ we will insert a node <code class="docutils literal notranslate"><span class="pr
 
 </dd></dl>
 
-<dl class="class">
-<dt id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_construction.</code><code class="sig-name descname">ConstituencyBasedGraphConstruction</code><span class="sig-paren">(</span><em class="sig-param">vocab</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">graph4nlp.graph_construction.</span></span><span class="sig-name descname"><span class="pre">ConstituencyBasedGraphConstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vocab</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for constituency graph construction.</p>
 <p>…</p>
 <dl class="field-list simple">
@@ -310,9 +341,9 @@ we will insert a node <code class="docutils literal notranslate"><span class="pr
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.parsing">
-<em class="property">classmethod </em><code class="sig-name descname">parsing</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.parsing" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.parsing">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parsing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_text_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlp_processor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor_args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.parsing" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -324,9 +355,9 @@ we will insert a node <code class="docutils literal notranslate"><span class="pr
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.static_topology">
-<em class="property">classmethod </em><code class="sig-name descname">static_topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy=None</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">sequential_link=3</em>, <em class="sig-param">top_down=False</em>, <em class="sig-param">prune=2</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.static_topology" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.static_topology">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">static_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_text_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlp_processor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_strategy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequential_link</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_down</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prune</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.ConstituencyBasedGraphConstruction.static_topology" title="Permalink to this definition">¶</a></dt>
 <dd><p>topology This function generate a graph strcuture from a raw text data.</p>
 <dl class="field-list">
 <dt class="field-odd">Parameters</dt>
@@ -393,9 +424,9 @@ from leaf nodes to root nodes.</p>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="graph4nlp.graph_construction.IEBasedGraphConstruction">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_construction.</code><code class="sig-name descname">IEBasedGraphConstruction</code><span class="sig-paren">(</span><em class="sig-param">vocab</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.IEBasedGraphConstruction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">graph4nlp.graph_construction.</span></span><span class="sig-name descname"><span class="pre">IEBasedGraphConstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vocab</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Information Extraction based graph construction class</p>
 </div></blockquote>
@@ -412,7 +443,7 @@ and <code class="docutils literal notranslate"><span class="pre">bert_lower_case
 </dd>
 </dl>
 <p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -428,7 +459,7 @@ and <code class="docutils literal notranslate"><span class="pre">bert_lower_case
 </dl>
 </p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.static_topology" title="graph4nlp.graph_construction.IEBasedGraphConstruction.static_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static_topology</span></code></a>(raw_text_data, …[, verbose])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.static_topology" title="graph4nlp.graph_construction.IEBasedGraphConstruction.static_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static_topology</span></code></a>(raw_text_data, ...[, verbose])</p></td>
 <td><p>Graph building method.</p></td>
 </tr>
 </tbody>
@@ -444,9 +475,9 @@ and <code class="docutils literal notranslate"><span class="pre">bert_lower_case
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="graph4nlp.graph_construction.IEBasedGraphConstruction.add_vocab">
-<code class="sig-name descname">add_vocab</code><span class="sig-paren">(</span><em class="sig-param">g</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.add_vocab" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.IEBasedGraphConstruction.add_vocab">
+<span class="sig-name descname"><span class="pre">add_vocab</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">g</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.add_vocab" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Add node tokens appeared in graph g to vocabulary.</p>
 </div></blockquote>
@@ -460,9 +491,9 @@ and <code class="docutils literal notranslate"><span class="pre">bert_lower_case
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="graph4nlp.graph_construction.IEBasedGraphConstruction.parsing">
-<em class="property">classmethod </em><code class="sig-name descname">parsing</code><span class="sig-paren">(</span><em class="sig-param">all_sent_triples_list</em>, <em class="sig-param">edge_strategy</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.parsing" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.IEBasedGraphConstruction.parsing">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parsing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_sent_triples_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_strategy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.parsing" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -485,9 +516,9 @@ triple (src_ent, rel, tgt_ent).</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="graph4nlp.graph_construction.IEBasedGraphConstruction.static_topology">
-<em class="property">classmethod </em><code class="sig-name descname">static_topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">nlp_processor</em>, <em class="sig-param">processor_args</em>, <em class="sig-param">merge_strategy</em>, <em class="sig-param">edge_strategy</em>, <em class="sig-param">verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.static_topology" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.IEBasedGraphConstruction.static_topology">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">static_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_text_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlp_processor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor_args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.IEBasedGraphConstruction.static_topology" title="Permalink to this definition">¶</a></dt>
 <dd><blockquote>
 <div><p>Graph building method.</p>
 </div></blockquote>
@@ -534,12 +565,12 @@ while the <code class="docutils literal notranslate"><span class="pre">type</spa
 
 </dd></dl>
 
-<dl class="class">
-<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_construction.</code><code class="sig-name descname">NodeEmbeddingBasedGraphConstruction</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">graph4nlp.graph_construction.</span></span><span class="sig-name descname"><span class="pre">NodeEmbeddingBasedGraphConstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for node embedding based dynamic graph construction.</p>
 <p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -594,7 +625,7 @@ while the <code class="docutils literal notranslate"><span class="pre">type</spa
 <td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_extra_state</span></code>()</p></td>
-<td><p>Returns any extra state to include in the module’s state_dict.</p></td>
+<td><p>Returns any extra state to include in the module's state_dict.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
 <td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
@@ -605,44 +636,50 @@ while the <code class="docutils literal notranslate"><span class="pre">type</spa
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
 <td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology" title="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_topology</span></code></a>(raw_text_data[, lower_case, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology" title="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_topology</span></code></a>(raw_text_data[, lower_case, ...])</p></td>
 <td><p>Convert raw text data to the initial node set graph (i.e., no edge information).</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ipu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the IPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
 <td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
 <td><p>Returns an iterator over all modules in the network.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
 <td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
 <td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
 <td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
 <td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
 <td><p>Returns an iterator over module parameters.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
 <td><p>Registers a backward hook on the module.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
 <td><p>Adds a buffer to the module.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
 <td><p>Registers a forward hook on the module.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
 <td><p>Registers a forward pre-hook on the module.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
 <td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_load_state_dict_post_hook</span></code>(hook)</p></td>
+<td><p>Registers a post hook to be run after module's <code class="docutils literal notranslate"><span class="pre">load_state_dict</span></code> is called.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_module</span></code>(name, module)</p></td>
 <td><p>Alias for <code class="xref py py-func docutils literal notranslate"><span class="pre">add_module()</span></code>.</p></td>
@@ -662,7 +699,7 @@ while the <code class="docutils literal notranslate"><span class="pre">type</spa
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sparsify_graph</span></code>(adj)</p></td>
 <td><p>Return a sparsified graph of the input graph.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>(*args[, destination, prefix, ...])</p></td>
 <td><p>Returns a dictionary containing a whole state of the module.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
@@ -696,9 +733,9 @@ while the <code class="docutils literal notranslate"><span class="pre">type</spa
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.dynamic_topology">
-<code class="sig-name descname">dynamic_topology</code><span class="sig-paren">(</span><em class="sig-param">graph</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.dynamic_topology" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.dynamic_topology">
+<span class="sig-name descname"><span class="pre">dynamic_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.dynamic_topology" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute graph topology.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -716,9 +753,9 @@ while the <code class="docutils literal notranslate"><span class="pre">type</spa
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology">
-<em class="property">classmethod </em><code class="sig-name descname">init_topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">tokenizer=&lt;function word_tokenize&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_text_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_case=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer=&lt;function</span> <span class="pre">word_tokenize&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedGraphConstruction.init_topology" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert raw text data to the initial node set graph (i.e., no edge information).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -745,9 +782,9 @@ to get a list of tokens.</p>
 
 </dd></dl>
 
-<dl class="class">
-<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction">
-<em class="property">class </em><code class="sig-prename descclassname">graph4nlp.graph_construction.</code><code class="sig-name descname">NodeEmbeddingBasedRefinedGraphConstruction</code><span class="sig-paren">(</span><em class="sig-param">alpha_fusion</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">graph4nlp.graph_construction.</span></span><span class="sig-name descname"><span class="pre">NodeEmbeddingBasedRefinedGraphConstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha_fusion</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for node embedding based refined dynamic graph construction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -758,7 +795,7 @@ to get a list of tokens.</p>
 </dd>
 </dl>
 <p class="rubric">Methods</p>
-<table class="longtable docutils align-default">
+<table class="autosummary longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
 <col style="width: 90%" />
@@ -813,7 +850,7 @@ to get a list of tokens.</p>
 <td><p>Returns the buffer given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_extra_state</span></code>()</p></td>
-<td><p>Returns any extra state to include in the module’s state_dict.</p></td>
+<td><p>Returns any extra state to include in the module's state_dict.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter</span></code>(target)</p></td>
 <td><p>Returns the parameter given by <code class="docutils literal notranslate"><span class="pre">target</span></code> if it exists, otherwise throws an error.</p></td>
@@ -824,44 +861,50 @@ to get a list of tokens.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">half</span></code>()</p></td>
 <td><p>Casts all floating point parameters and buffers to <code class="docutils literal notranslate"><span class="pre">half</span></code> datatype.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology" title="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_topology</span></code></a>(raw_text_data[, lower_case, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology" title="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_topology</span></code></a>(raw_text_data[, lower_case, ...])</p></td>
 <td><p>Convert raw text data to the initial graph.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ipu</span></code>([device])</p></td>
+<td><p>Moves all model parameters and buffers to the IPU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_state_dict</span></code>(state_dict[, strict])</p></td>
 <td><p>Copies parameters and buffers from <code class="xref py py-attr docutils literal notranslate"><span class="pre">state_dict</span></code> into this module and its descendants.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">modules</span></code>()</p></td>
 <td><p>Returns an iterator over all modules in the network.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_buffers</span></code>([prefix, recurse])</p></td>
 <td><p>Returns an iterator over module buffers, yielding both the name of the buffer as well as the buffer itself.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_children</span></code>()</p></td>
 <td><p>Returns an iterator over immediate children modules, yielding both the name of the module as well as the module itself.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_modules</span></code>([memo, prefix, remove_duplicate])</p></td>
 <td><p>Returns an iterator over all modules in the network, yielding both the name of the module as well as the module itself.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">named_parameters</span></code>([prefix, recurse])</p></td>
 <td><p>Returns an iterator over module parameters, yielding both the name of the parameter as well as the parameter itself.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">parameters</span></code>([recurse])</p></td>
 <td><p>Returns an iterator over module parameters.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backward_hook</span></code>(hook)</p></td>
 <td><p>Registers a backward hook on the module.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_buffer</span></code>(name, tensor[, persistent])</p></td>
 <td><p>Adds a buffer to the module.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_hook</span></code>(hook)</p></td>
 <td><p>Registers a forward hook on the module.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_forward_pre_hook</span></code>(hook)</p></td>
 <td><p>Registers a forward pre-hook on the module.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_full_backward_hook</span></code>(hook)</p></td>
 <td><p>Registers a backward hook on the module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_load_state_dict_post_hook</span></code>(hook)</p></td>
+<td><p>Registers a post hook to be run after module's <code class="docutils literal notranslate"><span class="pre">load_state_dict</span></code> is called.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_module</span></code>(name, module)</p></td>
 <td><p>Alias for <code class="xref py py-func docutils literal notranslate"><span class="pre">add_module()</span></code>.</p></td>
@@ -881,7 +924,7 @@ to get a list of tokens.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sparsify_graph</span></code>(adj)</p></td>
 <td><p>Return a sparsified graph of the input graph.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>([destination, prefix, keep_vars])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_dict</span></code>(*args[, destination, prefix, ...])</p></td>
 <td><p>Returns a dictionary containing a whole state of the module.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to</span></code>(*args, **kwargs)</p></td>
@@ -915,9 +958,9 @@ to get a list of tokens.</p>
 </tr>
 </tbody>
 </table>
-<dl class="method">
-<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.dynamic_topology">
-<code class="sig-name descname">dynamic_topology</code><span class="sig-paren">(</span><em class="sig-param">graph</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.dynamic_topology" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.dynamic_topology">
+<span class="sig-name descname"><span class="pre">dynamic_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.dynamic_topology" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute graph topology.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -935,9 +978,9 @@ to get a list of tokens.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology">
-<em class="property">classmethod </em><code class="sig-name descname">init_topology</code><span class="sig-paren">(</span><em class="sig-param">raw_text_data</em>, <em class="sig-param">lower_case=True</em>, <em class="sig-param">tokenizer=&lt;function word_tokenize&gt;</em>, <em class="sig-param">nlp_processor=None</em>, <em class="sig-param">processor_args=None</em>, <em class="sig-param">merge_strategy=None</em>, <em class="sig-param">edge_strategy=None</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">dynamic_init_topology_builder=None</em>, <em class="sig-param">dynamic_init_topology_aux_args=None</em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_text_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_case=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer=&lt;function</span> <span class="pre">word_tokenize&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlp_processor=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor_args=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">merge_strategy=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_strategy=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_init_topology_builder=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dynamic_init_topology_aux_args=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#graph4nlp.graph_construction.NodeEmbeddingBasedRefinedGraphConstruction.init_topology" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert raw text data to the initial graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

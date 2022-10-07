@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Graph Classification &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <title>Graph Classification &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -36,11 +38,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../dataset.html">Chapter 2. Dataset</a></li>
@@ -61,7 +63,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -71,7 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -105,12 +107,12 @@
            <div itemprop="articleBody">
              
   <div class="section" id="graph-classification">
-<span id="guide-graph-classification"></span><h1>Graph Classification<a class="headerlink" href="#graph-classification" title="Permalink to this headline">¶</a></h1>
+<span id="guide-graph-classification"></span><h1>Graph Classification<a class="headerlink" href="#graph-classification" title="Permalink to this heading">¶</a></h1>
 <p>Graph classification is a downstream classification task conducted at the graph level. Once node representations are learned by a GNN,
 one can obtain the graph-level representation and then perform graph-level classification. To facilitate the graph classification task,
 we provide commonly used implementations of the graph classification prediction modules.</p>
 <div class="section" id="feedforwardnn">
-<h2>FeedForwardNN<a class="headerlink" href="#feedforwardnn" title="Permalink to this headline">¶</a></h2>
+<h2>FeedForwardNN<a class="headerlink" href="#feedforwardnn" title="Permalink to this heading">¶</a></h2>
 <p>This is a high-level graph classification prediction module which consists of a graph pooling component and a multilayer perceptron (MLP).
 Users can specify important hyperparameters such as <code class="docutils literal notranslate"><span class="pre">input_size</span></code>, <code class="docutils literal notranslate"><span class="pre">num_class</span></code> and <code class="docutils literal notranslate"><span class="pre">hidden_size</span></code> (i.e., list of hidden sizes for each dense layer).
 The <code class="docutils literal notranslate"><span class="pre">FeedForwardNN</span></code> class calls the <code class="docutils literal notranslate"><span class="pre">FeedForwardNNLayer</span></code> API which implments MLP.</p>
@@ -133,7 +135,7 @@ The <code class="docutils literal notranslate"><span class="pre">FeedForwardNN</
 </div>
 </div>
 <div class="section" id="avgpooling">
-<h2>AvgPooling<a class="headerlink" href="#avgpooling" title="Permalink to this headline">¶</a></h2>
+<h2>AvgPooling<a class="headerlink" href="#avgpooling" title="Permalink to this heading">¶</a></h2>
 <p>This is the average pooling module which applies average pooling over the nodes in the graph.
 It takes batched <code class="docutils literal notranslate"><span class="pre">GraphData</span></code> as input and returns a feature tensor containing a vector for each graph in the batch.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AvgPooling</span><span class="p">(</span><span class="n">PoolingBase</span><span class="p">):</span>
@@ -153,7 +155,7 @@ It takes batched <code class="docutils literal notranslate"><span class="pre">Gr
 </div>
 </div>
 <div class="section" id="maxpooling">
-<h2>MaxPooling<a class="headerlink" href="#maxpooling" title="Permalink to this headline">¶</a></h2>
+<h2>MaxPooling<a class="headerlink" href="#maxpooling" title="Permalink to this heading">¶</a></h2>
 <p>This is the max pooling module which applies max pooling over the nodes in the graph.
 It takes batched <code class="docutils literal notranslate"><span class="pre">GraphData</span></code> as input and returns a feature tensor containing a vector for each graph in the batch.
 An optional linear projection can be applied to node embeddings before conducting max pooling.</p>

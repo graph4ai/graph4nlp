@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Install Graph4NLP &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>Install Graph4NLP &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -36,7 +38,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Install Graph4NLP</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation-via-pip-binaries">Installation via pip (binaries)</a><ul>
@@ -58,7 +60,7 @@
 </ul>
 </li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guide/graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guide/dataset.html">Chapter 2. Dataset</a></li>
@@ -68,7 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../guide/classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guide/evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -78,7 +80,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/semantic_parsing.html">Semantic Parsing Tutorial</a></li>
@@ -111,7 +113,7 @@
            <div itemprop="articleBody">
              
   <div class="section" id="install-graph4nlp">
-<h1>Install Graph4NLP<a class="headerlink" href="#install-graph4nlp" title="Permalink to this headline">¶</a></h1>
+<h1>Install Graph4NLP<a class="headerlink" href="#install-graph4nlp" title="Permalink to this heading">¶</a></h1>
 <p>Currently, users can install Graph4NLP via <strong>pip</strong> or <strong>source code</strong>. Graph4NLP supports the following OSes:</p>
 <ul class="simple">
 <li><p>Linux-based systems (tested on Ubuntu 18.04 and later)</p></li>
@@ -119,10 +121,10 @@
 <li><p>Windows 10 (only support pytorch &gt;= 1.8)</p></li>
 </ul>
 <div class="section" id="installation-via-pip-binaries">
-<h2>Installation via pip (binaries)<a class="headerlink" href="#installation-via-pip-binaries" title="Permalink to this headline">¶</a></h2>
+<h2>Installation via pip (binaries)<a class="headerlink" href="#installation-via-pip-binaries" title="Permalink to this heading">¶</a></h2>
 <p>We provide pip wheels for all major OS/PyTorch/CUDA combinations. Note that we highly recommend <cite>Windows</cite> users refer to <cite>Installation via source code</cite> due to compatibility.</p>
 <div class="section" id="ensure-that-at-least-pytorch-1-6-0-is-installed">
-<h3>Ensure that at least PyTorch (&gt;=1.6.0) is installed:<a class="headerlink" href="#ensure-that-at-least-pytorch-1-6-0-is-installed" title="Permalink to this headline">¶</a></h3>
+<h3>Ensure that at least PyTorch (&gt;=1.6.0) is installed:<a class="headerlink" href="#ensure-that-at-least-pytorch-1-6-0-is-installed" title="Permalink to this heading">¶</a></h3>
 <p>Note that <cite>&gt;=1.6.0</cite> is ok.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -c &quot;import torch; print(torch.__version__)&quot;
 &gt;&gt;&gt; 1.6.0
@@ -130,19 +132,19 @@
 </div>
 </div>
 <div class="section" id="find-the-cuda-version-pytorch-was-installed-with-for-gpu-users">
-<h3>Find the CUDA version PyTorch was installed with (for GPU users):<a class="headerlink" href="#find-the-cuda-version-pytorch-was-installed-with-for-gpu-users" title="Permalink to this headline">¶</a></h3>
+<h3>Find the CUDA version PyTorch was installed with (for GPU users):<a class="headerlink" href="#find-the-cuda-version-pytorch-was-installed-with-for-gpu-users" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -c &quot;import torch; print(torch.version.cuda)&quot;
 &gt;&gt;&gt; 10.2
 </pre></div>
 </div>
 </div>
 <div class="section" id="install-the-relevant-dependencies">
-<h3>Install the relevant dependencies:<a class="headerlink" href="#install-the-relevant-dependencies" title="Permalink to this headline">¶</a></h3>
+<h3>Install the relevant dependencies:<a class="headerlink" href="#install-the-relevant-dependencies" title="Permalink to this heading">¶</a></h3>
 <p><cite>torchtext</cite> is needed since Graph4NLP relies on it to implement embeddings.
 Please pay attention to the PyTorch requirements before installing <cite>torchtext</cite> with the following script! For detailed version matching please refer [here](<a class="reference external" href="https://pypi.org/project/torchtext/">https://pypi.org/project/torchtext/</a>).</p>
 </div>
 <div class="section" id="id1">
-<h3>Install Graph4NLP<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3>Install Graph4NLP<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>pip install graph4nlp${CUDA}
 </pre></div>
 </div>
@@ -179,9 +181,9 @@ Please pay attention to the PyTorch requirements before installing <cite>torchte
 </div>
 </div>
 <div class="section" id="installation-via-source-code">
-<h2>Installation via source code<a class="headerlink" href="#installation-via-source-code" title="Permalink to this headline">¶</a></h2>
+<h2>Installation via source code<a class="headerlink" href="#installation-via-source-code" title="Permalink to this heading">¶</a></h2>
 <div class="section" id="id2">
-<h3>Ensure that at least PyTorch (&gt;=1.6.0) is installed:<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<h3>Ensure that at least PyTorch (&gt;=1.6.0) is installed:<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
 <p>Note that <cite>&gt;=1.6.0</cite> is ok.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -c &quot;import torch; print(torch.__version__)&quot;
 &gt;&gt;&gt; 1.6.0
@@ -189,33 +191,33 @@ Please pay attention to the PyTorch requirements before installing <cite>torchte
 </div>
 </div>
 <div class="section" id="id3">
-<h3>Find the CUDA version PyTorch was installed with (for GPU users):<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<h3>Find the CUDA version PyTorch was installed with (for GPU users):<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -c &quot;import torch; print(torch.version.cuda)&quot;
 &gt;&gt;&gt; 10.2
 </pre></div>
 </div>
 </div>
 <div class="section" id="id4">
-<h3>Install the relevant dependencies:<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<h3>Install the relevant dependencies:<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
 <p><cite>torchtext</cite> is needed since Graph4NLP relies on it to implement embeddings.
 Please pay attention to the PyTorch requirements before installing <cite>torchtext</cite> with the following script! For detailed version matching please refer [here](<a class="reference external" href="https://pypi.org/project/torchtext/">https://pypi.org/project/torchtext/</a>).</p>
 </div>
 <div class="section" id="download-the-source-code-of-graph4nlp-from-github">
-<h3>Download the source code of <cite>Graph4NLP</cite> from Github:<a class="headerlink" href="#download-the-source-code-of-graph4nlp-from-github" title="Permalink to this headline">¶</a></h3>
+<h3>Download the source code of <cite>Graph4NLP</cite> from Github:<a class="headerlink" href="#download-the-source-code-of-graph4nlp-from-github" title="Permalink to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">graph4ai</span><span class="o">/</span><span class="n">graph4nlp</span><span class="o">.</span><span class="n">git</span>
 <span class="n">cd</span> <span class="n">graph4nlp</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="configure-the-cuda-version">
-<h3>Configure the CUDA version<a class="headerlink" href="#configure-the-cuda-version" title="Permalink to this headline">¶</a></h3>
+<h3>Configure the CUDA version<a class="headerlink" href="#configure-the-cuda-version" title="Permalink to this heading">¶</a></h3>
 <p>Then run <cite>./configure</cite> (or <cite>./configure.bat</cite>  if you are using Windows 10) to config your installation. The configuration program will ask you to specify your CUDA version. If you do not have a GPU, please type ‘cpu’.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">configure</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="id5">
-<h3>Install Graph4NLP<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<h3>Install Graph4NLP<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
 <p>Finally, install the package:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
 </pre></div>

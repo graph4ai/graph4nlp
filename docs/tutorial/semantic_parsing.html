@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Semantic Parsing Tutorial &mdash; Graph4NLP v0.4.1 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <title>Semantic Parsing Tutorial &mdash; Graph4NLP v0.4.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -36,11 +38,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Get Started</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../welcome/installation.html">Install Graph4NLP</a></li>
 </ul>
-<p class="caption"><span class="caption-text">User Guide</span></p>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../guide/graphdata.html">Chapter 1. Graph Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guide/dataset.html">Chapter 2. Dataset</a></li>
@@ -50,7 +52,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../guide/classification.html">Chapter 6. Classification</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guide/evaluation.html">Chapter 7. Evaluations and Loss components</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Module API references</span></p>
+<p class="caption" role="heading"><span class="caption-text">Module API references</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/data.html">graph4nlp.data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">graph4nlp.datasets</a></li>
@@ -60,7 +62,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../modules/loss.html">graph4nlp.loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/evaluation.html">graph4nlp.evaluation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="text_classification.html">Text Classification Tutorial</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Semantic Parsing Tutorial</a><ul>
@@ -99,9 +101,9 @@
            <div itemprop="articleBody">
              
   <div class="section" id="semantic-parsing-tutorial">
-<h1>Semantic Parsing Tutorial<a class="headerlink" href="#semantic-parsing-tutorial" title="Permalink to this headline">¶</a></h1>
+<h1>Semantic Parsing Tutorial<a class="headerlink" href="#semantic-parsing-tutorial" title="Permalink to this heading">¶</a></h1>
 <div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h2>
 <p>In this tutorial demo, we will use the Graph4NLP library to build a GNN-based semantic parsing model. The model consists of</p>
 <ul class="simple">
 <li><p>graph construction module (e.g., node embedding based dynamic graph)</p></li>
@@ -112,11 +114,11 @@
 The full example can be downloaded from <a class="reference external" href="https://github.com/graph4ai/graph4nlp_demo/blob/main/SIGIR2021_demo/semantic_parsing.ipynb">Semantic parsing notebook</a>.</p>
 </div>
 <div class="section" id="environment-setup">
-<h2>Environment setup<a class="headerlink" href="#environment-setup" title="Permalink to this headline">¶</a></h2>
+<h2>Environment setup<a class="headerlink" href="#environment-setup" title="Permalink to this heading">¶</a></h2>
 <p>Please follow the instructions <a class="reference external" href="https://github.com/graph4ai/graph4nlp_demo#environment-setup">here</a> to set up the environment.</p>
 </div>
 <div class="section" id="build-the-model-handler">
-<h2>Build the model handler<a class="headerlink" href="#build-the-model-handler" title="Permalink to this headline">¶</a></h2>
+<h2>Build the model handler<a class="headerlink" href="#build-the-model-handler" title="Permalink to this heading">¶</a></h2>
 <p>Let’s build a model handler which will do a bunch of things including setting up dataloader, model, optimizer, evaluation metrics, train/val/test loops, and so on.</p>
 <p>We will call the Graph2Seq model API which implements a GNN-based encoder and LSTM-based decoder.</p>
 <p>When setting up the dataloader, users will need to call the dataset API which will preprocess the data, e.g., calling the graph construction module, building the vocabulary, tensorizing the data. Users will need to specify the graph construction type when calling the dataset API.</p>
@@ -338,7 +340,7 @@ The full example can be downloaded from <a class="reference external" href="http
 </div>
 </div>
 <div class="section" id="run-the-model">
-<h2>Run the model<a class="headerlink" href="#run-the-model" title="Permalink to this headline">¶</a></h2>
+<h2>Run the model<a class="headerlink" href="#run-the-model" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">runner</span> <span class="o">=</span> <span class="n">Jobs</span><span class="p">(</span><span class="n">opt</span><span class="p">)</span>
 <span class="n">max_score</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
 <span class="n">runner</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;best.pth&quot;</span><span class="p">)</span>
