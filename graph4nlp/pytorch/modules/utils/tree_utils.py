@@ -132,10 +132,11 @@ class Tree:
 
 
 class VocabForAll:
-    def __init__(self, in_word_vocab, out_word_vocab, share_vocab):
+    def __init__(self, in_word_vocab, out_word_vocab, share_vocab, edge_vocab=None):
         self.in_word_vocab = in_word_vocab
         self.out_word_vocab = out_word_vocab
         self.share_vocab = share_vocab
+        self.edge_vocab = edge_vocab
 
     def get_vocab_size(self):
         if hasattr(self, "share_vocab"):

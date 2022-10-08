@@ -47,6 +47,8 @@ class VocabModel(object):
         Word embedding size, default: ``None``.
     share_vocab : boolean
         Specify whether to share vocab between input and output text, default: ``True``.
+    init_edge_vocab: boolean
+        Specify whether to initialize edge vocab, default: ``False``. 
 
     Examples
     -------
@@ -82,6 +84,7 @@ class VocabModel(object):
         #  pretrained_word_emb_file=None,
         word_emb_size=None,
         share_vocab=True,
+        init_edge_vocab=False,
     ):
         super(VocabModel, self).__init__()
         self.tokenizer = tokenizer
@@ -150,6 +153,12 @@ class VocabModel(object):
                 self.out_word_vocab.randomize_embeddings(word_emb_size)
         else:
             self.out_word_vocab = self.in_word_vocab
+        
+        if init_edge_vocab:
+            all_edge_words = VocabModel.collect_edge_vocabs(data_set, self.tokenizer, lower_case=lower_case)
+            self.edge_vocab = Vocab(lower_case=lower_case, tokenizer=self.tokenizer)
+            self.edge_vocab.build_vocab(all_edge_words, max_vocab_size=None, min_vocab_freq=1)
+            self.edge_vocab.randomize_embeddings(word_emb_size)
 
         if share_vocab:
             print("[ Initialized word embeddings: {} ]".format(self.in_word_vocab.embeddings.shape))
@@ -265,6 +274,14 @@ class VocabModel(object):
                 all_words[1].update(extracted_tokens[1])
 
         return all_words
+    @staticmethod
+    def collect_edge_vocabs(all_instances, tokenizer, lower_case=True):
+        """Count vocabulary tokens for edge."""
+        all_edges = Counter()
+        for instance in all_instances:
+            extracted_edge_tokens = instance.extract_edge_tokens()
+            all_edges.update(extracted_edge_tokens)
+        return all_edges
 
 
 class WordEmbModel(Vectors):

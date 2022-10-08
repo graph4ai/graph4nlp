@@ -149,3 +149,6 @@ cscope.*
 # config file
 /config
 local_scripts/
+
+**/amr_graph_construction/mawps/*
+

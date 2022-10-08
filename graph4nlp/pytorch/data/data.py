@@ -8,7 +8,7 @@ by :py:class:`GraphData`.
 """
 import os
 import warnings
-from collections import namedtuple
+from collections import namedtuple, Counter
 from typing import Any, Callable, Dict, List, Tuple, Union
 import dgl
 import scipy.sparse
@@ -99,6 +99,7 @@ class GraphData(object):
         self.batch_size = None  # Batch size
         self._batch_num_nodes = None  # Subgraph node number list with the length of batch size
         self._batch_num_edges = None  # Subgraph edge number list with the length of batch size
+        self.batch_graph_attributes = []  # Subgraph attribute list with the length of batch size
 
         if src is not None:
             if isinstance(src, GraphData):
@@ -176,7 +177,7 @@ class GraphData(object):
             )
 
         if not self.is_hetero:
-            if ntypes is None:
+            if ntypes is not None:
                 raise ValueError(
                     "The graph is homogeneous, ntypes should be None. Got {}".format(ntypes)
                 )
@@ -878,7 +879,9 @@ class GraphData(object):
             # Add nodes
             self.add_nodes(dgl_g.number_of_nodes())
             for k, v in dgl_g.ndata.items():
-                self.node_features[k] = v
+                self.node_features['node_'+k] = v
+
+                # node_features['node_embed'] -> tensor.size((num_of_node, emb_dim))
 
             # Add edges
             src_tensor, tgt_tensor = dgl_g.edges()
@@ -886,7 +889,9 @@ class GraphData(object):
             tgt_list = list(tgt_tensor.detach().cpu().numpy())
             self.add_edges(src_list, tgt_list)
             for k, v in dgl_g.edata.items():
-                self.edge_features[k] = v
+                self.edge_features['edge_'+k] = v
+                # edge_features['edge_emb'] -> tensor.size((number_of_edge, emb_dim))
+                # edge_features['type'] -> tensor.size((number_of_edge,))
         else:
             self.is_hetero = True
             # For heterogeneous DGL graphs, we perform the same routines for nodes and edges.
@@ -904,19 +909,22 @@ class GraphData(object):
             #     for feature_name, feature_value in node_data.items():
             #         self.node_features[feature_name] = feature_value
             node_data = dgl_g.ndata
-            ntypes = []
+            # ntypes = []
+            ntypes = [None for _ in range(dgl_g.number_of_nodes())]
             processed_node_types = False
             node_feat_dict = {}
             for feature_name, data_dict in node_data.items():
                 if not processed_node_types:
                     for node_type, node_feature in data_dict.items():
-                        ntypes += [node_type] * len(node_feature)
+                        for nidx in node_feature:
+                            ntypes[nidx] = node_type
+                        # ntypes += [node_type] * len(node_feature)
                     processed_node_types = True
                 # for node_type, node_feature in data_dict.items():
                 node_feat_dict[feature_name] = torch.cat(list(data_dict.values()), dim=0)
             self.add_nodes(len(ntypes), ntypes=ntypes)
             for feature_name, feature_value in node_feat_dict.items():
-                self.node_features[feature_name] = feature_value
+                self.node_features['node_'+feature_name] = feature_value
             # do the same thing for edges
             dgl_g_etypes = dgl_g.canonical_etypes
             # Add edges first
@@ -924,13 +932,15 @@ class GraphData(object):
             for etype in dgl_g_etypes:
                 num_edges = dgl_g.num_edges(etype)
                 src_type, r_type, dst_type = etype
-                srcs, dsts = dgl_g.find_edges(
-                    torch.tensor(list(range(num_edges)), dtype=torch.long), etype
-                )
+                # srcs, dsts = dgl_g.find_edges(
+                #     torch.tensor(list(range(num_edges)), dtype=torch.long), etype
+                # )
+                srcs, dsts = dgl_g.edges(etype=etype)
                 srcs, dsts = (
                     srcs.detach().cpu().numpy().tolist(),
                     dsts.detach().cpu().numpy().tolist(),
                 )
+                
                 self.add_edges(srcs, dsts, etypes=[etype] * num_edges)
                 if len(dgl_g_etypes) > 1:
                     for feature_name, feature_dict in dgl_g.edata.items():
@@ -945,7 +955,7 @@ class GraphData(object):
                         edge_feature_dict[feature_name] = feature_value
             # Add edge features then
             for feat_name, feat_value in edge_feature_dict.items():
-                self.edge_features[feat_name] = feat_value
+                self.edge_features['edge_'+feat_name] = feat_value
             # edge_data = dgl_g.edata
             # etypes = []
             # processed_edge_types = False
@@ -1330,7 +1340,7 @@ class GraphData(object):
         return output
 
 
-def from_dgl(g: dgl.DGLGraph) -> GraphData:
+def from_dgl(g: dgl.DGLGraph, is_hetero=False) -> GraphData:
     """
     Convert a dgl.DGLGraph to a GraphData object.
 
@@ -1338,14 +1348,15 @@ def from_dgl(g: dgl.DGLGraph) -> GraphData:
     ----------
     g : dgl.DGLGraph
         The source graph in DGLGraph format.
-
+    is_hetero: bool, default=False
+        Whether the graph should be heterogeneous
     Returns
     -------
     GraphData
         The converted graph in GraphData format.
     """
-    graph = GraphData(is_hetero=not g.is_homogeneous)
-    graph.from_dgl(g, is_hetero=not g.is_homogeneous)
+    graph = GraphData(is_hetero=is_hetero)
+    graph.from_dgl(g, is_hetero=is_hetero)
     return graph
 
 
@@ -1456,7 +1467,11 @@ def to_batch(graphs: List[GraphData] = None) -> GraphData:
     big_graph._batch_num_nodes = [g.get_node_num() for g in graphs]
     big_graph._batch_num_edges = [g.get_edge_num() for g in graphs]
 
-    # Step 8: merge node and edge types if the batch is heterograph
+    # Step 8: Insert graph attributes
+    for g in graphs:
+        big_graph.batch_graph_attributes.append(g.graph_attributes)
+
+    # Step 9: merge node and edge types if the batch is heterograph
     if is_heterograph:
         node_types = []
         edge_types = []
@@ -1501,6 +1516,7 @@ def from_batch(batch: GraphData) -> List[GraphData]:
         cum_n_edges += num_edges[i]
         cum_n_nodes += num_nodes[i]
         ret.append(g)
+        g.graph_attributes = batch.batch_graph_attributes[i]
 
     # Add node and edge features
     for k, v in batch._node_features.items():

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from dgl.nn.pytorch import RelGraphConv
 
-from .base import GNNBase, GNNLayerBase
+from graph4nlp.pytorch.modules.graph_embedding_learning.base import GNNBase, GNNLayerBase
 
 
 class RGCN(GNNBase):
@@ -18,19 +18,18 @@ class RGCN(GNNBase):
         Number of RGCN layers.
     input_size : int, or pair of ints
         Input feature size.
-    hidden_size: int list of int
+    hidden_size: int
         Hidden layer size.
-        If a scalar is given, the sizes of all the hidden layers are the same.
-        If a list of scalar is given, each element in the list is the size of each hidden layer.
-        Example: [100,50]
     output_size : int
         Output feature size.
     num_rels : int
         Number of relations.
     num_bases : int, optional
-        Number of bases. Needed when ``regularizer`` is specified. Default: ``None``.
+        Number of bases. Needed when ``regularizer`` is specified. Default: ``-1`` [all].
     use_self_loop : bool, optional
-        True to include self loop message. Default: ``True``.
+        True to include self loop message. Default: ``False``.
+    gpu : int, optional
+        True to use gpu. Default: ``-1`` [cpu].
     dropout : float, optional
         Dropout rate. Default: ``0.0``
     """
@@ -42,12 +41,14 @@ class RGCN(GNNBase):
         hidden_size,
         output_size,
         num_rels,
-        num_bases=None,
+        num_bases=-1,
         use_self_loop=True,
         dropout=0.0,
     ):
         super(RGCN, self).__init__()
         self.num_layers = num_layers
+        if num_bases == -1:
+            num_bases = num_rels
         self.num_rels = num_rels
         self.num_bases = num_bases
         self.use_self_loop = use_self_loop
@@ -75,8 +76,7 @@ class RGCN(GNNBase):
                 )
             )
         # hidden layers
-        for l in range(1, self.num_layers - 1):
-            # due to multi-head, the input_size = hidden_size * num_heads
+        for l in range(1, self.num_layers-1):
             self.RGCN_layers.append(
                 RGCNLayer(
                     hidden_size[l - 1],
@@ -93,7 +93,7 @@ class RGCN(GNNBase):
         # output projection
         self.RGCN_layers.append(
             RGCNLayer(
-                hidden_size[-1] if self.num_layers > 1 else input_size,
+                hidden_size,
                 output_size,
                 num_rels=self.num_rels,
                 regularizer="basis",
@@ -104,6 +104,9 @@ class RGCN(GNNBase):
                 dropout=self.dropout,
             )
         )
+
+        if self.gpu != -1:
+            self.to(device=self.gpu)
 
     def forward(self, graph):
         r"""Compute RGCN layer.
@@ -122,18 +125,19 @@ class RGCN(GNNBase):
             named as "node_emb".
         """
 
-        h = graph.node_features["node_feat"]
-        # get the node feature tensor from graph
-        g = graph.to_dgl()  # transfer the current NLPgraph to DGL graph
-        edge_type = g.edata[dgl.ETYPE].long()
-        # output projection
-        if self.num_layers > 1:
-            for l in range(0, self.num_layers - 1):
-                h = self.RGCN_layers[l](g, h, edge_type)
-
+        # transfer the current NLPgraph to DGL graph
+        g = graph.to_dgl()
+        h = graph.node_features['node_feat']
+        edge_type = graph.edge_features['token_id'].squeeze(1)
+        for l in range(self.num_layers):
+            h = self.RGCN_layers[l](g, h, edge_type)
+            h = self.dropout(F.relu(h))
         logits = self.RGCN_layers[-1](g, h, edge_type)
+        
+        # put the results into the NLPGraph
+        # graph.node_features['node_feat'] = h
+        graph.node_features["node_emb"] = logits  
 
-        graph.node_features["node_emb"] = logits  # put the results into the NLPGraph
         return graph
 
 
@@ -176,7 +180,7 @@ class RGCNLayer(GNNLayerBase):
         output_size,
         num_rels,
         regularizer=None,
-        num_bases=None,
+        num_bases=-1,
         bias=True,
         activation=None,
         self_loop=False,
