@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from dgl.nn.pytorch import RelGraphConv
 
-from .base import GNNBase, GNNLayerBase
+from graph4nlp.pytorch.modules.graph_embedding_learning.base import GNNBase, GNNLayerBase
 
 
 class RGCN(GNNBase):

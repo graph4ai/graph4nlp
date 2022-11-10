@@ -227,10 +227,10 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         graph: GraphData
             graph structure for single sentence
         """
-        ret_graph = GraphData()
+        ret_graph = GraphData(is_hetero=True)
         node_num = parsed_object["node_num"]
         assert node_num > 0
-        ret_graph.add_nodes(node_num)
+        ret_graph.add_nodes(node_num, ntypes=[0 for _ in range(node_num)])
         head_node = 0
         tail_node = node_num - 1
 
@@ -248,7 +248,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
             if edge_strategy is None or edge_strategy == "homogeneous":
                 ret_graph.add_edge(dep_info["src"], dep_info["tgt"])
             elif edge_strategy == "heterogeneous":
-                ret_graph.add_edge(dep_info["src"], dep_info["tgt"])
+                ret_graph.add_edge(dep_info["src"], dep_info["tgt"], dep_info["edge_type"])
                 edge_idx = ret_graph.edge_ids(dep_info["src"], dep_info["tgt"])[0]
                 ret_graph.edge_attributes[edge_idx]["token"] = dep_info["edge_type"]
             elif edge_strategy == "as_node":

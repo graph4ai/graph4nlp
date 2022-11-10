@@ -517,6 +517,7 @@ class Dataset(torch.utils.data.Dataset):
                     print(
                         "Building graph.... Processed/Remain: {} / {}".format(cnt, len(data_items))
                     )
+
                 try:
                     graph = topology_builder.static_topology(
                         raw_text_data=item.input_text,
