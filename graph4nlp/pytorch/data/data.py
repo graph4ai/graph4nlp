@@ -489,7 +489,6 @@ class GraphData(object):
                 tgt_idx < 0 and tgt_idx >= self.get_node_num()
             ):
                 raise ValueError("Endpoint not in the graph.")
-
         # Edge type consistency check
         if self.is_hetero:
             if etypes is None:
@@ -499,6 +498,13 @@ class GraphData(object):
                     "Length of edge types and number of edges mismatch."
                     "Got {} edge types and {} edges.".format(len(etypes), len(src))
                 )
+            for etype in etypes:
+                if not isinstance(etype, tuple) and not isinstance(etype, str):
+                    raise TypeError(
+                        "Edge type must be a tuple of three strings or a single string. Got {}.".format(
+                            type(etype)
+                        )
+                    )
         else:
             if etypes is not None:
                 raise ValueError("Edge type must be None for homograph. Got {}.".format(etypes))
@@ -542,7 +548,15 @@ class GraphData(object):
 
         # Update etypes
         if etypes is not None:
-            self._etypes.extend(etypes)
+            if isinstance(etypes[0], str):
+                self._etypes.extend(
+                    [
+                        (self.ntypes[src[i]], etypes[i], self.ntypes[tgt[i]])
+                        for i in range(len(etypes))
+                    ]
+                )
+            else:
+                self._etypes.extend(etypes)
 
     def edge_ids(self, src: Union[int, List[int]], tgt: Union[int, List[int]]) -> List[Any]:
         """
@@ -798,8 +812,6 @@ class GraphData(object):
                 if value is not None:
                     dgl_g.edata[key] = value
         else:
-            data_dict = self._data_dict
-            dgl_g = dgl.heterograph(data_dict).to(self.device)
 
             def make_feature_dict(
                 features: Dict[str, torch.Tensor],
@@ -839,6 +851,35 @@ class GraphData(object):
                     for n_type, indices in ntype_indices.items():
                         ret[feat_name][n_type] = feat_value[indices]
                 return ret
+
+            def make_num_nodes_dict(
+                node_types: List[str],
+            ) -> Dict[str, int]:
+                """
+                To cope with DGL's convention of adding features to heterograph, this function
+                converts GraphData's node features to a dictionary of node features indexed by
+                type names.
+
+                Parameters
+                ----------
+                node_types : List[str]
+                    A list containing the type of each node.
+
+                Returns
+                -------
+                Dict[str, int]
+                    A dictionary that can be passed as the edata/ndata argument of DGLGraph.
+                """
+                ret = {}
+                for n_type in node_types:
+                    if n_type not in ret:
+                        ret[n_type] = 0
+                    ret[n_type] += 1
+                return ret
+
+            data_dict = self._data_dict
+            num_nodes_dict = make_num_nodes_dict(self.ntypes)
+            dgl_g = dgl.heterograph(data_dict, num_nodes_dict=num_nodes_dict).to(self.device)
 
             node_hetero_feat_dict = make_feature_dict(self._node_features, self.ntypes)
             edge_hetero_feat_dict = make_feature_dict(self._edge_features, self.etypes)
@@ -1374,17 +1415,21 @@ def to_batch(graphs: List[GraphData] = None) -> GraphData:
         raise ValueError("All the graphs in the batch must all be heterogeneous or homogeneous!")
 
     # Optimized version
-    big_graph = GraphData()
+    big_graph = GraphData(is_hetero=is_heterograph)
     big_graph._is_batch = True
     big_graph.device = graphs[0].device
-    big_graph.is_hetero = is_heterograph
 
     total_num_nodes = 0
     for g in graphs:
         total_num_nodes += g.get_node_num()
 
-    # Step 1: Add nodes
-    big_graph.add_nodes(total_num_nodes)
+    # Step 1: Add nodes and node types
+    node_types = None
+    if is_heterograph:
+        node_types = []
+        for g in graphs:
+            node_types += g.ntypes
+    big_graph.add_nodes(total_num_nodes, ntypes=node_types)
 
     # Step 2: Set node features
     node_features = dict()
@@ -1408,7 +1453,7 @@ def to_batch(graphs: List[GraphData] = None) -> GraphData:
             big_graph.node_attributes[total_node_count] = g.node_attributes[i]
             total_node_count += 1
 
-    # Step 4: Add edges
+    # Step 4: Add edges and etypes
     def stack_edge_indices(gs):
         all_edge_indices = EdgeIndex(src=[], tgt=[])
         cumulative_node_num = 0
@@ -1423,7 +1468,12 @@ def to_batch(graphs: List[GraphData] = None) -> GraphData:
         return all_edge_indices
 
     all_edge_indices = stack_edge_indices(graphs)
-    big_graph.add_edges(all_edge_indices.src, all_edge_indices.tgt)
+    edge_types = None
+    if is_heterograph:
+        edge_types = []
+        for g in graphs:
+            edge_types += g.etypes
+    big_graph.add_edges(all_edge_indices.src, all_edge_indices.tgt, etypes=edge_types)
 
     # Step 5: Add edge features
     edge_features = dict()
@@ -1457,14 +1507,14 @@ def to_batch(graphs: List[GraphData] = None) -> GraphData:
     big_graph._batch_num_edges = [g.get_edge_num() for g in graphs]
 
     # Step 8: merge node and edge types if the batch is heterograph
-    if is_heterograph:
-        node_types = []
-        edge_types = []
-        for g in graphs:
-            node_types.extend(g.node_types)
-            edge_types.extend(g.edge_types)
-        big_graph.node_types = node_types
-        big_graph.edge_types = edge_types
+    # if is_heterograph:
+    #     node_types = []
+    #     edge_types = []
+    #     for g in graphs:
+    #         node_types.extend(g.node_types)
+    #         edge_types.extend(g.edge_types)
+    #     big_graph.node_types = node_types
+    #     big_graph.edge_types = edge_types
     return big_graph
 
 
@@ -1487,17 +1537,20 @@ def from_batch(batch: GraphData) -> List[GraphData]:
     num_edges = batch._batch_num_edges
     all_edges = batch.get_all_edges()
     batch_size = batch.batch_size
+    is_hetero = batch.is_hetero
     ret: List[GraphData] = []
     cum_n_nodes = 0
     cum_n_edges = 0
 
     # Construct graph respectively
     for i in range(batch_size):
-        g = GraphData(device=batch.device)
-        g.add_nodes(num_nodes[i])
+        g = GraphData(device=batch.device, is_hetero=is_hetero)
+        g_ntypes = batch.ntypes[cum_n_nodes : cum_n_nodes + num_nodes[i]] if is_hetero else None
+        g.add_nodes(num_nodes[i], ntypes=g_ntypes)
         edges = all_edges[cum_n_edges : cum_n_edges + num_edges[i]]
+        g_etypes = batch.etypes[cum_n_edges : cum_n_edges + num_edges[i]] if is_hetero else None
         src, tgt = [e[0] - cum_n_nodes for e in edges], [e[1] - cum_n_nodes for e in edges]
-        g.add_edges(src, tgt)
+        g.add_edges(src, tgt, etypes=g_etypes)
         cum_n_edges += num_edges[i]
         cum_n_nodes += num_nodes[i]
         ret.append(g)
