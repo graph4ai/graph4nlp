@@ -1,0 +1,14 @@
+{
+    "config_path": "examples/pytorch/semantic_parsing/graph2tree/jobs/config_for_amr/semantic_parsing_with_tree_decoder_amr.yaml",
+    "checkpoint_args.checkpoint_name": "node_emb_sage_undirected.pt",
+    "checkpoint_args.out_dir": "examples/pytorch/semantic_parsing/graph2tree/jobs/save_for_amr",
+    "env_args.gpuid": 1,
+    "training_args.batch_size": 20,
+    "training_args.max_epochs": 150,
+    "model_args.graph_construction_args.graph_construction_share.root_dir": "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data",
+    "inference_args.inference_data_dir": "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data_inference",
+    "model_args.graph_construction_name": "amr",
+    "model_args.graph_construction_args.graph_construction_share.topology_subdir": "AMRGraphForRGCN",
+    "model_args.graph_initialization_args.embedding_style.single_token_item": false,
+    "model_args.graph_initialization_args.embedding_style.emb_strategy": "w2v_bilstm_amr_pos"
+}

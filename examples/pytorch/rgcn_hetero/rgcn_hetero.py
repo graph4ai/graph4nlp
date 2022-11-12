@@ -1,3 +1,4 @@
+from re import S
 import warnings
 import dgl.function as fn
 import torch
@@ -5,12 +6,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import dgl
 from dgl.utils import check_eq_shape, expand_as_pair
-from dgl.nn.pytorch import RelGraphConv
+from dgl.nn.pytorch import HeteroGraphConv, GraphConv
 
 from graph4nlp.pytorch.modules.graph_embedding_learning.base import GNNBase, GNNLayerBase
 
 
-class RGCN(GNNBase):
+class RGCNHetero(GNNBase):
     r"""Multi-layered `RGCN Network <TODO:paper.pdf>`__
 
     .. math::
@@ -22,110 +23,88 @@ class RGCN(GNNBase):
         Number of RGCN layers.
     input_size : int, or pair of ints
         Input feature size.
-    hidden_size: int
+    hidden_size: int 
         Hidden layer size.
     output_size : int
         Output feature size.
-    num_rels : int
-        Number of relations.
+    rels_names : List[str]
+        Names of relation(edge) types.
+    node_types: List[str]
+        Names of node types.
+    num_nodes: int,
+        Number of nodes.
     num_bases : int, optional
-        Number of bases. Needed when ``regularizer`` is specified. Default: ``-1`` [all].
+        Number of bases. Needed when ``regularizer`` is specified. Default: ``-1``.
     use_self_loop : bool, optional
         True to include self loop message. Default: ``False``.
-    gpu : int, optional
-        True to use gpu. Default: ``-1`` [cpu].
+    gpu: int, optional
+        GPU device number. Default: ``-1`` (CPU)
     dropout : float, optional
         Dropout rate. Default: ``0.0``
     """
 
     def __init__(
         self,
-        num_layers,
+        num_hidden_layers,
         input_size,
         hidden_size,
         output_size,
-        num_rels,
+        rel_names,
+        node_types,
+        num_nodes,
         num_bases=-1,
-        use_self_loop=True,
-        gpu=False,
-        dropout=0.0,
-
+        use_self_loop=False,
+        gpu=-1,
+        dropout=0.0
     ):
-        super(RGCN, self).__init__()
-        self.num_layers = num_layers
-        if num_bases == -1:
-            num_bases = num_rels
-        self.num_rels = num_rels
+        super(RGCNHetero, self).__init__()
+        self.num_hidden_layers = num_hidden_layers
+        self.rel_names = rel_names
         self.num_bases = num_bases
+        self.num_nodes = num_nodes
         self.use_self_loop = use_self_loop
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = dropout
         self.gpu = gpu
 
+        self.embs = nn.ParameterDict({})
+        for nt in node_types:
+            embed = nn.Parameter(torch.Tensor(num_nodes[nt], hidden_size))
+            nn.init.xavier_uniform_(embed, gain=nn.init.calculate_gain('relu'))
+            self.embs[nt] = embed
+
         self.RGCN_layers = nn.ModuleList()
-        # input layers:
-        self.RGCN_layers.append(
-            RGCNLayer(
-                input_size,
-                hidden_size,
-                num_rels=self.num_rels,
-                regularizer="basis",
-                num_bases=self.num_bases,
-                bias=True,
-                activation=F.relu,
-                self_loop=self.use_self_loop,
-                dropout=dropout
-            )
-        )
-        if self.num_layers > 1:
-            # input projection
-            self.RGCN_layers.append(
-                RGCNLayer(
-                    hidden_size,
-                    hidden_size,
-                    num_rels=self.num_rels,
-                    regularizer="basis",
-                    num_bases=self.num_bases,
-                    bias=True,
-                    activation=F.relu,
-                    self_loop=self.use_self_loop,
-                    dropout=dropout
-                )
-            )
-        
+
         # hidden layers
-        for l in range(1, self.num_layers-1):
+        for l in range(self.num_hidden_layers):
+            # due to multi-head, the input_size = hidden_size * num_heads
             self.RGCN_layers.append(
-                RGCNLayer(
+                RGCNLayerHetero(
                     hidden_size,
                     hidden_size,
-                    num_rels=self.num_rels,
-                    regularizer="basis",
+                    rel_names=rel_names,
                     num_bases=self.num_bases,
-                    bias=True,
                     activation=F.relu,
                     self_loop=self.use_self_loop,
-                    dropout=dropout
+                    dropout=self.dropout
                 )
             )
         # output projection
         self.RGCN_layers.append(
-            RGCNLayer(
+            RGCNLayerHetero(
                 hidden_size,
                 output_size,
-                num_rels=self.num_rels,
-                regularizer="basis",
+                rel_names=self.rel_names,
                 num_bases=self.num_bases,
-                bias=True,
                 activation=F.relu,
                 self_loop=self.use_self_loop,
-                dropout=dropout
+                dropout=self.dropout
             )
         )
-
+        self.h = self.embs
         if self.gpu != -1:
             self.to(device=self.gpu)
 
-    def forward(self, graph):
+    def forward(self, graph, h=None):
         r"""Compute RGCN layer.
 
         Parameters
@@ -142,23 +121,21 @@ class RGCN(GNNBase):
             named as "node_emb".
         """
 
-        # transfer the current NLPgraph to DGL graph
-        g = graph.to_dgl()
-        h = graph.node_features['node_feat']
-        edge_type = graph.edge_features['token_id'].squeeze(1)
-        for l in range(self.num_layers):
-            h = self.RGCN_layers[l](g, h, edge_type)
-            h = self.dropout(F.relu(h))
-        logits = self.RGCN_layers[-1](g, h, edge_type)
         
-        # put the results into the NLPGraph
-        # graph.node_features['node_feat'] = h
-        graph.node_features["node_emb"] = logits  
+        # transfer the current NLPgraph to DGL graph
+        g = graph.to_dgl()  
+        if h is None:
+            h = self.embs
+        for l in range(self.num_hidden_layers):
+            h = self.RGCN_layers[l](g, h)
+        logits = self.RGCN_layers[-1](g, h)
+        
+        # graph.node_features['node_feat'] = h {'type1': (num_node_type1 x emb_dim), 'type2': (num_node_type2 x emb_dim)}
+        # graph.node_features["node_emb"] = logits  # put the results into the NLPGraph
+        return logits
 
-        return graph
 
-
-class RGCNLayer(GNNLayerBase):
+class RGCNLayerHetero(GNNLayerBase):
     r"""A wrapper for RelGraphConv in DGL.
 
     .. math::
@@ -195,27 +172,50 @@ class RGCNLayer(GNNLayerBase):
         self,
         input_size,
         output_size,
-        num_rels,
-        regularizer=None,
-        num_bases=-1,
-        bias=True,
+        rel_names,
+        num_bases=None,
         activation=None,
         self_loop=False,
-        dropout=0.0,
-        layer_norm=False
+        dropout=0.0
     ):
-        super(RGCNLayer, self).__init__()
-        self.model = RelGraphConv(
-                        in_feat=input_size, 
-                        out_feat=output_size, 
-                        num_rels=num_rels, 
-                        regularizer=regularizer,
-                        num_bases=num_bases,
-                        bias=bias, 
-                        activation=activation,
-                        self_loop=self_loop,
-                        dropout=dropout,
-                        layer_norm=layer_norm)
+        super(RGCNLayerHetero, self).__init__()
+        self.input_size = input_size
+        self.output_size = output_size
+        self.rel_names = rel_names
+        self.num_bases = num_bases
+        # self.bias = bias
+        self.activation = activation
+        self.self_loop = self_loop
+        self.dropout = dropout
 
-    def forward(self, graph, feat, etypes, norm=None):
-        return self.model(graph, feat, etypes, norm)
+        self.conv = HeteroGraphConv(
+            {
+                rel: GraphConv(input_size, output_size, norm='right', weight=False, bias=False) for rel in rel_names
+            }
+        )
+        self.dropout = nn.Dropout(dropout)
+        
+        
+    def forward(self, graph, inputs):
+        """
+
+        Parameters:
+        ----------
+        graph: DGLHeteroGraph
+            The graph
+        inputs: dict[str, torch.Tensor]
+            New node features for each node type
+        """
+        graph = graph.local_var()
+        inputs_src = inputs_dst = inputs
+
+        hs = self.conv(graph, inputs)
+
+        def _apply(ntype, h):
+            if self.self_loop:
+                h = h + torch.matmul(inputs_dst[ntype], self.loop_weight)
+            if self.activation:
+                h = self.activation(h)
+            return self.dropout(h)
+
+        return {ntype: _apply(ntype, h) for ntype, h in hs.items()}

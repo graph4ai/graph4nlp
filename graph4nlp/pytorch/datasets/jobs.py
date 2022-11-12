@@ -168,6 +168,8 @@ class JobsDatasetForTree(Text2TreeDataset):
         max_word_vocab_size=100000,
         for_inference=False,
         reused_vocab_model=None,
+        init_edge_vocab=False,
+        is_hetero=False,
     ):
         """
         Parameters
@@ -215,7 +217,7 @@ class JobsDatasetForTree(Text2TreeDataset):
         # then do the preprocessing and save them.
         super(JobsDatasetForTree, self).__init__(
             root_dir=root_dir,
-            # topology_builder=topology_builder,
+            topology_builder=topology_builder,
             topology_subdir=topology_subdir,
             graph_construction_name=graph_construction_name,
             static_or_dynamic=static_or_dynamic,
@@ -236,6 +238,8 @@ class JobsDatasetForTree(Text2TreeDataset):
             max_word_vocab_size=max_word_vocab_size,
             for_inference=for_inference,
             reused_vocab_model=reused_vocab_model,
+            init_edge_vocab=init_edge_vocab,
+            is_hetero=is_hetero,
         )
 
 
