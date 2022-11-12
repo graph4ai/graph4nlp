@@ -65,8 +65,8 @@ if __name__ == "__main__":
         packages=find_packages(
             ".",
             exclude=(
-                "examples.*",
-                "examples",
+                # "examples.*",
+                # "examples",
                 "graph4nlp.pytorch.test.*",
                 "graph4nlp.pytorch.test",
             ),

@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from utils import AMRDataItem
 
-from graph4nlp.pytorch.datasets.mawps import MawpsDatasetForTree, tokenize_mawps
+from graph4nlp.pytorch.datasets.jobs import JobsDatasetForTree, tokenize_jobs
 from graph4nlp.pytorch.inference_wrapper.generator_inference_wrapper_for_tree import (
     GeneratorInferenceWrapper,
 )
@@ -21,9 +21,9 @@ from utils import AMRDataItem, RGCNGraph2Tree, InferenceText2TreeDataset
 warnings.filterwarnings("ignore")
 
 
-class Mawps:
+class Jobs:
     def __init__(self, opt=None):
-        super(Mawps, self).__init__()
+        super(Jobs, self).__init__()
         self.opt = opt
 
         seed = self.opt["env_args"]["seed"]
@@ -48,7 +48,7 @@ class Mawps:
             model=self.model, 
             beam_size=2, 
             lower_case=True, 
-            tokenizer=tokenize_mawps, 
+            tokenizer=tokenize_jobs, 
             dataset=InferenceText2TreeDataset,
             data_item=AMRDataItem,
             topology_builder=(AMRGraphConstruction if self.model.graph_construction_name == "amr" else None)
@@ -57,12 +57,7 @@ class Mawps:
     @torch.no_grad()
     def translate(self):
         self.model.eval()
-        ret = self.inference_tool.predict(
-            raw_contents=[
-                "2 dogs are barking . 1 more dogs start to bark . how many dogs are barking"
-            ],
-            batch_size=1,
-        )
+        ret = self.inference_tool.predict(raw_contents=["list job on platformid0"], batch_size=1)
         print(ret)
 
 
@@ -102,5 +97,5 @@ if __name__ == "__main__":
     config = load_json_config(cfg["json_config"])
     # print_config(config)
 
-    runner = Mawps(opt=config)
+    runner = Jobs(opt=config)
     runner.translate()
