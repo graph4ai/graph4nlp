@@ -3,3 +3,5 @@ isort==4.3.21
 flake8==3.9.2
 flake8-bugbear==21.4.3
 flake8-comprehensions==3.6.1
+click==8.0.2
+importlib-metadata==4.13.0
