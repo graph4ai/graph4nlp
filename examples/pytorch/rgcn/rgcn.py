@@ -1,9 +1,10 @@
 import dgl
+import dgl.function as fn
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from dgl.nn.pytorch import RelGraphConv
 
-from .base import GNNBase, GNNLayerBase
+from graph4nlp.pytorch.modules.graph_embedding_learning.base import GNNBase, GNNLayerBase
 
 
 class RGCN(GNNBase):
@@ -45,6 +46,7 @@ class RGCN(GNNBase):
         num_bases=None,
         use_self_loop=True,
         dropout=0.0,
+        device="cuda",
     ):
         super(RGCN, self).__init__()
         self.num_layers = num_layers
@@ -52,6 +54,7 @@ class RGCN(GNNBase):
         self.num_bases = num_bases
         self.use_self_loop = use_self_loop
         self.dropout = dropout
+        self.device = device
 
         self.RGCN_layers = nn.ModuleList()
 
@@ -125,13 +128,13 @@ class RGCN(GNNBase):
         h = graph.node_features["node_feat"]
         # get the node feature tensor from graph
         g = graph.to_dgl()  # transfer the current NLPgraph to DGL graph
-        edge_type = g.edata[dgl.ETYPE].long()
+        # edge_type = g.edata[dgl.ETYPE].long()
         # output projection
         if self.num_layers > 1:
             for l in range(0, self.num_layers - 1):
-                h = self.RGCN_layers[l](g, h, edge_type)
+                h = self.RGCN_layers[l](g, h)
 
-        logits = self.RGCN_layers[-1](g, h, edge_type)
+        logits = self.RGCN_layers[-1](g, h)
 
         graph.node_features["node_emb"] = logits  # put the results into the NLPGraph
         return graph
@@ -182,20 +185,71 @@ class RGCNLayer(GNNLayerBase):
         self_loop=False,
         dropout=0.0,
         layer_norm=False,
+        device="cuda",
     ):
         super(RGCNLayer, self).__init__()
-        self.model = RelGraphConv(
-            in_feat=input_size,
-            out_feat=output_size,
-            num_rels=num_rels,
-            regularizer=regularizer,
-            num_bases=num_bases,
-            bias=bias,
-            activation=activation,
-            self_loop=self_loop,
-            dropout=dropout,
-            layer_norm=layer_norm,
-        )
+        self.linear_dict = {
+            i: nn.Linear(input_size, output_size, bias=bias, device=device) for i in range(num_rels)
+        }
+        # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
+        self.bias = bias
+        self.activation = activation
+        self.self_loop = self_loop
+        self.layer_norm = layer_norm
+        self.device = device
 
-    def forward(self, graph, feat, etypes, norm=None):
-        return self.model(graph, feat, etypes, norm)
+        # bias
+        if self.bias:
+            self.h_bias = nn.Parameter(torch.Tensor(output_size)).to(device)
+            nn.init.zeros_(self.h_bias)
+
+        # TODO(minjie): consider remove those options in the future to make
+        #   the module only about graph convolution.
+        # layer norm
+        if self.layer_norm:
+            self.layer_norm_weight = nn.LayerNorm(
+                output_size, elementwise_affine=True, device=device
+            )
+
+        # weight for self loop
+        if self.self_loop:
+            self.loop_weight = nn.Parameter(torch.Tensor(input_size, output_size)).to(device)
+            nn.init.xavier_uniform_(self.loop_weight, gain=nn.init.calculate_gain("relu"))
+
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
+        def message(edges, g):
+            """Message function."""
+            ln = self.linear_dict[g.canonical_etypes.index(edges._etype)]
+            m = ln(edges.src["h"])
+            if "norm" in edges.data:
+                m = m * edges.data["norm"]
+            return {"m": m}
+
+        # self.presorted = presorted
+        with g.local_scope():
+            g.srcdata["h"] = feat
+            if norm is not None:
+                g.edata["norm"] = norm
+            # g.edata['etype'] = etypes
+            # message passing
+            from functools import partial
+
+            update_dict = {
+                etype: (partial(message, g=g), fn.sum("m", "h")) for etype in g.canonical_etypes
+            }
+            g.multi_update_all(etype_dict=update_dict, cross_reducer="sum")
+            # g.update_all(self.message, fn.sum('m', 'h'))
+            # apply bias and activation
+            h = g.dstdata["h"]
+            if self.layer_norm:
+                h = self.layer_norm_weight(h)
+            if self.bias:
+                h = h + self.h_bias
+            if self.self_loop:
+                h = h + feat[: g.num_dst_nodes()] @ self.loop_weight
+            if self.activation:
+                h = self.activation(h)
+            h = self.dropout(h)
+            return h

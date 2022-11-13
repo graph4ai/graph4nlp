@@ -8,10 +8,10 @@ from graph4nlp.pytorch.models.graph2seq_loss import Graph2SeqLoss
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
-from args import get_args
-from build_model import get_model
-from evaluation import ExpressionAccuracy
-from utils import get_log, wordid2str
+from examples.pytorch.semantic_parsing.graph2seq.args import get_args
+from examples.pytorch.semantic_parsing.graph2seq.evaluation import ExpressionAccuracy
+from examples.pytorch.semantic_parsing.graph2seq.rgcn_lib.graph2seq import RGCNGraph2Seq
+from examples.pytorch.semantic_parsing.graph2seq.utils import get_log, wordid2str
 
 
 class Jobs:
@@ -53,7 +53,7 @@ class Jobs:
 
         log_folder = os.path.split(log_file)[0]
         if not os.path.exists(log_file):
-            os.makedirs(log_folder, exist_ok=True)
+            os.makedirs(log_folder)
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
@@ -111,7 +111,7 @@ class Jobs:
         self.vocab = dataset.vocab_model
 
     def _build_model(self):
-        self.model = get_model(self.opt, vocab_model=self.vocab).to(self.device)
+        self.model = RGCNGraph2Seq.from_args(self.opt, vocab_model=self.vocab).to(self.device)
 
     def _build_optimizer(self):
         parameters = [p for p in self.model.parameters() if p.requires_grad]
