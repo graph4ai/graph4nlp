@@ -382,7 +382,7 @@ title     = {GraphFlow: Exploiting Conversation Flow with Graph Neural Networks
 
 
 ## Team
-Graph4AI Team: [**Lingfei Wu**](https://sites.google.com/a/email.wm.edu/teddy-lfwu/home) (team leader), Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang and Xiao Liu. We are passionate in developing useful open-source libraries which aim to promote the easy use of various Deep Learning on Graphs techniques for Natural Language Processing. Our team consists of research scientists, applied data scientists, and graduate students from a variety of groups, including JD.COM Sillicon Valley Research Center (Lingfei Wu, Xiaojie Guo), JD.COM and Zhejiang University (Kai Shen), Facebook AI (Yu Chen), Tongji University (Hanning Gao), Nanjing University (Shucheng Li), HKUST (Saizhuo Wang).
+Graph4AI Team: [**Lingfei Wu**](https://sites.google.com/a/email.wm.edu/teddy-lfwu/home) (team leader), Yu Chen, Kai Shen, Xiaojie Guo, Hanning Gao, Shucheng Li, Saizhuo Wang, Xiao Liu and Jing Hu. We are passionate in developing useful open-source libraries which aim to promote the easy use of various Deep Learning on Graphs techniques for Natural Language Processing. Our team consists of research scientists, applied data scientists, and graduate students from a variety of industrial and academic groups, including Pinterest (Lingfei Wu), Zhejiang University (Kai Shen), Facebook AI (Yu Chen), IBM T.J. Watson Research Center (Xiaojie Guo), Tongji University (Hanning Gao), Nanjing University (Shucheng Li), HKUST (Saizhuo Wang).
 
 ## Contact
 If you have any technical questions, please submit new issues.
