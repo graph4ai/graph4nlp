@@ -1,8 +1,8 @@
 import dgl
+import dgl.function as fn
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import dgl.function as fn
 
 from graph4nlp.pytorch.modules.graph_embedding_learning.base import GNNBase, GNNLayerBase
 
