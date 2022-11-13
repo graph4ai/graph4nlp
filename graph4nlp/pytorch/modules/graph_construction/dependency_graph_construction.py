@@ -227,7 +227,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         graph: GraphData
             graph structure for single sentence
         """
-        ret_graph = GraphData(is_hetero=True)
+        ret_graph = GraphData(is_hetero=(edge_strategy == "heterogeneous"))
         node_num = parsed_object["node_num"]
         assert node_num > 0
         ret_graph.add_nodes(node_num, ntypes=[0 for _ in range(node_num)])

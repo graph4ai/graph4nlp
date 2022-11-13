@@ -97,7 +97,7 @@ model_args:
       tgt_emb_as_output_layer: true
 
 training_args:
-  log_file: "examples/pytorch/semantic_parsing/graph2seq/log/ggnn.txt"
+  log_file: "examples/pytorch/semantic_parsing/graph2seq/log/gcn.txt"
   learning_rate: 0.001
   lr_start_decay_epoch: 20
   lr_decay_per_epoch: 5

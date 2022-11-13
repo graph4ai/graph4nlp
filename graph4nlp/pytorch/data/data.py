@@ -176,7 +176,7 @@ class GraphData(object):
             )
 
         if not self.is_hetero:
-            if ntypes is None:
+            if ntypes is not None:
                 raise ValueError(
                     "The graph is homogeneous, ntypes should be None. Got {}".format(ntypes)
                 )

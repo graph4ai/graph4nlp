@@ -53,7 +53,7 @@ class Jobs:
 
         log_folder = os.path.split(log_file)[0]
         if not os.path.exists(log_file):
-            os.makedirs(log_folder)
+            os.makedirs(log_folder, exist_ok=True)
         self.logger = get_log(log_file)
 
     def _build_dataloader(self):
