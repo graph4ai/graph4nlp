@@ -9,8 +9,8 @@ from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 
 from examples.pytorch.semantic_parsing.graph2seq.args import get_args
-from examples.pytorch.semantic_parsing.graph2seq.rgcn_lib.graph2seq import RGCNGraph2Seq
 from examples.pytorch.semantic_parsing.graph2seq.evaluation import ExpressionAccuracy
+from examples.pytorch.semantic_parsing.graph2seq.rgcn_lib.graph2seq import RGCNGraph2Seq
 from examples.pytorch.semantic_parsing.graph2seq.utils import get_log, wordid2str
 
 

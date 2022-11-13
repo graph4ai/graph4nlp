@@ -1,4 +1,5 @@
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
+
 from examples.pytorch.rgcn.rgcn import RGCN
 
 
