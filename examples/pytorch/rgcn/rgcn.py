@@ -2,7 +2,6 @@ import dgl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from dgl.nn.pytorch import RelGraphConv
 import dgl.function as fn
 
 from graph4nlp.pytorch.modules.graph_embedding_learning.base import GNNBase, GNNLayerBase
@@ -208,7 +207,9 @@ class RGCNLayer(GNNLayerBase):
         #   the module only about graph convolution.
         # layer norm
         if self.layer_norm:
-            self.layer_norm_weight = nn.LayerNorm(output_size, elementwise_affine=True, device=device)
+            self.layer_norm_weight = nn.LayerNorm(
+                output_size, elementwise_affine=True, device=device
+            )
 
         # weight for self loop
         if self.self_loop:

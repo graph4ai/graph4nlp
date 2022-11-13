@@ -501,7 +501,8 @@ class GraphData(object):
             for etype in etypes:
                 if not isinstance(etype, tuple) and not isinstance(etype, str):
                     raise TypeError(
-                        "Edge type must be a tuple of three strings or a single string. Got {}.".format(
+                        "Edge type must be a tuple of three strings or a single string. \
+                            Got {}.".format(
                             type(etype)
                         )
                     )
