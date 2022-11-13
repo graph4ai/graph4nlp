@@ -227,10 +227,10 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         graph: GraphData
             graph structure for single sentence
         """
-        ret_graph = GraphData(is_hetero=(edge_strategy == "heterogeneous"))
+        ret_graph = GraphData(is_hetero=(edge_strategy == "heterogeneous")) # set ``is_hetero``=True when ``edge_strategy`` is ``heterogeneous``
         node_num = parsed_object["node_num"]
         assert node_num > 0
-        ret_graph.add_nodes(node_num, ntypes=[0 for _ in range(node_num)])
+        ret_graph.add_nodes(node_num, ntypes=[0 for _ in range(node_num)]) # node_type is a placeholder, since rgcn currently only support r-gnn, node types are omitted
         head_node = 0
         tail_node = node_num - 1
 
@@ -247,7 +247,7 @@ class DependencyBasedGraphConstruction(StaticGraphConstructionBase):
         for dep_info in parsed_object["graph_content"]:
             if edge_strategy is None or edge_strategy == "homogeneous":
                 ret_graph.add_edge(dep_info["src"], dep_info["tgt"])
-            elif edge_strategy == "heterogeneous":
+            elif edge_strategy == "heterogeneous": # add ``edge_type`` to graph_data
                 ret_graph.add_edge(dep_info["src"], dep_info["tgt"], dep_info["edge_type"])
                 edge_idx = ret_graph.edge_ids(dep_info["src"], dep_info["tgt"])[0]
                 ret_graph.edge_attributes[edge_idx]["token"] = dep_info["edge_type"]
