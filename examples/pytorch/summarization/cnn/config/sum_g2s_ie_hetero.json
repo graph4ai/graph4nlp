@@ -1,0 +1,4 @@
+{
+"config_path": "examples/pytorch/summarization/cnn/config/sum_g2s_ie_hetero.yaml",
+"training_args.batch_size": "32"
+}

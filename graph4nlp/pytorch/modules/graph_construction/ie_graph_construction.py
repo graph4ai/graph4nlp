@@ -119,6 +119,48 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                     parsed_results["graph_content"].append(triple_info_0_1)
                 if triple_info_1_2 not in parsed_results["graph_content"]:
                     parsed_results["graph_content"].append(triple_info_1_2)
+            elif edge_strategy == "heterogeneous":
+                if triple[0] not in graph_nodes:
+                    graph_nodes.append(triple[0])
+
+                if triple[1] not in graph_nodes:
+                    graph_nodes.append(triple[1])
+
+                if triple[2] not in graph_nodes:
+                    graph_nodes.append(triple[2])
+
+                triple_info_0_1 = {
+                    "edge_tokens": ("ent", "s2r", "ent"),
+                    "src": {
+                        "tokens": triple[0],
+                        "id": graph_nodes.index(triple[0]),
+                        "type": 0,  # 'ent_node'
+                    },
+                    "tgt": {
+                        "tokens": triple[1],
+                        "id": graph_nodes.index(triple[1]),
+                        "type": 3,  # 'edge_node'
+                    },
+                }
+
+                triple_info_1_2 = {
+                    "edge_tokens": ("ent", "r2o", "ent"),
+                    "src": {
+                        "tokens": triple[1],
+                        "id": graph_nodes.index(triple[1]),
+                        "type": 3,  # 'edge_node'
+                    },
+                    "tgt": {
+                        "tokens": triple[2],
+                        "id": graph_nodes.index(triple[2]),
+                        "type": 0,  # 'ent_node'
+                    },
+                }
+
+                if triple_info_0_1 not in parsed_results["graph_content"]:
+                    parsed_results["graph_content"].append(triple_info_0_1)
+                if triple_info_1_2 not in parsed_results["graph_content"]:
+                    parsed_results["graph_content"].append(triple_info_1_2)
             else:
                 raise NotImplementedError(
                     "Not Implemented Edge Strategy: {}.".format(edge_strategy)
@@ -339,7 +381,9 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
         graph: GraphData
             graph structure for single sentence
         """
-        ret_graph = GraphData()
+        ret_graph = GraphData(
+            is_hetero=(edge_strategy == "heterogeneous")
+        )  # set ``is_hetero``=True when ``edge_strategy`` is ``heterogeneous``
         node_num = parsed_object["node_num"]
         if node_num == 0:
             raise RuntimeError(
@@ -347,13 +391,20 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                     node_num
                 )
             )
-        ret_graph.add_nodes(node_num)
+        ret_graph.add_nodes(
+            node_num, ntypes=[0 for _ in range(node_num)]
+        )  # node_type is a placeholder, since rgcn currently only support r-gnn,
+        #    node types are omitted
         for triple_info in parsed_object["graph_content"]:
             if edge_strategy is None:
                 ret_graph.add_edge(triple_info["src"]["id"], triple_info["tgt"]["id"])
                 eids = ret_graph.edge_ids(triple_info["src"]["id"], triple_info["tgt"]["id"])
                 for eid in eids:
                     ret_graph.edge_attributes[eid]["token"] = triple_info["edge_tokens"]
+            elif edge_strategy == "heterogeneous":  # add ``edge_type`` to graph_data
+                ret_graph.add_edge(triple_info["src"]["id"], triple_info["tgt"]["id"], triple_info["edge_tokens"])
+                edge_idx = ret_graph.edge_ids(triple_info["src"]["id"], triple_info["tgt"]["id"])[0]
+                ret_graph.edge_attributes[edge_idx]["token"] = triple_info["edge_tokens"]
             elif edge_strategy == "as_node":
                 ret_graph.add_edge(triple_info["src"]["id"], triple_info["tgt"]["id"])
             else:
@@ -365,7 +416,7 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
             ret_graph.node_attributes[triple_info["tgt"]["id"]]["token"] = triple_info["tgt"][
                 "tokens"
             ]
-            if edge_strategy == "as_node":
+            if edge_strategy == "as_node" or edge_strategy == "heterogeneous":
                 ret_graph.node_attributes[triple_info["src"]["id"]]["type"] = triple_info["src"][
                     "type"
                 ]

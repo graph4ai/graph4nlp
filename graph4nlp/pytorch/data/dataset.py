@@ -896,19 +896,19 @@ class Text2TextDataset(Dataset):
             token_matrix = torch.tensor(token_matrix, dtype=torch.long)
             graph.node_features["token_id"] = token_matrix
 
-        if use_ie and "token" in graph.edge_attributes[0].keys():
+        if use_ie and isinstance(graph.edge_attributes[0]["token"], str):
             edge_token_matrix = []
             for edge_idx in range(graph.get_edge_num()):
                 edge_token = graph.edge_attributes[edge_idx]["token"]
                 edge_token_id = vocab_model.in_word_vocab.getIndex(edge_token, use_ie)
                 graph.edge_attributes[edge_idx]["token_id"] = edge_token_id
                 edge_token_matrix.append([edge_token_id])
-            if use_ie:
-                for i in range(len(edge_token_matrix)):
-                    edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
-                edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
-                edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
-                graph.edge_features["token_id"] = edge_token_matrix
+
+            for i in range(len(edge_token_matrix)):
+                edge_token_matrix[i] = np.array(edge_token_matrix[i][0])
+            edge_token_matrix = pad_2d_vals_no_size(edge_token_matrix)
+            edge_token_matrix = torch.tensor(edge_token_matrix, dtype=torch.long)
+            graph.edge_features["token_id"] = edge_token_matrix
 
         tgt = item.output_text
         if isinstance(tgt, str):
