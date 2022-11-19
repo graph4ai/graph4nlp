@@ -2,7 +2,6 @@ import dgl
 import dgl.function as fn
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from .base import GNNBase, GNNLayerBase
 
@@ -137,7 +136,7 @@ class RGCN(GNNBase):
             h = [feat, feat]
         else:
             h = feat
-        
+
         # get the node feature tensor from graph
         g = graph.to_dgl()  # transfer the current NLPgraph to DGL graph
         # edge_type = g.edata[dgl.ETYPE].long()
@@ -214,7 +213,7 @@ class RGCNLayer(GNNLayerBase):
                 activation=activation,
                 self_loop=self_loop,
                 feat_drop=feat_drop,
-                layer_norm=layer_norm
+                layer_norm=layer_norm,
             )
         elif direction_option == "bi_sep":
             self.model = BiSepRGCNLayer(
@@ -227,7 +226,7 @@ class RGCNLayer(GNNLayerBase):
                 activation=activation,
                 self_loop=self_loop,
                 feat_drop=feat_drop,
-                layer_norm=layer_norm
+                layer_norm=layer_norm,
             )
         elif direction_option == "bi_fuse":
             self.model = BiFuseRGCNLayer(
@@ -240,7 +239,7 @@ class RGCNLayer(GNNLayerBase):
                 activation=activation,
                 self_loop=self_loop,
                 feat_drop=feat_drop,
-                layer_norm=layer_norm
+                layer_norm=layer_norm,
             )
         else:
             raise RuntimeError("Unknown `direction_option` value: {}".format(direction_option))
@@ -299,6 +298,7 @@ class UndirectedRGCNLayer(GNNLayerBase):
     layer_norm: float, optional
         Add layer norm. Default: ``False``
     """
+
     def __init__(
         self,
         input_size,
@@ -407,6 +407,7 @@ class BiFuseRGCNLayer(GNNLayerBase):
     layer_norm: float, optional
         Add layer norm. Default: ``False``
     """
+
     def __init__(
         self,
         input_size,
@@ -460,7 +461,9 @@ class BiFuseRGCNLayer(GNNLayerBase):
     def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
         def message(edges, g, direction):
             """Message function."""
-            linear_dict = self.linear_dict_forward if direction=='forward' else self.linear_dict_backward
+            linear_dict = (
+                self.linear_dict_forward if direction == "forward" else self.linear_dict_backward
+            )
             ln = linear_dict[g.canonical_etypes.index(edges._etype)]
             m = ln(edges.src["h"])
             if "norm" in edges.data:
@@ -477,7 +480,8 @@ class BiFuseRGCNLayer(GNNLayerBase):
             from functools import partial
 
             update_dict = {
-                etype: (partial(message, g=g, direction='forward'), fn.sum("m", "h")) for etype in g.canonical_etypes
+                etype: (partial(message, g=g, direction="forward"), fn.sum("m", "h"))
+                for etype in g.canonical_etypes
             }
             g.multi_update_all(etype_dict=update_dict, cross_reducer="sum")
             # g.update_all(self.message, fn.sum('m', 'h'))
@@ -490,7 +494,7 @@ class BiFuseRGCNLayer(GNNLayerBase):
             if self.self_loop:
                 h = h + feat[: g.num_dst_nodes()] @ self.loop_weight_forward
             h_forward = h
-        
+
         g = g.reverse()
         with g.local_scope():
             g.srcdata["h"] = feat
@@ -501,7 +505,8 @@ class BiFuseRGCNLayer(GNNLayerBase):
             from functools import partial
 
             update_dict = {
-                etype: (partial(message, g=g, direction='backward'), fn.sum("m", "h")) for etype in g.canonical_etypes
+                etype: (partial(message, g=g, direction="backward"), fn.sum("m", "h"))
+                for etype in g.canonical_etypes
             }
             g.multi_update_all(etype_dict=update_dict, cross_reducer="sum")
             # g.update_all(self.message, fn.sum('m', 'h'))
@@ -514,11 +519,13 @@ class BiFuseRGCNLayer(GNNLayerBase):
             if self.self_loop:
                 h = h + feat[: g.num_dst_nodes()] @ self.loop_weight_backward
             h_backward = h
-        
-        fuse_vector = torch.cat([h_forward, h_backward, h_forward*h_backward, h_forward-h_backward], dim=-1)
+
+        fuse_vector = torch.cat(
+            [h_forward, h_backward, h_forward * h_backward, h_forward - h_backward], dim=-1
+        )
         fuse_gate_vector = torch.sigmoid(self.fuse_linear(fuse_vector))
         h = fuse_gate_vector * h_forward + (1 - fuse_gate_vector) * h_backward
-        
+
         if self.activation:
             h = self.activation(h)
         h = self.dropout(h)
@@ -557,6 +564,7 @@ class BiSepRGCNLayer(GNNLayerBase):
     layer_norm: float, optional
         Add layer norm. Default: ``False``
     """
+
     def __init__(
         self,
         input_size,
@@ -609,12 +617,15 @@ class BiSepRGCNLayer(GNNLayerBase):
     def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
         def message(edges, g, direction):
             """Message function."""
-            linear_dict = self.linear_dict_forward if direction=='forward' else self.linear_dict_backward
+            linear_dict = (
+                self.linear_dict_forward if direction == "forward" else self.linear_dict_backward
+            )
             ln = linear_dict[g.canonical_etypes.index(edges._etype)]
             m = ln(edges.src["h"])
             if "norm" in edges.data:
                 m = m * edges.data["norm"]
             return {"m": m}
+
         feat_forward, feat_backward = feat
         # self.presorted = presorted
         with g.local_scope():
@@ -626,7 +637,8 @@ class BiSepRGCNLayer(GNNLayerBase):
             from functools import partial
 
             update_dict = {
-                etype: (partial(message, g=g, direction='forward'), fn.sum("m", "h")) for etype in g.canonical_etypes
+                etype: (partial(message, g=g, direction="forward"), fn.sum("m", "h"))
+                for etype in g.canonical_etypes
             }
             g.multi_update_all(etype_dict=update_dict, cross_reducer="sum")
             # g.update_all(self.message, fn.sum('m', 'h'))
@@ -639,7 +651,7 @@ class BiSepRGCNLayer(GNNLayerBase):
             if self.self_loop:
                 h = h + feat[: g.num_dst_nodes()] @ self.loop_weight_forward
             h_forward = h
-        
+
         g = g.reverse()
         with g.local_scope():
             g.srcdata["h"] = feat_backward
@@ -650,7 +662,8 @@ class BiSepRGCNLayer(GNNLayerBase):
             from functools import partial
 
             update_dict = {
-                etype: (partial(message, g=g, direction='backward'), fn.sum("m", "h")) for etype in g.canonical_etypes
+                etype: (partial(message, g=g, direction="backward"), fn.sum("m", "h"))
+                for etype in g.canonical_etypes
             }
             g.multi_update_all(etype_dict=update_dict, cross_reducer="sum")
             # g.update_all(self.message, fn.sum('m', 'h'))
@@ -663,7 +676,7 @@ class BiSepRGCNLayer(GNNLayerBase):
             if self.self_loop:
                 h = h + feat[: g.num_dst_nodes()] @ self.loop_weight_backward
             h_backward = h
-        
+
         if self.activation:
             h_forward = self.activation(h_forward)
             h_backward = self.activation(h_backward)
