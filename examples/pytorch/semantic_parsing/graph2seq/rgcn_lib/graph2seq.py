@@ -1,7 +1,7 @@
 from graph4nlp.pytorch.models.graph2seq import Graph2Seq
 
-from examples.pytorch.rgcn.rgcn import RGCN
-
+# from examples.pytorch.rgcn.rgcn import RGCN
+from graph4nlp.pytorch.modules.graph_embedding_learning.rgcn import RGCN
 
 class RGCNGraph2Seq(Graph2Seq):
     def __init__(
@@ -89,6 +89,8 @@ class RGCNGraph2Seq(Graph2Seq):
             hidden_size,
             output_size,
             num_rels=gnn_num_rels,
-            num_bases=gnn_num_bases,
-            dropout=feats_dropout,
+            direction_option="undirected",
+            # num_bases=gnn_num_bases,
+            # dropout=feats_dropout,
+            feat_drop=feats_dropout
         )

@@ -111,11 +111,9 @@ def main(config):
         hidden_size=config["hidden_size"],
         output_size=num_classes,
         direction_option=config["direction_option"],
-        regularizer="basis",
-        bias=True,
+        bias=config['bias'],
         activation=F.relu,
         num_rels=num_rels,
-        num_bases=config["num_bases"],
         self_loop=config["self_loop"],
         feat_drop=config["feat_drop"],
     )

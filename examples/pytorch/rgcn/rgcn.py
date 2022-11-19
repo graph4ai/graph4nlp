@@ -46,7 +46,7 @@ class RGCN(GNNBase):
         num_bases=None,
         use_self_loop=True,
         dropout=0.0,
-        device="cuda",
+        device="cpu",
     ):
         super(RGCN, self).__init__()
         self.num_layers = num_layers
@@ -185,7 +185,7 @@ class RGCNLayer(GNNLayerBase):
         self_loop=False,
         dropout=0.0,
         layer_norm=False,
-        device="cuda",
+        device="cpu",
     ):
         super(RGCNLayer, self).__init__()
         self.linear_dict = {
