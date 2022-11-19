@@ -120,9 +120,7 @@ def main(config):
         num_rels=num_rels,
         num_bases=config["num_bases"],
         use_self_loop=config["use_self_loop"],
-        #  gpu=config.gpu,
         dropout=config["dropout"],
-        device="cpu" if config["gpu"] == -1 else "cuda:" + str(config["gpu"]),
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["wd"])
     print("start training...")
@@ -160,31 +158,5 @@ if __name__ == "__main__":
     parser.add_argument("--grid_search", action="store_true", help="flag: grid search")
     cfg = vars(parser.parse_args())
     config = get_config(cfg["config"])
-
-    # parser = argparse.ArgumentParser(description='RGCN for entity classification')
-    # parser.add_argument("--num-hidden-layers", type=int, default=1,
-    #                     help="number of hidden layers beside input/output layer")
-    # parser.add_argument("--hidden-size", type=int, default=16,
-    #                     help="dimension of hidden layer")
-    # parser.add_argument("--gpu", type=int, default=-1,
-    #                     help="GPU device number, -1 for cpu")
-    # parser.add_argument("--num-bases", type=int, default=-1,
-    #                     help="number of filter weight matrices, default: -1 [use all]")
-    # parser.add_argument("-d", "--dataset", type=str, required=True,
-    #                     choices=['aifb', 'mutag', 'bgs', 'am'],
-    #                     help="dataset to use")
-    # parser.add_argument("--use-self-loop", type=bool, default=False,
-    #                     help="Consider self-loop edges or not")
-    # parser.add_argument("--dropout", type=float, default=0.0,
-    #                     help="Dropout rate")
-    # parser.add_argument("--lr", type=float, default=1e-2,
-    #                     help="Start learning rate")
-    # parser.add_argument("--wd", type=float, default=5e-4,
-    #                     help="weight decay")
-    # parser.add_argument("--num-epochs", type=int, default=50,
-    #                     help="Number of training epochs")
-
-    # args = parser.parse_args()
-    # print(args)
     print(config)
     main(config)
