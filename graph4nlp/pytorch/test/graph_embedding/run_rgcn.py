@@ -1,5 +1,4 @@
 import argparse
-
 import dgl
 import torch
 import torch.nn.functional as F
@@ -10,18 +9,10 @@ from ...data.data import from_dgl
 from ...modules.graph_embedding_learning.rgcn import RGCN
 from ...modules.utils.generic_utils import get_config
 
-# Fix random seed
-# torch.manual_seed(1024)
-# import random
-# random.seed(1024)
-# import numpy as np
-# np.random.seed(1024)
 
 # Load dataset
 # Reference: dgl/examples/pytorch/rgcn/entity_utils.py
 # (https://github.com/dmlc/dgl/blob/master/examples/pytorch/rgcn/entity_utils.py)
-
-
 def load_data(data_name="aifb", get_norm=False, inv_target=False):
     if data_name == "aifb":
         dataset = AIFBDataset()
