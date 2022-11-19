@@ -90,5 +90,5 @@ class RGCNGraph2Seq(Graph2Seq):
             output_size,
             num_rels=gnn_num_rels,
             num_bases=gnn_num_bases,
-            dropout=feats_dropout,
+            dropout=feats_dropout
         )
