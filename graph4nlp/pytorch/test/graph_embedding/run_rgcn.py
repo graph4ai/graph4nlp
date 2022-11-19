@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from torchmetrics.functional import accuracy
 from ...modules.graph_embedding_learning.rgcn import RGCN
 from ...data.data import from_dgl
+from ...modules.utils.generic_utils import get_config
 from dgl.data.rdf import AIFBDataset, MUTAGDataset, BGSDataset, AMDataset
 
 
@@ -98,30 +99,30 @@ def load_data(data_name='aifb', get_norm=False, inv_target=False):
         return g, num_rels, num_classes, labels, train_idx, test_idx, target_idx
 
 
-def main(args):
-    g, num_rels, num_classes, labels, train_idx, test_idx, target_idx = load_data(data_name=args.dataset, get_norm=True)
+def main(config):
+    g, num_rels, num_classes, labels, train_idx, test_idx, target_idx = load_data(data_name=config['dataset'], get_norm=True)
 
     # graph = from_dgl(g, is_hetero=False)
     graph = from_dgl(g)
     num_nodes = graph.get_node_num()
-    emb = torch.nn.Embedding(num_nodes, args.hidden_size)
+    emb = torch.nn.Embedding(num_nodes, config['hidden_size'])
     # emb.requires_grad = True
     graph.node_features['node_feat'] = emb.weight
     
-    model = RGCN(num_layers=args.num_hidden_layers, 
-                 input_size=args.hidden_size,
-                 hidden_size=args.hidden_size,
+    model = RGCN(num_layers=config['num_hidden_layers'], 
+                 input_size=config['hidden_size'],
+                 hidden_size=config['hidden_size'],
                  output_size=num_classes,
                  num_rels=num_rels,
-                 num_bases=args.num_bases,
-                 use_self_loop=args.use_self_loop,
-                #  gpu=args.gpu,
-                 dropout = args.dropout,
-                 device='cpu')
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
+                 num_bases=config['num_bases'],
+                 use_self_loop=config['use_self_loop'],
+                #  gpu=config.gpu,
+                 dropout = config['dropout'],
+                 device='cpu' if config['gpu'] == -1 else 'cuda:'+str(config['gpu']))
+    optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], weight_decay=config['wd'])
     print("start training...")
     model.train()
-    for epoch in range(args.num_epochs):
+    for epoch in range(config['num_epochs']):
         logits = model(graph).node_features["node_emb"]
         logits = logits[target_idx]
         loss = F.cross_entropy(logits[train_idx], labels[train_idx])
@@ -145,47 +146,36 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='RGCN for entity classification')
-    parser.add_argument("--num-hidden-layers", type=int, default=1,
-                        help="number of hidden layers beside input/output layer")
-    parser.add_argument("--hidden-size", type=int, default=16,
-                        help="dimension of hidden layer")
-    parser.add_argument("--gpu", type=int, default=-1,
-                        help="GPU device number, -1 for cpu")
-    parser.add_argument("--num-bases", type=int, default=-1,
-                        help="number of filter weight matrices, default: -1 [use all]")
-    parser.add_argument("-d", "--dataset", type=str, required=True,
-                        choices=['aifb', 'mutag', 'bgs', 'am'],
-                        help="dataset to use")
-    parser.add_argument("--use-self-loop", type=bool, default=False,
-                        help="Consider self-loop edges or not")
-    parser.add_argument("--dropout", type=float, default=0.0,
-                        help="Dropout rate")
-    parser.add_argument("--lr", type=float, default=1e-2,
-                        help="Start learning rate")
-    parser.add_argument("--wd", type=float, default=5e-4,
-                        help="weight decay")
-    parser.add_argument("--num-epochs", type=int, default=50,
-                        help="Number of training epochs")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-config", type=str, help="path to the config file")
+    parser.add_argument("--grid_search", action="store_true", help="flag: grid search")
+    cfg = vars(parser.parse_args())
+    config = get_config(cfg["config"])
 
-    args = parser.parse_args()
-    print(args)
-    main(args)
+    # parser = argparse.ArgumentParser(description='RGCN for entity classification')
+    # parser.add_argument("--num-hidden-layers", type=int, default=1,
+    #                     help="number of hidden layers beside input/output layer")
+    # parser.add_argument("--hidden-size", type=int, default=16,
+    #                     help="dimension of hidden layer")
+    # parser.add_argument("--gpu", type=int, default=-1,
+    #                     help="GPU device number, -1 for cpu")
+    # parser.add_argument("--num-bases", type=int, default=-1,
+    #                     help="number of filter weight matrices, default: -1 [use all]")
+    # parser.add_argument("-d", "--dataset", type=str, required=True,
+    #                     choices=['aifb', 'mutag', 'bgs', 'am'],
+    #                     help="dataset to use")
+    # parser.add_argument("--use-self-loop", type=bool, default=False,
+    #                     help="Consider self-loop edges or not")
+    # parser.add_argument("--dropout", type=float, default=0.0,
+    #                     help="Dropout rate")
+    # parser.add_argument("--lr", type=float, default=1e-2,
+    #                     help="Start learning rate")
+    # parser.add_argument("--wd", type=float, default=5e-4,
+    #                     help="weight decay")
+    # parser.add_argument("--num-epochs", type=int, default=50,
+    #                     help="Number of training epochs")
 
-
-
-
-
-"""Deprecated RGCN code on Heterogeneous graph due to 
-the lack of support from data structure. The following supports
-are needed (but not limit to):
-- Redefine the feature data structure of node/edge
-    - Index node/edge ids by their type.
-    - Enable type indexed features.
-- Make corresponding changes on views.
-- Make corresponding changes on set/get features functions.
-
-This example bypasses it by storing the features in the model
-itself. It is a code trick and therefore not recommended to
-the user.
-"""
+    # args = parser.parse_args()
+    # print(args)
+    print(config)
+    main(config)

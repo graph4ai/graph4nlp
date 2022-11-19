@@ -1,0 +1,10 @@
+num_hidden_layers: 1
+hidden_size: 16
+gpu: -1
+num_bases: -1
+dataset: 'aifb'
+use_self_loop: False
+dropout: 0.0
+lr: 0.01
+wd: 0.0005
+num_epochs: 50
