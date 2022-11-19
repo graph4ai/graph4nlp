@@ -43,21 +43,17 @@ class RGCN(GNNBase):
         output_size,
         num_rels,
         direction_option=None,
-        regularizer="basis",
         bias=True,
         activation=None,
-        num_bases=None,
         self_loop=True,
         feat_drop=0.0,
     ):
         super(RGCN, self).__init__()
         self.num_layers = num_layers
         self.num_rels = num_rels
-        self.num_bases = num_bases
         self.self_loop = self_loop
         self.feat_drop = feat_drop
         self.direction_option = direction_option
-        self.regularizer = regularizer
         self.activation = activation
         self.bias = bias
         self.RGCN_layers = nn.ModuleList()
@@ -74,8 +70,6 @@ class RGCN(GNNBase):
                     hidden_size[0],
                     num_rels=self.num_rels,
                     direction_option=self.direction_option,
-                    regularizer=self.regularizer,
-                    num_bases=self.num_bases,
                     bias=self.bias,
                     activation=self.activation,
                     self_loop=self.self_loop,
@@ -91,8 +85,6 @@ class RGCN(GNNBase):
                     hidden_size[l],
                     num_rels=self.num_rels,
                     direction_option=self.direction_option,
-                    regularizer=self.regularizer,
-                    num_bases=self.num_bases,
                     bias=self.bias,
                     activation=self.activation,
                     self_loop=self.self_loop,
@@ -106,8 +98,6 @@ class RGCN(GNNBase):
                 output_size,
                 num_rels=self.num_rels,
                 direction_option=self.direction_option,
-                regularizer=self.regularizer,
-                num_bases=self.num_bases,
                 bias=self.bias,
                 activation=self.activation,
                 self_loop=self.self_loop,
@@ -193,8 +183,6 @@ class RGCNLayer(GNNLayerBase):
         output_size,
         num_rels,
         direction_option=None,
-        regularizer=None,
-        num_bases=None,
         bias=True,
         activation=None,
         self_loop=False,
@@ -207,8 +195,6 @@ class RGCNLayer(GNNLayerBase):
                 input_size,
                 output_size,
                 num_rels=num_rels,
-                regularizer=regularizer,
-                num_bases=num_bases,
                 bias=bias,
                 activation=activation,
                 self_loop=self_loop,
@@ -220,8 +206,6 @@ class RGCNLayer(GNNLayerBase):
                 input_size,
                 output_size,
                 num_rels=num_rels,
-                regularizer=regularizer,
-                num_bases=num_bases,
                 bias=bias,
                 activation=activation,
                 self_loop=self_loop,
@@ -233,8 +217,6 @@ class RGCNLayer(GNNLayerBase):
                 input_size,
                 output_size,
                 num_rels=num_rels,
-                regularizer=regularizer,
-                num_bases=num_bases,
                 bias=bias,
                 activation=activation,
                 self_loop=self_loop,
@@ -304,8 +286,6 @@ class UndirectedRGCNLayer(GNNLayerBase):
         input_size,
         output_size,
         num_rels,
-        regularizer=None,
-        num_bases=None,
         bias=True,
         activation=None,
         self_loop=False,
@@ -413,8 +393,6 @@ class BiFuseRGCNLayer(GNNLayerBase):
         input_size,
         output_size,
         num_rels,
-        regularizer=None,
-        num_bases=None,
         bias=True,
         activation=None,
         self_loop=False,
@@ -570,8 +548,6 @@ class BiSepRGCNLayer(GNNLayerBase):
         input_size,
         output_size,
         num_rels,
-        regularizer=None,
-        num_bases=None,
         bias=True,
         activation=None,
         self_loop=False,
