@@ -3,6 +3,7 @@ import dgl
 import torch
 import torch.nn.functional as F
 from dgl.data.rdf import AIFBDataset, AMDataset, BGSDataset, MUTAGDataset
+
 from torchmetrics.functional import accuracy
 
 from ...data.data import from_dgl
