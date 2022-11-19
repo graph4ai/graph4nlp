@@ -117,10 +117,14 @@ def main(config):
         input_size=config["hidden_size"],
         hidden_size=config["hidden_size"],
         output_size=num_classes,
+        direction_option=config["direction_option"],
+        regularizer="basis",
+        bias=True,
+        activation=F.relu,
         num_rels=num_rels,
         num_bases=config["num_bases"],
-        use_self_loop=config["use_self_loop"],
-        dropout=config["dropout"],
+        self_loop=config["self_loop"],
+        feat_drop=config["feat_drop"],
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["wd"])
     print("start training...")

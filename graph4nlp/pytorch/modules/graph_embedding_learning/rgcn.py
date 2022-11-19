@@ -30,10 +30,10 @@ class RGCN(GNNBase):
         Number of relations.
     num_bases : int, optional
         Number of bases. Needed when ``regularizer`` is specified. Default: ``None``.
-    use_self_loop : bool, optional
+    self_loop : bool, optional
         True to include self loop message. Default: ``True``.
-    dropout : float, optional
-        Dropout rate. Default: ``0.0``
+    feat_drop : float, optional
+        dropout rate. Default: ``0.0``
     """
 
     def __init__(
@@ -43,17 +43,24 @@ class RGCN(GNNBase):
         hidden_size,
         output_size,
         num_rels,
+        direction_option=None,
+        regularizer="basis",
+        bias=True,
+        activation=None,
         num_bases=None,
-        use_self_loop=True,
-        dropout=0.0,
+        self_loop=True,
+        feat_drop=0.0,
     ):
         super(RGCN, self).__init__()
         self.num_layers = num_layers
         self.num_rels = num_rels
         self.num_bases = num_bases
-        self.use_self_loop = use_self_loop
-        self.dropout = dropout
-
+        self.self_loop = self_loop
+        self.feat_drop = feat_drop
+        self.direction_option = direction_option
+        self.regularizer = regularizer
+        self.activation = activation
+        self.bias = bias
         self.RGCN_layers = nn.ModuleList()
 
         # transform the hidden size format
@@ -67,12 +74,13 @@ class RGCN(GNNBase):
                     input_size,
                     hidden_size[0],
                     num_rels=self.num_rels,
-                    regularizer="basis",
+                    direction_option=self.direction_option,
+                    regularizer=self.regularizer,
                     num_bases=self.num_bases,
-                    bias=True,
-                    activation=F.relu,
-                    self_loop=self.use_self_loop,
-                    dropout=self.dropout,
+                    bias=self.bias,
+                    activation=self.activation,
+                    self_loop=self.self_loop,
+                    feat_drop=self.feat_drop,
                 )
             )
         # hidden layers
@@ -83,12 +91,13 @@ class RGCN(GNNBase):
                     hidden_size[l - 1],
                     hidden_size[l],
                     num_rels=self.num_rels,
-                    regularizer="basis",
+                    direction_option=self.direction_option,
+                    regularizer=self.regularizer,
                     num_bases=self.num_bases,
-                    bias=True,
-                    activation=F.relu,
-                    self_loop=self.use_self_loop,
-                    dropout=self.dropout,
+                    bias=self.bias,
+                    activation=self.activation,
+                    self_loop=self.self_loop,
+                    feat_drop=self.feat_drop,
                 )
             )
         # output projection
@@ -97,12 +106,13 @@ class RGCN(GNNBase):
                 hidden_size[-1] if self.num_layers > 1 else input_size,
                 output_size,
                 num_rels=self.num_rels,
-                regularizer="basis",
+                direction_option=self.direction_option,
+                regularizer=self.regularizer,
                 num_bases=self.num_bases,
-                bias=True,
-                activation=F.relu,
-                self_loop=self.use_self_loop,
-                dropout=self.dropout,
+                bias=self.bias,
+                activation=self.activation,
+                self_loop=self.self_loop,
+                feat_drop=self.feat_drop,
             )
         )
 
@@ -122,8 +132,12 @@ class RGCN(GNNBase):
             The graph with generated node embedding stored in the feature field
             named as "node_emb".
         """
-
-        h = graph.node_features["node_feat"]
+        feat = graph.node_features["node_feat"]
+        if self.direction_option == "bi_sep":
+            h = [feat, feat]
+        else:
+            h = feat
+        
         # get the node feature tensor from graph
         g = graph.to_dgl()  # transfer the current NLPgraph to DGL graph
         # edge_type = g.edata[dgl.ETYPE].long()
@@ -134,12 +148,15 @@ class RGCN(GNNBase):
 
         logits = self.RGCN_layers[-1](g, h)
 
+        if self.direction_option == "bi_sep":
+            logits = torch.cat(logits, -1)
+
         graph.node_features["node_emb"] = logits  # put the results into the NLPGraph
         return graph
 
 
 class RGCNLayer(GNNLayerBase):
-    r"""A wrapper for RelGraphConv in DGL.
+    r"""A wrapper for RGCNLayer.
 
     .. math::
         TODO
@@ -165,7 +182,7 @@ class RGCNLayer(GNNLayerBase):
         Activation function. Default: ``None``.
     self_loop : bool, optional
         True to include self loop message. Default: ``True``.
-    dropout : float, optional
+    feat_drop : float, optional
         Dropout rate. Default: ``0.0``
     layer_norm: float, optional
         Add layer norm. Default: ``False``
@@ -176,15 +193,126 @@ class RGCNLayer(GNNLayerBase):
         input_size,
         output_size,
         num_rels,
+        direction_option=None,
         regularizer=None,
         num_bases=None,
         bias=True,
         activation=None,
         self_loop=False,
-        dropout=0.0,
+        feat_drop=0.0,
         layer_norm=False,
     ):
         super(RGCNLayer, self).__init__()
+        if direction_option == "undirected":
+            self.model = UndirectedRGCNLayer(
+                input_size,
+                output_size,
+                num_rels=num_rels,
+                regularizer=regularizer,
+                num_bases=num_bases,
+                bias=bias,
+                activation=activation,
+                self_loop=self_loop,
+                feat_drop=feat_drop,
+                layer_norm=layer_norm
+            )
+        elif direction_option == "bi_sep":
+            self.model = BiSepRGCNLayer(
+                input_size,
+                output_size,
+                num_rels=num_rels,
+                regularizer=regularizer,
+                num_bases=num_bases,
+                bias=bias,
+                activation=activation,
+                self_loop=self_loop,
+                feat_drop=feat_drop,
+                layer_norm=layer_norm
+            )
+        elif direction_option == "bi_fuse":
+            self.model = BiFuseRGCNLayer(
+                input_size,
+                output_size,
+                num_rels=num_rels,
+                regularizer=regularizer,
+                num_bases=num_bases,
+                bias=bias,
+                activation=activation,
+                self_loop=self_loop,
+                feat_drop=feat_drop,
+                layer_norm=layer_norm
+            )
+        else:
+            raise RuntimeError("Unknown `direction_option` value: {}".format(direction_option))
+
+    def forward(self, graph, feat):
+        r"""Compute graph attention network layer.
+
+        Parameters
+        ----------
+        graph : DGLGraph
+            The graph.
+        feat : torch.Tensor or pair of torch.Tensor
+            If a torch.Tensor is given, the input feature of shape :math:`(N, D_{in})` where
+            :math:`D_{in}` is size of input feature, :math:`N` is the number of nodes.
+            If a pair of torch.Tensor is given, the pair must contain two tensors of shape
+            :math:`(N_{in}, D_{in_{src}})` and :math:`(N_{out}, D_{in_{dst}})`.
+
+        Returns
+        -------
+        torch.Tensor
+            The output feature of shape :math:`(N, H, D_{out})` where :math:`H`
+            is the number of heads, and :math:`D_{out}` is size of output feature.
+        """
+        return self.model(graph, feat)
+
+
+class UndirectedRGCNLayer(GNNLayerBase):
+    r"""An undirected RGCN layer.
+
+    .. math::
+        TODO
+
+    Parameters
+    ----------
+    input_size : int, or pair of ints
+        Input feature size.
+    output_size : int
+        Output feature size.
+    num_rels: int
+        number of relations
+    regularizer : str, optional
+        Which weight regularizer to use "basis" or "bdd":
+         - "basis" is short for basis-decomposition.
+         - "bdd" is short for block-diagonal-decomposition.
+        Default applies no regularization.
+    num_bases : int, optional
+        Number of bases. Needed when ``regularizer`` is specified. Default: ``None``.
+    bias : bool, optional
+        True if bias is added. Default: ``True``.
+    activation : callable, optional
+        Activation function. Default: ``None``.
+    self_loop : bool, optional
+        True to include self loop message. Default: ``True``.
+    feat_drop : float, optional
+        Dropout rate. Default: ``0.0``
+    layer_norm: float, optional
+        Add layer norm. Default: ``False``
+    """
+    def __init__(
+        self,
+        input_size,
+        output_size,
+        num_rels,
+        regularizer=None,
+        num_bases=None,
+        bias=True,
+        activation=None,
+        self_loop=False,
+        feat_drop=0.0,
+        layer_norm=False,
+    ):
+        super(UndirectedRGCNLayer, self).__init__()
         self.linear_dict = {
             i: nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
         }
@@ -199,8 +327,6 @@ class RGCNLayer(GNNLayerBase):
             self.h_bias = nn.Parameter(torch.Tensor(output_size))
             nn.init.zeros_(self.h_bias)
 
-        # TODO(minjie): consider remove those options in the future to make
-        #   the module only about graph convolution.
         # layer norm
         if self.layer_norm:
             self.layer_norm_weight = nn.LayerNorm(output_size, elementwise_affine=True)
@@ -210,7 +336,7 @@ class RGCNLayer(GNNLayerBase):
             self.loop_weight = nn.Parameter(torch.Tensor(input_size, output_size))
             nn.init.xavier_uniform_(self.loop_weight, gain=nn.init.calculate_gain("relu"))
 
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(feat_drop)
 
     def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
         def message(edges, g):
@@ -247,3 +373,300 @@ class RGCNLayer(GNNLayerBase):
                 h = self.activation(h)
             h = self.dropout(h)
             return h
+
+
+class BiFuseRGCNLayer(GNNLayerBase):
+    r"""A Bidirectional version for RGCNLayer, with an additional fuse layer.
+
+    .. math::
+        TODO
+
+    Parameters
+    ----------
+    input_size : int, or pair of ints
+        Input feature size.
+    output_size : int
+        Output feature size.
+    num_rels: int
+        number of relations
+    regularizer : str, optional
+        Which weight regularizer to use "basis" or "bdd":
+         - "basis" is short for basis-decomposition.
+         - "bdd" is short for block-diagonal-decomposition.
+        Default applies no regularization.
+    num_bases : int, optional
+        Number of bases. Needed when ``regularizer`` is specified. Default: ``None``.
+    bias : bool, optional
+        True if bias is added. Default: ``True``.
+    activation : callable, optional
+        Activation function. Default: ``None``.
+    self_loop : bool, optional
+        True to include self loop message. Default: ``True``.
+    feat_drop : float, optional
+        Dropout rate. Default: ``0.0``
+    layer_norm: float, optional
+        Add layer norm. Default: ``False``
+    """
+    def __init__(
+        self,
+        input_size,
+        output_size,
+        num_rels,
+        regularizer=None,
+        num_bases=None,
+        bias=True,
+        activation=None,
+        self_loop=False,
+        feat_drop=0.0,
+        layer_norm=False,
+    ):
+        super(BiFuseRGCNLayer, self).__init__()
+        self.linear_dict_forward = {
+            i: nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
+        }
+        self.linear_dict_backward = {
+            i: nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
+        }
+
+        # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
+        self.bias = bias
+        self.activation = activation
+        self.self_loop = self_loop
+        self.layer_norm = layer_norm
+
+        # bias
+        if self.bias:
+            self.h_bias_forward = nn.Parameter(torch.Tensor(output_size))
+            nn.init.zeros_(self.h_bias_forward)
+            self.h_bias_backward = nn.Parameter(torch.Tensor(output_size))
+            nn.init.zeros_(self.h_bias_backward)
+
+        # layer norm
+        if self.layer_norm:
+            self.layer_norm_weight_forward = nn.LayerNorm(output_size, elementwise_affine=True)
+            self.layer_norm_weight_backward = nn.LayerNorm(output_size, elementwise_affine=True)
+
+        # weight for self loop
+        if self.self_loop:
+            self.loop_weight_forward = nn.Parameter(torch.Tensor(input_size, output_size))
+            nn.init.xavier_uniform_(self.loop_weight_forward, gain=nn.init.calculate_gain("relu"))
+
+            self.loop_weight_backward = nn.Parameter(torch.Tensor(input_size, output_size))
+            nn.init.xavier_uniform_(self.loop_weight_backward, gain=nn.init.calculate_gain("relu"))
+
+        self.fuse_linear = nn.Linear(4 * output_size, output_size, bias=True)
+        self.dropout = nn.Dropout(feat_drop)
+
+    def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
+        def message(edges, g, direction):
+            """Message function."""
+            linear_dict = self.linear_dict_forward if direction=='forward' else self.linear_dict_backward
+            ln = linear_dict[g.canonical_etypes.index(edges._etype)]
+            m = ln(edges.src["h"])
+            if "norm" in edges.data:
+                m = m * edges.data["norm"]
+            return {"m": m}
+
+        # self.presorted = presorted
+        with g.local_scope():
+            g.srcdata["h"] = feat
+            if norm is not None:
+                g.edata["norm"] = norm
+            # g.edata['etype'] = etypes
+            # message passing
+            from functools import partial
+
+            update_dict = {
+                etype: (partial(message, g=g, direction='forward'), fn.sum("m", "h")) for etype in g.canonical_etypes
+            }
+            g.multi_update_all(etype_dict=update_dict, cross_reducer="sum")
+            # g.update_all(self.message, fn.sum('m', 'h'))
+            # apply bias and activation
+            h = g.dstdata["h"]
+            if self.layer_norm:
+                h = self.layer_norm_weight_forward(h)
+            if self.bias:
+                h = h + self.h_bias_forward
+            if self.self_loop:
+                h = h + feat[: g.num_dst_nodes()] @ self.loop_weight_forward
+            h_forward = h
+        
+        g = g.reverse()
+        with g.local_scope():
+            g.srcdata["h"] = feat
+            if norm is not None:
+                g.edata["norm"] = norm
+            # g.edata['etype'] = etypes
+            # message passing
+            from functools import partial
+
+            update_dict = {
+                etype: (partial(message, g=g, direction='backward'), fn.sum("m", "h")) for etype in g.canonical_etypes
+            }
+            g.multi_update_all(etype_dict=update_dict, cross_reducer="sum")
+            # g.update_all(self.message, fn.sum('m', 'h'))
+            # apply bias and activation
+            h = g.dstdata["h"]
+            if self.layer_norm:
+                h = self.layer_norm_weight_backward(h)
+            if self.bias:
+                h = h + self.h_bias_backward
+            if self.self_loop:
+                h = h + feat[: g.num_dst_nodes()] @ self.loop_weight_backward
+            h_backward = h
+        
+        fuse_vector = torch.cat([h_forward, h_backward, h_forward*h_backward, h_forward-h_backward], dim=-1)
+        fuse_gate_vector = torch.sigmoid(self.fuse_linear(fuse_vector))
+        h = fuse_gate_vector * h_forward + (1 - fuse_gate_vector) * h_backward
+        
+        if self.activation:
+            h = self.activation(h)
+        h = self.dropout(h)
+        return h
+
+
+class BiSepRGCNLayer(GNNLayerBase):
+    r"""A Bidirectional version for RGCNLayer.
+
+    .. math::
+        TODO
+
+    Parameters
+    ----------
+    input_size : int, or pair of ints
+        Input feature size.
+    output_size : int
+        Output feature size.
+    num_rels: int
+        number of relations
+    regularizer : str, optional
+        Which weight regularizer to use "basis" or "bdd":
+         - "basis" is short for basis-decomposition.
+         - "bdd" is short for block-diagonal-decomposition.
+        Default applies no regularization.
+    num_bases : int, optional
+        Number of bases. Needed when ``regularizer`` is specified. Default: ``None``.
+    bias : bool, optional
+        True if bias is added. Default: ``True``.
+    activation : callable, optional
+        Activation function. Default: ``None``.
+    self_loop : bool, optional
+        True to include self loop message. Default: ``True``.
+    feat_drop : float, optional
+        Dropout rate. Default: ``0.0``
+    layer_norm: float, optional
+        Add layer norm. Default: ``False``
+    """
+    def __init__(
+        self,
+        input_size,
+        output_size,
+        num_rels,
+        regularizer=None,
+        num_bases=None,
+        bias=True,
+        activation=None,
+        self_loop=False,
+        feat_drop=0.0,
+        layer_norm=False,
+    ):
+        super(BiSepRGCNLayer, self).__init__()
+        self.linear_dict_forward = {
+            i: nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
+        }
+        self.linear_dict_backward = {
+            i: nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
+        }
+
+        # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
+        self.bias = bias
+        self.activation = activation
+        self.self_loop = self_loop
+        self.layer_norm = layer_norm
+
+        # bias
+        if self.bias:
+            self.h_bias_forward = nn.Parameter(torch.Tensor(output_size))
+            nn.init.zeros_(self.h_bias_forward)
+            self.h_bias_backward = nn.Parameter(torch.Tensor(output_size))
+            nn.init.zeros_(self.h_bias_backward)
+
+        # layer norm
+        if self.layer_norm:
+            self.layer_norm_weight_forward = nn.LayerNorm(output_size, elementwise_affine=True)
+            self.layer_norm_weight_backward = nn.LayerNorm(output_size, elementwise_affine=True)
+
+        # weight for self loop
+        if self.self_loop:
+            self.loop_weight_forward = nn.Parameter(torch.Tensor(input_size, output_size))
+            nn.init.xavier_uniform_(self.loop_weight_forward, gain=nn.init.calculate_gain("relu"))
+
+            self.loop_weight_backward = nn.Parameter(torch.Tensor(input_size, output_size))
+            nn.init.xavier_uniform_(self.loop_weight_backward, gain=nn.init.calculate_gain("relu"))
+
+        self.dropout = nn.Dropout(feat_drop)
+
+    def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
+        def message(edges, g, direction):
+            """Message function."""
+            linear_dict = self.linear_dict_forward if direction=='forward' else self.linear_dict_backward
+            ln = linear_dict[g.canonical_etypes.index(edges._etype)]
+            m = ln(edges.src["h"])
+            if "norm" in edges.data:
+                m = m * edges.data["norm"]
+            return {"m": m}
+        feat_forward, feat_backward = feat
+        # self.presorted = presorted
+        with g.local_scope():
+            g.srcdata["h"] = feat_forward
+            if norm is not None:
+                g.edata["norm"] = norm
+            # g.edata['etype'] = etypes
+            # message passing
+            from functools import partial
+
+            update_dict = {
+                etype: (partial(message, g=g, direction='forward'), fn.sum("m", "h")) for etype in g.canonical_etypes
+            }
+            g.multi_update_all(etype_dict=update_dict, cross_reducer="sum")
+            # g.update_all(self.message, fn.sum('m', 'h'))
+            # apply bias and activation
+            h = g.dstdata["h"]
+            if self.layer_norm:
+                h = self.layer_norm_weight_forward(h)
+            if self.bias:
+                h = h + self.h_bias_forward
+            if self.self_loop:
+                h = h + feat[: g.num_dst_nodes()] @ self.loop_weight_forward
+            h_forward = h
+        
+        g = g.reverse()
+        with g.local_scope():
+            g.srcdata["h"] = feat_backward
+            if norm is not None:
+                g.edata["norm"] = norm
+            # g.edata['etype'] = etypes
+            # message passing
+            from functools import partial
+
+            update_dict = {
+                etype: (partial(message, g=g, direction='backward'), fn.sum("m", "h")) for etype in g.canonical_etypes
+            }
+            g.multi_update_all(etype_dict=update_dict, cross_reducer="sum")
+            # g.update_all(self.message, fn.sum('m', 'h'))
+            # apply bias and activation
+            h = g.dstdata["h"]
+            if self.layer_norm:
+                h = self.layer_norm_weight_backward(h)
+            if self.bias:
+                h = h + self.h_bias_backward
+            if self.self_loop:
+                h = h + feat[: g.num_dst_nodes()] @ self.loop_weight_backward
+            h_backward = h
+        
+        if self.activation:
+            h_forward = self.activation(h_forward)
+            h_backward = self.activation(h_backward)
+        h_forward = self.dropout(h_forward)
+        h_backward = self.dropout(h_backward)
+        return [h_forward, h_backward]

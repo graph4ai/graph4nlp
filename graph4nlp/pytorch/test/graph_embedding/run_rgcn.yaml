@@ -2,8 +2,9 @@ num_hidden_layers: 1
 hidden_size: 16
 num_bases: -1
 dataset: 'aifb'
-use_self_loop: False
-dropout: 0.0
+direction_option: "bi_fuse"
+self_loop: False
+feat_drop: 0.0
 lr: 0.01
 wd: 0.0005
-num_epochs: 50
+num_epochs: 150
