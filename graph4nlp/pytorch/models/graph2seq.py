@@ -26,7 +26,7 @@ class Graph2Seq(Graph2XBase):
         >>> "It is just a how-to-use example."
         >>> from graph4nlp.pytorch.modules.config import get_basic_args
         >>> opt = get_basic_args(graph_construction_name="node_emb", graph_embedding_name="gat", decoder_name="stdrnn")
-        >>> graph2seq = Graph2Seq.from_args(opt=opt, vocab_model=vocab_model, device=torch.device("cuda:0"))
+        >>> graph2seq = Graph2Seq.from_args(opt=opt, vocab_model=vocab_model)
         >>> batch_graph = [GraphData() for _ in range(2)]
         >>> tgt_seq = torch.Tensor([[1, 2, 3], [4, 5, 6]])
         >>> seq_out, _, _ = graph2seq(batch_graph=batch_graph, tgt_seq=tgt_seq)

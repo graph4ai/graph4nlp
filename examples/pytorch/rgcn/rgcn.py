@@ -54,7 +54,6 @@ class RGCN(GNNBase):
         self.num_bases = num_bases
         self.use_self_loop = use_self_loop
         self.dropout = dropout
-        self.device = device
 
         self.RGCN_layers = nn.ModuleList()
 
@@ -189,18 +188,17 @@ class RGCNLayer(GNNLayerBase):
     ):
         super(RGCNLayer, self).__init__()
         self.linear_dict = {
-            i: nn.Linear(input_size, output_size, bias=bias, device=device) for i in range(num_rels)
+            i: nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
         }
         # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
         self.bias = bias
         self.activation = activation
         self.self_loop = self_loop
         self.layer_norm = layer_norm
-        self.device = device
 
         # bias
         if self.bias:
-            self.h_bias = nn.Parameter(torch.Tensor(output_size)).to(device)
+            self.h_bias = nn.Parameter(torch.Tensor(output_size))
             nn.init.zeros_(self.h_bias)
 
         # TODO(minjie): consider remove those options in the future to make
@@ -208,12 +206,12 @@ class RGCNLayer(GNNLayerBase):
         # layer norm
         if self.layer_norm:
             self.layer_norm_weight = nn.LayerNorm(
-                output_size, elementwise_affine=True, device=device
+                output_size, elementwise_affine=True
             )
 
         # weight for self loop
         if self.self_loop:
-            self.loop_weight = nn.Parameter(torch.Tensor(input_size, output_size)).to(device)
+            self.loop_weight = nn.Parameter(torch.Tensor(input_size, output_size))
             nn.init.xavier_uniform_(self.loop_weight, gain=nn.init.calculate_gain("relu"))
 
         self.dropout = nn.Dropout(dropout)
