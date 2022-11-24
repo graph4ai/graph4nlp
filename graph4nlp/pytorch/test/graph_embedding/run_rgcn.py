@@ -99,9 +99,11 @@ def main(config):
     )
 
     # graph = from_dgl(g, is_hetero=False)
-    graph = from_dgl(g)
+    device = 'cuda:0'
+    graph = from_dgl(g).to(device)
+    labels = labels.to(device)
     num_nodes = graph.get_node_num()
-    emb = torch.nn.Embedding(num_nodes, config["hidden_size"])
+    emb = torch.nn.Embedding(num_nodes, config["hidden_size"]).to(device)
     # emb.requires_grad = True
     graph.node_features["node_feat"] = emb.weight
 
@@ -116,7 +118,9 @@ def main(config):
         num_rels=num_rels,
         self_loop=config["self_loop"],
         feat_drop=config["feat_drop"],
-    )
+        regularizer='basis',
+        num_basis=10
+    ).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["wd"])
     print("start training...")
     model.train()

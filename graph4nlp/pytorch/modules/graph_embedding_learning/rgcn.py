@@ -1,5 +1,6 @@
 import dgl
 import dgl.function as fn
+from dgl.nn.pytorch.linear import TypedLinear
 import torch
 import torch.nn as nn
 
@@ -47,6 +48,8 @@ class RGCN(GNNBase):
         activation=None,
         self_loop=True,
         feat_drop=0.0,
+        regularizer=None,
+        num_basis=None,
     ):
         super(RGCN, self).__init__()
         self.num_layers = num_layers
@@ -291,11 +294,20 @@ class UndirectedRGCNLayer(GNNLayerBase):
         self_loop=False,
         feat_drop=0.0,
         layer_norm=False,
+        regularizer=None,
+        num_bases=None,
     ):
         super(UndirectedRGCNLayer, self).__init__()
-        self.linear_dict = nn.ModuleDict({
-            str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
-        })
+        # self.linear_dict = nn.ModuleDict({
+        #     str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
+        # })
+        self.linear = TypedLinear(
+            in_size=input_size,
+            out_size=output_size,
+            num_types=num_rels,
+            regularizer=regularizer,
+            num_bases=num_bases,
+        )
         # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
         self.bias = bias
         self.activation = activation
@@ -321,8 +333,15 @@ class UndirectedRGCNLayer(GNNLayerBase):
     def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
         def message(edges, g):
             """Message function."""
-            ln = self.linear_dict[str(g.canonical_etypes.index(edges._etype))]
-            m = ln(edges.src["h"])
+            # ln = self.linear(edges.src['h'], edges.data['type'])
+            # ln = self.linear_dict[str(g.canonical_etypes.index(edges._etype))]
+            # m = ln(edges.src["h"])
+
+            etypes = torch.tensor(
+                [g.canonical_etypes.index(edges._etype)] * edges.src["h"].shape[0]
+            ).to(edges.src["h"].device)
+            m = self.linear(edges.src["h"], etypes)
+
             if "norm" in edges.data:
                 m = m * edges.data["norm"]
             return {"m": m}
@@ -400,12 +419,12 @@ class BiFuseRGCNLayer(GNNLayerBase):
         layer_norm=False,
     ):
         super(BiFuseRGCNLayer, self).__init__()
-        self.linear_dict_forward = nn.ModuleDict({
-            str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
-        })
-        self.linear_dict_backward = nn.ModuleDict({
-            str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
-        })
+        self.linear_dict_forward = nn.ModuleDict(
+            {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
+        )
+        self.linear_dict_backward = nn.ModuleDict(
+            {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
+        )
 
         # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
         self.bias = bias
@@ -555,13 +574,13 @@ class BiSepRGCNLayer(GNNLayerBase):
         layer_norm=False,
     ):
         super(BiSepRGCNLayer, self).__init__()
-        
-        self.linear_dict_forward = nn.ModuleDict({
-            str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
-        })
-        self.linear_dict_backward = nn.ModuleDict({
-            str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
-        })
+
+        self.linear_dict_forward = nn.ModuleDict(
+            {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
+        )
+        self.linear_dict_backward = nn.ModuleDict(
+            {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
+        )
 
         # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
         self.bias = bias
