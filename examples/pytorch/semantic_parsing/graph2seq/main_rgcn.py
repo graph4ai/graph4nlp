@@ -52,7 +52,7 @@ class Jobs:
         import os
 
         log_folder = os.path.split(log_file)[0]
-        if not os.path.exists(log_file):
+        if not os.path.exists(log_folder):
             os.makedirs(log_folder)
         self.logger = get_log(log_file)
 

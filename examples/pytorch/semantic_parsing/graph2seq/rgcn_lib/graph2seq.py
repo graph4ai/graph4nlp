@@ -74,10 +74,12 @@ class RGCNGraph2Seq(Graph2Seq):
 
     def _build_gnn_encoder(
         self,
+        gnn,
         num_layers,
         input_size,
         hidden_size,
         output_size,
+        direction_option,
         feats_dropout,
         gnn_num_rels=80,
         gnn_num_bases=4,
@@ -89,7 +91,7 @@ class RGCNGraph2Seq(Graph2Seq):
             hidden_size,
             output_size,
             num_rels=gnn_num_rels,
-            direction_option="undirected",
+            direction_option=direction_option,
             # num_bases=gnn_num_bases,
             # dropout=feats_dropout,
             feat_drop=feats_dropout

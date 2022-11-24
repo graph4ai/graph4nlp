@@ -293,9 +293,9 @@ class UndirectedRGCNLayer(GNNLayerBase):
         layer_norm=False,
     ):
         super(UndirectedRGCNLayer, self).__init__()
-        self.linear_dict = {
-            i: nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
-        }
+        self.linear_dict = nn.ModuleDict({
+            str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
+        })
         # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
         self.bias = bias
         self.activation = activation
@@ -321,7 +321,7 @@ class UndirectedRGCNLayer(GNNLayerBase):
     def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
         def message(edges, g):
             """Message function."""
-            ln = self.linear_dict[g.canonical_etypes.index(edges._etype)]
+            ln = self.linear_dict[str(g.canonical_etypes.index(edges._etype))]
             m = ln(edges.src["h"])
             if "norm" in edges.data:
                 m = m * edges.data["norm"]
@@ -555,12 +555,13 @@ class BiSepRGCNLayer(GNNLayerBase):
         layer_norm=False,
     ):
         super(BiSepRGCNLayer, self).__init__()
-        self.linear_dict_forward = {
-            i: nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
-        }
-        self.linear_dict_backward = {
-            i: nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
-        }
+        
+        self.linear_dict_forward = nn.ModuleDict({
+            str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
+        })
+        self.linear_dict_backward = nn.ModuleDict({
+            str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)
+        })
 
         # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
         self.bias = bias
@@ -596,7 +597,7 @@ class BiSepRGCNLayer(GNNLayerBase):
             linear_dict = (
                 self.linear_dict_forward if direction == "forward" else self.linear_dict_backward
             )
-            ln = linear_dict[g.canonical_etypes.index(edges._etype)]
+            ln = linear_dict[str(g.canonical_etypes.index(edges._etype))]
             m = ln(edges.src["h"])
             if "norm" in edges.data:
                 m = m * edges.data["norm"]
