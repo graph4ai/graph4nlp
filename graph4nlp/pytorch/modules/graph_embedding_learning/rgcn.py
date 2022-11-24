@@ -626,7 +626,7 @@ class BiSepRGCNLayer(GNNLayerBase):
             if self.bias:
                 h = h + self.h_bias_forward
             if self.self_loop:
-                h = h + feat[: g.num_dst_nodes()] @ self.loop_weight_forward
+                h = h + feat_forward[: g.num_dst_nodes()] @ self.loop_weight_forward
             h_forward = h
 
         g = g.reverse()
@@ -651,7 +651,7 @@ class BiSepRGCNLayer(GNNLayerBase):
             if self.bias:
                 h = h + self.h_bias_backward
             if self.self_loop:
-                h = h + feat[: g.num_dst_nodes()] @ self.loop_weight_backward
+                h = h + feat_backward[: g.num_dst_nodes()] @ self.loop_weight_backward
             h_backward = h
 
         if self.activation:

@@ -1,7 +1,7 @@
-num_hidden_layers: 3
-hidden_size: 32
+num_hidden_layers: 1
+hidden_size: 16
 dataset: 'aifb'
-direction_option: "bi_fuse"
+direction_option: "undirected"
 self_loop: False
 bias: True
 feat_drop: 0.0
