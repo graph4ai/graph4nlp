@@ -130,7 +130,8 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                     graph_nodes.append(triple[2])
 
                 triple_info_0_1 = {
-                    "edge_tokens": ("ent", "s2r", "ent"),
+                    # "edge_tokens": ("ent", "s2r", "ent"),
+                    "edge_tokens": (0, "s2r", 0),
                     "src": {
                         "tokens": triple[0],
                         "id": graph_nodes.index(triple[0]),
@@ -139,16 +140,16 @@ class IEBasedGraphConstruction(StaticGraphConstructionBase):
                     "tgt": {
                         "tokens": triple[1],
                         "id": graph_nodes.index(triple[1]),
-                        "type": 3,  # 'edge_node'
+                        "type": 0,  # 'edge_node'
                     },
                 }
 
                 triple_info_1_2 = {
-                    "edge_tokens": ("ent", "r2o", "ent"),
+                    "edge_tokens": (0, "r2o", 0),
                     "src": {
                         "tokens": triple[1],
                         "id": graph_nodes.index(triple[1]),
-                        "type": 3,  # 'edge_node'
+                        "type": 0,  # 'edge_node'
                     },
                     "tgt": {
                         "tokens": triple[2],

@@ -20,13 +20,14 @@ model_args:
       root_dir: "examples/pytorch/summarization/cnn"
 #      topology_subdir: 'IEGraph_3w'
 #      topology_subdir: 'IEGraph_stanza'
-      topology_subdir: 'IEGraph_stanza_hetero'
+#      topology_subdir: 'IEGraph_stanza_hetero'
+      topology_subdir: 'IEGraph_stanza_hetero_1w'
       thread_number: 35
 
       nlp_processor_args:
         name: "stanza"
         args:
-          corenlp_dir: "/raid/user8/graph4nlp/stanford-corenlp-4.0.0"
+          corenlp_dir: "/home/gaohanning/graph4nlp/stanford-corenlp-4.0.0f"
           endpoint: "http://localhost:9001"
           memory: "4G"
           annotators: ["tokenize, ssplit, pos, lemma, ner, parse, coref, openie"]
@@ -117,6 +118,6 @@ checkpoint_args:
 
 env_args:
   seed: 1234
-  gpu: 2
+  gpu: 3
   no_cuda: false
   num_workers: 0

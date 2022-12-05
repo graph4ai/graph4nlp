@@ -47,8 +47,7 @@ class SumModel(nn.Module):
         ]
 
         # build Graph2Seq model
-        self.g2s = RGCNGraph2Seq.from_args(config, self.vocab).to(self.config["env_args"]["device"])
-
+        self.g2s = RGCNGraph2Seq.from_args(config, self.vocab)
         self.graph_construction_name = self.config["model_args"]["graph_construction_name"]
 
         if "w2v" in self.g2s.graph_initializer.embedding_layer.word_emb_layers:

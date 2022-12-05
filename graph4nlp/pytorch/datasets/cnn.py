@@ -18,7 +18,7 @@ class CNNDataset(Text2TextDataset):
         pretrained_word_emb_url=None,
         target_pretrained_word_emb_name=None,
         target_pretrained_word_emb_url=None,
-        pretrained_word_emb_cache_dir=".vector_cache/",
+        pretrained_word_emb_cache_dir="/home/gaohanning/data2text/.vector_cache/",
         use_val_for_vocab=False,
         seed=1234,
         thread_number=4,
@@ -65,7 +65,7 @@ class CNNDataset(Text2TextDataset):
         3 reserved keys: 'train', 'val' (optional), 'test'.
         Represent the split of dataset.
         """
-        return {"train": "train_3w.json", "val": "val.json", "test": "test.json"}
+        return {"train": "train_1w.json", "val": "val.json", "test": "test.json"}
 
     @property
     def processed_file_names(self):

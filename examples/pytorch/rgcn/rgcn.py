@@ -75,6 +75,7 @@ class RGCN(GNNBase):
                     activation=F.relu,
                     self_loop=self.use_self_loop,
                     dropout=self.dropout,
+                    device=device
                 )
             )
         # hidden layers
@@ -91,6 +92,7 @@ class RGCN(GNNBase):
                     activation=F.relu,
                     self_loop=self.use_self_loop,
                     dropout=self.dropout,
+                    device=device
                 )
             )
         # output projection
@@ -105,6 +107,7 @@ class RGCN(GNNBase):
                 activation=F.relu,
                 self_loop=self.use_self_loop,
                 dropout=self.dropout,
+                device=device
             )
         )
 
