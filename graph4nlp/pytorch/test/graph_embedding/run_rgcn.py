@@ -119,7 +119,7 @@ def main(config):
         self_loop=config["self_loop"],
         feat_drop=config["feat_drop"],
         regularizer='basis',
-        num_basis=10
+        num_bases=10
     ).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["wd"])
     print("start training...")

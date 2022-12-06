@@ -48,8 +48,8 @@ class RGCN(GNNBase):
         activation=None,
         self_loop=True,
         feat_drop=0.0,
-        regularizer=None,
-        num_basis=None,
+        regularizer='basis',
+        num_bases=4,
     ):
         super(RGCN, self).__init__()
         self.num_layers = num_layers
@@ -60,6 +60,8 @@ class RGCN(GNNBase):
         self.activation = activation
         self.bias = bias
         self.RGCN_layers = nn.ModuleList()
+        self.regularizer = regularizer
+        self.num_basis = num_bases
 
         # transform the hidden size format
         if self.num_layers > 1 and type(hidden_size) is int:
@@ -77,6 +79,8 @@ class RGCN(GNNBase):
                     activation=self.activation,
                     self_loop=self.self_loop,
                     feat_drop=self.feat_drop,
+                    regularizer=regularizer,
+                    num_bases=num_bases,
                 )
             )
         # hidden layers
@@ -92,7 +96,9 @@ class RGCN(GNNBase):
                     activation=self.activation,
                     self_loop=self.self_loop,
                     feat_drop=self.feat_drop,
-                )
+                    regularizer=regularizer,
+                    num_bases=num_bases,
+               )
             )
         # output projection
         self.RGCN_layers.append(
@@ -105,6 +111,8 @@ class RGCN(GNNBase):
                 activation=self.activation,
                 self_loop=self.self_loop,
                 feat_drop=self.feat_drop,
+                regularizer=regularizer,
+                num_bases=num_bases,
             )
         )
 
@@ -191,6 +199,8 @@ class RGCNLayer(GNNLayerBase):
         self_loop=False,
         feat_drop=0.0,
         layer_norm=False,
+        regularizer=None,
+        num_bases=None
     ):
         super(RGCNLayer, self).__init__()
         if direction_option == "undirected":
@@ -203,6 +213,8 @@ class RGCNLayer(GNNLayerBase):
                 self_loop=self_loop,
                 feat_drop=feat_drop,
                 layer_norm=layer_norm,
+                regularizer=regularizer,
+                num_bases=num_bases,
             )
         elif direction_option == "bi_sep":
             self.model = BiSepRGCNLayer(
@@ -214,6 +226,8 @@ class RGCNLayer(GNNLayerBase):
                 self_loop=self_loop,
                 feat_drop=feat_drop,
                 layer_norm=layer_norm,
+                regularizer=regularizer,
+                num_bases=num_bases,
             )
         elif direction_option == "bi_fuse":
             self.model = BiFuseRGCNLayer(
@@ -225,6 +239,8 @@ class RGCNLayer(GNNLayerBase):
                 self_loop=self_loop,
                 feat_drop=feat_drop,
                 layer_norm=layer_norm,
+                regularizer=regularizer,
+                num_bases=num_bases,
             )
         else:
             raise RuntimeError("Unknown `direction_option` value: {}".format(direction_option))
@@ -405,6 +421,11 @@ class BiFuseRGCNLayer(GNNLayerBase):
         Dropout rate. Default: ``0.0``
     layer_norm: float, optional
         Add layer norm. Default: ``False``
+    regularizer: str, optional
+        Which weight regularizer to use "basis" or "bdd":
+            - "basis" is short for basis-decomposition.
+    num_bases : int, optional
+        Number of bases. Needed when ``regularizer`` is specified. Default: ``None``.
     """
 
     def __init__(
@@ -417,14 +438,19 @@ class BiFuseRGCNLayer(GNNLayerBase):
         self_loop=False,
         feat_drop=0.0,
         layer_norm=False,
+        regularizer=None,
+        num_bases=None
     ):
         super(BiFuseRGCNLayer, self).__init__()
-        self.linear_dict_forward = nn.ModuleDict(
-            {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
-        )
-        self.linear_dict_backward = nn.ModuleDict(
-            {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
-        )
+        self.ln_fwd = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
+        self.ln_bwd = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
+        
+        # self.linear_dict_forward = nn.ModuleDict(
+        #     {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
+        # )
+        # self.linear_dict_backward = nn.ModuleDict(
+        #     {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
+        # )
 
         # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
         self.bias = bias
@@ -458,11 +484,17 @@ class BiFuseRGCNLayer(GNNLayerBase):
     def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
         def message(edges, g, direction):
             """Message function."""
-            linear_dict = (
-                self.linear_dict_forward if direction == "forward" else self.linear_dict_backward
-            )
-            ln = linear_dict[str(g.canonical_etypes.index(edges._etype))]
-            m = ln(edges.src["h"])
+            # linear_dict = (
+            #     self.linear_dict_forward if direction == "forward" else self.linear_dict_backward
+            # )
+            # ln = linear_dict[str(g.canonical_etypes.index(edges._etype))]
+            # m = ln(edges.src["h"])
+            
+            ln = self.ln_fwd if direction == "forward" else self.ln_bwd
+            etypes = torch.tensor(
+                [g.canonical_etypes.index(edges._etype)] * edges.src["h"].shape[0]
+            ).to(edges.src["h"].device)
+            m = ln(edges.src["h"], etypes)            
             if "norm" in edges.data:
                 m = m * edges.data["norm"]
             return {"m": m}
@@ -560,6 +592,11 @@ class BiSepRGCNLayer(GNNLayerBase):
         Dropout rate. Default: ``0.0``
     layer_norm: float, optional
         Add layer norm. Default: ``False``
+    regularizer: str, optional
+        Which weight regularizer to use "basis" or "bdd":
+            - "basis" is short for basis-decomposition.
+    num_bases : int, optional
+        Number of bases. Needed when ``regularizer`` is specified. Default: ``None``.
     """
 
     def __init__(
@@ -572,15 +609,19 @@ class BiSepRGCNLayer(GNNLayerBase):
         self_loop=False,
         feat_drop=0.0,
         layer_norm=False,
+        regularizer=None,
+        num_bases=None,
     ):
         super(BiSepRGCNLayer, self).__init__()
+        self.ln_fwd = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
+        self.ln_bwd = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
 
-        self.linear_dict_forward = nn.ModuleDict(
-            {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
-        )
-        self.linear_dict_backward = nn.ModuleDict(
-            {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
-        )
+        # self.linear_dict_forward = nn.ModuleDict(
+        #     {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
+        # )
+        # self.linear_dict_backward = nn.ModuleDict(
+        #     {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
+        # )
 
         # self.linear_r = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
         self.bias = bias
@@ -613,11 +654,15 @@ class BiSepRGCNLayer(GNNLayerBase):
     def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
         def message(edges, g, direction):
             """Message function."""
-            linear_dict = (
-                self.linear_dict_forward if direction == "forward" else self.linear_dict_backward
-            )
-            ln = linear_dict[str(g.canonical_etypes.index(edges._etype))]
-            m = ln(edges.src["h"])
+            # linear_dict = (
+            #     self.linear_dict_forward if direction == "forward" else self.linear_dict_backward
+            # )
+            # ln = linear_dict[str(g.canonical_etypes.index(edges._etype))]
+            ln = self.ln_fwd if direction == "forward" else self.ln_bwd
+            etypes = torch.tensor(
+                [g.canonical_etypes.index(edges._etype)] * edges.src["h"].shape[0]
+            ).to(edges.src["h"].device)
+            m = ln(edges.src["h"], etypes)
             if "norm" in edges.data:
                 m = m * edges.data["norm"]
             return {"m": m}
