@@ -7,8 +7,9 @@ from dgl.data.rdf import AIFBDataset, AMDataset, BGSDataset, MUTAGDataset
 from torchmetrics.functional import accuracy
 
 from ...data.data import from_dgl
-from ...modules.graph_embedding_learning.rgcn import RGCN
+from ...modules.graph_embedding_learning.rgcn import RGCNLayer
 from ...modules.utils.generic_utils import get_config
+import torch.nn as nn
 
 
 # Load dataset
@@ -93,39 +94,91 @@ def load_data(data_name="aifb", get_norm=False, inv_target=False):
         return g, num_rels, num_classes, labels, train_idx, test_idx, target_idx
 
 
+class MyModel(nn.Module):
+    def __init__(
+        self,
+        num_layers,
+        input_size,
+        hidden_size,
+        output_size,
+        num_rels,
+        direction_option=None,
+        bias=True,
+        activation=None,
+        self_loop=True,
+        feat_drop=0.0,
+        regularizer="none",
+        num_bases=4,
+        num_nodes=100,
+    ):
+        super(MyModel, self).__init__()
+        self.emb = nn.Embedding(num_nodes, config["hidden_size"])
+        self.layer_1 = RGCNLayer(
+            input_size,
+            hidden_size,
+            num_rels=num_rels,
+            direction_option=direction_option,
+            bias=bias,
+            activation=activation,
+            self_loop=self_loop,
+            feat_drop=feat_drop,
+            regularizer=regularizer,
+            num_bases=num_bases,
+        )
+        self.layer_2 = RGCNLayer(
+            hidden_size,
+            output_size,
+            num_rels=num_rels,
+            direction_option=direction_option,
+            bias=bias,
+            activation=activation,
+            self_loop=self_loop,
+            feat_drop=feat_drop,
+            regularizer=regularizer,
+            num_bases=num_bases,
+        )
+
+    def forward(self, g):
+        node_features = 0
+        x1 = F.relu(self.)
+        g.node_features["node_feat"] = self.emb(torch.eye(g.num_nodes()))
+        return self.RGCN(g).node_features["node_emb"]
+
+
 def main(config):
     g, num_rels, num_classes, labels, train_idx, test_idx, target_idx = load_data(
         data_name=config["dataset"], get_norm=True
     )
 
     # graph = from_dgl(g, is_hetero=False)
-    device = 'cuda:0'
+    device = "cuda:0"
     graph = from_dgl(g).to(device)
     labels = labels.to(device)
     num_nodes = graph.get_node_num()
-    emb = torch.nn.Embedding(num_nodes, config["hidden_size"]).to(device)
-    # emb.requires_grad = True
-    graph.node_features["node_feat"] = emb.weight
-
-    model = RGCN(
-        num_layers=config["num_hidden_layers"],
+    my_model = MyModel(
+        num_layers=config["num_hidden_layers"] + 1,
         input_size=config["hidden_size"],
         hidden_size=config["hidden_size"],
         output_size=num_classes,
         direction_option=config["direction_option"],
-        bias=config['bias'],
+        bias=config["bias"],
         activation=F.relu,
         num_rels=num_rels,
         self_loop=config["self_loop"],
         feat_drop=config["feat_drop"],
-        regularizer='basis',
-        num_bases=10
+        regularizer="basis",
+        num_bases=num_rels,
+        num_nodes=num_nodes,
     ).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["wd"])
+    optimizer = torch.optim.Adam(
+        my_model.parameters(),
+        lr=config["lr"],
+        weight_decay=config["wd"],
+    )
     print("start training...")
-    model.train()
+    my_model.train()
     for epoch in range(config["num_epochs"]):
-        logits = model(graph).node_features["node_emb"]
+        logits = my_model(graph)
         logits = logits[target_idx]
         loss = F.cross_entropy(logits[train_idx], labels[train_idx])
 
@@ -143,9 +196,9 @@ def main(config):
     # Save Model
     # torch.save(model.state_dict(), "./rgcn_model.pt")
     print("start evaluating...")
-    model.eval()
+    my_model.eval()
     with torch.no_grad():
-        logits = model(graph).node_features["node_emb"]
+        logits = my_model(graph)
     logits = logits[target_idx]
     test_acc = accuracy(logits[test_idx].argmax(dim=1), labels[test_idx]).item()
     print("Test Accuracy: {:.4f}".format(test_acc))

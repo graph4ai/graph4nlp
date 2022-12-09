@@ -48,7 +48,7 @@ class RGCN(GNNBase):
         activation=None,
         self_loop=True,
         feat_drop=0.0,
-        regularizer='basis',
+        regularizer="none",
         num_bases=4,
     ):
         super(RGCN, self).__init__()
@@ -98,7 +98,7 @@ class RGCN(GNNBase):
                     feat_drop=self.feat_drop,
                     regularizer=regularizer,
                     num_bases=num_bases,
-               )
+                )
             )
         # output projection
         self.RGCN_layers.append(
@@ -115,6 +115,9 @@ class RGCN(GNNBase):
                 num_bases=num_bases,
             )
         )
+        # Print named parameters
+        # for k, v in self.named_parameters():
+        #     print(f'{k}: {v}')
 
     def forward(self, graph):
         r"""Compute RGCN layer.
@@ -200,7 +203,7 @@ class RGCNLayer(GNNLayerBase):
         feat_drop=0.0,
         layer_norm=False,
         regularizer=None,
-        num_bases=None
+        num_bases=None,
     ):
         super(RGCNLayer, self).__init__()
         if direction_option == "undirected":
@@ -439,12 +442,12 @@ class BiFuseRGCNLayer(GNNLayerBase):
         feat_drop=0.0,
         layer_norm=False,
         regularizer=None,
-        num_bases=None
+        num_bases=None,
     ):
         super(BiFuseRGCNLayer, self).__init__()
         self.ln_fwd = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
         self.ln_bwd = TypedLinear(input_size, output_size, num_rels, regularizer, num_bases)
-        
+
         # self.linear_dict_forward = nn.ModuleDict(
         #     {str(i): nn.Linear(input_size, output_size, bias=bias) for i in range(num_rels)}
         # )
@@ -489,12 +492,12 @@ class BiFuseRGCNLayer(GNNLayerBase):
             # )
             # ln = linear_dict[str(g.canonical_etypes.index(edges._etype))]
             # m = ln(edges.src["h"])
-            
+
             ln = self.ln_fwd if direction == "forward" else self.ln_bwd
             etypes = torch.tensor(
                 [g.canonical_etypes.index(edges._etype)] * edges.src["h"].shape[0]
             ).to(edges.src["h"].device)
-            m = ln(edges.src["h"], etypes)            
+            m = ln(edges.src["h"], etypes)
             if "norm" in edges.data:
                 m = m * edges.data["norm"]
             return {"m": m}

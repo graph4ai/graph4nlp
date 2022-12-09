@@ -205,9 +205,7 @@ class RGCNLayer(GNNLayerBase):
         #   the module only about graph convolution.
         # layer norm
         if self.layer_norm:
-            self.layer_norm_weight = nn.LayerNorm(
-                output_size, elementwise_affine=True
-            )
+            self.layer_norm_weight = nn.LayerNorm(output_size, elementwise_affine=True)
 
         # weight for self loop
         if self.self_loop:
