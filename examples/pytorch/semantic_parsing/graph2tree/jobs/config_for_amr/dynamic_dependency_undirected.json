@@ -1,8 +1,8 @@
 {
     "config_path": "examples/pytorch/semantic_parsing/graph2tree/jobs/config_for_amr/semantic_parsing_with_tree_decoder_dependency.yaml",
     "checkpoint_args.checkpoint_name": "node_emb_sage_undirected.pt",
-    "checkpoint_args.out_dir": "examples/pytorch/semantic_parsing/graph2tree/jobs/save_for_amr",
-    "env_args.gpuid": 1,
+    "checkpoint_args.out_dir": "examples/pytorch/semantic_parsing/graph2tree/jobs/save_for_dep",
+    "env_args.gpuid": 2,
     "training_args.batch_size": 20,
     "training_args.max_epochs": 150,
     "model_args.graph_construction_args.graph_construction_share.root_dir": "examples/pytorch/semantic_parsing/graph2tree/jobs/jobs_data",

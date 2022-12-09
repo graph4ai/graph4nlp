@@ -16,7 +16,7 @@ import random
 import time
 import warnings
 from examples.pytorch.amr_graph_construction.amr_graph_construction import AMRGraphConstruction
-from utils import AMRDataItem, AMRGraph2Tree, EdgeText2TreeDataset, RGCNGraph2Tree
+from .utils import AMRDataItem, AMRGraph2Tree, EdgeText2TreeDataset, RGCNGraph2Tree
 
 warnings.filterwarnings("ignore")
 
