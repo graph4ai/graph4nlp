@@ -1,16 +1,15 @@
 import argparse
 import dgl
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 from dgl.data.rdf import AIFBDataset, AMDataset, BGSDataset, MUTAGDataset
 
 from torchmetrics.functional import accuracy
 
-from ...data.data import from_dgl
+from ...data.data import GraphData, from_dgl
 from ...modules.graph_embedding_learning.rgcn import RGCNLayer
 from ...modules.utils.generic_utils import get_config
-import torch.nn as nn
-from ...data.data import GraphData
 
 
 # Load dataset

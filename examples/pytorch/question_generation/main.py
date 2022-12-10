@@ -26,8 +26,9 @@ from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 
-from .fused_embedding_construction import FusedEmbeddingConstruction
 from examples.pytorch.semantic_parsing.graph2seq.rgcn_lib.graph2seq import RGCNGraph2Seq
+
+from .fused_embedding_construction import FusedEmbeddingConstruction
 
 
 class QGModel(nn.Module):

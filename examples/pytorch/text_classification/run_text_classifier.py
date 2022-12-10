@@ -31,6 +31,7 @@ from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
+
 from examples.pytorch.rgcn.rgcn import RGCN
 
 torch.multiprocessing.set_sharing_strategy("file_system")
