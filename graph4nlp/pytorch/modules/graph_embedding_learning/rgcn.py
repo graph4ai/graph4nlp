@@ -1,8 +1,8 @@
 import dgl
 import dgl.function as fn
-from dgl.nn.pytorch.linear import TypedLinear
 import torch
 import torch.nn as nn
+from dgl.nn.pytorch.linear import TypedLinear
 
 from .base import GNNBase, GNNLayerBase
 
