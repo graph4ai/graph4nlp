@@ -25,14 +25,13 @@ from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_in
     GraphEmbeddingInitialization,
 )
 from graph4nlp.pytorch.modules.graph_embedding_learning import GAT, GGNN, GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding_learning.rgcn import RGCN
 from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
 from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
 from graph4nlp.pytorch.modules.utils import constants as Constants
 from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
-
-from graph4nlp.pytorch.modules.graph_embedding_learning.rgcn import RGCN
 
 torch.multiprocessing.set_sharing_strategy("file_system")
 
@@ -236,8 +235,8 @@ class TextClassifier(nn.Module):
                     "graph_embedding_share"
                 ]["direction_option"],
                 feat_drop=config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
-                                    "feat_drop"
-                                ],
+                    "feat_drop"
+                ],
                 regularizer="basis",
                 num_bases=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
                     "num_bases"

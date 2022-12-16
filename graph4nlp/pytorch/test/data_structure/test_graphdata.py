@@ -1,12 +1,13 @@
 import gc
 import time
 import matplotlib.pyplot as plt
-import pytest
 import torch
 import torch.nn as nn
 
 from graph4nlp.pytorch.data import GraphData, from_batch, from_dgl, to_batch
 from graph4nlp.pytorch.data.utils import EdgeNotFoundException, SizeMismatchException
+
+import pytest
 
 
 def fail_here():
