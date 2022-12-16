@@ -25,6 +25,7 @@ from graph4nlp.pytorch.modules.graph_embedding_initialization.graph_embedding_in
     GraphEmbeddingInitialization,
 )
 from graph4nlp.pytorch.modules.graph_embedding_learning import GAT, GGNN, GraphSAGE
+from graph4nlp.pytorch.modules.graph_embedding_learning.rgcn import RGCN
 from graph4nlp.pytorch.modules.loss.general_loss import GeneralLoss
 from graph4nlp.pytorch.modules.prediction.classification.graph_classification import FeedForwardNN
 from graph4nlp.pytorch.modules.utils import constants as Constants
@@ -216,6 +217,30 @@ class TextClassifier(nn.Module):
                 use_edge_weight=config["model_args"]["graph_embedding_args"][
                     "graph_embedding_private"
                 ]["use_edge_weight"],
+            )
+        elif config["model_args"]["graph_embedding_name"] == "rgcn":
+            self.gnn = RGCN(
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["num_layers"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["input_size"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "hidden_size"
+                ],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "output_size"
+                ],
+                num_rels=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                    "num_rels"
+                ],
+                direction_option=config["model_args"]["graph_embedding_args"][
+                    "graph_embedding_share"
+                ]["direction_option"],
+                feat_drop=config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "feat_drop"
+                ],
+                regularizer="basis",
+                num_bases=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                    "num_bases"
+                ],
             )
         else:
             raise RuntimeError(

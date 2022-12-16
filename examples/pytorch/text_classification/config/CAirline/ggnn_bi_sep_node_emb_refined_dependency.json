@@ -15,5 +15,5 @@
 "model_args.graph_embedding_args.graph_embedding_share.hidden_size": "300",
 "model_args.graph_embedding_args.graph_embedding_share.output_size": "300",
 "model_args.graph_embedding_args.graph_embedding_private.use_edge_weight": "true",
-"checkpoint_args.out_dir": "out/trec/ggnn_bi_sep_node_emb_refined_dependency_ckpt"
+"checkpoint_args.out_dir": "out/CAirline/ggnn_bi_sep_node_emb_refined_dependency_ckpt"
 }

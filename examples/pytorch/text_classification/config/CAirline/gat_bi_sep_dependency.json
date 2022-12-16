@@ -7,5 +7,5 @@
 "model_args.graph_embedding_args.graph_embedding_private.negative_slope": "0.2",
 "model_args.graph_embedding_args.graph_embedding_private.residual": "false",
 "model_args.graph_embedding_args.graph_embedding_private.allow_zero_in_degree": "true",
-"checkpoint_args.out_dir": "out/trec/gat_bi_sep_dependency_ckpt"
+"checkpoint_args.out_dir": "out/CAirline/gat_bi_sep_dependency_ckpt"
 }

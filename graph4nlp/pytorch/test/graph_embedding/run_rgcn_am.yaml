@@ -1,0 +1,10 @@
+num_hidden_layers: 1
+hidden_size: 16
+dataset: 'am'
+direction_option: "undirected"
+self_loop: False
+bias: True
+feat_drop: 0.0
+lr: 0.01
+wd: 0.0005
+num_epochs: 200

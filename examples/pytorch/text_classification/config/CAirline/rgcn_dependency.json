@@ -1,0 +1,13 @@
+{
+"config_path": "examples/pytorch/text_classification/config/CAirline/text_clf.yaml",
+"model_args.graph_construction_args.graph_construction_share.topology_subdir": "dependency_graph_for_rgcn",
+"model_args.graph_construction_args.graph_construction_private.edge_strategy": "heterogeneous",
+"model_args.graph_construction_args.graph_construction_private.merge_strategy": "tailhead",
+"model_args.graph_construction_args.graph_construction_private.sequential_link": true,
+"model_args.graph_construction_args.graph_construction_private.as_node": false,
+"model_args.graph_embedding_name": "rgcn",
+"model_args.graph_embedding_args.graph_embedding_share.direction_option": "undirected",
+"model_args.graph_embedding_args.graph_embedding_private.num_rels": 80,
+"model_args.graph_embedding_args.graph_embedding_private.num_bases": 4,
+"checkpoint_args.out_dir": "out/CAirline/rgcn_dependency_ckpt"
+}
