@@ -138,10 +138,10 @@ class MyModel(nn.Module):
             num_bases=num_bases,
         )
         for k, v in self.named_parameters():
-            print(f'{k} => {v}')
+            print(f"{k} => {v}")
 
     def forward(self, g: GraphData):
-        node_features = self.emb(torch.IntTensor(list(range(g.get_node_num()))).to('cuda:0'))
+        node_features = self.emb(torch.IntTensor(list(range(g.get_node_num()))).to("cuda:0"))
         dgl_g = g.to_dgl()
         x1 = self.layer_1(dgl_g, node_features)
         x2 = self.layer_2(dgl_g, x1)
