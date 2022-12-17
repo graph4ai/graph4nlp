@@ -116,7 +116,7 @@ class MyModel(nn.Module):
         self.layer_1 = RGCNLayer(
             input_size,
             hidden_size,
-            num_rels=num_rels,
+            rel_names=num_rels,
             direction_option=direction_option,
             bias=bias,
             activation=activation,
@@ -128,7 +128,7 @@ class MyModel(nn.Module):
         self.layer_2 = RGCNLayer(
             hidden_size,
             output_size,
-            num_rels=num_rels,
+            rel_names=num_rels,
             direction_option=direction_option,
             bias=bias,
             activation=activation,

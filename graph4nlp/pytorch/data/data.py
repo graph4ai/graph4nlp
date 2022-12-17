@@ -787,7 +787,7 @@ class GraphData(object):
             )
         return data_dict
 
-    def to_dgl(self) -> dgl.DGLGraph:
+    def to_dgl(self) -> dgl.DGLHeteroGraph:
         """
         Convert to dgl.DGLGraph
         Note that there will be some information loss when calling this function,
@@ -796,8 +796,8 @@ class GraphData(object):
 
         Returns
         -------
-        g : dgl.DGLGraph
-            The converted dgl.DGLGraph
+        g : dgl.DGLHeteroGraph
+            The converted dgl.DGLHeteroGraph
         """
         u, v = self._edge_indices.src, self._edge_indices.tgt
         num_nodes = self.get_node_num()
@@ -903,13 +903,13 @@ class GraphData(object):
 
         return dgl_g
 
-    def from_dgl(self, dgl_g: dgl.DGLGraph, is_hetero=False):
+    def from_dgl(self, dgl_g: dgl.DGLHeteroGraph, is_hetero=False):
         """
-        Build the graph from dgl.DGLGraph
+        Build the graph from dgl.DGLHeteroGraph
 
         Parameters
         ----------
-        dgl_g : dgl.DGLGraph
+        dgl_g : dgl.DGLHeteroGraph
             The source graph
         """
         if not (self.get_edge_num() == 0 and self.get_node_num() == 0):
