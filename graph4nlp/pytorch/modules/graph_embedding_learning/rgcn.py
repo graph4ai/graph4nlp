@@ -348,17 +348,19 @@ class UndirectedRGCNLayer(GNNLayerBase):
             nn.init.xavier_uniform_(self.loop_weight, gain=nn.init.calculate_gain("relu"))
 
         self.dropout = nn.Dropout(feat_drop)
+        self.relation_name_map = {}
 
     def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
         def message(edges, g):
             """Message function."""
-            # ln = self.linear(edges.src['h'], edges.data['type'])
-            # ln = self.linear_dict[str(g.canonical_etypes.index(edges._etype))]
-            # m = ln(edges.src["h"])
-
-            etypes = torch.tensor(
-                [g.canonical_etypes.index(edges._etype)] * edges.src["h"].shape[0]
-            ).to(edges.src["h"].device)
+            device = edges.src['h'].device
+            num_edges = edges.src["h"].shape[0]
+            edge_type_name = edges._etype
+            edge_type_index = self.relation_name_map.setdefault(
+                edge_type_name, len(self.relation_name_map)
+            )
+            
+            etypes = torch.tensor([edge_type_index] * num_edges).to(device)
             m = self.linear(edges.src["h"], etypes)
 
             if "norm" in edges.data:
@@ -483,20 +485,21 @@ class BiFuseRGCNLayer(GNNLayerBase):
 
         self.fuse_linear = nn.Linear(4 * output_size, output_size, bias=True)
         self.dropout = nn.Dropout(feat_drop)
+        self.relation_name_map = {}
 
     def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
         def message(edges, g, direction):
             """Message function."""
-            # linear_dict = (
-            #     self.linear_dict_forward if direction == "forward" else self.linear_dict_backward
-            # )
-            # ln = linear_dict[str(g.canonical_etypes.index(edges._etype))]
-            # m = ln(edges.src["h"])
-
             ln = self.ln_fwd if direction == "forward" else self.ln_bwd
-            etypes = torch.tensor(
-                [g.canonical_etypes.index(edges._etype)] * edges.src["h"].shape[0]
-            ).to(edges.src["h"].device)
+            device = edges.src['h'].device
+            num_edges = edges.src["h"].shape[0]
+            edge_type_name = edges._etype
+            edge_type_index = self.relation_name_map.setdefault(
+                edge_type_name, len(self.relation_name_map)
+            )
+            
+            etypes = torch.tensor([edge_type_index] * num_edges).to(device)
+
             m = ln(edges.src["h"], etypes)
             if "norm" in edges.data:
                 m = m * edges.data["norm"]
@@ -657,14 +660,14 @@ class BiSepRGCNLayer(GNNLayerBase):
     def forward(self, g: dgl.DGLHeteroGraph, feat: torch.Tensor, norm=None):
         def message(edges, g, direction):
             """Message function."""
-            # linear_dict = (
-            #     self.linear_dict_forward if direction == "forward" else self.linear_dict_backward
-            # )
-            # ln = linear_dict[str(g.canonical_etypes.index(edges._etype))]
             ln = self.ln_fwd if direction == "forward" else self.ln_bwd
-            etypes = torch.tensor(
-                [g.canonical_etypes.index(edges._etype)] * edges.src["h"].shape[0]
-            ).to(edges.src["h"].device)
+            device = edges.src['h'].device
+            num_edges = edges.src["h"].shape[0]
+            edge_type_name = edges._etype
+            edge_type_index = self.relation_name_map.setdefault(
+                edge_type_name, len(self.relation_name_map)
+            )       
+            etypes = torch.tensor([edge_type_index] * num_edges).to(device)
             m = ln(edges.src["h"], etypes)
             if "norm" in edges.data:
                 m = m * edges.data["norm"]
