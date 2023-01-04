@@ -90,7 +90,7 @@ class RGCNGraph2Seq(Graph2Seq):
             input_size,
             hidden_size,
             output_size,
-            rel_names=gnn_num_rels,
+            num_rels=gnn_num_rels,
             direction_option=direction_option,
             # num_bases=gnn_num_bases,
             # dropout=feats_dropout,

@@ -39,7 +39,7 @@ class RelGraphConvLayer(nn.Module):
         self,
         in_feat,
         out_feat,
-        rel_names,
+        num_rels,
         num_bases,
         *,
         weight=True,
@@ -51,7 +51,7 @@ class RelGraphConvLayer(nn.Module):
         super(RelGraphConvLayer, self).__init__()
         self.in_feat = in_feat
         self.out_feat = out_feat
-        self.rel_names = rel_names
+        self.num_rels = num_rels
         self.num_bases = num_bases
         self.bias = bias
         self.activation = activation
@@ -59,18 +59,18 @@ class RelGraphConvLayer(nn.Module):
 
         self.conv = dglnn.HeteroGraphConv(
             {
-                rel: dglnn.GraphConv(in_feat, out_feat, norm="right", weight=False, bias=False)
-                for rel in rel_names
+                f"rel_{rel}": dglnn.GraphConv(in_feat, out_feat, norm="right", weight=False, bias=False)
+                for rel in range(num_rels)
             }
         )
 
         self.use_weight = weight
-        self.use_basis = num_bases < len(self.rel_names) and weight
+        self.use_basis = num_bases < self.num_rels and weight
         if self.use_weight:
             if self.use_basis:
-                self.basis = dglnn.WeightBasis((in_feat, out_feat), num_bases, len(self.rel_names))
+                self.basis = dglnn.WeightBasis((in_feat, out_feat), num_bases, self.num_rels)
             else:
-                self.weight = nn.Parameter(torch.Tensor(len(self.rel_names), in_feat, out_feat))
+                self.weight = nn.Parameter(torch.Tensor(self.num_rels, in_feat, out_feat))
                 nn.init.xavier_uniform_(self.weight, gain=nn.init.calculate_gain("relu"))
 
         # bias
@@ -84,8 +84,9 @@ class RelGraphConvLayer(nn.Module):
             nn.init.xavier_uniform_(self.loop_weight, gain=nn.init.calculate_gain("relu"))
 
         self.dropout = nn.Dropout(dropout)
+        self.etype_map = {}
 
-    def forward(self, g, inputs):
+    def forward(self, g: dgl.DGLHeteroGraph, inputs: tp.Dict[str, torch.Tensor]):
         """Forward computation
 
         Parameters
@@ -101,10 +102,25 @@ class RelGraphConvLayer(nn.Module):
             New node features for each node type.
         """
         g = g.local_var()
+        
+        # def create_new_graph():
+            
+        
+        new_canonical_etypes = []
+        new_etypes = []
+        for src_type, edge_type, dst_type in g.canonical_etypes:
+            new_edge_type = self.etype_map.setdefault(edge_type, f"rel_{len(self.etype_map)}")
+            new_canonical_etypes.append((src_type, new_edge_type, dst_type))
+            new_etypes.append(new_edge_type)
+        g._etypes = new_etypes
+        g._canonical_etypes = new_canonical_etypes
+        g._etype2canonical = {etype: canonical_etype for etype, canonical_etype in zip(new_etypes, new_canonical_etypes)}
+        g._etypes_invmap = {canonical_etype: i for i, canonical_etype in enumerate(new_canonical_etypes)}
+        
         if self.use_weight:
             weight = self.basis() if self.use_basis else self.weight
             wdict = {
-                self.rel_names[i]: {"weight": w.squeeze(0)}
+                f"rel_{i}": {"weight": w.squeeze(0)}
                 for i, w in enumerate(torch.split(weight, 1, dim=0))
             }
         else:
@@ -165,7 +181,7 @@ class RGCN(GNNBase):
         input_size,
         hidden_size,
         output_size,
-        rel_names=None,
+        num_rels=None,
         direction_option=None,
         bias=True,
         activation=None,
@@ -176,7 +192,7 @@ class RGCN(GNNBase):
     ):
         super(RGCN, self).__init__()
         self.num_layers = num_layers
-        self.rel_names = rel_names
+        self.num_rels = num_rels
         self.self_loop = self_loop
         self.feat_drop = feat_drop
         self.direction_option = direction_option
@@ -186,8 +202,8 @@ class RGCN(GNNBase):
         self.regularizer = regularizer
         self.num_basis = num_bases
         
-        if isinstance(self.rel_names, int):
-            self.rel_names = [str(i) for i in range(self.rel_names)]
+        # if isinstance(self.num_rels, int):
+        #     self.num_rels = [str(i) for i in range(self.num_rels)]
 
         # transform the hidden size format
         if self.num_layers > 1 and type(hidden_size) is int:
@@ -199,7 +215,7 @@ class RGCN(GNNBase):
                 RGCNLayer(
                     input_size,
                     hidden_size[0],
-                    rel_names=self.rel_names,
+                    num_rels=self.num_rels,
                     direction_option=self.direction_option,
                     bias=self.bias,
                     activation=self.activation,
@@ -216,7 +232,7 @@ class RGCN(GNNBase):
                 RGCNLayer(
                     hidden_size[l - 1],
                     hidden_size[l],
-                    rel_names=self.rel_names,
+                    num_rels=self.num_rels,
                     direction_option=self.direction_option,
                     bias=self.bias,
                     activation=self.activation,
@@ -231,7 +247,7 @@ class RGCN(GNNBase):
             RGCNLayer(
                 hidden_size[-1] if self.num_layers > 1 else input_size,
                 output_size,
-                rel_names=self.rel_names,
+                num_rels=self.num_rels,
                 direction_option=self.direction_option,
                 bias=self.bias,
                 activation=self.activation,
@@ -269,21 +285,34 @@ class RGCN(GNNBase):
 
         # get the node feature tensor from graph
         g = graph.to_dgl()  # transfer the current NLPgraph to DGL graph
-        h: tp.Dict[str, torch.Tensor] = g.ndata["node_feat"]
-        # edge_type = g.edata[dgl.ETYPE].long()
-
+        h: torch.Tensor = g.ndata["node_feat"]
+        
+        # Make node feature dictionary
+        feat_dict: tp.Dict[str, torch.Tensor] = {}
+        import numpy as np
+        node_types = np.array(graph.ntypes,)
+        for i in range(max(node_types) + 1):
+            index = torch.tensor(np.where(node_types == i)[0], device=graph.device)
+            feat_dict[i] = torch.index_select(h, 0, index)
+        
         # output projection
         if self.num_layers > 1:
             for l in range(0, self.num_layers - 1):
-                h = self.RGCN_layers[l](g, h)
+                h = self.RGCN_layers[l](g, feat_dict)
 
         h = self.RGCN_layers[-1](g, h)
 
         if self.direction_option == "bi_sep":
             logits = torch.cat(logits, -1)
 
+        # Unpack node feature dictionary
+        if len(g.ntypes) == 1:
+            h = h[0]
         g.ndata["node_emb"] = h  # put the results into the NLPGraph
-        return from_dgl(g=g)
+        graph_data = from_dgl(g=g)
+        if graph.batch is not None:
+            graph_data.copy_batch_info(graph)
+        return graph_data
 
 
 class RGCNLayer(GNNLayerBase):
@@ -323,7 +352,7 @@ class RGCNLayer(GNNLayerBase):
         self,
         input_size,
         output_size,
-        rel_names,
+        num_rels,
         direction_option=None,
         bias=True,
         activation=None,
@@ -338,7 +367,7 @@ class RGCNLayer(GNNLayerBase):
             self.model = UndirectedRGCNLayer(
                 input_size,
                 output_size,
-                rel_names=rel_names,
+                num_rels=num_rels,
                 bias=bias,
                 activation=activation,
                 self_loop=self_loop,
@@ -351,7 +380,7 @@ class RGCNLayer(GNNLayerBase):
             self.model = BiSepRGCNLayer(
                 input_size,
                 output_size,
-                num_rels=rel_names,
+                num_rels=num_rels,
                 bias=bias,
                 activation=activation,
                 self_loop=self_loop,
@@ -364,7 +393,7 @@ class RGCNLayer(GNNLayerBase):
             self.model = BiFuseRGCNLayer(
                 input_size,
                 output_size,
-                num_rels=rel_names,
+                num_rels=num_rels,
                 bias=bias,
                 activation=activation,
                 self_loop=self_loop,
@@ -435,7 +464,7 @@ class UndirectedRGCNLayer(GNNLayerBase):
         self,
         input_size,
         output_size,
-        rel_names,
+        num_rels,
         bias=True,
         activation=None,
         self_loop=False,
@@ -450,7 +479,7 @@ class UndirectedRGCNLayer(GNNLayerBase):
         self.layer = RelGraphConvLayer(
             in_feat=input_size,
             out_feat=output_size,
-            rel_names=rel_names,
+            num_rels=num_rels,
             num_bases=num_bases,
             activation=activation,
             self_loop=self_loop,

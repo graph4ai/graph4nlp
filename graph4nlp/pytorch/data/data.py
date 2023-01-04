@@ -950,6 +950,8 @@ class GraphData(object):
             processed_node_types = False
             node_feat_dict = {}
             for feature_name, data_dict in node_data.items():
+                if not isinstance(data_dict, Dict):  # DGL will return tensor if ntype is single
+                    data_dict = {0: data_dict}
                 if not processed_node_types:
                     for node_type, node_feature in data_dict.items():
                         ntypes += [node_type] * len(node_feature)
@@ -967,7 +969,8 @@ class GraphData(object):
                 num_edges = dgl_g.num_edges(etype)
                 src_type, r_type, dst_type = etype
                 srcs, dsts = dgl_g.find_edges(
-                    torch.tensor(list(range(num_edges)), dtype=torch.long), etype
+                    torch.tensor(list(range(num_edges)), dtype=torch.long, device=dgl_g.device),
+                    etype,
                 )
                 srcs, dsts = (
                     srcs.detach().cpu().numpy().tolist(),

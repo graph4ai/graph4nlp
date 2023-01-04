@@ -229,7 +229,7 @@ class TextClassifier(nn.Module):
                 config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
                     "output_size"
                 ],
-                rel_names=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                num_rels=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
                     "num_rels"
                 ],
                 direction_option=config["model_args"]["graph_embedding_args"][
