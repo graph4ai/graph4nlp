@@ -149,3 +149,6 @@ cscope.*
 # config file
 /config
 local_scripts/
+
+# profiling
+profiler/

@@ -36,11 +36,19 @@ class NodeView(object):
         if not (isinstance(node_idx, int) or isinstance(node_idx, slice)):
             raise TypeError("Only int and slice are supported currently.")
         # 2. boundary check
+        num_nodes = self._graph.get_node_num()
         if isinstance(node_idx, slice):
-            node_idx_list = slice_to_list(node_idx, self._graph.get_node_num())
-            for idx in node_idx_list:
-                if not (idx < self._graph.get_node_num()):
-                    raise ValueError("Node {} does not exist in the graph.".format(idx))
+            # node_idx_list = slice_to_list(node_idx, self._graph.get_node_num())
+            start, end = node_idx.start, node_idx.stop
+            start = node_idx.start if start is not None else 0
+            end = node_idx.stop if end is not None else num_nodes
+            if not (start >= 0 and end <= self._graph.get_node_num()):
+                raise ValueError(
+                    f"Node index out of range. Got {start} and {end}. And the total number of nodes is {self._graph.get_node_num()}."
+                )
+            # for idx in node_idx_list:
+            #     if not (idx < self._graph.get_node_num()):
+            #         raise ValueError("Node {} does not exist in the graph.".format(idx))
         else:
             if not (node_idx < self._graph.get_node_num()):
                 raise ValueError("Node {} does not exist in the graph.".format(node_idx))

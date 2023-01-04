@@ -1255,10 +1255,21 @@ class GraphData(object):
         value : torch.Tensor
             The values to be written, in the shape of (B, N, D)
         """
-        individual_features = [
-            value[i, : self._batch_num_nodes[i]] for i in range(len(self._batch_num_nodes))
-        ]
-        self.set_node_features(slice(None, None, None), {key: torch.cat(individual_features)})
+        # individual_features = [ # Resolve padding
+        #     value[i, : self._batch_num_nodes[i]] for i in range(len(self._batch_num_nodes))
+        # ]
+
+        # New solve padding
+        max_node_num = value.shape[1]
+        device = value.device
+        a = torch.IntTensor([list(range(max_node_num))] * len(self._batch_num_nodes))  # (B, N)
+        b = torch.IntTensor(self._batch_num_nodes).unsqueeze(1).expand(-1, max_node_num)  # (B, N)
+        mask = (a < b).to(device)  # (B, N)
+        individual_features = torch.masked_select(value, mask.unsqueeze(-1)).view(
+            -1, value.shape[-1]
+        )  # (Sum(batch_node_num), D)
+
+        self.set_node_features(slice(None, None, None), {key: individual_features})
 
     @property
     def batch_edge_features(self) -> BatchEdgeFeatView:

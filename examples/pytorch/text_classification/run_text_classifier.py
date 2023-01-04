@@ -35,8 +35,9 @@ from graph4nlp.pytorch.modules.utils.logger import Logger
 from graph4nlp.pytorch.modules.graph_embedding_learning.rgcn import RGCN
 
 torch.multiprocessing.set_sharing_strategy("file_system")
-
-
+import torch.profiler as profiler
+from torch.profiler import record_function
+from datetime import datetime
 class TextClassifier(nn.Module):
     def __init__(self, vocab, label_model, config):
         super(TextClassifier, self).__init__()
@@ -270,25 +271,26 @@ class TextClassifier(nn.Module):
         self.loss = GeneralLoss("CrossEntropy")
 
     def forward(self, graph_list, tgt=None, require_loss=True):
-        # graph embedding initialization
-        batch_gd = self.graph_initializer(graph_list)
-
-        # run dynamic graph construction if turned on
-        if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
-            batch_gd = self.graph_topology.dynamic_topology(batch_gd)
-
-        # run GNN
-        self.gnn(batch_gd)
-
-        # run graph classifier
-        self.clf(batch_gd)
-        logits = batch_gd.graph_attributes["logits"]
-
-        if require_loss:
-            loss = self.loss(logits, tgt)
-            return logits, loss
-        else:
-            return logits
+        with record_function("graph_init"):
+            # graph embedding initialization
+            batch_gd = self.graph_initializer(graph_list)
+        with record_function("check_topology"):
+            # run dynamic graph construction if turned on
+            if hasattr(self, "graph_topology") and hasattr(self.graph_topology, "dynamic_topology"):
+                batch_gd = self.graph_topology.dynamic_topology(batch_gd)
+        with record_function("gnn_forward"):
+            # run GNN
+            self.gnn(batch_gd)
+        with record_function("run_clf"):
+            # run graph classifier
+            self.clf(batch_gd)
+            logits = batch_gd.graph_attributes["logits"]
+        with record_function("compute_loss"):
+            if require_loss:
+                loss = self.loss(logits, tgt)
+                return logits, loss
+            else:
+                return logits
 
     def inference_forward(self, collate_data):
         return self.forward(collate_data["graph_data"], require_loss=False)
@@ -440,25 +442,38 @@ class ModelHandler:
             train_loss = []
             train_acc = []
             t0 = time.time()
-            for data in self.train_dataloader:
-                tgt = to_cuda(data["tgt_tensor"], self.config["env_args"]["device"])
-                data["graph_data"] = data["graph_data"].to(self.config["env_args"]["device"])
-                logits, loss = self.model(data["graph_data"], tgt, require_loss=True)
+            with profiler.profile(
+                schedule=torch.profiler.schedule(wait=2, warmup=3, active=1, repeat=2),
+                on_trace_ready=torch.profiler.tensorboard_trace_handler(f'./profiler/text_clf_{datetime.now().strftime("%Y%m%d-%H%M%S")}'),
+                record_shapes=True,
+                profile_memory=True,
+                with_stack=True,
+                with_flops=True,
+                with_modules=True,
+            ) as prof:
+                for data in self.train_dataloader:
+                    tgt = to_cuda(data["tgt_tensor"], self.config["env_args"]["device"])
+                    data["graph_data"] = data["graph_data"].to(self.config["env_args"]["device"])
+                    with record_function("model_forward"):
+                        logits, loss = self.model(data["graph_data"], tgt, require_loss=True)
 
-                # add graph regularization loss if available
-                if data["graph_data"].graph_attributes.get("graph_reg", None) is not None:
-                    loss = loss + data["graph_data"].graph_attributes["graph_reg"]
+                    with record_function("model_backward"):
+                        # add graph regularization loss if available
+                        if data["graph_data"].graph_attributes.get("graph_reg", None) is not None:
+                            loss = loss + data["graph_data"].graph_attributes["graph_reg"]
 
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-                train_loss.append(loss.item())
+                        self.optimizer.zero_grad()
+                        loss.backward()
+                    with record_function("model_optimize"):
+                        self.optimizer.step()
+                        train_loss.append(loss.item())
 
-                pred = torch.max(logits, dim=-1)[1].cpu()
-                train_acc.append(
-                    self.metric.calculate_scores(ground_truth=tgt.cpu(), predict=pred.cpu())[0]
-                )
-                dur.append(time.time() - t0)
+                        pred = torch.max(logits, dim=-1)[1].cpu()
+                        train_acc.append(
+                            self.metric.calculate_scores(ground_truth=tgt.cpu(), predict=pred.cpu())[0]
+                        )
+                        dur.append(time.time() - t0)
+                    # prof.step()
 
             val_acc = self.evaluate(self.val_dataloader)
             self.scheduler.step(val_acc)
@@ -487,7 +502,6 @@ class ModelHandler:
 
             if self.stopper.step(val_acc, self.model):
                 break
-
         return self.stopper.best_score
 
     def evaluate(self, dataloader):
