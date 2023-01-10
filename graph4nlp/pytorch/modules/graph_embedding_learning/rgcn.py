@@ -48,7 +48,7 @@ class RGCN(GNNBase):
         activation=None,
         self_loop=True,
         feat_drop=0.0,
-        regularizer="none",
+        regularizer="basis",
         num_bases=4,
     ):
         super(RGCN, self).__init__()

@@ -137,8 +137,6 @@ class MyModel(nn.Module):
             regularizer=regularizer,
             num_bases=num_bases,
         )
-        for k, v in self.named_parameters():
-            print(f'{k} => {v}')
 
     def forward(self, g: GraphData):
         node_features = self.emb(torch.IntTensor(list(range(g.get_node_num()))).to('cuda:0'))
@@ -173,6 +171,7 @@ def main(config):
         num_bases=num_rels,
         num_nodes=num_nodes,
     ).to(device)
+    print(my_model)
     optimizer = torch.optim.Adam(
         my_model.parameters(),
         lr=config["lr"],
