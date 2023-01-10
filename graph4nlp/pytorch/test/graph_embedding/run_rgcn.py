@@ -143,7 +143,17 @@ class MyModel(nn.Module):
     def forward(self, g: GraphData):
         node_features = self.emb(torch.IntTensor(list(range(g.get_node_num()))).to('cuda:0'))
         dgl_g = g.to_dgl()
-        x1 = self.layer_1(dgl_g, node_features)
+        
+        # Make node feature dictionary
+        import typing as tp
+        feat_dict: tp.Dict[str, torch.Tensor] = {}
+        import numpy as np
+        node_types = np.array(g.ntypes,)
+        for i in set(node_types):
+            index = torch.tensor(np.where(node_types == i)[0], device=g.device)
+            feat_dict[i] = torch.index_select(node_features, 0, index)
+            
+        x1 = self.layer_1(dgl_g, feat_dict)
         x2 = self.layer_2(dgl_g, x1)
         return x2
 
@@ -181,7 +191,7 @@ def main(config):
     print("start training...")
     my_model.train()
     for epoch in range(config["num_epochs"]):
-        logits = my_model(graph)
+        logits = my_model(graph)['_N']
         logits = logits[target_idx]
         loss = F.cross_entropy(logits[train_idx], labels[train_idx])
 
@@ -201,7 +211,7 @@ def main(config):
     print("start evaluating...")
     my_model.eval()
     with torch.no_grad():
-        logits = my_model(graph)
+        logits = my_model(graph)['_N']
     logits = logits[target_idx]
     test_acc = accuracy(logits[test_idx].argmax(dim=1), labels[test_idx]).item()
     print("Test Accuracy: {:.4f}".format(test_acc))

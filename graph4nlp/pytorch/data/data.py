@@ -176,7 +176,7 @@ class GraphData(object):
             )
 
         if not self.is_hetero:
-            if ntypes is not None:
+            if ntypes is not None and len(set(ntypes)) > 1:
                 raise ValueError(
                     "The graph is homogeneous, ntypes should be None. Got {}".format(ntypes)
                 )
@@ -950,8 +950,10 @@ class GraphData(object):
             processed_node_types = False
             node_feat_dict = {}
             for feature_name, data_dict in node_data.items():
-                if not isinstance(data_dict, Dict):  # DGL will return tensor if ntype is single
-                    data_dict = {0: data_dict}
+                if not isinstance(data_dict, Dict):  
+                    # DGL will return tensor if ntype is single
+                    # This can happen when graph is a multigraph
+                    data_dict = {dgl_g.ntypes[0]: data_dict}
                 if not processed_node_types:
                     for node_type, node_feature in data_dict.items():
                         ntypes += [node_type] * len(node_feature)
@@ -1389,8 +1391,9 @@ def from_dgl(g: dgl.DGLGraph) -> GraphData:
     GraphData
         The converted graph in GraphData format.
     """
-    graph = GraphData(is_hetero=not g.is_homogeneous)
-    graph.from_dgl(g, is_hetero=not g.is_homogeneous)
+    dgl_g_is_hetero = (not g.is_homogeneous) or g.is_multigraph
+    graph = GraphData(is_hetero=dgl_g_is_hetero)
+    graph.from_dgl(g, is_hetero=dgl_g_is_hetero)
     return graph
 
 
