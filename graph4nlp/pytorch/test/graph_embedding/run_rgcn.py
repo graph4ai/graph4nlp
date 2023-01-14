@@ -159,6 +159,11 @@ class MyModel(nn.Module):
 
 
 def main(config):
+    import mlflow
+    mlflow.set_tracking_uri("http://192.168.190.202:45250")
+    mlflow.set_experiment("rgcn_debug")
+    mlflow.start_run(run_name=f"rgcn_debug_{config['dataset']}")
+    
     g, num_rels, num_classes, labels, train_idx, test_idx, target_idx = load_data(
         data_name=config["dataset"], get_norm=True
     )
@@ -194,7 +199,7 @@ def main(config):
         logits = my_model(graph)['_N']
         logits = logits[target_idx]
         loss = F.cross_entropy(logits[train_idx], labels[train_idx])
-
+        
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -205,6 +210,10 @@ def main(config):
                 epoch, train_acc, loss.item()
             )
         )
+        mlflow.log_metric("loss", loss.item(), step=epoch)
+        mlflow.log_metric("train_acc", train_acc, step=epoch)
+        
+        
     print()
     # Save Model
     # torch.save(model.state_dict(), "./rgcn_model.pt")
@@ -215,6 +224,9 @@ def main(config):
     logits = logits[target_idx]
     test_acc = accuracy(logits[test_idx].argmax(dim=1), labels[test_idx]).item()
     print("Test Accuracy: {:.4f}".format(test_acc))
+    
+    mlflow.log_metric("test_acc", test_acc)
+    mlflow.end_run()
 
 
 if __name__ == "__main__":
