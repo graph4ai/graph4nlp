@@ -32,6 +32,8 @@ from graph4nlp.pytorch.modules.utils.config_utils import load_json_config
 from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 
+from graph4nlp.pytorch.modules.graph_embedding_learning.rgcn import RGCN
+
 torch.multiprocessing.set_sharing_strategy("file_system")
 
 
@@ -216,6 +218,30 @@ class TextClassifier(nn.Module):
                 use_edge_weight=config["model_args"]["graph_embedding_args"][
                     "graph_embedding_private"
                 ]["use_edge_weight"],
+            )
+        elif config["model_args"]["graph_embedding_name"] == "rgcn":
+            self.gnn = RGCN(
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["num_layers"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"]["input_size"],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "hidden_size"
+                ],
+                config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                    "output_size"
+                ],
+                num_rels=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                    "num_rels"
+                ],
+                direction_option=config["model_args"]["graph_embedding_args"][
+                    "graph_embedding_share"
+                ]["direction_option"],
+                feat_drop=config["model_args"]["graph_embedding_args"]["graph_embedding_share"][
+                                    "feat_drop"
+                                ],
+                regularizer="basis",
+                num_bases=config["model_args"]["graph_embedding_args"]["graph_embedding_private"][
+                    "num_bases"
+                ],
             )
         else:
             raise RuntimeError(

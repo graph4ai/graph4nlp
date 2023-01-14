@@ -1,0 +1,5 @@
+{
+    "config_path": "examples/pytorch/semantic_parsing/graph2seq/config/dependency_rgcn_undirected.yaml",
+    "model_args.graph_embedding_args.graph_embedding_share.direction_option": "bi_sep",
+    "training_args.log_file": "examples/pytorch/semantic_parsing/graph2seq/log/dependency_rgcn_bi_sep.txt"
+}

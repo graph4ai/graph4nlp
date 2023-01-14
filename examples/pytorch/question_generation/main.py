@@ -26,6 +26,8 @@ from graph4nlp.pytorch.modules.utils.copy_utils import prepare_ext_vocab
 from graph4nlp.pytorch.modules.utils.generic_utils import EarlyStopping, to_cuda
 from graph4nlp.pytorch.modules.utils.logger import Logger
 
+from examples.pytorch.semantic_parsing.graph2seq.rgcn_lib.graph2seq import RGCNGraph2Seq
+
 from .fused_embedding_construction import FusedEmbeddingConstruction
 
 
@@ -39,7 +41,10 @@ class QGModel(nn.Module):
         ]
 
         # build Graph2Seq model
-        self.g2s = Graph2Seq.from_args(config, self.vocab)
+        if config["model_args"]["graph_embedding_name"] == "rgcn":
+            self.g2s = RGCNGraph2Seq.from_args(config, self.vocab)
+        else:
+            self.g2s = Graph2Seq.from_args(config, self.vocab)
 
         if "w2v" in self.g2s.graph_initializer.embedding_layer.word_emb_layers:
             self.word_emb = self.g2s.graph_initializer.embedding_layer.word_emb_layers[

@@ -176,7 +176,7 @@ class GraphData(object):
             )
 
         if not self.is_hetero:
-            if ntypes is not None:
+            if ntypes is not None and len(set(ntypes)) > 1:
                 raise ValueError(
                     "The graph is homogeneous, ntypes should be None. Got {}".format(ntypes)
                 )
@@ -787,7 +787,7 @@ class GraphData(object):
             )
         return data_dict
 
-    def to_dgl(self) -> dgl.DGLGraph:
+    def to_dgl(self) -> dgl.DGLHeteroGraph:
         """
         Convert to dgl.DGLGraph
         Note that there will be some information loss when calling this function,
@@ -796,8 +796,8 @@ class GraphData(object):
 
         Returns
         -------
-        g : dgl.DGLGraph
-            The converted dgl.DGLGraph
+        g : dgl.DGLHeteroGraph
+            The converted dgl.DGLHeteroGraph
         """
         u, v = self._edge_indices.src, self._edge_indices.tgt
         num_nodes = self.get_node_num()
@@ -903,13 +903,13 @@ class GraphData(object):
 
         return dgl_g
 
-    def from_dgl(self, dgl_g: dgl.DGLGraph, is_hetero=False):
+    def from_dgl(self, dgl_g: dgl.DGLHeteroGraph, is_hetero=False):
         """
-        Build the graph from dgl.DGLGraph
+        Build the graph from dgl.DGLHeteroGraph
 
         Parameters
         ----------
-        dgl_g : dgl.DGLGraph
+        dgl_g : dgl.DGLHeteroGraph
             The source graph
         """
         if not (self.get_edge_num() == 0 and self.get_node_num() == 0):
@@ -950,6 +950,10 @@ class GraphData(object):
             processed_node_types = False
             node_feat_dict = {}
             for feature_name, data_dict in node_data.items():
+                if not isinstance(data_dict, Dict):  
+                    # DGL will return tensor if ntype is single
+                    # This can happen when graph is a multigraph
+                    data_dict = {dgl_g.ntypes[0]: data_dict}
                 if not processed_node_types:
                     for node_type, node_feature in data_dict.items():
                         ntypes += [node_type] * len(node_feature)
@@ -967,7 +971,8 @@ class GraphData(object):
                 num_edges = dgl_g.num_edges(etype)
                 src_type, r_type, dst_type = etype
                 srcs, dsts = dgl_g.find_edges(
-                    torch.tensor(list(range(num_edges)), dtype=torch.long), etype
+                    torch.tensor(list(range(num_edges)), dtype=torch.long, device=dgl_g.device),
+                    etype,
                 )
                 srcs, dsts = (
                     srcs.detach().cpu().numpy().tolist(),
@@ -1386,8 +1391,9 @@ def from_dgl(g: dgl.DGLGraph) -> GraphData:
     GraphData
         The converted graph in GraphData format.
     """
-    graph = GraphData(is_hetero=not g.is_homogeneous)
-    graph.from_dgl(g, is_hetero=not g.is_homogeneous)
+    dgl_g_is_hetero = (not g.is_homogeneous) or g.is_multigraph
+    graph = GraphData(is_hetero=dgl_g_is_hetero)
+    graph.from_dgl(g, is_hetero=dgl_g_is_hetero)
     return graph
 
 

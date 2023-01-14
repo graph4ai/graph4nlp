@@ -1,7 +1,7 @@
-from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
-
 import sympy
 from sympy.parsing.sympy_parser import parse_expr
+
+from graph4nlp.pytorch.modules.evaluation.base import EvaluationMetricBase
 
 
 class SolutionMatch(EvaluationMetricBase):
