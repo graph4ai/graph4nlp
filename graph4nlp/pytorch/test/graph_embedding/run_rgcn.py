@@ -178,7 +178,7 @@ def main(config):
     labels = labels.to(device)
     num_nodes = graph.get_node_num()
     my_model = MyModel(
-        num_layers=config["num_hidden_layers"] + 1,
+        num_layers=config["num_hidden_layers"],
         input_size=config["hidden_size"],
         hidden_size=config["hidden_size"],
         output_size=num_classes,
