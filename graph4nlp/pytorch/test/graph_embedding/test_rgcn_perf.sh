@@ -1,12 +1,28 @@
 #!/bin/bash
 
-mkdir -p out/test/graph_embedding
+export CUDA_VISIBLE_DEVICES=$1
+export test_module=graph4nlp.pytorch.test.graph_embedding.run_rgcn
+export python_command="python -m"
+export config_root=/student/wangsaizhuo/Codes/graph4nlp/graph4nlp/pytorch/test/graph_embedding/rgcn_scripts
 
-for i in {1..5}
-do
-    python -m graph4nlp.pytorch.test.graph_embedding.run_rgcn -config graph4nlp/pytorch/test/graph_embedding/rgcn_scripts/run_rgcn_aifb.yaml > out/test/graph_embedding/run_rgcn_aifb_$i.log 2>&1 &
-    python -m graph4nlp.pytorch.test.graph_embedding.run_rgcn -config graph4nlp/pytorch/test/graph_embedding/rgcn_scripts/run_rgcn_mutag.yaml > out/test/graph_embedding/run_rgcn_mutag_$i.log 2>&1 &
-    python -m graph4nlp.pytorch.test.graph_embedding.run_rgcn -config graph4nlp/pytorch/test/graph_embedding/rgcn_scripts/run_rgcn_bgs.yaml > out/test/graph_embedding/run_rgcn_bgs_$i.log 2>&1 &
-    python -m graph4nlp.pytorch.test.graph_embedding.run_rgcn -config graph4nlp/pytorch/test/graph_embedding/rgcn_scripts/run_rgcn_am.yaml > out/test/graph_embedding/run_rgcn_am_$i.log 2>&1 &
-    # wait
-done
+test_routine()
+{
+    for dataset in {aifb,am,bgs,mutag}
+    do
+        if [ "$1" == true ] ; then
+            command_line="${python_command} ${test_module} -config ${config_root}/run_rgcn_${dataset}.yaml --use_old"
+        else
+            command_line="${python_command} ${test_module} -config ${config_root}/run_rgcn_${dataset}.yaml"
+        fi
+        echo "running command ${command_line}"
+        ${command_line} &
+    done
+    wait
+}
+
+
+# Test RGCN-Hetero Implementation on dgl benchmarks
+test_routine false
+
+# Test RGCN-Homo Implementation on dgl benchmarks
+test_routine true
