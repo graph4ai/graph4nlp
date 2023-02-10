@@ -172,35 +172,13 @@ class MyModel(nn.Module):
         return x2
 
 
-<<<<<<< HEAD
 def main(config):
     g, num_rels, num_classes, labels, train_idx, test_idx = load_data(
-=======
-def main(config, args):
-    import mlflow
-    mlflow.set_tracking_uri("http://192.168.190.202:45250")
-    mlflow.set_experiment("rgcn_debug")
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    mlflow.start_run(run_name=f"rgcn_debug_{config['dataset']}_{timestamp}")
-    mlflow.log_params({
-        "dataset": config["dataset"],
-        "use_old": args["use_old"],
-    })
-    
-    g, num_rels, num_classes, labels, train_idx, test_idx, target_idx = load_data(
->>>>>>> rgcn-integration
         data_name=config["dataset"], get_norm=True
     )
 
     # graph = from_dgl(g, is_hetero=False)
     device = "cuda:0"
-<<<<<<< HEAD
-    
-    
-=======
-    val_idx = train_idx[: len(train_idx) // 5]
-    train_idx = train_idx[len(train_idx) // 5 :]
->>>>>>> rgcn-integration
     graph = from_dgl(g).to(device)
     
     
@@ -252,10 +230,6 @@ def main(config, args):
                 epoch, train_acc, loss.item(), val_acc, val_loss.item(), np.average(dur)
             )
         )
-        mlflow.log_metric("loss", loss.item(), step=epoch)
-        mlflow.log_metric("train_acc", train_acc, step=epoch)
-        
-        
     print()
     # Save Model
     # torch.save(model.state_dict(), "./rgcn_model.pt")
@@ -266,9 +240,6 @@ def main(config, args):
     logits = logits[target_idx]
     test_acc = accuracy(logits[test_idx].argmax(dim=1), labels[test_idx]).item()
     print("Test Accuracy: {:.4f}".format(test_acc))
-    
-    mlflow.log_metric("test_acc", test_acc)
-    mlflow.end_run()
 
 
 if __name__ == "__main__":
