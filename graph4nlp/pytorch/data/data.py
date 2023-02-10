@@ -478,6 +478,7 @@ class GraphData(object):
             If the lengths of `src` and `tgt` don't match or one of the list contains no element.
         """
         src, tgt = check_and_expand(int_to_list(src), int_to_list(tgt))
+        num_nodes = self.get_node_num()
         if len(src) != len(tgt):
             raise ValueError(
                 "Length of the source and target indices is not the same. "
@@ -485,9 +486,7 @@ class GraphData(object):
             )
         for src_idx, tgt_idx in zip(src, tgt):
             # Consistency check
-            if (src_idx < 0 or src_idx >= self.get_node_num()) and (
-                tgt_idx < 0 and tgt_idx >= self.get_node_num()
-            ):
+            if (src_idx < 0 or src_idx >= num_nodes) and (tgt_idx < 0 and tgt_idx >= num_nodes):
                 raise ValueError("Endpoint not in the graph.")
         # Edge type consistency check
         if self.is_hetero:
@@ -950,7 +949,7 @@ class GraphData(object):
             processed_node_types = False
             node_feat_dict = {}
             for feature_name, data_dict in node_data.items():
-                if not isinstance(data_dict, Dict):  
+                if not isinstance(data_dict, Dict):
                     # DGL will return tensor if ntype is single
                     # This can happen when graph is a multigraph
                     data_dict = {dgl_g.ntypes[0]: data_dict}

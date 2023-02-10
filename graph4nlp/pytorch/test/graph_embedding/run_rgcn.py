@@ -4,13 +4,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dgl.data.rdf import AIFBDataset, AMDataset, BGSDataset, MUTAGDataset
-
+import time
 from torchmetrics.functional import accuracy
 
 from ...data.data import GraphData, from_dgl
 from ...modules.graph_embedding_learning.rgcn import RGCNLayer
+from ...modules.graph_embedding_learning.rgcn_old import RGCNLayer as RGCNLayerOld
 from ...modules.utils.generic_utils import get_config
-
+from datetime import datetime
+import numpy as np
 
 # Load dataset
 # Reference: dgl/examples/pytorch/rgcn/entity_utils.py
@@ -110,10 +112,13 @@ class MyModel(nn.Module):
         regularizer="none",
         num_bases=4,
         num_nodes=100,
+        use_old=False
     ):
         super(MyModel, self).__init__()
         self.emb = nn.Embedding(num_nodes, hidden_size)
-        self.layer_1 = RGCNLayer(
+        self.use_old = use_old
+        RGCNKlass = RGCNLayer if not use_old else RGCNLayerOld
+        self.layer_1 = RGCNKlass(
             input_size,
             hidden_size,
             num_rels=num_rels,
@@ -125,7 +130,7 @@ class MyModel(nn.Module):
             regularizer=regularizer,
             num_bases=num_bases,
         )
-        self.layer_2 = RGCNLayer(
+        self.layer_2 = RGCNKlass(
             hidden_size,
             output_size,
             num_rels=num_rels,
@@ -145,24 +150,33 @@ class MyModel(nn.Module):
         dgl_g = g.to_dgl()
         
         # Make node feature dictionary
-        import typing as tp
-        feat_dict: tp.Dict[str, torch.Tensor] = {}
-        import numpy as np
-        node_types = np.array(g.ntypes,)
-        for i in set(node_types):
-            index = torch.tensor(np.where(node_types == i)[0], device=g.device)
-            feat_dict[i] = torch.index_select(node_features, 0, index)
+        if not self.use_old:
+            import typing as tp
+            feat_dict: tp.Dict[str, torch.Tensor] = {}
+            import numpy as np
+            node_types = np.array(g.ntypes,)
+            for i in set(node_types):
+                index = torch.tensor(np.where(node_types == i)[0], device=g.device)
+                feat_dict[i] = torch.index_select(node_features, 0, index)
+            input_feat = feat_dict
+        else:
+            input_feat = node_features
             
-        x1 = self.layer_1(dgl_g, feat_dict)
+        x1 = self.layer_1(dgl_g, input_feat)
         x2 = self.layer_2(dgl_g, x1)
         return x2
 
 
-def main(config):
+def main(config, args):
     import mlflow
     mlflow.set_tracking_uri("http://192.168.190.202:45250")
     mlflow.set_experiment("rgcn_debug")
-    mlflow.start_run(run_name=f"rgcn_debug_{config['dataset']}")
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    mlflow.start_run(run_name=f"rgcn_debug_{config['dataset']}_{timestamp}")
+    mlflow.log_params({
+        "dataset": config["dataset"],
+        "use_old": args["use_old"],
+    })
     
     g, num_rels, num_classes, labels, train_idx, test_idx, target_idx = load_data(
         data_name=config["dataset"], get_norm=True
@@ -170,6 +184,8 @@ def main(config):
 
     # graph = from_dgl(g, is_hetero=False)
     device = "cuda:0"
+    val_idx = train_idx[: len(train_idx) // 5]
+    train_idx = train_idx[len(train_idx) // 5 :]
     graph = from_dgl(g).to(device)
     labels = labels.to(device)
     num_nodes = graph.get_node_num()
@@ -187,6 +203,7 @@ def main(config):
         regularizer="basis",
         num_bases=num_rels,
         num_nodes=num_nodes,
+        use_old=args['use_old']
     ).to(device)
     optimizer = torch.optim.Adam(
         my_model.parameters(),
@@ -195,7 +212,10 @@ def main(config):
     )
     print("start training...")
     my_model.train()
+    dur = []
     for epoch in range(config["num_epochs"]):
+        if epoch > 5:
+            t0 = time.time()
         logits = my_model(graph)['_N']
         logits = logits[target_idx]
         loss = F.cross_entropy(logits[train_idx], labels[train_idx])
@@ -203,11 +223,16 @@ def main(config):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+        t1 = time.time()
+        if epoch > 5:
+            dur.append(t1 - t0)
 
         train_acc = accuracy(logits[train_idx].argmax(dim=1), labels[train_idx]).item()
+        val_loss = F.cross_entropy(logits[val_idx], labels[val_idx])
+        val_acc = torch.sum(logits[val_idx].argmax(dim=1) == labels[val_idx]).item() / len(val_idx)
         print(
-            "Epoch {:05d} | Train Accuracy: {:.4f} | Train Loss: {:.4f}".format(
-                epoch, train_acc, loss.item()
+            "Epoch {:05d} | Train Acc: {:.4f} | Train Loss: {:.4f} | Valid Acc: {:.4f} | Valid loss: {:.4f} | Time: {:.4f}".format(
+                epoch, train_acc, loss.item(), val_acc, val_loss.item(), np.average(dur)
             )
         )
         mlflow.log_metric("loss", loss.item(), step=epoch)
@@ -233,7 +258,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-config", type=str, help="path to the config file")
     parser.add_argument("--grid_search", action="store_true", help="flag: grid search")
+    parser.add_argument("--use_old", action="store_true")
     cfg = vars(parser.parse_args())
     config = get_config(cfg["config"])
     print(config)
-    main(config)
+    main(config, cfg)
