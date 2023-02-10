@@ -68,17 +68,22 @@ def load_data(data_name="aifb", get_norm=False, inv_target=False):
     train_idx = torch.nonzero(train_mask, as_tuple=False).squeeze()
     test_idx = torch.nonzero(test_mask, as_tuple=False).squeeze()
 
-    if get_norm:
-        # Calculate normalization weight for each edge,
-        # 1. / d, d is the degree of the destination node
-        for cetype in hg.canonical_etypes:
-            hg.edges[cetype].data["norm"] = dgl.norm_by_dst(hg, cetype).unsqueeze(1)
-        edata = ["norm"]
-    else:
-        edata = None
+    # if get_norm:
+    #     # Calculate normalization weight for each edge,
+    #     # 1. / d, d is the degree of the destination node
+    #     for cetype in hg.canonical_etypes:
+    #         hg.edges[cetype].data["norm"] = dgl.norm_by_dst(hg, cetype).unsqueeze(1)
+    #     edata = ["norm"]
+    # else:
+    #     edata = None
+    
     category_id = hg.ntypes.index(category)
-    g = dgl.to_homogeneous(hg, edata=edata)
+    # g = dgl.to_homogeneous(hg, edata=edata)
+    g = hg
+    
     node_ids = torch.arange(g.num_nodes())
+    
+    return g, num_rels, num_classes, labels, train_idx, test_idx
 
     # find out the target node ids in g
     loc = g.ndata["_TYPE"] == category_id
@@ -159,13 +164,17 @@ class MyModel(nn.Module):
 
 
 def main(config):
-    g, num_rels, num_classes, labels, train_idx, test_idx, target_idx = load_data(
+    g, num_rels, num_classes, labels, train_idx, test_idx = load_data(
         data_name=config["dataset"], get_norm=True
     )
 
     # graph = from_dgl(g, is_hetero=False)
     device = "cuda:0"
+    
+    
     graph = from_dgl(g).to(device)
+    
+    
     labels = labels.to(device)
     num_nodes = graph.get_node_num()
     my_model = MyModel(
