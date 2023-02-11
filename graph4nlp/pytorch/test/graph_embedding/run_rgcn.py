@@ -187,9 +187,9 @@ def main(config):
     assert new_dglg.num_edges() == g.num_edges()
     for ntype in g.ntypes:
         assert torch.equal(new_dglg.nodes[ntype].data['_ID'].cpu(), g.nodes[ntype].data['_ID'])
-    # for etype in g.etypes:
-    #     assert torch.equal(new_dglg.edges[etype].data["norm"], g.edges[etype].data["norm"])
-    
+    for etype in g.canonical_etypes:
+        # assert torch.equal(new_dglg.edges[etype].data["norm"], g.edges[etype].data["norm"])
+        assert torch.equal(new_dglg.edges[etype].data["_ID"].cpu(), g.edges[etype].data["_ID"])
     
     
     labels = labels.to(device)
@@ -225,8 +225,11 @@ def main(config):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
-        train_acc = accuracy(logits[train_idx].argmax(dim=1), labels[train_idx]).item()
+        train_acc = accuracy(
+            preds=logits[train_idx].argmax(dim=1),
+            target=labels[train_idx],
+            task='multiclass',
+            num_classes=num_classes).item()
         print(
             "Epoch {:05d} | Train Accuracy: {:.4f} | Train Loss: {:.4f}".format(
                 epoch, train_acc, loss.item()
@@ -238,9 +241,13 @@ def main(config):
     print("start evaluating...")
     my_model.eval()
     with torch.no_grad():
-        logits = my_model()['_N']
+        logits = my_model()[category]
     # logits = logits[target_idx]
-    test_acc = accuracy(logits[test_idx].argmax(dim=1), labels[test_idx]).item()
+    test_acc = accuracy(
+        preds=logits[test_idx].argmax(dim=1),
+        target=labels[test_idx],
+        task='multiclass',
+        num_classes=num_classes).item()
     print("Test Accuracy: {:.4f}".format(test_acc))
 
 
