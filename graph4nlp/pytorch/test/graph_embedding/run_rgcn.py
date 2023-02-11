@@ -180,6 +180,16 @@ def main(config):
     
     
     graph = from_dgl(g).to(device)
+    new_dglg = graph.to_dgl()
+    
+    # TEST: node/edge num, node/edge features of the two dgl graphs
+    assert new_dglg.num_nodes() == g.num_nodes()
+    assert new_dglg.num_edges() == g.num_edges()
+    for ntype in g.ntypes:
+        assert torch.equal(new_dglg.nodes[ntype].data['_ID'].cpu(), g.nodes[ntype].data['_ID'])
+    # for etype in g.etypes:
+    #     assert torch.equal(new_dglg.edges[etype].data["norm"], g.edges[etype].data["norm"])
+    
     
     
     labels = labels.to(device)
