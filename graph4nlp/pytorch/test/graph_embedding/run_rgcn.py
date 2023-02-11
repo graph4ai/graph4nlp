@@ -1,10 +1,12 @@
-import argparse
 import dgl
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dgl.data.rdf import AIFBDataset, AMDataset, BGSDataset, MUTAGDataset
-
+import random
+import argparse
+import typing as tp
 from torchmetrics.functional import accuracy
 
 from ...data.data import GraphData, from_dgl
@@ -78,25 +80,11 @@ def load_data(data_name="aifb", get_norm=False, inv_target=False):
     #     edata = None
     
     category_id = hg.ntypes.index(category)
-    # g = dgl.to_homogeneous(hg, edata=edata)
     g = hg
     
     node_ids = torch.arange(g.num_nodes())
     
-    return g, num_rels, num_classes, labels, train_idx, test_idx
-
-    # find out the target node ids in g
-    loc = g.ndata["_TYPE"] == category_id
-    target_idx = node_ids[loc]
-
-    if inv_target:
-        # Map global node IDs to type-specific node IDs. This is required for
-        # looking up type-specific labels in a minibatch
-        inv_target = torch.empty((g.num_nodes(),), dtype=torch.int64)
-        inv_target[target_idx] = torch.arange(0, target_idx.shape[0], dtype=inv_target.dtype)
-        return g, num_rels, num_classes, labels, train_idx, test_idx, target_idx, inv_target
-    else:
-        return g, num_rels, num_classes, labels, train_idx, test_idx, target_idx
+    return g, num_rels, num_classes, labels, train_idx, test_idx, category
 
 
 class MyModel(nn.Module):
@@ -115,9 +103,11 @@ class MyModel(nn.Module):
         regularizer="none",
         num_bases=4,
         num_nodes=100,
+        g: GraphData = None,
     ):
         super(MyModel, self).__init__()
         self.emb = nn.Embedding(num_nodes, hidden_size)
+        nn.init.xavier_uniform_(self.emb.weight, gain=nn.init.calculate_gain("relu"))
         self.layer_1 = RGCNLayer(
             input_size,
             hidden_size,
@@ -142,29 +132,46 @@ class MyModel(nn.Module):
             regularizer=regularizer,
             num_bases=num_bases,
         )
-        for k, v in self.named_parameters():
-            print(f'{k} => {v}')
-
-    def forward(self, g: GraphData):
-        node_features = self.emb(torch.IntTensor(list(range(g.get_node_num()))).to('cuda:0'))
-        dgl_g = g.to_dgl()
         
+        self.dgl_g = g.to_dgl()
+        self.g = g
+        
+        # self.feat_dict = feat_dict
+    
+    @property
+    def feat_dict(self):
+        node_features = self.emb(torch.IntTensor(list(range(self.g.get_node_num()))).to(self.g.device))
         # Make node feature dictionary
-        import typing as tp
         feat_dict: tp.Dict[str, torch.Tensor] = {}
-        import numpy as np
-        node_types = np.array(g.ntypes,)
+        node_types = np.array(self.g.ntypes,)
         for i in set(node_types):
-            index = torch.tensor(np.where(node_types == i)[0], device=g.device)
+            index = torch.tensor(np.where(node_types == i)[0], device=self.g.device)
             feat_dict[i] = torch.index_select(node_features, 0, index)
-            
-        x1 = self.layer_1(dgl_g, feat_dict)
-        x2 = self.layer_2(dgl_g, x1)
+        return feat_dict
+
+    def forward(self,):
+        
+        x1 = self.layer_1(self.dgl_g, self.feat_dict)
+        x2 = self.layer_2(self.dgl_g, x1)
+        # self.feat_dict = x2
         return x2
 
+def set_seed(seed: int):
+    """Set random seed for python, numpy, torch and cuda.
+
+    Parameters
+    ----------
+    seed : int
+        the seed
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
 
 def main(config):
-    g, num_rels, num_classes, labels, train_idx, test_idx = load_data(
+    set_seed(42)
+    g, num_rels, num_classes, labels, train_idx, test_idx, category = load_data(
         data_name=config["dataset"], get_norm=True
     )
 
@@ -191,6 +198,7 @@ def main(config):
         regularizer="basis",
         num_bases=num_rels,
         num_nodes=num_nodes,
+        g=graph,
     ).to(device)
     optimizer = torch.optim.Adam(
         my_model.parameters(),
@@ -200,8 +208,8 @@ def main(config):
     print("start training...")
     my_model.train()
     for epoch in range(config["num_epochs"]):
-        logits = my_model(graph)['_N']
-        logits = logits[target_idx]
+        logits = my_model()[category]
+        # logits = logits[train_idx]
         loss = F.cross_entropy(logits[train_idx], labels[train_idx])
 
         optimizer.zero_grad()
@@ -221,7 +229,7 @@ def main(config):
     my_model.eval()
     with torch.no_grad():
         logits = my_model(graph)['_N']
-    logits = logits[target_idx]
+    # logits = logits[target_idx]
     test_acc = accuracy(logits[test_idx].argmax(dim=1), labels[test_idx]).item()
     print("Test Accuracy: {:.4f}".format(test_acc))
 

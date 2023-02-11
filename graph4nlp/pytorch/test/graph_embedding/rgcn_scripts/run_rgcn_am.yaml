@@ -7,4 +7,4 @@ bias: True
 feat_drop: 0.0
 lr: 0.01
 wd: 0.0005
-num_epochs: 200
+num_epochs: 50

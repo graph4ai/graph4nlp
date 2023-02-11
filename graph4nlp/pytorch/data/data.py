@@ -772,16 +772,15 @@ class GraphData(object):
         # 1st pass: scan every edge and make them ((src_type, etype, tgt_type)->(src_idx, tgt_idx))
         for edge_index in range(self.get_edge_num()):
             etype = self.etypes[edge_index]
-            key = etype
             src, tgt = self._edge_indices.src[edge_index], self._edge_indices.tgt[edge_index]
             src, tgt = typed_node_indices[src][1], typed_node_indices[tgt][1]
-            if key not in data_dict:
-                data_dict[key] = ([], [])
-            data_dict[key][0].append(src)
-            data_dict[key][1].append(tgt)
+            if etype not in data_dict:
+                data_dict[etype] = ([], [])
+            data_dict[etype][0].append(src)
+            data_dict[etype][1].append(tgt)
         # 2nd pass: convert to tensors
-        for key, (srcs, tgts) in data_dict.items():
-            data_dict[key] = (
+        for etype, (srcs, tgts) in data_dict.items():
+            data_dict[etype] = (
                 torch.LongTensor(srcs),
                 torch.LongTensor(tgts),
             )
@@ -945,31 +944,41 @@ class GraphData(object):
             #     self.add_nodes(num_nodes, ntypes=[ntype] * num_nodes)
             #     for feature_name, feature_value in node_data.items():
             #         self.node_features[feature_name] = feature_value
+
+            # Add ntypes first
+            node_num_list = []
+            for ntype in dgl_g.ntypes:
+                num_nodes = dgl_g.nodes(ntype).shape[0]
+                self.add_nodes(num_nodes, ntypes=[ntype] * num_nodes)
+                node_num_list.append((ntype, num_nodes))
+
             node_data = dgl_g.ndata
-            ntypes = []
-            processed_node_types = False
             node_feat_dict = {}
             for feature_name, data_dict in node_data.items():
-                if not isinstance(data_dict, Dict):  
+                if not isinstance(data_dict, Dict):
                     # DGL will return tensor if ntype is single
                     # This can happen when graph is a multigraph
                     data_dict = {dgl_g.ntypes[0]: data_dict}
-                if not processed_node_types:
-                    for node_type, node_feature in data_dict.items():
-                        ntypes += [node_type] * len(node_feature)
-                    processed_node_types = True
-                # for node_type, node_feature in data_dict.items():
-                node_feat_dict[feature_name] = torch.cat(list(data_dict.values()), dim=0)
-            self.add_nodes(len(ntypes), ntypes=ntypes)
+
+                # TODO: zero-padding on node features for missing node types, need to preserve order.
+                node_feature_list = []
+                for ntype, num_nodes in node_num_list:
+                    if ntype not in data_dict:
+                        node_feature_list.append(torch.zeros(num_nodes, dtype=torch.float32))
+                    else:
+                        node_feature_list.append(data_dict[ntype])
+
+                node_feat_dict[feature_name] = torch.cat(node_feature_list, dim=0)
             for feature_name, feature_value in node_feat_dict.items():
                 self.node_features[feature_name] = feature_value
+
             # do the same thing for edges
             dgl_g_etypes = dgl_g.canonical_etypes
+
             # Add edges first
             edge_feature_dict = {}
             for etype in dgl_g_etypes:
                 num_edges = dgl_g.num_edges(etype)
-                src_type, r_type, dst_type = etype
                 srcs, dsts = dgl_g.find_edges(
                     torch.tensor(list(range(num_edges)), dtype=torch.long, device=dgl_g.device),
                     etype,
@@ -982,31 +991,22 @@ class GraphData(object):
                 if len(dgl_g_etypes) > 1:
                     for feature_name, feature_dict in dgl_g.edata.items():
                         current_feat = edge_feature_dict.get(feature_name, None)
+                        # Zero-padding if the feature is missing for some edge types
+                        edge_feature = feature_dict.get(
+                            etype, torch.zeros(num_edges, dtype=torch.float32, device=dgl_g.device)
+                        )
                         if current_feat is None:
-                            current_feat = feature_dict[etype]
+                            current_feat = edge_feature
                         else:
-                            current_feat = torch.cat([current_feat, feature_dict[etype]], dim=0)
+                            current_feat = torch.cat([current_feat, edge_feature], dim=0)
                         edge_feature_dict[feature_name] = current_feat
                 else:
                     for feature_name, feature_value in dgl_g.edata.items():
                         edge_feature_dict[feature_name] = feature_value
+
             # Add edge features then
             for feat_name, feat_value in edge_feature_dict.items():
                 self.edge_features[feat_name] = feat_value
-            # edge_data = dgl_g.edata
-            # etypes = []
-            # processed_edge_types = False
-            # edge_feat_dict = {}
-            # for feature_name, data_dict in edge_data.items():
-            #     if not processed_edge_types:
-            #         for edge_type, edge_feature in data_dict.items():
-            #             etypes += [edge_type] * len(edge_feature)
-            #         processed_edge_types = True
-            #     # for edge_type, edge_feature in data_dict.items():
-            #     edge_feat_dict[feature_name] = torch.stack(list(data_dict.values()), dim=0)
-            # self.add_edges()
-            # for feature_name, feature_value in edge_feat_dict.items():
-            #     self.edge_features[feature_name] = feature_value
 
         return self
 
