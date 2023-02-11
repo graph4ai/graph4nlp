@@ -238,7 +238,7 @@ def main(config):
     print("start evaluating...")
     my_model.eval()
     with torch.no_grad():
-        logits = my_model(graph)['_N']
+        logits = my_model()['_N']
     # logits = logits[target_idx]
     test_acc = accuracy(logits[test_idx].argmax(dim=1), labels[test_idx]).item()
     print("Test Accuracy: {:.4f}".format(test_acc))
